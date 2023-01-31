@@ -134,16 +134,16 @@ const entries: DetailedViewEntry[] = [
 interface LiveExtra {
     samples: number[];
     tooltip_titles: string[];
-    grid_ticks: string[];
-    grid_colors: string[];
+    grid_ticks: {[id: number]: string[]};
+    grid_colors: {[id: number]: string[]};
     last_minute: number;
 }
 
 interface HistoryExtra {
     samples: number[];
     tooltip_titles: string[];
-    grid_ticks: string[];
-    grid_colors: string[];
+    grid_ticks: {[id: number]: string[]};
+    grid_colors: {[id: number]: string[]};
 }
 
 interface MeterState {
@@ -153,15 +153,17 @@ interface MeterState {
     all_values: Readonly<API.getType['meter/all_values']>;
     live_extra: LiveExtra;
     history_extra: HistoryExtra;
+    history_x_ticks_modulo: number;
     chart_selected: "history"|"live";
 }
 
 interface StatusMeterChartState {
     history_extra: HistoryExtra;
+    history_x_ticks_modulo: number;
 }
 
 function calculate_live_extra(offset: number, samples_per_second: number, samples: number[], last_minute: number): LiveExtra {
-    let extra: LiveExtra = {samples: samples, tooltip_titles: [], grid_ticks: [], grid_colors: [], last_minute: last_minute};
+    let extra: LiveExtra = {samples: samples, tooltip_titles: [], grid_ticks: {0: []}, grid_colors: {0: []}, last_minute: last_minute};
     let now = Date.now();
     let start;
     let step;
@@ -182,13 +184,13 @@ function calculate_live_extra(offset: number, samples_per_second: number, sample
         extra.tooltip_titles[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false});
 
         if(d.getSeconds() == 0 && d.getMinutes() != extra.last_minute) {
-            extra.grid_ticks[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
-            extra.grid_colors[i] = "rgba(0,0,0,0.1)";
+            extra.grid_ticks[0][i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
+            extra.grid_colors[0][i] = "rgba(0,0,0,0.1)";
             extra.last_minute = d.getMinutes();
         }
         else {
-            extra.grid_ticks[i] = "";
-            extra.grid_colors[i] = "rgba(0,0,0,0)";
+            extra.grid_ticks[0][i] = "";
+            extra.grid_colors[0][i] = "rgba(0,0,0,0)";
         }
     }
 
@@ -198,14 +200,15 @@ function calculate_live_extra(offset: number, samples_per_second: number, sample
 function calculate_history_extra(offset: number, samples: Readonly<number[]>): HistoryExtra {
     const HISTORY_MINUTE_INTERVAL = 4;
 
-    let extra: HistoryExtra = {samples: [], tooltip_titles: [], grid_ticks: [], grid_colors: []};
+    let extra: HistoryExtra = {samples: [], tooltip_titles: [], grid_ticks: {6: [], 12: []}, grid_colors: {6: [], 12: []}};
     let now = Date.now();
     let step = HISTORY_MINUTE_INTERVAL * 60 * 1000;
     // (samples.length - 1) because step defines the gaps between two samples.
     // with N samples there are (N - 1) gaps, while the lastest/newest sample is
     // offset milliseconds old
     let start = now - (samples.length - 1) * step - offset;
-    let last_hour = -1;
+    let last_hour: {[id:number]: number} = {6: -1, 12: -1};
+    let modulo = [6, 12];
 
     for(let i = 0; i < samples.length; ++i) {
         extra.samples[i] = samples[i];
@@ -213,22 +216,24 @@ function calculate_history_extra(offset: number, samples: Readonly<number[]>): H
         let d = new Date(start + i * step);
         extra.tooltip_titles[i] = d.toLocaleTimeString(navigator.language, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false});
 
-        // FIXME: there might be no datapoint on a full hour interval
-        if (d.getHours() % 6 == 0 && d.getHours() != last_hour && d.getMinutes() < HISTORY_MINUTE_INTERVAL) {
-            extra.grid_ticks[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
+        for (let k = 0; k < modulo.length; ++k) {
+            // FIXME: there might be no datapoint on a full hour interval
+            if (d.getHours() % modulo[k] == 0 && d.getHours() != last_hour[modulo[k]] && d.getMinutes() < HISTORY_MINUTE_INTERVAL) {
+                extra.grid_ticks[modulo[k]][i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
 
-            if (d.getHours() == 0) {
-                extra.grid_colors[i] = "rgba(1,1,1,0.75)";
+                if (d.getHours() == 0) {
+                    extra.grid_colors[modulo[k]][i] = "rgba(1,1,1,0.75)";
+                }
+                else {
+                    extra.grid_colors[modulo[k]][i] = "rgba(0,0,0,0.1)";
+                }
+
+                last_hour[modulo[k]] = d.getHours();
             }
             else {
-                extra.grid_colors[i] = "rgba(0,0,0,0.1)";
+                extra.grid_ticks[modulo[k]][i] = "";
+                extra.grid_colors[modulo[k]][i] = "rgba(0,0,0,0)";
             }
-
-            last_hour = d.getHours();
-        }
-        else {
-            extra.grid_ticks[i] = "";
-            extra.grid_colors[i] = "rgba(0,0,0,0)";
         }
     }
 
@@ -241,9 +246,9 @@ function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
     return a.slice(-tail);
 }
 
-function build_chart_data(chart_extra: LiveExtra|HistoryExtra) {
+function build_chart_data(chart_extra: LiveExtra|HistoryExtra, grid_ticks_modulo: number) {
     let data: ChartData<"line"> = {
-        labels: chart_extra.grid_ticks,
+        labels: chart_extra.grid_ticks[grid_ticks_modulo],
         datasets: [
             {
                 data: chart_extra.samples,
@@ -258,13 +263,15 @@ function build_chart_data(chart_extra: LiveExtra|HistoryExtra) {
 }
 
 function build_chart_options(chart_extra: LiveExtra|HistoryExtra, chart_container_id: string,
-                             suggested_min: number, suggested_max: number, step_size: number) {
+                             suggested_min: number, suggested_max: number, step_size: number,
+                             grid_colors_modulo: number, on_resize_function: (width: number) => void) {
     let options: ChartOptions<"line"> = {
         normalized: true,
         animation: false,
         onResize: function(chart, size) {
             let element = document.getElementById(chart_container_id);
             chart.options.aspectRatio = parseFloat(getComputedStyle(element).aspectRatio);
+            on_resize_function(element.offsetWidth);
         },
         layout: {
             autoPadding: false,
@@ -312,7 +319,7 @@ function build_chart_options(chart_extra: LiveExtra|HistoryExtra, chart_containe
                     sampleSize: 0,
                 },
                 grid: {
-                    color: chart_extra.grid_colors,
+                    color: chart_extra.grid_colors[grid_colors_modulo],
                 }
             },
             y: {
@@ -371,7 +378,7 @@ export class Meter extends Component<{}, MeterState> {
             let live = API.get("meter/live");
             let live_extra = calculate_live_extra(live.offset, live.samples_per_second, live.samples, -1);
 
-            this.pending_live_extra = {samples: [], tooltip_titles: [], grid_ticks: [], grid_colors: [], last_minute: live_extra.last_minute};
+            this.pending_live_extra = {samples: [], tooltip_titles: [], grid_ticks: {0: []}, grid_colors: {0: []}, last_minute: live_extra.last_minute};
 
             this.setState({live_extra: live_extra});
         });
@@ -382,8 +389,8 @@ export class Meter extends Component<{}, MeterState> {
 
             this.pending_live_extra.samples.push(...live_extra.samples);
             this.pending_live_extra.tooltip_titles.push(...live_extra.tooltip_titles);
-            this.pending_live_extra.grid_ticks.push(...live_extra.grid_ticks);
-            this.pending_live_extra.grid_colors.push(...live_extra.grid_colors);
+            this.pending_live_extra.grid_ticks[0].push(...live_extra.grid_ticks[0]);
+            this.pending_live_extra.grid_colors[0].push(...live_extra.grid_colors[0]);
             this.pending_live_extra.last_minute = live_extra.last_minute;
 
             if (this.pending_live_extra.samples.length >= 5) {
@@ -391,16 +398,16 @@ export class Meter extends Component<{}, MeterState> {
                     live_extra: {
                         samples: array_append(this.state.live_extra.samples, this.pending_live_extra.samples, 720),
                         tooltip_titles: array_append(this.state.live_extra.tooltip_titles, this.pending_live_extra.tooltip_titles, 720),
-                        grid_ticks: array_append(this.state.live_extra.grid_ticks, this.pending_live_extra.grid_ticks, 720),
-                        grid_colors: array_append(this.state.live_extra.grid_colors, this.pending_live_extra.grid_colors, 720),
+                        grid_ticks: {0: array_append(this.state.live_extra.grid_ticks[0], this.pending_live_extra.grid_ticks[0], 720)},
+                        grid_colors: {0: array_append(this.state.live_extra.grid_colors[0], this.pending_live_extra.grid_colors[0], 720)},
                         last_minute: this.pending_live_extra.last_minute,
                     }
                 });
 
                 this.pending_live_extra.samples = [];
                 this.pending_live_extra.tooltip_titles = [];
-                this.pending_live_extra.grid_ticks = [];
-                this.pending_live_extra.grid_colors = [];
+                this.pending_live_extra.grid_ticks[0] = [];
+                this.pending_live_extra.grid_colors[0] = [];
             }
         });
 
@@ -434,8 +441,22 @@ export class Meter extends Component<{}, MeterState> {
             return (<></>);
         }
 
-        let data = build_chart_data(chart_extra);
-        let options = build_chart_options(chart_extra, "meter_chart", undefined, undefined, undefined);
+        let grid_ticks_modulo;
+
+        if (state.chart_selected == "live") {
+            grid_ticks_modulo = 0;
+        } else {
+            grid_ticks_modulo = state.history_x_ticks_modulo;
+        }
+
+        let data = build_chart_data(chart_extra, grid_ticks_modulo);
+        let options = build_chart_options(chart_extra, "meter_chart", undefined, undefined, undefined, grid_ticks_modulo, (width) => {
+            if (width < 400) {
+                this.setState({history_x_ticks_modulo: 12});
+            } else {
+                this.setState({history_x_ticks_modulo: 6});
+            }
+        });
 
         return (
             <>
@@ -566,8 +587,14 @@ export class StatusMeterChart extends Component<{}, StatusMeterChartState> {
             return (<></>);
         }
 
-        let data = build_chart_data(state.history_extra);
-        let options = build_chart_options(state.history_extra, "status_meter_chart", 0, 1500, 100);
+        let data = build_chart_data(state.history_extra, state.history_x_ticks_modulo);
+        let options = build_chart_options(state.history_extra, "status_meter_chart", 0, 1500, 100, state.history_x_ticks_modulo, (width) => {
+            if (width < 375) {
+                this.setState({history_x_ticks_modulo: 12});
+            } else {
+                this.setState({history_x_ticks_modulo: 6});
+            }
+        });
 
         return (
             <>
