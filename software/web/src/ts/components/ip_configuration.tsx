@@ -22,6 +22,7 @@ import { JSXInternal } from "preact/src/jsx";
 import { __ } from "../translation";
 import { FormRow } from "./form_row";
 import { InputIP } from "./input_ip";
+import { parseIP } from "../util";
 
 import Collapse from 'react-bootstrap/Collapse';
 import { InputSelect } from "./input_select";
@@ -57,18 +58,16 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
         this.props.onValue(this.props.value);
     }
 
-    parseIP(ip: string) {
-        return ip.split(".").map((x, i, _) => parseInt(x, 10) * (1 << (8 * (3 - i)))).reduce((a, b) => a+b);
-    }
+
 
     render(props: IPConfigurationProps, state: Readonly<{}>) {
         let dhcp = props.value.ip == "0.0.0.0";
         let gateway_out_of_subnet = false;
         let subnet_captures_localhost = false;
         if (!dhcp && props.value.ip !== undefined) { //ip is undefined if we render before the web socket connection is established.
-            let ip = this.parseIP(props.value.ip);
-            let subnet = this.parseIP(props.value.subnet);
-            let gateway = this.parseIP(props.value.gateway);
+            let ip = parseIP(props.value.ip);
+            let subnet = parseIP(props.value.subnet);
+            let gateway = parseIP(props.value.gateway);
 
             if (!isNaN(ip) && !isNaN(subnet) && !isNaN(gateway)){
                 gateway_out_of_subnet = gateway != 0 && (ip & subnet) != (gateway & subnet);
