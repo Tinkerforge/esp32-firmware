@@ -25,7 +25,7 @@ import * as API from "../../ts/api";
 import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/components/config_page_header";
-import Switch from "react-bootstrap/esm/Switch";
+import { Switch } from "src/ts/components/switch";
 import { ConfigComponent } from "src/ts/components/config_component";
 import { ConfigForm } from "src/ts/components/config_form";
 import { FormRow } from "src/ts/components/form_row";
@@ -55,8 +55,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
             return (<></>);
 
         let em = state.em_state;
-        console.log(em);
-
+        
         return (
             <>
                 <ConfigForm id="em_meter_config_config_form" title={__("em_meter_config.content.em_meter_config")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
@@ -99,6 +98,12 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
                             <FormRow label={__("em_meter_config.content.sdm_energy_export")} label_muted={__("em_meter_config.content.sdm_energy_export_muted")}>
                                 <InputFloat value={em.energy_meter_energy_export} digits={0} unit={'kWh'} />
                             </FormRow>
+
+                            <FormRow label={__("em_meter_config.content.kulparga_mode")}>
+                                <Switch desc={__("em_meter_config.content.kulparga_desc")}
+                                    checked={state.kulparga_mode}
+                                    onClick={this.toggle('kulparga_mode')}/>
+                                    </FormRow>
                         </div>
                     </Collapse>
 

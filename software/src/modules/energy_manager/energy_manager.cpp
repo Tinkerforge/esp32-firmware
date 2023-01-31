@@ -351,6 +351,10 @@ void EnergyManager::update_all_data_struct()
             bricklet_reachable = true;
             logger.printfln("energy_manager: Bricklet is reachable again.");
         }
+
+        // TODO Remove: Support reversed current clamps.
+        if (em_meter_config.config.get("kulparga_mode")->asBool())
+            all_data.power *= -1;
     } else {
         if (rc == TF_E_TIMEOUT) {
             logger.printfln("energy_manager: get_all_data_1() timed out.");
@@ -644,8 +648,35 @@ void EnergyManager::update_energy()
 uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
 {
     uint16_t len = 0;
-    tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, &len);
-    return len;
+    int rc = tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, &len);
+
+    if (rc == TF_E_OK) {
+        consecutive_bricklet_errors = 0;
+        if (!bricklet_reachable) {
+            bricklet_reachable = true;
+            logger.printfln("energy_manager: Bricklet is reachable again.");
+        }
+
+        // TODO Remove: Support reversed current clamps.
+        if (em_meter_config.config.get("kulparga_mode")->asBool()) {
+            for (int i = 0; i < len; i++)
+                ret_values[i] *= -1;
+        }
+
+        return len;
+    } else {
+        if (rc == TF_E_TIMEOUT) {
+            logger.printfln("energy_manager: get_energy_meter_detailed_values() timed out.");
+        } else {
+            logger.printfln("energy_manager: get_energy_meter_detailed_values() returned error %d.", rc);
+        }
+        if (bricklet_reachable && ++consecutive_bricklet_errors >= 8) {
+            bricklet_reachable = false;
+            logger.printfln("energy_manager: Bricklet is unreachable.");
+        }
+
+        return 0;
+    }
 }
 
 void EnergyManager::set_output(bool output)
