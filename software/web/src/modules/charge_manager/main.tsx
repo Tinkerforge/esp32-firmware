@@ -326,10 +326,12 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                     <Modal.Header closeButton>
                         <label class="modal-title form-label">{__("charge_manager.content.add_charger_modal_title")}</label>
                     </Modal.Header>
-                    <form onSubmit={() => {this.setState({showModal: false,
-                                                            chargers: state.chargers.concat(state.newCharger),
-                                                            newCharger: {name: "", host: ""}});
-                                                this.hackToAllowSave();}}>
+                    <form onSubmit={(e) => {e.preventDefault();
+                                            e.stopPropagation();
+                                            this.setState({showModal: false,
+                                                           chargers: state.chargers.concat(state.newCharger),
+                                                           newCharger: {name: "", host: ""}});
+                                            this.hackToAllowSave();}}>
                     <Modal.Body>
                             <FormGroup label={__("charge_manager.content.add_charger_modal_name")}>
                                 <InputText value={state.newCharger.name}
