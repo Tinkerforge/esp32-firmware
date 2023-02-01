@@ -434,63 +434,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                 />
                         </FormGroup>
                 </ItemModal>
-
-                {/* <Modal show={state.showModal} onHide={() => this.setState({showModal: false})} centered>
-                    <Modal.Header closeButton>
-                        <label class="modal-title form-label">{__("users.content.add_user_modal_title")}</label>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <FormGroup label={__("users.content.add_user_modal_username")}>
-                            <InputText
-                                value={state.newUser.username}
-                                onValue={(v) => this.setState({newUser: {...state.newUser, username: v}})}
-                                required
-                                maxLength={32}
-                                placeholder={__("users.content.add_user_modal_username_desc")}
-                                />
-                        </FormGroup>
-                        <FormGroup label={__("users.content.add_user_modal_display_name")}>
-                            <InputText
-                                value={state.newUser.display_name}
-                                onValue={(v) => this.setState({newUser: {...state.newUser, display_name: v}})}
-                                required
-                                maxLength={32}
-                                placeholder={__("users.content.add_user_modal_display_name_desc")}
-                                />
-                        </FormGroup>
-                        <FormGroup label={__("users.content.add_user_modal_current")}>
-                            <InputFloat
-                                    unit="A"
-                                    value={state.newUser.current}
-                                    onValue={(v) => this.setState({newUser: {...state.newUser, current: v}})}
-                                    digits={3}
-                                    min={6000}
-                                    max={32000}
-                                    />
-                        </FormGroup>
-                        <FormGroup label={__("users.content.add_user_modal_password")}>
-                            <InputPassword
-                                maxLength={64}
-                                value={state.newUser.password}
-                                onValue={(v) => this.setState({newUser: {...state.newUser, password: v}})}
-                                hideClear
-                                placeholder={__("users.content.add_user_modal_password_desc")}
-                                />
-                        </FormGroup>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={() => this.setState({showModal: false})}>
-                            {__("users.content.add_user_modal_abort")}
-                        </Button>
-                        <Button variant="primary"
-                                onClick={() => {this.setState({showModal: false,
-                                                               users: state.users.concat({...state.newUser, id: -1, roles: 0xFFFF}),
-                                                               newUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}});
-                                                this.hackToAllowSave();}}>
-                            {__("users.content.add_user_modal_save")}
-                        </Button>
-                    </Modal.Footer>
-                </Modal> */}
             </>
         )
     }

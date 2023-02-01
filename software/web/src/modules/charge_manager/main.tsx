@@ -388,7 +388,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
             onExited={() => {this.setState({scanResult: []}); window.clearInterval(this.intervalID)}}
             show={state.showModal}
             no_variant="secondary"
-            yes_variant="danger"
+            yes_variant="primary"
             title={__("charge_manager.content.add_charger_modal_title")}
             no_text={__("charge_manager.content.add_charger_modal_abort")}
             yes_text={__("charge_manager.content.add_charger_modal_save")}>
