@@ -205,8 +205,10 @@ function calculate_history_extra(offset: number, samples: Readonly<number[]>): H
     let step = HISTORY_MINUTE_INTERVAL * 60 * 1000;
     // (samples.length - 1) because step defines the gaps between two samples.
     // with N samples there are (N - 1) gaps, while the lastest/newest sample is
-    // offset milliseconds old
-    let start = now - (samples.length - 1) * step - offset;
+    // offset milliseconds old. there might be no data point on a full hour
+    // interval. to get nice aligned ticks nudge the ticks by at most half of a
+    // sampling interval
+    let start = Math.round((now - (samples.length - 1) * step - offset) / step) * step;
     let last_hour: {[id:number]: number} = {6: -1, 12: -1};
     let modulo = [6, 12];
 
@@ -217,7 +219,6 @@ function calculate_history_extra(offset: number, samples: Readonly<number[]>): H
         extra.tooltip_titles[i] = d.toLocaleTimeString(navigator.language, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false});
 
         for (let k = 0; k < modulo.length; ++k) {
-            // FIXME: there might be no datapoint on a full hour interval
             if (d.getHours() % modulo[k] == 0 && d.getHours() != last_hour[modulo[k]] && d.getMinutes() < HISTORY_MINUTE_INTERVAL) {
                 extra.grid_ticks[modulo[k]][i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
 
