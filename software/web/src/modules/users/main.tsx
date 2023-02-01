@@ -39,6 +39,7 @@ import { Switch } from "src/ts/components/switch";
 import { InputPassword } from "src/ts/components/input_password";
 import { Slash, User, UserPlus, UserX } from "react-feather";
 import { EVSE_SLOT_USER } from "../evse_common/api";
+import { ItemModal } from "src/ts/components/item_modal";
 
 const MAX_ACTIVE_USERS = 16;
 
@@ -384,7 +385,57 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                     </FormRow>
                 </ConfigForm>
 
-                <Modal show={state.showModal} onHide={() => this.setState({showModal: false})} centered>
+                <ItemModal show={state.showModal}
+                    onHide={() => this.setState({showModal: false})}
+                    onSubmit={() => {this.setState({showModal: false,
+                        users: state.users.concat({...state.newUser, id: -1, roles: 0xFFFF}),
+                        newUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}});
+                        this.hackToAllowSave();}}
+                    title={__("users.content.add_user_modal_title")}
+                    no_variant={"secondary"}
+                    yes_variant={"primary"}
+                    no_text={__("users.content.add_user_modal_abort")}
+                    yes_text={__("users.content.add_user_modal_save")}>
+                        <FormGroup label={__("users.content.add_user_modal_username")}>
+                            <InputText
+                                value={state.newUser.username}
+                                onValue={(v) => this.setState({newUser: {...state.newUser, username: v}})}
+                                required
+                                maxLength={32}
+                                placeholder={__("users.content.add_user_modal_username_desc")}
+                                />
+                        </FormGroup>
+                        <FormGroup label={__("users.content.add_user_modal_display_name")}>
+                            <InputText
+                                value={state.newUser.display_name}
+                                onValue={(v) => this.setState({newUser: {...state.newUser, display_name: v}})}
+                                required
+                                maxLength={32}
+                                placeholder={__("users.content.add_user_modal_display_name_desc")}
+                                />
+                        </FormGroup>
+                        <FormGroup label={__("users.content.add_user_modal_current")}>
+                            <InputFloat
+                                    unit="A"
+                                    value={state.newUser.current}
+                                    onValue={(v) => this.setState({newUser: {...state.newUser, current: v}})}
+                                    digits={3}
+                                    min={6000}
+                                    max={32000}
+                                    />
+                        </FormGroup>
+                        <FormGroup label={__("users.content.add_user_modal_password")}>
+                            <InputPassword
+                                maxLength={64}
+                                value={state.newUser.password}
+                                onValue={(v) => this.setState({newUser: {...state.newUser, password: v}})}
+                                hideClear
+                                placeholder={__("users.content.add_user_modal_password_desc")}
+                                />
+                        </FormGroup>
+                </ItemModal>
+
+                {/* <Modal show={state.showModal} onHide={() => this.setState({showModal: false})} centered>
                     <Modal.Header closeButton>
                         <label class="modal-title form-label">{__("users.content.add_user_modal_title")}</label>
                     </Modal.Header>
@@ -439,7 +490,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                             {__("users.content.add_user_modal_save")}
                         </Button>
                     </Modal.Footer>
-                </Modal>
+                </Modal> */}
             </>
         )
     }
