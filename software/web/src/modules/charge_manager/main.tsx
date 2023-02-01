@@ -35,6 +35,7 @@ import { InputText } from "../../ts/components/input_text";
 import { Button, Card, Collapse, ListGroup, Modal } from "react-bootstrap";
 import { InputSelect } from "src/ts/components/input_select";
 import { InputFloat } from "src/ts/components/input_float";
+import { ItemModal } from "src/ts/components/item_modal";
 import { Switch } from "src/ts/components/switch";
 import { config } from "./api";
 
@@ -377,23 +378,21 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                 </div>
             </FormRow>
 
-        let modal = <Modal show={state.showModal}
-                        onHide={() => this.setState({showModal: false})}
-                        centered
-                        onEnter={() => {this.scan_services(); this.intervalID = setInterval(this.scan_services, 3000)}}
-                        onExited={() => {this.setState({scanResult: []}); window.clearInterval(this.intervalID)}}
-                        >
-                    <Modal.Header closeButton>
-                        <label class="modal-title form-label">{__("charge_manager.content.add_charger_modal_title")}</label>
-                    </Modal.Header>
-                    <form onSubmit={(e) => {e.preventDefault();
-                                            e.stopPropagation();
-                                            this.setState({showModal: false,
-                                                           chargers: state.chargers.concat(state.newCharger),
-                                                           newCharger: {name: "", host: ""}});
-                                            this.hackToAllowSave();}}>
-                    <Modal.Body>
-                            <FormGroup label={__("charge_manager.content.add_charger_modal_name")}>
+        let modal = <ItemModal onSubmit={() => {
+                this.setState({showModal: false,
+                    chargers: state.chargers.concat(state.newCharger),
+                    newCharger: {name: "", host: ""}});
+                this.hackToAllowSave();}}
+            onHide={() => this.setState({showModal: false})}
+            onEnter={() => {this.scan_services(); this.intervalID = setInterval(this.scan_services, 3000)}}
+            onExited={() => {this.setState({scanResult: []}); window.clearInterval(this.intervalID)}}
+            show={state.showModal}
+            no_variant="secondary"
+            yes_variant="danger"
+            title={__("charge_manager.content.add_charger_modal_title")}
+            no_text={__("charge_manager.content.add_charger_modal_abort")}
+            yes_text={__("charge_manager.content.add_charger_modal_save")}>
+                    <FormGroup label={__("charge_manager.content.add_charger_modal_name")}>
                                 <InputText value={state.newCharger.name}
                                         onValue={(v) => this.setState({newCharger: {...state.newCharger, name: v}})}
                                         maxLength={32}
@@ -429,18 +428,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                 }
                                 </ListGroup>
                             </FormGroup>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={() => this.setState({showModal: false})}>
-                            {__("charge_manager.content.add_charger_modal_abort")}
-                        </Button>
-                        <Button variant="primary"
-                                type="submit">
-                            {__("charge_manager.content.add_charger_modal_save")}
-                        </Button>
-                    </Modal.Footer>
-                    </form>
-                </Modal>;
+                </ItemModal>
 
         return (
             <>
