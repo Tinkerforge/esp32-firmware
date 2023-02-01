@@ -209,35 +209,38 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
     isMultiOrBroadcastIp(v: string): boolean
     {
         const ip = util.parseIP(v);
-        if (!isNaN(ip))
-        {
-            const wifi_subnet = util.parseIP(API.get("wifi/sta_config").subnet);
-            const eth_subnet = util.parseIP(API.get("ethernet/config").subnet);
-            const wifi_ip = util.parseIP(API.get("wifi/sta_config").ip);
-            const eth_ip = util.parseIP(API.get("ethernet/config").ip);
-            const wifi_network = !isNaN(wifi_ip) && !isNaN(wifi_subnet) ? wifi_subnet & wifi_ip : undefined;
-            const eth_network = !isNaN(eth_ip) && !isNaN(eth_subnet) ? eth_ip & eth_subnet : undefined;
-            const wifi_broadcast = wifi_network != undefined ? (~wifi_subnet) | wifi_network : undefined;
-            const eth_broadcast = eth_network != undefined ? (~eth_subnet) | eth_network : undefined;
+        if (isNaN(ip))
+            return false;
 
-            if (API.get("wifi/sta_config").subnet != "255.255.255.254" && wifi_broadcast != undefined && (v == this.intToIP(wifi_broadcast) || v == this.intToIP(wifi_network)))
-                return true;
-            if (API.get("ethernet/config").subnet != "255.255.255.254" && eth_broadcast != undefined && (v == this.intToIP(eth_broadcast) || v == this.intToIP(eth_network)))
-                return true;
+        const wifi_subnet = util.parseIP(API.get("wifi/sta_config").subnet);
+        const wifi_ip = util.parseIP(API.get("wifi/sta_config").ip);
+        const wifi_network = wifi_subnet & wifi_ip;
+        const wifi_broadcast = (~wifi_subnet) | wifi_network;
 
-            const start_multicast = util.parseIP("224.0.0.0");
-            const end_multicast = util.parseIP("239.255.255.255");
-            if (ip >= start_multicast && ip <= end_multicast)
-                return true;
+        if (API.get("wifi/sta_config").subnet != "255.255.255.254" && (v == this.intToIP(wifi_broadcast) || v == this.intToIP(wifi_network)))
+            return true;
 
-            const ap_ip = util.parseIP(API.get("wifi/ap_config").ip);
-            const ap_subnet = util.parseIP(API.get("wifi/ap_config").subnet);
-            const ap_network = !isNaN(ap_ip) && !isNaN(ap_subnet) ? ap_ip & ap_subnet : undefined;
-            const ap_broadcast = ap_network != undefined ? (~ap_subnet) | ap_network : undefined;
-            if (API.get("wifi/ap_config").subnet != "255.255.255.254" && ap_broadcast != undefined && (v == this.intToIP(ap_network) || v == this.intToIP(ap_broadcast)))
+        if (API.hasFeature("ethernet")) {
+            const eth_subnet = util.parseIP(API.get_maybe("ethernet/config").subnet);
+            const eth_ip = util.parseIP(API.get_maybe("ethernet/config").ip);
+            const eth_network = eth_ip & eth_subnet;
+            const eth_broadcast = (~eth_subnet) | eth_network;
+            if (API.get_maybe("ethernet/config")?.subnet != "255.255.255.254" && (v == this.intToIP(eth_broadcast) || v == this.intToIP(eth_network)))
                 return true;
         }
-        return false;
+
+        const start_multicast = util.parseIP("224.0.0.0");
+        const end_multicast = util.parseIP("239.255.255.255");
+        if (ip >= start_multicast && ip <= end_multicast)
+            return true;
+
+        const ap_ip = util.parseIP(API.get("wifi/ap_config").ip);
+        const ap_subnet = util.parseIP(API.get("wifi/ap_config").subnet);
+        const ap_network = ap_ip & ap_subnet;
+        const ap_broadcast =  (~ap_subnet) | ap_network;
+        if (API.get("wifi/ap_config").subnet != "255.255.255.254" && (v == this.intToIP(ap_network) || v == this.intToIP(ap_broadcast)))
+            return true;
+
     }
 
     render(props: {}, state: ChargeManagerConfig & ChargeManagerState) {
