@@ -59,6 +59,14 @@ char receiveCommandBuffer[UDP_RX_PACKET_MAX_SIZE];  // buffer to hold incoming U
 Rtc rtc;
 EVSEV2 evse;
 
+::time_t GetTimeZoneOffset () {
+  static const time_t seconds = 0; // any arbitrary value works!
+  ::tm tmGMT = {}, tmLocal = {};
+  ::gmtime_r(&seconds, &tmGMT); // ::gmtime_s() for WINDOWS
+  ::localtime_r(&seconds, &tmLocal);  // ::localtime_s() for WINDOWS
+  return ::mktime(&tmGMT) - ::mktime(&tmLocal);
+}
+
 bool ready_for_next_chunk = false;
 size_t MAXLENGTH;
 byte flash_seq;
@@ -953,22 +961,14 @@ void AC011K::loop()
     static byte PrivCommRxState = PRIVCOMM_MAGIC;
     static int PrivCommRxBufferPointer = 0;
     byte rxByte;
-    if (rtc.rtc_updated)
-    {
+    if (rtc.rtc_updated && ntp.state.get("time")->asUint() == 0) {
+        // only use the browser time if NTP is not synced
         timeval time;
-        time.tv_sec = rtc.get_time(true);
+        time.tv_sec = rtc.get_time(true) - GetTimeZoneOffset();
         time.tv_usec = 0;
         SetRTC(time);
+        logger.printfln("Got time from browser. Set RTC to: %s UTC", timeStr(&PrivCommTxBuffer[PayloadStart + 4]));
     }
-    if (!ntp_clock_synced && clock_synced(&tv_now)) {
-        //SetRTC(); // TODO: move this to ntp sync
-        ntp_clock_synced = true;
-    }
-
-    // if(evse.evse_found && !evse.initialized && deadline_elapsed(last_check + 10000)) {
-    //     last_check = millis();
-    //     evse.setup(); // init? local setup? TODO: Oelison
-    // }
 
     if( Serial2.available() > 0 && !cmd_to_process) {
         do {
@@ -1366,8 +1366,8 @@ void AC011K::loop()
                     case GD_0A_TIME_ANSWER: // time answer
                         switch( PrivCommRxBuffer[8] ) {
                             case GD_GET_RTC_ANSWER:
-                                // set ESP32 time ???
-                                if (!clock_synced(&tv_now) || !ntp.state.get("synced")->asBool()) {
+                                if (!clock_synced(&tv_now) || (ntp.state.get("time")->asUint() == 0)) {
+                                    struct timeval tv_rtc;
                                     struct tm timeinfo;
                                     timeinfo.tm_year  = PrivCommRxBuffer[PayloadStart + 4] + 100;
                                     timeinfo.tm_mon   = PrivCommRxBuffer[PayloadStart + 5] - 1;
@@ -1376,17 +1376,18 @@ void AC011K::loop()
                                     timeinfo.tm_min   = PrivCommRxBuffer[PayloadStart + 8];
                                     timeinfo.tm_sec   = PrivCommRxBuffer[PayloadStart + 9];
                                     timeinfo.tm_isdst = -1;
-                                    tv_now.tv_sec = mktime(&timeinfo);
-                                    tv_now.tv_usec = 0;
+                                    tv_rtc.tv_sec = mktime(&timeinfo) - GetTimeZoneOffset();
+                                    tv_rtc.tv_usec = 0;
 
-                                    if (tv_now.tv_sec > build_timestamp()) {
-                                        settimeofday(&tv_now, nullptr);
-                                        logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Got RTC, set time to %s", cmd, seq, len, crc, timeStr(&PrivCommRxBuffer[PayloadStart + 4]));
+                                    if (tv_rtc.tv_sec > build_timestamp()) {
+                                        rtc.set_synced();
+                                        if (abs(tv_now.tv_sec - tv_rtc.tv_sec) > 1) {
+                                            settimeofday(&tv_rtc, nullptr);
+                                            logger.printfln("Got a more precise time from RTC (%s UTC), setting local time in respect to timezone (%s).", timeStr(&PrivCommRxBuffer[PayloadStart + 4]), ntp.config.get("timezone")->asEphemeralCStr());
+                                        }
                                     } else {
                                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Got RTC, but time is before build time. %s", cmd, seq, len, crc, timeStr(&PrivCommRxBuffer[PayloadStart + 4]));
                                     }
-                                } else {
-                                    logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Got RTC, but time is already in sync %s", cmd, seq, len, crc, timeStr(&PrivCommRxBuffer[PayloadStart + 4]));
                                 }
                                 break;
                             case GD_SET_RTC_ANSWER:

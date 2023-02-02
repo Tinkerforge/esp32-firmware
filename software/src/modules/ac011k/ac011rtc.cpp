@@ -28,6 +28,8 @@ extern API api;
 extern TaskScheduler task_scheduler;
 extern NTP ntp;
 
+#define RTC_DESYNC_THRESHOLD_S 25 * 60 * 60
+
 void Rtc::pre_setup()
 {
     time = Config::Object({
@@ -57,28 +59,28 @@ void Rtc::pre_setup()
     config = Config::Object({
         {"auto_sync", Config::Bool(true)},
     });
+
+    state = Config::Object({
+        {"synced", Config::Bool(false)},
+        {"time", Config::Uint32(0)} // unix timestamp in minutes
+    });
 }
 
 void Rtc::set_time(timeval time)
 {
-    /* struct tm date_time; */
-    /* gmtime_r(&time.tv_sec, &date_time); */
+    struct tm date_time;
+    gmtime_r(&time.tv_sec, &date_time);
 
-    /* date_time.tm_year += 1900; */
-    /* auto ret = tf_real_time_clock_v2_set_date_time(&device, */
-    /*                                                date_time.tm_year, */
-    /*                                                date_time.tm_mon + 1, */
-    /*                                                date_time.tm_mday, */
-    /*                                                date_time.tm_hour, */
-    /*                                                date_time.tm_min, */
-    /*                                                date_time.tm_sec, */
-    /*                                                time.tv_usec / (1000 * 10), */
-    /*                                                date_time.tm_wday); */
-    /* if (ret) */
-    /*     logger.printfln("Setting rtc failed with code %i", ret); */
+    tf_real_time_clock_v2_set_date_time(
+        date_time.tm_year + 1900,
+        date_time.tm_mon + 1,
+        date_time.tm_mday,
+        date_time.tm_hour,
+        date_time.tm_min,
+        date_time.tm_sec);
 
-    logger.printfln("Setting the clock...");
-    ntp.set_synced();
+    rtc_updated = true;
+    logger.printfln("Setting the RTC clock...");
 }
 
 time_t Rtc::get_time(bool reset_update)
@@ -100,11 +102,20 @@ void Rtc::tf_real_time_clock_v2_set_date_time(uint year, uint month, uint day, u
     rtcunixtime = mktime(&tv);
 }
 
+void Rtc::set_synced()
+{
+    gettimeofday(&last_sync, NULL);
+    state.get("synced")->updateBool(true);
+    state.get("time")->updateUint(timestamp_minutes());
+    ntp.set_synced();
+}
+
 void Rtc::register_urls()
 {
     api.addPersistentConfig("rtc/config", &config, {}, 1000);
 
     api.addState("rtc/time", &time, {}, 100);
+    api.addState("rtc/state", &state, {}, 1000);
     api.addCommand("rtc/time_update", &time_update, {}, [this]() {
         tf_real_time_clock_v2_set_date_time(time_update.get("year")->asUint(),
                                             time_update.get("month")->asUint(),
@@ -112,8 +123,8 @@ void Rtc::register_urls()
                                             time_update.get("hour")->asUint(),
                                             time_update.get("minute")->asUint(),
                                             time_update.get("second")->asUint());
-        ntp.set_synced();
         rtc_updated = true;
+        set_synced();
     }, true);
 
     api.addFeature("rtc");
@@ -131,6 +142,15 @@ void Rtc::register_urls()
         time.get("second")->updateUint(date_time.tm_sec);
         time.get("weekday")->updateUint(date_time.tm_wday);
     }, 0, 200);
+
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        struct timeval time;
+        gettimeofday(&time, NULL);
+        if (time.tv_sec - this->last_sync.tv_sec >= RTC_DESYNC_THRESHOLD_S || time.tv_sec < build_timestamp()) {
+            ntp.state.get("synced")->updateBool(false);
+            state.get("synced")->updateBool(false);
+        }
+    }, 0, 30 * 1000);
 }
 
 void Rtc::setup()

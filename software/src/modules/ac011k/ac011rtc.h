@@ -25,6 +25,7 @@
 class Rtc
 {
     private:
+        struct timeval last_sync;
         time_t rtcunixtime;
         void tf_real_time_clock_v2_set_date_time(uint year, uint month, uint day, uint hour, uint minute, uint second);
     public:
@@ -35,6 +36,7 @@ class Rtc
         void pre_setup();
         void setup();
         void loop();
+        void set_synced();
         void register_urls();
 
         void setup_rtc();
@@ -44,4 +46,5 @@ class Rtc
         ConfigRoot time;
         ConfigRoot time_update;
         ConfigRoot config;
+        ConfigRoot state;
 };
