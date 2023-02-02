@@ -12,7 +12,12 @@
             "heap_free": "Free heap bytes",
             "heap_block": "Largest free heap block",
             "psram_free": "Free PSRAM bytes",
-            "psram_block": "Largest free PSRAM block"
+            "psram_block": "Largest free PSRAM block",
+
+            "websocket_connection": "WebSocket connection",
+            "websocket_connection_muted": "of this browser tab",
+            "websocket_pause": "Pause",
+            "websocket_resume": "Resume"
         },
         "script": {
         }

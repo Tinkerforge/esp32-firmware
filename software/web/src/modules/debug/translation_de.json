@@ -12,7 +12,12 @@
             "heap_free": "Freie Heap-Bytes",
             "heap_block": "Größter freier Heap-Block",
             "psram_free": "Freie Bytes im externen RAM",
-            "psram_block": "Größter freier Block im externen RAM"
+            "psram_block": "Größter freier Block im externen RAM",
+
+            "websocket_connection": "WebSocket-Verbindung",
+            "websocket_connection_muted": "von diesem Browser-Tab",
+            "websocket_pause": "Pause",
+            "websocket_resume": "Fortsetzen"
         },
         "script": {
         }

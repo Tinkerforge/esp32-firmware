@@ -27,7 +27,8 @@ import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 
 import { FormRow } from "../../ts/components/form_row";
-import { InputText } from "src/ts/components/input_text";
+import { InputText } from "../../ts/components/input_text";
+import { Button } from "react-bootstrap";
 
 export class Debug extends Component<{}, API.getType['debug/state']> {
     constructor() {
@@ -65,6 +66,13 @@ export class Debug extends Component<{}, API.getType['debug/state']> {
 
                 <FormRow label={__("debug.content.psram_block")}>
                     <InputText value={state.largest_free_psram_block}/>
+                </FormRow>
+
+                <FormRow label={__("debug.content.websocket_connection")} label_muted={__("debug.content.websocket_connection_muted")}>
+                    <div class="input-group pb-2">
+                        <Button variant="primary" className="form-control rounded-right mr-2" onClick={util.pauseWebSockets}>{__("debug.content.websocket_pause")}</Button>
+                        <Button variant="primary" className="form-control rounded-left" onClick={util.resumeWebSockets}>{__("debug.content.websocket_resume")}</Button>
+                    </div>
                 </FormRow>
             </>
         )
