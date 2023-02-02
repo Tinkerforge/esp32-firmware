@@ -420,12 +420,12 @@ const static SupportedMeasurand supported_measurands_sdm72v2[] = {
 const size_t supported_measurand_offsets_sdm72v2[] = {
     0,  /*ENERGY_ACTIVE_EXPORT_REGISTER*/
     1,  /*ENERGY_ACTIVE_IMPORT_REGISTER*/
-    1,  /*ENERGY_REACTIVE_EXPORT_REGISTER*/
-    1,  /*ENERGY_REACTIVE_IMPORT_REGISTER*/
-    1, /*ENERGY_ACTIVE_EXPORT_INTERVAL*/
-    1, /*ENERGY_ACTIVE_IMPORT_INTERVAL*/
-    1, /*ENERGY_REACTIVE_EXPORT_INTERVAL*/
-    1, /*ENERGY_REACTIVE_IMPORT_INTERVAL*/
+    2,  /*ENERGY_REACTIVE_EXPORT_REGISTER*/
+    2,  /*ENERGY_REACTIVE_IMPORT_REGISTER*/
+    2, /*ENERGY_ACTIVE_EXPORT_INTERVAL*/
+    2, /*ENERGY_ACTIVE_IMPORT_INTERVAL*/
+    2, /*ENERGY_REACTIVE_EXPORT_INTERVAL*/
+    2, /*ENERGY_REACTIVE_IMPORT_INTERVAL*/
     2, /*POWER_ACTIVE_EXPORT*/
     5, /*POWER_ACTIVE_IMPORT*/
     8, /*POWER_OFFERED*/
@@ -434,13 +434,13 @@ const size_t supported_measurand_offsets_sdm72v2[] = {
     17, /*POWER_FACTOR*/
     20, /*CURRENT_IMPORT*/
     24, /*CURRENT_EXPORT*/
-    27, /*CURRENT_OFFERED*/
-    30, /*VOLTAGE*/
-    36, /*FREQUENCY*/
-    37, /*TEMPERATURE*/
-    37, /*SO_C*/
-    37, /*RPM*/
-    37  /*NONE*/
+    28, /*CURRENT_OFFERED*/
+    31, /*VOLTAGE*/
+    37, /*FREQUENCY*/
+    38, /*TEMPERATURE*/
+    38, /*SO_C*/
+    38, /*RPM*/
+    38  /*NONE*/
 };
 
 static uint8_t meter_type = 0;
