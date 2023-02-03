@@ -4,40 +4,38 @@
             "energy_manager": "Energy Manager"
         },
         "navbar": {
-            "energy_manager": "General"
+            "energy_manager": "Settings"
         },
         "content": {
-            "energy_manager": "Energy Manager",
-            "low_level_state": "Low-level state",
-            "low_level_state_show": "Show / Hide",
-            "relay": "Relay",
-            "one_phase": "1-phase",
-            "three_phase": "3-phase",
-            "enable_excess_charging": "Excess charging",
-            "enable_excess_charging_desc": "Adjust charging power according to excess power generation.",
+            "page_header": "Energy Manager Settings",
+
+            "header_load_management": "Dynamic load management",
+            "load_management_explainer": "The Energy Manager adjusts the power consumption of devices under its control to avoid exceeding the maximum allowed current on any phase of the building's mains connection.",
+
+            "header_excess_charging": "PV Excess charging",
+            "enable_excess_charging": "Enable excess charging",
+            "enable_excess_charging_desc": "When enabled, the Energy Manager will adjust the power consumption of devices under its control, depending on the power generation of an available photovoltaic system. When disabled, the maximum power within the limits of the supply lines will be allowed.",
+            "guaranteed_power": "Guaranteed charging power",
+            "guaranteed_power_muted": "Charging power that is guaranteed to be allowed for all connected chargers in total, even when not enough excess generated power is available.",
             "contactor_installed": "Contactor installed",
-            "contactor_installed_desc": "A contactor for phase switching is installed.",
+            "contactor_installed_desc": "The Energy Manager is connected to a contactor that it can use to switch its managed wallboxes between 1-phase and 3-phase connection.",
             "phase_switching_mode": "Phase Switching",
             "fixed_one_phase": "Fixed 1-phase connection",
             "fixed_three_phases": "Fixed 3-phase connection",
             "automatic": "Automatic",
             "always_one_phase": "Always 1-phase",
             "always_three_phases": "Always 3-phase",
+
+            "relay": "Relay",
+            "one_phase": "1-phase",
+            "three_phase": "3-phase",
             "extern": "Externally controlled",
             "input3_config": "Input 3",
             "input4_config": "Input 4",
-            "target_power_from_grid": "Target grid power draw",
-            "target_power_from_grid_muted": "target grid draw for excess charging",
-            "guaranteed_power": "Guaranteed charging power",
-            "guaranteed_power_muted": "Minimum charging power guaranteed, even when not enough excess generated power is available. This can override the target grid power draw.",
             "maximum_available_current": "Maximum current of supply line",
             "maximum_available_current_muted": "limit of the contactor's supply line",
             "minimum_current": "Minimum charging current",
             "minimum_current_muted": "must be available at least to start a charge",
-            "hysteresis_time": "Hysteresis time",
-            "hysteresis_time_muted": "Minimum delay before phase switches or starting or stopping a charge, to avoid excessive wear on the vehicle's charge electronics by switching too often.",
-            "hysteresis_wear_accepted": "Accept excessive wear",
-            "hysteresis_wear_accepted_desc": "I accept the excessive wear on my vehicle's charge electronics caused by short charges. This allows using a short hysteresis time.",
             "relay_config": "Relay",
             "relay_unused": "Unused (always open)",
             "relay_rules": "Rule-based",
@@ -71,7 +69,15 @@
             "input_when": "When",
             "input_low": "Input low (open)",
             "input_high": "Input high (closed)",
-            "phase_switching": "Phase switching"
+            "phase_switching": "Phase switching",
+
+            "expert_settings": "Expert settings",
+            "target_power_from_grid": "Target grid power draw",
+            "target_power_from_grid_muted": "target grid draw for excess charging",
+            "hysteresis_time": "Hysteresis time",
+            "hysteresis_time_muted": "Minimum delay before phase switches or starting or stopping a charge, to avoid excessive wear on the vehicle's charge electronics by switching too often.",
+            "hysteresis_wear_accepted": "Accept excessive wear",
+            "hysteresis_wear_accepted_desc": "I accept the excessive wear on my vehicle's charge electronics caused by short charges. This allows using a short hysteresis time."
         },
         "script": {
             "save_failed": "Failed to save energy manager configuration.",

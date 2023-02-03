@@ -58,11 +58,31 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
         return (
             <>
-                <ConfigForm id="energy_manager_config_form" title={__("energy_manager.content.energy_manager")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="energy_manager_config_form" title={__("energy_manager.content.page_header")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+
+                    <FormSeparator heading={__("energy_manager.content.header_load_management")} />
+                    <FormRow label="">
+                        <div class="pt-3 pb-4">
+                            {__("energy_manager.content.load_management_explainer")}
+                        </div>
+                    </FormRow>
+
+                    <FormSeparator heading={__("energy_manager.content.header_excess_charging")} />
                     <FormRow label={__("energy_manager.content.enable_excess_charging")}>
                         <Switch desc={__("energy_manager.content.enable_excess_charging_desc")}
                                 checked={s.excess_charging_enable}
                                 onClick={this.toggle('excess_charging_enable')}/>
+                    </FormRow>
+
+                    <FormRow label={__("energy_manager.content.guaranteed_power")} label_muted={__("energy_manager.content.guaranteed_power_muted")}>
+                        <InputFloat
+                            unit="kW"
+                            value={s.guaranteed_power}
+                            onValue={this.set('guaranteed_power')}
+                            digits={3}
+                            min={0}
+                            max={22000}
+                            />
                     </FormRow>
 
                     <FormRow label={__("energy_manager.content.contactor_installed")}>
@@ -87,28 +107,6 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                             onValue={(v) => this.setState({phase_switching_mode: parseInt(v)})}/>
                     </FormRow>
 
-                    <FormRow label={__("energy_manager.content.target_power_from_grid")} label_muted={__("energy_manager.content.target_power_from_grid_muted")}>
-                        <InputFloat
-                            unit="kW"
-                            value={s.target_power_from_grid}
-                            onValue={this.set('target_power_from_grid')}
-                            digits={3}
-                            min={0}
-                            max={TODO_DEFINE_MAXIMUM}
-                            />
-                    </FormRow>
-
-                    <FormRow label={__("energy_manager.content.guaranteed_power")} label_muted={__("energy_manager.content.guaranteed_power_muted")}>
-                        <InputFloat
-                            unit="kW"
-                            value={s.guaranteed_power}
-                            onValue={this.set('guaranteed_power')}
-                            digits={3}
-                            min={0}
-                            max={22000}
-                            />
-                    </FormRow>
-
                     <FormRow label={__("energy_manager.content.maximum_available_current")} label_muted={__("energy_manager.content.maximum_available_current_muted")}>
                         <InputFloat
                             unit="A"
@@ -129,22 +127,6 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                             min={6000}
                             max={32000}
                             />
-                    </FormRow>
-
-                    <FormRow label={__("energy_manager.content.hysteresis_time")} label_muted={__("energy_manager.content.hysteresis_time_muted")}>
-                        <InputNumber
-                            unit="min"
-                            value={s.hysteresis_time}
-                            onValue={this.set('hysteresis_time')}
-                            min={s.hysteresis_wear_accepted ? 0 : 10}
-                            max={60}
-                            />
-                    </FormRow>
-
-                    <FormRow label={__("energy_manager.content.hysteresis_wear_accepted")}>
-                        <Switch desc={__("energy_manager.content.hysteresis_wear_accepted_desc")}
-                                checked={s.hysteresis_wear_accepted}
-                                onClick={() => {this.toggle('hysteresis_wear_accepted')(); if (s.hysteresis_wear_accepted && s.hysteresis_time < 10) this.setState({hysteresis_time: 10});}}/>
                     </FormRow>
 
                     <FormSeparator heading={__("energy_manager.content.relay")}/>
@@ -315,8 +297,34 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                         </div>
                     </Collapse>
 
-                    {/*<CollapsedSection label={__("energy_manager.content.low_level_state")}>
-                    </CollapsedSection>*/}
+                    <CollapsedSection label={__("energy_manager.content.expert_settings")}>
+                        <FormRow label={__("energy_manager.content.target_power_from_grid")} label_muted={__("energy_manager.content.target_power_from_grid_muted")}>
+                            <InputFloat
+                                unit="kW"
+                                value={s.target_power_from_grid}
+                                onValue={this.set('target_power_from_grid')}
+                                digits={3}
+                                min={0}
+                                max={345000}
+                            />
+                        </FormRow>
+
+                        <FormRow label={__("energy_manager.content.hysteresis_time")} label_muted={__("energy_manager.content.hysteresis_time_muted")}>
+                            <InputNumber
+                                unit="min"
+                                value={s.hysteresis_time}
+                                onValue={this.set('hysteresis_time')}
+                                min={s.hysteresis_wear_accepted ? 0 : 10}
+                                max={60}
+                            />
+                        </FormRow>
+
+                        <FormRow label={__("energy_manager.content.hysteresis_wear_accepted")}>
+                            <Switch desc={__("energy_manager.content.hysteresis_wear_accepted_desc")}
+                                checked={s.hysteresis_wear_accepted}
+                                onClick={() => { this.toggle('hysteresis_wear_accepted')(); if (s.hysteresis_wear_accepted && s.hysteresis_time < 10) this.setState({ hysteresis_time: 10 }); }} />
+                        </FormRow>
+                    </CollapsedSection>
                 </ConfigForm>
             </>
         )
