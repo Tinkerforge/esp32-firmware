@@ -30,7 +30,9 @@
 #define WORKER_START_ERROR_THRES 60 * 10
 #define WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT 60 * 60 * 1000
 
+#if MODULE_WATCHDOG_AVAILABLE()
 static int watchdog_handle = -1;
+#endif
 
 void clear_ws_work_item(ws_work_item *wi)
 {
