@@ -298,7 +298,7 @@ void AC011K::Serial2write(byte *data, int size) {
     }
 }
 
-void AC011K::sendCommand(byte *data, int datasize, byte sendSequenceNumber) {
+void AC011K::sendCommand(byte *data, int datasize, byte sendSequenceNumber, bool verbose /* default = true */) {
     PrivCommTxBuffer[4] = data[0]; // command code
     PrivCommTxBuffer[5] = sendSequenceNumber;
     PrivCommTxBuffer[6] = (datasize-1) & 0xFF;
@@ -310,19 +310,24 @@ void AC011K::sendCommand(byte *data, int datasize, byte sendSequenceNumber) {
     PrivCommTxBuffer[datasize+7] = crc & 0xFF;
     PrivCommTxBuffer[datasize+8] = crc >> 8;
 
-    if(ac011k_hardware.config.get("verbose_communication")->asBool() || ( // we are silent by default for the heartbeat and other well known stuff
-        (data[0]!=0xA3) && // Status
-        (data[0]!=0xA4) && // heartbeat
-        (data[0]!=0xA5) && // RFID
-        //(data[0]!=0xA6) && // RemoteTransactionReq (Start/Stop)
-        //(data[0]!=0xA7) && // Start/Stop charging approval
-        (data[0]!=0xA8) && // ClockAlignedDataInterval
-        (data[0]!=0xA9) && // Charging stop
-        (data[0]!=0xAB) && // Update
-        //(data[0]!=0xAD) && // Limit ack
-        (data[0]!=0xAE) && // ChargingParameterRpt
-        (data[0]!=0xAF)    // Charging limit request
-        )) {
+    if(verbose || ac011k_hardware.config.get("verbose_communication")->asBool()
+        /* || ( */
+        /*     // we are silent by default for the heartbeat and other well known stuff */
+        /*     (data[0]!=0x0A) && // AA answer */
+        /*     (data[0]!=0xA3) && // Status */
+        /*     (data[0]!=0xA4) && // heartbeat */
+        /*     (data[0]!=0xA5) && // RFID */
+        /*     //(data[0]!=0xA6) && // RemoteTransactionReq (Start/Stop) */
+        /*     //(data[0]!=0xA7) && // Start/Stop charging approval */
+        /*     (data[0]!=0xA8) && // ClockAlignedDataInterval */
+        /*     (data[0]!=0xA9) && // Charging stop */
+        /*     (data[0]!=0xAB) && // Update */
+        /*     //(data[0]!=0xAD) && // Limit ack */
+        /*     (data[0]!=0xAE) && // ChargingParameterRpt */
+        /*     (data[0]!=0xAF)    // Charging limit request */
+        /*     ) */
+        ) 
+    {
         get_hex_privcomm_line(PrivCommTxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
         String cmdText = "";
         switch (PrivCommTxBuffer[4]) {
@@ -341,7 +346,7 @@ void AC011K::sendCommand(byte *data, int datasize, byte sendSequenceNumber) {
     Serial2write(data, datasize + 9);
 }
 
-void AC011K::PrivCommSend(byte cmd, uint16_t datasize, byte *data) {
+void AC011K::PrivCommSend(byte cmd, uint16_t datasize, byte *data, bool verbose /* default = true */) {
     // the first 4 bytes never change and should be set already
     data[4] = cmd;
     //data[5] = sendSequence-1;
@@ -356,8 +361,10 @@ void AC011K::PrivCommSend(byte cmd, uint16_t datasize, byte *data) {
     data[datasize+8] = crc & 0xFF;
     data[datasize+9] = crc >> 8;
 
-    get_hex_privcomm_line(data); // PrivCommHexBuffer now holds the hex representation of the buffer
-    logger.printfln("Tx cmd_%.2X seq:%.2X, len:%d, crc:%.4X", cmd, data[5], datasize, crc);
+    if(verbose || ac011k_hardware.config.get("verbose_communication")->asBool()) {
+        get_hex_privcomm_line(data); // PrivCommHexBuffer now holds the hex representation of the buffer
+        logger.printfln("Tx cmd_%.2X seq:%.2X, len:%d, crc:%.4X", cmd, data[5], datasize, crc);
+    }
 
     Serial2write(data, datasize + 10);
 }
@@ -395,10 +402,9 @@ void AC011K::sendTime(byte cmd, byte action, byte len, byte sendSequenceNumber) 
     TimeAck[1] = action;
     fillTimeGdCommand(&TimeAck[2]);
     // TimeAck[8] to TimeAck[11] are always 0
-    sendCommand(TimeAck, len, sendSequenceNumber);
+    sendCommand(TimeAck, len, sendSequenceNumber, false);
 }
 
-//void AC011K::filltime(byte *year, byte *month, byte *day, byte *hour, byte *minute, byte *second)
 void AC011K::fillTimeGdCommand(byte *datetime) {
     struct timeval tv_now;
     struct tm timeinfo;
@@ -427,13 +433,12 @@ void AC011K::fillTimeGdCommand(byte *datetime) {
         datetime[3] = 3;  // hour  
         datetime[4] = 4;  // minute
         datetime[5] = 5;  // second
-        //logger.printfln("time fill went wrong, using FAKE %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
         logger.printfln("time fill went wrong, using FAKE %s", timeStr(datetime));
     }
 }
 
 void AC011K::GetRTC() {
-    sendCommand(GetRtc, sizeof(GetRtc), sendSequenceNumber++);
+    sendCommand(GetRtc, sizeof(GetRtc), sendSequenceNumber++, false);
 }
 
 void AC011K::SetRTC() {
@@ -443,8 +448,7 @@ void AC011K::SetRTC() {
     PrivCommTxBuffer[PayloadStart + 2] = 0x06;
     PrivCommTxBuffer[PayloadStart + 3] = 0x00;
     fillTimeGdCommand(&PrivCommTxBuffer[PayloadStart + 4]);
-    logger.printfln("GD time set to: %s", timeStr(&PrivCommTxBuffer[PayloadStart + 4]));
-    PrivCommSend(0xAA, 10, &PrivCommTxBuffer[0]);
+    PrivCommSend(0xAA, 10, &PrivCommTxBuffer[0], false);
 }
 
 void AC011K::SetRTC(timeval time) {
@@ -455,21 +459,21 @@ void AC011K::SetRTC(timeval time) {
 void AC011K::sendChargingLimit1(uint8_t currentLimit, byte sendSequenceNumber) {  // AF 00 date/time
     fillTimeGdCommand(&ChargingLimit1[2]);
     ChargingLimit1[17] = currentLimit;
-    sendCommand(ChargingLimit1, sizeof(ChargingLimit1), sendSequenceNumber);
+    sendCommand(ChargingLimit1, sizeof(ChargingLimit1), sendSequenceNumber, false);
 }
 
 void AC011K::sendChargingLimit2(uint8_t currentLimit, byte sendSequenceNumber) {  // AD 00
 //    ChargingLimit2[2] = 8;  // charging profile ID - 0x41 for 1.0.1435 ?
     fillTimeGdCommand(&ChargingLimit2[55]);
     ChargingLimit2[65] = currentLimit;
-    sendCommand(ChargingLimit2, sizeof(ChargingLimit2), sendSequenceNumber);
+    sendCommand(ChargingLimit2, sizeof(ChargingLimit2), sendSequenceNumber, false);
 }
 
 void AC011K::sendChargingLimit3(uint8_t currentLimit, byte sendSequenceNumber) {  //  AD 01 91
     fillTimeGdCommand(&ChargingLimit3[56]);
     ChargingLimit3[56] = ChargingLimit3[56] +100;  // adds 100 to the year, because it starts at the year 1900
     ChargingLimit3[70] = currentLimit;
-    sendCommand(ChargingLimit3, sizeof(ChargingLimit3), sendSequenceNumber);
+    sendCommand(ChargingLimit3, sizeof(ChargingLimit3), sendSequenceNumber, false);
 }
 
 
@@ -492,7 +496,7 @@ int AC011K::bs_evse_start_charging() {
         case 812:
         case 888:
         case 1435:
-            sendCommand(StartChargingA6, sizeof(StartChargingA6), sendSequenceNumber++);
+            sendCommand(StartChargingA6, sizeof(StartChargingA6), sendSequenceNumber++, false);
             break;
     }
     return 0;
@@ -500,7 +504,7 @@ int AC011K::bs_evse_start_charging() {
 
 int AC011K::bs_evse_stop_charging() {
     logger.printfln("EVSE stop charging");
-    sendCommand(StopChargingA6, sizeof(StopChargingA6), sendSequenceNumber++);
+    sendCommand(StopChargingA6, sizeof(StopChargingA6), sendSequenceNumber++, false);
     return 0;
 }
 
@@ -589,7 +593,7 @@ void AC011K::evse_slot_machine() {
 
     // plugged in
     if((last_iec61851_state == IEC_STATE_A) && (evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) && (allowed_charging_current > 0)) {
-        logger.printfln("EVSE Just plugged in and allowed charging current > 0 (%dmA)", allowed_charging_current/1000);
+        logger.printfln("EVSE Just plugged in and allowed charging current > 0 (%dA)", allowed_charging_current/1000);
         bs_evse_start_charging();
     }
     
@@ -713,7 +717,7 @@ bool AC011K::handle_update_chunk(int command, WebServerRequest request, size_t c
     if(chunk_index == 0) {
         logger.printfln("EVSE RemoteUpdate, reset into boot mode");
         RemoteUpdate[7] = 5; // Reset into boot mode
-        sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++);
+        sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++, false);
 
         size_t chunk_offset = 0 + 0x8000;
         size_t length = gd_firmware_len - 0x8000;
@@ -747,7 +751,7 @@ bool AC011K::handle_update_chunk(int command, WebServerRequest request, size_t c
             memcpy(FlashVerify+11, gd_firmware_1_2_460 + chunk_offset, maxlength);  // firmware file for upload button
 
             MAXLENGTH = maxlength;
-            sendCommand(FlashVerify, maxlength+11, sendSequenceNumber++); // next chunk (11 bytes header) 
+            sendCommand(FlashVerify, maxlength+11, sendSequenceNumber++, false); // next chunk (11 bytes header) 
             flash_seq = PrivCommTxBuffer[5];
             last_flash = millis();
             ready_for_next_chunk = false;
@@ -949,8 +953,6 @@ void AC011K::loop()
 {
     evse.loop();
     initialized = evse.initialized;
-    // static uint32_t last_check = 0;
-    static bool ntp_clock_synced = false;
     static struct timeval tv_now;
     static uint8_t evseStatus = 0;
     static uint8_t cmd;
@@ -1048,11 +1050,13 @@ void AC011K::loop()
                             (cmd!=0x03) && // Status
                             (cmd!=0x04) && // heartbeat
                             (cmd!=0x05) && // RFID
-                            //(cmd!=0x06) && // RemoteTransactionReq (Start/Stop)
-                            //(cmd!=0x07) && // Start/Stop charging approval
+                            (cmd!=0x06) && // RemoteTransactionReq (Start/Stop)
+                            (cmd!=0x07) && // Start/Stop charging approval
                             (cmd!=0x08) && // ClockAlignedDataInterval
                             (cmd!=0x09) && // Charging stop
+                            (cmd!=0x0A) && // cmdAACtrl answer
                             (cmd!=0x0B) && // Update
+                            (cmd!=0x0C) && // cmdACCtrl answer
                             (cmd!=0x0D) && // Limit ack
                             (cmd!=0x0E) && // ChargingParameterRpt
                             (cmd!=0x0F)    // Charging limit request
@@ -1190,7 +1194,7 @@ void AC011K::loop()
                         PrivCommRxBuffer[PayloadStart + 7]
                 );
                 logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - RFID card detected. ID: %s", cmd, seq, len, crc, str);
-                sendCommand(CardAuthAckA5, sizeof(CardAuthAckA5), seq); // offline charging cfgAllowOfflineTxForUnknownId Disabled
+                sendCommand(CardAuthAckA5, sizeof(CardAuthAckA5), seq, false); // offline charging cfgAllowOfflineTxForUnknownId Disabled
                 api.callCommand("nfc/inject_tag", Config::ConfUpdateObject{{
                     {"tag_type", 0},
                     {"tag_id", String(str)}
@@ -1225,7 +1229,7 @@ void AC011K::loop()
                 //if (PrivCommRxBuffer[72] == 0x10) cmdText = "- Stop charging approval"; else cmdText = "- Start charging approval";
                 if (PrivCommRxBuffer[72] == 0) {
                     logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Start charging approval", cmd, seq, len, crc);
-                    sendCommand(StartChargingA7, sizeof(StartChargingA7), seq);
+                    sendCommand(StartChargingA7, sizeof(StartChargingA7), seq, false);
 #ifdef EXPERIMENTAL
 // experimental:
                     send_http(String(",\"type\":\"en+07\",\"data\":{")
@@ -1238,7 +1242,7 @@ void AC011K::loop()
 #endif
                 } else {
                     logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Stop charging approval", cmd, seq, len, crc);
-                    sendCommand(StopChargingA7, sizeof(StopChargingA7), seq);
+                    sendCommand(StopChargingA7, sizeof(StopChargingA7), seq, false);
                 }
                 break;
 
@@ -1358,7 +1362,7 @@ void AC011K::loop()
                 );
 // end experimental
 #endif
-                sendCommand(TransactionAck, sizeof(TransactionAck), seq);
+                sendCommand(TransactionAck, sizeof(TransactionAck), seq, false);
                 break;
 
             case 0x0A:
@@ -1386,17 +1390,18 @@ void AC011K::loop()
                                             logger.printfln("Got a more precise time from RTC (%s UTC), setting local time in respect to timezone (%s).", timeStr(&PrivCommRxBuffer[PayloadStart + 4]), ntp.config.get("timezone")->asEphemeralCStr());
                                         }
                                     } else {
-                                        logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Got RTC, but time is before build time. %s", cmd, seq, len, crc, timeStr(&PrivCommRxBuffer[PayloadStart + 4]));
+                                        logger.printfln("Got time from RTC (%s UTC), but time is before build time, ignoring.", timeStr(&PrivCommRxBuffer[PayloadStart + 4]));
                                     }
                                 }
                                 break;
                             case GD_SET_RTC_ANSWER:
                             case 0x16:
                             case 0x17:
-                                logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Set Time done", cmd, seq, len, crc);
+                                //logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Set Time done", cmd, seq, len, crc);
                                 break;
                             default:
                                 logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X -  Time answer, but I don't know what %.2X means.", cmd, seq, len, crc, PrivCommRxBuffer[8]);
+                                get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
                                 break;
                         }
                         break;
@@ -1427,13 +1432,14 @@ void AC011K::loop()
                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - cmdAACtrlcantestsetAck test cancom...111 done", cmd, seq, len, crc);
                         break;
                     case 0x3E: // 
-                        logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - ClockAlignedDataInterval: %ds", cmd, seq, len, crc, PrivCommRxBuffer[12]+256*PrivCommRxBuffer[13]);
+                        logger.printfln("ClockAlignedDataInterval is now: %ds", PrivCommRxBuffer[12]+256*PrivCommRxBuffer[13]);
                         break;
                     case 0x3F: // 
                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - cmdAAInit7Ack", cmd, seq, len, crc);
                         break;
                     default:
                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X -  I don't know what %.2X means.", cmd, seq, len, crc, PrivCommRxBuffer[9]);
+                        get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
                         break;
                 }  //switch cmdAA answer processing
                 break;
@@ -1497,13 +1503,11 @@ void AC011K::loop()
                 break;
 
             case 0x0E: // ChargingParameterRpt
-// [2021-08-07 07:55:05] Tx(cmd_0E len:76) : FA 03 00 00 0E 11 42 00 00 00 00 00 00 00 00 00 00 0A 01 77 02 37 35 32 30 33 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 66 08 97 08 14 00 7A 01 01 00 00 00 00 00 00 00 00 00 00 DE 91
-// [2021-08-07 07:55:05] cmd0E_DutyData pwmMax:266
                 if(ac011k_hardware.config.get("verbose_communication")->asBool() 
+                    // report on changes
                     || (evse.evse_low_level_state.get("cp_pwm_duty_cycle")->asUint() != PrivCommRxBuffer[17]+256*PrivCommRxBuffer[18]) //duty
                     || (evse.evse_low_level_state.get("adc_values")->get(6)->asUint() != PrivCommRxBuffer[19]+256*PrivCommRxBuffer[20])) { //cpVolt
-                    logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - duty:%d cpVolt:%d power factors:%d/%d/%d %d offset0:%d offset1:%d leakcurr:%d AMBTemp:%d lock:%d",
-                        cmd, seq, len, crc,
+                    logger.printfln("Charging parameter report - duty:%d cpVolt:%d power factors:%d/%d/%d %d offset0:%d offset1:%d leakcurr:%d AMBTemp:%d lock:%d",
                         PrivCommRxBuffer[17]+256*PrivCommRxBuffer[18], // duty
                         PrivCommRxBuffer[19]+256*PrivCommRxBuffer[20], // cpVolt
                         PrivCommRxBuffer[ 9]+256*PrivCommRxBuffer[10], // power factor 1
@@ -1549,6 +1553,7 @@ void AC011K::loop()
 
             default:
                 logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - I don't know what to do about it.", cmd, seq, len, crc);
+                get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
                 break;
         }  //switch process cmd
         cmd_to_process = false;

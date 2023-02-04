@@ -134,9 +134,9 @@ public:
 
     String get_hex_privcomm_line(byte *data);
     void Serial2write(byte *data, int size);
-    void PrivCommSend(byte cmd, uint16_t datasize, byte *data);
+    void PrivCommSend(byte cmd, uint16_t datasize, byte *data, bool verbose = true);
     void PrivCommAck(byte cmd, byte *data);
-    void sendCommand(byte *data, int datasize, byte sendSequenceNumber);
+    void sendCommand(byte *data, int datasize, byte sendSequenceNumber, bool verbose = true);
     void sendTime(byte cmd, byte action, byte len, byte sendSequenceNumber);
     void GetRTC();
     void SetRTC();
