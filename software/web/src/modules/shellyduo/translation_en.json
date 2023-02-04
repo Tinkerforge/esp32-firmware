@@ -1,0 +1,18 @@
+{
+    "shellyduo": {
+        "navbar": {
+            "shellyduo": "Status Light"
+        },
+        "content": {
+            "shellyduo": "ShellyDuo",
+            "enable_desc": "Shelly Duo",
+            "enable": "Status light enabled",
+            "host": "Status light hostname or IP address",
+            "intensity": "Intensity"
+        },
+        "script": {
+            "save_failed": "Failed to save the status light configuration.",
+            "reboot_content_changed": "Status light settings"
+        }
+    }
+}

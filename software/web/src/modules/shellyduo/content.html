@@ -1,0 +1,41 @@
+<div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-shellyduo" id="shellyduo">
+    <div id="shellyduo_header" class="sticky-under-top"></div>
+
+    <form id="shellyduo_config_form" class="needs-validation" novalidate>
+        <!--
+            Use custom validation instead of the browser default, that is broken on Chrome
+            See: https://getbootstrap.com/docs/4.5/components/forms/#validation
+        -->
+
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="shellyduo_enabled" class="col-form-label form-label" data-i18n="shellyduo.content.enable"></label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <div class="borderless-form-control custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="shellyduo_enabled">
+                    <label class="custom-control-label" for="shellyduo_enabled" data-i18n="shellyduo.content.enable_desc"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="shellyduo_host" class="col-form-label form-label" data-i18n="shellyduo.content.host"></label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <input id="shellyduo_host" class="form-control" type="text">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="shellyduo_intensity" class="col-form-label form-label" data-i18n="shellyduo.content.intensity"></label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <input id="shellyduo_intensity" class="form-control" type="number" min="1" max="100">
+            </div>
+        </div>
+    </form>
+
+</div>
