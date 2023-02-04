@@ -519,7 +519,7 @@ int AC011K::bs_evse_persist_config() {
     /*     logger.printfln("Failed to save config: %s", error.c_str()); */
     /*     return 500; */
     /* } else { */
-	/* logger.printfln("saved config - auto_start_charging: %s, managed: %s, max_current_configured: %d", */
+    /* logger.printfln("saved config - auto_start_charging: %s, managed: %s, max_current_configured: %d", */
     /*         evse_config.get("auto_start_charging")->asBool() ?"true":"false", */
     /*         evse_config.get("managed")->asBool() ?"true":"false", */
     /*         evse_config.get("max_current_configured")->asUint()); */
@@ -640,8 +640,8 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
     uint8_t last_evseStatus = evse.evse_state.get("GD_state")->asUint();
     evse.evse_state.get("GD_state")->updateUint(evseStatus);
 
-	//if(!ac011k_hardware.config.get("verbose_communication")->asBool() && (evseStatus != last_evseStatus)) {
-	if(evseStatus != last_evseStatus) {
+    //if(!ac011k_hardware.config.get("verbose_communication")->asBool() && (evseStatus != last_evseStatus)) {
+    if(evseStatus != last_evseStatus) {
         logger.printfln("EVSE GD Status now %d: %s, allowed charging current %dmA", evseStatus, evse_status_text[evseStatus], evse.evse_state.get("allowed_charging_current")->asUint());
     }
 
@@ -1199,10 +1199,10 @@ void AC011K::loop()
                     {"tag_type", 0},
                     {"tag_id", String(str)}
                 }});
-		break;
+        break;
 
             case 0x06:
-		// ack for cmd_A6 srvOcppRemoteStartTransactionReq (triggers cmd_07)
+        // ack for cmd_A6 srvOcppRemoteStartTransactionReq (triggers cmd_07)
                 //logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - cp call srv_ocpp ack srv remote ctrl ack", cmd, seq, len, crc);
 //ESP> W (2021-08-22 16:04:37) [EN_WSS, 712]: recv[0:111] [2,"50d4459e-1d1e-42d9-b932-ee2f4784bd38","RemoteStartTransaction",{"connectorId":1,"idTag":"19800020490_APP"}]^M
 //------ JSON RemoteStartTransaction --> idTag: 19800020490_APP
