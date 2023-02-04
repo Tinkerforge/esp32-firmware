@@ -132,7 +132,7 @@ public:
 
     // bool debug = false;
 
-    String get_hex_privcomm_line(byte *data);
+    void log_hex_privcomm_line(byte *data);
     void Serial2write(byte *data, int size);
     void PrivCommSend(byte cmd, uint16_t datasize, byte *data, bool verbose = true);
     void PrivCommAck(byte cmd, byte *data);
@@ -149,7 +149,6 @@ public:
     #define PRIV_COMM_BUFFER_MAX_SIZE 1024
     byte PrivCommRxBuffer[PRIV_COMM_BUFFER_MAX_SIZE] = {'0'};
     byte PrivCommTxBuffer[PRIV_COMM_BUFFER_MAX_SIZE] = {0xFA, 0x03, 0x00, 0x00}; // Magic byte, Version, 16 bit Address - always the same
-    char PrivCommHexBuffer[PRIV_COMM_BUFFER_MAX_SIZE*3] = {'0'};
 
     int bs_evse_start_charging();
     int bs_evse_stop_charging();

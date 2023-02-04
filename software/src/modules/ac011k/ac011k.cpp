@@ -244,7 +244,7 @@ uint16_t crc16_modbus(uint8_t *buffer, uint32_t length) {
         return crc;
 }
 
-String AC011K::get_hex_privcomm_line(byte *data) {
+void AC011K::log_hex_privcomm_line(byte *data) {
     #define LOG_LEN 4048 //TODO work without such a big buffer by writing line by line
     char log[LOG_LEN] = {0};
 
@@ -272,8 +272,6 @@ String AC011K::get_hex_privcomm_line(byte *data) {
     logger.write(log, local_log - log);
     
     }
-    
-    return String(log);
 }
 
 void AC011K::Serial2write(byte *data, int size) {
@@ -328,7 +326,7 @@ void AC011K::sendCommand(byte *data, int datasize, byte sendSequenceNumber, bool
         /*     ) */
         ) 
     {
-        get_hex_privcomm_line(PrivCommTxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
+        log_hex_privcomm_line(PrivCommTxBuffer);
         String cmdText = "";
         switch (PrivCommTxBuffer[4]) {
             case 0xA3: cmdText = "- Status data ack"; break;
@@ -362,7 +360,7 @@ void AC011K::PrivCommSend(byte cmd, uint16_t datasize, byte *data, bool verbose 
     data[datasize+9] = crc >> 8;
 
     if(verbose || ac011k_hardware.config.get("verbose_communication")->asBool()) {
-        get_hex_privcomm_line(data); // PrivCommHexBuffer now holds the hex representation of the buffer
+        log_hex_privcomm_line(data);
         logger.printfln("Tx cmd_%.2X seq:%.2X, len:%d, crc:%.4X", cmd, data[5], datasize, crc);
     }
 
@@ -381,7 +379,7 @@ void AC011K::PrivCommAck(byte cmd, byte *data) {
     data[10] = crc >> 8;
 
     /* if(ac011k_hardware.config.get("verbose_communication")->asBool() || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour? */
-    /*     get_hex_privcomm_line(data); // PrivCommHexBuffer now holds the hex representation of the buffer */
+    /*     log_hex_privcomm_line(data); */
     /*     logger.printfln("Tx cmd_%.2X seq:%.2X, crc:%.4X", data[4], data[5], crc); */
     /* } */
 
@@ -1037,7 +1035,7 @@ void AC011K::loop()
                             logger.printfln("PRIVCOMM BUG: process the next command albeit the last one was not finished. Buggy! cmd:%.2X len:%d cut off:%d", cmd, len, PrivCommRxBufferPointer-4);
                             PrivCommRxState = PRIVCOMM_CMD;
                             PrivCommRxBufferPointer = 4;
-                            get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
+                            log_hex_privcomm_line(PrivCommRxBuffer);
                             cmd_to_process = true;
                         }
                     }
@@ -1061,7 +1059,7 @@ void AC011K::loop()
                             (cmd!=0x0E) && // ChargingParameterRpt
                             (cmd!=0x0F)    // Charging limit request
                             )) {
-                            get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
+                            log_hex_privcomm_line(PrivCommRxBuffer);
                         }
                         crc = (uint16_t)(PrivCommRxBuffer[len + 9] << 8 | PrivCommRxBuffer[len + 8]);
                         uint16_t checksum = crc16_modbus(PrivCommRxBuffer, len+8);
@@ -1401,7 +1399,7 @@ void AC011K::loop()
                                 break;
                             default:
                                 logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X -  Time answer, but I don't know what %.2X means.", cmd, seq, len, crc, PrivCommRxBuffer[8]);
-                                get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
+                                log_hex_privcomm_line(PrivCommRxBuffer);
                                 break;
                         }
                         break;
@@ -1439,7 +1437,7 @@ void AC011K::loop()
                         break;
                     default:
                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X -  I don't know what %.2X means.", cmd, seq, len, crc, PrivCommRxBuffer[9]);
-                        get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
+                        log_hex_privcomm_line(PrivCommRxBuffer);
                         break;
                 }  //switch cmdAA answer processing
                 break;
@@ -1553,7 +1551,7 @@ void AC011K::loop()
 
             default:
                 logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - I don't know what to do about it.", cmd, seq, len, crc);
-                get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
+                log_hex_privcomm_line(PrivCommRxBuffer);
                 break;
         }  //switch process cmd
         cmd_to_process = false;
