@@ -49,7 +49,7 @@ InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf
             break;
         case INPUT_CONFIG_LIMIT_MAX_CURRENT:
             update_func = &InputPin::limit_max_current;
-            limit_ma = pin_conf_limit_ma >= 0 ? pin_conf_limit_ma : 0;
+            limit_ma = pin_conf_limit_ma;
             break;
         default:
             logger.printfln("energy_manager/InputPin: Unknown INPUT_CONFIG type %u for input %u", pin_conf_func, num_name);
