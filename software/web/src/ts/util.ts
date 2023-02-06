@@ -346,6 +346,9 @@ const INDEX_BY_CODE_POINT = new Map([
 
 // Based on https://www.npmjs.com/package/windows-1252
 export const win1252Encode = (input: string) => {
+    // Undo the insertion of unicode soft hyphen characters.
+    // Those can't be encoded in cp1252
+    input = input.replace(/\u00AD/g, "");
 	const length = input.length;
 	const result = new Uint8Array(length);
 	for (let index = 0; index < length; index++) {
