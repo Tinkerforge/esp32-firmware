@@ -188,9 +188,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                 [
                                     ["0", __("energy_manager.content.input_unused")],
                                     ["2", __("energy_manager.content.block_charging")],
-                                    ["3", __("energy_manager.content.switch_excess_charging")],
-                                    ["4", __("energy_manager.content.limit_max_current")],
-                                    ["5", __("energy_manager.content.override_grid_draw")],
+                                    ["3", __("energy_manager.content.limit_max_current")],
                                 ]
                             }
                             value={s.input3_config}
@@ -211,16 +209,16 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                     onValue={(v) => this.setState({input3_config_when: parseInt(v)})}/>
                             </FormRow>
 
-                            <Collapse in={s.input3_config >= 4}>
+                            <Collapse in={s.input3_config == 3}>
                                 <div>
-                                    <FormRow label={s.input3_config == 4 ? __("energy_manager.content.limit_to_current") : __("energy_manager.content.limit_grid_draw")}>
+                                    <FormRow label={__("energy_manager.content.limit_to_current")}>
                                     <InputNumber
-                                        required={s.input3_config >= 4}
-                                        unit={s.input3_config == 4 ? "A" : "kW"}
+                                        required={s.input3_config == 3}
+                                        unit={"A"}
                                         value={s.input3_config_limit}
                                         onValue={this.set('input3_config_limit')}
                                         min={0}
-                                        max={TODO_DEFINE_MAXIMUM}
+                                        max={125}
                                         />
                                     </FormRow>
                                 </div>
@@ -236,9 +234,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                             items={[
                                     ["0", __("energy_manager.content.input_unused")],
                                     ["2", __("energy_manager.content.block_charging")],
-                                    ["3", __("energy_manager.content.switch_excess_charging")],
-                                    ["4", __("energy_manager.content.limit_max_current")],
-                                    ["5", __("energy_manager.content.override_grid_draw")],
+                                    ["3", __("energy_manager.content.limit_max_current")],
                                 ]
                             }
                             value={s.input4_config}
@@ -258,16 +254,16 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                     onValue={(v) => this.setState({input4_config_when: parseInt(v)})}/>
                             </FormRow>
 
-                            <Collapse in={s.input4_config >= 4}>
+                            <Collapse in={s.input4_config == 3}>
                                 <div>
-                                    <FormRow label={s.input4_config == 4 ? __("energy_manager.content.limit_to_current") : __("energy_manager.content.limit_grid_draw")}>
+                                    <FormRow label={__("energy_manager.content.limit_to_current")}>
                                         <InputNumber
-                                            required={s.input4_config >= 4}
-                                            unit={s.input4_config == 4 ? "A" : "kW"}
+                                            required={s.input4_config == 3}
+                                            unit={"A"}
                                             value={s.input4_config_limit}
                                             onValue={this.set('input4_config_limit')}
                                             min={0}
-                                            max={TODO_DEFINE_MAXIMUM}
+                                            max={125}
                                             />
                                     </FormRow>
                                 </div>

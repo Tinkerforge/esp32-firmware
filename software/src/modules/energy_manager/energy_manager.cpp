@@ -64,10 +64,10 @@ void EnergyManager::pre_setup()
         {"relay_config_when", Config::Uint8(0)},
         {"relay_config_is", Config::Uint8(0)},
         {"input3_config", Config::Uint8(0)},
-        {"input3_config_limit", Config::Int32(0)},
+        {"input3_config_limit", Config::Uint32(0)}, // in A
         {"input3_config_when", Config::Uint8(0)},
         {"input4_config", Config::Uint8(0)},
-        {"input4_config_limit", Config::Int32(0)},
+        {"input4_config_limit", Config::Uint32(0)}, // in A
         {"input4_config_when", Config::Uint8(0)},
     }), [](const Config &cfg) -> String {
         uint32_t switching_hysteresis_min = cfg.get("hysteresis_time")->asUint(); // minutes
@@ -76,12 +76,15 @@ void EnergyManager::pre_setup()
         if (switching_hysteresis_min < HYSTERESIS_MIN_TIME_MINUTES && !hysteresis_wear_ok)
             return "Switching hysteresis time cannot be shorter than " MACRO_VALUE_TO_STRING(HYSTERESIS_MIN_TIME_MINUTES) " minutes without accepting additional wear.";
 
-        uint32_t input3_config = cfg.get("input3_config")->asUint();
-        uint32_t input4_config = cfg.get("input4_config")->asUint();
+        uint32_t max_current_ma = charge_manager.charge_manager_config_in_use.get("maximum_available_current")->asUint();
+        uint32_t input3_config_limit_ma = cfg.get("input3_config_limit")->asUint() * 1000; // A -> mA
+        uint32_t input4_config_limit_ma = cfg.get("input4_config_limit")->asUint() * 1000; // A -> mA
 
-        if (input3_config == input4_config) {
-            if (input3_config == INPUT_CONFIG_EXCESS_CHARGING)
-                return "Cannot configure both input 3 and input 4 to switch excess charging.";
+        if (input3_config_limit_ma > max_current_ma) {
+            return "Input 3 current limit exceeds maximum total current of all chargers.";
+        }
+        if (input4_config_limit_ma > max_current_ma) {
+            return "Input 4 current limit exceeds maximum total current of all chargers.";
         }
 
         return "";

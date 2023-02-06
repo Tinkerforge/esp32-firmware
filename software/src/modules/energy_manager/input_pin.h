@@ -30,7 +30,7 @@ public:
 private:
     bool invert_pin;
     void (InputPin::*update_func)(bool level);
-    int32_t limit;
+    uint32_t limit_ma;
     void *out_dst;
 
     void nop(bool level);
