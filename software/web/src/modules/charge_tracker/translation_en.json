@@ -54,7 +54,7 @@
             "pdf_header_username": "Username",
             "pdf_header_energy": "Charged energy in kWh",
             "pdf_header_duration": "Charge duration in hh:mm:ss",
-            "pdf_header_price": "Charging costs in EUR",
+            "pdf_header_price": "Charging costs in €",
             "pdf_unknown": "Unknown",
             "pdf_page": "Page ",
             "pdf_page_of": " of ",
