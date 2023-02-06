@@ -32,7 +32,7 @@
 #include "build.h"
 
 #ifdef GD_FLASH
-#include "GD_firmware.1.2.460.h"
+#include "GD_firmware.h"
 #endif
 
 #include "HardwareSerial.h"
@@ -718,7 +718,7 @@ bool AC011K::handle_update_chunk(int command, WebServerRequest request, size_t c
         sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++, false);
 
         size_t chunk_offset = 0 + 0x8000;
-        size_t length = gd_firmware_len - 0x8000;
+        size_t length = GD_firmware_len - 0x8000;
 
         FlashVerify[7] = command; // flash write (3=write, 4=verify)
 
@@ -746,7 +746,7 @@ bool AC011K::handle_update_chunk(int command, WebServerRequest request, size_t c
                 return true;
 
             // copy data
-            memcpy(FlashVerify+11, gd_firmware_1_2_460 + chunk_offset, maxlength);  // firmware file for upload button
+            memcpy(FlashVerify+11, GD_firmware + chunk_offset, maxlength);  // firmware file for upload button
 
             MAXLENGTH = maxlength;
             sendCommand(FlashVerify, maxlength+11, sendSequenceNumber++, false); // next chunk (11 bytes header) 
