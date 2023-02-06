@@ -656,6 +656,35 @@ void EnergyManager::update_energy()
 #endif
 }
 
+void EnergyManager::get_sdcard_info(struct sdcard_info *data)
+{
+    uint32_t time = micros();
+
+    int rc = tf_warp_energy_manager_get_sd_information(
+        &device,
+        &data->sd_status,
+        &data->lfs_status,
+        &data->sector_size,
+        &data->sector_count,
+        &data->card_type,
+        &data->product_rev,
+        data->product_name,
+        &data->manufacturer_id
+    );
+    
+    check_bricklet_reachable(rc);
+
+    if (rc != TF_E_OK)
+        logger.printfln("energy_manager: Failed to get SD card information.");
+
+    static uint32_t time_max = 1000;
+    time = micros() - time;
+    if (time > time_max) {
+        time_max = time;
+        logger.printfln("energy_manager::get_sdcard_info() took %uus", time_max);
+    }
+}
+
 uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
 {
     uint32_t time = micros();

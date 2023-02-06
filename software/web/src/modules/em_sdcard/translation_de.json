@@ -1,0 +1,24 @@
+{
+    "em_sdcard": {
+        "navbar": {
+            "em_sdcard": "EM SD-Karte"
+        },
+        "content": {
+            "header": "Energy Manager SD-Karte",
+
+            "manufacturer_id": "Hersteller-ID",
+            "product_name": "Produktcode",
+            "product_rev": "Produktrevision",
+            "card_type": "SD-Karten-Typ",
+            "card_size": "Speichergröße",
+            "sector_size": "Sektorgröße",
+            "sector_count": "Anzahl Sektoren",
+            "sd_status": "Status SD-Karte",
+            "lfs_status": "Status Dateisystem",
+
+            "error_no_card": "Keine SD-Karte eingesetzt"
+        },
+        "script": {
+        }
+    }
+}

@@ -85,6 +85,17 @@ typedef struct {
     uint8_t contactor_check_state;
 } EnergyManagerAllData;
 
+struct sdcard_info {
+    uint32_t sd_status;
+    uint32_t lfs_status;
+    uint32_t card_type;
+    uint32_t sector_count;
+    uint16_t sector_size;
+    uint8_t  manufacturer_id;
+    uint8_t  product_rev;
+    char     product_name[6];
+} __attribute__((packed));
+
 enum class SwitchingState
 {
     Monitoring = 0,
@@ -122,6 +133,7 @@ public:
 
     void apply_defaults();
 
+    void get_sdcard_info(struct sdcard_info *data);
     uint16_t get_energy_meter_detailed_values(float *ret_values);
     void set_output(bool output);
 
