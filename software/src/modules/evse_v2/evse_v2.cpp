@@ -338,6 +338,16 @@ void EVSEV2::apply_defaults()
     // Slot 8 (external) is controlled via API, no need to change anything here
 }
 
+void EVSEV2::set_charge_condition(uint16_t current, bool enabled)
+{
+    is_in_bootloader(tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_CHARGING_CONDITION, current, enabled, true));
+}
+
+void EVSEV2::set_charge_time_restriction(uint16_t current, bool enabled)
+{
+    is_in_bootloader(tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_TIME_RESTRICTION, current, enabled, true));
+}
+
 void EVSEV2::factory_reset()
 {
     tf_evse_v2_factory_reset(&device, 0x2342FACD);

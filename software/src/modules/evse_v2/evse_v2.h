@@ -25,7 +25,7 @@
 #include "device_module.h"
 #include "evse_v2_bricklet_firmware_bin.embedded.h"
 
-#define CHARGING_SLOT_COUNT 12
+#define CHARGING_SLOT_COUNT 14
 #define CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE 20
 
 #define CHARGING_SLOT_INCOMING_CABLE 0
@@ -40,6 +40,8 @@
 #define CHARGING_SLOT_MODBUS_TCP 9
 #define CHARGING_SLOT_MODBUS_TCP_ENABLE 10
 #define CHARGING_SLOT_OCPP 11
+#define CHARGING_SLOT_CHARGING_CONDITION 12
+#define CHARGING_SLOT_TIME_RESTRICTION 13
 
 #define IEC_STATE_A 0
 #define IEC_STATE_B 1
@@ -86,6 +88,10 @@ public:
 
     void set_modbus_current(uint16_t current);
     void set_modbus_enabled(bool enabled);
+
+    void set_charge_condition(uint16_t current, bool enabled);
+
+    void set_charge_time_restriction(uint16_t current, bool enabled);
 
     void set_ocpp_current(uint16_t current);
     uint16_t get_ocpp_current();

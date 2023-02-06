@@ -111,7 +111,8 @@
             "slot_8": "External control",
             "slot_9": "Modbus TCP current",
             "slot_10": "Modbus TCP clearance",
-            "slot_11": "OCPP"
+            "slot_11": "OCPP",
+            "slot_12": "Lalala"
         },
         "script": {
             "error_code": "Error code",
@@ -151,7 +152,8 @@
             "slot_8": "External control",
             "slot_9": "Modbus TCP",
             "slot_10": "Modbus TCP clearance",
-            "slot_11": "OCPP"
+            "slot_11": "OCPP",
+            "slot_12": "Lalala"
         }
     }
 }
