@@ -48,7 +48,7 @@
             "csv_header_duration": "Ladedauer in s",
             "csv_header_meter_start": "Zählerstand Start",
             "csv_header_meter_end": "Zählerstand Ende",
-            "csv_header_price": "Ladekosten in € Arbeitspreis ",
+            "csv_header_price": "Ladekosten in €; Arbeitspreis ",
             "pdf_header_start": "Startzeit",
             "pdf_header_display_name": "Anzeigename",
             "pdf_header_username": "Benutzername",
