@@ -59,14 +59,9 @@ static char distribution_log[DISTRIBUTION_LOG_LEN] = {0};
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
 static void apply_energy_manager_config(Config &conf)
 {
-    if (!api.hasFeature("energy_manager"))
-        return;
-
     conf.get("enable_charge_manager")->updateBool(true);
     conf.get("enable_watchdog")->updateBool(false);
     conf.get("default_available_current")->updateUint(0);
-    conf.get("maximum_available_current")->updateUint(energy_manager.energy_manager_config_in_use.get("maximum_available_current")->asUint());
-    conf.get("minimum_current")->updateUint(energy_manager.energy_manager_config_in_use.get("minimum_current")->asUint());
 }
 #endif
 
@@ -76,8 +71,8 @@ void ChargeManager::pre_setup()
         {"enable_charge_manager", Config::Bool(false)},
         {"enable_watchdog", Config::Bool(false)},
         {"default_available_current", Config::Uint32(0)},
-        {"maximum_available_current", Config::Uint32(0xFFFFFFFF)}, // Keep in sync with energy_manager.cpp
-        {"minimum_current", Config::Uint(6000, 6000, 32000)}, // Keep in sync with energy_manager.cpp
+        {"maximum_available_current", Config::Uint32(0xFFFFFFFF)},
+        {"minimum_current", Config::Uint(6000, 6000, 32000)},
         {"verbose", Config::Bool(false)},
         {"chargers", Config::Array({},
             new Config{Config::Object({
@@ -272,11 +267,11 @@ void ChargeManager::setup()
 {
     uint32_t control_cycle_time_ms;
     if (!api.restorePersistentConfig("charge_manager/config", &charge_manager_config)) {
+        charge_manager_config.get("maximum_available_current")->updateUint(0);
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
         apply_energy_manager_config(charge_manager_config);
         control_cycle_time_ms = 5 * 1000;
 #else
-        charge_manager_config.get("maximum_available_current")->updateUint(0);
         control_cycle_time_ms = 10 * 1000;
 #endif
     }

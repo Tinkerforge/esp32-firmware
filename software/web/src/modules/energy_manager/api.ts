@@ -16,8 +16,6 @@ export interface config {
     contactor_installed: boolean,
     phase_switching_mode: number,
     target_power_from_grid: number,
-    maximum_available_current: number,
-    minimum_current: number,
     guaranteed_power: number,
     hysteresis_time: number,
     hysteresis_wear_accepted: boolean,

@@ -107,28 +107,6 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                             onValue={(v) => this.setState({phase_switching_mode: parseInt(v)})}/>
                     </FormRow>
 
-                    <FormRow label={__("energy_manager.content.maximum_available_current")} label_muted={__("energy_manager.content.maximum_available_current_muted")}>
-                        <InputFloat
-                            unit="A"
-                            value={s.maximum_available_current}
-                            onValue={this.set('maximum_available_current')}
-                            digits={3}
-                            min={0}
-                            max={TODO_DEFINE_MAXIMUM}
-                            />
-                    </FormRow>
-
-                    <FormRow label={__("energy_manager.content.minimum_current")} label_muted={__("energy_manager.content.minimum_current_muted")}>
-                        <InputFloat
-                            unit="A"
-                            value={s.minimum_current}
-                            onValue={this.set('minimum_current')}
-                            digits={3}
-                            min={6000}
-                            max={32000}
-                            />
-                    </FormRow>
-
                     <FormSeparator heading={__("energy_manager.content.relay")}/>
 
                     <FormRow label={__("energy_manager.content.relay_config")}>

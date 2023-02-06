@@ -183,12 +183,12 @@ private:
     // Config cache
     int32_t  target_power_from_grid_conf_w;
     uint32_t guaranteed_power_conf_w;
-    uint32_t max_current_unlimited_ma;
-    uint32_t min_current_ma;
     bool     contactor_installed;
     uint8_t  phase_switching_mode;
     uint32_t switching_hysteresis_ms;
     bool     hysteresis_wear_ok;
+    uint32_t max_current_unlimited_ma;
+    uint32_t min_current_ma;
 
     // Pre-calculated limits
     int32_t  overall_min_power_w;

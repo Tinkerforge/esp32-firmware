@@ -443,6 +443,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                     {state.energyManagerMode ?
                         <>
                             {verbose}
+                            {maximum_available_current}
+                            {minimum_current}
                             {chargers}
                         </>
                     :

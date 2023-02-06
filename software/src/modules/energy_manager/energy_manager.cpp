@@ -58,8 +58,6 @@ void EnergyManager::pre_setup()
         {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
         {"target_power_from_grid", Config::Int32(0)}, // in watt
         {"guaranteed_power", Config::Uint(0, 0, 22000)}, // in watt
-        {"maximum_available_current", Config::Uint32(0)}, // Keep in sync with charge_manager.cpp
-        {"minimum_current", Config::Uint(6000, 6000, 32000)}, // Keep in sync with charge_manager.cpp
         {"hysteresis_time", Config::Uint(HYSTERESIS_MIN_TIME_MINUTES, 0, 60)}, // in minutes
         {"hysteresis_wear_accepted", Config::Bool(false)},
         {"relay_config", Config::Uint8(0)},
@@ -156,12 +154,12 @@ void EnergyManager::setup()
     excess_charging_enable          = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
     target_power_from_grid_conf_w   = energy_manager_config_in_use.get("target_power_from_grid")->asInt();          // watt
     guaranteed_power_conf_w         = energy_manager_config_in_use.get("guaranteed_power")->asUint();               // watt
-    max_current_unlimited_ma        = energy_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
-    min_current_ma                  = energy_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
     contactor_installed             = energy_manager_config_in_use.get("contactor_installed")->asBool();
     phase_switching_mode            = energy_manager_config_in_use.get("phase_switching_mode")->asUint();
     switching_hysteresis_ms         = energy_manager_config_in_use.get("hysteresis_time")->asUint() * 60 * 1000;    // milliseconds (from minutes)
     hysteresis_wear_ok              = energy_manager_config_in_use.get("hysteresis_wear_accepted")->asBool();
+    max_current_unlimited_ma        = charge_manager.charge_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
+    min_current_ma                  = charge_manager.charge_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
 
     // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
     uint32_t hysteresis_min_ms = hysteresis_wear_ok ? 10 * 1000 : HYSTERESIS_MIN_TIME_MINUTES * 60 * 1000;  // milliseconds
@@ -207,7 +205,7 @@ void EnergyManager::setup()
     }, 250, 250);
 
     if (max_current_unlimited_ma == 0) {
-        logger.printfln("energy_manager: No maximum current configured. Disabling energy distribution.");
+        logger.printfln("energy_manager: No maximum current configured for chargers. Disabling energy distribution.");
         return;
     }
 
