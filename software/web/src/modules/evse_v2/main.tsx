@@ -42,15 +42,19 @@ interface EVSEState {
     state: API.getType['evse/state'];
     ll_state: API.getType['evse/low_level_state'];
     hardware_cfg: API.getType['evse/hardware_configuration'];
+    slots: Readonly<API.getType['evse/slots']>;
+    control_pilot_disconnect: API.getType['evse/control_pilot_disconnect'];
+    debug_running: boolean;
+    debug_status: string;
+}
+
+interface EVSESSettingsState {
     button_cfg: API.getType['evse/button_configuration']
     slots: Readonly<API.getType['evse/slots']>;
     gpio_cfg: API.getType['evse/gpio_configuration'];
     ev_wakeup: API.getType['evse/ev_wakeup'];
     boost_mode: API.getType['evse/boost_mode'];
-    control_pilot_disconnect: API.getType['evse/control_pilot_disconnect'];
     auto_start_charging: API.getType['evse/auto_start_charging'];
-    debug_running: boolean;
-    debug_status: string;
 }
 
 let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
@@ -75,26 +79,6 @@ export class EVSEV2 extends Component<{}, EVSEState> {
 
         util.eventTarget.addEventListener('evse/slots', () => {
             this.setState({slots: API.get('evse/slots')});
-        });
-
-        util.eventTarget.addEventListener('evse/gpio_configuration', () => {
-            this.setState({gpio_cfg: API.get('evse/gpio_configuration')});
-        });
-
-        util.eventTarget.addEventListener('evse/button_configuration', () => {
-            this.setState({button_cfg: API.get('evse/button_configuration')});
-        });
-
-        util.eventTarget.addEventListener('evse/ev_wakeup', () => {
-            this.setState({ev_wakeup: API.get('evse/ev_wakeup')});
-        });
-
-        util.eventTarget.addEventListener('evse/boost_mode', () => {
-            this.setState({boost_mode: API.get('evse/boost_mode')});
-        });
-
-        util.eventTarget.addEventListener('evse/auto_start_charging', () => {
-            this.setState({auto_start_charging: API.get('evse/auto_start_charging')});
         });
 
         util.eventTarget.addEventListener('evse/control_pilot_disconnect', () => {
@@ -200,13 +184,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
         let {state,
             ll_state,
             hardware_cfg,
-            button_cfg,
             slots,
-            gpio_cfg,
-            ev_wakeup,
-            boost_mode,
-            control_pilot_disconnect,
-            auto_start_charging,
             debug_running,
             debug_status} = s;
 
@@ -339,109 +317,6 @@ export class EVSEV2 extends Component<{}, EVSEState> {
 
                     <FormRow label={__("evse.content.uptime")}>
                         <InputText value={util.format_timespan(Math.floor(ll_state.uptime / 1000.0))}/>
-                    </FormRow>
-
-                    <FormSeparator heading={__("evse.content.settings")}/>
-
-                    <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
-                        <Switch desc={__("evse.content.auto_start_enable")}
-                                checked={!auto_start_charging.auto_start_charging}
-                                onClick={async () => {
-                                    let inverted = !auto_start_charging.auto_start_charging;
-                                    await API.save('evse/auto_start_charging', {"auto_start_charging": inverted}, __("evse.script.save_failed"));
-                                }}/>
-                    </FormRow>
-
-                    <FormRow label={__("evse.content.external_description")} label_muted={__("evse.content.external_description_muted")}>
-                        <Switch desc={__("evse.content.external_enable")}
-                                checked={slots[EVSE_SLOT_EXTERNAL].active}
-                                onClick={async () => {
-                                    let inverted = !slots[EVSE_SLOT_EXTERNAL].active;
-                                    await API.save('evse/external_enabled', {"enabled": inverted}, __("evse.script.save_failed"));
-                                }}/>
-                    </FormRow>
-
-                    <FormRow label={__("evse.content.button_configuration")} label_muted={__("evse.content.button_configuration_muted")}>
-                        <InputSelect items={[
-                                        ["0",__("evse.content.button_configuration_deactivated")],
-                                        ["1",__("evse.content.button_configuration_start_charging")],
-                                        ["2",__("evse.content.button_configuration_stop_charging")],
-                                        ["3",__("evse.content.button_configuration_start_and_stop_charging")],
-                                    ]}
-                                value={button_cfg.button}
-                                onValue={async (v) => {
-                                    this.setState({button_cfg: {button: parseInt(v)}});
-                                    await API.save('evse/button_configuration', {"button": parseInt(v)}, __("evse.script.save_failed"))
-                                }}
-                        />
-                    </FormRow>
-
-                    <FormRow label={__("evse.content.gpio_shutdown")} label_muted={__("evse.content.gpio_shutdown_muted")}>
-                        <InputSelect items={[
-                                        ["0",__("evse.content.gpio_shutdown_not_configured")],
-                                        ["1",__("evse.content.gpio_shutdown_on_open")],
-                                        ["2",__("evse.content.gpio_shutdown_on_close")],
-                                    ]}
-                                value={gpio_cfg.shutdown_input}
-                                onValue={async (v) => {
-                                    let cfg = {...API.get('evse/gpio_configuration')};
-                                    cfg.shutdown_input = parseInt(v);
-                                    this.setState({gpio_cfg: cfg});
-                                    await API.save('evse/gpio_configuration', cfg,
-                                        __("evse.script.gpio_configuration_failed"));
-                                }}
-                        />
-                    </FormRow>
-
-                    <FormRow label={__("evse.content.gpio_in")} label_muted={__("evse.content.gpio_in_muted")}>
-                        <InputSelect items={[
-                                        ["0",__("evse.content.not_configured")],
-                                        ["disabled",__("evse.content.todo")]
-                                    ]}
-                                value={gpio_cfg.input}
-                                onValue={async (v) => {
-                                    let cfg = {...API.get('evse/gpio_configuration')};
-                                    cfg.input = parseInt(v);
-                                    this.setState({gpio_cfg: cfg});
-                                    await API.save('evse/gpio_configuration', cfg,
-                                        __("evse.script.gpio_configuration_failed"));
-                                }}
-                        />
-                    </FormRow>
-
-                    <FormRow label={__("evse.content.gpio_out")} label_muted={__("evse.content.gpio_out_muted")}>
-                        <InputSelect items={[
-                                        ["0",__("evse.content.gpio_out_low")],
-                                        ["1",__("evse.content.gpio_out_high")],
-                                        ["disabled",__("evse.content.todo")],
-                                    ]}
-                                value={gpio_cfg.output}
-                                onValue={async (v) => {
-                                    let cfg = {...API.get('evse/gpio_configuration')};
-                                    cfg.output = parseInt(v);
-                                    this.setState({gpio_cfg: cfg});
-                                    await API.save('evse/gpio_configuration', cfg,
-                                        __("evse.script.gpio_configuration_failed"));
-                                }}
-                        />
-                    </FormRow>
-
-                    <FormRow label={__("evse.content.ev_wakeup_desc")} label_muted={__("evse.content.ev_wakeup_desc_muted")}>
-                        <Switch desc={__("evse.content.ev_wakeup")}
-                                checked={ev_wakeup.enabled}
-                                onClick={async () => {
-                                    let inverted = !ev_wakeup.enabled;
-                                    await API.save('evse/ev_wakeup', {"enabled": inverted}, __("evse.script.save_failed"));
-                                }}/>
-                    </FormRow>
-
-                    <FormRow label={__("evse.content.boost_mode_desc")} label_muted={__("evse.content.boost_mode_desc_muted")}>
-                        <Switch desc={__("evse.content.boost_mode")}
-                                checked={boost_mode.enabled}
-                                onClick={async () => {
-                                    let inverted = !boost_mode.enabled;
-                                    await API.save('evse/boost_mode', {"enabled": inverted}, __("evse.script.save_failed"));
-                                }}/>
                     </FormRow>
 
                     {/*<FormRow label={__("evse.content.control_pilot_disconnect_desc")} label_muted={__("evse.content.control_pilot_disconnect_desc_muted")}>
@@ -638,6 +513,158 @@ export class EVSEV2 extends Component<{}, EVSEState> {
 
 render(<EVSEV2 />, $('#evse')[0]);
 
+class EVSEV2Settings extends Component<{}, EVSESSettingsState>
+{
+    constructor()
+    {
+        super();
+
+        util.eventTarget.addEventListener('evse/gpio_configuration', () => {
+            this.setState({gpio_cfg: API.get('evse/gpio_configuration')});
+        });
+
+        util.eventTarget.addEventListener('evse/button_configuration', () => {
+            this.setState({button_cfg: API.get('evse/button_configuration')});
+        });
+
+        util.eventTarget.addEventListener('evse/ev_wakeup', () => {
+            this.setState({ev_wakeup: API.get('evse/ev_wakeup')});
+        });
+
+        util.eventTarget.addEventListener('evse/boost_mode', () => {
+            this.setState({boost_mode: API.get('evse/boost_mode')});
+        });
+
+        util.eventTarget.addEventListener('evse/auto_start_charging', () => {
+            this.setState({auto_start_charging: API.get('evse/auto_start_charging')});
+        });
+        util.eventTarget.addEventListener('evse/slots', () => {
+            this.setState({slots: API.get('evse/slots')});
+        })
+    }
+
+    render(props: {}, s: Readonly<EVSESSettingsState>)
+    {
+        if (!s || !s.button_cfg)
+            return <></>;
+
+        let {
+            button_cfg,
+            slots,
+            gpio_cfg,
+            ev_wakeup,
+            boost_mode,
+            auto_start_charging} = s;
+
+        return <>
+                    <PageHeader title={__("evse.content.evse")}/>
+
+                    <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
+                        <Switch desc={__("evse.content.auto_start_enable")}
+                                checked={!auto_start_charging.auto_start_charging}
+                                onClick={async () => {
+                                    let inverted = !auto_start_charging.auto_start_charging;
+                                    await API.save('evse/auto_start_charging', {"auto_start_charging": inverted}, __("evse.script.save_failed"));
+                                }}/>
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.external_description")} label_muted={__("evse.content.external_description_muted")}>
+                        <Switch desc={__("evse.content.external_enable")}
+                                checked={slots[EVSE_SLOT_EXTERNAL].active}
+                                onClick={async () => {
+                                    let inverted = !slots[EVSE_SLOT_EXTERNAL].active;
+                                    await API.save('evse/external_enabled', {"enabled": inverted}, __("evse.script.save_failed"));
+                                }}/>
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.button_configuration")} label_muted={__("evse.content.button_configuration_muted")}>
+                        <InputSelect items={[
+                                        ["0",__("evse.content.button_configuration_deactivated")],
+                                        ["1",__("evse.content.button_configuration_start_charging")],
+                                        ["2",__("evse.content.button_configuration_stop_charging")],
+                                        ["3",__("evse.content.button_configuration_start_and_stop_charging")],
+                                    ]}
+                                value={button_cfg.button}
+                                onValue={async (v) => {
+                                    this.setState({button_cfg: {button: parseInt(v)}});
+                                    await API.save('evse/button_configuration', {"button": parseInt(v)}, __("evse.script.save_failed"))
+                                }}
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.gpio_shutdown")} label_muted={__("evse.content.gpio_shutdown_muted")}>
+                        <InputSelect items={[
+                                        ["0",__("evse.content.gpio_shutdown_not_configured")],
+                                        ["1",__("evse.content.gpio_shutdown_on_open")],
+                                        ["2",__("evse.content.gpio_shutdown_on_close")],
+                                    ]}
+                                value={gpio_cfg.shutdown_input}
+                                onValue={async (v) => {
+                                    let cfg = {...API.get('evse/gpio_configuration')};
+                                    cfg.shutdown_input = parseInt(v);
+                                    this.setState({gpio_cfg: cfg});
+                                    await API.save('evse/gpio_configuration', cfg,
+                                        __("evse.script.gpio_configuration_failed"));
+                                }}
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.gpio_in")} label_muted={__("evse.content.gpio_in_muted")}>
+                        <InputSelect items={[
+                                        ["0",__("evse.content.not_configured")],
+                                        ["disabled",__("evse.content.todo")]
+                                    ]}
+                                value={gpio_cfg.input}
+                                onValue={async (v) => {
+                                    let cfg = {...API.get('evse/gpio_configuration')};
+                                    cfg.input = parseInt(v);
+                                    this.setState({gpio_cfg: cfg});
+                                    await API.save('evse/gpio_configuration', cfg,
+                                        __("evse.script.gpio_configuration_failed"));
+                                }}
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.gpio_out")} label_muted={__("evse.content.gpio_out_muted")}>
+                        <InputSelect items={[
+                                        ["0",__("evse.content.gpio_out_low")],
+                                        ["1",__("evse.content.gpio_out_high")],
+                                        ["disabled",__("evse.content.todo")],
+                                    ]}
+                                value={gpio_cfg.output}
+                                onValue={async (v) => {
+                                    let cfg = {...API.get('evse/gpio_configuration')};
+                                    cfg.output = parseInt(v);
+                                    this.setState({gpio_cfg: cfg});
+                                    await API.save('evse/gpio_configuration', cfg,
+                                        __("evse.script.gpio_configuration_failed"));
+                                }}
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.ev_wakeup_desc")} label_muted={__("evse.content.ev_wakeup_desc_muted")}>
+                        <Switch desc={__("evse.content.ev_wakeup")}
+                                checked={ev_wakeup.enabled}
+                                onClick={async () => {
+                                    let inverted = !ev_wakeup.enabled;
+                                    await API.save('evse/ev_wakeup', {"enabled": inverted}, __("evse.script.save_failed"));
+                                }}/>
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.boost_mode_desc")} label_muted={__("evse.content.boost_mode_desc_muted")}>
+                        <Switch desc={__("evse.content.boost_mode")}
+                                checked={boost_mode.enabled}
+                                onClick={async () => {
+                                    let inverted = !boost_mode.enabled;
+                                    await API.save('evse/boost_mode', {"enabled": inverted}, __("evse.script.save_failed"));
+                                }}/>
+                    </FormRow>
+        </>;
+    }
+}
+
+render(<EVSEV2Settings/>, $('#evse-settings')[0]);
+
 export function init() {
 }
 
@@ -647,5 +674,6 @@ export function add_event_listeners(source: API.APIEventTarget) {
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-evse').prop('hidden', !module_init.evse_v2);
+    $('#sidebar-evse-settings').prop('hidden', !module_init.evse_v2);
     $('#status-evse').prop('hidden', !module_init.evse_v2);
 }

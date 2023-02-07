@@ -1,0 +1,10 @@
+{
+    "evse_start": {
+        "status": {},
+        "navbar": {
+            "evse_start": "Charge Controller"
+        },
+        "content": {},
+        "script": {}
+    }
+}
