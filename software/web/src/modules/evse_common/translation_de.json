@@ -112,7 +112,7 @@
             "slot_6": "Benutzer",
             "slot_7": "Lastmanagement",
             "slot_8": "Externe Steuerung",
-            "slot_9": "Modbus TCP",
+            "slot_9": "Modbus TCP-Strom",
             "slot_10": "Modbus TCP-Freigabe",
             "slot_11": "OCPP"
         },
