@@ -16,7 +16,8 @@
             "sd_status": "Status SD-Karte",
             "lfs_status": "Status Dateisystem",
 
-            "error_no_card": "Keine SD-Karte eingesetzt"
+            "bytes": "Bytes",
+            "error_no_card": "Keine SD-Karte erkannt"
         },
         "script": {
         }

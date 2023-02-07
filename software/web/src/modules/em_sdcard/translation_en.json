@@ -16,7 +16,8 @@
             "sd_status": "SD card status",
             "lfs_status": "File system status",
 
-            "error_no_card": "No SD card inserted"
+            "bytes": "bytes",
+            "error_no_card": "No SD card detected"
         },
         "script": {
         }

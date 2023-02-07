@@ -19,14 +19,15 @@
 
 import $ from "../../ts/jq";
 
-import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 
 import { h, render, Fragment, Component } from "preact";
-import { FormRow    } from "../../ts/components/form_row";
-import { InputText  } from "../../ts/components/input_text";
-import { PageHeader } from "../../ts/components/page_header";
+import { FormRow        } from "../../ts/components/form_row";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
+import { InputText      } from "../../ts/components/input_text";
+import { PageHeader     } from "../../ts/components/page_header";
 
 type EMSDcardState = API.getType['em_sdcard/state'];
 
@@ -43,6 +44,27 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
         if (!state || state.manufacturer_id === undefined)
             return (<></>);
 
+        var no_card = state.manufacturer_id == 0
+                   && state.product_rev == 0
+                   && state.card_type == 0
+                   && state.sector_size == 0
+                   && state.sector_count == 0
+                   && state.sd_status == 15;
+
+        if (no_card) {
+            return (
+                <>
+                    <PageHeader title={__("em_sdcard.content.header")} />
+
+                    <IndicatorGroup
+                        value={0}
+                        items={[
+                            ["warning", __("em_sdcard.content.error_no_card")],
+                        ]} />
+                </>
+            )
+        }
+
         var manufacturer;
         switch(state.manufacturer_id) {
             case 0x01: manufacturer = "Panasonic"; break;
@@ -50,7 +72,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
             case 0x03: manufacturer = "SanDisk"; break;
             case 0x1b: manufacturer = "Samsung"; break;
             case 0x1d: manufacturer = "AData"; break;
-            case 0x27: manufacturer = "Phison, rebranded"; break;
+            case 0x27: manufacturer = "Phison (rebranded)"; break;
             case 0x28: manufacturer = "Lexar"; break;
             case 0x31: manufacturer = "Silicon Power"; break;
             case 0x41: manufacturer = "Kingston"; break;
@@ -80,7 +102,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
             case 12: sd_status = "ERROR_INIT_VER_OR_VOLTAGE"; break;
             case 13: sd_status = "ERROR_INIT_ACMD41"; break;
             case 14: sd_status = "ERROR_INIT_CMD58"; break;
-            case 15: sd_status = "ERROR_INIT_CMD0 (" + __("em_sdcard.content.error_no_card") + "?)"; break;
+            case 15: sd_status = "ERROR_INIT_CMD0"; break;
             case 21: sd_status = "ERROR_CID_START"; break;
             case 22: sd_status = "ERROR_CID_CMD10"; break;
             case 31: sd_status = "ERROR_CSD_START"; break;
@@ -115,7 +137,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
                     <InputText value={((state.sector_count * state.sector_size) / 1000000000).toFixed(2) + " GB (" + ((state.sector_count * state.sector_size) / 1073741824).toFixed(2) + " GiB)"}/>
                 </FormRow>
                 <FormRow label={__("em_sdcard.content.sector_size")}>
-                    <InputText value={state.sector_size.toString() + " Bytes"}/>
+                    <InputText value={state.sector_size.toString() + " " + __("em_sdcard.content.bytes")}/>
                 </FormRow>
                 <FormRow label={__("em_sdcard.content.sector_count")}>
                     <InputText value={state.sector_count}/>
