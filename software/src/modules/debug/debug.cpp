@@ -21,6 +21,8 @@
 
 #include <Arduino.h>
 
+#include "esp_core_dump.h"
+
 #include "api.h"
 #include "tools.h"
 #include "task_scheduler.h"
@@ -53,6 +55,41 @@ void Debug::setup()
 void Debug::register_urls()
 {
     api.addState("debug/state", &debug_state, {}, 1000);
+
+    server.on("/debug/coredump.elf", HTTP_GET, [this](WebServerRequest request) {
+        if (esp_core_dump_image_check() != ESP_OK)
+            return request.send(404);
+
+        auto buffer = heap_caps_calloc_prefer(4096, 1, MALLOC_CAP_32BIT | MALLOC_CAP_INTERNAL, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        defer {free(buffer);};
+
+        if (!buffer)
+            return request.send(503, "text/plain", "Out of memory");
+
+        esp_core_dump_summary_t summary;
+        if (esp_core_dump_get_summary(&summary) != ESP_OK)
+            return request.send(503, "text/plain", "Failed to get core dump summary");
+
+        size_t addr;
+        size_t size;
+        if (esp_core_dump_image_get(&addr, &size) != ESP_OK)
+            return request.send(503, "text/plain", "Failed to get core dump image size");
+
+        request.beginChunkedResponse(200, "application/octet-stream");
+
+        for (size_t i = 0; i < size; i += 4096)
+        {
+            size_t to_send = min((size_t)4096, size - i);
+            if (esp_flash_read(NULL, buffer, addr + i, to_send) != ESP_OK) {
+                String s = "ESP_FLASH_READ failed. Core dump truncated";
+                request.sendChunk(s.c_str(), s.length());
+                return request.endChunkedResponse();
+            }
+            request.sendChunk((char *)buffer + (i == 0 ? 20 : 0), to_send - (i == 0 ? 20 : 0));
+        }
+
+        return request.endChunkedResponse();
+    });
 }
 
 void Debug::loop()
