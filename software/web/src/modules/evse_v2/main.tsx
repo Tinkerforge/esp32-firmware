@@ -638,8 +638,6 @@ export class EVSEV2 extends Component<{}, EVSEState> {
 
 render(<EVSEV2 />, $('#evse')[0]);
 
-let status_plus_minus_timeout: number = null;
-
 export function init() {
 }
 
