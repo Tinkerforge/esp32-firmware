@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, createContext, Context, VNode, cloneElement, toChildArray } from "preact";
+import { h, Component, createContext, Context, VNode, cloneElement, toChildArray, Fragment } from "preact";
 
 export interface FormRowProps {
     label: string
@@ -41,15 +41,20 @@ export class FormRow extends Component<FormRowProps, any> {
     }
 
     render(props: FormRowProps) {
+        let inner = <>{(toChildArray(props.children) as VNode[]).map(c => cloneElement(c, {idContext: this.idContext}))}</>;
+        if (props.contentColClasses === undefined || props.contentColClasses !== "")
+            inner = <div class={props.contentColClasses === undefined ? "col-lg-9 col-xl-6" : props.contentColClasses}>
+                {inner}
+            </div>
+
+
         return (
             <div class="form-group row">
                 <label for={this.id} class={"col-form-label " + (props.labelColClasses === undefined ? "col-lg-3 col-xl-2" : props.labelColClasses)}>
                     {props.label ? <span class={"form-label" + (props.label_muted ? " pr-2" : "")} dangerouslySetInnerHTML={{__html: props.label}}></span> : ""}
                     {props.label_muted ? <span class="text-muted" dangerouslySetInnerHTML={{__html: props.label_muted}}></span> : ""}
                 </label>
-                <div class={props.contentColClasses === undefined ? "col-lg-9 col-xl-6" : props.contentColClasses}>
-                    {(toChildArray(props.children) as VNode[]).map(c => cloneElement(c, {idContext: this.idContext}))}
-                </div>
+                {inner}
             </div>
         );
     }

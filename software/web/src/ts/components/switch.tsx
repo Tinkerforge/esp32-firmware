@@ -31,10 +31,16 @@ export interface SwitchProps {
 
 export function Switch(props: SwitchProps) {
     let id = useContext(props.idContext);
-    return (
-        <div class={"borderless-form-control custom-control custom-switch " + (props.className ?? "")}>
+
+    let inner = <div class={"borderless-form-control custom-control custom-switch "}>
             <input type="checkbox" class="custom-control-input" id={id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
             <label class="custom-control-label" for={id} dangerouslySetInnerHTML={{__html: props.desc}}></label>
-        </div>
-    );
+        </div>;
+
+    if (props.className !== undefined && props.className != "")
+        inner = <div class={props.className}>
+                {inner}
+            </div>;
+
+    return inner;
 }

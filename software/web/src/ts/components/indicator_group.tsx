@@ -27,11 +27,12 @@ interface IndicatorProps {
     items: [variant, string | VNode][];
     class?: string
     vertical?: boolean
+    style?: string
 }
 
 export function IndicatorGroup(props: IndicatorProps) {
     return (
-        <ButtonGroup vertical={props.vertical} className={props.class !== undefined ? props.class : "flex-wrap w-100"}>
+        <ButtonGroup style={props.style != undefined ? props.style : ""} vertical={props.vertical} className={props.class !== undefined ? props.class : "flex-wrap w-100"}>
             {props.items.map((v, i) => typeof(v[1]) == "string" ? <Button disabled
                                                key={i}
                                                variant={(i == props.value ? "" : "outline-") + v[0]}
