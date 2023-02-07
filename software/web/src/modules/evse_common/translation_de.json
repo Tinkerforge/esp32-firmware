@@ -12,7 +12,6 @@
             "charging_current_minimum": "6 A",
             "charging_current_maximum": "Max",
             "charge_control": "Ladesteuerung",
-            "auto_start_charging": "Autostart",
             "start_charging": "Start",
             "stop_charging": "Stop"
         },
@@ -85,6 +84,10 @@
 
             "settings": "Einstellungen",
 
+            "auto_start_description": "Manuelle Ladefreigabe",
+            "auto_start_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "auto_start_enable": "Erzwingt dass Ladevorgänge immer über das Webinterface, die API oder (je nach Tastereinstellung) den Taster manuell gestartet werden müssen.",
+
             "external_description": "Externe Steuerung",
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">siehe Einrichtungs-Tutorial für Details</a>",
             "external_enable": "Erlaubt einer externen Steuerung (z.B. <a href=\"https://evcc.io/\">EVCC</a>) diese Wallbox zu steuern",
@@ -103,7 +106,7 @@
             "slot_1": "Typ-2-Ladekabel",
             "slot_2": "Abschalteingang",
             "slot_3": "Konfigurierbarer Eingang",
-            "slot_4": "Autostart oder Taster",
+            "slot_4": "Manuelle Ladefreigabe",
             "slot_5": "Konfiguration",
             "slot_6": "Benutzer",
             "slot_7": "Lastmanagement",
@@ -115,7 +118,7 @@
         "script": {
             "error_code": "Fehlercode",
             "set_charging_current_failed": "Konnte Ladestrom nicht setzen",
-            "auto_start_charging_update": "Lade-Autostart setzen fehlgeschlagen.",
+            "auto_start_charging_update": "Manuelle Ladefregabe (de)aktivieren fehlgeschlagen.",
             "start_charging_failed": "Ladestart auslösen fehlgeschlagen",
             "stop_charging_failed": "Ladestop auslösen fehlgeschlagen",
             "tab_close_warning": "Die Aufzeichnung des Ladecontroller-Logs wird abgebrochen, wenn der Tab geschlossen wird.",

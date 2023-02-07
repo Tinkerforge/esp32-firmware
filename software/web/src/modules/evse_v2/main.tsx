@@ -48,6 +48,7 @@ interface EVSEState {
     ev_wakeup: API.getType['evse/ev_wakeup'];
     boost_mode: API.getType['evse/boost_mode'];
     control_pilot_disconnect: API.getType['evse/control_pilot_disconnect'];
+    auto_start_charging: API.getType['evse/auto_start_charging'];
     debug_running: boolean;
     debug_status: string;
 }
@@ -90,6 +91,10 @@ export class EVSEV2 extends Component<{}, EVSEState> {
 
         util.eventTarget.addEventListener('evse/boost_mode', () => {
             this.setState({boost_mode: API.get('evse/boost_mode')});
+        });
+
+        util.eventTarget.addEventListener('evse/auto_start_charging', () => {
+            this.setState({auto_start_charging: API.get('evse/auto_start_charging')});
         });
 
         util.eventTarget.addEventListener('evse/control_pilot_disconnect', () => {
@@ -201,6 +206,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
             ev_wakeup,
             boost_mode,
             control_pilot_disconnect,
+            auto_start_charging,
             debug_running,
             debug_status} = s;
 
@@ -336,6 +342,15 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                     </FormRow>
 
                     <FormSeparator heading={__("evse.content.settings")}/>
+
+                    <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
+                        <Switch desc={__("evse.content.auto_start_enable")}
+                                checked={!auto_start_charging.auto_start_charging}
+                                onClick={async () => {
+                                    let inverted = !auto_start_charging.auto_start_charging;
+                                    await API.save('evse/auto_start_charging', {"auto_start_charging": inverted}, __("evse.script.save_failed"));
+                                }}/>
+                    </FormRow>
 
                     <FormRow label={__("evse.content.external_description")} label_muted={__("evse.content.external_description_muted")}>
                         <Switch desc={__("evse.content.external_enable")}
@@ -655,15 +670,6 @@ function set_charging_current(current: number) {
 }
 
 
-function update_evse_auto_start_charging() {
-    let x = API.get('evse/auto_start_charging');
-
-    $('#status_auto_start_charging').prop("checked", x.auto_start_charging);
-}
-
-function set_auto_start_charging(auto_start_charging: boolean) {
-    API.save('evse/auto_start_charging', {"auto_start_charging": auto_start_charging}, __("evse.script.auto_start_charging_update"));
-}
 
 function start_charging() {
     API.call('evse/start_charging', {}, __("evse.script.start_charging_failed"));
@@ -725,8 +731,6 @@ export function init() {
 
     $("#status_stop_charging").on("click", stop_charging);
     $("#status_start_charging").on("click", start_charging);
-
-    $('#status_auto_start_charging').on("change", () => set_auto_start_charging($('#status_auto_start_charging').prop('checked')));
 
     let input = $('#status_charging_current');
 
@@ -811,7 +815,6 @@ export function init() {
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('evse/state', update_evse_state);
-    source.addEventListener('evse/auto_start_charging', update_evse_auto_start_charging);
     source.addEventListener("evse/slots", update_evse_slots);
     source.addEventListener("evse/state", update_evse_status_start_charging_button);
     source.addEventListener("evse/slots", update_evse_status_start_charging_button);

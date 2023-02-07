@@ -12,7 +12,6 @@
             "charging_current_minimum": "6 A",
             "charging_current_maximum": "Max",
             "charge_control": "Charge control",
-            "auto_start_charging": "Auto-start",
             "start_charging": "Start",
             "stop_charging": "Stop"
         },
@@ -84,6 +83,10 @@
             "debug_description_muted": "to diagnose charging problems",
 
             "settings": "Settings",
+
+            "auto_start_description": "Manual charge release",
+            "auto_start_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">see manual for details</a>",
+            "auto_start_enable": "Requires that charges are always manually released via the web interface, the API or (depending on the button configuration) the button.",
 
             "external_description": "External control",
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">see setup tutorial for details</a>",

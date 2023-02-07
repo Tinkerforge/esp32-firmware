@@ -22,7 +22,7 @@
         },
         "script": {
             "user_calibration_upload_failed": "Aktualisieren der Kalibrierung fehlgeschlagen",
-            "slot_4": "Autostart, Taster oder Schlüsselschalter"
+            "slot_4": "Manuelle Ladefreigabe, Taster oder Schlüsselschalter"
         }
     }
 }
