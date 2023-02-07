@@ -54,6 +54,15 @@ void AC011KHardware::pre_setup()
         {"UID", Config::Str("", 0, 16)},
     });
 
+    meter = Config::Object({
+        {"energy_rel",       Config::Float(0.0)},
+        {"energy_rel_raw",   Config::Float(0.0)},
+        {"energy_rel_delta", Config::Float(0.0)},
+        {"energy_abs",       Config::Float(0.0)},
+        {"energy_abs_raw",   Config::Float(0.0)},
+        {"energy_abs_delta", Config::Float(0.0)},
+    });
+
     if(!api.restorePersistentConfig("ac011k/hardware", &ac011k_hardware)) {
         logger.printfln("AC011K error, could not restore persistent storage ac011k_hardware");
     } else {
@@ -85,6 +94,7 @@ void AC011KHardware::setup()
     }, 0, 1000);
 
     api.restorePersistentConfig("ac011k_hardware/config", &config);
+    api.restorePersistentConfig("ac011k_hardware/meter", &meter);
 
     initialized = true;
 }
@@ -92,6 +102,16 @@ void AC011KHardware::setup()
 void AC011KHardware::register_urls()
 {
     api.addPersistentConfig("ac011k_hardware/config", &config, {}, 1000);
+    api.addPersistentConfig("ac011k_hardware/meter", &meter, {}, 1000);
+
+    // this would take care of the energy_rel reset, if it would work
+    /* meter.meter.registerResetCallback([this]() { */
+    /*     if (!initialized) { */
+    /*         return; */
+    /*     } */
+
+    /*     meter.values.get("energy_rel")->updateFloat(0); */
+    /* }); */
 }
 
 void AC011KHardware::loop()

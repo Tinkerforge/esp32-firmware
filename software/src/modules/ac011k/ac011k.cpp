@@ -1256,39 +1256,73 @@ void AC011K::loop()
                     if(ac011k_hardware.config.get("verbose_communication")->asBool()) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
                         logger.printfln("Rx cmd_%.2X %dWh\t%d\t%dWh\t%d\t%d\t%d\t%dW\t%d\t%.1fV\t%.1fV\t%.1fV\t%.1fA\t%.1fA\t%.1fA\t%d minutes",
                             cmd,
-                            PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85],  // charged energy Wh
+                            PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85],  // charged energy Wh (session?)
                             PrivCommRxBuffer[86]+256*PrivCommRxBuffer[87],
-                            PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89],  // charged energy Wh
+                            PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89],  // charged energy Wh (total, but will not survive GD reboots) 
                             PrivCommRxBuffer[90]+256*PrivCommRxBuffer[91],
                             PrivCommRxBuffer[92]+256*PrivCommRxBuffer[93],
                             PrivCommRxBuffer[94]+256*PrivCommRxBuffer[95],
                             PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97],  // charging power
                             PrivCommRxBuffer[98]+256*PrivCommRxBuffer[99],
-                            float(PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101])/10,  // L1 plug voltage * 10
-                            float(PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103])/10,  // L2 plug voltage * 10
-                            float(PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105])/10,  // L3 plug voltage * 10
-                            float(PrivCommRxBuffer[106]+256*PrivCommRxBuffer[107])/10,  // L1 charging current * 10
-                            float(PrivCommRxBuffer[108]+256*PrivCommRxBuffer[109])/10,  // L2 charging current * 10
-                            float(PrivCommRxBuffer[110]+256*PrivCommRxBuffer[111])/10,  // L3 charging current * 10
+                            float(PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101])/10.0,  // L1 plug voltage * 10
+                            float(PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103])/10.0,  // L2 plug voltage * 10
+                            float(PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105])/10.0,  // L3 plug voltage * 10
+                            float(PrivCommRxBuffer[106]+256*PrivCommRxBuffer[107])/10.0,  // L1 charging current * 10
+                            float(PrivCommRxBuffer[108]+256*PrivCommRxBuffer[109])/10.0,  // L2 charging current * 10
+                            float(PrivCommRxBuffer[110]+256*PrivCommRxBuffer[111])/10.0,  // L3 charging current * 10
                             PrivCommRxBuffer[113]+256*PrivCommRxBuffer[114]
                             );
                     }
                     // push values to the meter
                     // voltages
-                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1, float(PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101])/10);
-                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L2, float(PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103])/10);
-                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L3, float(PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105])/10);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1, float(PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101])/10.0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L2, float(PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103])/10.0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L3, float(PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105])/10.0);
                     // current
-                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L1_A, float(PrivCommRxBuffer[106]+256*PrivCommRxBuffer[107])/10);
-                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L2_A, float(PrivCommRxBuffer[108]+256*PrivCommRxBuffer[109])/10);
-                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L3_A, float(PrivCommRxBuffer[110]+256*PrivCommRxBuffer[111])/10);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L1_A, float(PrivCommRxBuffer[106]+256*PrivCommRxBuffer[107])/10.0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L2_A, float(PrivCommRxBuffer[108]+256*PrivCommRxBuffer[109])/10.0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L3_A, float(PrivCommRxBuffer[110]+256*PrivCommRxBuffer[111])/10.0);
 
                     // meter power
+                    static float prev_energy_rel_raw = 0;
+                    static float prev_energy_abs_raw = 0;
+                    float energy_rel_raw = float(PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85])/1000.0;
+                    float energy_abs_raw = float(PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89])/1000.0;
+
+                    // detect meter restart
+                    if (energy_rel_raw < ac011k_hardware.meter.get("energy_rel_raw")->asFloat()) { ac011k_hardware.meter.get("energy_rel_delta")->updateFloat(ac011k_hardware.meter.get("energy_rel")->asFloat()); }
+                    if (energy_abs_raw < ac011k_hardware.meter.get("energy_abs_raw")->asFloat()) { ac011k_hardware.meter.get("energy_abs_delta")->updateFloat(ac011k_hardware.meter.get("energy_abs")->asFloat()); }
+
+                    // persist meter on change
+                    if ((prev_energy_rel_raw != energy_rel_raw) || (prev_energy_abs_raw != energy_abs_raw)) {
+                        if(ac011k_hardware.config.get("verbose_communication")->asBool()) {
+                            logger.printfln(" energy_rel: %.1fWh, energy_rel_raw: %.1fWh, energy_rel_delta: %.1fWh, energy_abs: %.1fWh, energy_abs_raw: %.1fWh, energy_abs_delta: %.1fWh", 
+                                1000.0 * ac011k_hardware.meter.get("energy_rel")->asFloat(),
+                                1000.0 * ac011k_hardware.meter.get("energy_rel_raw")->asFloat(),
+                                1000.0 * ac011k_hardware.meter.get("energy_rel_delta")->asFloat(),
+                                1000.0 * ac011k_hardware.meter.get("energy_abs")->asFloat(),
+                                1000.0 * ac011k_hardware.meter.get("energy_abs_raw")->asFloat(),
+                                1000.0 * ac011k_hardware.meter.get("energy_abs_delta")->asFloat());
+                        }
+                        prev_energy_rel_raw = energy_rel_raw;
+                        prev_energy_abs_raw = energy_abs_raw;
+                        static uint32_t last_write = 0;
+                        if (deadline_elapsed(last_write + 60 * 60 * 1000)) { // once per hour
+                            last_write = millis();
+                            api.writeConfig("ac011k_hardware/meter", &ac011k_hardware.meter);
+                        }
+                    }
+
+                    ac011k_hardware.meter.get("energy_rel_raw")->updateFloat(energy_rel_raw);
+                    ac011k_hardware.meter.get("energy_abs_raw")->updateFloat(energy_abs_raw);
+                    ac011k_hardware.meter.get("energy_rel")->updateFloat(energy_rel_raw + ac011k_hardware.meter.get("energy_rel_delta")->asFloat());
+                    ac011k_hardware.meter.get("energy_abs")->updateFloat(energy_abs_raw + ac011k_hardware.meter.get("energy_abs_delta")->asFloat());
+
                     meter.updateMeterValues(
-                              (PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97]),             // charging power W  (power)
-                              float(PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85])/1000, // charged energy Wh (energy_rel)
-                              float(PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89])/1000  // charged energy Wh (energy_abs)
-                              );
+                        PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97],       // charging power W
+                        ac011k_hardware.meter.get("energy_rel")->asFloat(),  // charged energy Wh
+                        ac011k_hardware.meter.get("energy_abs")->asFloat()); // charged energy Wh
+
                     /*
                     meter.updateMeterAllValues(i, all_values_update.get(i)->asFloat());
                     */
@@ -1339,6 +1373,7 @@ void AC011K::loop()
                 break;
 
             case 0x09:
+                api.writeConfig("ac011k_hardware/meter", &ac011k_hardware.meter);
                 logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Charging stop reason: %d - %s",
                     cmd, seq, len, crc,
                     PrivCommRxBuffer[77], PrivCommRxBuffer[77]<=3 ? stop_reason_text[PrivCommRxBuffer[77]] : stop_reason_text[0]);  // "stopreson": 1 = Remote, 3 = EVDisconnected

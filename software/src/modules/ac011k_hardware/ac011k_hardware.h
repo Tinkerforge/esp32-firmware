@@ -32,6 +32,7 @@ public:
     void loop();
 
     ConfigRoot ac011k_hardware;
+    ConfigRoot meter;
     ConfigRoot config;
 
     bool initialized = false;
