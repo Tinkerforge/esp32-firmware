@@ -66,9 +66,7 @@ export class EVSECommon extends Component<{}, EVSECommonState>
             let slots = API.get_maybe('evse/slots');
             let conf_current = slots[5].max_current;
             let theoretical_max = Math.min(slots[0].max_current, slots[1].max_current);
-
-            console.log(theoretical_max, conf_current);
-
+            
             if (conf_current > theoretical_max)
                 conf_current = theoretical_max;
             this.setState({slots: slots, current: conf_current});
