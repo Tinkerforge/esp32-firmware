@@ -83,23 +83,18 @@ extern char local_uid_str[32];
 
 // Commands
 // First byte = command code, then payload bytes, no crc bytes
-byte Init1[] = {0xAC, 0x11, 0x0B, 0x01, 0x00, 0x00}; // 10b cmdACCtrlSetRemoteStart, 0
-//byte Init2[] = {0xAC, 0x11, 0x09, 0x01, 0x00, 0x01}; // 109 cmdACCtrlSetS2OPENSTOP, 1 // bs & uwe
-byte Init2[] = {0xAC, 0x11, 0x09, 0x01, 0x00, 0x00}; // 109 cmdACCtrlSetS2OPENSTOP, 0 // connie
-byte Init3[] = {0xAC, 0x11, 0x0A, 0x01, 0x00, 0x00}; // 10a cmdACCtrlSetS2OPENLOCK, 0
-byte Init4[] = {0xAC, 0x11, 0x0C, 0x01, 0x00, 0x00}; // 10c cmdACCtrlSetOfflineStop, 0
+byte SetRemoteStart[]           = {0xAC, 0x11, 0x0B, 0x01, 0x00, 0}; // 10b cmdACCtrlSetRemoteStart, 0
+byte SetS2OPENSTOP[]            = {0xAC, 0x11, 0x09, 0x01, 0x00, 0}; // 109 cmdACCtrlSetS2OPENSTOP, 0
+byte SetS2OPENLOCK[]            = {0xAC, 0x11, 0x0A, 0x01, 0x00, 0}; // 10a cmdACCtrlSetS2OPENLOCK, 0
+byte SetOfflineStop[]           = {0xAC, 0x11, 0x0C, 0x01, 0x00, 0}; // 10c cmdACCtrlSetOfflineStop, 0
 byte ClockAlignedDataInterval[] = {0xAA, 0x18, 0x3E, 0x04, 0x00, 10, 0, 0x00, 0x00}; // 10 + 0*256 sec // 13e cmdAACtrlSetRTCTime08, 0
-byte Init6[] = {0xAC, 0x11, 0x0D, 0x04, 0x00, 0xB8, 0x0B, 0x00, 0x00}; // 10d cmdACSetOfflineEnergy, 3000
-byte Init7[] = {0xAA, 0x18, 0x3F, 0x04, 0x00, 0x1E, 0x00, 0x00, 0x00}; // 13f cmdAACtrlSetGunTime, 30
-byte Init8[] = {0xAA, 0x18, 0x25, 0x0E, 0x00, 0x05, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x02}; // 125 cmdAACtrlSetSmartparam
-byte Init12[] = {0xAA, 0x18, 0x12, 0x01, 0x00, 0x03}; // 112 cmdAACtrlSetReset, 3 // this triggers 0x02 SN, Hardware, Version
-
-// cmdAACtrlcantestsetAck test cancom...111
-byte Init11[] = {0xAA, 0x18, 0x2A, 0x00, 0x00}; // 
-
-byte GetRtc[] = {0xAA, 0x10, 0x02, 0x00, 0x00};
-
-byte TimeAck[] = {'c', 'a', 'y', 'm', 'd', 'h', 'm', 's', 0, 0, 0, 0};
+byte SetOfflineEnergy[]         = {0xAC, 0x11, 0x0D, 0x04, 0x00, 0xB8, 0x0B, 0x00, 0x00}; // 10d cmdACSetOfflineEnergy, 3000
+byte SetGunTime[]               = {0xAA, 0x18, 0x3F, 0x04, 0x00, 30, 0x00, 0x00, 0x00}; // 13f cmdAACtrlSetGunTime, 30
+byte SetSmartparam[]            = {0xAA, 0x18, 0x25, 0x0E, 0x00, 0x05, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x02}; // 125 cmdAACtrlSetSmartparam
+byte SetReset[]                 = {0xAA, 0x18, 0x12, 0x01, 0x00, 3}; // 112 cmdAACtrlSetReset, 3 // this triggers 0x02 SN, Hardware, Version
+byte cantestsetAck[]            = {0xAA, 0x18, 0x2A, 0x00, 0x00}; // cmdAACtrlcantestsetAck test cancom...111
+byte GetRtc[]                   = {0xAA, 0x10, 0x02, 0x00, 0x00};
+byte TimeAck[]                  = {'c', 'a', 'y', 'm', 'd', 'h', 'm', 's', 0, 0, 0, 0};
 
 // ctrl_cmd set start power mode done
 byte Init15[] = {0xAA, 0x18, 0x09, 0x01, 0x00, 0x00};
@@ -107,16 +102,14 @@ byte Init15[] = {0xAA, 0x18, 0x09, 0x01, 0x00, 0x00};
 //W (2021-04-11 18:36:27) [PRIV_COMM, 1919]: Rx(cmd_0A len:15) :  FA 03 00 00 0A 40 05 00 14 09 01 00 00 11 30
 //I (2021-04-11 18:36:27) [PRIV_COMM, 279]: ctrl_cmd set start power mode done -> minpower: 3150080
 
-byte CardAuthAckA5[] = {0xA5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x50, 0, 0, 0, 0}; // D0 = decline, 40 = accept, 50 = unknown ID (disabled)
+byte CardAuthAckA5[]           = {0xA5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x50, 0, 0, 0, 0}; // D0 decline, 40 accept, 50 unknown ID (disabled)
 
 //privCommCmdA7StartTransAck GD Firmware before 1.1.212?
-byte StartChargingA6[] = {0xA6, 'W', 'A', 'R', 'P', ' ', 'c', 'h', 'a', 'r', 'g', 'e', 'r', ' ', 'f', 'o', 'r', ' ', 'E', 'N', '+', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x30, 0, 0, 0, 0, 0, 0, 0, 0};
-byte StopChargingA6[]  = {0xA6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '0', '0', '0', '0', '0', '0', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x40, 0, 0, 0, 0, 0, 0, 0, 0};
-
-byte StartChargingA7[] = {0xA7, '0', '0', '0', '0', '0', '0', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-byte StopChargingA7[]  = {0xA7, '0', '0', '0', '0', '0', '0', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x10, 0};
-
-byte TransactionAck[] = {0xA9, 'W', 'A', 'R', 'P', ' ', 'c', 'h', 'a', 'r', 'g', 'e', 'r', ' ', 'f', 'o', 'r', ' ', 'E', 'N', '+', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte StartChargingA6[]         = {0xA6, 'W', 'A', 'R', 'P', ' ', 'c', 'h', 'a', 'r', 'g', 'e', 'r', ' ', 'f', 'o', 'r', ' ', 'E', 'N', '+', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x30, 0, 0, 0, 0, 0, 0, 0, 0};
+byte StopChargingA6[]          = {0xA6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '0', '0', '0', '0', '0', '0', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x40, 0, 0, 0, 0, 0, 0, 0, 0};
+byte StartChargingA7[]         = {0xA7, '0', '0', '0', '0', '0', '0', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte StopChargingA7[]          = {0xA7, '0', '0', '0', '0', '0', '0', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x10, 0};
+byte TransactionAck[]          = {0xA9, 'W', 'A', 'R', 'P', ' ', 'c', 'h', 'a', 'r', 'g', 'e', 'r', ' ', 'f', 'o', 'r', ' ', 'E', 'N', '+', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 //privCommCmdAFSmartCurrCtl
 byte ChargingLimit1[] = {0xAF, 0, 'y', 'm', 'd', 'h', 'm', 's', 0x80, 0x51, 0x01, 0, 0x01, 0, 0, 0, 0, 'A', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -828,61 +821,18 @@ void AC011K::setup() {
     //Serial2.setTimeout(90);
     logger.printfln("Set up PrivComm: 115200, SERIAL_8N1, RX 26, TX 27");
 
-    /* // TODO start: look out for this on a unconfigured box ( no wifi ) - if it still works, delete the code */
-    /* setTime(23,59,00,31,12,2018); */
-    /* switch (timeStatus()){ */
-    /*     case timeNotSet: */
-    /*         logger.printfln("the time has never been set, the clock started on Jan 1, 1970"); */
-    /*         break; */
-    /*     case timeNeedsSync: */
-    /*         logger.printfln("the time had been set but a sync attempt did not succeed"); */
-    /*         break; */
-    /*     case timeSet: */
-    /*         logger.printfln("the time is set and is synced"); */
-    /*         break; */
-    /* } */
-    /* logger.printfln("the time is %d", now()); */
-    /* logger.printfln("the now() call was not blocking"); */
-    /* // TODO end: look out for this on a unconfigured box ( no wifi ) - if it still works, delete the code */
-
-
-// V3.2.589 init sequence
- /* W (1970-01-01 00:00:00) [PRIV_COMM, 1875]: Tx(cmd_AC len:15) :  FA 03 00 00  AC  01   05 00    11 0B 01 00 00 CA D3 */
- /* W (1970-01-01 00:00:00) [PRIV_COMM, 1875]: Tx(cmd_AC len:15) :  FA 03 00 00  AC  02   05 00    11 09 01 00 01 4A BE */
- /* W (1970-01-01 00:00:00) [PRIV_COMM, 1875]: Tx(cmd_AC len:15) :  FA 03 00 00  AC  03   05 00    11 0A 01 00 00 4A F6 */
- /* W (1970-01-01 00:00:00) [PRIV_COMM, 1875]: Tx(cmd_AC len:15) :  FA 03 00 00  AC  04   05 00    11 0C 01 00 00 0B 98 */
- /* W (1970-01-01 00:00:00) [PRIV_COMM, 1875]: Tx(cmd_AA len:18) :  FA 03 00 00  AA  05   08 00    18 3E 04 00 00 00 00 00 54 F0 */
- /* W (1970-01-01 00:00:00) [PRIV_COMM, 1875]: Tx(cmd_AC len:18) :  FA 03 00 00  AC  06   08 00    11 0D 04 00 B8 0B 00 00 C5 B7 */
- /* W (1970-01-01 00:00:01) [PRIV_COMM, 1875]: Tx(cmd_AA len:18) :  FA 03 00 00  AA  07   08 00    18 3F 04 00 1E 00 00 00 49 A0 */
- /* W (1970-01-01 00:00:01) [PRIV_COMM, 1875]: Tx(cmd_AA len:28) :  FA 03 00 00  AA  08   12 00    18 25 0E 00 05 00 00 00 05 00 00 00 00 03 00 00 00 02 EC 31 */
- /* W (1970-01-01 00:00:01) [PRIV_COMM, 1875]: Tx(cmd_AA len:15) :  FA 03 00 00  AA  09   05 00    18 12 01 00 03 7B 89 */
- /* W (1970-01-01 00:00:03) [PRIV_COMM, 1875]: Tx(cmd_AA len:14) :  FA 03 00 00  AA  0A   04 00    18 2A 00 00 52 B6 */
-
-    sendCommand(Init1,  sizeof(Init1), sendSequenceNumber++);
-    sendCommand(Init2,  sizeof(Init2), sendSequenceNumber++);
-    sendCommand(Init3,  sizeof(Init3), sendSequenceNumber++);
-    sendCommand(Init4,  sizeof(Init4), sendSequenceNumber++);
-    sendCommand(ClockAlignedDataInterval,  sizeof(ClockAlignedDataInterval), sendSequenceNumber++);
-    sendCommand(Init6,  sizeof(Init6), sendSequenceNumber++);
-    sendCommand(Init7,  sizeof(Init7), sendSequenceNumber++);
-    sendCommand(Init8,  sizeof(Init8), sendSequenceNumber++);
+    logger.printfln("cmdAC 0x0B CtrlSetRemoteStart  to 0");       sendCommand(SetRemoteStart,           sizeof(SetRemoteStart),           sendSequenceNumber++, false);
+    logger.printfln("cmdAC 0x09 CtrlSetS2OPENSTOP   to 0");       sendCommand(SetS2OPENSTOP,            sizeof(SetS2OPENSTOP),            sendSequenceNumber++, false);
+    logger.printfln("cmdAC 0x0A CtrlSetS2OPENLOCK   to 0");       sendCommand(SetS2OPENLOCK,            sizeof(SetS2OPENLOCK),            sendSequenceNumber++, false);
+    logger.printfln("cmdAC 0x0C CtrlSetOfflineStop  to 0");       sendCommand(SetOfflineStop,           sizeof(SetOfflineStop),           sendSequenceNumber++, false);
+    logger.printfln("cmdAA ClockAlignedDataInterval to 10s");     sendCommand(ClockAlignedDataInterval, sizeof(ClockAlignedDataInterval), sendSequenceNumber++, false);
+    logger.printfln("cmdAC 0x0D SetOfflineEnergy    to 3000Wh");  sendCommand(SetOfflineEnergy,         sizeof(SetOfflineEnergy),         sendSequenceNumber++, false);
+    logger.printfln("cmdAA CtrlSetGunTime 30");                   sendCommand(SetGunTime,               sizeof(SetGunTime),               sendSequenceNumber++, false);
+    logger.printfln("cmdAA CtrlSetSmartparam");                   sendCommand(SetSmartparam,            sizeof(SetSmartparam),            sendSequenceNumber++, false);
     GetRTC();
-    /* we had init9 and init10 in here, but connie found that it is not in the original FW and */ 
-    /* now we think it was just a copy/paste mistake and a duplicate of init12 */
-    /* sendCommand(Init9,  sizeof(Init9), sendSequenceNumber++); */
-    /* sendCommand(Init10, sizeof(Init10), sendSequenceNumber++);  // last two bytes correct? */
-
-//W (1970-01-01 00:08:53) [PRIV_COMM, 1764]: Tx(cmd_AA len:15) :  FA 03 00 00 AA 08 05 00 18 12 01 00 03 BA 45
-//W (2021-04-11 18:36:27) [PRIV_COMM, 1919]: Rx(cmd_0A len:15) :  FA 03 00 00 0A 08 05 00 14 12 01 00 00 12 42
-//I (2021-04-11 18:36:27) [PRIV_COMM, 51]: ctrl_cmd set ack done, type:0
 
     // ctrl_cmd set ack done, type:0 // this triggers 0x02 SN, Hardware, Version
-    sendCommand(Init12, sizeof(Init12), sendSequenceNumber++);
-
-
-//W (1970-01-01 00:08:53) [PRIV_COMM, 1764]: Tx(cmd_AA len:16) :  FA 03 00 00 AA 07 06 00 18 08 02 00 1E 00 95 80
-//W (2021-04-11 18:36:27) [PRIV_COMM, 1919]: Rx(cmd_0A len:16) :  FA 03 00 00 0A 07 06 00 14 08 02 00 1E 00 93 CE
-//I (2021-04-11 18:36:27) [PRIV_COMM, 249]: ctrl_cmd set heart beat time out done -> 30      (=1E)
+    sendCommand(SetReset, sizeof(SetReset), sendSequenceNumber++, false);
 
     // ctrl_cmd set heart beat time out
     PrivCommTxBuffer[PayloadStart + 0] = 0x18;
@@ -903,7 +853,7 @@ void AC011K::setup() {
 //I (2021-04-11 18:36:31) [PRIV_COMM, 279]: ctrl_cmd set start power mode done -> minpower: 15.306.752
 
     // ctrl_cmd set start power mode done
-    sendCommand(Init15, sizeof(Init15), sendSequenceNumber++);
+    sendCommand(Init15, sizeof(Init15), sendSequenceNumber++, false);
 
 
 //W (1970-01-01 00:00:03) [PRIV_COMM, 1764]: Tx(cmd_AA len:14) :  FA 03 00 00 AA 02 04 00 18 2A 00 00 DB 76
@@ -911,7 +861,7 @@ void AC011K::setup() {
 //E (1970-01-01 00:00:03) [PRIV_COMM, 78]: cmdAACtrlcantestsetAck test cancom...111
 
     // cmdAACtrlcantestsetAck test cancom...111
-    sendCommand(Init11, sizeof(Init11), sendSequenceNumber++);
+    sendCommand(SetGunTime, sizeof(SetGunTime), sendSequenceNumber++, false);
 
 /*
     do { // wait for the first PRIVCOMM signal to decide if we have a GD chip to talk to
@@ -1457,6 +1407,9 @@ void AC011K::loop()
 //I (2021-04-11 18:36:27) [PRIV_COMM, 51]: ctrl_cmd set ack done, type:0
                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - ctrl_cmd set ack done, type:0", cmd, seq, len, crc);
                         break;
+                    case 0x25: // SetClrSmartparam
+                        logger.printfln("SetClrSmartparam");
+                        break;
                     case 0x2A: // answer to cmdAACtrlcantestsetAck test cancom...111
 //W (1970-01-01 00:00:03) [PRIV_COMM, 1764]: Tx(cmd_AA len:14) :  FA 03 00 00 AA 02 04 00 18 2A 00 00 DB 76
 //W (1970-01-01 00:00:03) [PRIV_COMM, 1919]: Rx(cmd_0A len:14) :  FA 03 00 00 0A 02 04 00 14 2A 00 00 D2 5E
@@ -1528,8 +1481,41 @@ void AC011K::loop()
                 }
                 break;
 
+            case 0x0C:
+                /*
+                              0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 
+                         000: FA 03 00 00 0C 02 05 00 11 09 01 00 00 73 79            CtrlGetS20OpenStop -> Off
+                         000: FA 03 00 00 0C 03 05 00 11 0A 01 00 00 B2 F1            CtrlGetS20OPENLOCK -> Off
+                         000: FA 03 00 00 0C 01 05 00 11 0B 01 00 00 32 D4            CtrlGetRemoteStart -> Off
+                         000: FA 03 00 00 0C 04 05 00 11 0C 01 00 00 F3 9F            CtrlGetOfflineStop -> Off
+                         000: FA 03 00 00 0C 06 08 00 11 0D 04 00 B8 0B 00 00 46 76   CtrlGetOfflineEnergy -> 0x0bb8 = 3000Wh
+
+                         for all 0C cases, the data field is like this:
+                         0C ss reclen_lo reclen_hi type subcmd datalen_lo datalen_hi (data in case data_len is >0) .... crc
+                 */ 
+                switch( PrivCommRxBuffer[9] ) {
+                    case 0x09:
+                        logger.printfln("CtrlGetS20OpenStop = %d", PrivCommRxBuffer[12]);
+                        break;
+                    case 0x0A:
+                        logger.printfln("CtrlGetS20OPENLOCK = %d", PrivCommRxBuffer[12]);
+                        break;
+                    case 0x0B:
+                        logger.printfln("CtrlGetRemoteStart = %d", PrivCommRxBuffer[12]);
+                        break;
+                    case 0x0C:
+                        logger.printfln("CtrlGetOfflineStop = %d", PrivCommRxBuffer[12]);
+                        break;
+                    case 0x0D:
+                        logger.printfln("CtrlGetOfflineEnergy %dWh",
+                            (uint16_t)(PrivCommRxBuffer[14]<<24 | PrivCommRxBuffer[15]<<16 | PrivCommRxBuffer[12]<<8 | PrivCommRxBuffer[13]));
+                        break;
+                }
+                break;
+
             case 0x0D:
-                logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Limit ack", cmd, seq, len, crc);
+                logger.printfln("Limit ack");
+                log_hex_privcomm_line(PrivCommRxBuffer);
                 // as of now we set the value when we send the setting to the GD
                 // set the value here? is the value in the ack?
                 // evse_state.get("allowed_charging_current")->updateUint(allowed_charging_current);
@@ -1654,7 +1640,7 @@ void AC011K::loop()
                 sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++);  // Restart GD
                 break;
             case 'V':
-                sendCommand(Init12, sizeof(Init12), sendSequenceNumber++);  // triggers 0x02 reply: SN, Hardware, Version
+                sendCommand(SetSmartparam, sizeof(SetSmartparam), sendSequenceNumber++);  // triggers 0x02 reply: SN, Hardware, Version
         }
     }
 // end experimental
