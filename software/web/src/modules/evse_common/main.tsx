@@ -35,12 +35,12 @@ interface EVSECommonState {
     state: API.getType['evse/state']
     auto_start: API.getType['evse/auto_start_charging']
     slots: Readonly<API.getType['evse/slots']>
+    current: number
 }
 
 export class EVSECommon extends Component<{}, EVSECommonState>
 {
     timeOut: number;
-    current: number;
     theoretical_max: number;
 
     constructor()
@@ -49,6 +49,10 @@ export class EVSECommon extends Component<{}, EVSECommonState>
 
         this.timeOut = null;
         this.theoretical_max = 0;
+
+        this.state = {
+            current: 0
+        } as any;
 
         util.eventTarget.addEventListener('evse/state', () => {
             this.setState({state: API.get_maybe('evse/state')})
@@ -59,7 +63,15 @@ export class EVSECommon extends Component<{}, EVSECommonState>
         })
 
         util.eventTarget.addEventListener('evse/slots', () => {
-            this.setState({slots: API.get_maybe('evse/slots')})
+            let slots = API.get_maybe('evse/slots');
+            let conf_current = slots[5].max_current;
+            let theoretical_max = Math.min(slots[0].max_current, slots[1].max_current);
+
+            console.log(theoretical_max, conf_current);
+
+            if (conf_current > theoretical_max)
+                conf_current = theoretical_max;
+            this.setState({slots: slots, current: conf_current});
         })
     }
 
@@ -158,12 +170,12 @@ export class EVSECommon extends Component<{}, EVSECommonState>
                 </FormRow>
                 <FormRow label={__("evse.status.configured_charging_current")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4 input-group">
                         <InputFloat min={6000} max={this.theoretical_max} digits={3} unit="A"
-                            value={state.state.allowed_charging_current}
+                            value={state.current}
                             onValue={(v) => {
                                 clearTimeout(this.timeOut);
 
                                 this.timeOut = setTimeout(this.timeOutSave, 1000, v, this.theoretical_max);
-                                this.setState({state: {...state.state, allowed_charging_current: v}})
+                                this.setState({current: v})
                             }}
                             showMinMax/>
                 </FormRow>
