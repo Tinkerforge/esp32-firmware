@@ -24,6 +24,7 @@ import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 
 import { h, render, Fragment, Component } from "preact";
+import { Button         } from "react-bootstrap";
 import { FormRow        } from "../../ts/components/form_row";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputText      } from "../../ts/components/input_text";
@@ -44,7 +45,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
         if (!state || state.manufacturer_id === undefined)
             return (<></>);
 
-        var no_card = state.manufacturer_id == 0
+        let no_card = state.manufacturer_id == 0
                    && state.product_rev == 0
                    && state.card_type == 0
                    && state.sector_size == 0
@@ -65,7 +66,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
             )
         }
 
-        var manufacturer;
+        let manufacturer;
         switch(state.manufacturer_id) {
             case 0x01: manufacturer = "Panasonic"; break;
             case 0x02: manufacturer = "Toshiba"; break;
@@ -83,7 +84,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
             default:   manufacturer = "Unknown (" + state.manufacturer_id.toString(16) + ")";
         }
 
-        var card_type;
+        let card_type;
         switch(state.card_type) {
             case 0x01: card_type = "MMC"; break;
             case 0x02: card_type = "SD"; break;
@@ -92,7 +93,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
             default:   card_type = "Unknown (0x" + state.card_type.toString(16) + ")";
         }
 
-        var sd_status;
+        let sd_status;
         switch(state.sd_status) {
             case  0: sd_status = "OK"; break;
             case  1: sd_status = "READ_BLOCK_TIMEOUT"; break;
@@ -110,11 +111,12 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
             case 41: sd_status = "ERROR_COUNT_TO_HIGH"; break;
             default: sd_status = "Unknown error code " + state.sd_status;
         }
-
-        var lfs_status;
+        
+        let lfs_status;
         switch(state.lfs_status) {
-            case  0: lfs_status = "OK"; break;
-            default: lfs_status = "ERROR " + state.lfs_status;
+            case   0: lfs_status = "OK"; break;
+            case 256: lfs_status = __("em_sdcard.content.formatting"); break;
+            default:  lfs_status = "ERROR " + state.lfs_status;
         }
 
         return (
@@ -147,6 +149,27 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
                 </FormRow>
                 <FormRow label={__("em_sdcard.content.lfs_status")}>
                     <InputText value={lfs_status}/>
+                </FormRow>
+
+                <FormRow label={__("em_sdcard.content.format_sdcard")} label_muted={__("em_sdcard.content.format_sdcard_desc")}>
+                    <Button variant="danger" className="form-control" onClick={async () => {
+                        const modal = util.async_modal_ref.current;
+                        if (!await modal.show({
+                                title: __("em_sdcard.content.format_sdcard"),
+                                body: __("em_sdcard.content.format_sdcard_modal_text"),
+                                no_text: __("em_sdcard.content.abort_format"),
+                                yes_text: __("em_sdcard.content.confirm_format"),
+                                no_variant: "secondary",
+                                yes_variant: "danger"
+                            }))
+                            return;
+
+                        try {
+                            await util.put("/em_sdcard_format", {"do_i_know_what_i_am_doing": true});
+                        } catch (error) {
+                            util.add_alert("sdcard_format_failed", "alert-danger", __("em_sdcard.script.sdcard_format_error"), error);
+                        }
+                    }}>{__("em_sdcard.content.format_sdcard")}</Button>
                 </FormRow>
             </>
         )

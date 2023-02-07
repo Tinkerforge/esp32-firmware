@@ -67,21 +67,18 @@ void EMSDcard::register_urls()
             return "SD card format NOT initiated";
         }
 
-        task_scheduler.scheduleOnce([this](){
-            logger.printfln("SD card format requested");
-            format_sdcard();
-        }, 0);
+        logger.printfln("em_sdcard: Formatting SD card...");
+        if (!energy_manager.format_sdcard())
+            return "Format request failed";
+
+        // Fake LittleFS state to display "Formatting..." message in frontend.
+        sdcard_state.get("lfs_status")->updateUint(256);
 
         return "";
     }, true);
 }
 void EMSDcard::loop()
 {
-}
-
-void EMSDcard::format_sdcard()
-{
-
 }
 
 void EMSDcard::update_sdcard_info()

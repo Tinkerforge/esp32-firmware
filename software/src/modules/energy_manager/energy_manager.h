@@ -134,6 +134,7 @@ public:
     void apply_defaults();
 
     void get_sdcard_info(struct sdcard_info *data);
+    bool format_sdcard();
     uint16_t get_energy_meter_detailed_values(float *ret_values);
     void set_output(bool output);
 

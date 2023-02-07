@@ -35,7 +35,6 @@ public:
     bool initialized = false;
 
 private:
-    void format_sdcard();
     void update_sdcard_info();
 
     ConfigRoot sdcard_state;

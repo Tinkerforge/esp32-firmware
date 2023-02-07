@@ -685,6 +685,16 @@ void EnergyManager::get_sdcard_info(struct sdcard_info *data)
     }
 }
 
+bool EnergyManager::format_sdcard()
+{
+    uint8_t ret_format_status;
+    int rc = tf_warp_energy_manager_format_sd(&device, 0x4223ABCD, &ret_format_status);
+
+    check_bricklet_reachable(rc);
+
+    return rc == TF_E_OK && ret_format_status == TF_WARP_ENERGY_MANAGER_FORMAT_STATUS_OK;
+}
+
 uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
 {
     uint32_t time = micros();
