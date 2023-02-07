@@ -31,6 +31,7 @@ extern API api;
 void WS::pre_setup()
 {
     api.registerBackend(this);
+    web_sockets.pre_setup();
 }
 
 void WS::setup()

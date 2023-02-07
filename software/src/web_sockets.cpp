@@ -491,6 +491,35 @@ void WebSockets::triggerHttpThread()
     }
 }
 
+void WebSockets::pre_setup() {
+    state = Config::Object({
+        {"keep_alive_fds", Config::Array({}, new Config{Config::Int(-1)}, MAX_WEB_SOCKET_CLIENTS, MAX_WEB_SOCKET_CLIENTS, Config::type_id<Config::ConfInt>())},
+        {"keep_alive_pongs", Config::Array({}, new Config{Config::Uint(0)}, MAX_WEB_SOCKET_CLIENTS, MAX_WEB_SOCKET_CLIENTS, Config::type_id<Config::ConfUint>())},
+        {"worker_active", Config::Bool(false)},
+        {"last_worker_run", Config::Uint32(0)},
+        {"queue_len", Config::Uint32(0)}
+    });
+
+    for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        state.get("keep_alive_fds")->add();
+        state.get("keep_alive_pongs")->add();
+        keep_alive_fds[i] = -1;
+        keep_alive_last_pong[i] = 0;
+    }
+}
+
+void WebSockets::updateDebugState() {
+    std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+    std::lock_guard<std::recursive_mutex> lock2{keep_alive_mutex};
+    for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        state.get("keep_alive_fds")->get(i)->updateInt(keep_alive_fds[i]);
+        state.get("keep_alive_pongs")->get(i)->updateUint(keep_alive_last_pong[i]);
+        state.get("worker_active")->updateBool(worker_active);
+        state.get("last_worker_run")->updateUint(last_worker_run);
+        state.get("queue_len")->updateUint(work_queue.size());
+    }
+}
+
 void WebSockets::start(const char *uri)
 {
     httpd_handle_t httpd = server.httpd;
@@ -509,6 +538,10 @@ void WebSockets::start(const char *uri)
         this->triggerHttpThread();
     }, 100, 100);
 
+    task_scheduler.scheduleWithFixedDelay([this](){
+        this->updateDebugState();
+    }, 1000, 1000);
+
 #if MODULE_WATCHDOG_AVAILABLE()
     task_scheduler.scheduleOnce([this]() {
         watchdog_handle = watchdog.add(
@@ -526,29 +559,12 @@ void WebSockets::start(const char *uri)
         checkActiveClients();
     }, 100, 100);
 
-    server.on("/info/ws", HTTP_GET, [this](WebServerRequest request) {
-        std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
-        std::lock_guard<std::recursive_mutex> lock2{keep_alive_mutex};
-        logger.printfln("\n");
-        logger.printfln("keep_alive_fds   %d %d %d %d %d", keep_alive_fds[0], keep_alive_fds[1], keep_alive_fds[2], keep_alive_fds[3], keep_alive_fds[4]);
-        logger.printfln("keep_alive_pongs %u %u %u %u %u", keep_alive_last_pong[0], keep_alive_last_pong[1], keep_alive_last_pong[2], keep_alive_last_pong[3], keep_alive_last_pong[4]);
-        logger.printfln("worker_active %s state %s", worker_active ? "yes" : "no", work_state);
-        logger.printfln("last_worker_run %u", last_worker_run);
-        logger.printfln("queue_len %u", work_queue.size());
+    api.addState("info/ws", &state, {}, 1000);
 
-        for (int i = 0; i < work_queue.size(); ++i) {
-            logger.printfln("    q[%d] to {%d %d %d %d %d} len %u %.30s",
-                            i,
-                            work_queue[i].fds[0],
-                            work_queue[i].fds[1],
-                            work_queue[i].fds[2],
-                            work_queue[i].fds[3],
-                            work_queue[i].fds[4],
-                            work_queue[i].payload_len,
-                            work_queue[i].payload_len == 0 ? "PING" : (work_queue[i].payload_len < 10 ? work_queue[i].payload : work_queue[i].payload + 10));
-        }
-
-        return request.send(200);
+    server.on("/info/ws_trigger", HTTP_GET, [this](WebServerRequest request) {
+        this->updateDebugState();
+        String s = state.to_string();
+        return request.send(200, "application/json", s.c_str());
     });
 }
 
