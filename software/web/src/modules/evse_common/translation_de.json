@@ -16,7 +16,8 @@
             "stop_charging": "Stop"
         },
         "navbar": {
-            "evse": "Ladecontroller"
+            "evse": "Status",
+            "evse_settings": "Einstellungen"
         },
         "content": {
             "evse": "Ladecontroller (EVSE)",
