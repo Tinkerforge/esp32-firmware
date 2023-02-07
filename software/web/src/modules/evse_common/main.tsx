@@ -147,13 +147,8 @@ export class EVSECommon extends Component<{}, EVSECommonState>
                         ]}/>
                 </FormRow>
 
-                <FormRow label={__("evse.status.charge_control")} labelColClasses="col-sm-4" contentColClasses="">
-                        <Switch
-                            className="col-xl-2 col-lg-4"
-                            desc={__("evse.status.auto_start_charging")}
-                            checked={state.auto_start.auto_start_charging}
-                            onClick={() => this.set_auto_start_charging(!state.auto_start.auto_start_charging)}/>
-                        <div class="col-xl-2 col-lg-4 input-group">
+                <FormRow label={__("evse.status.charge_control")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                        <div class="input-group">
                         <Button
                             className="form-control mr-2 rounded-right"
                             disabled={state.state.iec61851_state != 1 || state.slots[4].max_current != 0}
