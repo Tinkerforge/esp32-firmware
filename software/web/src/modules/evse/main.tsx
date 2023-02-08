@@ -37,6 +37,7 @@ import { Button} from "react-bootstrap";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
 import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_GLOBAL, EVSE_SLOT_GP_INPUT, EVSE_SLOT_SHUTDOWN_INPUT } from "../evse_common/api";
 import { InputFile } from "src/ts/components/input_file";
+import { extend } from "jquery";
 
 interface EVSEState {
     state: API.getType['evse/state'];
@@ -44,10 +45,14 @@ interface EVSEState {
     hardware_cfg: API.getType['evse/hardware_configuration'];
     slots: Readonly<API.getType['evse/slots']>;
     user_calibration: API.getType['evse/user_calibration'];
-    boost_mode: API.getType['evse/boost_mode'];
-    auto_start_charging: API.getType['evse/auto_start_charging'];
     debug_running: boolean;
     debug_status: string;
+}
+
+interface EVSESettingsState {
+    slots: Readonly<API.getType['evse/slots']>;
+    boost_mode: API.getType['evse/boost_mode'];
+    auto_start_charging: API.getType['evse/auto_start_charging'];
 }
 
 let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
@@ -76,14 +81,6 @@ export class EVSE extends Component<{}, EVSEState> {
 
         util.eventTarget.addEventListener('evse/user_calibration', () => {
             this.setState({user_calibration: API.get('evse/user_calibration')});
-        });
-
-        util.eventTarget.addEventListener('evse/boost_mode', () => {
-            this.setState({boost_mode: API.get('evse/boost_mode')});
-        });
-
-        util.eventTarget.addEventListener('evse/auto_start_charging', () => {
-            this.setState({auto_start_charging: API.get('evse/auto_start_charging')});
         });
 
         util.eventTarget.addEventListener("evse/debug_header", (e) => {
@@ -187,8 +184,6 @@ export class EVSE extends Component<{}, EVSEState> {
             hardware_cfg,
             slots,
             user_calibration,
-            boost_mode,
-            auto_start_charging,
             debug_running,
             debug_status} = s;
 
@@ -284,35 +279,6 @@ export class EVSE extends Component<{}, EVSEState> {
 
                     <FormRow label={__("evse.content.uptime")}>
                         <InputText value={util.format_timespan(Math.floor(ll_state.uptime / 1000.0))}/>
-                    </FormRow>
-
-                    <FormSeparator heading={__("evse.content.settings")}/>
-
-                    <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
-                        <Switch desc={__("evse.content.auto_start_enable")}
-                                checked={!auto_start_charging.auto_start_charging}
-                                onClick={async () => {
-                                    let inverted = !auto_start_charging.auto_start_charging;
-                                    await API.save('evse/auto_start_charging', {"auto_start_charging": inverted}, __("evse.script.save_failed"));
-                                }}/>
-                    </FormRow>
-
-                    <FormRow label={__("evse.content.external_description")} label_muted={__("evse.content.external_description_muted")}>
-                        <Switch desc={__("evse.content.external_enable")}
-                                checked={slots[EVSE_SLOT_EXTERNAL].active}
-                                onClick={async () => {
-                                    let inverted = !slots[EVSE_SLOT_EXTERNAL].active;
-                                    await API.save('evse/external_enabled', {"enabled": inverted}, __("evse.script.save_failed"));
-                                }}/>
-                    </FormRow>
-
-                    <FormRow label={__("evse.content.boost_mode_desc")} label_muted={__("evse.content.boost_mode_desc_muted")}>
-                        <Switch desc={__("evse.content.boost_mode")}
-                                checked={boost_mode.enabled}
-                                onClick={async () => {
-                                    let inverted = !boost_mode.enabled;
-                                    await API.save('evse/boost_mode', {"enabled": inverted}, __("evse.script.save_failed"));
-                                }}/>
                     </FormRow>
 
                     <FormSeparator heading={__("evse.content.charging_current")}/>
@@ -555,3 +521,76 @@ export class EVSE extends Component<{}, EVSEState> {
 }
 
 render(<EVSE />, $('#evse')[0]);
+
+class EVSESettings extends Component<{}, EVSESettingsState>
+{
+    constructor()
+    {
+        super();
+
+        util.eventTarget.addEventListener('evse/boost_mode', () => {
+            this.setState({boost_mode: API.get('evse/boost_mode')});
+        });
+
+        util.eventTarget.addEventListener('evse/auto_start_charging', () => {
+            this.setState({auto_start_charging: API.get('evse/auto_start_charging')});
+        });
+
+        util.eventTarget.addEventListener('evse/slots', () => {
+            this.setState({slots: API.get('evse/slots')});
+        });
+    }
+    render(props: {}, s: EVSESettingsState)
+    {
+        if (!s || !s.slots)
+            return (<></>);
+
+        let {
+            slots,
+            boost_mode,
+            auto_start_charging} = s;
+
+        return <>
+                <PageHeader title={__("evse.content.settings")}/>
+
+                <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
+                    <Switch desc={__("evse.content.auto_start_enable")}
+                            checked={!auto_start_charging.auto_start_charging}
+                            onClick={async () => {
+                                let inverted = !auto_start_charging.auto_start_charging;
+                                await API.save('evse/auto_start_charging', {"auto_start_charging": inverted}, __("evse.script.save_failed"));
+                            }}/>
+                </FormRow>
+
+                <FormRow label={__("evse.content.external_description")} label_muted={__("evse.content.external_description_muted")}>
+                    <Switch desc={__("evse.content.external_enable")}
+                            checked={slots[EVSE_SLOT_EXTERNAL].active}
+                            onClick={async () => {
+                                let inverted = !slots[EVSE_SLOT_EXTERNAL].active;
+                                await API.save('evse/external_enabled', {"enabled": inverted}, __("evse.script.save_failed"));
+                            }}/>
+                </FormRow>
+
+                <FormRow label={__("evse.content.boost_mode_desc")} label_muted={__("evse.content.boost_mode_desc_muted")}>
+                    <Switch desc={__("evse.content.boost_mode")}
+                            checked={boost_mode.enabled}
+                            onClick={async () => {
+                                let inverted = !boost_mode.enabled;
+                                await API.save('evse/boost_mode', {"enabled": inverted}, __("evse.script.save_failed"));
+                            }}/>
+                </FormRow>
+            </>;
+    }
+}
+
+render(<EVSESettings/>, $('#evse-settings')[0])
+
+export function init(){}
+
+export function add_event_listeners(){}
+
+export function update_sidebar_state(module_init: any) {
+    $('#sidebar-evse').prop('hidden', !module_init.evse);
+    $('#sidebar-evse-settings').prop('hidden', !module_init.evse);
+    $('#status-evse').prop('hidden', !module_init.evse);
+}
