@@ -8,10 +8,10 @@
         "content": {
             "em_debug": "Energy Manager Debug",
             "protocol": "Energy Manager-Protokoll",
-            "protocol_description": "Protokoll erstellen",
-            "protocol_description_muted": "zur Diagnose bei Problemen",
-            "protocol_start": "Start",
-            "protocol_stop": "Stop + Download",
+            "debug_description": "Protokoll erstellen",
+            "debug_description_muted": "zur Diagnose bei Problemen",
+            "debug_start": "Start",
+            "debug_stop": "Stop + Download",
 
             "low_level_state": "Low-Level-Zustand",
             "contactor_control": "Schützsteuerung",

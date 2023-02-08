@@ -33,6 +33,7 @@ import { InputFloat     } from "../../ts/components/input_float";
 import { InputNumber    } from "../../ts/components/input_number";
 import { InputText      } from "../../ts/components/input_text";
 import { PageHeader     } from "../../ts/components/page_header";
+import { DebugLogger    } from "../../ts/components/debug_logger";
 
 interface EMDebugState {
     state: API.getType['energy_manager/state'];
@@ -59,104 +60,9 @@ export class EMDebug extends Component<{}, EMDebugState> {
         }, false);
     }
 
-    async get_debug_report_and_event_log() {
-        try {
-            this.setState({debug_status: __("em_debug.script.loading_debug_report")});
-            this.debug_log += await util.download("/debug_report").then(blob => blob.text());
-            this.debug_log += "\n\n";
-        } catch (error) {
-            this.setState({debug_running: false, debug_status: __("em_debug.script.loading_debug_report_failed")});
-            throw __("em_debug.script.loading_debug_report_failed") + ": " + error;
-        }
-
-        try {
-            this.setState({debug_status: __("em_debug.script.loading_event_log")});
-            this.debug_log += await util.download("/event_log").then(blob => blob.text());
-            this.debug_log += "\n";
-        } catch (error) {
-            this.setState({debug_running: false, debug_status: __("em_debug.script.loading_event_log_failed")});
-            throw __("em_debug.script.loading_event_log_failed") + ": " + error;
-        }
-    }
-
-    debugTimeout: number;
-
-    async resetDebugWd() {
-        try {
-            await util.download("/energy_manager/continue_debug");
-        }
-        catch{
-            this.setState({debug_running: false, debug_status: __("em_debug.script.starting_debug_failed")});
-        }
-    }
-
-    async debug_start() {
-        this.debug_log = "";
-        this.setState({debug_running: true});
-
-        try {
-            await this.get_debug_report_and_event_log();
-
-            this.setState({debug_status: __("em_debug.script.starting_debug")});
-        } catch(error) {
-            this.setState({debug_running: false, debug_status: error});
-            return;
-        }
-
-        try{
-            await util.download("/energy_manager/start_debug");
-        } catch {
-            this.setState({debug_running: false, debug_status: __("em_debug.script.starting_debug_failed")});
-            return;
-        }
-
-        this.debugTimeout = setInterval(this.resetDebugWd, 15000);
-
-        this.setState({debug_status: __("em_debug.script.debug_running")});
-    }
-
-    async debug_stop() {
-        this.setState({debug_running: false});
-        clearInterval(this.debugTimeout);
-
-        try {
-            await util.download("/energy_manager/stop_debug");
-        } catch {
-            this.setState({debug_running: true, debug_status: __("em_debug.script.debug_stop_failed")});
-        }
-
-        try {
-            this.debug_log += "\n\n";
-            this.setState({debug_status: __("em_debug.script.debug_stopped")});
-
-            await this.get_debug_report_and_event_log();
-            this.setState({debug_status: __("em_debug.script.debug_done")});
-        } catch (error) {
-            this.debug_log += "\n\nError while stopping charge protocol: ";
-            this.debug_log += error;
-
-            this.setState({debug_status: error});
-        }
-
-        //Download log in any case: Even an incomplete log can be useful for debugging.
-        util.downloadToFile(this.debug_log, "energy_manager-debug-log", "txt", "text/plain");
-    }
-
     render(props: {}, s: Readonly<EMDebugState>) {
         if (!s || !s.state) {
             return (<></>);
-        }
-
-        if (s.debug_running) {
-            window.onbeforeunload = (e: Event) => {
-                e.preventDefault();
-                // returnValue is not a boolean, but the string to be shown
-                // in the "are you sure you want to close this tab" message
-                // box. However this string is only shown in some browsers.
-                e.returnValue = __("em_debug.script.tab_close_warning") as any;
-            }
-        } else {
-            window.onbeforeunload = null;
         }
 
         return (
@@ -164,13 +70,7 @@ export class EMDebug extends Component<{}, EMDebugState> {
                 <PageHeader title={__("em_debug.content.em_debug")} colClasses="col-xl-10"/>
 
                 <FormSeparator heading={__("em_debug.content.protocol")} />
-                <FormRow label={__("em_debug.content.protocol_description")} label_muted={__("em_debug.content.protocol_description_muted")}>
-                    <div class="input-group pb-2">
-                        <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => { this.debug_start() }} disabled={s.debug_running}>{__("em_debug.content.protocol_start")}</Button>
-                        <Button variant="primary" className="form-control rounded-left" onClick={() => { this.debug_stop() }} disabled={!s.debug_running}>{__("em_debug.content.protocol_stop")}</Button>
-                    </div>
-                    <InputText value={s.debug_status} />
-                </FormRow>
+                <DebugLogger prefix="energy_manager" debug="energy_manager/debug" debugHeader="energy_manager/debug_header" translationPrefix="em_debug"/>
 
                 <FormSeparator heading={__("em_debug.content.low_level_state")} />
                 <FormRow label={__("em_debug.content.contactor_control")}>

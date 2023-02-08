@@ -8,10 +8,10 @@
         "content": {
             "em_debug": "Energy Manager Debug",
             "protocol": "Energy Manager Protocol",
-            "protocol_description": "Create protocol",
-            "protocol_description_muted": "for diagnosing issues",
-            "protocol_start": "Start",
-            "protocol_stop": "Stop + Download",
+            "debug_description": "Create protocol",
+            "debug_description_muted": "for diagnosing issues",
+            "debug_start": "Start",
+            "debug_stop": "Stop + Download",
 
             "low_level_state": "Low-level state",
             "contactor_control": "Contactor control",
