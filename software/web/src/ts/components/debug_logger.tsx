@@ -38,6 +38,7 @@ interface DebugLoggerProps {
     debugHeader: keyof ConfigMap
     debug: keyof ConfigMap
     prefix: string
+    translationPrefix: string
 }
 
 export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
@@ -51,7 +52,8 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         this.props = {
             debug: null,
             debugHeader: null,
-            prefix: ""
+            prefix: "",
+            translationPrefix: ""
         }
 
         this.state = {
@@ -70,21 +72,21 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
     async get_debug_report_and_event_log() {
         try {
-            this.setState({debug_status: __("evse.script.loading_debug_report")});
+            this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.loading_debug_report")});
             this.debug_log += await util.download("/debug_report").then(blob => blob.text());
             this.debug_log += "\n\n";
         } catch (error) {
-            this.setState({debug_running: false, debug_status: __("evse.script.loading_debug_report_failed")});
-            throw __("evse.script.loading_debug_report_failed") + ": " + error;
+            this.setState({debug_running: false, debug_status: translate_unchecked(this.props.translationPrefix + ".script.loading_debug_report_failed")});
+            throw translate_unchecked(this.props.translationPrefix + ".script.loading_debug_report_failed") + ": " + error;
         }
 
         try {
-            this.setState({debug_status: __("evse.script.loading_event_log")});
+            this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.loading_event_log")});
             this.debug_log += await util.download("/event_log").then(blob => blob.text());
             this.debug_log += "\n";
         } catch (error) {
-            this.setState({debug_running: false, debug_status: __("evse.script.loading_event_log_failed")});
-            throw __("evse.script.loading_event_log_failed") + ": " + error;
+            this.setState({debug_running: false, debug_status: translate_unchecked(this.props.translationPrefix + ".script.loading_event_log_failed")});
+            throw translate_unchecked(this.props.translationPrefix + ".script.loading_event_log_failed") + ": " + error;
         }
     }
 
@@ -95,7 +97,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
             await util.download("/" + this.props.prefix + "/continue_debug");
         }
         catch{
-            this.setState({debug_running: false, debug_status: __("evse.script.starting_debug_failed")});
+            this.setState({debug_running: false, debug_status: translate_unchecked(this.props.translationPrefix + ".script.starting_debug_failed")});
         }
     }
 
@@ -106,7 +108,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         try {
             await this.get_debug_report_and_event_log();
 
-            this.setState({debug_status: __("evse.script.starting_debug")});
+            this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.starting_debug")});
         } catch(error) {
             this.setState({debug_running: false, debug_status: error});
             return;
@@ -115,13 +117,13 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         try{
             await util.download("/" + this.props.prefix + "/start_debug");
         } catch {
-            this.setState({debug_running: false, debug_status: __("evse.script.starting_debug_failed")});
+            this.setState({debug_running: false, debug_status: translate_unchecked(this.props.translationPrefix + ".script.starting_debug_failed")});
             return;
         }
 
         this.debugTimeout = setInterval(this.resetDebugWd, 15000);
 
-        this.setState({debug_status: __("evse.script.debug_running")});
+        this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.debug_running")});
     }
 
     async debug_stop() {
@@ -131,15 +133,15 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         try {
             await util.download("/" + this.props.prefix + "/stop_debug");
         } catch {
-            this.setState({debug_running: true, debug_status: __("evse.script.debug_stop_failed")});
+            this.setState({debug_running: true, debug_status: translate_unchecked(this.props.translationPrefix + ".script.debug_stop_failed")});
         }
 
         try {
             this.debug_log += "\n\n";
-            this.setState({debug_status: __("evse.script.debug_stopped")});
+            this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.debug_stopped")});
 
             await this.get_debug_report_and_event_log();
-            this.setState({debug_status: __("evse.script.debug_done")});
+            this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.debug_done")});
         } catch (error) {
             this.debug_log += "\n\nError while stopping charge protocol: ";
             this.debug_log += error;
@@ -154,7 +156,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
     render(props: DebugLoggerProps, s: DebugLoggerState)
     {
-        if (!s)
+        if (!s || !props)
             return <></>;
 
         let {
@@ -168,17 +170,17 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
                 // returnValue is not a boolean, but the string to be shown
                 // in the "are you sure you want to close this tab" message
                 // box. However this string is only shown in some browsers.
-                e.returnValue = __("evse.script.tab_close_warning") as any;
+                e.returnValue = translate_unchecked(props.translationPrefix + ".script.tab_close_warning") as any;
             }
         } else {
             window.onbeforeunload = null;
         }
 
         return <>
-                    <FormRow label={__("evse.content.debug_description")} label_muted={__("evse.content.debug_description_muted")}>
+                    <FormRow label={translate_unchecked(props.translationPrefix + ".content.debug_description")} label_muted={translate_unchecked(props.translationPrefix + ".content.debug_description_muted")}>
                         <div class="input-group pb-2">
-                            <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => {this.debug_start()}} disabled={debug_running}>{__("evse.content.debug_start")}</Button>
-                            <Button variant="primary" className="form-control rounded-left" onClick={() => {this.debug_stop()}} disabled={!debug_running}>{__("evse.content.debug_stop")}</Button>
+                            <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => {this.debug_start()}} disabled={debug_running}>{translate_unchecked(props.translationPrefix + ".content.debug_start")}</Button>
+                            <Button variant="primary" className="form-control rounded-left" onClick={() => {this.debug_stop()}} disabled={!debug_running}>{translate_unchecked(props.translationPrefix + ".content.debug_stop")}</Button>
                         </div>
                         <InputText value={debug_status}/>
                     </FormRow>
