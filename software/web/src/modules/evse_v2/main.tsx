@@ -37,6 +37,7 @@ import { Button} from "react-bootstrap";
 import { InputSelect } from "src/ts/components/input_select";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
 import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_GLOBAL } from "../evse_common/api";
+import { DebugLogger } from "../../ts/components/debug_logger"
 
 interface EVSEState {
     state: API.getType['evse/state'];
@@ -44,8 +45,6 @@ interface EVSEState {
     hardware_cfg: API.getType['evse/hardware_configuration'];
     slots: Readonly<API.getType['evse/slots']>;
     control_pilot_disconnect: API.getType['evse/control_pilot_disconnect'];
-    debug_running: boolean;
-    debug_status: string;
 }
 
 interface EVSESSettingsState {
@@ -60,7 +59,6 @@ interface EVSESSettingsState {
 let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
 
 export class EVSEV2 extends Component<{}, EVSEState> {
-    debug_log = "";
 
     constructor() {
         super();
@@ -84,97 +82,6 @@ export class EVSEV2 extends Component<{}, EVSEState> {
         util.eventTarget.addEventListener('evse/control_pilot_disconnect', () => {
             this.setState({control_pilot_disconnect: API.get('evse/control_pilot_disconnect')});
         });
-
-        util.eventTarget.addEventListener("evse/debug_header", (e) => {
-            this.debug_log += e.data + "\n";
-        }, false);
-
-        util.eventTarget.addEventListener("evse/debug", (e) => {
-            this.debug_log += e.data + "\n";
-        }, false);
-    }
-
-    async get_debug_report_and_event_log() {
-        try {
-            this.setState({debug_status: __("evse.script.loading_debug_report")});
-            this.debug_log += await util.download("/debug_report").then(blob => blob.text());
-            this.debug_log += "\n\n";
-        } catch (error) {
-            this.setState({debug_running: false, debug_status: __("evse.script.loading_debug_report_failed")});
-            throw __("evse.script.loading_debug_report_failed") + ": " + error;
-        }
-
-        try {
-            this.setState({debug_status: __("evse.script.loading_event_log")});
-            this.debug_log += await util.download("/event_log").then(blob => blob.text());
-            this.debug_log += "\n";
-        } catch (error) {
-            this.setState({debug_running: false, debug_status: __("evse.script.loading_event_log_failed")});
-            throw __("evse.script.loading_event_log_failed") + ": " + error;
-        }
-    }
-
-    debugTimeout: number;
-
-    async resetDebugWd() {
-        try {
-            await util.download("/evse/continue_debug");
-        }
-        catch{
-            this.setState({debug_running: false, debug_status: __("evse.script.starting_debug_failed")});
-        }
-    }
-
-    async debug_start() {
-        this.debug_log = "";
-        this.setState({debug_running: true});
-
-        try {
-            await this.get_debug_report_and_event_log();
-
-            this.setState({debug_status: __("evse.script.starting_debug")});
-        } catch(error) {
-            this.setState({debug_running: false, debug_status: error});
-            return;
-        }
-
-        try{
-            await util.download("/evse/start_debug");
-        } catch {
-            this.setState({debug_running: false, debug_status: __("evse.script.starting_debug_failed")});
-            return;
-        }
-
-        this.debugTimeout = setInterval(this.resetDebugWd, 15000);
-
-        this.setState({debug_status: __("evse.script.debug_running")});
-    }
-
-    async debug_stop() {
-        this.setState({debug_running: false});
-        clearInterval(this.debugTimeout);
-
-        try {
-            await util.download("/evse/stop_debug");
-        } catch {
-            this.setState({debug_running: true, debug_status: __("evse.script.debug_stop_failed")});
-        }
-
-        try {
-            this.debug_log += "\n\n";
-            this.setState({debug_status: __("evse.script.debug_stopped")});
-
-            await this.get_debug_report_and_event_log();
-            this.setState({debug_status: __("evse.script.debug_done")});
-        } catch (error) {
-            this.debug_log += "\n\nError while stopping charge protocol: ";
-            this.debug_log += error;
-
-            this.setState({debug_status: error});
-        }
-
-        //Download log in any case: Even an incomplete log can be useful for debugging.
-        util.downloadToFile(this.debug_log, "evse-debug-log", "txt", "text/plain");
     }
 
     render(props: {}, s: Readonly<EVSEState>) {
@@ -184,23 +91,9 @@ export class EVSEV2 extends Component<{}, EVSEState> {
         let {state,
             ll_state,
             hardware_cfg,
-            slots,
-            debug_running,
-            debug_status} = s;
+            slots,} = s;
 
         let min = Math.min(...slots.filter(s => s.active).map(s => s.max_current));
-
-        if (debug_running) {
-            window.onbeforeunload = (e: Event) => {
-                e.preventDefault();
-                // returnValue is not a boolean, but the string to be shown
-                // in the "are you sure you want to close this tab" message
-                // box. However this string is only shown in some browsers.
-                e.returnValue = __("evse.script.tab_close_warning") as any;
-            }
-        } else {
-            window.onbeforeunload = null;
-        }
 
         return (
             <>
@@ -419,14 +312,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                     </FormRow>
 
                     <FormSeparator heading={__("evse.content.debug")}/>
-
-                    <FormRow label={__("evse.content.debug_description")} label_muted={__("evse.content.debug_description_muted")}>
-                        <div class="input-group pb-2">
-                            <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => {this.debug_start()}} disabled={debug_running}>{__("evse.content.debug_start")}</Button>
-                            <Button variant="primary" className="form-control rounded-left" onClick={() => {this.debug_stop()}} disabled={!debug_running}>{__("evse.content.debug_stop")}</Button>
-                        </div>
-                        <InputText value={debug_status}/>
-                    </FormRow>
+                    <DebugLogger prefix="evse" debugHeader="evse/debug_header" debug="evse/debug"/>
 
                     <CollapsedSection label={__("evse.content.low_level_state")}>
                         <FormRow label={__("evse.content.led_state")}>
