@@ -145,6 +145,8 @@ public:
     void update_evseStatus(uint8_t evseStatus);
     time_t now();
     void fillTimeGdCommand(byte *datetime);
+    uint16_t getPrivCommRxBufferUint16(uint16_t index);
+    uint32_t getPrivCommRxBufferUint32(uint16_t index);
 
     #define PRIV_COMM_BUFFER_MAX_SIZE 1024
     byte PrivCommRxBuffer[PRIV_COMM_BUFFER_MAX_SIZE] = {'0'};

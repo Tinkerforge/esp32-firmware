@@ -388,6 +388,14 @@ const char* AC011K::timeStr(byte *data) {
     return timeString;
 }
 
+uint16_t AC011K::getPrivCommRxBufferUint16(uint16_t index) {
+    return (uint16_t)(256*PrivCommRxBuffer[index+1] + PrivCommRxBuffer[index]);
+}
+
+uint32_t AC011K::getPrivCommRxBufferUint32(uint16_t index) {
+    return (uint32_t)(PrivCommRxBuffer[index+3]<<24 | PrivCommRxBuffer[index+2]<<16 | PrivCommRxBuffer[index+1]<<8 | PrivCommRxBuffer[index]);
+}
+
 void AC011K::sendTime(byte cmd, byte action, byte len, byte sendSequenceNumber) {
     TimeAck[0] = cmd;
     TimeAck[1] = action;
@@ -966,8 +974,7 @@ void AC011K::loop()
                 case PRIVCOMM_LEN:
                     if(PrivCommRxBufferPointer == 8) { // this was the second byte of the length, move on
                         PrivCommRxState = PRIVCOMM_PAYLOAD;
-                        len = (uint16_t)(PrivCommRxBuffer[7] << 8 | PrivCommRxBuffer[6]);
-                        //logger.printfln("PRIVCOMM INFO: len: %d cmd:%.2X", len, cmd);
+                        len = getPrivCommRxBufferUint16(6);
                     }
                     break;
                 case PRIVCOMM_PAYLOAD:
@@ -1011,7 +1018,7 @@ void AC011K::loop()
                             )) {
                             log_hex_privcomm_line(PrivCommRxBuffer);
                         }
-                        crc = (uint16_t)(PrivCommRxBuffer[len + 9] << 8 | PrivCommRxBuffer[len + 8]);
+                        crc = getPrivCommRxBufferUint16(len + 8);
                         uint16_t checksum = crc16_modbus(PrivCommRxBuffer, len+8);
                         if(crc == checksum) {
                             if(!evse.evse_found) {
@@ -1105,7 +1112,7 @@ void AC011K::loop()
                     //TODO figure out what substatus (PrivCommRxBuffer[11]) is or should be
                     logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Status %d: %s substatus b0 %.2X b3 %.2X", cmd, seq, len, crc, evseStatus, evse_status_text[evseStatus], PrivCommRxBuffer[8], PrivCommRxBuffer[11]);
                     // there is the time in the 03 cmd - do we need it for something?
-                    logger.printfln("       time: %d/%d/%d %d:%d.%d", PrivCommRxBuffer[22],PrivCommRxBuffer[23],PrivCommRxBuffer[24],PrivCommRxBuffer[25],PrivCommRxBuffer[26],PrivCommRxBuffer[27]);
+                    logger.printfln("       time: %s", timeStr(&PrivCommRxBuffer[22]));
                 }
                 sendTime(0xA3, 0x10, 8, seq);  // send ack
                 break;
@@ -1182,7 +1189,7 @@ void AC011K::loop()
 // experimental:
                     send_http(String(",\"type\":\"en+07\",\"data\":{")
                       +"\"transaction\":"+String(transactionNumber)
-                      +",\"meterStart\":"+String(PrivCommRxBuffer[79]+256*PrivCommRxBuffer[80])  // status ?
+                      +",\"meterStart\":"+String(getPrivCommRxBufferUint16(79))  // status ?
                       //+",\"startMode\":"+String(PrivCommRxBuffer[72])
                       +"}}"
                     );
@@ -1206,38 +1213,38 @@ void AC011K::loop()
                     if(ac011k_hardware.config.get("verbose_communication")->asBool()) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
                         logger.printfln("Rx cmd_%.2X %dWh\t%d\t%dWh\t%d\t%d\t%d\t%dW\t%d\t%.1fV\t%.1fV\t%.1fV\t%.1fA\t%.1fA\t%.1fA\t%d minutes",
                             cmd,
-                            PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85],  // charged energy Wh (session?)
-                            PrivCommRxBuffer[86]+256*PrivCommRxBuffer[87],
-                            PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89],  // charged energy Wh (total, but will not survive GD reboots) 
-                            PrivCommRxBuffer[90]+256*PrivCommRxBuffer[91],
-                            PrivCommRxBuffer[92]+256*PrivCommRxBuffer[93],
-                            PrivCommRxBuffer[94]+256*PrivCommRxBuffer[95],
-                            PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97],  // charging power
-                            PrivCommRxBuffer[98]+256*PrivCommRxBuffer[99],
-                            float(PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101])/10.0,  // L1 plug voltage * 10
-                            float(PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103])/10.0,  // L2 plug voltage * 10
-                            float(PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105])/10.0,  // L3 plug voltage * 10
-                            float(PrivCommRxBuffer[106]+256*PrivCommRxBuffer[107])/10.0,  // L1 charging current * 10
-                            float(PrivCommRxBuffer[108]+256*PrivCommRxBuffer[109])/10.0,  // L2 charging current * 10
-                            float(PrivCommRxBuffer[110]+256*PrivCommRxBuffer[111])/10.0,  // L3 charging current * 10
-                            PrivCommRxBuffer[113]+256*PrivCommRxBuffer[114]
+                            getPrivCommRxBufferUint16(84),  // charged energy Wh (session?)
+                            getPrivCommRxBufferUint16(86),
+                            getPrivCommRxBufferUint16(88),  // charged energy Wh (total, but will not survive GD reboots) 
+                            getPrivCommRxBufferUint16(90),
+                            getPrivCommRxBufferUint16(92),
+                            getPrivCommRxBufferUint16(94),
+                            getPrivCommRxBufferUint16(96),  // charging power
+                            getPrivCommRxBufferUint16(98),
+                            float(getPrivCommRxBufferUint16(100))/10.0,  // L1 plug voltage * 10
+                            float(getPrivCommRxBufferUint16(102))/10.0,  // L2 plug voltage * 10
+                            float(getPrivCommRxBufferUint16(104))/10.0,  // L3 plug voltage * 10
+                            float(getPrivCommRxBufferUint16(106))/10.0,  // L1 charging current * 10
+                            float(getPrivCommRxBufferUint16(108))/10.0,  // L2 charging current * 10
+                            float(getPrivCommRxBufferUint16(110))/10.0,  // L3 charging current * 10
+                            getPrivCommRxBufferUint16(113)
                             );
                     }
                     // push values to the meter
                     // voltages
-                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1, float(PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101])/10.0);
-                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L2, float(PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103])/10.0);
-                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L3, float(PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105])/10.0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1, float(getPrivCommRxBufferUint16(100))/10.0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L2, float(getPrivCommRxBufferUint16(102))/10.0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L3, float(getPrivCommRxBufferUint16(104))/10.0);
                     // current
-                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L1_A, float(PrivCommRxBuffer[106]+256*PrivCommRxBuffer[107])/10.0);
-                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L2_A, float(PrivCommRxBuffer[108]+256*PrivCommRxBuffer[109])/10.0);
-                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L3_A, float(PrivCommRxBuffer[110]+256*PrivCommRxBuffer[111])/10.0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L1_A, float(getPrivCommRxBufferUint16(106))/10.0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L2_A, float(getPrivCommRxBufferUint16(108))/10.0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L3_A, float(getPrivCommRxBufferUint16(110))/10.0);
 
                     // meter power
                     static float prev_energy_rel_raw = 0;
                     static float prev_energy_abs_raw = 0;
-                    float energy_rel_raw = float(PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85])/1000.0;
-                    float energy_abs_raw = float(PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89])/1000.0;
+                    float energy_rel_raw = float(getPrivCommRxBufferUint16(84))/1000.0;
+                    float energy_abs_raw = float(getPrivCommRxBufferUint16(88))/1000.0;
 
                     // detect meter restart
                     if (energy_rel_raw < ac011k_hardware.meter.get("energy_rel_raw")->asFloat()) { ac011k_hardware.meter.get("energy_rel_delta")->updateFloat(ac011k_hardware.meter.get("energy_rel")->asFloat()); }
@@ -1269,7 +1276,7 @@ void AC011K::loop()
                     ac011k_hardware.meter.get("energy_abs")->updateFloat(energy_abs_raw + ac011k_hardware.meter.get("energy_abs_delta")->asFloat());
 
                     meter.updateMeterValues(
-                        PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97],       // charging power W
+                        getPrivCommRxBufferUint16(96),                       // charging power W
                         ac011k_hardware.meter.get("energy_rel")->asFloat(),  // charged energy Wh
                         ac011k_hardware.meter.get("energy_abs")->asFloat()); // charged energy Wh
 
@@ -1279,34 +1286,34 @@ void AC011K::loop()
 
                     /* fill phases status values */
                     /* consider a voltage > 70V as real, below that it is probably a faulty reading (we tried with 10V, which still was too low as a threshold) */
-                    if ((PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101]) > 700) { phases_connected[0] = true; } // L1 plug voltage
-                    if ((PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103]) > 700) { phases_connected[1] = true; } // L2 plug voltage
-                    if ((PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105]) > 700) { phases_connected[2] = true; } // L3 plug voltage
+                    if (getPrivCommRxBufferUint16(100) > 700) { phases_connected[0] = true; } // L1 plug voltage
+                    if (getPrivCommRxBufferUint16(102) > 700) { phases_connected[1] = true; } // L2 plug voltage
+                    if (getPrivCommRxBufferUint16(104) > 700) { phases_connected[2] = true; } // L3 plug voltage
                     meter.updateMeterPhases(phases_connected, phases_active);
 
                     /* set charging_time */
-                    evse.evse_low_level_state.get("charging_time")->updateUint((PrivCommRxBuffer[113]+256*PrivCommRxBuffer[114])*60*1000);   // in ms
+                    evse.evse_low_level_state.get("charging_time")->updateUint((getPrivCommRxBufferUint16(113))*60*1000);   // in ms
                               
 #ifdef EXPERIMENTAL
 // experimental:
                     send_http(String(",\"type\":\"en+08\",\"data\":{")
                         +"\"status\":"+String(PrivCommRxBuffer[77])  // status
                         +",\"transaction\":"+String(transactionNumber)
-                        +",\"energy1\":"+String(PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85])  // charged energy Wh
-                        +",\"aaa\":"+String(PrivCommRxBuffer[86]+256*PrivCommRxBuffer[87])
-                        +",\"energy2\":"+String(PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89])  // charged energy Wh
-                        +",\"bbb\":"+String(PrivCommRxBuffer[90]+256*PrivCommRxBuffer[91])
-                        +",\"ccc\":"+String(PrivCommRxBuffer[92]+256*PrivCommRxBuffer[93])
-                        +",\"ddd\":"+String(PrivCommRxBuffer[94]+256*PrivCommRxBuffer[95])
-                        +",\"power\":"+String(PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97])  // charging power
-                        +",\"eee\":"+String(PrivCommRxBuffer[98]+256*PrivCommRxBuffer[99])
-                        +",\"u1\":"+String(float(PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101])/10,1)  // L1 plug voltage * 10
-                        +",\"u2\":"+String(float(PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103])/10,1)  // L2 plug voltage * 10
-                        +",\"u3\":"+String(float(PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105])/10,1)  // L3 plug voltage * 10
-                        +",\"i1\":"+String(float(PrivCommRxBuffer[106]+256*PrivCommRxBuffer[107])/10,1)  // L1 charging current * 10
-                        +",\"i2\":"+String(float(PrivCommRxBuffer[108]+256*PrivCommRxBuffer[109])/10,1)  // L2 charging current * 10
-                        +",\"i3\":"+String(float(PrivCommRxBuffer[110]+256*PrivCommRxBuffer[111])/10,1)  // L3 charging current * 10
-                        +",\"minutes\":"+String(PrivCommRxBuffer[113]+256*PrivCommRxBuffer[114])
+                        +",\"energy1\":"+String(getPrivCommRxBufferUint16(84))  // charged energy Wh
+                        +",\"aaa\":"+String(getPrivCommRxBufferUint16(86))
+                        +",\"energy2\":"+String(getPrivCommRxBufferUint16(88))  // charged energy Wh
+                        +",\"bbb\":"+String(getPrivCommRxBufferUint16(90))
+                        +",\"ccc\":"+String(getPrivCommRxBufferUint16(92))
+                        +",\"ddd\":"+String(getPrivCommRxBufferUint16(94))
+                        +",\"power\":"+String(getPrivCommRxBufferUint16(96))    // charging power
+                        +",\"eee\":"+String(getPrivCommRxBufferUint16(98))
+                        +",\"u1\":"+String(float(getPrivCommRxBufferUint16(100))/10.0,1)  // L1 plug voltage * 10
+                        +",\"u2\":"+String(float(getPrivCommRxBufferUint16(102))/10.0,1)  // L2 plug voltage * 10
+                        +",\"u3\":"+String(float(getPrivCommRxBufferUint16(104))/10.0,1)  // L3 plug voltage * 10
+                        +",\"i1\":"+String(float(getPrivCommRxBufferUint16(106))/10.0,1)  // L1 charging current * 10
+                        +",\"i2\":"+String(float(getPrivCommRxBufferUint16(108))/10.0,1)  // L2 charging current * 10
+                        +",\"i3\":"+String(float(getPrivCommRxBufferUint16(110))/10.0,1)  // L3 charging current * 10
+                        +",\"minutes\":"+String(getPrivCommRxBufferUint16(113))
                         +"}}"
                     );
 // end experimental
@@ -1331,15 +1338,15 @@ void AC011K::loop()
                 logger.printfln("start:%s stop:%s meter:%dWh value1:%d value2:%d value3:%d",
                     timeStr(&PrivCommRxBuffer[80]),
                     timeStr(&PrivCommRxBuffer[86]),
-                    PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97],
-                    PrivCommRxBuffer[78]+256*PrivCommRxBuffer[79],
-                    PrivCommRxBuffer[92]+256*PrivCommRxBuffer[93],
-                    PrivCommRxBuffer[94]+256*PrivCommRxBuffer[95]);
+                    getPrivCommRxBufferUint16(96),
+                    getPrivCommRxBufferUint16(78),
+                    getPrivCommRxBufferUint16(92),
+                    getPrivCommRxBufferUint16(94));
 #ifdef EXPERIMENTAL
 // experimental:
                 send_http(String(",\"type\":\"en+09\",\"data\":{")
                     +"\"transaction\":"+String(transactionNumber)
-                    +",\"meterStop\":"+String(PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97])  // status
+                    +",\"meterStop\":"+String(getPrivCommRxBufferUint16(96))  // status
                     +",\"stopReason\":"+String(PrivCommRxBuffer[77])
                     +"}}"
                 );
@@ -1389,7 +1396,7 @@ void AC011K::loop()
                         }
                         break;
                     case 0x08: // answer to set hb timeout
-                        logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Heartbeat Timeout: %ds", cmd, seq, len, crc, PrivCommRxBuffer[12]+256*PrivCommRxBuffer[13]);
+                        logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Heartbeat Timeout: %ds", cmd, seq, len, crc, getPrivCommRxBufferUint16(12));
                         break;
                     case 0x09: // answer to ctrl_cmd set start power mode
 //W (2021-04-11 18:36:27) [PRIV_COMM, 1764]: Tx(cmd_AA len:15) :  FA 03 00 00 AA 40 05 00 18 09 01 00 00 F9 36
@@ -1418,7 +1425,7 @@ void AC011K::loop()
                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - cmdAACtrlcantestsetAck test cancom...111 done", cmd, seq, len, crc);
                         break;
                     case 0x3E: // 
-                        logger.printfln("ClockAlignedDataInterval is now: %ds", PrivCommRxBuffer[12]+256*PrivCommRxBuffer[13]);
+                        logger.printfln("ClockAlignedDataInterval is now: %ds", getPrivCommRxBufferUint16(12));
                         break;
                     case 0x3F: // 
                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - cmdAAInit7Ack", cmd, seq, len, crc);
@@ -1507,8 +1514,7 @@ void AC011K::loop()
                         logger.printfln("CtrlGetOfflineStop = %d", PrivCommRxBuffer[12]);
                         break;
                     case 0x0D:
-                        logger.printfln("CtrlGetOfflineEnergy %dWh",
-                            (uint16_t)(PrivCommRxBuffer[14]<<24 | PrivCommRxBuffer[15]<<16 | PrivCommRxBuffer[12]<<8 | PrivCommRxBuffer[13]));
+                        logger.printfln("CtrlGetOfflineEnergy %dWh", getPrivCommRxBufferUint32(12));
                         break;
                 }
                 break;
@@ -1524,37 +1530,37 @@ void AC011K::loop()
             case 0x0E: // ChargingParameterRpt
                 if(ac011k_hardware.config.get("verbose_communication")->asBool() 
                     // report on changes
-                    || (evse.evse_low_level_state.get("cp_pwm_duty_cycle")->asUint() != PrivCommRxBuffer[17]+256*PrivCommRxBuffer[18]) //duty
-                    || (evse.evse_low_level_state.get("adc_values")->get(6)->asUint() != PrivCommRxBuffer[19]+256*PrivCommRxBuffer[20])) { //cpVolt
+                    || (evse.evse_low_level_state.get("cp_pwm_duty_cycle")->asUint() != getPrivCommRxBufferUint16(17)) //duty
+                    || (evse.evse_low_level_state.get("adc_values")->get(6)->asUint() != getPrivCommRxBufferUint16(19))) { //cpVolt
                     logger.printfln("Charging parameter report - duty:%d cpVolt:%d power factors:%d/%d/%d %d offset0:%d offset1:%d leakcurr:%d AMBTemp:%d lock:%d",
-                        PrivCommRxBuffer[17]+256*PrivCommRxBuffer[18], // duty
-                        PrivCommRxBuffer[19]+256*PrivCommRxBuffer[20], // cpVolt
-                        PrivCommRxBuffer[ 9]+256*PrivCommRxBuffer[10], // power factor 1
-                        PrivCommRxBuffer[11]+256*PrivCommRxBuffer[12], // power factor 2
-                        PrivCommRxBuffer[13]+256*PrivCommRxBuffer[14], // power factor 3
-                        PrivCommRxBuffer[15]+256*PrivCommRxBuffer[16], // power factor total
-                        PrivCommRxBuffer[55]+256*PrivCommRxBuffer[56], // offset0
-                        PrivCommRxBuffer[57]+256*PrivCommRxBuffer[58], // offset1
-                        PrivCommRxBuffer[59]+256*PrivCommRxBuffer[60], // leakcurr
-                        PrivCommRxBuffer[61]+256*PrivCommRxBuffer[62], // AMBTemp
-                        PrivCommRxBuffer[63]);                         // lock
+                        getPrivCommRxBufferUint16(17), // duty
+                        getPrivCommRxBufferUint16(19), // cpVolt
+                        getPrivCommRxBufferUint16(9),  // power factor 1
+                        getPrivCommRxBufferUint16(11), // power factor 2
+                        getPrivCommRxBufferUint16(13), // power factor 3
+                        getPrivCommRxBufferUint16(15), // power factor total
+                        getPrivCommRxBufferUint16(55), // offset0
+                        getPrivCommRxBufferUint16(57), // offset1
+                        getPrivCommRxBufferUint16(59), // leakcurr
+                        getPrivCommRxBufferUint16(61), // AMBTemp
+                        PrivCommRxBuffer[63]);         // lock
                 }
-                evse.evse_low_level_state.get("cp_pwm_duty_cycle")->updateUint(PrivCommRxBuffer[17]+256*PrivCommRxBuffer[18]); //duty
-                evse.evse_low_level_state.get("adc_values")->get(6)->updateUint(PrivCommRxBuffer[19]+256*PrivCommRxBuffer[20]); //cpVolt
+                evse.evse_low_level_state.get("cp_pwm_duty_cycle")->updateUint(getPrivCommRxBufferUint16(17)); //duty
+                evse.evse_low_level_state.get("adc_values")->get(6)->updateUint(getPrivCommRxBufferUint16(19)); //cpVolt
 #ifdef EXPERIMENTAL
 // experimental:
                 send_http(String(",\"type\":\"en+0E\",\"data\":{")
                     +"\"transaction\":"+String(transactionNumber)
-                    +",\"duty\":"+String(PrivCommRxBuffer[17]+256*PrivCommRxBuffer[18])
-                    +",\"cpVolt\":"+String(PrivCommRxBuffer[19]+256*PrivCommRxBuffer[20])
-                    +",\"pf1\":"+String(PrivCommRxBuffer[9]+256*PrivCommRxBuffer[10])  // power factor 1
-                    +",\"pf2\":"+String(PrivCommRxBuffer[11]+256*PrivCommRxBuffer[12])  // power factor 2
-                    +",\"pf3\":"+String(PrivCommRxBuffer[13]+256*PrivCommRxBuffer[14])  // power factor 3
-                    +",\"pft\":"+String(PrivCommRxBuffer[15]+256*PrivCommRxBuffer[16])  // power factor total
-                    +",\"offset0\":"+String(PrivCommRxBuffer[55]+256*PrivCommRxBuffer[56])
-                    +",\"offset1\":"+String(PrivCommRxBuffer[57]+256*PrivCommRxBuffer[58])
-                    +",\"leakcurr\":"+String(PrivCommRxBuffer[59]+256*PrivCommRxBuffer[60])
-                    +",\"AMBTemp\":"+String(PrivCommRxBuffer[61]+256*PrivCommRxBuffer[62])
+                    +",\"duty\":"+String(getPrivCommRxBufferUint16(17))
+                    +",\"cpVolt\":"+String(getPrivCommRxBufferUint16(19))
+                    +",\"pf1\":"+String(getPrivCommRxBufferUint16(9))   // power factor 1
+                    +",\"pf2\":"+String(getPrivCommRxBufferUint16(11))  // power factor 2
+                    +",\"pf3\":"+String(getPrivCommRxBufferUint16(13))  // power factor 3
+                    +",\"pft\":"+String(getPrivCommRxBufferUint16(15))  // power factor total
+                    +",\"offset0\":"+String(getPrivCommRxBufferUint16(55))
+                    +",\"offset1\":"+String(getPrivCommRxBufferUint16(57))
+                    +",\"leakcurr\":"+String(getPrivCommRxBufferUint16(59))
+                    +",\"AMBTemp\":"+String(getPrivCommRxBufferUint16(61))
                     +",\"lock\":"+String(PrivCommRxBuffer[63])
                     +"}}"
                 );
