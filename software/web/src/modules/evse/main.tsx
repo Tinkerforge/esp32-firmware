@@ -265,7 +265,7 @@ export class EVSE extends Component<{}, EVSEState> {
 
                     <FormSeparator heading={__("evse.content.debug")}/>
 
-                    <DebugLogger prefix="evse" debug="evse/debug" debugHeader="evse/debug_header"/>
+                    <DebugLogger prefix="evse" debug="evse/debug" debugHeader="evse/debug_header" translationPrefix="evse"/>
 
                     <CollapsedSection label={__("evse.content.low_level_state")}>
                         <FormRow label={__("evse.content.led_state")}>
