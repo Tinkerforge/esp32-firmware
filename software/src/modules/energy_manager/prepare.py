@@ -22,7 +22,7 @@ import re
 
 util.embed_bricklet_firmware_bin()
 
-variables = [
+debug_log_variables = [
             "charge_manager_allocated_current_ma",
             "max_current_limited_ma",
             "guaranteed_power_w",
@@ -30,6 +30,7 @@ variables = [
             "power_at_meter_w",
             "power_available_w",
             "",
+            "mode",
             "is_3phase",
             "wants_3phase",
             "wants_3phase_last",
@@ -75,12 +76,12 @@ variables = [
             "all_data.contactor_check_state",
     ]
 
-formats = 'fmt(' + '),\n        fmt('.join(variables) + '),'
-header  = '"' + ',"\n           "'.join([re.sub('[^.]+\.', '', v) for v in variables]) + '"'
-data    = ',\n             '.join(filter(None, variables))
+formats = 'fmt(' + '),\n        fmt('.join(debug_log_variables) + '),'
+header  = '"' + ',"\n           "'.join([re.sub('[^.]+\.', '', v) for v in debug_log_variables]) + '"'
+data    = ',\n             '.join(filter(None, debug_log_variables))
 
 util.specialize_template("energy_manager_debug.cpp.template", "energy_manager_debug.cpp", {
-    "{{{varcount}}}": str(len(variables)),
+    "{{{varcount}}}": str(len(debug_log_variables)),
     "{{{formats}}}": formats,
     "{{{header}}}": header,
     "{{{data}}}": data,

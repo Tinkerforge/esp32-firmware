@@ -12,6 +12,7 @@ export interface state {
 }
 
 export interface config {
+    default_mode: number,
     excess_charging_enable: boolean,
     contactor_installed: boolean,
     phase_switching_mode: number,
@@ -28,6 +29,10 @@ export interface config {
     input4_config: number,
     input4_config_limit: number,
     input4_config_when: number
+}
+
+export interface runtime_config {
+    mode: number
 }
 
 export type debug_header = string;

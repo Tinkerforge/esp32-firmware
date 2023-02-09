@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render, Fragment } from "preact";
+import { h, render, Fragment, Component} from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "src/ts/components/config_component";
 import { FormRow } from "src/ts/components/form_row";
@@ -39,6 +39,62 @@ interface EnergyManagerState {
     state: API.getType['energy_manager/state'];
 }
 
+interface EnergyManagerRuntimeConfig {
+    runtime_config: API.getType['energy_manager/runtime_config'];
+}
+
+export class EnergyManagerStatus extends Component<{}, EnergyManagerRuntimeConfig> {
+    constructor() {
+        super();
+
+        util.eventTarget.addEventListener('energy_manager/runtime_config', () => {
+            this.setState({runtime_config: API.get('energy_manager/runtime_config')});
+        });
+    }
+
+    change_mode(mode: number) {
+        API.save('energy_manager/runtime_config', {"mode": mode}, __("energy_manager.script.mode_change_failed"));
+    }
+
+    render(props: {}, r: Readonly<EnergyManagerRuntimeConfig>) {
+        if (!r || !r.runtime_config)
+            return <></>;
+        
+        return <>
+            <FormRow label={__("energy_manager.status.mode")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                <div class="input-group">
+                    <Button
+                        className="form-control mr-2 rounded-right"
+                        variant={r.runtime_config.mode == 2 ? "primary" : "secondary"}
+                        onClick={() => this.change_mode(2)}>
+                        {__("energy_manager.status.mode_pv")}
+                    </Button>
+                    <Button
+                        className="form-control mr-2 rounded-left rounded-right"
+                        variant={r.runtime_config.mode == 3 ? "primary" : "secondary"}
+                        onClick={() => this.change_mode(3)}>
+                        {__("energy_manager.status.mode_min_pv")}
+                    </Button>
+                    <Button
+                        className="form-control mr-2 rounded-left rounded-right"
+                        variant={r.runtime_config.mode == 0 ? "primary" : "secondary"}
+                        onClick={() => this.change_mode(0)}>
+                        {__("energy_manager.status.mode_fast")}
+                    </Button>
+                    <Button
+                        className="form-control rounded-left"
+                        variant={r.runtime_config.mode == 1 ? "primary" : "secondary"}
+                        onClick={() => this.change_mode(1)}>
+                        {__("energy_manager.status.mode_off")}
+                    </Button>
+                </div>
+            </FormRow>
+        </>
+    }
+}
+
+render(<EnergyManagerStatus/>, $('#status-energy_manager')[0])
+
 export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, EnergyManagerState> {
     constructor() {
         super('energy_manager/config',
@@ -52,13 +108,25 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
     render(props: {}, s: Readonly<API.getType['energy_manager/config'] & EnergyManagerState>) {
         if (!s || !s.state)
-            return (<></>);
-
-        const TODO_DEFINE_MAXIMUM = 100000;
+            return <></>;
 
         return (
             <>
                 <ConfigForm id="energy_manager_config_form" title={__("energy_manager.content.page_header")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+
+                    <FormRow label={__("energy_manager.content.default_mode")}>
+                        <InputSelect
+                            required
+                            items={[
+                                    ["2", __("energy_manager.status.mode_pv")],
+                                    ["3", __("energy_manager.status.mode_min_pv")],
+                                    ["0", __("energy_manager.status.mode_fast")],
+                                    ["1", __("energy_manager.status.mode_off")],
+                                ]
+                            }
+                            value={s.default_mode}
+                            onValue={(v) => this.setState({default_mode: parseInt(v)})}/>
+                    </FormRow>
 
                     <FormSeparator heading={__("energy_manager.content.header_load_management")} />
                     <FormRow label="">

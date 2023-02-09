@@ -1,7 +1,11 @@
 {
     "energy_manager": {
         "status": {
-            "energy_manager": "Energy Manager"
+            "mode": "Charging mode",
+            "mode_fast": "Fast",
+            "mode_off": "Off",
+            "mode_pv": "PV",
+            "mode_min_pv": "Min + PV"
         },
         "navbar": {
             "energy_manager": "Settings"
@@ -9,8 +13,10 @@
         "content": {
             "page_header": "Energy Manager Settings",
 
+            "default_mode": "Default charging mode",
+
             "header_load_management": "Dynamic load management",
-            "load_management_explainer": "The Energy Manager adjusts the power consumption of devices under its control to avoid exceeding the maximum allowed current on any phase of the building's mains connection.",
+            "load_management_explainer": "The Energy Manager adjusts the power consumption of devices under its control to avoid exceeding the maximum allowed current on any phase of the building's mains connection.<br/>Coming soon: This feature is currently in development.",
 
             "header_excess_charging": "PV excess charging",
             "enable_excess_charging": "Enable excess charging",
@@ -74,7 +80,8 @@
         },
         "script": {
             "save_failed": "Failed to save energy manager configuration.",
-            "reboot_content_changed": "energy manager configuration"
+            "reboot_content_changed": "energy manager configuration",
+            "mode_change_failed": "Failed to change charging mode."
         }
     }
 }

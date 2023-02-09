@@ -27,6 +27,11 @@
 #include "output_relay.h"
 #include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
+#define MODE_FAST                       0
+#define MODE_OFF                        1
+#define MODE_PV                         2
+#define MODE_MIN_PV                     3
+
 #define PHASE_SWITCHING_AUTOMATIC       0
 #define PHASE_SWITCHING_ALWAYS_1PHASE   1
 #define PHASE_SWITCHING_ALWAYS_3PHASE   2
@@ -143,6 +148,8 @@ public:
     ConfigRoot energy_manager_state;
     ConfigRoot energy_manager_config;
     ConfigRoot energy_manager_config_in_use;
+    ConfigRoot energy_manager_runtime_config;
+    ConfigRoot energy_manager_runtime_config_update;
 
     EnergyManagerAllData all_data;
 
@@ -178,6 +185,7 @@ private:
     bool     bricklet_reachable;
     SwitchingState switching_state;
     uint32_t switching_start;
+    uint32_t mode;
     uint8_t  have_phases;
     bool     wants_3phase;
     bool     wants_3phase_last;

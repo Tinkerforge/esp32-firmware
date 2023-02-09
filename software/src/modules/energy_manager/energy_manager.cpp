@@ -53,6 +53,7 @@ void EnergyManager::pre_setup()
 
     // Config
     energy_manager_config = ConfigRoot(Config::Object({
+        {"default_mode", Config::Uint(0, 0, 3)},
         {"excess_charging_enable", Config::Bool(false)},
         {"contactor_installed", Config::Bool(false)},
         {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
@@ -89,6 +90,12 @@ void EnergyManager::pre_setup()
 
         return "";
     });
+
+    // Runtime config
+    energy_manager_runtime_config = Config::Object({
+        {"mode", Config::Uint(0, 0, 3)},
+    });
+    energy_manager_runtime_config_update = energy_manager_runtime_config;
 
     switching_state = SwitchingState::Monitoring;
 }
@@ -140,6 +147,8 @@ void EnergyManager::setup()
         logger.printfln("energy_manager: Invalid configuration: Automatic phase switching selected but no contactor installed.");
         return;
     }
+
+    energy_manager_runtime_config.get("mode")->updateUint(energy_manager_config_in_use.get("default_mode")->asUint());
 
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
     charge_manager.set_allocated_current_callback([this](uint32_t current_ma){
@@ -263,6 +272,13 @@ void EnergyManager::register_urls()
 
     api.addPersistentConfig("energy_manager/config", &energy_manager_config, {}, 1000);
     api.addState("energy_manager/state", &energy_manager_state, {}, 1000);
+
+    api.addState("energy_manager/runtime_config", &energy_manager_runtime_config, {}, 1000);
+    api.addCommand("energy_manager/runtime_config_update", &energy_manager_runtime_config_update, {}, [this](){
+        mode = energy_manager_runtime_config_update.get("mode")->asUint();
+        energy_manager_runtime_config.get("mode")->updateUint(mode);
+        logger.printfln("energy_manager: Switched to mode %i", mode);
+    }, false);
 
     this->DeviceModule::register_urls();
 }
@@ -463,7 +479,11 @@ void EnergyManager::update_energy()
             return;
         }
 
-        // Evil: Allow runtime changes, overrides input pins!
+        switch(mode) {
+            // TODO switch me
+        }
+
+        // TODO Evil: Allow runtime changes, overrides input pins!
         excess_charging_enable      = energy_manager_config.get("excess_charging_enable")->asBool();
         target_power_from_grid_w    = energy_manager_config.get("target_power_from_grid")->asInt(); // watt
 
@@ -614,8 +634,8 @@ void EnergyManager::update_energy()
             static uint32_t last_print = 0;
             last_print = (last_print + 1) % print_every;
             if (last_print == 0)
-                logger.printfln("power_at_meter_w %i | target_power_from_grid_w %i | power_available_w %i | wants_3phase %i | is_3phase %i | is_on %i | max_current_limited_ma %u | cm avail ma %u | cm alloc ma %u",
-                    power_at_meter_w, target_power_from_grid_w, power_available_w, wants_3phase, is_3phase, is_on, max_current_limited_ma, charge_manager.charge_manager_available_current.get("current")->asUint(), charge_manager_allocated_current_ma);
+                logger.printfln("mode %u | power_at_meter_w %i | target_power_from_grid_w %i | power_available_w %i | wants_3phase %i | is_3phase %i | is_on %i | max_current_limited_ma %u | cm avail ma %u | cm alloc ma %u",
+                    mode, power_at_meter_w, target_power_from_grid_w, power_available_w, wants_3phase, is_3phase, is_on, max_current_limited_ma, charge_manager.charge_manager_available_current.get("current")->asUint(), charge_manager_allocated_current_ma);
         }
     } else if (switching_state == SwitchingState::Stopping) {
         set_available_current(0);

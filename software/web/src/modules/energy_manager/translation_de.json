@@ -1,7 +1,11 @@
 {
     "energy_manager": {
         "status": {
-            "energy_manager": "Energiemanager"
+            "mode": "Lademodus",
+            "mode_fast": "Schnell",
+            "mode_off": "Aus",
+            "mode_pv": "PV",
+            "mode_min_pv": "Min + PV"
         },
         "navbar": {
             "energy_manager": "Einstellungen"
@@ -9,8 +13,10 @@
         "content": {
             "page_header": "Energiemanager-Einstellungen",
 
+            "default_mode": "Standard-Lademodus",
+
             "header_load_management": "Dynamisches Lastmanagement",
-            "load_management_explainer": "Der Energiemanager regelt die an ihn angeschlossenen Verbraucher so, dass der maximal zulässige Strom des Gebäudeanschlusses auf keiner Phase überschritten wird.",
+            "load_management_explainer": "Der Energiemanager regelt die an ihn angeschlossenen Verbraucher so, dass der maximal zulässige Strom des Gebäudeanschlusses auf keiner Phase überschritten wird.<br/>Bald verfügbar: Diese Funktion befindet sich aktuell noch in der Entwicklung.",
 
             "header_excess_charging": "PV-Überschussladen",
             "enable_excess_charging": "Überschussladen aktivieren",
@@ -74,7 +80,8 @@
         },
         "script": {
             "save_failed": "Speichern der Energiemanager-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Energiemanager-Einstellungen"
+            "reboot_content_changed": "Energiemanager-Einstellungen",
+            "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen."
         }
     }
 }
