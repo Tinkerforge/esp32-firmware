@@ -54,21 +54,21 @@ export class ChargeCondition extends ConfigComponent<'charge_condition/config', 
               __("charge_manager.script.save_failed"),
               __("charge_manager.script.reboot_content_changed"));
 
+        this.state = {
+            duration_limit: 0,
+            energy_limit_kwh: 0,
+            time_restriction_enabled: false,
+        } as any;
+
         util.eventTarget.addEventListener("charge_condition/state", () => {
             this.setState({state: API.get("charge_condition/state")});
         });
     }
 
-    handle_change(idx: number, e: boolean[])
-    {
-        const times = this.state.allowed_times;
-        times.splice(idx, 1, e)
-        this.setState({allowed_times: [...times]});
-    }
-
     render(props: {}, state: ChargeConditionConfig & ChargeConditionState) {
         if (!state || !state.state)
             return (<></>);
+
         let has_meter = API.hasFeature("meter");
 
         let energy_settings = <FormRow label="Energie Einstellung">
@@ -78,7 +78,6 @@ export class ChargeCondition extends ConfigComponent<'charge_condition/config', 
         let energy_display = <FormRow label="Energy über">
                 <InputFloat value={state.state.energy_left_kwh} digits={3} unit={"kwh"}/>
             </FormRow>
-        console.log(state.allowed_times);
         return (
             <>
                 <ConfigForm title="Charge Condition" id="charge_condition_config_form" isModified={this.isModified()} onSave={() => this.save()} onReset={() => this.reset()} onDirtyChange={(d) => this.ignore_updates = d}>
@@ -105,10 +104,12 @@ export class ChargeCondition extends ConfigComponent<'charge_condition/config', 
                     </FormRow>
                     {has_meter ? energy_display : <></>}
                     <FormSeparator/>
-                    <FormGroup label="Activate time">
+                    <FormRow label="Activate time">
                         <Switch onClick={() => this.setState({time_restriction_enabled: !state.time_restriction_enabled})} desc="lalala" checked={state.time_restriction_enabled}/>
-                    </FormGroup>
-                    <DateTimePicker onValue={(v) => this.setState({allowed_times: v})} value={state.allowed_times}/>
+                    </FormRow>
+                    <FormRow label="Selector">
+                        <DateTimePicker onValue={(v) => this.setState({blocked_hours: v})} value={state.blocked_hours}/>
+                    </FormRow>
                 </ConfigForm>
             </>
         );

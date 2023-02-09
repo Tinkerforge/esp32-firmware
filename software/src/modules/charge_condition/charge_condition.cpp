@@ -33,12 +33,13 @@ void ChargeCondition::pre_setup()
         {"duration_limit", Config::Uint(0, 0, 10)},
         {"energy_limit_kwh", Config::Uint32(0)},
         {"time_restriction_enabled", Config::Bool(false)},
-        {"allowed_times", Config::Array({}, new Config{Config::Array({},
-                                                    new Config{Config::Bool(false)},
-                                                    24,
-                                                    24,
-                                                    Config::type_id<Config::ConfBool>())},
-                                        7, 7, Config::type_id<Config::ConfArray>())}
+        {"blocked_hours", Config::Array({Config::Uint32(0),
+                                        Config::Uint32(0),
+                                        Config::Uint32(0),
+                                        Config::Uint32(0),
+                                        Config::Uint32(0),
+                                        Config::Uint32(0),
+                                        Config::Uint32(0)}, new Config(Config::Uint32(0)), 7, 7, Config::type_id<Config::ConfUint>())}
     })};
 
     state = ConfigRoot{Config::Object({
@@ -52,6 +53,7 @@ void ChargeCondition::pre_setup()
 void ChargeCondition::setup()
 {
     api.restorePersistentConfig("charge_condition/config", &config);
+    config_in_use = config;
     initialized = true;
 }
 
@@ -84,17 +86,15 @@ static uint32_t map_duration(uint32_t val)
     }
 }
 
-static bool is_allowed(Config::Wrap &config, timeval &now)
-{
-}
-
 void ChargeCondition::register_urls()
 {
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
     api.addPersistentConfig("charge_condition/config", &config, {}, 1000);
     api.addState("charge_condition/state", &state, {}, 1000);
 
-    if ((config.get("duration_limit")->asUint() > 0 || config.get("energy_limit_kwh")->asUint() > 0) && api.hasFeature("evse"))
+    api.addCommand("charge_condition/override", &config_in_use, {}, {}, false);
+
+    if ((config_in_use.get("duration_limit")->asUint() > 0 || config_in_use.get("energy_limit_kwh")->asUint() > 0) && api.hasFeature("evse"))
     {
 #if MODULE_EVSE_V2_AVAILABLE()
         evse_v2.set_charge_condition(32000, true);
@@ -106,12 +106,12 @@ void ChargeCondition::register_urls()
             {
                 if (api.hasFeature("meter") && state.get("start_energy_kwh")->asUint() == 0)
                     state.get("start_energy_kwh")->updateUint((uint32_t)(charge_tracker.current_charge.get("meter_start")->asFloat() * 1000));
-                if (config.get("duration_limit")->asUint() > 0)
+                if (config_in_use.get("duration_limit")->asUint() > 0)
                 {
                     if (state.get("start_time_mil")->asUint() == 0)
                         state.get("start_time_mil")->updateUint(millis());
 
-                    int time_left = map_duration(config.get("duration_limit")->asUint()) * 1000 - (millis() - state.get("start_time_mil")->asUint());
+                    int time_left = map_duration(config_in_use.get("duration_limit")->asUint()) * 1000 - (millis() - state.get("start_time_mil")->asUint());
                     if (time_left <= 0)
                     {
 #if MODULE_EVSE_V2_AVAILABLE()
@@ -124,9 +124,9 @@ void ChargeCondition::register_urls()
                     else
                         state.get("duration_left_sec")->updateUint(time_left / 1000);
                 }
-                if (api.hasFeature("meter") && config.get("energy_limit_kwh")->asUint() > 0)
+                if (api.hasFeature("meter") && config_in_use.get("energy_limit_kwh")->asUint() > 0)
                 {
-                    int energy_left = state.get("start_energy_kwh")->asUint() + config.get("energy_limit_kwh")->asUint() - meter.values.get("energy_abs")->asFloat() * 1000;
+                    int energy_left = state.get("start_energy_kwh")->asUint() + config_in_use.get("energy_limit_kwh")->asUint() - meter.values.get("energy_abs")->asFloat() * 1000;
                     if (energy_left <= 0)
                     {
 #if MODULE_EVSE_V2_AVAILABLE()
@@ -142,6 +142,7 @@ void ChargeCondition::register_urls()
             }
             else
             {
+                config_in_use = config;
 #if MODULE_EVSE_V2_AVAILABLE()
                 evse_v2.set_charge_condition(32000, true);
 #elif MODULE_EVSE_AVAILABLE()
@@ -156,7 +157,7 @@ void ChargeCondition::register_urls()
     }
 #endif
 
-    if (config.get("time_restriction_enabled")->asBool())
+    if (config_in_use.get("time_restriction_enabled")->asBool())
     {
 #if MODULE_EVSE_V2_AVAILABLE()
         evse_v2.set_charge_time_restriction(32000, true);
@@ -167,9 +168,11 @@ void ChargeCondition::register_urls()
             {
                 tm tm_now;
                 localtime_r(&now.tv_sec, &tm_now);
-                bool allowed = config.get("allowed_times")->get(tm_now.tm_wday)->get(tm_now.tm_hour)->asBool();
+                uint32_t hours = config_in_use.get("blocked_hours")->get((tm_now.tm_wday + 6) % 7)->asUint();
+                bool forbidden = hours & (1 << tm_now.tm_hour);
+                logger.printfln("%u, %i, %u, %u", hours, forbidden, tm_now.tm_hour, (tm_now.tm_wday + 6) % 7);
 #if MODULE_EVSE_V2_AVAILABLE()
-                evse_v2.set_charge_time_restriction(allowed ? 32000 : 0, true);
+                evse_v2.set_charge_time_restriction(forbidden ? 0: 32000, true);
 #endif
             }
         }, 0, 1000);

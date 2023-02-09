@@ -20,12 +20,11 @@
 import { h, Component, Fragment } from "preact";
 import { Card, Row, Button } from "react-bootstrap"
 import { __ } from "../translation"
-import { FormSeparator } from "./form_separator";
 
 interface DayCardState {
     day: string
-    onValue: (value: boolean[]) => void
-    configuredTimes: boolean[]
+    onValue: (value: number) => void
+    configuredTimes: number
 }
 
 class DayCard extends Component<DayCardState, any>
@@ -40,12 +39,29 @@ class DayCard extends Component<DayCardState, any>
             this.times.push(i.toString());
     }
 
+    hackToAllowSave() {
+        document.getElementById("charge_condition_config_form").dispatchEvent(new Event('input'));
+    }
+
+    isBitSet(number: number, bit: number): boolean
+    {
+        bit = 1 << bit;
+        let test = number & bit;
+        return test != 0 ? true : false;
+    }
+
+    xorBit(number: number, bit: number): number
+    {
+        bit = 1 << bit;
+        return number ^ bit
+    }
+
     render(props: DayCardState)
     {
-        if (!props || !props.configuredTimes)
+        if (!props || props.configuredTimes === undefined)
             return <></>;
-            
-        return <Card >
+
+        return <Card>
                 <Card.Header>
                     <Card.Title>{props.day}</Card.Title>
                 </Card.Header>
@@ -53,11 +69,11 @@ class DayCard extends Component<DayCardState, any>
                         {this.times.map((val, idx) => {
                             return <Row>
                                         <Button className="mb-1 form-control"
-                                            variant={props.configuredTimes[idx] ? "danger" : "primary"}
+                                            variant={this.isBitSet(props.configuredTimes, idx) ? "danger" : "primary"}
                                             onClick={() => {
-                                                props.configuredTimes[idx] = !props.configuredTimes[idx];
-                                                this.props.onValue(props.configuredTimes);
-                                            }}>
+                                                    this.hackToAllowSave();
+                                                    this.props.onValue(this.xorBit(props.configuredTimes, idx));
+                                                }}>
                                             {this.times[idx]}
                                         </Button>
                                     </Row>
@@ -69,15 +85,15 @@ class DayCard extends Component<DayCardState, any>
 
 interface DateTimePickerProps
 {
-    value: boolean [][]
-    onValue: (value: boolean[][]) => void
+    value: number[]
+    onValue: (value: number[]) => void
 }
 
 export class DateTimePicker extends Component<DateTimePickerProps, any>
 {
-    handle_change(idx: number, e: boolean[])
+    handle_change(idx: number, e: number)
     {
-        const times = this.state.value;
+        const times = this.props.value;
         times.splice(idx, 1, e)
         this.setState({value: [...times]});
     }
@@ -88,16 +104,28 @@ export class DateTimePicker extends Component<DateTimePickerProps, any>
             return <></>;
 
         return (<>
-                    <Row>
-                    {/* <div class="col mb-4"> */}
+                    <Row class="form-control">
+                    <div class="col" style="width: 100%">
                         <DayCard day={"Mo"} configuredTimes={props.value[0]} onValue={(v) => {this.handle_change(0, v); props.onValue(props.value);}}/>
+                    </div>
+                    <div class="col" style="width: 100%">
                         <DayCard day={"Tu"} configuredTimes={props.value[1]} onValue={(v) => {this.handle_change(1, v); props.onValue(props.value);}}/>
+                    </div>
+                    <div class="col" style="width: 100%">
                         <DayCard day={"We"} configuredTimes={props.value[2]} onValue={(v) => {this.handle_change(2, v); props.onValue(props.value);}}/>
+                    </div>
+                    <div class="col" style="width: 100%">
                         <DayCard day={"Th"} configuredTimes={props.value[3]} onValue={(v) => {this.handle_change(3, v); props.onValue(props.value);}}/>
+                    </div>
+                    <div class="col" style="width: 100%">
                         <DayCard day={"Fr"} configuredTimes={props.value[4]} onValue={(v) => {this.handle_change(4, v); props.onValue(props.value);}}/>
+                    </div>
+                    <div class="col" style="width: 100%">
                         <DayCard day={"Sa"} configuredTimes={props.value[5]} onValue={(v) => {this.handle_change(5, v); props.onValue(props.value);}}/>
+                    </div>
+                    <div class="col" style="width: 100%">
                         <DayCard day={"Su"} configuredTimes={props.value[6]} onValue={(v) => {this.handle_change(6, v); props.onValue(props.value);}}/>
-                    {/* </div> */}
+                    </div>
                     </Row>
                 </>
             )

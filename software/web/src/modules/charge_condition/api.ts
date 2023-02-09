@@ -2,7 +2,7 @@ export interface config {
     duration_limit: number
     energy_limit_kwh: number
     time_restriction_enabled: boolean
-    allowed_times: boolean[][]
+    blocked_hours: number[]
 }
 
 export interface state {

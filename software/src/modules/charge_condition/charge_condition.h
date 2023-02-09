@@ -33,6 +33,7 @@ public:
     void loop();
 
     ConfigRoot config;
+    ConfigRoot config_in_use;
     ConfigRoot state;
 
     uint32_t duration_left;
