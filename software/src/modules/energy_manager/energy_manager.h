@@ -191,6 +191,7 @@ private:
     bool     wants_3phase_last;
     bool     is_on_last;
     bool     just_switched_phases;
+    bool     just_switched_mode;
     uint32_t phase_state_change_blocked_until;
     uint32_t on_state_change_blocked_until;
     uint32_t charge_manager_allocated_current_ma;

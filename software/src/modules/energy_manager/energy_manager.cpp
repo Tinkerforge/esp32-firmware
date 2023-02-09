@@ -276,8 +276,15 @@ void EnergyManager::register_urls()
     api.addState("energy_manager/runtime_config", &energy_manager_runtime_config, {}, 1000);
     api.addCommand("energy_manager/runtime_config_update", &energy_manager_runtime_config_update, {}, [this](){
         mode = energy_manager_runtime_config_update.get("mode")->asUint();
-        energy_manager_runtime_config.get("mode")->updateUint(mode);
-        logger.printfln("energy_manager: Switched to mode %i", mode);
+
+        auto runtime_mode = energy_manager_runtime_config.get("mode");
+        uint32_t old_mode = runtime_mode->asUint();
+        runtime_mode->updateUint(mode);
+
+        if (mode != old_mode)
+            just_switched_mode = true;
+
+        logger.printfln("energy_manager: Switched mode %i->%i", old_mode, mode);
     }, false);
 
     this->DeviceModule::register_urls();
@@ -479,45 +486,53 @@ void EnergyManager::update_energy()
             return;
         }
 
-        switch(mode) {
-            // TODO switch me
-        }
-
         // TODO Evil: Allow runtime changes, overrides input pins!
-        excess_charging_enable      = energy_manager_config.get("excess_charging_enable")->asBool();
         target_power_from_grid_w    = energy_manager_config.get("target_power_from_grid")->asInt(); // watt
 
-        if (!excess_charging_enable) {
-            power_available_w = 230 * 3 * max_current_limited_ma / 1000;
-        } else {
-            // Excess charging enabled; use a simple P controller to adjust available power.
-            int32_t p_error_w  = target_power_from_grid_w - power_at_meter_w;
+        switch (mode) {
+            case MODE_FAST:
+                power_available_w = 230 * 3 * max_current_limited_ma / 1000;
+                break;
+            case MODE_OFF:
+            default:
+                power_available_w = 0;
+                break;
+            case MODE_PV:
+            case MODE_MIN_PV:
+                // Excess charging enabled; use a simple P controller to adjust available power.
+                int32_t p_error_w = target_power_from_grid_w - power_at_meter_w;
 
-            int32_t p_adjust_w;
-            if (!is_on) {
-                // When the power is not on, use p=1 so that the switch-on threshold can be reached properly.
-                p_adjust_w = p_error_w;
-            } else {
-                // Some EVs may only be able to adjust their charge power in steps of 1500W,
-                // so smaller factors are required for smaller errors.
-                int32_t p_error_abs_w = abs(p_error_w);
-                if (p_error_abs_w < 1000) {
-                    // Use p=0.5 for small differences so that the controller can converge without oscillating too much.
-                    p_adjust_w = p_error_w / 2;
-                } else if (p_error_abs_w < 1500) {
-                    // Use p=0.75 for medium differences so that the controller can converge reasonably fast while still avoiding too many oscillations.
-                    p_adjust_w = p_error_w * 3 / 4;
+                int32_t p_adjust_w;
+                if (!is_on) {
+                    // When the power is not on, use p=1 so that the switch-on threshold can be reached properly.
+                    p_adjust_w = p_error_w;
                 } else {
-                    // Use p=0.875 for large differences so that the controller can converge faster.
-                    p_adjust_w = p_error_w * 7 / 8;
+                    // Some EVs may only be able to adjust their charge power in steps of 1500W,
+                    // so smaller factors are required for smaller errors.
+                    int32_t p_error_abs_w = abs(p_error_w);
+                    if (p_error_abs_w < 1000) {
+                        // Use p=0.5 for small differences so that the controller can converge without oscillating too much.
+                        p_adjust_w = p_error_w / 2;
+                    } else if (p_error_abs_w < 1500) {
+                        // Use p=0.75 for medium differences so that the controller can converge reasonably fast while still avoiding too many oscillations.
+                        p_adjust_w = p_error_w * 3 / 4;
+                    } else {
+                        // Use p=0.875 for large differences so that the controller can converge faster.
+                        p_adjust_w = p_error_w * 7 / 8;
+                    }
                 }
-            }
 
-            power_available_w  = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_w;
+                power_available_w = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_w;
+
+                if (mode != MODE_MIN_PV)
+                    break;
+
+                // Check against guaranteed power only in MIN_PV mode.
+                if (power_available_w < static_cast<int32_t>(guaranteed_power_w))
+                    power_available_w = static_cast<int32_t>(guaranteed_power_w);
+
+                break;
         }
-
-        if (power_available_w < static_cast<int32_t>(guaranteed_power_w))
-            power_available_w = static_cast<int32_t>(guaranteed_power_w);
 
         // CP disconnect support unknown if some chargers haven't replied yet.
         if (!charge_manager.seen_all_chargers()) {
@@ -560,6 +575,10 @@ void EnergyManager::update_energy()
             } else if (!uptime_past_hysteresis) {
                 // (Re)booted recently. Allow immediate switching.
                 logger.printfln("energy_manager: Free phase switch to %s during start-up period. available=%i", wants_3phase ? "3 phases" : "1 phase", power_available_w);
+                switch_phases = true;
+            } else if (just_switched_mode) {
+                // Just switched modes. Allow immediate switching.
+                logger.printfln("energy_manager: Free phase switch to %s after changing modes. available=%i", wants_3phase ? "3 phases" : "1 phase", power_available_w);
                 switch_phases = true;
             } else if (!is_on && a_after_b(time_now, on_state_change_blocked_until) && a_after_b(time_now, phase_state_change_blocked_until - switching_hysteresis_ms/2)) {
                 // On/off deadline passed and at least half of the phase switching deadline passed.
@@ -605,6 +624,9 @@ void EnergyManager::update_energy()
                     logger.printfln("energy_manager: Free switch-%s during start-up period.", wants_on ? "on" : "off");
                     // Only one immediate switch on/off allowed; mark as used.
                     uptime_past_hysteresis = true;
+                } else if (just_switched_mode) {
+                    // Just switched modes. Allow immediate switching.
+                    logger.printfln("energy_manager: Free switch-%s after changing modes.", wants_on ? "on" : "off");
                 } else if (just_switched_phases && a_after_b(time_now, on_state_change_blocked_until - switching_hysteresis_ms/2)) {
                     logger.printfln("energy_manager: Opportunistic switch-%s", wants_on ? "on" : "off");
                 } else { // Switched too recently
@@ -627,6 +649,7 @@ void EnergyManager::update_energy()
 
             set_available_current(current_available_ma);
             just_switched_phases = false;
+            just_switched_mode = false;
         }
 
         const uint32_t print_every = 8;
