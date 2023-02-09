@@ -94,7 +94,7 @@ void Wifi::pre_setup()
             )
         },
         {"bssid_lock", Config::Bool(false)},
-        {"passphrase", Config::Str("", 0, 64)},
+        {"passphrase", Config::Str("", 8, 64)},
         {"ip", Config::Str("0.0.0.0", 7, 15)},
         {"gateway", Config::Str("0.0.0.0", 7, 15)},
         {"subnet", Config::Str("0.0.0.0", 7, 15)},
