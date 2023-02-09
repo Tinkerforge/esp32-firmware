@@ -16,7 +16,7 @@
             "default_mode": "Default charging mode",
 
             "header_load_management": "Dynamic load management",
-            "load_management_explainer": "The Energy Manager adjusts the power consumption of devices under its control to avoid exceeding the maximum allowed current on any phase of the building's mains connection.<br/>Coming soon: This feature is currently in development.",
+            "load_management_explainer": "The Energy Manager adjusts the power consumption of devices under its control to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)",
 
             "header_excess_charging": "PV excess charging",
             "enable_excess_charging": "Enable excess charging",
