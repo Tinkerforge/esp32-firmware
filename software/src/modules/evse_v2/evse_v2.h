@@ -89,9 +89,8 @@ public:
     void set_modbus_current(uint16_t current);
     void set_modbus_enabled(bool enabled);
 
-    void set_charge_condition(uint16_t current, bool enabled);
-
-    void set_charge_time_restriction(uint16_t current, bool enabled);
+    void set_charge_condition_slot(uint16_t current, bool enabled);
+    void set_charge_time_restriction_slot(uint16_t current, bool enabled);
 
     void set_ocpp_current(uint16_t current);
     uint16_t get_ocpp_current();
