@@ -39,13 +39,18 @@ interface EnergyManagerState {
     state: API.getType['energy_manager/state'];
 }
 
-interface EnergyManagerRuntimeConfig {
+interface EnergyManagerAllConfig {
+    config: API.getType['energy_manager/config'];
     runtime_config: API.getType['energy_manager/runtime_config'];
 }
 
-export class EnergyManagerStatus extends Component<{}, EnergyManagerRuntimeConfig> {
+export class EnergyManagerStatus extends Component<{}, EnergyManagerAllConfig> {
     constructor() {
         super();
+
+        util.eventTarget.addEventListener('energy_manager/config', () => {
+            this.setState({config: API.get('energy_manager/config')});
+        });
 
         util.eventTarget.addEventListener('energy_manager/runtime_config', () => {
             this.setState({runtime_config: API.get('energy_manager/runtime_config')});
@@ -56,34 +61,36 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerRuntimeConfi
         API.save('energy_manager/runtime_config', {"mode": mode}, __("energy_manager.script.mode_change_failed"));
     }
 
-    render(props: {}, r: Readonly<EnergyManagerRuntimeConfig>) {
-        if (!r || !r.runtime_config)
+    render(props: {}, c: Readonly<EnergyManagerAllConfig>) {
+        if (!c || !c.config || !c.runtime_config)
             return <></>;
-        
+
         return <>
             <FormRow label={__("energy_manager.status.mode")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
                 <div class="input-group">
-                    <Button
-                        className="form-control mr-2 rounded-right"
-                        variant={r.runtime_config.mode == 2 ? "primary" : "secondary"}
-                        onClick={() => this.change_mode(2)}>
-                        {__("energy_manager.status.mode_pv")}
-                    </Button>
+                    {c.config.excess_charging_enable ? <>
+                        <Button
+                            className="form-control mr-2 rounded-right"
+                            variant={c.runtime_config.mode == 2 ? "primary" : "secondary"}
+                            onClick={() => this.change_mode(2)}>
+                            {__("energy_manager.status.mode_pv")}
+                        </Button>
+                        <Button
+                            className="form-control mr-2 rounded-left rounded-right"
+                            variant={c.runtime_config.mode == 3 ? "primary" : "secondary"}
+                            onClick={() => this.change_mode(3)}>
+                            {__("energy_manager.status.mode_min_pv")}
+                        </Button>
+                    </>: <></>}
                     <Button
                         className="form-control mr-2 rounded-left rounded-right"
-                        variant={r.runtime_config.mode == 3 ? "primary" : "secondary"}
-                        onClick={() => this.change_mode(3)}>
-                        {__("energy_manager.status.mode_min_pv")}
-                    </Button>
-                    <Button
-                        className="form-control mr-2 rounded-left rounded-right"
-                        variant={r.runtime_config.mode == 0 ? "primary" : "secondary"}
+                        variant={c.runtime_config.mode == 0 ? "primary" : "secondary"}
                         onClick={() => this.change_mode(0)}>
                         {__("energy_manager.status.mode_fast")}
                     </Button>
                     <Button
                         className="form-control rounded-left"
-                        variant={r.runtime_config.mode == 1 ? "primary" : "secondary"}
+                        variant={c.runtime_config.mode == 1 ? "primary" : "secondary"}
                         onClick={() => this.change_mode(1)}>
                         {__("energy_manager.status.mode_off")}
                     </Button>
@@ -117,9 +124,12 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                     <FormRow label={__("energy_manager.content.default_mode")}>
                         <InputSelect
                             required
-                            items={[
+                            items={s.excess_charging_enable ? [
                                     ["2", __("energy_manager.status.mode_pv")],
                                     ["3", __("energy_manager.status.mode_min_pv")],
+                                    ["0", __("energy_manager.status.mode_fast")],
+                                    ["1", __("energy_manager.status.mode_off")],
+                                ] : [
                                     ["0", __("energy_manager.status.mode_fast")],
                                     ["1", __("energy_manager.status.mode_off")],
                                 ]
