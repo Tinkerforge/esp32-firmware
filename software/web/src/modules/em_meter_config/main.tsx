@@ -84,6 +84,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
                                         ["primary", __("em_meter_config.content.sdm_630")],
                                         ["primary", __("em_meter_config.content.sdm_72dmv2")],
                                         ["primary", __("em_meter_config.content.sdm_72ctm")],
+                                        ["primary", __("em_meter_config.content.sdm_630mctv2")],
                                     ]}/>
                             </FormRow>
 

@@ -148,7 +148,8 @@ void EnergyManager::setup()
         return;
     }
 
-    energy_manager_runtime_config.get("mode")->updateUint(energy_manager_config_in_use.get("default_mode")->asUint());
+    mode = energy_manager_config_in_use.get("default_mode")->asUint();
+    energy_manager_runtime_config.get("mode")->updateUint(mode);
 
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
     charge_manager.set_allocated_current_callback([this](uint32_t current_ma){
