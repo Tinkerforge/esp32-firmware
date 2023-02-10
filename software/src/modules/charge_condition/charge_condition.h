@@ -36,6 +36,9 @@ public:
     ConfigRoot config_in_use;
     ConfigRoot state;
 
+    ConfigRoot override_duration;
+    ConfigRoot override_energy;
+
     uint32_t duration_left;
     uint32_t energy_left;
     bool initialized = false;
