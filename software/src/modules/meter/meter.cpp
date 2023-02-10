@@ -135,6 +135,7 @@ void Meter::setupMeter(uint8_t meter_type)
     switch(meter_type) {
         case METER_TYPE_SDM630:
         case METER_TYPE_SDM72DMV2:
+        case METER_TYPE_SDM630MCTV2:
             api.addFeature("meter_phases");
             /* FALLTHROUGH*/
         case METER_TYPE_SDM72CTM:
