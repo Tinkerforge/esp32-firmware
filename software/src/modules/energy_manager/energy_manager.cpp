@@ -469,12 +469,26 @@ void EnergyManager::update_energy()
         prev_state = switching_state;
     }
 
-    if (contactor_check_tripped || !bricklet_reachable) {
+    if (!bricklet_reachable) {
         set_available_current(0);
         return;
     }
 
     if (switching_state == SwitchingState::Monitoring) {
+        if (contactor_check_tripped) {
+            set_available_current(0);
+
+            // The contactor check only detects a contactor defect when the contactor should be on.
+            // Switch contactor off when a defect is detected, to make sure that it's not energized.
+            if (all_data.contactor_value) {
+                logger.printfln("energy_manager: Switching off possibly defective contactor.");
+                wants_3phase = false;
+                switching_state = SwitchingState::Stopping;
+                switching_start = millis();
+            }
+            return;
+        }
+
         const bool     is_on = is_on_last;
         const uint32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt
 
