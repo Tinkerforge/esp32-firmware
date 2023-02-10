@@ -39,6 +39,7 @@
 #include "tools.h"
 #include "web_server.h"
 #include "modules.h"
+#include "../meter/meter.h"
 
 extern EventLog logger;
 
@@ -78,7 +79,7 @@ void EVSEV2::pre_setup()
         {"jumper_configuration", Config::Uint8(3)}, // 3 = 16 Ampere = 11KW for the EN+ wallbox
         {"has_lock_switch", Config::Bool(false)},   // no key lock switch
         {"evse_version", Config::Uint16(0)},
-        {"energy_meter_type", Config::Uint8(99)}
+        {"energy_meter_type", Config::Uint8(METER_TYPE_INTERNAL)}
     });
 
     evse_low_level_state = Config::Object ({

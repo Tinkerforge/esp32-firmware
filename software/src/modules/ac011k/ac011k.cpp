@@ -26,6 +26,7 @@
 #include "tools.h"
 #include "web_server.h"
 #include "modules.h"
+#include "../meter/meter.h"
 #include "ac011rtc.h"
 #include "ac011evse_v2.h"
 
@@ -900,7 +901,7 @@ void AC011K::setup() {
     sprintf((char*)StopChargingA6 +33, "%06d", transactionNumber);
     logger.printfln("Initial transaction number %05d", transactionNumber);
 
-    meter.updateMeterState(2, 99);
+    meter.updateMeterState(2, METER_TYPE_INTERNAL);
     logger.printfln("Internal meter enabeled");
 }
             
