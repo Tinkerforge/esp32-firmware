@@ -67,9 +67,13 @@ void EnergyManager::pre_setup()
         {"input3_config", Config::Uint8(0)},
         {"input3_config_limit", Config::Uint32(0)}, // in A
         {"input3_config_when", Config::Uint8(0)},
+        {"input3_config_rising_mode", Config::Uint(MODE_DO_NOTHING, 0, 255)},
+        {"input3_config_falling_mode", Config::Uint(MODE_DO_NOTHING, 0, 255)},
         {"input4_config", Config::Uint8(0)},
         {"input4_config_limit", Config::Uint32(0)}, // in A
         {"input4_config_when", Config::Uint8(0)},
+        {"input4_config_rising_mode", Config::Uint(MODE_DO_NOTHING, 0, 255)},
+        {"input4_config_falling_mode", Config::Uint(MODE_DO_NOTHING, 0, 255)},
     }), [](const Config &cfg) -> String {
         uint32_t switching_hysteresis_min = cfg.get("hysteresis_time")->asUint(); // minutes
         uint32_t hysteresis_wear_ok       = cfg.get("hysteresis_wear_accepted")->asBool();
@@ -158,10 +162,12 @@ void EnergyManager::setup()
     });
 #endif
 
+    update_all_data();
+
     // Set up output relay and input pins
     output = new OutputRelay(energy_manager_config_in_use);
-    input3 = new InputPin(3, 0, energy_manager_config_in_use);
-    input4 = new InputPin(4, 1, energy_manager_config_in_use);
+    input3 = new InputPin(3, 0, energy_manager_config_in_use, all_data.input[0]);
+    input4 = new InputPin(4, 1, energy_manager_config_in_use, all_data.input[1]);
 
     // Cache config for energy update
     excess_charging_enable          = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
@@ -276,13 +282,17 @@ void EnergyManager::register_urls()
 
     api.addState("energy_manager/runtime_config", &energy_manager_runtime_config, {}, 1000);
     api.addCommand("energy_manager/runtime_config_update", &energy_manager_runtime_config_update, {}, [this](){
-        mode = energy_manager_runtime_config_update.get("mode")->asUint();
+        uint32_t new_mode = energy_manager_runtime_config_update.get("mode")->asUint();
+
+        if (new_mode == MODE_DO_NOTHING)
+            return;
 
         auto runtime_mode = energy_manager_runtime_config.get("mode");
         uint32_t old_mode = runtime_mode->asUint();
-        runtime_mode->updateUint(mode);
+        runtime_mode->updateUint(new_mode);
+        mode = new_mode;
 
-        if (mode != old_mode)
+        if (new_mode != old_mode)
             just_switched_mode = true;
 
         logger.printfln("energy_manager: Switched mode %i->%i", old_mode, mode);
@@ -446,6 +456,13 @@ void EnergyManager::override_grid_draw(int32_t limit_w)
 void EnergyManager::override_guaranteed_power(uint32_t power_w)
 {
     guaranteed_power_w = power_w;
+}
+
+void EnergyManager::switch_mode(uint32_t new_mode)
+{
+    api.callCommand("energy_manager/runtime_config_update", Config::ConfUpdateObject{{
+        {"mode", new_mode}
+    }});
 }
 
 void EnergyManager::set_available_current(uint32_t current)

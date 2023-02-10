@@ -31,6 +31,7 @@
 #define MODE_OFF                        1
 #define MODE_PV                         2
 #define MODE_MIN_PV                     3
+#define MODE_DO_NOTHING                 255
 
 #define PHASE_SWITCHING_AUTOMATIC       0
 #define PHASE_SWITCHING_ALWAYS_1PHASE   1
@@ -64,6 +65,7 @@
 #define INPUT_CONFIG_CONTACTOR_CHECK    1
 #define INPUT_CONFIG_BLOCK_CHARGING     2
 #define INPUT_CONFIG_LIMIT_MAX_CURRENT  3
+#define INPUT_CONFIG_SWITCH_MODE        4
 
 #define INPUT_CONFIG_WHEN_HIGH          0
 #define INPUT_CONFIG_WHEN_LOW           1
@@ -131,6 +133,7 @@ public:
     void limit_max_current(uint32_t limit_ma);
     void override_grid_draw(int32_t limit_w);
     void override_guaranteed_power(uint32_t power_w);
+    void switch_mode(uint32_t new_mode);
 
     void setup_energy_manager();
     String get_energy_manager_debug_header();

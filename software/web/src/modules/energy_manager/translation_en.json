@@ -69,6 +69,11 @@
             "input_low": "Input low (open)",
             "input_high": "Input high (closed)",
             "phase_switching": "Phase switching",
+            "input_switch_mode": "Switch mode",
+            "input_when_closing": "When closing input",
+            "input_when_opening": "When opening input",
+            "input_switch_to": "Switch mode to",
+            "input_mode_nothing": "Don't switch mode",
 
             "expert_settings": "Expert settings",
             "target_power_from_grid": "Target grid power draw",

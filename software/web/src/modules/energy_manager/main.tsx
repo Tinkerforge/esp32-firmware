@@ -35,6 +35,8 @@ import { FormSeparator } from "src/ts/components/form_separator";
 import { Button, Collapse } from "react-bootstrap";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
 
+type StringStringTuple = [string, string];
+
 interface EnergyManagerState {
     state: API.getType['energy_manager/state'];
 }
@@ -117,6 +119,20 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         if (!s || !s.state)
             return <></>;
 
+        let mode_list: StringStringTuple[] = [];
+        if (s.excess_charging_enable) {
+            mode_list.push(["2", __("energy_manager.status.mode_pv")]);
+            mode_list.push(["3", __("energy_manager.status.mode_min_pv")]);
+        }
+        mode_list.push(["0", __("energy_manager.status.mode_fast")]);
+        mode_list.push(["1", __("energy_manager.status.mode_off")]);
+
+        let mode_list_for_inputs: StringStringTuple[] = [];
+        for (let tuple of mode_list) {
+            mode_list_for_inputs.push([tuple[0], __("energy_manager.content.input_switch_to") + " " + tuple[1]]);
+        }
+        mode_list_for_inputs.push(["255", __("energy_manager.content.input_mode_nothing")]);
+
         return (
             <>
                 <ConfigForm id="energy_manager_config_form" title={__("energy_manager.content.page_header")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
@@ -124,16 +140,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                     <FormRow label={__("energy_manager.content.default_mode")}>
                         <InputSelect
                             required
-                            items={s.excess_charging_enable ? [
-                                    ["2", __("energy_manager.status.mode_pv")],
-                                    ["3", __("energy_manager.status.mode_min_pv")],
-                                    ["0", __("energy_manager.status.mode_fast")],
-                                    ["1", __("energy_manager.status.mode_off")],
-                                ] : [
-                                    ["0", __("energy_manager.status.mode_fast")],
-                                    ["1", __("energy_manager.status.mode_off")],
-                                ]
-                            }
+                            items={mode_list}
                             value={s.default_mode}
                             onValue={(v) => this.setState({default_mode: parseInt(v)})}/>
                     </FormRow>
@@ -173,12 +180,12 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                         <InputSelect
                             required
                             items={s.contactor_installed ? [
-                                    ["0", __("energy_manager.content.automatic")],
-                                    ["1", __("energy_manager.content.always_one_phase")],
-                                    ["2", __("energy_manager.content.always_three_phases")],
-                                ] : [
-                                    ["1", __("energy_manager.content.fixed_one_phase")],
-                                    ["2", __("energy_manager.content.fixed_three_phases")],
+                                ["0", __("energy_manager.content.automatic")],
+                                ["1", __("energy_manager.content.always_one_phase")],
+                                ["2", __("energy_manager.content.always_three_phases")],
+                            ] : [
+                                ["1", __("energy_manager.content.fixed_one_phase")],
+                                ["2", __("energy_manager.content.fixed_three_phases")],
                                 ]
                             }
                             value={s.phase_switching_mode}
@@ -267,6 +274,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                     ["0", __("energy_manager.content.input_unused")],
                                     ["2", __("energy_manager.content.block_charging")],
                                     ["3", __("energy_manager.content.limit_max_current")],
+                                    ["4", __("energy_manager.content.input_switch_mode")],
                                 ]
                             }
                             value={s.input3_config}
@@ -276,16 +284,20 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
                     <Collapse in={s.input3_config >= 2}>
                         <div>
-                            <FormRow label={__("energy_manager.content.input_when")}>
-                                <InputSelect
-                                    required={s.input3_config >= 2}
-                                    items={[
-                                            ["0", __("energy_manager.content.input_high")],
-                                            ["1", __("energy_manager.content.input_low")],
-                                        ]}
-                                    value={s.input3_config_when}
-                                    onValue={(v) => this.setState({input3_config_when: parseInt(v)})}/>
-                            </FormRow>
+                            <Collapse in={s.input3_config == 2 || s.input3_config == 3}>
+                                <div>
+                                    <FormRow label={__("energy_manager.content.input_when")}>
+                                        <InputSelect
+                                            required={s.input3_config == 2 || s.input3_config == 3}
+                                            items={[
+                                                ["0", __("energy_manager.content.input_high")],
+                                                ["1", __("energy_manager.content.input_low")],
+                                            ]}
+                                            value={s.input3_config_when}
+                                            onValue={(v) => this.setState({ input3_config_when: parseInt(v) })} />
+                                    </FormRow>
+                                </div>
+                            </Collapse>
 
                             <Collapse in={s.input3_config == 3}>
                                 <div>
@@ -301,6 +313,24 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                     </FormRow>
                                 </div>
                             </Collapse>
+                            <Collapse in={s.input3_config == 4}>
+                                <div>
+                                    <FormRow label={__("energy_manager.content.input_when_closing")}>
+                                        <InputSelect
+                                            required={s.input3_config == 4}
+                                            items={mode_list_for_inputs}
+                                            value={s.input3_config_rising_mode}
+                                            onValue={(v) => this.setState({ input3_config_rising_mode: parseInt(v) })} />
+                                    </FormRow>
+                                    <FormRow label={__("energy_manager.content.input_when_opening")}>
+                                        <InputSelect
+                                            required={s.input3_config == 4}
+                                            items={mode_list_for_inputs}
+                                            value={s.input3_config_falling_mode}
+                                            onValue={(v) => this.setState({ input3_config_falling_mode: parseInt(v) })} />
+                                    </FormRow>
+                                </div>
+                            </Collapse>
                         </div>
                     </Collapse>
 
@@ -313,6 +343,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                     ["0", __("energy_manager.content.input_unused")],
                                     ["2", __("energy_manager.content.block_charging")],
                                     ["3", __("energy_manager.content.limit_max_current")],
+                                    ["4", __("energy_manager.content.input_switch_mode")],
                                 ]
                             }
                             value={s.input4_config}
@@ -321,16 +352,20 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
                     <Collapse in={s.input4_config >= 2}>
                         <div>
-                            <FormRow label={__("energy_manager.content.input_when")}>
-                                <InputSelect
-                                    required={s.input4_config >= 2}
-                                    items={[
-                                            ["0", __("energy_manager.content.input_high")],
-                                            ["1", __("energy_manager.content.input_low")],
-                                        ]}
-                                    value={s.input4_config_when}
-                                    onValue={(v) => this.setState({input4_config_when: parseInt(v)})}/>
-                            </FormRow>
+                            <Collapse in={s.input4_config == 2 || s.input4_config == 3}>
+                                <div>
+                                    <FormRow label={__("energy_manager.content.input_when")}>
+                                        <InputSelect
+                                            required={s.input4_config == 2 || s.input4_config == 3}
+                                            items={[
+                                                ["0", __("energy_manager.content.input_high")],
+                                                ["1", __("energy_manager.content.input_low")],
+                                            ]}
+                                            value={s.input4_config_when}
+                                            onValue={(v) => this.setState({ input4_config_when: parseInt(v) })} />
+                                    </FormRow>
+                                </div>
+                            </Collapse>
 
                             <Collapse in={s.input4_config == 3}>
                                 <div>
@@ -343,6 +378,24 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                             min={0}
                                             max={125}
                                             />
+                                    </FormRow>
+                                </div>
+                            </Collapse>
+                            <Collapse in={s.input4_config == 4}>
+                                <div>
+                                    <FormRow label={__("energy_manager.content.input_when_closing")}>
+                                        <InputSelect
+                                            required={s.input4_config == 4}
+                                            items={mode_list_for_inputs}
+                                            value={s.input4_config_rising_mode}
+                                            onValue={(v) => this.setState({ input4_config_rising_mode: parseInt(v) })} />
+                                    </FormRow>
+                                    <FormRow label={__("energy_manager.content.input_when_opening")}>
+                                        <InputSelect
+                                            required={s.input4_config == 4}
+                                            items={mode_list_for_inputs}
+                                            value={s.input4_config_falling_mode}
+                                            onValue={(v) => this.setState({ input4_config_falling_mode: parseInt(v) })} />
                                     </FormRow>
                                 </div>
                             </Collapse>

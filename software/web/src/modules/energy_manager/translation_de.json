@@ -69,6 +69,11 @@
             "input_low": "Eingang low (offen)",
             "input_high": "Eingang high (geschlossen)",
             "phase_switching": "Phasenumschaltung",
+            "input_switch_mode": "Moduswechsel",
+            "input_when_closing": "Beim Schließen des Eingangs",
+            "input_when_opening": "Beim Öffnen des Eingangs",
+            "input_switch_to": "Wechsle Modus zu",
+            "input_mode_nothing": "Modus nicht wechseln",
 
             "expert_settings": "Experteneinstellungen",
             "target_power_from_grid": "Soll-Netzbezug",

@@ -26,9 +26,13 @@ export interface config {
     input3_config: number,
     input3_config_limit: number,
     input3_config_when: number,
+    input3_config_rising_mode: number,
+    input3_config_falling_mode: number,
     input4_config: number,
     input4_config_limit: number,
-    input4_config_when: number
+    input4_config_when: number,
+    input4_config_rising_mode: number,
+    input4_config_falling_mode: number
 }
 
 export interface runtime_config {
