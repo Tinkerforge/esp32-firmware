@@ -21,129 +21,134 @@ extern API api;
 #define BUTTON T9
 
 void evse_v2_button_recovery_handler() {
-    //uint32_t start = millis();
+    uint32_t start = millis();
 
-    pinMode(GREEN_LED, OUTPUT);
-    pinMode(BLUE_LED, OUTPUT);
+    /* pinMode(GREEN_LED, OUTPUT); */
+    /* pinMode(BLUE_LED, OUTPUT); */
+    /* pinMode(BUTTON, INPUT); */
 
-    //uint32_t button_press_time = BUTTON_IS_PRESSED;
-    //bool first = true;
+//    uint32_t button_press_time = BUTTON_IS_PRESSED;
+//    bool first = true;
+//    while(button_press_time == BUTTON_IS_PRESSED && !deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
+//        /* if (!touchRead(BUTTON)) { */
+//        /*     button_press_time = millis() - start; */
+//        /* } */
+//        // Handle first boot with new firmware (i.e. the firmware supporting get_button_press_boot_time is not flashed yet)
+//        /*
+//        if (tf_evse_v2_get_button_press_boot_time(&evse, false, &button_press_time) == TF_E_NOT_SUPPORTED) {
+//            button_press_time = 0;
+//            break;
+//        }
+//        */
+// 
+//        if (first && button_press_time == BUTTON_IS_PRESSED) {
+//            logger.printfln("Button is pressed. Waiting for release.");
+//            first = false;
+//        } else {
+//            led_blink(BLUE_LED, 200, 1, 0);
+//            led_blink(GREEN_LED, 200, 1, 0);
+//        }
+//    }
+// 
+//    if (button_press_time < 100)
+//        return;
+// 
+//    if (deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
+//        logger.printfln("Button is pressed for more than %d seconds. Assuming this must be an error. Continuing normal boot.", BUTTON_MAX_PRESS_THRES);
+//        return;
+//    }
+// 
+//    if (deadline_elapsed(start + BUTTON_MIN_PRESS_THRES)) {
+//        logger.printfln("Button was pressed for less than %d seconds. Continuing normal boot.", BUTTON_MIN_PRESS_THRES);
+//        return;
+//    }
+// 
+//    logger.printfln("Button was pressed for %.3f seconds on EVSE startup. Starting recovery routine.", button_press_time / 1000.0);
+// 
+//    uint8_t stage = 0;
 
-    //logger.printfln("Factory reset ...");
-    
-    /* while(button_press_time == BUTTON_IS_PRESSED && !deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) { */
-    /*     // Handle first boot with new firmware (i.e. the firmware supporting get_button_press_boot_time is not flashed yet) */
-    /*     if (tf_evse_v2_get_button_press_boot_time(&evse, false, &button_press_time) == TF_E_NOT_SUPPORTED) { */
-    /*         button_press_time = 0; */
-    /*         break; */
-    /*     } */
+    /*
+    struct FactoryResetData {
+        uint8_t stage:4;
+        uint32_t magic:28;
+        uint32_t uptime; // only for entropy
+        uint16_t padding;
+        uint16_t checksum;
+    };
 
-    /*     if (first && button_press_time == BUTTON_IS_PRESSED) { */
-    /*         logger.printfln("Button is pressed. Waiting for release."); */
-    /*         first = false; */
-    /*     } else { */
-    /*         led_blink(BLUE_LED, 200, 1, 0); */
-    /*         led_blink(GREEN_LED, 200, 1, 0); */
-    /*     } */
-    /* } */
+    uint8_t buf[63] = {0};
+    tf_evse_v2_get_data_storage(&evse, DATA_STORE_PAGE_RECOVERY, buf);
 
-    /* if (button_press_time == 0) */
-    /*     return; */
+    if (internet_checksum(buf, sizeof(FactoryResetData)) != 0) {
+        logger.printfln("Checksum mismatch while reading recovery info from EVSE RAM. Assuming stage 0.");
+        stage = 0;
+    }
+    else {
+        FactoryResetData data;
+        memcpy(&data, buf, sizeof(data));
+        if (data.magic != 0x0BADB007 || data.uptime > 30000 || data.stage > 3)
+            stage = 0;
+        else
+            stage = data.stage;
+    }
 
-    /* if (deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) { */
-    /*     logger.printfln("Button is pressed for more than 30 seconds. Assuming charger runs with front plate removed. Continuing normal boot."); */
-    /*     return; */
-    /* } */
+    logger.printfln("Requested recovery stage %u.", stage);
 
-    /* if (button_press_time < BUTTON_MIN_PRESS_THRES || button_press_time > BUTTON_MAX_PRESS_THRES){ */
-    /*     logger.printfln("Button was pressed for more %s. Continuing normal boot.", (button_press_time < BUTTON_MIN_PRESS_THRES) ? "less than 10 seconds" : "more than 30 seconds"); */
-    /*     return; */
-    /* } */
+    if (stage != 3) {
+        logger.printfln("Writing request for stage %u into EVSE RAM in case this boot-up fails.", stage + 1);
 
-    /* logger.printfln("Button was pressed for %.3f seconds on EVSE startup. Starting recovery routine.", button_press_time / 1000.0); */
+        FactoryResetData data;
+        data.stage = stage + 1;
+        data.magic = FACTORY_RESET_DATA_MAGIC;
+        data.uptime = millis();
+        data.padding = 0;
+        data.checksum = 0;
+        memcpy(buf, &data, sizeof(data));
+        data.checksum = internet_checksum(buf, sizeof(data));
 
-    /* uint8_t stage = 0; */
+        memcpy(buf, &data, sizeof(data));
+        tf_evse_v2_set_data_storage(&evse, DATA_STORE_PAGE_RECOVERY, buf);
+    }
 
-    /* struct FactoryResetData { */
-    /*     uint8_t stage:4; */
-    /*     uint32_t magic:28; */
-    /*     uint32_t uptime; // only for entropy */
-    /*     uint16_t padding; */
-    /*     uint16_t checksum; */
-    /* }; */
+    tf_evse_v2_destroy(&evse);
+    tf_hal_destroy(&hal);
 
-    /* uint8_t buf[63] = {0}; */
-    /* tf_evse_v2_get_data_storage(&evse, DATA_STORE_PAGE_RECOVERY, buf); */
+    switch (stage) {
+        // Stage 0 - User can't reach the web interface anymore. Remove network configuration and disable http_auth.
+        case 0:
+            logger.printfln("Running stage 0: Resetting network configuration and disabling web interface login");
 
-    /* if (internet_checksum(buf, sizeof(FactoryResetData)) != 0) { */
-    /*     logger.printfln("Checksum mismatch while reading recovery info from EVSE RAM. Assuming stage 0."); */
-    /*     stage = 0; */
-    /* } */
-    /* else { */
-    /*     FactoryResetData data; */
-    /*     memcpy(&data, buf, sizeof(data)); */
-    /*     if (data.magic != 0x0BADB007 || data.uptime > 30000 || data.stage > 3) */
-    /*         stage = 0; */
-    /*     else */
-    /*         stage = data.stage; */
-    /* } */
+            mount_or_format_spiffs();
+            api.restorePersistentConfig("users/config", &users.user_config);
+            users.user_config.get("http_auth_enabled")->updateBool(false);
+            api.writeConfig("users/config", &users.user_config);
 
-    /* logger.printfln("Requested recovery stage %u.", stage); */
-
-    /* if (stage != 3) { */
-    /*     logger.printfln("Writing request for stage %u into EVSE RAM in case this boot-up fails.", stage + 1); */
-
-    /*     FactoryResetData data; */
-    /*     data.stage = stage + 1; */
-    /*     data.magic = FACTORY_RESET_DATA_MAGIC; */
-    /*     data.uptime = millis(); */
-    /*     data.padding = 0; */
-    /*     data.checksum = 0; */
-    /*     memcpy(buf, &data, sizeof(data)); */
-    /*     data.checksum = internet_checksum(buf, sizeof(data)); */
-
-    /*     memcpy(buf, &data, sizeof(data)); */
-    /*     tf_evse_v2_set_data_storage(&evse, DATA_STORE_PAGE_RECOVERY, buf); */
-    /* } */
-
-    /* tf_evse_v2_destroy(&evse); */
-    /* tf_hal_destroy(&hal); */
-
-    /* switch (stage) { */
-    /*     // Stage 0 - User can't reach the web interface anymore. Remove network configuration and disable http_auth. */
-    /*     case 0: */
-    /*         logger.printfln("Running stage 0: Resetting network configuration and disabling web interface login"); */
-
-    /*         mount_or_format_spiffs(); */
-    /*         api.restorePersistentConfig("users/config", &users.user_config); */
-    /*         users.user_config.get("http_auth_enabled")->updateBool(false); */
-    /*         api.writeConfig("users/config", &users.user_config); */
-
-    /*         api.removeConfig("ethernet/config"); */
-    /*         api.removeConfig("wifi/sta_config"); */
-    /*         api.removeConfig("wifi/ap_config"); */
-    /*         logger.printfln("Stage 0 done"); */
-    /*         break; */
-    /*     // Stage 1 - ESP crashed when booting after stage 0. Remove all configuration */
-    /*     case 1: */
-    /*         logger.printfln("Running stage 1: Removing configuration but keeping charge log."); */
-    /*         mount_or_format_spiffs(); */
-    /*         api.removeAllConfig(); */
-    /*         logger.printfln("Stage 1 done"); */
-    /*         break; */
-    /*     // Stage 2 - ESP still crashed. Format data partition. (This also removes tracked charges and the username file) */
-    /*     case 2: */
-    /*         logger.printfln("Running stage 2: Formatting data partition"); */
-    /*         LittleFS.begin(false, "/spiffs", 10, "spiffs"); */
-    /*         LittleFS.format(); */
-    /*         LittleFS.end(); */
-    /*         logger.printfln("Stage 2 done"); */
-    /*         break; */
-    /*     // Stage 3 - ESP still crashed after formatting the data partition. The firmware is unrecoverably broken. To prevent a fast boot loop, delay here. */
-    /*     case 3: */
-    /*         logger.printfln("Running stage 3: Firmware is probably broken. Delaying next crash for a minute."); */
-    /*         delay(60 * 1000); */
-    /*         logger.printfln("Stage 3 done"); */
-    /*         break; */
-    /* } */
+            api.removeConfig("ethernet/config");
+            api.removeConfig("wifi/sta_config");
+            api.removeConfig("wifi/ap_config");
+            logger.printfln("Stage 0 done");
+            break;
+        // Stage 1 - ESP crashed when booting after stage 0. Remove all configuration
+        case 1:
+            logger.printfln("Running stage 1: Removing configuration but keeping charge log.");
+            mount_or_format_spiffs();
+            api.removeAllConfig();
+            logger.printfln("Stage 1 done");
+            break;
+        // Stage 2 - ESP still crashed. Format data partition. (This also removes tracked charges and the username file)
+        case 2:
+            logger.printfln("Running stage 2: Formatting data partition");
+            LittleFS.begin(false, "/spiffs", 10, "spiffs");
+            LittleFS.format();
+            LittleFS.end();
+            logger.printfln("Stage 2 done");
+            break;
+        // Stage 3 - ESP still crashed after formatting the data partition. The firmware is unrecoverably broken. To prevent a fast boot loop, delay here.
+        case 3:
+            logger.printfln("Running stage 3: Firmware is probably broken. Delaying next crash for a minute.");
+            delay(60 * 1000);
+            logger.printfln("Stage 3 done");
+            break;
+    }
+    */
 }
