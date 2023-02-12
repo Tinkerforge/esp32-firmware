@@ -10,63 +10,67 @@ extern API api;
 #include "modules.h"
 
 #define BUTTON_MIN_PRESS_THRES 10000
+#define BUTTON_STAGE_0_PRESS_THRES 15000
+#define BUTTON_STAGE_1_PRESS_THRES 20000
+#define BUTTON_STAGE_2_PRESS_THRES 25000
 #define BUTTON_MAX_PRESS_THRES 30000
-#define BUTTON_IS_PRESSED 0xFFFFFFFF
-#define FACTORY_RESET_DATA_MAGIC 0x0BADB007; //stage is written over the first 0. so this counts the number of bad boot(-up)s.
 
-//#include "../ac011k_hardware/ac011k_hardware.h"
-
-#define GREEN_LED 25
-#define BLUE_LED 33
-#define BUTTON T9
+#include "../ac011k_hardware/ac011k_hardware.h"
 
 void evse_v2_button_recovery_handler() {
     uint32_t start = millis();
 
-    /* pinMode(GREEN_LED, OUTPUT); */
-    /* pinMode(BLUE_LED, OUTPUT); */
-    /* pinMode(BUTTON, INPUT); */
+    pinMode(GREEN_LED, OUTPUT);
+    pinMode(RED_LED, OUTPUT);
+    pinMode(BUTTON, INPUT);
+    digitalWrite(GREEN_LED, HIGH);
+    digitalWrite(RED_LED, HIGH);
 
-//    uint32_t button_press_time = BUTTON_IS_PRESSED;
-//    bool first = true;
-//    while(button_press_time == BUTTON_IS_PRESSED && !deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
-//        /* if (!touchRead(BUTTON)) { */
-//        /*     button_press_time = millis() - start; */
-//        /* } */
-//        // Handle first boot with new firmware (i.e. the firmware supporting get_button_press_boot_time is not flashed yet)
-//        /*
-//        if (tf_evse_v2_get_button_press_boot_time(&evse, false, &button_press_time) == TF_E_NOT_SUPPORTED) {
-//            button_press_time = 0;
-//            break;
-//        }
-//        */
-// 
-//        if (first && button_press_time == BUTTON_IS_PRESSED) {
-//            logger.printfln("Button is pressed. Waiting for release.");
-//            first = false;
-//        } else {
-//            led_blink(BLUE_LED, 200, 1, 0);
-//            led_blink(GREEN_LED, 200, 1, 0);
-//        }
-//    }
-// 
-//    if (button_press_time < 100)
-//        return;
-// 
-//    if (deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
-//        logger.printfln("Button is pressed for more than %d seconds. Assuming this must be an error. Continuing normal boot.", BUTTON_MAX_PRESS_THRES);
-//        return;
-//    }
-// 
-//    if (deadline_elapsed(start + BUTTON_MIN_PRESS_THRES)) {
-//        logger.printfln("Button was pressed for less than %d seconds. Continuing normal boot.", BUTTON_MIN_PRESS_THRES);
-//        return;
-//    }
-// 
-//    logger.printfln("Button was pressed for %.3f seconds on EVSE startup. Starting recovery routine.", button_press_time / 1000.0);
-// 
-//    uint8_t stage = 0;
+    uint8_t stage = 0;
+    bool first = true;
+    bool btn = digitalRead(BUTTON);
 
+    while(btn == LOW && !deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
+        btn = digitalRead(BUTTON);
+ 
+        if (first) {
+            logger.printfln("Button SW3 is pressed. Waiting for release.");
+            first = false;
+            digitalWrite(GREEN_LED, LOW);
+        }
+        if (deadline_elapsed(start + BUTTON_MIN_PRESS_THRES) && !deadline_elapsed(start + BUTTON_STAGE_0_PRESS_THRES)) {
+            led_blink(GREEN_LED, 200, 1, 0);
+            stage = 0;
+        }
+        if (deadline_elapsed(start + BUTTON_STAGE_0_PRESS_THRES) && !deadline_elapsed(start + BUTTON_STAGE_1_PRESS_THRES)) {
+            led_blink(GREEN_LED, 200, 1, 0);
+            led_blink(RED_LED, 200, 1, 0);
+            stage = 1;
+        }
+        if (deadline_elapsed(start + BUTTON_STAGE_1_PRESS_THRES) && !deadline_elapsed(start + BUTTON_STAGE_2_PRESS_THRES)) {
+            digitalWrite(GREEN_LED, HIGH);
+            led_blink(RED_LED, 200, 1, 0);
+            stage = 2;
+        }
+        if (deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
+            digitalWrite(RED_LED, HIGH);
+            logger.printfln("Button SW3 is pressed for more than %.3f seconds. Assuming this must be an error. Continuing normal boot.", BUTTON_MAX_PRESS_THRES / 1000.0);
+            return;
+        }
+    }
+ 
+    if (!deadline_elapsed(start + 10)) {
+        // we considder this as no button press
+        return;
+    }
+ 
+    if (!deadline_elapsed(start + BUTTON_MIN_PRESS_THRES)) {
+        logger.printfln("Button SW3 was pressed for less than %.3f seconds. Continuing normal boot.", BUTTON_MIN_PRESS_THRES / 1000.0);
+        return;
+    }
+ 
+    logger.printfln("Button SW3 was pressed for %.3f seconds on startup. Starting recovery routine.", (millis() - start) / 1000.0);
+ 
     /*
     struct FactoryResetData {
         uint8_t stage:4;

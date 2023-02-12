@@ -22,6 +22,10 @@
 
 #include "config.h"
 
+#define GREEN_LED 25
+#define RED_LED 33
+#define BUTTON 32
+
 class AC011KHardware {
 public:
     AC011KHardware();

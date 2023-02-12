@@ -27,11 +27,6 @@
 
 extern TaskScheduler task_scheduler;
 
-#define GREEN_LED 25
-#define BLUE_LED 33
-//#define BUTTON T9
-#define BUTTON 32
-
 extern uint32_t uid_numeric;
 extern char uid[7];
 extern char passphrase[20];
@@ -81,18 +76,18 @@ void AC011KHardware::persist_config()
 void AC011KHardware::setup()
 {
     pinMode(GREEN_LED, OUTPUT);
-    pinMode(BLUE_LED, OUTPUT);
+    pinMode(RED_LED, OUTPUT);
     pinMode(BUTTON, INPUT);
 
     green_led_pin = GREEN_LED;
-    blue_led_pin = BLUE_LED;
+    blue_led_pin = RED_LED;
     button_pin = BUTTON;
 
-    /* task_scheduler.scheduleWithFixedDelay([](){ */
-    /*     static bool led_blink_state = false; */
-    /*     led_blink_state = !led_blink_state; */
-    /*     digitalWrite(BLUE_LED, led_blink_state ? HIGH : LOW); */
-    /* }, 0, 1000); */
+    task_scheduler.scheduleWithFixedDelay([](){
+        static bool led_blink_state = false;
+        led_blink_state = !led_blink_state;
+        digitalWrite(GREEN_LED, led_blink_state ? HIGH : LOW);
+    }, 0, 1000);
 
     api.restorePersistentConfig("ac011k_hardware/config", &config);
     api.restorePersistentConfig("ac011k_hardware/meter", &meter);
@@ -117,27 +112,24 @@ void AC011KHardware::register_urls()
 
 void AC011KHardware::loop()
 {
-    static int last_btn_value = 0;
+    static int last_btn_value = HIGH;
     static uint32_t last_btn_change = 0;
 
-    //int btn = touchRead(BUTTON);
     bool btn = digitalRead(BUTTON);
-    /* if (!factory_reset_requested) { */
-    /*     //digitalWrite(GREEN_LED, btn); */
-    /*     digitalWrite(BLUE_LED, btn); */
-    /* } */
+    if (!factory_reset_requested) {
+        digitalWrite(RED_LED, btn);
+    }
 
-    if (last_btn_change == 0) logger.printfln("Button SW3 changed state to %d.", btn);
     if (btn != last_btn_value) {
         last_btn_change = millis();
-        logger.printfln("Button SW3 changed state to %d.", btn);
+        logger.printfln("Button SW3 changed state to: %s.", (btn == HIGH) ? "high" : "low" );
     }
 
     last_btn_value = btn;
 
-    /* if (!btn && deadline_elapsed(last_btn_change + 10000)) { */
-    /*     logger.printfln("IO0 button was pressed for 10 seconds. Resetting to factory defaults."); */
-    /*     last_btn_change = millis(); */
-    /*     factory_reset_requested = true; */
-    /* } */
+    if (!btn && deadline_elapsed(last_btn_change + 10000)) {
+        logger.printfln("Button SW3 was pressed for 10 seconds. Resetting to factory defaults.");
+        last_btn_change = millis();
+        factory_reset_requested = true;
+    }
 }
