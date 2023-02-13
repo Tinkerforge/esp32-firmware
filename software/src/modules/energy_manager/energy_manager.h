@@ -131,8 +131,6 @@ public:
     void update_all_data();
 
     void limit_max_current(uint32_t limit_ma);
-    void override_grid_draw(int32_t limit_w);
-    void override_guaranteed_power(uint32_t power_w);
     void switch_mode(uint32_t new_mode);
 
     void setup_energy_manager();
@@ -198,14 +196,12 @@ private:
     uint32_t phase_state_change_blocked_until;
     uint32_t on_state_change_blocked_until;
     uint32_t charge_manager_allocated_current_ma;
-    uint32_t guaranteed_power_w;
     uint32_t max_current_limited_ma;
-    int32_t  target_power_from_grid_w;
     int32_t  power_available_w;
 
     // Config cache
-    int32_t  target_power_from_grid_conf_w;
-    uint32_t guaranteed_power_conf_w;
+    int32_t  target_power_from_grid_w;
+    uint32_t guaranteed_power_w;
     bool     contactor_installed;
     uint8_t  phase_switching_mode;
     uint32_t switching_hysteresis_ms;

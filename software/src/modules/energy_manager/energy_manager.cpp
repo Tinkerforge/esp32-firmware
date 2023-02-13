@@ -170,15 +170,15 @@ void EnergyManager::setup()
     input4 = new InputPin(4, 1, energy_manager_config_in_use, all_data.input[1]);
 
     // Cache config for energy update
-    excess_charging_enable          = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
-    target_power_from_grid_conf_w   = energy_manager_config_in_use.get("target_power_from_grid")->asInt();          // watt
-    guaranteed_power_conf_w         = energy_manager_config_in_use.get("guaranteed_power")->asUint();               // watt
-    contactor_installed             = energy_manager_config_in_use.get("contactor_installed")->asBool();
-    phase_switching_mode            = energy_manager_config_in_use.get("phase_switching_mode")->asUint();
-    switching_hysteresis_ms         = energy_manager_config_in_use.get("hysteresis_time")->asUint() * 60 * 1000;    // milliseconds (from minutes)
-    hysteresis_wear_ok              = energy_manager_config_in_use.get("hysteresis_wear_accepted")->asBool();
-    max_current_unlimited_ma        = charge_manager.charge_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
-    min_current_ma                  = charge_manager.charge_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
+    excess_charging_enable      = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
+    target_power_from_grid_w    = energy_manager_config_in_use.get("target_power_from_grid")->asInt();          // watt
+    guaranteed_power_w          = energy_manager_config_in_use.get("guaranteed_power")->asUint();               // watt
+    contactor_installed         = energy_manager_config_in_use.get("contactor_installed")->asBool();
+    phase_switching_mode        = energy_manager_config_in_use.get("phase_switching_mode")->asUint();
+    switching_hysteresis_ms     = energy_manager_config_in_use.get("hysteresis_time")->asUint() * 60 * 1000;    // milliseconds (from minutes)
+    hysteresis_wear_ok          = energy_manager_config_in_use.get("hysteresis_wear_accepted")->asBool();
+    max_current_unlimited_ma    = charge_manager.charge_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
+    min_current_ma              = charge_manager.charge_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
 
     // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
     uint32_t hysteresis_min_ms = hysteresis_wear_ok ? 10 * 1000 : HYSTERESIS_MIN_TIME_MINUTES * 60 * 1000;  // milliseconds
@@ -428,8 +428,6 @@ void EnergyManager::update_io()
 
     // Restore values that can be changed by input pins.
     max_current_limited_ma      = max_current_unlimited_ma;
-    target_power_from_grid_w    = target_power_from_grid_conf_w;
-    guaranteed_power_w          = guaranteed_power_conf_w;
 
     input3->update(all_data.input[0]);
     input4->update(all_data.input[1]);
@@ -446,16 +444,6 @@ void EnergyManager::limit_max_current(uint32_t limit_ma)
 {
     if (max_current_limited_ma > limit_ma)
         max_current_limited_ma = limit_ma;
-}
-
-void EnergyManager::override_grid_draw(int32_t limit_w)
-{
-    target_power_from_grid_w = limit_w;
-}
-
-void EnergyManager::override_guaranteed_power(uint32_t power_w)
-{
-    guaranteed_power_w = power_w;
 }
 
 void EnergyManager::switch_mode(uint32_t new_mode)
@@ -689,8 +677,8 @@ void EnergyManager::update_energy()
             static uint32_t last_print = 0;
             last_print = (last_print + 1) % print_every;
             if (last_print == 0)
-                logger.printfln("mode %u | power_at_meter_w %i | target_power_from_grid_w %i | power_available_w %i | wants_3phase %i | is_3phase %i | is_on %i | max_current_limited_ma %u | cm avail ma %u | cm alloc ma %u",
-                    mode, power_at_meter_w, target_power_from_grid_w, power_available_w, wants_3phase, is_3phase, is_on, max_current_limited_ma, charge_manager.charge_manager_available_current.get("current")->asUint(), charge_manager_allocated_current_ma);
+                logger.printfln("mode %u | power_at_meter_w %i | power_available_w %i | wants_3phase %i | is_3phase %i | is_on %i | max_current_limited_ma %u | cm avail ma %u | cm alloc ma %u",
+                    mode, power_at_meter_w, power_available_w, wants_3phase, is_3phase, is_on, max_current_limited_ma, charge_manager.charge_manager_available_current.get("current")->asUint(), charge_manager_allocated_current_ma);
         }
     } else if (switching_state == SwitchingState::Stopping) {
         set_available_current(0);
@@ -750,7 +738,7 @@ void EnergyManager::get_sdcard_info(struct sdcard_info *data)
     check_bricklet_reachable(rc);
 
     if (rc != TF_E_OK)
-        logger.printfln("energy_manager: Failed to get SD card information.");
+        logger.printfln("energy_manager: Failed to get SD card information. Error %i", rc);
 
     static uint32_t time_max = 1000;
     time = micros() - time;

@@ -25,8 +25,6 @@ util.embed_bricklet_firmware_bin()
 debug_log_variables = [
             "charge_manager_allocated_current_ma",
             "max_current_limited_ma",
-            "guaranteed_power_w",
-            "target_power_from_grid_w",
             "power_at_meter_w",
             "power_available_w",
             "",

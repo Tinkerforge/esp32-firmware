@@ -88,23 +88,10 @@ void InputPin::block_charging(bool level)
     *(uint8_t*)out_dst = level ^ invert_pin;
 }
 
-// TODO remove?
-void InputPin::switch_excess_charging(bool level)
-{
-    *(bool*)out_dst = level ^ invert_pin;
-}
-
 void InputPin::limit_max_current(bool level)
 {
     if (level ^ invert_pin)
         energy_manager.limit_max_current((uint32_t)limit_ma);
-}
-
-// TODO remove?
-void InputPin::override_grid_draw(bool level)
-{
-    if (level ^ invert_pin)
-        energy_manager.override_grid_draw(limit_ma);
 }
 
 void InputPin::switch_mode(bool level)
