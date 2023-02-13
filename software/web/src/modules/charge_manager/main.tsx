@@ -24,7 +24,7 @@ import feather from "../../ts/feather";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render, Fragment } from "preact";
+import { h, render, Fragment, Component, Attributes, ComponentChild, ComponentChildren, Ref } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -38,6 +38,7 @@ import { InputFloat } from "src/ts/components/input_float";
 import { ItemModal } from "src/ts/components/item_modal";
 import { Switch } from "src/ts/components/switch";
 import { config } from "./api";
+import { IndicatorGroup } from "src/ts/components/indicator_group";
 
 type ChargeManagerConfig = API.getType['charge_manager/config'];
 type ChargerConfig = ChargeManagerConfig["chargers"][0];
@@ -58,7 +59,6 @@ interface ChargeManagerState {
     scanResult: Readonly<ScanCharger[]>
     energyManagerMode: boolean
 }
-
 
 
 export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, ChargeManagerState> {
@@ -485,124 +485,110 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
 render(<ChargeManager/>, $('#charge_manager')[0]);
 
-let charger_state_count = -1;
+interface ChargeManagerStatusState {
+    state: API.getType['charge_manager/state']
+    available_current: API.getType['charge_manager/available_current']
+    config: API.getType['charge_manager/config']
+}
 
-function update_charge_manager_state() {
-    let state = API.get('charge_manager/state');
+export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState> {
+    constructor() {
+        super();
 
-    if (state.chargers.length != charger_state_count) {
-        let charger_status = "";
-        for (let i = 0; i < state.chargers.length; i++) {
-            if (i % 2 == 0) {
-                if (i != 0) {
-                    charger_status += '</div>';
+        util.eventTarget.addEventListener('charge_manager/state', () => {
+            this.setState({state: API.get_maybe('charge_manager/state')})
+        });
+
+        util.eventTarget.addEventListener('charge_manager/available_current', () => {
+            this.setState({available_current: API.get_maybe('charge_manager/available_current')})
+        });
+
+        util.eventTarget.addEventListener('charge_manager/config', () => {
+            this.setState({config: API.get_maybe('charge_manager/config')})
+        });
+    }
+
+    render(props: {}, state: Readonly<ChargeManagerStatusState>) {
+        if (!state || !state.config || !state.config.enable_charge_manager)
+            return <></>;
+
+        return <>
+            <FormRow label={__("charge_manager.status.charge_manager")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                <IndicatorGroup
+                    style="width: 100%"
+                    class="flex-wrap"
+                    value={state.state.state}
+                    items={[
+                        ["primary", __("charge_manager.status.not_configured")],
+                        ["success", __("charge_manager.status.manager")],
+                        ["danger", __("charge_manager.status.error")]
+                    ]}/>
+            </FormRow>
+
+            <FormRow label={__("charge_manager.status.available_current")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                <InputFloat min={0} max={state.config.maximum_available_current} digits={3} unit="A"
+                    value={state.available_current.current}
+                    onValue={(v) => API.save("charge_manager/available_current", {"current": v}, __("charge_manager.script.set_available_current_failed"))}
+                    showMinMax/>
+            </FormRow>
+
+            <FormRow label={__("charge_manager.status.managed_boxes")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                {state.state.chargers.map(c => {
+
+                    let c_state = "";
+                    let c_info = "";
+                    let c_body_classes = "";
+
+                    let last_update = Math.floor((state.state.uptime - c.last_update) / 1000);
+                    let c_status_text = util.toLocaleFixed(c.supported_current / 1000.0, 3) + " " + __("charge_manager.script.ampere_supported");
+
+                    if (last_update >= 10)
+                        c_status_text += "; " + __("charge_manager.script.last_update_prefix") + " " + util.format_timespan(last_update) + (__("charge_manager.script.last_update_suffix"));
+
+                    if (c.state != 5) {
+                        if (state.state.state == 2) {
+                            c_body_classes = "bg-danger text-white bg-disabled";
+                            c_state = __("charge_manager.script.charge_state_blocked_by_other_box");
+                            c_info = __("charge_manager.script.charge_state_blocked_by_other_box_details");
+                        } else {
+                            c_state = translate_unchecked(`charge_manager.script.charge_state_${c.state}`);
+                            c_info = util.toLocaleFixed(c.allocated_current / 1000.0, 3) + " " + __("charge_manager.script.ampere_allocated");
+                        }
+                    }
+                    else {
+                        if (c.error < 192)
+                            c_state = __("charge_manager.script.charge_error_type_management");
+                        else
+                            c_state = __("charge_manager.script.charge_error_type_client");
+
+                        c_body_classes = "bg-danger text-white bg-disabled";
+                        c_info = translate_unchecked(`charge_manager.script.charge_error_${c.error}`);
+                    }
+
+                    return  <div class="card">
+                                <h5 class="card-header">{c.name}</h5>
+                                <div class={"card-body " + c_body_classes}>
+                                    <h5 class="card-title">{c_state}</h5>
+                                    <p class="card-text">{c_info}</p>
+                                </div>
+                                <div class="card-footer">
+                                    <span>{c_status_text}</span>
+                                </div>
+                            </div>
+                })
                 }
-                charger_status += '<div class="card-deck mb-4">';
-            }
-
-            charger_status += `
-            <div class="card">
-                <h5 id="charge_manager_status_charger_${i}_name" class="card-header"></h5>
-                <div id="charge_manager_status_charger_${i}_body" class="card-body">
-                    <h5 id="charge_manager_status_charger_${i}_state" class="card-title"></h5>
-                    <p id="charge_manager_status_charger_${i}_info" class="card-text"></p>
-                </div>
-                <div class="card-footer">
-                    <span id="charge_manager_status_charger_${i}_details"></span>
-                </div>
-            </div>
-            `
-        }
-        charger_status += '</div>';
-        $('#charge_manager_status_chargers').html(charger_status);
-        charger_state_count = state.chargers.length;
-        $('#charge_manager_status_controlled_chargers').prop('hidden', charger_state_count == 0);
-        $('#charge_manager_status_available_current_form').prop('hidden', charger_state_count == 0);
-    }
-    for (let i = 0; i < state.chargers.length; i++) {
-        const s = state.chargers[i];
-
-        $(`#charge_manager_status_charger_${i}_name`).text(s.name);
-        if (s.state != 5) {
-            if (state.state == 2) {
-                $(`#charge_manager_status_charger_${i}_body`).addClass("bg-danger text-white bg-disabled");
-                $(`#charge_manager_status_charger_${i}_state`).text(__("charge_manager.script.charge_state_blocked_by_other_box"));
-                $(`#charge_manager_status_charger_${i}_info`).text(__("charge_manager.script.charge_state_blocked_by_other_box_details"));
-            } else {
-                $(`#charge_manager_status_charger_${i}_body`).removeClass("bg-danger text-white bg-disabled");
-                $(`#charge_manager_status_charger_${i}_state`).text(translate_unchecked(`charge_manager.script.charge_state_${s.state}`));
-                $(`#charge_manager_status_charger_${i}_info`).text(util.toLocaleFixed(s.allocated_current / 1000.0, 3) + " " + __("charge_manager.script.ampere_allocated"));
-            }
-        }
-        else {
-            if (s.error < 192)
-                $(`#charge_manager_status_charger_${i}_state`).text(__("charge_manager.script.charge_error_type_management"));
-            else
-                $(`#charge_manager_status_charger_${i}_state`).text(__("charge_manager.script.charge_error_type_client"));
-
-            $(`#charge_manager_status_charger_${i}_body`).addClass("bg-danger text-white bg-disabled");
-            $(`#charge_manager_status_charger_${i}_info`).text(translate_unchecked(`charge_manager.script.charge_error_${s.error}`));
-        }
-
-        let last_update = Math.floor((state.uptime - s.last_update) / 1000);
-        let status_text = util.toLocaleFixed(s.supported_current / 1000.0, 3) + " " + __("charge_manager.script.ampere_supported");
-
-        if (last_update >= 10)
-            status_text += "; " + __("charge_manager.script.last_update_prefix") + " " + util.format_timespan(last_update) + (__("charge_manager.script.last_update_suffix"));
-        $(`#charge_manager_status_charger_${i}_details`).text(status_text);
+            </FormRow>
+        </>
     }
 
-    util.update_button_group("btn_group_charge_manager_state", state.state);
 }
 
-
-function set_available_current(current: number) {
-    $('#charge_manager_status_available_current_save').prop("disabled", true);
-    API.save("charge_manager/available_current", {"current": current},__("charge_manager.script.set_available_current_failed"))
-       .then(() => $('#charge_manager_status_available_current_save').html(feather.icons.check.toSvg()))
-       .catch(error => $('#charge_manager_status_available_current_save').prop("disabled", false));
-}
-
-function update_available_current(current: number = API.get('charge_manager/available_current').current) {
-    if($('#charge_manager_status_available_current_save').prop("disabled")) {
-        util.setNumericInput("charge_manager_status_available_current", current / 1000, 3);
-    }
-}
-
-function update_charge_manager_config() {
-    let config = API.get('charge_manager/config');
-    $('#charge_manager_status_available_current').prop("max", config.maximum_available_current / 1000.0);
-    $("#charge_manager_status_available_current_maximum").on("click", () => set_available_current(config.default_available_current));
-    $('#charge_manager_status_available_current_maximum').html(util.toLocaleFixed(config.default_available_current / 1000.0, 0) + " A");
-
-    update_available_current(config.default_available_current);
-}
-
+render(<ChargeManagerStatus/>, $('#status-charge_manager')[0]);
 
 export function init() {
-    $("#charge_manager_status_available_current_minimum").on("click", () => set_available_current(0));
-
-    $('#charge_manager_status_available_current').on("input", () => {
-        $('#charge_manager_status_available_current_save').html(feather.icons.save.toSvg());
-        $('#charge_manager_status_available_current_save').prop("disabled", false);
-    });
-
-    $('#charge_manager_status_available_current_form').on('submit', function (this: HTMLFormElement, event: Event) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (this.checkValidity() === false) {
-            return;
-        }
-
-        set_available_current(Math.round(($('#charge_manager_status_available_current').val() as number) * 1000));
-    });
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('charge_manager/state', update_charge_manager_state);
-    source.addEventListener('charge_manager/config', update_charge_manager_config);
-    source.addEventListener('charge_manager/available_current', () => update_available_current());
 }
 
 export function update_sidebar_state(module_init: any) {
