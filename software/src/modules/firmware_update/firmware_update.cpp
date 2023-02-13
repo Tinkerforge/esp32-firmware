@@ -82,9 +82,6 @@ void factory_reset()
 #if MODULE_EVSE_V2_AVAILABLE()
     evse_v2.factory_reset();
 #endif
-#if MODULE_AC011K_AVAILABLE()
-    ac011k.factory_reset();
-#endif
 
     LittleFS.end();
     LittleFS.format();
@@ -385,9 +382,6 @@ void FirmwareUpdate::register_urls()
 #endif
 #if MODULE_EVSE_V2_AVAILABLE()
             evse_v2.factory_reset();
-#endif
-#if MODULE_AC011K_AVAILABLE()
-            ac011k.factory_reset();
 #endif
 
 #if MODULE_USERS_AVAILABLE()

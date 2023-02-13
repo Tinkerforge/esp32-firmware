@@ -333,7 +333,7 @@ void EVSEV2::apply_defaults()
 
 void EVSEV2::factory_reset()
 {
-    logger.printfln("EVSE factory reset is not implemented yet.");
+    logger.printfln("AC011K factory reset of the GD chip is not implemented. And probably doesn't have to.");
 }
 
 void EVSEV2::setup()

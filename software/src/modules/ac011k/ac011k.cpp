@@ -764,12 +764,6 @@ bool AC011K::handle_update_chunk(int command, WebServerRequest request, size_t c
 }
 #endif
 
-void AC011K::factory_reset()
-{
-    evse.factory_reset();
-    logger.printfln("AC011K factory reset is not implemented yet.");
-}
-
 void AC011K::update_all_data() {
     evse.update_all_data();
     evse_slot_machine();

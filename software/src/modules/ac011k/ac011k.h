@@ -128,8 +128,6 @@ public:
     // bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     // void apply_defaults();
 
-    void factory_reset();
-
     // bool debug = false;
 
     void log_hex_privcomm_line(byte *data);
