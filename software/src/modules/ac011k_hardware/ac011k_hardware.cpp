@@ -114,6 +114,7 @@ void AC011KHardware::loop()
 {
     static int last_btn_value = HIGH;
     static uint32_t last_btn_change = 0;
+    static bool first = false;
 
     bool btn = digitalRead(BUTTON);
     if (!factory_reset_requested) {
@@ -123,13 +124,15 @@ void AC011KHardware::loop()
     if (btn != last_btn_value) {
         last_btn_change = millis();
         logger.printfln("Button SW3 changed state to: %s.", (btn == HIGH) ? "high" : "low" );
+        first = true;
     }
 
     last_btn_value = btn;
 
-    if (!btn && deadline_elapsed(last_btn_change + 10000)) {
-        logger.printfln("Button SW3 was pressed for 10 seconds. Resetting to factory defaults.");
-        last_btn_change = millis();
-        factory_reset_requested = true;
+    if (!btn && first && deadline_elapsed(last_btn_change + 10000)) {
+        logger.printfln("Button SW3 was pressed for 10 seconds. But resetting should be done on boot. Please use power off/on or SW1 to restart and press SW3 on boot to reset.");
+        first = false;
+        //logger.printfln("Button SW3 was pressed for 10 seconds. Resetting to factory defaults.");
+        //factory_reset_requested = true;
     }
 }

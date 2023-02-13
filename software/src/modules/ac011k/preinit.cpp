@@ -70,52 +70,7 @@ void evse_v2_button_recovery_handler() {
     }
  
     logger.printfln("Button SW3 was pressed for %.3f seconds on startup. Starting recovery routine.", (millis() - start) / 1000.0);
- 
-    /*
-    struct FactoryResetData {
-        uint8_t stage:4;
-        uint32_t magic:28;
-        uint32_t uptime; // only for entropy
-        uint16_t padding;
-        uint16_t checksum;
-    };
-
-    uint8_t buf[63] = {0};
-    tf_evse_v2_get_data_storage(&evse, DATA_STORE_PAGE_RECOVERY, buf);
-
-    if (internet_checksum(buf, sizeof(FactoryResetData)) != 0) {
-        logger.printfln("Checksum mismatch while reading recovery info from EVSE RAM. Assuming stage 0.");
-        stage = 0;
-    }
-    else {
-        FactoryResetData data;
-        memcpy(&data, buf, sizeof(data));
-        if (data.magic != 0x0BADB007 || data.uptime > 30000 || data.stage > 3)
-            stage = 0;
-        else
-            stage = data.stage;
-    }
-
     logger.printfln("Requested recovery stage %u.", stage);
-
-    if (stage != 3) {
-        logger.printfln("Writing request for stage %u into EVSE RAM in case this boot-up fails.", stage + 1);
-
-        FactoryResetData data;
-        data.stage = stage + 1;
-        data.magic = FACTORY_RESET_DATA_MAGIC;
-        data.uptime = millis();
-        data.padding = 0;
-        data.checksum = 0;
-        memcpy(buf, &data, sizeof(data));
-        data.checksum = internet_checksum(buf, sizeof(data));
-
-        memcpy(buf, &data, sizeof(data));
-        tf_evse_v2_set_data_storage(&evse, DATA_STORE_PAGE_RECOVERY, buf);
-    }
-
-    tf_evse_v2_destroy(&evse);
-    tf_hal_destroy(&hal);
 
     switch (stage) {
         // Stage 0 - User can't reach the web interface anymore. Remove network configuration and disable http_auth.
@@ -127,7 +82,6 @@ void evse_v2_button_recovery_handler() {
             users.user_config.get("http_auth_enabled")->updateBool(false);
             api.writeConfig("users/config", &users.user_config);
 
-            api.removeConfig("ethernet/config");
             api.removeConfig("wifi/sta_config");
             api.removeConfig("wifi/ap_config");
             logger.printfln("Stage 0 done");
@@ -139,7 +93,7 @@ void evse_v2_button_recovery_handler() {
             api.removeAllConfig();
             logger.printfln("Stage 1 done");
             break;
-        // Stage 2 - ESP still crashed. Format data partition. (This also removes tracked charges and the username file)
+        // Stage 2 - Format data partition. (This also removes tracked charges and the username file)
         case 2:
             logger.printfln("Running stage 2: Formatting data partition");
             LittleFS.begin(false, "/spiffs", 10, "spiffs");
@@ -154,5 +108,4 @@ void evse_v2_button_recovery_handler() {
             logger.printfln("Stage 3 done");
             break;
     }
-    */
 }
