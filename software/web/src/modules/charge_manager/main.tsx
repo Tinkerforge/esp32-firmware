@@ -489,6 +489,7 @@ interface ChargeManagerStatusState {
     state: API.getType['charge_manager/state']
     available_current: API.getType['charge_manager/available_current']
     config: API.getType['charge_manager/config']
+    energyManagerMode: boolean
 }
 
 export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState> {
@@ -505,6 +506,10 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 
         util.eventTarget.addEventListener('charge_manager/config', () => {
             this.setState({config: API.get_maybe('charge_manager/config')})
+        });
+
+        util.eventTarget.addEventListener('info/modules', () => {
+            this.setState({energyManagerMode: API.get('info/modules').energy_manager})
         });
     }
 
@@ -569,12 +574,14 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                     ]}/>
             </FormRow>
 
-            <FormRow label={__("charge_manager.status.available_current")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
-                <InputFloat min={0} max={state.config.maximum_available_current} digits={3} unit="A"
-                    value={state.available_current.current}
-                    onValue={(v) => API.save("charge_manager/available_current", {"current": v}, __("charge_manager.script.set_available_current_failed"))}
-                    showMinMax/>
-            </FormRow>
+            {state.energyManagerMode ? null:
+                <FormRow label={__("charge_manager.status.available_current")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                    <InputFloat min={0} max={state.config.maximum_available_current} digits={3} unit="A"
+                        value={state.available_current.current}
+                        onValue={(v) => API.save("charge_manager/available_current", {"current": v}, __("charge_manager.script.set_available_current_failed"))}
+                        showMinMax/>
+                </FormRow>
+            }
 
             <FormRow label={__("charge_manager.status.managed_boxes")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
                 {util.range(Math.ceil(cards.length / 2)).map(i =>
