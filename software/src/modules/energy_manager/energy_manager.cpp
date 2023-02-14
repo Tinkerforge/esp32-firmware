@@ -94,6 +94,10 @@ void EnergyManager::pre_setup()
             return "Input 4 current limit exceeds maximum total current of all chargers.";
         }
 
+        if (cfg.get("auto_reset_mode")->asBool() && cfg.get("auto_reset_time")->asString().length() != 5) {
+            return "Must set reset time when reset to default is enabled.";
+        }
+
         return "";
     });
 
