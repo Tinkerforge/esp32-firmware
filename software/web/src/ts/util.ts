@@ -511,13 +511,23 @@ export async function put(url: string, payload: any, timeout_ms: number = 5000) 
 
 export const async_modal_ref: RefObject<AsyncModal> = createRef();
 
+export function isInteger(x: number) {
+    return !isNaN(x) && (x === (x | 0));
+}
+
 export function range(stopOrStart: number, stop?: number) {
     if (stop === undefined) {
-        stop = stopOrStart
-        stopOrStart = 0
+        stop = stopOrStart;
+        stopOrStart = 0;
     }
 
-    const len = (stop - stopOrStart)
+    if (!isInteger(stopOrStart))
+        throw "util.range: stopOrStart was not an integer";
+
+    if (!isInteger(stop))
+        throw "util.range: stop was not an integer";
+
+    const len = stop - stopOrStart;
     if (len <= 0)
         return [];
 
