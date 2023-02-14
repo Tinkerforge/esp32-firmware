@@ -645,10 +645,18 @@ int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
     return 0;
 }
 
+#define BUILD_YEAR \
+    ( \
+        (__DATE__[ 7] - '0') * 1000 + \
+        (__DATE__[ 8] - '0') *  100 + \
+        (__DATE__[ 9] - '0') *   10 + \
+        (__DATE__[10] - '0') \
+    )
+
 bool clock_synced(struct timeval *out_tv_now)
 {
     gettimeofday(out_tv_now, nullptr);
-    return out_tv_now->tv_sec > ((2016 - 1970) * 365 * 24 * 60 * 60);
+    return out_tv_now->tv_sec > ((BUILD_YEAR - 1970) * 365 * 24 * 60 * 60);
 }
 
 uint32_t timestamp_minutes()
@@ -812,4 +820,33 @@ void list_dir(fs::FS &fs, const char * dirname, uint8_t max_depth, uint8_t curre
         }
         file = root.openNextFile();
     }
+}
+
+time_t ms_until_datetime(int *year, int *month, int *day, int *hour, int *minutes, int *seconds) {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+
+	struct tm datetime;
+	localtime_r(&tv.tv_sec, &datetime);
+
+	if (year)    datetime.tm_year = *year    < 0 ? datetime.tm_year - *year    : *year  - 1900;
+	if (month)   datetime.tm_mon  = *month   < 0 ? datetime.tm_mon  - *month   : *month - 1;
+	if (day)     datetime.tm_mday = *day     < 0 ? datetime.tm_mday - *day     : *day;
+	if (hour)    datetime.tm_hour = *hour    < 0 ? datetime.tm_hour - *hour    : *hour;
+	if (minutes) datetime.tm_min  = *minutes < 0 ? datetime.tm_min  - *minutes : *minutes;
+	if (seconds) datetime.tm_sec  = *seconds < 0 ? datetime.tm_sec  - *seconds : *seconds;
+
+	time_t ts = mktime(&datetime);
+
+	return (ts - tv.tv_sec) * 1000 - tv.tv_usec / 1000;
+}
+
+time_t ms_until_time(int h, int m) {
+	int s = 0;
+	time_t delay = ms_until_datetime(NULL, NULL, NULL, &h, &m, &s);
+	if (delay <= 0) {
+		int d = -1;
+		delay = ms_until_datetime(NULL, NULL, &d, &h, &m, &s);
+	}
+	return delay;
 }

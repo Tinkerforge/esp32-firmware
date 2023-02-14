@@ -69,6 +69,9 @@ uint16_t internet_checksum(const uint8_t* data, size_t length);
 
 void trigger_reboot(const char *initiator);
 
+time_t ms_until_datetime(int *year, int *month, int *day, int *hour, int *minutes, int *seconds);
+time_t ms_until_time(int h, int m);
+
 class LogSilencer
 {
 public:
