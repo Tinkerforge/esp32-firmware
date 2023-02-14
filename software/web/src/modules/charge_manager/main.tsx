@@ -512,6 +512,50 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
         if (!state || !state.config || !state.config.enable_charge_manager)
             return <></>;
 
+        let cards = state.state.chargers.map((c, i) => {
+            let c_state = "";
+            let c_info = "";
+            let c_body_classes = "";
+
+            let last_update = Math.floor((state.state.uptime - c.last_update) / 1000);
+            let c_status_text = util.toLocaleFixed(c.supported_current / 1000.0, 3) + " " + __("charge_manager.script.ampere_supported");
+
+            if (last_update >= 10)
+                c_status_text += "; " + __("charge_manager.script.last_update_prefix") + " " + util.format_timespan(last_update) + (__("charge_manager.script.last_update_suffix"));
+
+            if (c.state != 5) {
+                if (state.state.state == 2) {
+                    c_body_classes = "bg-danger text-white bg-disabled";
+                    c_state = __("charge_manager.script.charge_state_blocked_by_other_box");
+                    c_info = __("charge_manager.script.charge_state_blocked_by_other_box_details");
+                } else {
+                    c_state = translate_unchecked(`charge_manager.script.charge_state_${c.state}`);
+                    c_info = util.toLocaleFixed(c.allocated_current / 1000.0, 3) + " " + __("charge_manager.script.ampere_allocated");
+                }
+            }
+            else {
+                if (c.error < 192)
+                    c_state = __("charge_manager.script.charge_error_type_management");
+                else
+                    c_state = __("charge_manager.script.charge_error_type_client");
+
+                c_body_classes = "bg-danger text-white bg-disabled";
+                c_info = translate_unchecked(`charge_manager.script.charge_error_${c.error}`);
+            }
+
+            return  <div class="card">
+                        <h5 class="card-header">{c.name}</h5>
+                        <div class={"card-body " + c_body_classes}>
+                            <h5 class="card-title">{c_state}</h5>
+                            <p class="card-text">{c_info}</p>
+                        </div>
+                        <div class="card-footer">
+                            <span>{c_status_text}</span>
+                        </div>
+                    </div>
+        });
+
+
         return <>
             <FormRow label={__("charge_manager.status.charge_manager")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
                 <IndicatorGroup
@@ -533,49 +577,11 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
             </FormRow>
 
             <FormRow label={__("charge_manager.status.managed_boxes")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
-                {state.state.chargers.map(c => {
-
-                    let c_state = "";
-                    let c_info = "";
-                    let c_body_classes = "";
-
-                    let last_update = Math.floor((state.state.uptime - c.last_update) / 1000);
-                    let c_status_text = util.toLocaleFixed(c.supported_current / 1000.0, 3) + " " + __("charge_manager.script.ampere_supported");
-
-                    if (last_update >= 10)
-                        c_status_text += "; " + __("charge_manager.script.last_update_prefix") + " " + util.format_timespan(last_update) + (__("charge_manager.script.last_update_suffix"));
-
-                    if (c.state != 5) {
-                        if (state.state.state == 2) {
-                            c_body_classes = "bg-danger text-white bg-disabled";
-                            c_state = __("charge_manager.script.charge_state_blocked_by_other_box");
-                            c_info = __("charge_manager.script.charge_state_blocked_by_other_box_details");
-                        } else {
-                            c_state = translate_unchecked(`charge_manager.script.charge_state_${c.state}`);
-                            c_info = util.toLocaleFixed(c.allocated_current / 1000.0, 3) + " " + __("charge_manager.script.ampere_allocated");
-                        }
-                    }
-                    else {
-                        if (c.error < 192)
-                            c_state = __("charge_manager.script.charge_error_type_management");
-                        else
-                            c_state = __("charge_manager.script.charge_error_type_client");
-
-                        c_body_classes = "bg-danger text-white bg-disabled";
-                        c_info = translate_unchecked(`charge_manager.script.charge_error_${c.error}`);
-                    }
-
-                    return  <div class="card">
-                                <h5 class="card-header">{c.name}</h5>
-                                <div class={"card-body " + c_body_classes}>
-                                    <h5 class="card-title">{c_state}</h5>
-                                    <p class="card-text">{c_info}</p>
-                                </div>
-                                <div class="card-footer">
-                                    <span>{c_status_text}</span>
-                                </div>
-                            </div>
-                })
+                {util.range(Math.ceil(cards.length / 2)).map(i =>
+                    <div class="card-deck mb-4">
+                        {cards[2 * i]}
+                        {cards.length > (2 * i + 1) ? cards[2 * i + 1] : undefined}
+                    </div>)
                 }
             </FormRow>
         </>
