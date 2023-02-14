@@ -76,10 +76,10 @@
             "charge_error_130": "Ladecontroller reagiert nicht",
 
             "charge_error_192": "OK",
-            "charge_error_193": "Schalterfehler",
-            "charge_error_194": "DC-Fehlerstromschutzfehler",
-            "charge_error_195": "Schützfehler",
-            "charge_error_196": "Fahrzeug-Kommunikationsfehler",
+            "charge_error_194": "Schalterfehler",
+            "charge_error_195": "DC-Fehlerstromschutzfehler",
+            "charge_error_196": "Schützfehler",
+            "charge_error_197": "Fahrzeug-Kommunikationsfehler",
 
             "charge_state_blocked_by_other_box": "Blockiert",
             "charge_state_blocked_by_other_box_details": "Fehler bei anderer Wallbox",

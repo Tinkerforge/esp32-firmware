@@ -76,10 +76,10 @@
             "charge_error_130": "Charge controller does not react",
 
             "charge_error_192": "OK",
-            "charge_error_193": "Switch error",
-            "charge_error_194": "DC fault protector error",
-            "charge_error_195": "Contactor error",
-            "charge_error_196": "Vehicle communication error",
+            "charge_error_194": "Switch error",
+            "charge_error_195": "DC fault protector error",
+            "charge_error_196": "Contactor error",
+            "charge_error_197": "Vehicle communication error",
 
             "charge_state_blocked_by_other_box": "Blocked",
             "charge_state_blocked_by_other_box_details": "Error with another charger",

@@ -132,7 +132,7 @@ layout.addRow("Vehicle state", resp_charger_state)
 
 resp_error_state = QSpinBox()
 resp_error_state.setMinimum(0)
-resp_error_state.setMaximum(4)
+resp_error_state.setMaximum(5)
 layout.addRow("Error state", resp_error_state)
 
 resp_uptime = QLabel("no packet sent yet")
