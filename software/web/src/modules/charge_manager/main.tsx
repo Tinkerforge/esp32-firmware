@@ -509,7 +509,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
         });
 
         util.eventTarget.addEventListener('info/modules', () => {
-            this.setState({energyManagerMode: API.get('info/modules').energy_manager})
+            this.setState({energyManagerMode: !!((API.get('info/modules') as any).energy_manager)})
         });
     }
 
