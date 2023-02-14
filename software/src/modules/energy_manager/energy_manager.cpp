@@ -55,7 +55,7 @@ void EnergyManager::pre_setup()
     energy_manager_config = ConfigRoot(Config::Object({
         {"default_mode", Config::Uint(0, 0, 3)},
         {"auto_reset_mode", Config::Bool(false)},
-        {"auto_reset_time", Config::Str("00:00", 5, 5)},
+        {"auto_reset_time", Config::Str("", 0, 5)},
         {"excess_charging_enable", Config::Bool(false)},
         {"contactor_installed", Config::Bool(false)},
         {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
@@ -392,14 +392,6 @@ void EnergyManager::update_all_data_struct()
     );
 
     check_bricklet_reachable(rc);
-
-    // TODO Remove: Support reversed current clamps.
-    if (rc == TF_E_OK && em_meter_config.config.get("kulparga_mode")->asBool()) {
-        all_data.power *= -1;
-        float swap = all_data.energy_export;
-        all_data.energy_export = all_data.energy_import;
-        all_data.energy_import = swap;
-    }
 }
 
 void EnergyManager::check_bricklet_reachable(int rc) {
@@ -799,16 +791,7 @@ uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
 
     check_bricklet_reachable(rc);
 
-    if (rc == TF_E_OK) {
-        // TODO Remove: Support reversed current clamps.
-        if (em_meter_config.config.get("kulparga_mode")->asBool()) {
-            for (int i = 0; i < len; i++)
-                ret_values[i] *= -1;
-        }
-        ret = len;
-    } else {
-        ret = 0;
-    }
+    ret = rc == TF_E_OK ? len : 0;
 
     static uint32_t time_max = 8000;
     time = micros() - time;

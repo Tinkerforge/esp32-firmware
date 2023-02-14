@@ -27,9 +27,7 @@ void EMMeterConfig::pre_setup()
 {
     // States
     config = Config::Object({
-        {"meter_type", Config::Uint8(0)},
-        {"kulparga_mode", Config::Bool(false)}
-    });
+        {"meter_type", Config::Uint8(0)}    });
 }
 
 void EMMeterConfig::setup()

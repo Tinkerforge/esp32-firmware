@@ -99,12 +99,6 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
                             <FormRow label={__("em_meter_config.content.sdm_energy_export")} label_muted={__("em_meter_config.content.sdm_energy_export_muted")}>
                                 <InputFloat value={em.energy_meter_energy_export} digits={0} unit={'kWh'} />
                             </FormRow>
-
-                            <FormRow label={__("em_meter_config.content.kulparga_mode")}>
-                                <Switch desc={__("em_meter_config.content.kulparga_desc")}
-                                    checked={state.kulparga_mode}
-                                    onClick={this.toggle('kulparga_mode')}/>
-                                    </FormRow>
                         </div>
                     </Collapse>
 

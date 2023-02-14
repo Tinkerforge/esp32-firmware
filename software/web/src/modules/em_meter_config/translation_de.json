@@ -32,10 +32,7 @@
             "sdm_energy_export": "Netzeinspeisung",
             "sdm_energy_export_muted": "Gesamt",
 
-            "generic_details": "Zeige Detailansicht für generischen Stromzähler",
-
-            "kulparga_mode": "Kulparga-Mode",
-            "kulparga_desc": "Aktiviere das hier, falls aus irgendeinem Grund dein Stromzähler seine <s>Füße</s> Stromklemmen umgedreht installiert hat."
+            "generic_details": "Zeige Detailansicht für generischen Stromzähler"
         },
         "script": {
             "save_failed": "Speichern der Stromzähler-Konfiguration fehlgeschlagen.",

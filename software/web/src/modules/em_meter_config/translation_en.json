@@ -32,10 +32,7 @@
             "sdm_energy_export": "Export",
             "sdm_energy_export_muted": "Total feed to grid",
 
-            "generic_details": "Show generic energy meter details",
-
-            "kulparga_mode": "Kulparga mode",
-            "kulparga_desc": "Enable this if for some reason your energy meter is installed with reversed <s>feet</s> current clamps."
+            "generic_details": "Show generic energy meter details"
         },
         "script": {
             "save_failed": "Failed to save energy meter configuration.",
