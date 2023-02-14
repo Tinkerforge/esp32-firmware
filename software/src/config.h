@@ -808,7 +808,7 @@ public:
     // This allows ArduinoJson to deserialize in zero-copy mode
     String update_from_cstr(char *c, size_t payload_len);
 
-    String update_from_json(JsonVariant root);
+    String update_from_json(JsonVariant root, bool force_same_keys);
 
     String update(const Config::ConfUpdate *val);
 

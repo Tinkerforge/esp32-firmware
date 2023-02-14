@@ -406,6 +406,9 @@ struct from_json {
         for (size_t i = 0; i < x.getVal()->size(); ++i) {
             if (!obj.containsKey(x.getVal()->at(i).first))
             {
+                if (!force_same_keys)
+                    continue;
+
                 if (return_str.length() < 1000)
                     return_str += String("JSON object is missing key '") + x.getVal()->at(i).first + "'\n";
                 else
@@ -425,12 +428,14 @@ struct from_json {
 
         }
 
-        for (auto i = obj.begin(); i != obj.end(); i += 1)
-        {
-            if (return_str.length() < 1000)
-                return_str += String("JSON object has unknown key '") + i->key().c_str() + "'.\n";
-            else
-                more_errors = true;
+        if (force_same_keys) {
+            for (auto i = obj.begin(); i != obj.end(); i += 1)
+            {
+                if (return_str.length() < 1000)
+                    return_str += String("JSON object has unknown key '") + i->key().c_str() + "'.\n";
+                else
+                    more_errors = true;
+            }
         }
 
         if (return_str.length() > 0)
@@ -1350,7 +1355,7 @@ String ConfigRoot::update_from_file(File &file)
     if (error)
         return String("Failed to read file: ") + String(error.c_str());
 
-    return this->update_from_json(doc.as<JsonVariant>());
+    return this->update_from_json(doc.as<JsonVariant>(), false);
 }
 
 // Intentionally take a non-const char * here:
@@ -1362,7 +1367,7 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
 
     switch (error.code()) {
         case DeserializationError::Ok:
-            return this->update_from_json(doc.as<JsonVariant>());
+            return this->update_from_json(doc.as<JsonVariant>(), true);
         case DeserializationError::NoMemory:
             return String("Failed to deserialize: JSON payload was longer than expected and possibly contained unknown keys.");
         case DeserializationError::EmptyInput:
@@ -1378,10 +1383,10 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
     }
 }
 
-String ConfigRoot::update_from_json(JsonVariant root)
+String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys)
 {
     Config copy = *this;
-    String err = Config::apply_visitor(from_json{root, !this->permit_null_updates, this->permit_null_updates, true}, copy.value);
+    String err = Config::apply_visitor(from_json{root, force_same_keys, this->permit_null_updates, true}, copy.value);
 
     if (err != "")
         return err;
