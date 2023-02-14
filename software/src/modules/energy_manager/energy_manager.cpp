@@ -224,8 +224,6 @@ void EnergyManager::setup()
     // Initialize contactor check state so that the check doesn't trip immediately if the first response from the bricklet is invalid.
     all_data.contactor_check_state = 1;
 
-    bricklet_reachable = true;
-
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_all_data();
     }, 0, 250);

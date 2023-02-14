@@ -185,7 +185,7 @@ private:
     unsigned long last_debug_check;
     bool     uptime_past_hysteresis;
     uint32_t consecutive_bricklet_errors;
-    bool     bricklet_reachable;
+    bool     bricklet_reachable = true;
     SwitchingState switching_state;
     uint32_t switching_start;
     uint32_t mode;
