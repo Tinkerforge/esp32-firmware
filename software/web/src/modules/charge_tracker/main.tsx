@@ -736,11 +736,14 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
                     let meter_end = view.getFloat32(12, true);
 
                     if (timestamp_minutes != 0 && timestamp_minutes < start) {
+                        // We know when this charge started and it was before the requested start date.
+                        // This means that all charges before and including this one can't be relevant.
                         result = header;
                         continue;
                     }
 
                     if (timestamp_minutes != 0 && timestamp_minutes > end)
+                        // This charge started after the requested end date. We are done searching.
                         break;
 
                     if (user_filtered(user_id))
