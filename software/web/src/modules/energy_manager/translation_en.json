@@ -14,6 +14,11 @@
             "page_header": "Energy Manager Settings",
 
             "default_mode": "Default charging mode",
+            "auto_reset_charging_mode": "Reset to default every day",
+            "auto_reset_charging_mode_desc": "Automatically set the charging mode back to the default at a specific time.",
+            "auto_reset_time": "Reset at",
+            "hour": "hr",
+            "minute": "min",
 
             "header_load_management": "Dynamic load management",
             "load_management_explainer": "The Energy Manager adjusts the power consumption of devices under its control to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)",

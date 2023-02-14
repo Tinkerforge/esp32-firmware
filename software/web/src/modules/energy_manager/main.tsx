@@ -145,6 +145,24 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                             onValue={(v) => this.setState({default_mode: parseInt(v)})}/>
                     </FormRow>
 
+                    <FormRow label={__("energy_manager.content.auto_reset_charging_mode")}>
+                        <Switch desc={__("energy_manager.content.auto_reset_charging_mode_desc")}
+                                checked={s.auto_reset_mode}
+                                onClick={this.toggle('auto_reset_mode')}/>
+                    </FormRow>
+
+                    <Collapse in={s.auto_reset_mode}>
+                        <div>
+                            <FormRow label={__("energy_manager.content.auto_reset_time")}>
+                                <input type="time"
+                                    min="00:00"
+                                    max="23:59"
+                                    value={s.auto_reset_time}
+                                    onChange={(e) => this.setState({ auto_reset_time: (e.target as HTMLInputElement).value })} />
+                            </FormRow>
+                        </div>
+                    </Collapse>
+
                     <FormSeparator heading={__("energy_manager.content.header_load_management")} />
                     <FormRow label="">
                         <div class="pt-3 pb-4">

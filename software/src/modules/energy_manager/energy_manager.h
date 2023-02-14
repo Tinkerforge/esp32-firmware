@@ -171,6 +171,8 @@ private:
     void update_io();
     void update_energy();
 
+    void start_auto_reset_task();
+    void schedule_auto_reset_task();
     void set_available_current(uint32_t current);
 
     void check_debug();
@@ -200,6 +202,9 @@ private:
     int32_t  power_available_w;
 
     // Config cache
+    uint32_t default_mode;
+    uint32_t auto_reset_hour;
+    uint32_t auto_reset_minute;
     int32_t  target_power_from_grid_w;
     uint32_t guaranteed_power_w;
     bool     contactor_installed;

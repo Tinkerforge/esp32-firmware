@@ -54,6 +54,8 @@ void EnergyManager::pre_setup()
     // Config
     energy_manager_config = ConfigRoot(Config::Object({
         {"default_mode", Config::Uint(0, 0, 3)},
+        {"auto_reset_mode", Config::Bool(false)},
+        {"auto_reset_time", Config::Str("00:00", 5, 5)},
         {"excess_charging_enable", Config::Bool(false)},
         {"contactor_installed", Config::Bool(false)},
         {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
@@ -152,9 +154,6 @@ void EnergyManager::setup()
         return;
     }
 
-    mode = energy_manager_config_in_use.get("default_mode")->asUint();
-    energy_manager_runtime_config.get("mode")->updateUint(mode);
-
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
     charge_manager.set_allocated_current_callback([this](uint32_t current_ma){
         //logger.printfln("energy_manager: allocated current callback: %u", current_ma);
@@ -170,6 +169,7 @@ void EnergyManager::setup()
     input4 = new InputPin(4, 1, energy_manager_config_in_use, all_data.input[1]);
 
     // Cache config for energy update
+    default_mode                = energy_manager_config_in_use.get("default_mode")->asUint();
     excess_charging_enable      = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
     target_power_from_grid_w    = energy_manager_config_in_use.get("target_power_from_grid")->asInt();          // watt
     guaranteed_power_w          = energy_manager_config_in_use.get("guaranteed_power")->asUint();               // watt
@@ -179,6 +179,13 @@ void EnergyManager::setup()
     hysteresis_wear_ok          = energy_manager_config_in_use.get("hysteresis_wear_accepted")->asBool();
     max_current_unlimited_ma    = charge_manager.charge_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
     min_current_ma              = charge_manager.charge_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
+
+    const String &reset_time    = energy_manager_config_in_use.get("auto_reset_time")->asString();
+    auto_reset_hour   = reset_time.substring(0, 2).toInt();
+    auto_reset_minute = reset_time.substring(3, 5).toInt();
+
+    mode = default_mode;
+    energy_manager_runtime_config.get("mode")->updateUint(mode);
 
     // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
     uint32_t hysteresis_min_ms = hysteresis_wear_ok ? 10 * 1000 : HYSTERESIS_MIN_TIME_MINUTES * 60 * 1000;  // milliseconds
@@ -246,6 +253,9 @@ void EnergyManager::setup()
     task_scheduler.scheduleOnce([this](){
         uptime_past_hysteresis = true;
     }, switching_hysteresis_ms);
+
+    if (energy_manager_config_in_use.get("auto_reset_mode")->asBool())
+        start_auto_reset_task();
 }
 
 void EnergyManager::register_urls()
@@ -354,7 +364,7 @@ void EnergyManager::update_all_data()
         }
     }
 
-    static uint32_t time_max = 5000;
+    static uint32_t time_max = 7000;
     time = micros() - time;
     if (time > time_max) {
         time_max = time;
@@ -438,6 +448,27 @@ void EnergyManager::update_io()
         time_max = time;
         logger.printfln("energy_manager::update_io() took %uus", time_max);
     }
+}
+
+void EnergyManager::start_auto_reset_task()
+{
+#if MODULE_NTP_AVAILABLE()
+    task_scheduler.scheduleOnce([this](){
+        if (ntp.state.get("synced")->asBool())
+            schedule_auto_reset_task();
+        else
+            start_auto_reset_task();
+    }, 30 * 1000);
+#endif
+}
+
+void EnergyManager::schedule_auto_reset_task()
+{
+    uint32_t delay_ms = ms_until_time(auto_reset_hour, auto_reset_minute);
+    task_scheduler.scheduleOnce([this](){
+        switch_mode(default_mode);
+        schedule_auto_reset_task();
+    }, delay_ms);
 }
 
 void EnergyManager::limit_max_current(uint32_t limit_ma)
@@ -740,7 +771,7 @@ void EnergyManager::get_sdcard_info(struct sdcard_info *data)
     if (rc != TF_E_OK)
         logger.printfln("energy_manager: Failed to get SD card information. Error %i", rc);
 
-    static uint32_t time_max = 1000;
+    static uint32_t time_max = 4000;
     time = micros() - time;
     if (time > time_max) {
         time_max = time;
