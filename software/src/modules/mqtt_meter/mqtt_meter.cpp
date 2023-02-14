@@ -77,7 +77,7 @@ bool MqttMeter::onMqttMessage(char *topic, size_t topic_len, char *data, size_t 
     }
 
     if (retain) {
-        logger.printfln("mqtt_meter: Ignoring retained message.");
+        // Ignoring retained message. Need fresh data for the meter.
         // Even if we ignore the data, return true because we consumed the message.
         return true;
     }
