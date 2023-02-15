@@ -49,6 +49,20 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
     if (strncmp_with_same_len("/*", in_uri, len) == 0)
         return false;
 
+    size_t ref_len = strlen(ref_uri);
+
+    // Match other wildcard handlers if:
+    // - ref_uri is a wildcard handler (it ends in *)
+    // - ref_uri is is not the API handler
+    // - in_uri is at least as long as the wildcard handler without the *
+    // - in_uri and ref_uri are the same up to one char before the *
+    if ((ref_uri[ref_len - 1] == '*')
+     && (strncmp_with_same_len(ref_uri, "/*", 2) != 0)
+     && (strnlen(in_uri, len) >= (ref_len - 1))
+     && (strncmp(ref_uri, in_uri, MIN(ref_len - 1, len)) == 0)) {
+        return true;
+    }
+
     // Match directly registered URLs.
     if (!strncmp_with_same_len(ref_uri, in_uri, len))
         return true;
