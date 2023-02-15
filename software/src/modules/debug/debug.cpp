@@ -134,6 +134,26 @@ void Debug::register_urls()
             return request.endChunkedResponse();
         }
     });
+
+    server.on("/debug/fs/*", HTTP_DELETE, [this](WebServerRequest request) {
+        String path = request.uri().substring(ARRAY_SIZE("/debug/fs") - 1);
+        if (path.length() > 1 && path[path.length() - 1] == '/')
+            path = path.substring(0, path.length() - 1);
+
+        if (!LittleFS.exists(path))
+            return request.send(404, "text/plain", (String("File ") + path + " not found").c_str());
+
+        File f = LittleFS.open(path);
+        if (!f.isDirectory()) {
+            f.close();
+            LittleFS.remove(path);
+            return request.send(200, "text/plain", (String("File ") + path + " deleted").c_str());
+        } else {
+            f.close();
+            remove_directory(path.c_str());
+            return request.send(200, "text/plain", (String("Directory ") + path + " and all contents deleted").c_str());
+        }
+    });
 #endif
 }
 
