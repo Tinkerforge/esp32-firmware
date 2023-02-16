@@ -122,8 +122,6 @@ void Rtc::set_time(timeval time)
                                                    date_time.tm_wday);
     if (ret)
         logger.printfln("Setting rtc failed with code %i", ret);
-
-    ntp.set_synced();
 }
 
 struct timeval Rtc::get_time()
