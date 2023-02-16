@@ -31,14 +31,14 @@ import { Button } from "react-bootstrap";
 import { InputFloat } from "src/ts/components/input_float";
 import { InputText } from "src/ts/components/input_text";
 
-interface EVSECommonState {
+interface EVSEStatusState {
     state: API.getType['evse/state']
     auto_start: API.getType['evse/auto_start_charging']
     slots: Readonly<API.getType['evse/slots']>
     current: number
 }
 
-export class EVSECommon extends Component<{}, EVSECommonState>
+export class EVSEStatus extends Component<{}, EVSEStatusState>
 {
     timeOut: number;
     theoretical_max: number;
@@ -66,7 +66,7 @@ export class EVSECommon extends Component<{}, EVSECommonState>
             let slots = API.get_maybe('evse/slots');
             let conf_current = slots[5].max_current;
             let theoretical_max = Math.min(slots[0].max_current, slots[1].max_current);
-            
+
             if (conf_current > theoretical_max)
                 conf_current = theoretical_max;
             this.setState({slots: slots, current: conf_current});
@@ -123,7 +123,7 @@ export class EVSECommon extends Component<{}, EVSECommonState>
     }
 
 
-    render(props: {}, state: EVSECommonState)
+    render(props: {}, state: EVSEStatusState)
     {
         if (!state || !state.state)
             return <></>;
@@ -179,7 +179,7 @@ export class EVSECommon extends Component<{}, EVSECommonState>
     }
 }
 
-render(<EVSECommon/>, $('#status-evse')[0]);
+render(<EVSEStatus/>, $('#status-evse')[0]);
 
 
 
