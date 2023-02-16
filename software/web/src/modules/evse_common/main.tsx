@@ -35,24 +35,17 @@ interface EVSEStatusState {
     state: API.getType['evse/state']
     auto_start: API.getType['evse/auto_start_charging']
     slots: Readonly<API.getType['evse/slots']>
-    current: number
+    configured_current: number
 }
 
 export class EVSEStatus extends Component<{}, EVSEStatusState>
 {
-    timeOut: number;
-    theoretical_max: number;
-
+    timeout: number;
     constructor()
     {
         super();
 
-        this.timeOut = null;
-        this.theoretical_max = 0;
-
-        this.state = {
-            current: 0
-        } as any;
+        this.timeout = null;
 
         util.eventTarget.addEventListener('evse/state', () => {
             this.setState({state: API.get_maybe('evse/state')})
@@ -64,12 +57,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
 
         util.eventTarget.addEventListener('evse/slots', () => {
             let slots = API.get_maybe('evse/slots');
-            let conf_current = slots[5].max_current;
-            let theoretical_max = Math.min(slots[0].max_current, slots[1].max_current);
-
-            if (conf_current > theoretical_max)
-                conf_current = theoretical_max;
-            this.setState({slots: slots, current: conf_current});
+            this.setState({slots: slots, configured_current: Math.min(slots[0].max_current, slots[1].max_current, slots[5].max_current)});
         })
     }
 
@@ -102,33 +90,24 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
         return status_string;
     }
 
-    set_auto_start_charging(auto_start_charging: boolean) {
-        API.save('evse/auto_start_charging', {"auto_start_charging": auto_start_charging}, __("evse.script.auto_start_charging_update"));
-    }
 
-    start_charging() {
-        API.call('evse/start_charging', {}, __("evse.script.start_charging_failed"));
-    }
-
-    stop_charging() {
-        API.call('evse/stop_charging', {}, __("evse.script.stop_charging_failed"));
-    }
-
-    timeOutSave(current: number, theoretical_max: number)
+    timeoutSave(current: number, theoretical_max: number)
     {
         if (current === theoretical_max)
-            API.save('evse/global_current', {"current": 32000}, __("evse.script.set_charging_current_failed"));
-        else
-            API.save('evse/global_current', {"current": current}, __("evse.script.set_charging_current_failed"));
-    }
+            current = 32000;
 
+        if (current == this.state.slots[5].max_current)
+            return;
+
+        API.save('evse/global_current', {"current": current}, __("evse.script.set_charging_current_failed"));
+    }
 
     render(props: {}, state: EVSEStatusState)
     {
-        if (!state || !state.state)
+        if (!state || !state.state || !state.slots)
             return <></>;
 
-        this.theoretical_max = Math.min(state.slots[0].max_current, state.slots[1].max_current);
+        let theoretical_max = Math.min(state.slots[0].max_current, state.slots[1].max_current);
 
         return <>
                 <FormRow label={__("evse.status.evse")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
@@ -150,25 +129,25 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
                         <Button
                             className="form-control mr-2 rounded-right"
                             disabled={state.state.iec61851_state != 1 || state.slots[4].max_current != 0}
-                            onClick={() => this.start_charging()}>
+                            onClick={() =>  API.call('evse/start_charging', {}, __("evse.script.start_charging_failed"))}>
                             {__("evse.status.start_charging")}
                         </Button>
                         <Button
                             className="form-control rounded-left"
                             disabled={state.state.charger_state != 2 && state.state.charger_state != 3}
-                            onClick={() => this.stop_charging()}>
+                            onClick={() => API.call('evse/stop_charging', {}, __("evse.script.stop_charging_failed"))}>
                             {__("evse.status.stop_charging")}
                         </Button>
                         </div>
                 </FormRow>
                 <FormRow label={__("evse.status.configured_charging_current")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4 input-group">
-                        <InputFloat min={6000} max={this.theoretical_max} digits={3} unit="A"
-                            value={state.current}
+                        <InputFloat min={6000} max={theoretical_max} digits={3} unit="A"
+                            value={state.configured_current}
                             onValue={(v) => {
-                                clearTimeout(this.timeOut);
+                                window.clearTimeout(this.timeout);
 
-                                this.timeOut = setTimeout(this.timeOutSave, 1000, v, this.theoretical_max);
-                                this.setState({current: v})
+                                this.timeout = window.setTimeout(() => this.timeoutSave(v, theoretical_max), 1000);
+                                this.setState({configured_current: v})
                             }}
                             showMinMax/>
                 </FormRow>
@@ -180,8 +159,6 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
 }
 
 render(<EVSEStatus/>, $('#status-evse')[0]);
-
-
 
 export function init(){}
 export function add_event_listeners(){}
