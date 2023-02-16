@@ -24,7 +24,7 @@
             "formatting": "Formatiere...",
 
             "bytes": "Bytes",
-            "error_no_card": "Keine SD-Karte erkannt"
+            "error_no_card": "Keine SD-Karte eingelegt"
         },
         "script": {
             "sdcard_format_error": "Formatieren der SD-Karte fehlgeschlagen"

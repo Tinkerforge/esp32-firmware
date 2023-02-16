@@ -45,14 +45,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
         if (!state || state.manufacturer_id === undefined)
             return (<></>);
 
-        let no_card = state.manufacturer_id == 0
-                   && state.product_rev == 0
-                   && state.card_type == 0
-                   && state.sector_size == 0
-                   && state.sector_count == 0
-                   && state.sd_status == 15;
-
-        if (no_card) {
+        if (state.sd_status == 51) { // No card
             return (
                 <>
                     <PageHeader title={__("em_sdcard.content.header")} />
@@ -109,6 +102,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
             case 31: sd_status = "ERROR_CSD_START"; break;
             case 32: sd_status = "ERROR_CSD_CMD9"; break;
             case 41: sd_status = "ERROR_COUNT_TO_HIGH"; break;
+            case 51: sd_status = "ERROR_NO_CARD"; break;
             default: sd_status = "Unknown error code " + state.sd_status;
         }
         

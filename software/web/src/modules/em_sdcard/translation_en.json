@@ -24,7 +24,7 @@
             "formatting": "Formatting...",
 
             "bytes": "bytes",
-            "error_no_card": "No SD card detected"
+            "error_no_card": "No SD card inserted"
         },
         "script": {
             "sdcard_format_error": "Formatting SD card failed"
