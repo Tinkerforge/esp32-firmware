@@ -62,4 +62,5 @@ public:
     ConfigRoot config;
 
     std::mutex records_mutex;
+    std::mutex pdf_mutex;
 };
