@@ -167,6 +167,8 @@ void EnergyManager::setup()
 
     update_all_data();
 
+    rgb_led.setup();
+
     // Set up output relay and input pins
     output = new OutputRelay(energy_manager_config_in_use);
     input3 = new InputPin(3, 0, energy_manager_config_in_use, all_data.input[0]);
@@ -534,6 +536,20 @@ void EnergyManager::update_energy()
         // TODO Evil: Allow runtime changes, overrides input pins!
         target_power_from_grid_w    = energy_manager_config.get("target_power_from_grid")->asInt(); // watt
 
+        int32_t p_error_w;
+        if (!excess_charging_enable) {
+            p_error_w = 0;
+        } else {
+            p_error_w = target_power_from_grid_w - power_at_meter_w;
+
+            if (p_error_w > 200)
+                rgb_led.update_grid_balance(EmRgbLed::GridBalance::Export);
+            else if (p_error_w < -200)
+                rgb_led.update_grid_balance(EmRgbLed::GridBalance::Import);
+            else
+                rgb_led.update_grid_balance(EmRgbLed::GridBalance::Balanced);
+        }
+
         switch (mode) {
             case MODE_FAST:
                 power_available_w = 230 * 3 * max_current_limited_ma / 1000;
@@ -545,8 +561,6 @@ void EnergyManager::update_energy()
             case MODE_PV:
             case MODE_MIN_PV:
                 // Excess charging enabled; use a simple P controller to adjust available power.
-                int32_t p_error_w = target_power_from_grid_w - power_at_meter_w;
-
                 int32_t p_adjust_w;
                 if (!is_on) {
                     // When the power is not on, use p=1 so that the switch-on threshold can be reached properly.
@@ -808,6 +822,19 @@ uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
 void EnergyManager::set_output(bool output)
 {
     int result = tf_warp_energy_manager_set_output(&device, output);
+
+    check_bricklet_reachable(result);
+
     if (result != TF_E_OK)
         logger.printfln("energy_manager: Failed to set output relay: error %i", result);
+}
+
+void EnergyManager::set_rgb_led(uint8_t r, uint8_t g, uint8_t b)
+{
+    int rc = tf_warp_energy_manager_set_rgb_value(&device, r, g, b);
+
+    check_bricklet_reachable(rc);
+
+    if (rc != TF_E_OK)
+        logger.printfln("energy_manager: Failed to set RGB LED values: error %i. Continuing anyway.", rc);
 }

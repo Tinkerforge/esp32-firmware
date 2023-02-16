@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "device_module.h"
+#include "em_rgb_led.h"
 #include "input_pin.h"
 #include "output_relay.h"
 #include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
@@ -143,6 +144,7 @@ public:
     bool format_sdcard();
     uint16_t get_energy_meter_detailed_values(float *ret_values);
     void set_output(bool output);
+    void set_rgb_led(uint8_t r, uint8_t g, uint8_t b);
 
     bool debug = false;
 
@@ -159,7 +161,6 @@ public:
         uint8_t  pin[4];
     } charging_blocked;
 
-    bool     excess_charging_enable;
     bool     contactor_check_tripped;
     bool     is_3phase;
     bool     wants_on_last;
@@ -178,6 +179,7 @@ private:
     void check_debug();
     String prepare_fmtstr();
 
+    EmRgbLed rgb_led;
     OutputRelay *output;
     InputPin *input3;
     InputPin *input4;
@@ -205,6 +207,7 @@ private:
     uint32_t default_mode;
     uint32_t auto_reset_hour;
     uint32_t auto_reset_minute;
+    bool     excess_charging_enable;
     int32_t  target_power_from_grid_w;
     uint32_t guaranteed_power_w;
     bool     contactor_installed;
