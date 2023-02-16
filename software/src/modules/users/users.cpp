@@ -474,6 +474,21 @@ void Users::search_next_free_user() {
     user_config.get("next_user_id")->updateUint(user_id);
 }
 
+int Users::get_display_name(uint8_t user_id, char *ret_buf)
+{
+    for (auto &cfg : user_config.get("users")->asArray()) {
+        if (cfg.get("id")->asUint() == user_id) {
+            String s = cfg.get("display_name")->asString();
+            strncpy(ret_buf, s.c_str(), 32);
+            return min(s.length(), 32u);
+        }
+    }
+    File f = LittleFS.open(USERNAME_FILE, "r");
+    f.seek(user_id * USERNAME_ENTRY_LENGTH + USERNAME_LENGTH, SeekMode::SeekSet);
+    f.read((uint8_t *) ret_buf, DISPLAY_NAME_LENGTH);
+    return strnlen(ret_buf, 32);
+}
+
 void Users::register_urls()
 {
     // No users (except anonymous) configured: Make sure the EVSE's user slot is disabled.
