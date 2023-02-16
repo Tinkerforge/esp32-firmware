@@ -34,6 +34,7 @@ import { Button } from "react-bootstrap";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
 import { state } from "./api";
 import { InputPassword } from "src/ts/components/input_password";
+import { IndicatorGroup } from "src/ts/components/indicator_group";
 
 type OcppConfig = API.getType['ocpp/config']
 
@@ -217,6 +218,95 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
 }
 
 render(<Ocpp/>, $('#ocpp')[0])
+
+interface OcppStatusState {
+    state: API.getType['ocpp/state']
+}
+
+export class OcppStatus extends Component<{}, OcppStatusState>
+{
+    constructor()
+    {
+        super();
+
+        util.eventTarget.addEventListener('ocpp/state', () => {
+            this.setState({state: API.get('ocpp/state')})
+        });
+    }
+
+    getConnectionState() {
+        switch(this.state.state.charge_point_state) {
+            case 0:
+            case 1:
+            case 3:
+                return 0;
+            case 2:
+                return 1;
+            case 4:
+            case 5:
+            case 6:
+            default:
+                return 2;
+
+        }
+    }
+
+    getStatusPrefix() {
+        let ocpp = this.state.state;
+        switch (ocpp.charge_point_state) {
+            case 0:
+            case 1:
+            case 3:
+            case 4:
+            case 5:
+            case 7:
+            case 8:
+                return translate_unchecked(`ocpp.content.charge_point_state_${ocpp.charge_point_state}`);
+        }
+
+        // normal operation
+        if (ocpp.charge_point_state == 2) {
+            // no txn running
+            if (ocpp.connector_state != 8)
+                return translate_unchecked(`ocpp.content.connector_state_${ocpp.connector_state}`);
+
+            // txn running
+            return translate_unchecked(`ocpp.content.status_${ocpp.connector_status}`);
+        }
+    }
+
+    getStatusLine() {
+        // TODO add cable/tag deadline info here
+        return this.getStatusPrefix();
+    }
+
+    render(props: {}, state: OcppStatusState)
+    {
+        if (!state || !state.state)
+            return <></>;
+
+        return <>
+                <FormRow label={__("ocpp.status.ocpp")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                    <IndicatorGroup
+                        style="width: 100%"
+                        class="flex-wrap"
+                        value={this.getConnectionState()}
+                        items={[
+                            ["primary", __("ocpp.status.connecting")],
+                            ["success", __("ocpp.status.connected")],
+                            ["danger", __("ocpp.status.error")]
+                        ]}/>
+                </FormRow>
+
+                <FormRow label={__("ocpp.status.status")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                        <InputText value={this.getStatusLine()} />
+                </FormRow>
+
+            </>;
+    }
+}
+
+render(<OcppStatus/>, $('#status-ocpp')[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {}
 

@@ -1,6 +1,11 @@
 {
     "ocpp": {
         "status": {
+            "ocpp": "OCPP connection",
+            "connecting": "Connecting",
+            "connected": "Connected",
+            "error": "Error",
+            "status": "State"
         },
         "navbar": {
             "ocpp": "OCPP"

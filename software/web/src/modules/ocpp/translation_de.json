@@ -1,6 +1,11 @@
 {
     "ocpp": {
         "status": {
+            "ocpp": "OCPP-Verbindung",
+            "connecting": "Verbinde",
+            "connected": "Verbunden",
+            "error": "Fehler",
+            "status": "Status"
         },
         "navbar": {
             "ocpp": "OCPP"
