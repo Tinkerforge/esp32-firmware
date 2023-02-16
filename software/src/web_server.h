@@ -41,7 +41,7 @@ public:
 
     void beginChunkedResponse(uint16_t code, const char *content_type);
 
-    void sendChunk(const char *chunk, size_t chunk_len);
+    int sendChunk(const char *chunk, size_t chunk_len);
 
     WebServerRequestReturnProtect endChunkedResponse();
 

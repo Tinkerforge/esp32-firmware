@@ -349,13 +349,13 @@ void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_t
     }
 }
 
-void WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
+int WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
 {
     auto result = httpd_resp_send_chunk(req, chunk, chunk_len);
     if (result != ESP_OK) {
         printf("Failed to send response chunk: %d\n", result);
-        return;
     }
+    return result;
 }
 
 WebServerRequestReturnProtect WebServerRequest::endChunkedResponse()
