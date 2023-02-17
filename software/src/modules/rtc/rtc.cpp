@@ -80,6 +80,7 @@ void Rtc::update_system_time()
             return;
 
         settimeofday(&t, nullptr);
+        ntp.set_synced();
     }
 }
 
@@ -180,7 +181,6 @@ void Rtc::register_urls()
             return;
         }
 
-        ntp.set_synced();
         update_system_time();
     }, true);
 
