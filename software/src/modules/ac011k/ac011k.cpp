@@ -790,6 +790,7 @@ void AC011K::pre_setup() {
 }
 
 void AC011K::setup() {
+    logger.printfln("BUILD info: %s.", build_info_str());
     evse.setup_evse();
     evse.update_all_data();
     evse.setup();
