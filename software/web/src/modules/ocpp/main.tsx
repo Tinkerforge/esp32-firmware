@@ -80,6 +80,8 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
         if (!state || !state.state)
             return (<></>);
 
+        let ocpp_debug = API.hasFeature("ocpp_debug");
+
         return (
             <>
                 <ConfigForm id="ocpp_config_form" title={__("ocpp.content.ocpp")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
@@ -201,14 +203,18 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
 
                     <CollapsedSection label={__("ocpp.content.configuration")}>
                         {(Object.keys(state.configuration) as Array<keyof typeof state.configuration>).map((k, i) => (
-                            <FormRow label={k}>
-                                <InputText value={state.configuration[k]}
-                                           onValue={(v) => this.setState({configuration: {...this.state.configuration, [k]: v}})}
-                                           onfocusout={() => API.call("ocpp/change_configuration", {
-                                                key: k,
-                                                value: state.configuration[k]
-                                           }, "lalala")} />
-                            </FormRow>)
+                            ocpp_debug ?
+                                <FormRow label={k}>
+                                    <InputText value={state.configuration[k]}
+                                            onValue={(v) => this.setState({configuration: {...this.state.configuration, [k]: v}})}
+                                            onfocusout={() => API.call("ocpp/change_configuration", {
+                                                    key: k,
+                                                    value: state.configuration[k]
+                                            }, "lalala")} />
+                                </FormRow> :
+                                <FormRow label={k}>
+                                    <InputText value={state.configuration[k]} />
+                                </FormRow>)
                         )}
                     </CollapsedSection>
                 </ConfigForm>
