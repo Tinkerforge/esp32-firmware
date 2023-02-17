@@ -31,7 +31,7 @@ def main():
         fatal_error("Firmware {} not found.".format(sys.argv[1]))
 
     firmware_type = sys.argv[3]
-    if firmware_type not in ["esp32", "esp32_ethernet", "warp2"]:
+    if firmware_type not in ["esp32", "esp32_ethernet", "warp2", "energy_manager"]:
         fatal_error("Unknown firmware type {}".format(firmware_type))
 
     PORT = sys.argv[2]
