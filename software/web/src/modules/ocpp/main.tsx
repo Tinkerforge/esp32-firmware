@@ -227,6 +227,7 @@ render(<Ocpp/>, $('#ocpp')[0])
 
 interface OcppStatusState {
     state: API.getType['ocpp/state']
+    config: API.getType['ocpp/config'];
 }
 
 export class OcppStatus extends Component<{}, OcppStatusState>
@@ -237,6 +238,10 @@ export class OcppStatus extends Component<{}, OcppStatusState>
 
         util.eventTarget.addEventListener('ocpp/state', () => {
             this.setState({state: API.get('ocpp/state')})
+        });
+
+        util.eventTarget.addEventListener('ocpp/config', () => {
+            this.setState({config: API.get('ocpp/config')})
         });
     }
 
@@ -288,7 +293,7 @@ export class OcppStatus extends Component<{}, OcppStatusState>
 
     render(props: {}, state: OcppStatusState)
     {
-        if (!state || !state.state)
+        if (!state || !state.state || !state.config || !state.config.enable)
             return <></>;
 
         return <>
