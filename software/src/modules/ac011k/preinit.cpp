@@ -9,11 +9,20 @@ extern API api;
 
 #include "modules.h"
 
-#define BUTTON_MIN_PRESS_THRES 10000
-#define BUTTON_STAGE_0_PRESS_THRES 15000
-#define BUTTON_STAGE_1_PRESS_THRES 20000
-#define BUTTON_STAGE_2_PRESS_THRES 25000
-#define BUTTON_MAX_PRESS_THRES 30000
+static const int BUTTON_STAGE_IS_PRESSED = 100;
+static const int BUTTON_STAGE_DELETE_NETWORK = 10000;
+static const int BUTTON_STAGE_DELETE_CONFIG = 15000;
+static const int BUTTON_STAGE_DELETE_ALL = 20000;
+static const int BUTTON_STAGE_OVERTIME = 25000;
+
+typedef enum EraseStages {
+
+    doNothingNoPress = 0,
+    deleteNetwork = 1,
+    deleteConfig = 2,
+    deleteAll = 3,
+    doNothingWithPress = 4
+};
 
 #include "../ac011k_hardware/ac011k_hardware.h"
 
@@ -26,56 +35,52 @@ void evse_v2_button_recovery_handler() {
     digitalWrite(GREEN_LED, HIGH);
     digitalWrite(RED_LED, HIGH);
 
-    uint8_t stage = 0;
-    bool first = true;
+    EraseStages stage = doNothingNoPress;
+    bool oneTimePrint = true;
     bool btn = digitalRead(BUTTON);
 
-    while(btn == LOW && !deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
+    while(btn == LOW && !deadline_elapsed(start + BUTTON_STAGE_OVERTIME)) {
         btn = digitalRead(BUTTON);
- 
-        if (first) {
-            logger.printfln("Button SW3 is pressed. Waiting for release.");
-            first = false;
-            digitalWrite(GREEN_LED, LOW);
+        
+        if (deadline_elapsed(start + BUTTON_STAGE_IS_PRESSED) && !deadline_elapsed(start + BUTTON_STAGE_DELETE_NETWORK)) {
+            // log one time, that the button is pressed.
+            if (oneTimePrint) {
+                logger.printfln("Button SW3 is pressed. Waiting for release.");
+                oneTimePrint = false;
+                digitalWrite(GREEN_LED, LOW);
+            }
+            stage = doNothingWithPress;
         }
-        if (deadline_elapsed(start + BUTTON_MIN_PRESS_THRES) && !deadline_elapsed(start + BUTTON_STAGE_0_PRESS_THRES)) {
+        if (deadline_elapsed(start + BUTTON_STAGE_DELETE_NETWORK) && !deadline_elapsed(start + BUTTON_STAGE_DELETE_CONFIG)) {
             led_blink(GREEN_LED, 200, 1, 0);
-            stage = 0;
+            stage = deleteNetwork;
         }
-        if (deadline_elapsed(start + BUTTON_STAGE_0_PRESS_THRES) && !deadline_elapsed(start + BUTTON_STAGE_1_PRESS_THRES)) {
+        if (deadline_elapsed(start + BUTTON_STAGE_DELETE_CONFIG) && !deadline_elapsed(start + BUTTON_STAGE_DELETE_ALL)) {
             led_blink(GREEN_LED, 200, 1, 0);
             led_blink(RED_LED, 200, 1, 0);
-            stage = 1;
+            stage = deleteConfig;
         }
-        if (deadline_elapsed(start + BUTTON_STAGE_1_PRESS_THRES) && !deadline_elapsed(start + BUTTON_STAGE_2_PRESS_THRES)) {
+        if (deadline_elapsed(start + BUTTON_STAGE_DELETE_ALL) && !deadline_elapsed(start + BUTTON_STAGE_OVERTIME)) {
             digitalWrite(GREEN_LED, HIGH);
             led_blink(RED_LED, 200, 1, 0);
-            stage = 2;
-        }
-        if (deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
-            digitalWrite(RED_LED, HIGH);
-            logger.printfln("Button SW3 is pressed for more than %.3f seconds. Assuming this must be an error. Continuing normal boot.", BUTTON_MAX_PRESS_THRES / 1000.0);
-            return;
+            stage = deleteAll;
         }
     }
- 
-    if (!deadline_elapsed(start + 10)) {
-        // we considder this as no button press
-        return;
+    // check overtime exit from loop
+    if (deadline_elapsed(start + BUTTON_STAGE_OVERTIME)){
+        stage = doNothingWithPress;
     }
- 
-    if (!deadline_elapsed(start + BUTTON_MIN_PRESS_THRES)) {
-        logger.printfln("Button SW3 was pressed for less than %.3f seconds. Continuing normal boot.", BUTTON_MIN_PRESS_THRES / 1000.0);
-        return;
-    }
- 
-    logger.printfln("Button SW3 was pressed for %.3f seconds on startup. Starting recovery routine.", (millis() - start) / 1000.0);
-    logger.printfln("Requested recovery stage %u.", stage);
 
     switch (stage) {
-        // Stage 0 - User can't reach the web interface anymore. Remove network configuration and disable http_auth.
-        case 0:
-            logger.printfln("Running stage 0: Resetting network configuration and disabling web interface login");
+        case doNothingNoPress:
+            break;
+        case doNothingWithPress:
+            // switch securly all leds off
+            digitalWrite(RED_LED, HIGH);
+            digitalWrite(GREEN_LED, HIGH);
+            logger.printfln("Button SW3 is pressed for more than %.3f seconds. Assuming this must be an error. Continuing normal boot.", BUTTON_STAGE_OVERTIME / 1000.0);
+        case deleteNetwork:
+            logger.printfln("Resetting network configuration and disabling web interface login");
 
             mount_or_format_spiffs();
             api.restorePersistentConfig("users/config", &users.user_config);
@@ -84,28 +89,23 @@ void evse_v2_button_recovery_handler() {
 
             api.removeConfig("wifi/sta_config");
             api.removeConfig("wifi/ap_config");
-            logger.printfln("Stage 0 done");
+            logger.printfln("network reset done");
             break;
-        // Stage 1 - ESP crashed when booting after stage 0. Remove all configuration
-        case 1:
-            logger.printfln("Running stage 1: Removing configuration but keeping charge log.");
+        case deleteConfig:
+            logger.printfln("Removing configuration but keeping charge log.");
             mount_or_format_spiffs();
             api.removeAllConfig();
-            logger.printfln("Stage 1 done");
+            logger.printfln("config reset done");
             break;
-        // Stage 2 - Format data partition. (This also removes tracked charges and the username file)
-        case 2:
-            logger.printfln("Running stage 2: Formatting data partition");
+        case deleteAll:
+            logger.printfln("Formatting data partition");
             LittleFS.begin(false, "/spiffs", 10, "spiffs");
             LittleFS.format();
             LittleFS.end();
-            logger.printfln("Stage 2 done");
+            logger.printfln("factory reset done");
             break;
-        // Stage 3 - ESP still crashed after formatting the data partition. The firmware is unrecoverably broken. To prevent a fast boot loop, delay here.
-        case 3:
-            logger.printfln("Running stage 3: Firmware is probably broken. Delaying next crash for a minute.");
-            delay(60 * 1000);
-            logger.printfln("Stage 3 done");
+        default:
+            logger.printfln("Oh oh! unknown state in preinit.cpp: %s", stage);
             break;
     }
 }
