@@ -545,8 +545,7 @@ void WebSockets::start(const char *uri)
     task_scheduler.scheduleOnce([this]() {
         watchdog_handle = watchdog.add(
             "websocket_worker",
-            "Websocket worker was not able to start for five minutes. The control socket is probably dead.",
-            5 * 60 * 1000);
+            "Websocket worker was not able to start for five minutes. The control socket is probably dead.");
     }, WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT);
 #endif
 

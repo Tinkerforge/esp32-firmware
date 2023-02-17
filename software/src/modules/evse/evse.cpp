@@ -1063,7 +1063,7 @@ void EVSE::update_all_data()
         evse_user_calibration.get("resistance_880")->get(i)->updateInt(resistance_880[i]);
 
 #if MODULE_WATCHDOG_AVAILABLE()
-    static size_t watchdog_handle = watchdog.add("evse_all_data", "EVSE not reachable", 10 * 60 * 1000);
+    static size_t watchdog_handle = watchdog.add("evse_all_data", "EVSE not reachable");
     watchdog.reset(watchdog_handle);
 #endif
 }

@@ -1291,7 +1291,7 @@ void EVSEV2::update_all_data()
     evse_external_defaults.get("clear_on_disconnect")->updateBool(external_default_clear_on_disconnect);
 
 #if MODULE_WATCHDOG_AVAILABLE()
-    static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable", 10 * 60 * 1000);
+    static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable");
     watchdog.reset(watchdog_handle);
 #endif
 }

@@ -36,6 +36,9 @@ struct watchdog_reg {
     const char *message = nullptr;
     uint32_t last_reset = 0;
     uint32_t timeout = 0;
+    // This timeout must be reached before the watchdog logic starts checking for timeouts.
+    // Prevents boot-loops if a watchdog is triggered immediately after booting.
+    uint32_t initial_deadline = 0;
 };
 
 static std::mutex regs_mutex{};
@@ -45,13 +48,21 @@ static size_t regs_used = 0;
 void watchdog_task(void *arg)
 {
     esp_task_wdt_add(xTask);
-
     for (;;) {
         {
             std::lock_guard<std::mutex> l{regs_mutex};
             for(int i = 0; i < regs_used; ++i) {
+                // Timeout 0 means that this registration is not initialized or disabled.
                 if (regs[i].timeout == 0)
                     continue;
+
+                // Don't trigger the watchdog if the initial deadline has not been reached.
+                if (regs[i].initial_deadline != 0 && !deadline_elapsed(regs[i].initial_deadline))
+                    continue;
+
+                // Initial deadline has been reached.
+                // Set it to 0 to not fall back into the logic above when the system timer wraps.
+                regs[i].initial_deadline = 0;
 
                 if (!deadline_elapsed(regs[i].last_reset + regs[i].timeout))
                     continue;
@@ -99,13 +110,15 @@ void Watchdog::loop()
 
 }
 
-int Watchdog::add(const char *name, const char *message, uint32_t timeout_ms)
+int Watchdog::add(const char *name, const char *message, uint32_t timeout_ms, uint32_t initial_deadline_ms)
 {
-    // We can't watchdogs to trigger within the first five minutes after start-up,
-    // as the uptime tracker writes only after five minutes.
-    // The easiest way to ensure this is to disallow high frequency watchdogs completely.
-    // This also makes sure that we don't reboot too often, giving the user a chance to connect
-    // to the web interface to diagnose and potentially fix the issue.
+    // This makes sure that we don't reboot too often, giving the user a chance to connect
+    // to the web interface to diagnose and potentially fix the issue that will trigger the watchdog.
+    if (initial_deadline_ms < 30 * 60 * 1000) {
+        logger.printfln("Can't register %s to watchdog: Initial deadline %u not allowed as it is less than 30 minutes", name, timeout_ms);
+    }
+
+    // Some tasks (for example firmware updates via a crappy WiFi connection) can take quite some time.
     if (timeout_ms < 5 * 60 * 1000) {
         logger.printfln("Can't register %s to watchdog: Timeout %u not allowed as it is less than 5 minutes", name, timeout_ms);
     }
@@ -119,6 +132,7 @@ int Watchdog::add(const char *name, const char *message, uint32_t timeout_ms)
     regs[regs_used].name = name;
     regs[regs_used].message = message;
     regs[regs_used].timeout = timeout_ms;
+    regs[regs_used].initial_deadline = initial_deadline_ms;
     regs[regs_used].last_reset = millis();
     ++regs_used;
     return regs_used - 1;
