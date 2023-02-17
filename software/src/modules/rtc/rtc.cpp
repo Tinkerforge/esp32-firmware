@@ -70,6 +70,8 @@ void Rtc::update_system_time()
     }
 
     struct timeval t = this->get_time();
+    if (t.tv_sec == 0 && t.tv_usec == 0)
+        return;
 
     {
         std::lock_guard<std::mutex> lock{ntp.mtx};
