@@ -58,12 +58,6 @@ void AC011KHardware::pre_setup()
         {"energy_abs_raw",   Config::Float(0.0)},
         {"energy_abs_delta", Config::Float(0.0)},
     });
-
-    if(!api.restorePersistentConfig("ac011k/hardware", &ac011k_hardware)) {
-        logger.printfln("AC011K error, could not restore persistent storage ac011k_hardware");
-    } else {
-        sprintf(local_uid_str, "%s", ac011k_hardware.get("UID")->asEphemeralCStr());
-    }
 }
 
 void AC011KHardware::persist_config()
@@ -86,8 +80,14 @@ void AC011KHardware::setup()
     task_scheduler.scheduleWithFixedDelay([](){
         static bool led_blink_state = false;
         led_blink_state = !led_blink_state;
-        digitalWrite(GREEN_LED, led_blink_state ? HIGH : LOW);
+        digitalWrite(GREEN_LED, led_blink_state ? LED_OFF : LED_ON);
     }, 0, 1000);
+
+    if(!api.restorePersistentConfig("ac011k/hardware", &ac011k_hardware)) {
+        logger.printfln("AC011K error, could not restore persistent storage ac011k_hardware");
+    } else {
+        sprintf(local_uid_str, "%s", ac011k_hardware.get("UID")->asEphemeralCStr());
+    }
 
     api.restorePersistentConfig("ac011k_hardware/config", &config);
     api.restorePersistentConfig("ac011k_hardware/meter", &meter);
@@ -112,27 +112,24 @@ void AC011KHardware::register_urls()
 
 void AC011KHardware::loop()
 {
-    static int last_btn_value = HIGH;
     static uint32_t last_btn_change = 0;
+    static bool last_btn_value = digitalRead(BUTTON);
     static bool first = false;
 
     bool btn = digitalRead(BUTTON);
-    if (!factory_reset_requested) {
-        digitalWrite(RED_LED, btn);
-    }
+    digitalWrite(RED_LED, btn);
 
     if (btn != last_btn_value) {
         last_btn_change = millis();
-        logger.printfln("Button SW3 changed state to: %s.", (btn == HIGH) ? "high" : "low" );
+        logger.printfln("Button SW3 changed state to: %s.", (btn == BUTTON_PRESSED) ? "pressed" : "not pressed" );
         first = true;
     }
 
     last_btn_value = btn;
 
     if (!btn && first && deadline_elapsed(last_btn_change + 10000)) {
-        logger.printfln("Button SW3 was pressed for 10 seconds. But resetting should be done on boot. Please use power off/on or SW1 to restart and press SW3 on boot to reset.");
+        logger.printfln("Button SW3 was pressed for 10 seconds, restarting.");
         first = false;
-        //logger.printfln("Button SW3 was pressed for 10 seconds. Resetting to factory defaults.");
-        //factory_reset_requested = true;
+        ESP.restart();
     }
 }

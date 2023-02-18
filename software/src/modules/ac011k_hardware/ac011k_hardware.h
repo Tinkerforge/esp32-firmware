@@ -25,6 +25,10 @@
 #define GREEN_LED 25
 #define RED_LED 33
 #define BUTTON 32
+#define LED_OFF HIGH
+#define LED_ON LOW
+#define BUTTON_NOT_PRESSED HIGH
+#define BUTTON_PRESSED LOW
 
 class AC011KHardware {
 public:
