@@ -7,7 +7,13 @@ FW="${1:-AC011K-AE-25_V1.2.460}"
 PREFIX="src/modules/ac011k/"
 
 function finish {
-  popd > /dev/null
+    if ! [[ -r GD_firmware.h ]]
+    then
+        echo
+        echo "ERROR: GD firmware NOT ready for embedding. :-("
+        echo
+    fi
+    popd > /dev/null
 }
 trap finish EXIT
 
@@ -69,21 +75,36 @@ else
     echo "$FW.bin already there."
 fi
 
-
-if ! command -v sed &> /dev/null
-then
-    echo "Sed could not be found, but is needed to convert the GD firmware for embedding."
-    echo "Please install sed. Alternatively you can edit the GD_firmware.h file by hand and replace 'unsigned char' with 'const unsigned char'."
-fi
-
 if ! [[ -r GD_firmware.h ]]
 then
-    ln -sf $FW.bin GD_firmware
-    if xxd -i GD_firmware GD_firmware.h && sed -i '' 's/^unsigned char/const unsigned char/' GD_firmware.h ; then
-        echo "GD firmware $FW.bin converted to GD_firmware.h."
+    if command -v sed &> /dev/null
+    then
+        if xxd -i $FW.bin| sed -e 's/^unsigned char .*\[/const unsigned char GD_firmware\[/' -e 's/unsigned int.*=/unsigned int GD_firmware_len =/' > GD_firmware.h; then
+            echo "GD firmware $FW.bin converted to GD_firmware.h."
+        else
+            echo "Could not convert GD firmware $FW.bin to GD_firmware.h. Exiting."
+            exit 1
+        fi
     else
-        echo "Could not convert GD firmware $FW.bin to GD_firmware.h. Exiting."
-        exit 1
+        if xxd -i $FW.bin $FW.h; then
+            echo "GD firmware $FW.bin converted to $FW.h."
+            echo
+            echo "But sed could not be found!"
+            echo "It is needed to convert the GD firmware for embedding automatically."
+            echo "Please install sed."
+            echo
+            echo "Alternatively you can copy ${PREFIX}${FW}.h to GD_firmware.h by hand,"
+            echo "edit ${PREFIX}GD_firmware.h and change the two following lines:"
+            echo
+            grep unsigned $FW.h
+            echo
+            echo "'unsigned char...' needs to be 'const unsigned char GD_firmware[] = {'."
+            echo "'unsigned int...' needs to start with 'unsigned int GD_firmware_len = '."
+            exit 1
+        else
+            echo "Could not convert GD firmware $FW.bin to $FW.h. Exiting."
+            exit 1
+        fi
     fi
 else
     echo "GD_firmware.h already there."
