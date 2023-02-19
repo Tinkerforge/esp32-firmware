@@ -6,4 +6,4 @@
 
 {{{module_extern_decls}}}
 
-extern Config modules;
+extern ConfigRoot modules;
