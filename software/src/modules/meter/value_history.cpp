@@ -110,11 +110,13 @@ void ValueHistory::add_sample(float sample)
     ++samples_this_interval;
 
 #if MODULE_WS_AVAILABLE()
-    char *buf;
-    int buf_written = asprintf(&buf, "{\"topic\":\"meter/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[%d]}}\n", samples_per_second(), (int)val);
+    {
+        char *buf;
+        int buf_written = asprintf(&buf, "{\"topic\":\"meter/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[%d]}}\n", samples_per_second(), (int)val);
 
-    if (buf_written > 0) {
-        ws.web_sockets.sendToAllOwned(buf, buf_written);
+        if (buf_written > 0) {
+            ws.web_sockets.sendToAllOwned(buf, buf_written);
+        }
     }
 #endif
 
