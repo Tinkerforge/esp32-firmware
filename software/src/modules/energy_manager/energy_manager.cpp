@@ -55,7 +55,7 @@ void EnergyManager::pre_setup()
     energy_manager_config = ConfigRoot(Config::Object({
         {"default_mode", Config::Uint(0, 0, 3)},
         {"auto_reset_mode", Config::Bool(false)},
-        {"auto_reset_time", Config::Str("", 0, 5)},
+        {"auto_reset_time", Config::Uint(0, 0, 1439)},
         {"excess_charging_enable", Config::Bool(false)},
         {"contactor_installed", Config::Bool(false)},
         {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
@@ -92,10 +92,6 @@ void EnergyManager::pre_setup()
         }
         if (input4_config_limit_ma > max_current_ma) {
             return "Input 4 current limit exceeds maximum total current of all chargers.";
-        }
-
-        if (cfg.get("auto_reset_mode")->asBool() && cfg.get("auto_reset_time")->asString().length() != 5) {
-            return "Must set reset time when reset to default is enabled.";
         }
 
         return "";
@@ -186,9 +182,9 @@ void EnergyManager::setup()
     max_current_unlimited_ma    = charge_manager.charge_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
     min_current_ma              = charge_manager.charge_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
 
-    const String &reset_time    = energy_manager_config_in_use.get("auto_reset_time")->asString();
-    auto_reset_hour   = reset_time.substring(0, 2).toInt();
-    auto_reset_minute = reset_time.substring(3, 5).toInt();
+    uint32_t auto_reset_time    = energy_manager_config_in_use.get("auto_reset_time")->asUint();
+    auto_reset_hour   = auto_reset_time / 60;
+    auto_reset_minute = auto_reset_time % 60;
 
     mode = default_mode;
     energy_manager_runtime_config.get("mode")->updateUint(mode);

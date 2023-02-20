@@ -14,7 +14,7 @@ export interface state {
 export interface config {
     default_mode: number,
     auto_reset_mode: boolean,
-    auto_reset_time: string,
+    auto_reset_time: number,
     excess_charging_enable: boolean,
     contactor_installed: boolean,
     phase_switching_mode: number,
