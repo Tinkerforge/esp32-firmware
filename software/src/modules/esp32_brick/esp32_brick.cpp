@@ -24,6 +24,7 @@
 #include "tools.h"
 #include "hal_arduino_esp32_brick/hal_arduino_esp32_brick.h"
 #include "event_log.h"
+#include "modules.h"
 #include "task_scheduler.h"
 
 #if TF_LOCAL_ENABLE != 0
