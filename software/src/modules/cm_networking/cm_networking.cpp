@@ -546,12 +546,12 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
     return true;
 }
 
-bool CMNetworking::check_results()
+void CMNetworking::check_results()
 {
     {
         std::lock_guard<std::mutex> lock{scan_results_mutex};
         if (!mdns_query_async_get_results(scan, 0, &scan_results))
-            return false; // This should never happen as check_results is only called if we are notified the search has finished.
+            return; // This should never happen as check_results is only called if we are notified the search has finished.
     }
 
     mdns_query_async_delete(scan);
@@ -562,7 +562,7 @@ bool CMNetworking::check_results()
     String s = get_scan_results();
     ws.pushRawStateUpdate(s, "charge_manager/scan_result");
 #endif
-    return true;
+    return;
 }
 
 void CMNetworking::start_scan()

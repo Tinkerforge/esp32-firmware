@@ -155,10 +155,10 @@ struct cm_state_v1 {
     uint32_t charging_time;
     uint16_t allowed_charging_current;
     uint16_t supported_current;
-    
+
     uint8_t iec61851_state;
     uint8_t charger_state;
-    uint8_t error_state;    
+    uint8_t error_state;
     /* state_flags
     bit 7 - managed
     bit 6 - control_pilot_permanently_disconnected
@@ -240,7 +240,7 @@ public:
     String validate_state_packet_header(const struct cm_state_packet *pkt, ssize_t recv_length) const;
     bool seq_num_invalid(uint16_t received_sn, uint16_t last_seen_sn) const;
 
-    bool check_results();
+    void check_results();
 
     bool scanning = false;
 
