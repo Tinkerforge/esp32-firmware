@@ -186,7 +186,10 @@
         },
         "script": {
             "time": "Uhrzeit",
-            "power": "Leistung (Watt)"
+            "time_legend_format": "{DD}.{MM}.{YYYY} {HH}:{mm}:{ss}",
+            "time_long_date_format": "{DD}.{MM}.{YYYY}",
+            "time_short_date_format": "{DD}.{MM}.",
+            "power": "Leistung"
         }
     }
 }

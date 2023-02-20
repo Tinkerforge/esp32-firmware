@@ -186,7 +186,10 @@
         },
         "script": {
             "time": "Time of day",
-            "power": "Power (Watt)"
+            "time_legend_format": "{YYYY}-{MM}-{DD} {HH}:{mm}:{ss}",
+            "time_long_date_format": "{YYYY}-{MM}-{DD}",
+            "time_short_date_format": "{MM}-{DD}",
+            "power": "Power"
         }
     }
 }

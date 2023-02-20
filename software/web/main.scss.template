@@ -65,6 +65,7 @@ $container-max-widths: (
 @import "../node_modules/bootstrap/scss/spinners";
 @import "../node_modules/bootstrap/scss/utilities";
 //@import "../node_modules/bootstrap/scss/print";
+@import "../node_modules/uplot/dist/uPlot.min";
 
 .borderless-form-control {
     @extend .form-control;
@@ -506,4 +507,14 @@ body {
 .em-energy-analysis-chart {
     position: relative;
     aspect-ratio: 1.5;
+}
+
+#status_meter_chart_container .u-value {
+    min-width: 5em;
+    text-align: left;
+}
+
+#meter_chart .u-value {
+    min-width: 5em;
+    text-align: left;
 }

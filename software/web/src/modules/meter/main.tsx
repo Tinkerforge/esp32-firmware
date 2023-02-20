@@ -22,37 +22,7 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __, translate_unchecked } from "../../ts/translation";
-
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  ChartData,
-  ChartOptions,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
-interface LineProps {
-  options: ChartOptions<"line">;
-  data: ChartData<"line">;
-}
-
-import { h, render, Fragment, Component, ComponentChild } from "preact";
+import { h, render, createRef, Fragment, Component, ComponentChild } from "preact";
 import { PageHeader } from "../../ts/components/page_header";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { FormRow } from "../../ts/components/form_row";
@@ -62,6 +32,7 @@ import { InputSelect } from "src/ts/components/input_select";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
 import { OutputFloat } from "src/ts/components/output_float";
 import { Zap, ZapOff } from "react-feather";
+import uPlot from 'uplot';
 
 interface DetailedViewEntry {
     i: number,
@@ -131,19 +102,178 @@ const entries: DetailedViewEntry[] = [
     entry("total_kvarh",                       true,  "kvarh", true,  3)
 ];
 
-interface LiveExtra {
+interface UplotData {
+    timestamps: number[];
     samples: number[];
-    tooltip_titles: string[];
-    grid_ticks: {[id: number]: string[]};
-    grid_colors: {[id: number]: string[]};
-    last_minute: number;
 }
 
-interface HistoryExtra {
-    samples: number[];
-    tooltip_titles: string[];
-    grid_ticks: {[id: number]: string[]};
-    grid_colors: {[id: number]: string[]};
+interface UplotWrapperProps {
+    id: string;
+    class: string;
+    sidebar_id: string;
+    y_min: number;
+    y_max: number;
+}
+
+class UplotWrapper extends Component<UplotWrapperProps, {}> {
+    uplot: uPlot;
+    pending_data: UplotData;
+    visible: boolean;
+    div_ref = createRef();
+    observer: ResizeObserver;
+
+    constructor() {
+        super();
+
+        this.visible = false;
+    }
+
+    shouldComponentUpdate() {
+        return false;
+    }
+
+    componentDidMount() {
+        if (this.uplot) {
+            return;
+        }
+
+        // We have to use jquery here or else the events don't fire?
+        // This can be removed once the sidebar is ported to preact.
+        $(`#sidebar-${this.props.sidebar_id}`).on('shown.bs.tab', () => {
+            console.log('UplotWrapper shown ' + this.props.sidebar_id);
+
+            this.visible = true;
+
+            if (this.pending_data !== undefined) {
+                let pending_data = this.pending_data;
+                this.pending_data = undefined;
+
+                this.set_data(pending_data);
+            }
+        });
+
+        $(`#sidebar-${this.props.sidebar_id}`).on('hidden.bs.tab', () => {
+            console.log('UplotWrapper hidden ' + this.props.sidebar_id);
+            this.visible = false;
+        });
+
+        let get_size = () => {
+            let div = this.div_ref.current;
+            let aspect_ratio = parseFloat(getComputedStyle(div).aspectRatio);
+
+            return {
+                width: div.clientWidth,
+                height: div.clientWidth / aspect_ratio,
+            }
+        }
+
+        let options = {
+            ...get_size(),
+            pxAlign: 0,
+            cursor: {
+                drag: {
+                    x: false, // disable zoom
+                },
+            },
+            series: [
+                {
+                    label: __("meter.script.time"),
+                    value: __("meter.script.time_legend_format"),
+                },
+                {
+                    show: true,
+                    pxAlign: 0,
+                    spanGaps: false,
+                    label: __("meter.script.power"),
+                    value: (self: uPlot, rawValue: number) => rawValue !== null ? rawValue + " W" : null,
+                    stroke: "#007bff",
+                    width: 2,
+                },
+            ],
+            axes: [
+                {
+                    incrs: [
+                        60,
+                        60 * 2,
+                        3600,
+                        3600 * 2,
+                        3600 * 4,
+                        3600 * 6,
+                        3600 * 8,
+                        3600 * 12,
+                        3600 * 24,
+                    ],
+                    // [0]:   minimum num secs in found axis split (tick incr)
+                    // [1]:   default tick format
+                    // [2-7]: rollover tick formats
+                    // [8]:   mode: 0: replace [1] -> [2-7], 1: concat [1] + [2-7]
+                    values: [
+                        // tick incr  default      year                                             month  day                                               hour  min   sec   mode
+                        [3600,        "{HH}:{mm}", "\n" + __("meter.script.time_long_date_format"), null,  "\n" + __("meter.script.time_short_date_format"), null, null, null, 1],
+                        [60,          "{HH}:{mm}", null,                                            null,  null,                                             null, null, null, 1],
+                    ],
+                },
+            ],
+            scales: {
+                y: {
+                    range: {
+                        max: {
+                            soft: this.props.y_max,
+                            mode: (this.props.y_max !== undefined ? 1 : 3) as uPlot.Range.SoftMode,
+                        },
+                        min: {
+                            soft: this.props.y_min,
+                            mode: (this.props.y_min !== undefined ? 1 : 3) as uPlot.Range.SoftMode,
+                        },
+                    },
+                },
+            },
+        };
+
+        let div = this.div_ref.current;
+        this.uplot = new uPlot(options, [], div);
+
+        let resize = () => {
+            let size = get_size();
+
+            if (size.width == 0 || size.height == 0) {
+                return;
+            }
+
+            this.uplot.setSize(get_size());
+        };
+
+        try {
+            this.observer = new ResizeObserver(() => {
+                resize();
+            });
+
+            this.observer.observe(div);
+        } catch (e) {
+            setInterval(() => {
+                resize();
+            }, 500);
+
+            window.addEventListener("resize", e => {
+                resize();
+            });
+        }
+    }
+
+    render(props?: UplotWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
+        return <div ref={this.div_ref} id={props.id} class={props.class} />
+    }
+
+    set_data(data: UplotData) {
+        if (!this.uplot || !this.visible) {
+            this.pending_data = data;
+            return;
+        }
+
+        this.pending_data = undefined;
+
+        this.uplot.setData([data.timestamps, data.samples]);
+    }
 }
 
 interface MeterState {
@@ -151,19 +281,11 @@ interface MeterState {
     values: Readonly<API.getType['meter/values']>;
     phases: Readonly<API.getType['meter/phases']>;
     all_values: Readonly<API.getType['meter/all_values']>;
-    live_extra: LiveExtra;
-    history_extra: HistoryExtra;
-    history_x_ticks_modulo: number;
     chart_selected: "history"|"live";
 }
 
-interface StatusMeterChartState {
-    history_extra: HistoryExtra;
-    history_x_ticks_modulo: number;
-}
-
-function calculate_live_extra(offset: number, samples_per_second: number, samples: number[], last_minute: number): LiveExtra {
-    let extra: LiveExtra = {samples: samples, tooltip_titles: [], grid_ticks: {0: []}, grid_colors: {0: []}, last_minute: last_minute};
+function calculate_live_data(offset: number, samples_per_second: number, samples: number[]): UplotData {
+    let data: UplotData = {timestamps: new Array(samples.length), samples: samples};
     let now = Date.now();
     let start;
     let step;
@@ -180,27 +302,16 @@ function calculate_live_extra(offset: number, samples_per_second: number, sample
     }
 
     for(let i = 0; i < samples.length; ++i) {
-        let d = new Date(start + i * step);
-        extra.tooltip_titles[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false});
-
-        if(d.getSeconds() == 0 && d.getMinutes() != extra.last_minute) {
-            extra.grid_ticks[0][i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
-            extra.grid_colors[0][i] = "rgba(0,0,0,0.1)";
-            extra.last_minute = d.getMinutes();
-        }
-        else {
-            extra.grid_ticks[0][i] = "";
-            extra.grid_colors[0][i] = "rgba(0,0,0,0)";
-        }
+        data.timestamps[i] = (start + i * step) / 1000;
     }
 
-    return extra;
+    return data;
 }
 
-function calculate_history_extra(offset: number, samples: Readonly<number[]>): HistoryExtra {
+function calculate_history_data(offset: number, samples: number[]): UplotData {
     const HISTORY_MINUTE_INTERVAL = 4;
 
-    let extra: HistoryExtra = {samples: [], tooltip_titles: [], grid_ticks: {6: [], 12: []}, grid_colors: {6: [], 12: []}};
+    let data: UplotData = {timestamps: new Array(samples.length), samples: samples};
     let now = Date.now();
     let step = HISTORY_MINUTE_INTERVAL * 60 * 1000;
     // (samples.length - 1) because step defines the gaps between two samples.
@@ -209,36 +320,12 @@ function calculate_history_extra(offset: number, samples: Readonly<number[]>): H
     // interval. to get nice aligned ticks nudge the ticks by at most half of a
     // sampling interval
     let start = Math.round((now - (samples.length - 1) * step - offset) / step) * step;
-    let last_hour: {[id:number]: number} = {6: -1, 12: -1};
-    let modulo = [6, 12];
 
     for(let i = 0; i < samples.length; ++i) {
-        extra.samples[i] = samples[i];
-
-        let d = new Date(start + i * step);
-        extra.tooltip_titles[i] = d.toLocaleTimeString(navigator.language, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false});
-
-        for (let k = 0; k < modulo.length; ++k) {
-            if (d.getHours() % modulo[k] == 0 && d.getHours() != last_hour[modulo[k]] && d.getMinutes() < HISTORY_MINUTE_INTERVAL) {
-                extra.grid_ticks[modulo[k]][i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
-
-                if (d.getHours() == 0) {
-                    extra.grid_colors[modulo[k]][i] = "rgba(1,1,1,0.75)";
-                }
-                else {
-                    extra.grid_colors[modulo[k]][i] = "rgba(0,0,0,0.1)";
-                }
-
-                last_hour[modulo[k]] = d.getHours();
-            }
-            else {
-                extra.grid_ticks[modulo[k]][i] = "";
-                extra.grid_colors[modulo[k]][i] = "rgba(0,0,0,0)";
-            }
-        }
+        data.timestamps[i] = (start + i * step) / 1000;
     }
 
-    return extra;
+    return data;
 }
 
 function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
@@ -247,109 +334,11 @@ function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
     return a.slice(-tail);
 }
 
-function build_chart_data(chart_extra: LiveExtra|HistoryExtra, grid_ticks_modulo: number) {
-    let data: ChartData<"line"> = {
-        labels: chart_extra.grid_ticks[grid_ticks_modulo],
-        datasets: [
-            {
-                data: chart_extra.samples,
-                backgroundColor: "#007bff",
-                borderColor: "#007bff",
-                normalized: true,
-            }
-        ]
-    };
-
-    return data;
-}
-
-function build_chart_options(chart_extra: LiveExtra|HistoryExtra, chart_container_id: string,
-                             suggested_min: number, suggested_max: number, step_size: number,
-                             grid_colors_modulo: number, on_resize_function: (width: number) => void) {
-    let options: ChartOptions<"line"> = {
-        normalized: true,
-        animation: false,
-        onResize: function(chart, size) {
-            let element = document.getElementById(chart_container_id);
-            chart.options.aspectRatio = parseFloat(getComputedStyle(element).aspectRatio);
-            on_resize_function(element.offsetWidth);
-        },
-        resizeDelay: 100, // workaround for onResize function being called before container aspect ratio was changed by CSS
-        layout: {
-            autoPadding: false,
-            padding: {
-                right: 25,
-            }
-        },
-        elements: {
-            point: {
-                pointStyle: false,
-            },
-            line: {
-                borderWidth: 2,
-            }
-        },
-        plugins: {
-            legend: {
-                display: false,
-            },
-            tooltip: {
-                intersect: false,
-                callbacks: {
-                    title: function(context) {
-                        return chart_extra.tooltip_titles[context[0].dataIndex];
-                    },
-                    label: function(context) {
-                        return " " + context.formattedValue + " Watt";
-                    }
-                }
-            }
-        },
-        scales: {
-            x: {
-                title: {
-                    display: true,
-                    text: __("meter.script.time"),
-                    font: {
-                        size: 14,
-                    }
-                },
-                ticks: {
-                    autoSkip: false,
-                    maxRotation: 0,
-                    includeBounds: false,
-                    sampleSize: 0,
-                },
-                grid: {
-                    color: chart_extra.grid_colors[grid_colors_modulo],
-                }
-            },
-            y: {
-                title: {
-                    display: true,
-                    text: __("meter.script.power"),
-                    font: {
-                        size: 14,
-                    }
-                },
-                border: {
-                    display: false,
-                },
-                ticks: {
-                    autoSkipPadding: 20,
-                    stepSize: step_size,
-                },
-                suggestedMin: suggested_min,
-                suggestedMax: suggested_max,
-            }
-        }
-    };
-
-    return options;
-}
-
 export class Meter extends Component<{}, MeterState> {
-    pending_live_extra: LiveExtra;
+    live_data: UplotData;
+    pending_live_data: UplotData = {timestamps: [], samples: []};
+    history_data: UplotData;
+    uplot_wrapper_ref = createRef();
 
     constructor() {
         super();
@@ -378,53 +367,53 @@ export class Meter extends Component<{}, MeterState> {
 
         util.eventTarget.addEventListener("meter/live", () => {
             let live = API.get("meter/live");
-            let live_extra = calculate_live_extra(live.offset, live.samples_per_second, live.samples, -1);
 
-            this.pending_live_extra = {samples: [], tooltip_titles: [], grid_ticks: {0: []}, grid_colors: {0: []}, last_minute: live_extra.last_minute};
+            this.live_data = calculate_live_data(live.offset, live.samples_per_second, live.samples);
+            this.pending_live_data = {timestamps: [], samples: []};
 
-            this.setState({live_extra: live_extra});
+            if (this.state.chart_selected == "live") {
+                this.update_uplot(this.live_data);
+            }
         });
 
         util.eventTarget.addEventListener("meter/live_samples", () => {
             let live = API.get("meter/live_samples");
-            let live_extra = calculate_live_extra(0, live.samples_per_second, live.samples, this.pending_live_extra.last_minute);
+            let live_extra = calculate_live_data(0, live.samples_per_second, live.samples);
 
-            this.pending_live_extra.samples.push(...live_extra.samples);
-            this.pending_live_extra.tooltip_titles.push(...live_extra.tooltip_titles);
-            this.pending_live_extra.grid_ticks[0].push(...live_extra.grid_ticks[0]);
-            this.pending_live_extra.grid_colors[0].push(...live_extra.grid_colors[0]);
-            this.pending_live_extra.last_minute = live_extra.last_minute;
+            this.pending_live_data.timestamps.push(...live_extra.timestamps);
+            this.pending_live_data.samples.push(...live_extra.samples);
 
-            if (this.pending_live_extra.samples.length >= 5) {
-                this.setState({
-                    live_extra: {
-                        samples: array_append(this.state.live_extra.samples, this.pending_live_extra.samples, 720),
-                        tooltip_titles: array_append(this.state.live_extra.tooltip_titles, this.pending_live_extra.tooltip_titles, 720),
-                        grid_ticks: {0: array_append(this.state.live_extra.grid_ticks[0], this.pending_live_extra.grid_ticks[0], 720)},
-                        grid_colors: {0: array_append(this.state.live_extra.grid_colors[0], this.pending_live_extra.grid_colors[0], 720)},
-                        last_minute: this.pending_live_extra.last_minute,
-                    }
-                });
+            if (this.pending_live_data.samples.length >= 5) {
+                this.live_data.timestamps = array_append(this.live_data.timestamps, this.pending_live_data.timestamps, 720);
+                this.live_data.samples = array_append(this.live_data.samples, this.pending_live_data.samples, 720);
 
-                this.pending_live_extra.samples = [];
-                this.pending_live_extra.tooltip_titles = [];
-                this.pending_live_extra.grid_ticks[0] = [];
-                this.pending_live_extra.grid_colors[0] = [];
+                this.pending_live_data.timestamps = [];
+                this.pending_live_data.samples = [];
+
+                if (this.state.chart_selected == "live") {
+                    this.update_uplot(this.live_data);
+                }
             }
         });
 
         util.eventTarget.addEventListener("meter/history", () => {
             let history = API.get("meter/history");
-            let history_extra = calculate_history_extra(history.offset, history.samples);
 
-            this.setState({history_extra: history_extra});
+            this.history_data = calculate_history_data(history.offset, history.samples);
+
+            if (this.state.chart_selected == "history") {
+                this.update_uplot(this.history_data);
+            }
         });
 
         util.eventTarget.addEventListener("meter/history_samples", () => {
             let history = API.get("meter/history_samples");
-            let history_extra = calculate_history_extra(0, array_append(this.state.history_extra.samples, history.samples, 720));
 
-            this.setState({history_extra: history_extra});
+            this.history_data = calculate_history_data(0, array_append(this.history_data.samples, history.samples, 720));
+
+            if (this.state.chart_selected == "history") {
+                this.update_uplot(this.history_data);
+            }
         });
 
         this.state = {
@@ -432,33 +421,18 @@ export class Meter extends Component<{}, MeterState> {
         } as any;
     }
 
+    update_uplot(data: UplotData) {
+        if (!this.uplot_wrapper_ref || !this.uplot_wrapper_ref.current) {
+            return;
+        }
+
+        this.uplot_wrapper_ref.current.set_data(data);
+    }
+
     render(props: {}, state: Readonly<MeterState>) {
         if (!state || !state.all_values) {
             return (<></>);
         }
-
-        let chart_extra = state[`${state.chart_selected}_extra`];
-
-        if (!chart_extra) {
-            return (<></>);
-        }
-
-        let grid_ticks_modulo;
-
-        if (state.chart_selected == "live") {
-            grid_ticks_modulo = 0;
-        } else {
-            grid_ticks_modulo = state.history_x_ticks_modulo;
-        }
-
-        let data = build_chart_data(chart_extra, grid_ticks_modulo);
-        let options = build_chart_options(chart_extra, "meter_chart", undefined, undefined, undefined, grid_ticks_modulo, (width) => {
-            if (width < 400) {
-                this.setState({history_x_ticks_modulo: 12});
-            } else {
-                this.setState({history_x_ticks_modulo: 6});
-            }
-        });
 
         return (
             <>
@@ -470,7 +444,10 @@ export class Meter extends Component<{}, MeterState> {
                                     <span class="h3">{__("meter.status.charge_history")}</span>
                                     <div>
                                         <InputSelect value={this.state.chart_selected} onValue={(v) => {
-                                            this.setState({chart_selected: v as any});
+                                            let chart_selected: "live"|"history" = v as any;
+
+                                            this.setState({chart_selected: chart_selected});
+                                            this.update_uplot(this[`${chart_selected}_data`]);
                                         }}
                                             items={[
                                                 ["history", __("meter.content.history")],
@@ -479,9 +456,7 @@ export class Meter extends Component<{}, MeterState> {
                                     </div>
                                 </div>
                             </div>
-                            <div id="meter_chart" class="meter-chart">
-                                <Line data={data} options={options} />
-                            </div>
+                            <UplotWrapper ref={this.uplot_wrapper_ref} id="meter_chart" class="meter-chart" sidebar_id="meter" y_min={undefined} y_max={undefined} />
                         </div>
                         <div class="col-lg-6 col-xl-4">
                             <FormSeparator heading={__("meter.content.statistics")} colClasses="col"/>
@@ -565,48 +540,48 @@ export class Meter extends Component<{}, MeterState> {
 
 render(<Meter />, $('#meter')[0]);
 
-export class StatusMeterChart extends Component<{}, StatusMeterChartState> {
+export class StatusMeterChart extends Component<{}, {}> {
+    history_data: UplotData;
+    uplot_wrapper_ref = createRef();
+
     constructor() {
         super();
 
         util.eventTarget.addEventListener("meter/history", () => {
             let history = API.get("meter/history");
-            let history_extra = calculate_history_extra(history.offset, history.samples);
 
-            this.setState({history_extra: history_extra});
+            this.history_data = calculate_history_data(history.offset, history.samples);
+
+            this.update_uplot();
         });
 
         util.eventTarget.addEventListener("meter/history_samples", () => {
             let history = API.get("meter/history_samples");
-            let history_extra = calculate_history_extra(0, array_append(this.state.history_extra.samples, history.samples, 720));
 
-            this.setState({history_extra: history_extra});
+            this.history_data = calculate_history_data(0, array_append(this.history_data.samples, history.samples, 720));
+
+            this.update_uplot();
         });
     }
 
-    render(props: {}, state: Readonly<MeterState>) {
-        if (!state || !state.history_extra) {
-            return (<></>);
+    update_uplot() {
+        if (!this.history_data || !this.uplot_wrapper_ref || !this.uplot_wrapper_ref.current) {
+            return;
         }
 
-        let data = build_chart_data(state.history_extra, state.history_x_ticks_modulo);
-        let options = build_chart_options(state.history_extra, "status_meter_chart", 0, 1500, 100, state.history_x_ticks_modulo, (width) => {
-            if (width < 375) {
-                this.setState({history_x_ticks_modulo: 12});
-            } else {
-                this.setState({history_x_ticks_modulo: 6});
-            }
-        });
+        this.uplot_wrapper_ref.current.set_data(this.history_data);
+    }
 
+    render(props: {}, state: {}) {
         return (
             <>
-                <Line data={data} options={options} />
+                <UplotWrapper ref={this.uplot_wrapper_ref} id="status_meter_chart" class="status-meter-chart" sidebar_id="status" y_min={0} y_max={1500} />
             </>
         )
     }
 }
 
-render(<StatusMeterChart />, $('#status_meter_chart')[0]);
+render(<StatusMeterChart />, $('#status_meter_chart_container')[0]);
 
 let meter_show_navbar = true;
 
