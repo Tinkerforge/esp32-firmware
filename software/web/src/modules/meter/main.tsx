@@ -140,8 +140,6 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         // We have to use jquery here or else the events don't fire?
         // This can be removed once the sidebar is ported to preact.
         $(`#sidebar-${this.props.sidebar_id}`).on('shown.bs.tab', () => {
-            console.log('UplotWrapper shown ' + this.props.sidebar_id);
-
             this.visible = true;
 
             if (this.pending_data !== undefined) {
@@ -153,7 +151,6 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         });
 
         $(`#sidebar-${this.props.sidebar_id}`).on('hidden.bs.tab', () => {
-            console.log('UplotWrapper hidden ' + this.props.sidebar_id);
             this.visible = false;
         });
 
