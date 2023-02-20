@@ -98,7 +98,29 @@ void ValueHistory::register_urls(String base_url)
 
 void ValueHistory::add_sample(float sample)
 {
-    if (live.used() == 0) {
+    int16_t val = std::min(INT16_MAX, (int)roundf(sample));
+    live.push(val);
+    live_last_update = millis();
+    end_this_interval = live_last_update;
+
+    if (samples_this_interval == 0) {
+        begin_this_interval = live_last_update;
+    }
+
+    ++samples_this_interval;
+
+#if MODULE_WS_AVAILABLE()
+    char *buf;
+    int buf_written = asprintf(&buf, "{\"topic\":\"meter/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[%d]}}\n", samples_per_second(), (int)val);
+
+    if (buf_written > 0) {
+        ws.web_sockets.sendToAllOwned(buf, buf_written);
+    }
+#endif
+
+    // start history task when first sample arrives. this adds the first sample to the
+    // history immediately to avoid and empty history for the first history period
+    if (live.used() == 1) {
         task_scheduler.scheduleWithFixedDelay([this](){
             int16_t history_val;
 
@@ -141,28 +163,8 @@ void ValueHistory::add_sample(float sample)
                 ws.web_sockets.sendToAllOwned(buf, buf_written);
             }
 #endif
-        }, 1000 * 60 * HISTORY_MINUTE_INTERVAL, 1000 * 60 * HISTORY_MINUTE_INTERVAL);
+        }, 0, 1000 * 60 * HISTORY_MINUTE_INTERVAL);
     }
-
-    int16_t val = std::min(INT16_MAX, (int)roundf(sample));
-    live.push(val);
-    live_last_update = millis();
-    end_this_interval = live_last_update;
-
-    if (samples_this_interval == 0) {
-        begin_this_interval = live_last_update;
-    }
-
-    ++samples_this_interval;
-
-#if MODULE_WS_AVAILABLE()
-    char *buf;
-    int buf_written = asprintf(&buf, "{\"topic\":\"meter/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[%d]}}\n", samples_per_second(), (int)val);
-
-    if (buf_written > 0) {
-        ws.web_sockets.sendToAllOwned(buf, buf_written);
-    }
-#endif
 }
 
 size_t ValueHistory::format_live(char *buf, size_t buf_size)
