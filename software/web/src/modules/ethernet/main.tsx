@@ -94,6 +94,7 @@ function update_ethernet_state() {
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('ethernet/state', update_ethernet_state);
+    source.addEventListener('ethernet/config', () => $('#status-ethernet').prop("hidden", !API.get("ethernet/config").enable_ethernet));
 }
 
 export function init() {

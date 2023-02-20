@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
-import { h, render, Fragment } from "preact";
+import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -33,6 +33,7 @@ import { InputSelect } from "src/ts/components/input_select";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputPassword } from "../../ts/components/input_password";
 import { Switch } from "../../ts/components/switch";
+import { IndicatorGroup } from "src/ts/components/indicator_group";
 
 type MqttConfig = API.getType['mqtt/config'];
 
@@ -178,20 +179,54 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
 
 render(<Mqtt/>, $('#mqtt')[0])
 
-function update_mqtt_state() {
-    let state = API.default_updater('mqtt/state', ['last_error'], false);
 
-    if(state.connection_state == 3) {
-        $('#mqtt_status_error').html(" " + state.last_error);
+interface MqttStatusState {
+    state: API.getType['mqtt/state']
+    config: API.getType['mqtt/config'];
+}
+
+export class MqttStatus extends Component<{}, MqttStatusState>
+{
+    constructor()
+    {
+        super();
+
+        util.eventTarget.addEventListener('mqtt/state', () => {
+            this.setState({state: API.get('mqtt/state')})
+        });
+
+        util.eventTarget.addEventListener('mqtt/config', () => {
+            this.setState({config: API.get('mqtt/config')})
+        });
+    }
+
+    render(props: {}, state: MqttStatusState)
+    {
+        if (!state || !state.state || !state.config || !state.config.enable_mqtt)
+            return <></>;
+
+        return <>
+                <FormRow label={__("mqtt.status.connection")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                    <IndicatorGroup
+                        style="width: 100%"
+                        class="flex-wrap"
+                        value={state.state.connection_state}
+                        items={[
+                            ["primary", __("mqtt.status.not_configured")],
+                            ["danger", __("mqtt.status.not_connected")],
+                            ["success", __("mqtt.status.connected")],
+                            ["danger", __("mqtt.status.error") + (state.state.connection_state != 3 ? "" : state.state.last_error)]
+                        ]}/>
+                </FormRow>
+            </>;
     }
 }
 
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('mqtt/state', update_mqtt_state);
-}
+render(<MqttStatus/>, $('#status-mqtt')[0]);
 
-export function init() {
-}
+export function add_event_listeners(source: API.APIEventTarget) {}
+
+export function init() {}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-mqtt').prop('hidden', !module_init.mqtt);

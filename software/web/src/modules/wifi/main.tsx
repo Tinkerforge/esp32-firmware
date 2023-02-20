@@ -52,6 +52,8 @@ function update_wifi_state() {
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('wifi/state', update_wifi_state);
+    source.addEventListener('wifi/sta_config', () => $('#status-wifi-sta').prop("hidden", !API.get("wifi/sta_config").enable_sta));
+    source.addEventListener('wifi/ap_config', () => $('#status-wifi-ap').prop("hidden", !API.get("wifi/ap_config").enable_ap));
 }
 
 export function init() {

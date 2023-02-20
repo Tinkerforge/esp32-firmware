@@ -97,7 +97,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
 
         return (
             <>
-                <PageHeader title={__("evse.content.evse")} />
+                <PageHeader title={__("evse.content.status")} />
                     <FormRow label={__("evse.content.iec_state")}>
                         <IndicatorGroup
                             value={state.iec61851_state}
@@ -443,7 +443,7 @@ class EVSEV2Settings extends Component<{}, EVSESSettingsState>
             auto_start_charging} = s;
 
         return <>
-                    <PageHeader title={__("evse.content.evse")}/>
+                    <PageHeader title={__("evse.content.settings")}/>
 
                     <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
                         <Switch desc={__("evse.content.auto_start_enable")}

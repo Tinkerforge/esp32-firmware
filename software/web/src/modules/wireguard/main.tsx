@@ -23,7 +23,7 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 
-import { h, render, Fragment } from "preact";
+import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -36,6 +36,7 @@ import { Switch } from "../../ts/components/switch";
 import { IPConfiguration } from "src/ts/components/ip_configuration";
 import { Slash } from "react-feather";
 import { InputIP } from "src/ts/components/input_ip";
+import { IndicatorGroup } from "src/ts/components/indicator_group";
 
 type WireGuardConfig = API.getType['wireguard/config'];
 
@@ -136,16 +137,54 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
 
 render(<WireGuard/>, $('#wireguard')[0])
 
-function update_wireguard_state() {
-    let state = API.get("wireguard/state").state;
-    util.update_button_group("btn_group_wireguard_state", state);
-}
-export function init() {
+
+interface WireGuardStatusState {
+    state: API.getType['wireguard/state']
+    config: API.getType['wireguard/config'];
 }
 
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('wireguard/state', () => update_wireguard_state());
+export class WireGuardStatus extends Component<{}, WireGuardStatusState>
+{
+    constructor()
+    {
+        super();
+
+        util.eventTarget.addEventListener('wireguard/state', () => {
+            this.setState({state: API.get('wireguard/state')})
+        });
+
+        util.eventTarget.addEventListener('wireguard/config', () => {
+            this.setState({config: API.get('wireguard/config')})
+        });
+    }
+
+    render(props: {}, state: WireGuardStatusState)
+    {
+        if (!state || !state.state || !state.config || !state.config.enable)
+            return <></>;
+
+        return <>
+                <FormRow label={__("wireguard.status.connection")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                    <IndicatorGroup
+                        style="width: 100%"
+                        class="flex-wrap"
+                        value={state.state.state}
+                        items={[
+                            ["primary", __("wireguard.status.not_configured")],
+                            ["warning", __("wireguard.status.waiting_for_timesync")],
+                            ["warning", __("wireguard.status.not_connected")],
+                            ["success", __("wireguard.status.connected")]
+                        ]}/>
+                </FormRow>
+            </>;
+    }
 }
+
+render(<WireGuardStatus/>, $('#status-wireguard')[0]);
+
+export function init() {}
+
+export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-wireguard').prop('hidden', !module_init.wireguard);

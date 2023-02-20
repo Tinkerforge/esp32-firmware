@@ -16,10 +16,12 @@
             "stop_charging": "Stop"
         },
         "navbar": {
-            "evse": "Status",
-            "evse_settings": "Einstellungen"
+            "evse": "Ladestatus",
+            "evse_settings": "Ladeeinstellungen"
         },
         "content": {
+            "status": "Ladestatus",
+            "settings": "Ladeeinstellungen",
             "evse": "Ladecontroller (EVSE)",
             "iec_state": "IEC-61851-Zustand",
             "iec_state_a": "A (getrennt)",
@@ -82,8 +84,6 @@
             "debug_stop": "Stop+Download",
             "debug_description": "Ladeprotokoll erstellen",
             "debug_description_muted": "zur Diagnose bei Ladeproblemen",
-
-            "settings": "Einstellungen",
 
             "auto_start_description": "Manuelle Ladefreigabe",
             "auto_start_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",

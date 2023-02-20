@@ -2,7 +2,7 @@
     "evse_start": {
         "status": {},
         "navbar": {
-            "evse_start": "Ladecontroller"
+            "evse_start": "Wallbox"
         },
         "content": {},
         "script": {}

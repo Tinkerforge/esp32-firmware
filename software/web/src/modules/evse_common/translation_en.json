@@ -20,6 +20,8 @@
             "evse_settings": "Settings"
         },
         "content": {
+            "status": "State",
+            "settings": "Settings",
             "evse": "Charge Controller (EVSE)",
             "iec_state": "IEC 61851 state",
             "iec_state_a": "A (disconnected)",
@@ -82,8 +84,6 @@
             "debug_stop": "Stop+Download",
             "debug_description": "Create charge log",
             "debug_description_muted": "to diagnose charging problems",
-
-            "settings": "Settings",
 
             "auto_start_description": "Manual charge release",
             "auto_start_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">see manual for details</a>",
