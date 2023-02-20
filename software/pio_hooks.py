@@ -271,6 +271,19 @@ def main():
             dirty_suffix = '_' + git_commit_id + "_" + branch_name
 
 
+    is_release = len(subprocess.run(["git", "tag", "--contains", "HEAD"], check=True, capture_output=True).stdout) > 0
+    is_dirty = len(subprocess.run(["git", "diff"], check=True, capture_output=True).stdout) > 0
+    dirty_suffix = ""
+    git_url = subprocess.run(["git", "config", "--get", "remote.origin.url"], check=True, capture_output=True).stdout.decode("utf-8").strip()
+    git_commit_id = subprocess.run(["git", "rev-parse", "--short=15", "HEAD"], check=True, capture_output=True).stdout.decode("utf-8").strip()
+    branch_name = subprocess.run(["git", "branch", "--show-current"], check=True, capture_output=True).stdout.decode("utf-8").strip()
+
+    if is_dirty or not is_release:
+        if branch_name == "master":
+            dirty_suffix = '_' + git_commit_id
+        else:
+            dirty_suffix = '_' + git_commit_id + "_" + branch_name
+
     try:
         oldest_version, version = get_changelog_version(name)
     except Exception as e:
@@ -374,7 +387,7 @@ def main():
 
     firmware_basename = '{}_firmware{}_{}_{:x}{}'.format(
         name,
-        "-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE_" if not_for_distribution else "",
+        "-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE" if not_for_distribution else "",
         '_'.join(version),
         timestamp,
         dirty_suffix,
