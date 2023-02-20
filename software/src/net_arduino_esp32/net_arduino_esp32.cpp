@@ -330,22 +330,6 @@ static int accept_connections(TF_Net *net) {
     }
 }*/
 
-static bool is_valid_header(TF_TFPHeader *header) {
-    if (header->length < TF_TFP_MIN_MESSAGE_LENGTH) {
-        return false;
-    }
-
-    if (header->length > TF_TFP_MAX_MESSAGE_LENGTH) {
-        return false;
-    }
-
-    if (header->fid == 0) {
-        return false;
-    }
-
-    return true;
-}
-
 static void drop_packet(TF_NetClient *client, uint8_t len) {
     len = MIN(len, client->read_buf_used);
     memmove(client->read_buf, client->read_buf + len, client->read_buf_used - len);
@@ -502,9 +486,7 @@ static void reassemble_packets(TF_Net *net) {
         uint8_t *buf = client->read_buf;
         TF_TFPHeader header;
 
-        tf_tfp_header_peek_plain(&header, buf);
-
-        if (!is_valid_header(&header)) {
+        if (!tf_tfp_header_peek_plain(&header, buf) || header.fid == 0) {
             tf_hal_log_debug("invalid request, closing connection\n");
             remove_client(net, i);
             continue;
