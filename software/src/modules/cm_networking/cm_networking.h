@@ -245,6 +245,7 @@ public:
     void check_results();
 
     bool scanning = false;
+    bool periodic_scan_task_started = false;
 
     mdns_search_once_t *scan;
 
@@ -268,6 +269,8 @@ private:
     struct sockaddr_storage manager_addr;
 
     void start_scan();
+    bool mdns_result_is_charger(mdns_result_t *entry, const char ** ret_version, const char **ret_enabled, const char **ret_display_name);
+    void resolve_via_mdns(mdns_result_t *entry);
 
     #define SCAN_RESULT_ERROR_OK 0
     #define SCAN_RESULT_ERROR_FIRMWARE_MISMATCH 1

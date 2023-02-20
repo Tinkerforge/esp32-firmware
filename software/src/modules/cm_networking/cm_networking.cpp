@@ -141,6 +141,13 @@ static void dns_callback(const char *host, const ip_addr_t *ip, void *args)
 
 void CMNetworking::resolve_hostname(uint8_t charger_idx)
 {
+    if (this->hostnames[charger_idx].endsWith(".local")) {
+        if (!periodic_scan_task_started)
+            task_scheduler.scheduleWithFixedDelay([this](){this->start_scan();}, 0, 60 * 1000);
+        periodic_scan_task_started = true;
+        return;
+    }
+
     ip_addr_t ip;
     int err = dns_gethostbyname(hostnames[charger_idx].c_str(), &ip, dns_callback, &resolve_state[charger_idx]);
 
@@ -547,6 +554,18 @@ void CMNetworking::check_results()
 #if MODULE_WS_AVAILABLE()
     String s = get_scan_results();
     ws.pushRawStateUpdate(s, "charge_manager/scan_result");
+#else
+    {
+        std::lock_guard<std::mutex> lock{scan_results_mutex};
+        if (scan_results == nullptr)
+            return;
+
+        while (scan_results != nullptr) {
+            if (this->mdns_result_is_charger(scan_results, nullptr, nullptr, nullptr))
+                this->resolve_via_mdns(scan_results);
+            scan_results = scan_results->next;
+        }
+    }
 #endif
     return;
 }
@@ -571,33 +590,70 @@ void CMNetworking::start_scan()
     });
 }
 
-void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer &json)
-{
-    const char *version = "0";
-    const char *enabled = "false";
-    const char *display_name = "[no_display_name]";
+bool CMNetworking::mdns_result_is_charger(mdns_result_t *entry, const char ** ret_version, const char **ret_enabled, const char **ret_display_name) {
+    if (ret_version != nullptr)
+        *ret_version = "0";
+    if (ret_enabled != nullptr)
+        *ret_enabled = "false";
+    if (ret_display_name != nullptr)
+        *ret_display_name = "[no_display_name]";
 
     if (entry->txt_count < 3)
-        return;
+        return false;
 
     int found = 0;
     for(size_t i = 0; i < entry->txt_count; ++i) {
         if (strcmp(entry->txt[i].key, "enabled") == 0 && entry->txt_value_len[i] > 0) {
-            enabled = entry->txt[i].value;
+            if (ret_enabled != nullptr)
+                *ret_enabled = entry->txt[i].value;
             ++found;
         }
         else if (strcmp(entry->txt[i].key, "display_name") == 0 && entry->txt_value_len[i] > 0) {
-            display_name = entry->txt[i].value;
+            if (ret_display_name != nullptr)
+                *ret_display_name = entry->txt[i].value;
             ++found;
         }
         else if (strcmp(entry->txt[i].key, "version") == 0 && entry->txt_value_len[i] > 0) {
-            version = entry->txt[i].value;
+            if (ret_version != nullptr)
+                *ret_version = entry->txt[i].value;
             ++found;
         }
     }
 
     if (found < 3)
+        return false;
+
+    return true;
+}
+
+void CMNetworking::resolve_via_mdns(mdns_result_t *entry) {
+    if (entry->addr && entry->addr->addr.type == IPADDR_TYPE_V4) {
+        for(size_t i = 0; i < this->hostnames.size(); ++i ){
+            if (!this->hostnames[i].endsWith(".local"))
+                continue;
+
+            String host = this->hostnames[i].substring(0, this->hostnames[i].length() - 6);
+
+            if (host == entry->hostname) {
+                this->dest_addrs[i].sin_addr.s_addr = entry->addr->addr.u_addr.ip4.addr;
+                if (this->resolve_state[i] != RESOLVE_STATE_RESOLVED) {
+                    logger.printfln("Resolved %s to %s (via mDNS scan)", this->hostnames[i].c_str(), ipaddr_ntoa((const ip_addr*)&entry->addr->addr));
+                }
+                this->resolve_state[i] = RESOLVE_STATE_RESOLVED;
+            }
+        }
+    }
+}
+
+void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer &json)
+{
+    const char *version;
+    const char *enabled;
+    const char *display_name;
+    if (!this->mdns_result_is_charger(entry, &version, &enabled, &display_name))
         return;
+
+    this->resolve_via_mdns(entry);
 
     uint8_t error = SCAN_RESULT_ERROR_OK;
 
