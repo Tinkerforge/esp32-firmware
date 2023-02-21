@@ -34,6 +34,8 @@
 
 #ifdef GD_FLASH
 #include "GD_firmware.h"
+#include <LittleFS.h>
+#define GD_FIRMWARE_FILE "/GD_firmware.bin"
 #endif
 
 #include "HardwareSerial.h"
@@ -46,6 +48,7 @@ extern WebServer server;
 
 extern API api;
 extern bool firmware_update_allowed;
+bool convert_intel_hex_to_bin = false;
 
 #ifdef EXPERIMENTAL
 /* experimental: Test command receiver */
@@ -1654,6 +1657,9 @@ void AC011K::register_urls()
 {
     evse.register_urls();
 #ifdef GD_FLASH
+
+#define U_FLASH 1
+
     server.on("/evse/reflash", HTTP_PUT, [this](WebServerRequest request){
         if (update_aborted)
             return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
@@ -1674,9 +1680,153 @@ void AC011K::register_urls()
         logger.printfln("/evse/reflash %d (%d)", index, len);
         return handle_update_chunk(3, request, index, data, len);
     });
+
+    server.on("/check_gd_firmware", HTTP_POST, [this](WebServerRequest request){
+        /* if (!this->info_found && BUILD_REQUIRE_FIRMWARE_INFO) { */
+        /*     return request.send(400, "text/plain", "{\"error\":\"firmware_update.script.no_info_page\"}"); */
+        /* } */
+        return request.send(200);
+    },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+        if (index == 0) {
+            logger.printfln("Checking if the upload is a GD firmware that I would recognize.");
+            const char GD_intel_hex_firmware_identifier[] = "AC011K-";
+            const char GD_bin_firmware_identifier[] = {0x68, 0x16, 0x00, 0x20, 0x1d, 0x25, 0x00, 0x08,0x3b, 0x0e, 0x00, 0x08, 0x3d, 0x0e, 0x00, 0x08};
+            char* ptr = strstr((const char*)data, GD_intel_hex_firmware_identifier);
+            if (ptr != NULL) {
+                logger.printfln("%s found at position %d", GD_intel_hex_firmware_identifier, ptr - (const char*)data);
+                update_aborted = false;
+                convert_intel_hex_to_bin = true;
+            } else {
+                ptr = strstr((const char*)data, GD_bin_firmware_identifier);
+                if (ptr != NULL) {
+                    logger.printfln("Binary GD firmware found at position %d", ptr - (const char*)data);
+                    update_aborted = false;
+                    convert_intel_hex_to_bin = false;
+                } else {
+                    logger.printfln("This is not a GD firmware that I would recognize.");
+                    request.send(400, "text/plain", "This is not a GD firmware that I would recognize.");
+                    convert_intel_hex_to_bin = false;
+                    update_aborted = true;
+                    return false;
+                }
+            }
+        }
+
+        if (!firmware_update_allowed) {
+            request.send(400, "text/plain", "{\"error\":\"firmware_update.script.vehicle_connected\"}");
+            update_aborted = true;
+            return false;
+        }
+
+        /* if (index > FIRMWARE_INFO_LENGTH) { */
+        /*     request.send(400, "text/plain", "Too long!"); */
+        /*     return false; */
+        /* } */
+
+        /* if (error != "") { */
+        /*     request.send(400, "text/plain", error.c_str()); */
+        /* } */
+
+        return true;
+    });
+
+    server.on("/write_gd_firmware", HTTP_POST, [this](WebServerRequest request){
+        if (update_aborted)
+            return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
+
+        this->firmware_update_running = false;
+
+        /* if(!Update.hasError()) { */
+        /*     logger.printfln("Firmware flashed successfully! Rebooting in one second."); */
+        /*     //task_scheduler.scheduleOnce([](){ESP.restart();}, 1000); */
+        /* } */
+
+        //return request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
+        return request.send(200, "text/plain", "Update ~~~");
+    },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+
+        this->firmware_update_running = true;
+        return handle_gd_update_chunk(U_FLASH, request, index, data, len, final, request.contentLength());
+    });
 #endif
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         GetRTC();
     }, 1000 * 60 * 10, 1000 * 60 * 10);
 }
+
+bool AC011K::handle_gd_update_chunk(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length) {
+    static File file;
+
+    if (chunk_index == 0 && !update_aborted) {
+        if (LittleFS.exists(GD_FIRMWARE_FILE) && !file) { LittleFS.remove(GD_FIRMWARE_FILE); }
+        if (LittleFS.totalBytes() - LittleFS.usedBytes() < GD_firmware_len) {
+            logger.printfln("Failed to cache GD firmware - not enough space on the LittleFS: %d bytes free, but %d bytes needed.", LittleFS.totalBytes() - LittleFS.usedBytes(), GD_firmware_len);
+            request.send(400, "text/plain", "Failed to cache GD firmware - not enough space on the LittleFS.");
+            update_aborted = true;
+            return false;
+        }
+
+        // Open the file for writing in binary mode
+        file = LittleFS.open(GD_FIRMWARE_FILE, "wb");
+    }
+
+    if (update_aborted) {
+        return false;
+    }
+
+    if (!file) {
+        logger.printfln("Failed to open file to write GD firmware into.");
+        request.send(400, "text/plain", "Failed to open file to write GD firmware into.");
+        update_aborted = true;
+        return false;
+    }
+
+    if (update_aborted) {
+        return false;
+    }
+
+    if (convert_intel_hex_to_bin) {
+        // convert every chunk to bin before write and correct chunk_lenght
+        if (chunk_index == 0) {
+            logger.printfln("I would have to convert the intel hex to bin, but I can't yet.");
+            request.send(400, "text/plain", "I would have to convert the intel hex to bin, but I can't yet.");
+            update_aborted = true;
+            return false;
+        }
+    }
+
+    static size_t total_written = 0;
+    auto written = file.write(data, chunk_length);
+    if (written != chunk_length) {
+        logger.printfln("Failed to write update chunk with chunk_length %u; written %u, abort.", chunk_length, written);
+        //request.send(400, "text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
+        request.send(400, "text/plain", "Failed to write update, aborted.");
+        this->firmware_update_running = false;
+        total_written = 0;
+        file.close();
+        if (LittleFS.exists(GD_FIRMWARE_FILE)) { LittleFS.remove(GD_FIRMWARE_FILE); }
+        return false;
+    }
+    else {
+        total_written += written;
+        //data[chunk_length-1] = 0;
+        //logger.printfln("total_written: %d, chunk chunk_length: %d, txt: %s", total_written, chunk_length, data);
+    }
+
+    if (final) {
+        file.close();
+        logger.printfln("total_written: %d", total_written);
+        total_written = 0;
+        /* //logger.printfln("Failed to apply update: %s", Update.errorString()); */
+        /* logger.printfln("Failed to apply update: %s", "Update.errorString()"); */
+        /* //request.send(400, "text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str()); */
+        /* request.send(400, "text/plain", (String("Failed to apply update: ") + "Update.errorString()").c_str()); */
+        /* this->firmware_update_running = false; */
+        /* //Update.abort(); */
+        /* return false; */
+    }
+
+    return true;
+}
+
