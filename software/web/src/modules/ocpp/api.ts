@@ -2,6 +2,7 @@ export interface config {
     enable: boolean,
     url: string,
     identity: string,
+    enable_auth: boolean,
     pass: string
 }
 

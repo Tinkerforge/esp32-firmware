@@ -94,13 +94,20 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                         <InputText required
                                    maxLength={128}
                                    value={state.url}
-                                   onValue={this.set("url")}/>
+                                   onValue={this.set("url")}
+                                   pattern={"wss?://.*[^/]"}
+                                   invalidFeedback={__("ocpp.content.endpoint_url_invalid")}/>
                     </FormRow>
                     <FormRow label={__("ocpp.content.identity")}>
                         <InputText required
                                    maxLength={64}
                                    value={state.identity}
                                    onValue={this.set("identity")}/>
+                    </FormRow>
+                    <FormRow label={__("ocpp.content.enable_auth")}>
+                        <Switch desc={__("ocpp.content.enable_auth_desc")}
+                                checked={state.enable_auth}
+                                onClick={this.toggle('enable_auth')}/>
                     </FormRow>
                     <FormRow label={__("ocpp.content.pass")}>
                         <InputPassword maxLength={64}

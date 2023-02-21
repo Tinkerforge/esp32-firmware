@@ -13,9 +13,12 @@
         "content": {
             "ocpp": "OCPP",
             "enable_ocpp": "OCPP enabled",
-            "enable_ocpp_desc": "This allows controlling the charger over the configured OCPP server.",
+            "enable_ocpp_desc": "Enables the configured OCPP server to control this charger",
             "endpoint_url": "Endpoint URL",
+            "endpoint_url_invalid": "The endpoint URL has to start with either ws:// (unencrypted) or wss:// (encrypted) and must not end with a /",
             "identity": "Charge point identity",
+            "enable_auth": "Authorization enabled",
+            "enable_auth_desc": "Sends the configured password or 40 character long hex key be to authorized by the OCPP server",
             "pass": "Password or hex key",
 
             "reset": "Reset OCPP state",
