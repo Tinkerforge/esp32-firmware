@@ -10,10 +10,15 @@ export interface ConfigModified {
     modified: number
 }
 
+export interface KeepAlive {
+    uptime: number
+}
+
 export interface ConfigMap {
     {{{config_map_entries}}}
     'info/modules': Modules
     'info/features': Features
+    'info/keep_alive': KeepAlive
     'reboot': null
 };
 
@@ -25,5 +30,6 @@ export let api_cache: {[key in keyof ConfigMap]: ConfigMap[key]} = {
     {{{api_cache_entries}}}
     'info/modules': null as any,
     'info/features': null as any,
+    'info/keep_alive': null as any,
     'reboot': null as any
 };

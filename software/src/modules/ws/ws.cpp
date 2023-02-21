@@ -52,8 +52,10 @@ void WS::register_urls()
     web_sockets.start("/ws");
 
     task_scheduler.scheduleWithFixedDelay([this](){
-        const char *payload = "{\"topic\": \"keep-alive\", \"payload\": \"null\"}\n";
-        web_sockets.sendToAll(payload, strlen(payload));
+        char *payload;
+        int len = asprintf(&payload, "{\"topic\": \"info/keep_alive\", \"payload\": {\"uptime\": %u}}\n", millis());
+        if (len > 0)
+            web_sockets.sendToAllOwned(payload, len);
     }, 1000, 1000);
 }
 
