@@ -1,4 +1,5 @@
 export interface state {
+    error_flags: number,
     contactor: boolean,
     led_rgb: number[],
     gpio_input_state: boolean[],

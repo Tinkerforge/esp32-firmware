@@ -73,6 +73,13 @@
 
 #define HYSTERESIS_MIN_TIME_MINUTES     10
 
+#define ERROR_FLAGS_BRICKLET            (1<<30)
+#define ERROR_FLAGS_CONTACTOR           (1<<29)
+#define ERROR_FLAGS_NETWORK             (1<< 1)
+
+#define ERROR_FLAGS_ALL_ERRORS          (ERROR_FLAGS_INTERNAL | ERROR_FLAGS_CONTACTOR)
+#define ERROR_FLAGS_ALL_WARNINGS        (ERROR_FLAGS_NETWORK)
+
 typedef struct {
     bool contactor_value;
 
@@ -161,12 +168,15 @@ public:
         uint8_t  pin[4];
     } charging_blocked;
 
+    uint32_t error_flags;
     bool     contactor_check_tripped;
     bool     is_3phase;
     bool     wants_on_last;
     int32_t  power_at_meter_w;
 
 private:
+    void clr_error(uint32_t error_mask);
+    void set_error(uint32_t error_mask);
     void check_bricklet_reachable(int rc);
     void update_all_data_struct();
     void update_io();

@@ -5,7 +5,12 @@
             "mode_fast": "Fast",
             "mode_off": "Off",
             "mode_pv": "PV",
-            "mode_min_pv": "Min + PV"
+            "mode_min_pv": "Min + PV",
+            "status": "Energy Manager",
+            "error_ok": "OK",
+            "error_network": "Network error",
+            "error_contactor": "Contactor error",
+            "error_bricklet": "Internal error"
         },
         "navbar": {
             "energy_manager": "Settings"

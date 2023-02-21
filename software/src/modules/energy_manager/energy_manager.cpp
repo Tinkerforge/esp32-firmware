@@ -32,6 +32,7 @@ void EnergyManager::pre_setup()
 {
     // States
     energy_manager_state = Config::Object({
+        {"error_flags", Config::Uint32(0)},
         {"contactor", Config::Bool(false)},
         {"led_rgb", Config::Array({Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)},
             new Config{Config::Uint8(0)}, 3, 3, Config::type_id<Config::ConfUint>())
@@ -48,7 +49,6 @@ void EnergyManager::pre_setup()
         {"energy_meter_energy_export", Config::Float(0)}, // kWh
         // Derived states
         {"phases_switched", Config::Uint8(0)},
-        {"contactor_check_tripped", Config::Bool(false)},
     });
 
     // Config
@@ -358,7 +358,7 @@ void EnergyManager::update_all_data()
         if ((all_data.contactor_check_state & 1) == 0) {
             logger.printfln("Contactor check tripped. Check contactor.");
             contactor_check_tripped = true;
-            energy_manager_state.get("contactor_check_tripped")->updateBool(true);
+            set_error(ERROR_FLAGS_CONTACTOR);
         } else if (contactor_check_tripped) {
             logger.printfln("Contactor check tripped in the past but reports ok now. Check contactor and reboot Energy Manager to clear.");
         }
@@ -394,11 +394,24 @@ void EnergyManager::update_all_data_struct()
     check_bricklet_reachable(rc);
 }
 
+void EnergyManager::clr_error(uint32_t error_mask)
+{
+    error_flags &= ~error_mask;
+    energy_manager_state.get("error_flags")->updateUint(error_flags);
+}
+
+void EnergyManager::set_error(uint32_t error_mask)
+{
+    error_flags |= error_mask;
+    energy_manager_state.get("error_flags")->updateUint(error_flags);
+}
+
 void EnergyManager::check_bricklet_reachable(int rc) {
     if (rc == TF_E_OK) {
         consecutive_bricklet_errors = 0;
         if (!bricklet_reachable) {
             bricklet_reachable = true;
+            clr_error(ERROR_FLAGS_BRICKLET);
             logger.printfln("energy_manager: Bricklet is reachable again.");
         }
     } else {
@@ -409,6 +422,7 @@ void EnergyManager::check_bricklet_reachable(int rc) {
         }
         if (bricklet_reachable && ++consecutive_bricklet_errors >= 8) {
             bricklet_reachable = false;
+            set_error(ERROR_FLAGS_BRICKLET);
             logger.printfln("energy_manager: Bricklet is unreachable.");
         }
     }
@@ -819,7 +833,7 @@ void EnergyManager::set_output(bool output)
 {
     int result = tf_warp_energy_manager_set_output(&device, output);
 
-    check_bricklet_reachable(result);
+    // Don't check if bricklet is reachable because the setter call won't tell us.
 
     if (result != TF_E_OK)
         logger.printfln("energy_manager: Failed to set output relay: error %i", result);
@@ -829,7 +843,7 @@ void EnergyManager::set_rgb_led(uint8_t r, uint8_t g, uint8_t b)
 {
     int rc = tf_warp_energy_manager_set_rgb_value(&device, r, g, b);
 
-    check_bricklet_reachable(rc);
+    // Don't check if bricklet is reachable because the setter call won't tell us.
 
     if (rc != TF_E_OK)
         logger.printfln("energy_manager: Failed to set RGB LED values: error %i. Continuing anyway.", rc);

@@ -32,7 +32,7 @@ import { InputFloat } from "src/ts/components/input_float";
 import { InputNumber } from "src/ts/components/input_number";
 import { ConfigForm } from "src/ts/components/config_form";
 import { FormSeparator } from "src/ts/components/form_separator";
-import { Button, Collapse } from "react-bootstrap";
+import { Button, ButtonGroup, Collapse } from "react-bootstrap";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
 
 type StringStringTuple = [string, string];
@@ -41,14 +41,19 @@ interface EnergyManagerState {
     state: API.getType['energy_manager/state'];
 }
 
-interface EnergyManagerAllConfig {
+interface EnergyManagerAllData {
+    state: API.getType['energy_manager/state'];
     config: API.getType['energy_manager/config'];
     runtime_config: API.getType['energy_manager/runtime_config'];
 }
 
-export class EnergyManagerStatus extends Component<{}, EnergyManagerAllConfig> {
+export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
     constructor() {
         super();
+
+        util.eventTarget.addEventListener('energy_manager/state', () => {
+            this.setState({state: API.get('energy_manager/state')});
+        });
 
         util.eventTarget.addEventListener('energy_manager/config', () => {
             this.setState({config: API.get('energy_manager/config')});
@@ -63,40 +68,69 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllConfig> {
         API.save('energy_manager/runtime_config', {"mode": mode}, __("energy_manager.script.mode_change_failed"));
     }
 
-    render(props: {}, c: Readonly<EnergyManagerAllConfig>) {
-        if (!c || !c.config || !c.runtime_config)
+    render(props: {}, d: Readonly<EnergyManagerAllData>) {
+        if (!d || !d.state || !d.config || !d.runtime_config)
             return <></>;
+
+        let error_flags_ok        = d.state.error_flags == 0;
+        let error_flags_bricklet  = d.state.error_flags & 0x40000000;
+        let error_flags_contactor = d.state.error_flags & 0x20000000;
+        let error_flags_network   = d.state.error_flags & 0x2;
 
         return <>
             <FormRow label={__("energy_manager.status.mode")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
                 <div class="input-group">
-                    {c.config.excess_charging_enable ? <>
+                    {d.config.excess_charging_enable ? <>
                         <Button
                             className="form-control mr-2 rounded-right"
-                            variant={c.runtime_config.mode == 2 ? "primary" : "secondary"}
+                            variant={d.runtime_config.mode == 2 ? "primary" : "secondary"}
                             onClick={() => this.change_mode(2)}>
                             {__("energy_manager.status.mode_pv")}
                         </Button>
                         <Button
                             className="form-control mr-2 rounded-left rounded-right"
-                            variant={c.runtime_config.mode == 3 ? "primary" : "secondary"}
+                            variant={d.runtime_config.mode == 3 ? "primary" : "secondary"}
                             onClick={() => this.change_mode(3)}>
                             {__("energy_manager.status.mode_min_pv")}
                         </Button>
                     </>: <></>}
                     <Button
                         className="form-control mr-2 rounded-left rounded-right"
-                        variant={c.runtime_config.mode == 0 ? "primary" : "secondary"}
+                        variant={d.runtime_config.mode == 0 ? "primary" : "secondary"}
                         onClick={() => this.change_mode(0)}>
                         {__("energy_manager.status.mode_fast")}
                     </Button>
                     <Button
                         className="form-control rounded-left"
-                        variant={c.runtime_config.mode == 1 ? "primary" : "secondary"}
+                        variant={d.runtime_config.mode == 1 ? "primary" : "secondary"}
                         onClick={() => this.change_mode(1)}>
                         {__("energy_manager.status.mode_off")}
                     </Button>
                 </div>
+            </FormRow>
+            <FormRow label={__("energy_manager.status.status")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                <ButtonGroup className="flex-wrap w-100">
+                    <Button disabled
+                        key="13"
+                        variant={(error_flags_ok ? "" : "outline-") + "success"}>
+                        {__("energy_manager.status.error_ok")}
+                    </Button>
+                    <Button disabled
+                        key="42"
+                        variant={(error_flags_network ? "" : "outline-") + "warning"}>
+                        {__("energy_manager.status.error_network")}
+                    </Button>
+                    <Button disabled
+                        key="99"
+                        variant={(error_flags_contactor ? "" : "outline-") + "danger"}>
+                        {__("energy_manager.status.error_contactor")}
+                    </Button>
+                    <Button disabled
+                        key="7"
+                        variant={(error_flags_bricklet ? "" : "outline-") + "danger"}>
+                        {__("energy_manager.status.error_bricklet")}
+                    </Button>
+                </ButtonGroup>
             </FormRow>
         </>
     }
