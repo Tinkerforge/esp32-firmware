@@ -3,7 +3,7 @@
         "status": {
         },
         "navbar": {
-            "em_debug": "EM Debug"
+            "em_debug": "Debug"
         },
         "content": {
             "em_debug": "Energy Manager Debug",
