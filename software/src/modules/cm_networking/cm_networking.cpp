@@ -446,7 +446,8 @@ void CMNetworking::register_client(std::function<void(uint16_t, bool)> client_ca
     }, 100, 100);
 }
 
-bool CMNetworking::send_client_update(uint8_t iec61851_state,
+bool CMNetworking::send_client_update(uint32_t esp32_uid,
+                                      uint8_t iec61851_state,
                                       uint8_t charger_state,
                                       uint8_t error_state,
                                       uint32_t uptime,
@@ -484,6 +485,7 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
         | has_meter                                 << CM_FEATURE_FLAGS_METER_BIT_POS
         | api.hasFeature("button_configuration")    << CM_FEATURE_FLAGS_BUTTON_CONFIGURATION_BIT_POS;
 
+    state_pkt.v1.esp32_uid = esp32_uid;
     state_pkt.v1.evse_uptime = uptime;
     state_pkt.v1.charging_time = charging_time;
     state_pkt.v1.allowed_charging_current = allowed_charging_current;

@@ -28,6 +28,7 @@
 #include "web_server.h"
 #include "modules.h"
 
+extern uint32_t local_uid_num;
 extern bool firmware_update_allowed;
 
 #define SLOT_ACTIVE(x) ((bool)(x & 0x01))
@@ -550,6 +551,7 @@ void EVSE::register_urls()
         }
 
         cm_networking.send_client_update(
+            local_uid_num,
             evse_state.get("iec61851_state")->asUint(),
             evse_state.get("charger_state")->asUint(),
             evse_state.get("error_state")->asUint(),
