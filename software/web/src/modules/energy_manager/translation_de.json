@@ -16,7 +16,7 @@
             "energy_manager": "Einstellungen"
         },
         "content": {
-            "page_header": "Energiemanager-Einstellungen",
+            "page_header": "Energy Manager-Einstellungen",
 
             "default_mode": "Standard-Lademodus",
             "auto_reset_charging_mode": "Täglich rücksetzen",
@@ -24,15 +24,15 @@
             "auto_reset_time": "Zurücksetzen um",
 
             "header_load_management": "Dynamisches Lastmanagement",
-            "load_management_explainer": "Der Energiemanager regelt die an ihn angeschlossenen Verbraucher so, dass der maximal zulässige Strom des Gebäudeanschlusses auf keiner Phase überschritten wird. (Bald verfügbar: Diese Funktion befindet sich aktuell noch in der Entwicklung.)",
+            "load_management_explainer": "Der Energy Manager regelt die an ihn angeschlossenen Verbraucher so, dass der maximal zulässige Strom des Gebäudeanschlusses auf keiner Phase überschritten wird. (Bald verfügbar: Diese Funktion befindet sich aktuell noch in der Entwicklung.)",
 
             "header_excess_charging": "PV-Überschussladen",
             "enable_excess_charging": "Überschussladen aktivieren",
-            "enable_excess_charging_desc": "Wenn aktiviert, regelt der Energiemanager die an ihn angeschlossenen Verbraucher abhängig vom Überschuss einer vorhandenen Photovoltaikanlage. Wenn deaktiviert, wird die maximale Leistung unter Einhaltung der maximale Strombelastbarkeit der Zuleitungen erlaubt.",
+            "enable_excess_charging_desc": "Wenn aktiviert, regelt der Energy Manager die an ihn angeschlossenen Verbraucher abhängig vom Überschuss einer vorhandenen Photovoltaikanlage. Wenn deaktiviert, wird die maximale Leistung unter Einhaltung der maximale Strombelastbarkeit der Zuleitungen erlaubt.",
             "guaranteed_power": "Mindest-Ladeleistung",
             "guaranteed_power_muted": "Leistung, die auch ohne Überschuss garantiert mindestens für alle angeschlossenen Wallboxen in Summe zur Verfügung steht.",
             "contactor_installed": "Schütz angeschlossen",
-            "contactor_installed_desc": "Der Energiemanager verfügt über ein Schütz, mit dem die von ihm verwalteten Wallboxen zwischen ein- und dreiphasigem Anschluss umgeschaltet werden können.",
+            "contactor_installed_desc": "Der Energy Manager verfügt über ein Schütz, mit dem die von ihm verwalteten Wallboxen zwischen ein- und dreiphasigem Anschluss umgeschaltet werden können.",
             "phase_switching_mode": "Phasenumschaltung",
             "fixed_one_phase": "Fest einphasig angeschlossen",
             "fixed_three_phases": "Fest dreiphasig angeschlossen",
@@ -92,8 +92,8 @@
             "hysteresis_wear_accepted_desc": "Ich akzeptiere den übermäßigen Verschleiß der Ladeelektronik meines Fahrzeuges durch häufige Schaltvorgänge. Dies ermöglicht es, eine kurze Hysterese-Zeite zu verwenden."
         },
         "script": {
-            "save_failed": "Speichern der Energiemanager-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Energiemanager-Einstellungen",
+            "save_failed": "Speichern der Energy Manager-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "Energy Manager-Einstellungen",
             "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen."
         }
     }
