@@ -50,12 +50,20 @@ struct RawCommandRegistration {
     bool is_action;
 };
 
+struct ResponseRegistration {
+    String path;
+    ConfigRoot *config;
+    std::function<bool(String *)> callback;
+    std::vector<String> keys_to_censor_in_debug_report;
+};
+
 class IAPIBackend
 {
 public:
     virtual void addCommand(size_t commandIdx, const CommandRegistration &reg) = 0;
     virtual void addState(size_t stateIdx, const StateRegistration &reg) = 0;
     virtual void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg) = 0;
+    virtual void addResponse(size_t responseIdx, const ResponseRegistration &reg) = 0;
     virtual bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) = 0;
     virtual void pushRawStateUpdate(const String &payload, const String &path) = 0;
     virtual void wifiAvailable() = 0;
@@ -80,6 +88,7 @@ public:
     bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
     //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms, std::function<void(void)> callback);
     void addRawCommand(const String &path, std::function<String(char *, size_t)> callback, bool is_action);
+    void addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<bool(String *)> callback);
 
     bool hasFeature(const char *name);
 
@@ -98,6 +107,7 @@ public:
     std::vector<StateRegistration> states;
     std::vector<CommandRegistration> commands;
     std::vector<RawCommandRegistration> raw_commands;
+    std::vector<ResponseRegistration> responses;
 
     std::vector<IAPIBackend *> backends;
 

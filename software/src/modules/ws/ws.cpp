@@ -80,6 +80,10 @@ void WS::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg)
 {
 }
 
+void WS::addResponse(size_t responseIdx, const ResponseRegistration &reg)
+{
+}
+
 static const char *prefix = "{\"topic\":\"";
 static const char *infix = "\",\"payload\":";
 static const char *suffix = "}\n";

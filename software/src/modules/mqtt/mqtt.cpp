@@ -126,6 +126,10 @@ void Mqtt::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg
     }, reg.is_action);
 }
 
+void Mqtt::addResponse(size_t responseIdx, const ResponseRegistration &reg)
+{
+}
+
 void Mqtt::publish_with_prefix(const String &path, const String &payload)
 {
     const String &prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();

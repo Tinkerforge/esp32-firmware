@@ -174,6 +174,19 @@ void API::addRawCommand(const String &path, std::function<String(char *, size_t)
     }
 }
 
+void API::addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<bool(String *)> callback)
+{
+    if (already_registered(path, "response"))
+        return;
+
+    responses.push_back({path, config, callback, keys_to_censor_in_debug_report});
+    auto responseIdx = responses.size() - 1;
+
+    for (auto *backend : this->backends) {
+        backend->addResponse(responseIdx, responses[responseIdx]);
+    }
+}
+
 bool API::hasFeature(const char *name)
 {
     for (int i = 0; i < features.count(); ++i)
@@ -311,6 +324,13 @@ void API::registerDebugUrl(WebServer *server)
             result += reg.config->to_string_except(reg.keys_to_censor_in_debug_report);
         }
 
+        for (auto &reg : responses) {
+            result += ",\n \"";
+            result += reg.path;
+            result += "\": ";
+            result += reg.config->to_string_except(reg.keys_to_censor_in_debug_report);
+        }
+
         result += "}";
 
         return request.send(200, "application/json; charset=utf-8", result.c_str());
@@ -406,6 +426,12 @@ bool API::already_registered(const String &path, const char *api_type)
         if (reg.path != path)
             continue;
         logger.printfln("Can't register %s %s. Already registered as raw command!", api_type, path.c_str());
+        return true;
+    }
+    for (auto &reg : this->responses) {
+        if (reg.path != path)
+            continue;
+        logger.printfln("Can't register %s %s. Already registered as response!", api_type, path.c_str());
         return true;
     }
 
