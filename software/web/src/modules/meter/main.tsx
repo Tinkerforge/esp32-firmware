@@ -137,6 +137,10 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             return;
         }
 
+        // FIXME: special hack for status page that is visible by default
+        //        and doesn't receive an initial shown event because of that
+        this.visible = this.props.sidebar_id === "status";
+
         // We have to use jquery here or else the events don't fire?
         // This can be removed once the sidebar is ported to preact.
         $(`#sidebar-${this.props.sidebar_id}`).on('shown.bs.tab', () => {
