@@ -490,6 +490,7 @@ interface ChargeManagerStatusState {
     available_current: API.getType['charge_manager/available_current']
     config: API.getType['charge_manager/config']
     energyManagerMode: boolean
+    uptime: number
 }
 
 export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState> {
@@ -511,6 +512,10 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
         util.eventTarget.addEventListener('info/modules', () => {
             this.setState({energyManagerMode: !!((API.get('info/modules') as any).energy_manager)})
         });
+
+        util.eventTarget.addEventListener('info/keep_alive', () => {
+            this.setState({uptime: API.get('info/keep_alive').uptime})
+        });
     }
 
     render(props: {}, state: Readonly<ChargeManagerStatusState>) {
@@ -522,7 +527,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
             let c_info = "";
             let c_body_classes = "";
 
-            let last_update = Math.floor((state.state.uptime - c.last_update) / 1000);
+            let last_update = Math.floor((state.uptime - c.last_update) / 1000);
             let c_status_text = util.toLocaleFixed(c.supported_current / 1000.0, 3) + " " + __("charge_manager.script.ampere_supported");
 
             if (last_update >= 10)
