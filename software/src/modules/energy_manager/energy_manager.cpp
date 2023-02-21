@@ -769,7 +769,7 @@ void EnergyManager::get_sdcard_info(struct sdcard_info *data)
         data->product_name,
         &data->manufacturer_id
     );
-    
+
     check_bricklet_reachable(rc);
 
     if (rc != TF_E_OK)
