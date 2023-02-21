@@ -2,6 +2,7 @@ import socket
 import struct
 import sys
 import time
+import ipaddress
 
 """
 struct cm_packet_header {
@@ -29,6 +30,7 @@ struct cm_command_packet {
 
 struct cm_state_v1 {
     uint32_t feature_flags; /* unused */
+    uint32_t esp32_uid;
     uint32_t evse_uptime;
     uint32_t charging_time;
     uint16_t allowed_charging_current;
@@ -64,7 +66,7 @@ struct cm_state_packet {
 
 header_format = "<HHHBx"
 command_format = header_format + "HBx"
-state_format = header_format + "IIIHHBBBBffffffffffff"
+state_format = header_format + "IIIIHHBBBBffffffffffff"
 
 command_len = struct.calcsize(command_format)
 state_len = struct.calcsize(state_format)
@@ -72,6 +74,7 @@ print(state_len)
 
 
 listen_addr = sys.argv[1]
+uid = struct.unpack('>I', ipaddress.ip_address(listen_addr))[0]
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((listen_addr, 34128))
@@ -227,6 +230,7 @@ def send():
                     next_seq_num,
                     protocol_version if not resp_wrong_proto_version.isChecked() else 0,
                     0,                                          # features
+                    uid,
                     uptime,
                     charging_time,
                     resp_allowed_charging_current.value() * 1000,
