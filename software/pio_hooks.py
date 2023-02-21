@@ -245,6 +245,9 @@ def hyphenate_translation(translation, parent_key=None):
     return {key: (hyphenate(value) if isinstance(value, str) else hyphenate_translation(value, parent_key=parent_key + [key])) for key, value in translation.items()}
 
 def main():
+    if env.IsCleanTarget():
+        return
+
     subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
 
     # Add build flags
