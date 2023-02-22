@@ -166,7 +166,7 @@ void Meter::register_urls()
     api.addState("meter/last_reset", &last_reset, {}, 1000);
 
     api.addCommand("meter/reset", Config::Null(), {}, [this](){
-        for (auto cb : this->reset_callbacks)
+        for (auto &cb : this->reset_callbacks)
             cb();
 
         struct timeval tv_now;
