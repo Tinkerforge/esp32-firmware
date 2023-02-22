@@ -31,7 +31,7 @@ export function InputTime(props: InputTimeProps) {
     let {idContext, value, onValue, ...p} = props;
 
     const [inputInFlight, setInputInFlight] = useState<string | null>(null);
-    let propValue = value[0] + ':' + value[1];
+    let propValue = ("0" + value[0]).slice(-2) + ':' + ("0" + value[1]).slice(-2);
     let v = inputInFlight === null ? propValue : inputInFlight;
 
     const sendInFlight = () => {
