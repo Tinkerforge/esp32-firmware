@@ -30,6 +30,7 @@ import { Switch } from "src/ts/components/switch";
 import { InputSelect } from "src/ts/components/input_select";
 import { InputFloat } from "src/ts/components/input_float";
 import { InputNumber } from "src/ts/components/input_number";
+import { InputTime } from "src/ts/components/input_time";
 import { ConfigForm } from "src/ts/components/config_form";
 import { FormSeparator } from "src/ts/components/form_separator";
 import { Button, ButtonGroup, Collapse } from "react-bootstrap";
@@ -154,11 +155,6 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         });
     }
 
-    time_str2mins(intime: string) {
-        return parseInt(intime.substring(0, 2)) * 60 // hours
-             + parseInt(intime.substring(3, 5));     // minutes
-    }
-
     render(props: {}, s: Readonly<API.getType['energy_manager/config'] & EnergyManagerState>) {
         if (!s || !s.state)
             return <></>;
@@ -176,9 +172,6 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
             mode_list_for_inputs.push([tuple[0], __("energy_manager.content.input_switch_to") + " " + tuple[1]]);
         }
         mode_list_for_inputs.push(["255", __("energy_manager.content.input_mode_nothing")]);
-
-        let auto_reset_hours   = ("0" + Math.floor(s.auto_reset_time / 60)).slice(-2);
-        let auto_reset_minutes = ("0" + Math.floor(s.auto_reset_time % 60)).slice(-2);
 
         return (
             <>
@@ -201,11 +194,9 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                     <Collapse in={s.auto_reset_mode}>
                         <div>
                             <FormRow label={__("energy_manager.content.auto_reset_time")}>
-                                <input type="time"
-                                    min="00:00"
-                                    max="23:59"
-                                    value={auto_reset_hours + ':' + auto_reset_minutes}
-                                    onChange={(e) => this.setState({ auto_reset_time: this.time_str2mins((e.target as HTMLInputElement).value) })} />
+                                <InputTime
+                                    value={[Math.floor(s.auto_reset_time / 60), s.auto_reset_time % 60]}
+                                    onValue={(h, m) => this.setState({auto_reset_time: h * 60 + m})} />
                             </FormRow>
                         </div>
                     </Collapse>
