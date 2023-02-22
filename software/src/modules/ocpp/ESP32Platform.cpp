@@ -777,7 +777,7 @@ OcppDirEnt *platform_read_dir(void *dir_fd) {
     File f;
     while (f = dir->openNextFile()) {
         dir_ent.is_dir = f.isDirectory();
-        strncpy(dir_ent.name, f.name(), ARRAY_SIZE(dir_ent.name));
+        strncpy(dir_ent.name, f.name(), ARRAY_SIZE(dir_ent.name) - 1);
         return &dir_ent;
     }
     return nullptr;
