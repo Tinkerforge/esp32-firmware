@@ -31,8 +31,8 @@ private:
     bool prev_level;
     bool invert_pin;
     void (InputPin::*update_func)(bool level);
-    uint32_t limit_ma;
-    void *out_dst;
+    uint32_t limit_ma = 0;
+    void *out_dst = nullptr;
     uint32_t rising_mode;
     uint32_t falling_mode;
 

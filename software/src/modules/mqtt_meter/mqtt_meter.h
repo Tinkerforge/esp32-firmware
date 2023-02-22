@@ -38,6 +38,6 @@ public:
     ConfigRoot config;
 
 private:
-    bool enabled;
+    bool enabled = false;
     String source_meter_topic;
 };

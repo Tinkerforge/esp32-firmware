@@ -102,8 +102,6 @@ void EnergyManager::pre_setup()
         {"mode", Config::Uint(0, 0, 3)},
     });
     energy_manager_runtime_config_update = energy_manager_runtime_config;
-
-    switching_state = SwitchingState::Monitoring;
 }
 
 void EnergyManager::apply_defaults()

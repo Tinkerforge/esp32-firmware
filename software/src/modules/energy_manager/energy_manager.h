@@ -166,13 +166,13 @@ public:
     union {
         uint32_t combined;
         uint8_t  pin[4];
-    } charging_blocked;
+    } charging_blocked               = {0};
 
-    uint32_t error_flags;
-    bool     contactor_check_tripped;
-    bool     is_3phase;
-    bool     wants_on_last;
-    int32_t  power_at_meter_w;
+    uint32_t error_flags             = 0;
+    bool     contactor_check_tripped = false;
+    bool     is_3phase               = false;
+    bool     wants_on_last           = false;
+    int32_t  power_at_meter_w        = 0;
 
 private:
     void clr_error(uint32_t error_mask);
@@ -194,41 +194,41 @@ private:
     InputPin *input3;
     InputPin *input4;
 
-    uint32_t last_debug_check = 0;
-    bool     uptime_past_hysteresis;
-    uint32_t consecutive_bricklet_errors;
-    bool     bricklet_reachable = true;
-    SwitchingState switching_state;
-    uint32_t switching_start;
-    uint32_t mode;
-    uint8_t  have_phases;
-    bool     wants_3phase;
-    bool     wants_3phase_last;
-    bool     is_on_last;
-    bool     just_switched_phases;
-    bool     just_switched_mode;
-    uint32_t phase_state_change_blocked_until;
-    uint32_t on_state_change_blocked_until;
-    uint32_t charge_manager_allocated_current_ma;
-    uint32_t max_current_limited_ma;
-    int32_t  power_available_w;
+    uint32_t last_debug_check                    = 0;
+    bool     uptime_past_hysteresis              = false;
+    uint32_t consecutive_bricklet_errors         = 0;
+    bool     bricklet_reachable                  = true;
+    SwitchingState switching_state               = SwitchingState::Monitoring;
+    uint32_t switching_start                     = 0;
+    uint32_t mode                                = 0;
+    uint8_t  have_phases                         = 0;
+    bool     wants_3phase                        = false;
+    bool     wants_3phase_last                   = false;
+    bool     is_on_last                          = false;
+    bool     just_switched_phases                = false;
+    bool     just_switched_mode                  = false;
+    uint32_t phase_state_change_blocked_until    = 0;
+    uint32_t on_state_change_blocked_until       = 0;
+    uint32_t charge_manager_allocated_current_ma = 0;
+    uint32_t max_current_limited_ma              = 0;
+    int32_t  power_available_w                   = 0;
 
     // Config cache
-    uint32_t default_mode;
-    uint32_t auto_reset_hour;
-    uint32_t auto_reset_minute;
-    bool     excess_charging_enable;
-    int32_t  target_power_from_grid_w;
-    uint32_t guaranteed_power_w;
-    bool     contactor_installed;
-    uint8_t  phase_switching_mode;
-    uint32_t switching_hysteresis_ms;
-    bool     hysteresis_wear_ok;
-    uint32_t max_current_unlimited_ma;
-    uint32_t min_current_ma;
+    uint32_t default_mode             = 0;
+    uint32_t auto_reset_hour          = 0;
+    uint32_t auto_reset_minute        = 0;
+    bool     excess_charging_enable   = false;
+    int32_t  target_power_from_grid_w = 0;
+    uint32_t guaranteed_power_w       = 0;
+    bool     contactor_installed      = false;
+    uint8_t  phase_switching_mode     = 0;
+    uint32_t switching_hysteresis_ms  = 0;
+    bool     hysteresis_wear_ok       = false;
+    uint32_t max_current_unlimited_ma = 0;
+    uint32_t min_current_ma           = 0;
 
     // Pre-calculated limits
-    int32_t  overall_min_power_w;
-    int32_t  threshold_3to1_w;
-    int32_t  threshold_1to3_w;
+    int32_t  overall_min_power_w = 0;
+    int32_t  threshold_3to1_w    = 0;
+    int32_t  threshold_1to3_w    = 0;
 };

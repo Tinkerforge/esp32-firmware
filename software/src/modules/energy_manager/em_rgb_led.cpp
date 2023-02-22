@@ -32,7 +32,10 @@ EmRgbLed::EmRgbLed()
     hue_balanced = 240; // full blue
     hue_export   = 120; // full green
 
+    have_grid_balance = false;
+    show_grid_balance = false;
     hue = 120;
+    hue_balance = 0;
 
     breathing_pos = 0;
     breathing_step = 1;
