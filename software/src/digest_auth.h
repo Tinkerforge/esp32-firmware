@@ -47,7 +47,7 @@ typedef struct AuthFields {
 AuthFields parseDigestAuth(const char *header);
 
 String requestDigestAuthentication(const char * realm);
-bool checkDigestAuthentication(AuthFields fields, const char * method, const char * username, const char * password, const char * realm, bool passwordIsHash, const char * nonce, const char * opaque, const char * uri);
+bool checkDigestAuthentication(const AuthFields &fields, const char * method, const char * username, const char * password, const char * realm, bool passwordIsHash, const char * nonce, const char * opaque, const char * uri);
 
 //for storing hashed versions on the device that can be authenticated against
 String generateDigestHash(const char * username, const char * password, const char * realm);

@@ -148,7 +148,7 @@ AuthFields parseDigestAuth(const char *header)
     return result;
 }
 
-bool checkDigestAuthentication(AuthFields fields, const char * method, const char * username, const char * password, const char * realm, bool passwordIsHash, const char * nonce, const char * opaque, const char * uri){
+bool checkDigestAuthentication(const AuthFields &fields, const char * method, const char * username, const char * password, const char * realm, bool passwordIsHash, const char * nonce, const char * opaque, const char * uri){
     if (username == NULL || password == NULL || method == NULL) {
         logger.printfln("AUTH FAIL: missing required fields");
         return false;
