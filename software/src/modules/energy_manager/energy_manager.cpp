@@ -326,8 +326,6 @@ void EnergyManager::loop()
 
 void EnergyManager::update_all_data()
 {
-    uint32_t time = micros();
-
     update_all_data_struct();
 
     energy_manager_state.get("contactor")->updateBool(all_data.contactor_value);
@@ -362,13 +360,6 @@ void EnergyManager::update_all_data()
         } else if (contactor_check_tripped) {
             logger.printfln("Contactor check tripped in the past but reports ok now. Check contactor and reboot Energy Manager to clear.");
         }
-    }
-
-    static uint32_t time_max = 7000;
-    time = micros() - time;
-    if (time > time_max) {
-        time_max = time;
-        logger.printfln("energy_manager::update_all_data() took %uus", time_max);
     }
 }
 
@@ -430,8 +421,6 @@ void EnergyManager::check_bricklet_reachable(int rc) {
 
 void EnergyManager::update_io()
 {
-    uint32_t time = micros();
-
     output->update();
 
     // Oversampling inputs is currently not used because all of the implemented input pin functions require update_energy() to run anyway.
@@ -447,13 +436,6 @@ void EnergyManager::update_io()
 
     input3->update(all_data.input[0]);
     input4->update(all_data.input[1]);
-
-    static uint32_t time_max = 2000;
-    time = micros() - time;
-    if (time > time_max) {
-        time_max = time;
-        logger.printfln("energy_manager::update_io() took %uus", time_max);
-    }
 }
 
 void EnergyManager::start_auto_reset_task()
@@ -503,8 +485,6 @@ void EnergyManager::update_energy()
 #if !MODULE_CHARGE_MANAGER_AVAILABLE()
     logger.printfln("energy_manager: Module 'Charge Manager' not available. update_energy() does nothing.");
 #else
-    uint32_t time = micros();
-
     static SwitchingState prev_state = switching_state;
     if (switching_state != prev_state) {
         logger.printfln("energy_manager: now in state %d", (int)switching_state);
@@ -720,15 +700,6 @@ void EnergyManager::update_energy()
             just_switched_phases = false;
             just_switched_mode = false;
         }
-
-        const uint32_t print_every = 8;
-        if (print_every > 0) {
-            static uint32_t last_print = 0;
-            last_print = (last_print + 1) % print_every;
-            if (last_print == 0)
-                logger.printfln("mode %u | power_at_meter_w %i | power_available_w %i | wants_3phase %i | is_3phase %i | is_on %i | max_current_limited_ma %u | cm avail ma %u | cm alloc ma %u",
-                    mode, power_at_meter_w, power_available_w, wants_3phase, is_3phase, is_on, max_current_limited_ma, charge_manager.charge_manager_available_current.get("current")->asUint(), charge_manager_allocated_current_ma);
-        }
     } else if (switching_state == SwitchingState::Stopping) {
         set_available_current(0);
 
@@ -758,20 +729,11 @@ void EnergyManager::update_energy()
 
         just_switched_phases = true;
     }
-
-    static uint32_t time_max = 20000;
-    time = micros() - time;
-    if (time > time_max) {
-        time_max = time;
-        logger.printfln("energy_manager::update_energy() took %uus", time_max);
-    }
 #endif
 }
 
 void EnergyManager::get_sdcard_info(struct sdcard_info *data)
 {
-    uint32_t time = micros();
-
     int rc = tf_warp_energy_manager_get_sd_information(
         &device,
         &data->sd_status,
@@ -788,13 +750,6 @@ void EnergyManager::get_sdcard_info(struct sdcard_info *data)
 
     if (rc != TF_E_OK)
         logger.printfln("energy_manager: Failed to get SD card information. Error %i", rc);
-
-    static uint32_t time_max = 4000;
-    time = micros() - time;
-    if (time > time_max) {
-        time_max = time;
-        logger.printfln("energy_manager::get_sdcard_info() took %uus", time_max);
-    }
 }
 
 bool EnergyManager::format_sdcard()
@@ -809,24 +764,12 @@ bool EnergyManager::format_sdcard()
 
 uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
 {
-    uint32_t time = micros();
-
     uint16_t len = 0;
-    uint16_t ret;
     int rc = tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, &len);
 
     check_bricklet_reachable(rc);
 
-    ret = rc == TF_E_OK ? len : 0;
-
-    static uint32_t time_max = 8000;
-    time = micros() - time;
-    if (time > time_max) {
-        time_max = time;
-        logger.printfln("energy_manager::get_energy_meter_detailed_values() took %uus", time_max);
-    }
-
-    return ret;
+    return rc == TF_E_OK ? len : 0;
 }
 
 void EnergyManager::set_output(bool output)
