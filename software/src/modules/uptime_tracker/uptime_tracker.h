@@ -43,7 +43,7 @@ class UptimeTracker
 
         bool initialized = false;
         bool verified = false;
-        uptime_data_t old_uptime;
+        uptime_data_t old_uptime{};
 
         ConfigRoot uptimes;
 };

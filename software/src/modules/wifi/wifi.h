@@ -62,5 +62,5 @@ private:
 
     bool soft_ap_running = false;
 
-    uint32_t last_connected_ms;
+    uint32_t last_connected_ms = 0;
 };
