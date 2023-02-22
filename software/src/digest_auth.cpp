@@ -27,6 +27,7 @@
 #include "mbedtls/md5.h"
 #include "event_log.h"
 #include "build.h"
+#include "tools.h"
 
 static bool getMD5(uint8_t * data, uint16_t len, char * output){//33 bytes or more
     mbedtls_md5_context _ctx;
@@ -65,12 +66,12 @@ static String genRandomString(){
 }
 
 static String stringMD5(const String& in){
-  char * out = (char*)malloc(33);
-  if(out == NULL || !getMD5((uint8_t*)(in.c_str()), in.length(), out))
-    return "";
-  String res = String(out);
-  free(out);
-  return res;
+    CoolString out;
+    out.reserve(33);
+    if(!getMD5((uint8_t*)(in.c_str()), in.length(), out.begin()))
+        return "";
+    out.setLength(32);
+    return out;
 }
 
 String requestDigestAuthentication(const char * realm){
