@@ -45,16 +45,9 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 {
     debug_log = "";
 
-    constructor()
+    constructor(props: any)
     {
-        super();
-
-        this.props = {
-            debug: null,
-            debugHeader: null,
-            prefix: "",
-            translationPrefix: ""
-        }
+        super(props);
 
         this.state = {
             debug_running: false,
