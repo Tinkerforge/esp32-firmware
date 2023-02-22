@@ -30,7 +30,7 @@
     },
     "mqtt": {
         "content": {
-            "enable_mqtt_desc": "This allows controlling the energy manager over the configured MQTT broker."
+            "enable_mqtt_desc": "This allows controlling the energy manager over the configured MQTT broker. <a href=\"{{{apidoc_url}}}\">MQTT API documentation</a>"
         }
     },
     "network": {

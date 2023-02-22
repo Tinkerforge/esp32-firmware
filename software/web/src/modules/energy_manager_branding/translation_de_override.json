@@ -40,7 +40,7 @@
     },
     "mqtt": {
         "content": {
-            "enable_mqtt_desc": "Hierdurch kann der Energy Manager über den konfigurierten MQTT-Broker kontrolliert werden."
+            "enable_mqtt_desc": "Hierdurch kann der Energy Manager über den konfigurierten MQTT-Broker kontrolliert werden. <a href=\"{{{apidoc_url}}}\">MQTT-API-Dokumentation</a>"
         }
     },
     "util": {
