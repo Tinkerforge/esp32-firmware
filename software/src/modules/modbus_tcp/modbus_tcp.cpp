@@ -848,9 +848,9 @@ void ModbusTcp::update_keba_regs()
 #if MODULE_METER_AVAILABLE()
     if (api.hasFeature("meter"))
     {
-        bool charging = false;
-
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
+        int32_t user_id = api.getState("charge_tracker/current_charge")->get("user_id")->asInt();
+        bool charging = user_id != -1;
         auto meter_absolute = api.getState("meter/values")->get("energy_abs")->asFloat();
         auto meter_start = api.getState("charge_tracker/current_charge")->get("meter_start")->asFloat();
 
