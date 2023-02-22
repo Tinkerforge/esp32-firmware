@@ -29,6 +29,8 @@
 #include "build.h"
 #include "tools.h"
 
+#define MD5_LEN 32
+
 static bool getMD5(uint8_t * data, uint16_t len, char * output){//33 bytes or more
     mbedtls_md5_context _ctx;
   uint8_t i;
@@ -67,10 +69,12 @@ static String genRandomString(){
 
 static String stringMD5(const String& in){
     CoolString out;
-    out.reserve(33);
+    if (!out.reserve(MD5_LEN + 1))
+        return "";
+
     if(!getMD5((uint8_t*)(in.c_str()), in.length(), out.begin()))
         return "";
-    out.setLength(32);
+    out.setLength(MD5_LEN);
     return out;
 }
 
@@ -183,8 +187,19 @@ bool checkDigestAuthentication(const AuthFields &fields, const char * method, co
     }
 
     String ha1 = (passwordIsHash) ? String(password) : stringMD5(fields.username + ":" + fields.realm + ":" + String(password));
+    if (passwordIsHash && ha1.length() < MD5_LEN) {
+        logger.printfln("AUTH FAIL: out of memory");
+        return false;
+    }
+
     String ha2 = String(method) + ":" + fields.uri;
-    String response = ha1 + ":" + fields.nonce + ":" + fields.nc + ":" + fields.cnonce + ":" + fields.qop + ":" + stringMD5(ha2);
+    ha2 = stringMD5(ha2);
+    if (ha2.length() < MD5_LEN) {
+        logger.printfln("AUTH FAIL: out of memory");
+        return false;
+    }
+
+    String response = ha1 + ":" + fields.nonce + ":" + fields.nc + ":" + fields.cnonce + ":" + fields.qop + ":" + ha2;
 
     if (fields.response.equals(stringMD5(response))) {
         return true;
