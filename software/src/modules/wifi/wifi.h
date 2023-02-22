@@ -21,8 +21,6 @@
 
 #include "config.h"
 
-#define MAX_CONNECT_ATTEMPT_INTERVAL_MS (5 * 60 * 1000)
-
 enum class WifiState {
     NOT_CONFIGURED,
     NOT_CONNECTED,
@@ -63,7 +61,6 @@ private:
     ConfigRoot wifi_sta_config_in_use;
 
     bool soft_ap_running = false;
-    uint32_t connect_attempt_interval_ms;
 
     uint32_t last_connected_ms;
 };

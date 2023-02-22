@@ -21,8 +21,6 @@
 
 #include "config.h"
 
-#define MAX_CONNECT_ATTEMPT_INTERVAL_MS (5 * 60 * 1000)
-
 enum class EthernetState {
     NOT_CONFIGURED = 0,
     NOT_CONNECTED = 1,
@@ -50,6 +48,4 @@ private:
     ConfigRoot ethernet_state;
 
     ConfigRoot ethernet_config_in_use;
-
-    uint32_t connect_attempt_interval_ms;
 };
