@@ -150,5 +150,5 @@ public:
 
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;
-    uint64_t last_debug_check;
+    uint32_t last_debug_check = 0;
 };

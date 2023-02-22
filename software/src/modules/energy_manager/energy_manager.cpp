@@ -129,7 +129,7 @@ void EnergyManager::setup_energy_manager()
 void EnergyManager::check_debug()
 {
     task_scheduler.scheduleOnce([this](){
-        if (millis() - last_debug_check > 60000 && debug == true)
+        if (deadline_elapsed(last_debug_check + 60000)  && debug == true)
         {
             logger.printfln("Debug log creation canceled because no continue call was received for more than 60 seconds.");
             debug = false;

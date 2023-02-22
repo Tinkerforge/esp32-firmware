@@ -194,7 +194,7 @@ private:
     InputPin *input3;
     InputPin *input4;
 
-    unsigned long last_debug_check;
+    uint32_t last_debug_check = 0;
     bool     uptime_past_hysteresis;
     uint32_t consecutive_bricklet_errors;
     bool     bricklet_reachable = true;
