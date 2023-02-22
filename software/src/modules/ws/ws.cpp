@@ -44,7 +44,7 @@ void WS::register_urls()
             to_send += String("{\"topic\":\"") + reg.path + String("\",\"payload\":") + reg.config->to_string_except(reg.keys_to_censor) + String("}\n");
         }
         client.send(to_send.c_str(), to_send.length());
-        for (auto callback : on_connect_callbacks) {
+        for (auto &callback : on_connect_callbacks) {
             callback(client);
         }
     });
