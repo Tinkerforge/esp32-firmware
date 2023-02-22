@@ -72,6 +72,18 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
     // Otherwise set value to the given property.
     let value = inputInFlight === null ? propValue : inputInFlight;
 
+    const sendInFlight = () => {
+        if (inputInFlight === null)
+            return;
+
+        let target = parseFloat(inputInFlight);
+        if (isNaN(target))
+            return;
+
+        setTarget(target * pow10);
+        setInputInFlight(null);
+    }
+
     return (
         <div class="input-group">
             <input class="form-control no-spin"
@@ -80,17 +92,12 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                        ref={input}
                        step={1/pow10}
                        onInput={'onValue' in props ? (e) => setInputInFlight((e.target as HTMLInputElement).value) : undefined}
-                       onfocusout={'onValue' in props ? () => {
-                            if (inputInFlight === null)
-                                return;
-
-                            let target = parseFloat(inputInFlight);
-                            if (isNaN(target))
-                                return;
-
-                            setTarget(target * pow10);
-                            setInputInFlight(null);
-                        } : undefined}
+                       // onfocusout is not triggered if a user submits the form by pressing enter
+                       onKeyDown={(e: KeyboardEvent) => {
+                        if (e.key == 'Enter')
+                            sendInFlight();
+                       }}
+                       onfocusout={'onValue' in props ? () => sendInFlight() : undefined}
                        value={value}
                        disabled={!('onValue' in props)}
                        inputMode="decimal"/>
