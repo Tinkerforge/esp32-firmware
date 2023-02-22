@@ -274,7 +274,7 @@ def main():
         if branch_name == "master":
             dirty_suffix = '_' + git_commit_id
         else:
-            dirty_suffix = '_' + git_commit_id + "_" + branch_name
+            dirty_suffix = '_' + git_commit_id + "_" + branch_name.replace("_", "-")
 
     try:
         oldest_version, version = get_changelog_version(name)
