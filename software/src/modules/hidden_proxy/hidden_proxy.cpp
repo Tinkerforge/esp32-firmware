@@ -57,8 +57,10 @@ void HiddenProxy::start_proxy()
         logger.printfln("TF_Net already allocated?");
     } else {
         net = (TF_Net *)malloc(sizeof(TF_Net));
-        if (net == nullptr)
+        if (net == nullptr) {
             logger.printfln("Failed to allocate TF_Net");
+            return;
+        }
     }
 
     if (blinky_running)
