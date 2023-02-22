@@ -122,7 +122,7 @@ bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_index, uint8_t *dat
 
     if (info_offset < sizeof(info)) {
         size_t to_write = MIN(length, sizeof(info) - info_offset);
-        memcpy(&info + info_offset, start, to_write);
+        memcpy(((uint8_t *)&info) + info_offset, start, to_write);
         info_offset += to_write;
     }
 
@@ -143,7 +143,7 @@ bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_index, uint8_t *dat
 
     if (checksum_offset < sizeof(checksum)) {
         size_t to_write = MIN(length, sizeof(checksum) - checksum_offset);
-        memcpy(&checksum + checksum_offset, start, to_write);
+        memcpy((uint8_t *)&checksum + checksum_offset, start, to_write);
         checksum_offset += to_write;
     }
 
