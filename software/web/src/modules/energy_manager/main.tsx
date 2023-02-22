@@ -38,13 +38,14 @@ import { CollapsedSection } from "src/ts/components/collapsed_section";
 type StringStringTuple = [string, string];
 
 interface EnergyManagerState {
-    state: API.getType['energy_manager/state'];
+    state: API.getType['energy_manager/state']
+    debug_mode: boolean
 }
 
 interface EnergyManagerAllData {
-    state: API.getType['energy_manager/state'];
-    config: API.getType['energy_manager/config'];
-    runtime_config: API.getType['energy_manager/runtime_config'];
+    state: API.getType['energy_manager/state']
+    config: API.getType['energy_manager/config']
+    runtime_config: API.getType['energy_manager/runtime_config']
 }
 
 export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
@@ -146,6 +147,10 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
         util.eventTarget.addEventListener('energy_manager/state', () => {
             this.setState({state: API.get('energy_manager/state')});
+        });
+
+        util.eventTarget.addEventListener('info/modules', () => {
+            this.setState({debug_mode: !!((API.get('info/modules') as any).debug)})
         });
     }
 
@@ -462,7 +467,8 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                         </div>
                     </Collapse>
 
-                    <CollapsedSection label={__("energy_manager.content.expert_settings")}>
+                    {s.debug_mode ? <>
+                        <FormSeparator heading={__("energy_manager.content.header_expert_settings")} />
                         <FormRow label={__("energy_manager.content.target_power_from_grid")} label_muted={__("energy_manager.content.target_power_from_grid_muted")}>
                             <InputFloat
                                 unit="kW"
@@ -489,7 +495,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                 checked={s.hysteresis_wear_accepted}
                                 onClick={() => { this.toggle('hysteresis_wear_accepted')(); if (s.hysteresis_wear_accepted && s.hysteresis_time < 10) this.setState({ hysteresis_time: 10 }); }} />
                         </FormRow>
-                    </CollapsedSection>
+                    </> : null }
                 </ConfigForm>
             </>
         )

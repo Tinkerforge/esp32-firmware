@@ -29,7 +29,7 @@
             "header_excess_charging": "PV-Überschussladen",
             "enable_excess_charging": "Überschussladen aktivieren",
             "enable_excess_charging_desc": "Wenn aktiviert, regelt der Energy Manager die an ihn angeschlossenen Verbraucher abhängig vom Überschuss einer vorhandenen Photovoltaikanlage. Wenn deaktiviert, wird die maximale Leistung unter Einhaltung der maximale Strombelastbarkeit der Zuleitungen erlaubt.",
-            "guaranteed_power": "Mindest-Ladeleistung",
+            "guaranteed_power": "Min + PV: Mindest-Ladeleistung",
             "guaranteed_power_muted": "Leistung, die auch ohne Überschuss garantiert mindestens für alle angeschlossenen Wallboxen in Summe zur Verfügung steht.",
             "contactor_installed": "Schütz angeschlossen",
             "contactor_installed_desc": "Der Energy Manager verfügt über ein Schütz, mit dem die von ihm verwalteten Wallboxen zwischen ein- und dreiphasigem Anschluss umgeschaltet werden können.",
@@ -83,7 +83,7 @@
             "input_switch_to": "Wechsle Modus zu",
             "input_mode_nothing": "Modus nicht wechseln",
 
-            "expert_settings": "Experteneinstellungen",
+            "header_expert_settings": "Experteneinstellungen",
             "target_power_from_grid": "Soll-Netzbezug",
             "target_power_from_grid_muted": "Sollwert für Überschussregelung",
             "hysteresis_time": "Hysterese-Zeit",

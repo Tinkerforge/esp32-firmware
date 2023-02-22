@@ -55,7 +55,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
             return (<></>);
 
         let em = state.em_state;
-        
+
         return (
             <>
                 <ConfigForm id="em_meter_config_config_form" title={__("em_meter_config.content.em_meter_config")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
@@ -64,8 +64,8 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
                             items={[
                                     ["0", __("em_meter_config.content.type_none")],
                                     ["1", __("em_meter_config.content.type_sdm")],
-                                    ["2", __("em_meter_config.content.type_sunspec")],
-                                    ["3", __("em_meter_config.content.type_modbus_tcp")],
+                                    //["2", __("em_meter_config.content.type_sunspec")],
+                                    //["3", __("em_meter_config.content.type_modbus_tcp")],
                                     ["100", __("em_meter_config.content.type_custom")],
                                 ]}
                             value={state.meter_type}
