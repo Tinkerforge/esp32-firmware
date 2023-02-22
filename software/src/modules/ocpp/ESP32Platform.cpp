@@ -751,7 +751,9 @@ void platform_set_charging_current(int32_t connectorId, uint32_t milliAmps)
 size_t platform_read_file(const char *name, char *buf, size_t len) {
     File f = LittleFS.open(PATH_PREFIX + name);
     // File::read can return 2^32-1 because it returns -1 if the file is not open but the return type is size_t.
-    return min(len, f.read((uint8_t *)buf, len));
+    if (f.read((uint8_t *)buf, len) > len)
+        return 0;
+    return len;
 }
 bool platform_write_file(const char *name, char *buf, size_t len) {
     File f = LittleFS.open(PATH_PREFIX + name, "w", true);
