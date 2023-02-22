@@ -180,7 +180,7 @@ static const uint8_t cm_state_packet_length_versions[] = {
 };
 static_assert(ARRAY_SIZE(cm_state_packet_length_versions) == (CM_PROTOCOL_VERSION + 1));
 
-String CMNetworking::validate_packet_header(const struct cm_packet_header *header, ssize_t recv_length) const
+String CMNetworking::validate_packet_header(const struct cm_packet_header *header, ssize_t recv_length, const uint8_t packet_length_versions[], const char *packet_type_name) const
 {
     if (recv_length < sizeof(struct cm_packet_header)) {
         return String("Truncated header with ") + recv_length + " bytes.";
@@ -194,45 +194,29 @@ String CMNetworking::validate_packet_header(const struct cm_packet_header *heade
         return String("Protocol version ") + header->version + " too old. Need at least version " MACRO_VALUE_TO_STRING(CM_PROTOCOL_VERSION_MIN) ".";
     }
 
+    if (header->version <= CM_PROTOCOL_VERSION) { // Known protocol version; match against known packet length.
+        if (header->length != packet_length_versions[header->version])
+            return String("Invalid ") + packet_type_name + " packet length for known protocol version " + header->version + ": " + header->length + " bytes.";
+
+    } else { // Newer protocol than known; packet must be at least as long as our newest known version.
+        if (header->length < packet_length_versions[CM_PROTOCOL_VERSION])
+            return String("Invalid ") + packet_type_name + " packet length for protocol version " + header->version + " from the future: " + header->length + " bytes.";
+    }
+
+    if (recv_length < header->length)
+        return String("Received truncated ") + packet_type_name + " packet for protocol version " + header->version + ": " + recv_length + '/' + header->length + " bytes.";
+
     return String();
 }
 
 String CMNetworking::validate_command_packet_header(const struct cm_command_packet *pkt, ssize_t recv_length) const
 {
-    String err = validate_packet_header(&(pkt->header), recv_length);
-    if (err != "")
-        return err;
-
-    if (((pkt->header.version > CM_PROTOCOL_VERSION) && (pkt->header.length < cm_command_packet_length_versions[CM_PROTOCOL_VERSION]))  // Newer protocol than known. Packet must be at least as long as our newest known version.
-        || (pkt->header.length != cm_command_packet_length_versions[pkt->header.version])) {                                            // Match length of known protocol version.
-        return String("Invalid packet length for protocol version ") + pkt->header.version + ": " + pkt->header.length + " bytes.";
-    }
-
-    if (((pkt->header.version > CM_PROTOCOL_VERSION) && (recv_length < cm_command_packet_length_versions[CM_PROTOCOL_VERSION])) // Newer protocol than known. Packet must be at least as long as our newest known version.
-        || (recv_length != cm_command_packet_length_versions[pkt->header.version])) {                                           // Match length of known protocol version.
-        return String("Received truncated packet for protocol version ") + pkt->header.version + ": " + recv_length + " bytes.";
-    }
-
-    return String();
+    return validate_packet_header(&(pkt->header), recv_length, cm_command_packet_length_versions, "command");
 }
 
 String CMNetworking::validate_state_packet_header(const struct cm_state_packet *pkt, ssize_t recv_length) const
 {
-    String err = validate_packet_header(&(pkt->header), recv_length);
-    if (err != "")
-        return err;
-
-    if (((pkt->header.version > CM_PROTOCOL_VERSION) && (pkt->header.length < cm_state_packet_length_versions[CM_PROTOCOL_VERSION]))    // Newer protocol than known. Packet must be at least as long as our newest known version.
-        || (pkt->header.length != cm_state_packet_length_versions[pkt->header.version])) {                                              // Match length of known protocol version.
-        return String("Invalid packet length for protocol version ") + pkt->header.version + ": " + pkt->header.length + " bytes.";
-    }
-
-    if (((pkt->header.version > CM_PROTOCOL_VERSION) && (recv_length < cm_state_packet_length_versions[CM_PROTOCOL_VERSION]))    // Newer protocol than known. Packet must be at least as long as our newest known version.
-        || (recv_length != cm_state_packet_length_versions[pkt->header.version])) {                                              // Match length of known protocol version.
-        return String("Received truncated packet for protocol version ") + pkt->header.version + ": " + recv_length + " bytes.";
-    }
-
-    return String();
+    return validate_packet_header(&(pkt->header), recv_length, cm_state_packet_length_versions, "state");
 }
 
 bool CMNetworking::seq_num_invalid(uint16_t received_sn, uint16_t last_seen_sn) const
