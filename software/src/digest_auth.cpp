@@ -53,9 +53,9 @@ static String genRandomString(){
   memcpy(data, &t, sizeof(t));
   t = build_timestamp();
   memcpy(data + 4, &t, sizeof(t));
-  uint32_t r = rand();
+  uint32_t r = esp_random();
   memcpy(data + 8, &r, sizeof(r));
-  r = rand();
+  r = esp_random();
   memcpy(data + 12, &r, sizeof(r));
 
   char buf[33] = {0};
