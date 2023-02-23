@@ -355,8 +355,6 @@ void EnergyManager::update_all_data()
             logger.printfln("Contactor check tripped. Check contactor.");
             contactor_check_tripped = true;
             set_error(ERROR_FLAGS_CONTACTOR);
-        } else if (contactor_check_tripped) {
-            logger.printfln("Contactor check tripped in the past but reports ok now. Check contactor and reboot Energy Manager to clear.");
         }
     }
 }
@@ -383,16 +381,28 @@ void EnergyManager::update_all_data_struct()
     check_bricklet_reachable(rc);
 }
 
+void EnergyManager::update_status_led()
+{
+    if (error_flags & ERROR_FLAGS_ALL_ERRORS)
+        rgb_led.set_status(EmRgbLed::Status::Error);
+    else if (error_flags & ERROR_FLAGS_ALL_WARNINGS)
+        rgb_led.set_status(EmRgbLed::Status::Warning);
+    else
+        rgb_led.set_status(EmRgbLed::Status::OK);
+}
+
 void EnergyManager::clr_error(uint32_t error_mask)
 {
     error_flags &= ~error_mask;
     energy_manager_state.get("error_flags")->updateUint(error_flags);
+    update_status_led();
 }
 
 void EnergyManager::set_error(uint32_t error_mask)
 {
     error_flags |= error_mask;
     energy_manager_state.get("error_flags")->updateUint(error_flags);
+    update_status_led();
 }
 
 void EnergyManager::check_bricklet_reachable(int rc) {

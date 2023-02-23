@@ -177,6 +177,7 @@ public:
     int32_t  power_at_meter_w        = 0;
 
 private:
+    void update_status_led();
     void clr_error(uint32_t error_mask);
     void set_error(uint32_t error_mask);
     void check_bricklet_reachable(int rc);

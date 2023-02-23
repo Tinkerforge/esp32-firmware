@@ -21,15 +21,30 @@
 
 #include "config.h"
 
+// full green
+#define HUE_OK       120
+// full yellow
+#define HUE_WARNING   60
+// full red
+#define HUE_ERROR      0
+// full yellow
+#define HUE_IMPORT    60
+// full blue
+#define HUE_BALANCED 240
+// full green
+#define HUE_EXPORT   120
+// full magenta
+#define HUE_UNKNOWN  300
+
+// should be a power of 2
+#define BLINK_PERIOD  16
+
+#define LED_TASK_INTERVAL 25
+
 class EmRgbLed
 {
 public:
-    enum class Priority {
-        Low = 0,
-        Mid = 1,
-        High = 2,
-    };
-    enum class Severity {
+    enum class Status {
         OK = 0,
         Warning = 1,
         Error = 2,
@@ -42,26 +57,20 @@ public:
 
     EmRgbLed();
     void setup();
-    void add_status(const String &id, Severity severity, Priority priority);
-    void remove_status(const String &id);
+    void set_status(Status status);
     void update_grid_balance(GridBalance balance);
 
 private:
     void update_led();
+    void set_led_hsv(uint32_t H, float v);
 
+    Status status;
     bool have_grid_balance;
-    bool show_grid_balance;
-    float hue;
-    float hue_balance;
-
-    int16_t hue_ok;
-    int16_t hue_warning;
-    int16_t hue_error;
-    int16_t hue_import;
-    int16_t hue_balanced;
-    int16_t hue_export;
+    uint32_t hue_balance;
 
     float value_breathing[100];
     int32_t breathing_pos;
     int32_t breathing_step;
+
+    uint32_t blink_counter;
 };
