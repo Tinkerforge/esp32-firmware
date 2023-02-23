@@ -9,6 +9,8 @@ import sys
 import time
 import urllib.request
 import traceback
+import subprocess
+import datetime
 
 from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
@@ -23,6 +25,32 @@ from provision_common.provision_common import *
 from provision_common.sdm_simulator import SDMSimulator
 
 from provision_stage_2_warp2 import ContentTypeRemover, factory_reset, connect_to_ethernet
+
+WARP_CHARGER_GIT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'warp-charger')
+
+def get_next_serial_number():
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'staging-password.txt'), 'r') as f:
+        staging_password = f.read().strip()
+
+    if sys.version_info < (3, 5, 3):
+        context = ssl.SSLContext(protocol=ssl.PROTOCOL_SSLv23)
+    else:
+        context = ssl.SSLContext()
+
+    https_handler = urllib.request.HTTPSHandler(context=context)
+
+    auth_handler = urllib.request.HTTPBasicAuthHandler()
+    auth_handler.add_password(realm='Staging',
+                              uri='https://stagingwww.tinkerforge.com',
+                              user='staging',
+                              passwd=staging_password)
+
+    opener = urllib.request.build_opener(https_handler, auth_handler)
+    urllib.request.install_opener(opener)
+
+    serial_number = int(urllib.request.urlopen('https://stagingwww.tinkerforge.com/warpsn', timeout=15).read())
+
+    return '7{0:09}'.format(serial_number)
 
 class EnergyManagerTester:
     def __init__(self):
@@ -77,6 +105,11 @@ class EnergyManagerTester:
 
         event_log = connect_to_ethernet(self.ssid, "event_log").decode('utf-8')
         print(event_log)
+
+        macs = re.findall(re.compile(r'Ethernet MAC: ((?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2})'), event_log)
+        if len(macs) == 0:
+            self.fatal_error("Failed to find MAC address in event log!")
+        self.mac = macs[0]
 
         m = re.search(r"WARP (?:ENERGY MANAGER|Energy Manager) V(\d+).(\d+).(\d+)", event_log)
         if not m:
@@ -143,7 +176,12 @@ class EnergyManagerTester:
     
     def fatal_error(self, string):
         self.rgb_led.set_rgb_value(255, 0, 0)
-        self.wem.set_rgb_value(255, 0, 0)
+
+        # Depending on the error, the WEM Bricklet might not be initialize yet
+        try:
+            self.wem.set_rgb_value(255, 0, 0)
+        except:
+            pass
         fatal_error(string)
 
     def test_voltage_supply(self):
@@ -241,6 +279,65 @@ class EnergyManagerTester:
         else:
             self.fatal_error(" ... RS485 FAILED! ({})".format(value))
         print(' ... Done')
+    
+    def test_sd_card(self):
+        print('Testing SD card...')
+        print(' ... formating SD card')
+        status = self.wem.format_sd(0x4223ABCD)
+        if status == self.wem.FORMAT_STATUS_OK:
+            print(' ... SD card format OK')
+        else:
+            self.fatal_error(" ... SD card format FAILED! ({})".format(status))
+
+        print(' ... checking SD card status (may take a few seconds)')
+        for i in range(10):
+            time.sleep(0.5)
+
+            info = self.wem.get_sd_information()
+            if info.sd_status == 0 and  info.lfs_status == 0:
+                print(' ... SD card status OK')
+                break
+        else:
+            self.fatal_error(" ... SD card status FAILED! ({})".format(info))
+
+        print(' ... Done')
+
+    def print_labels(self):
+        sku = 'WARP-EM'
+        version = '1.0'
+        serial_number = get_next_serial_number()
+        production_date = datetime.datetime.now().strftime('%Y-%m')
+
+        print('Printing labels...')
+        arguments = [
+            os.path.join(WARP_CHARGER_GIT_PATH, 'label', 'print-wem-label.py'),
+            version,
+            serial_number,
+            production_date,
+            self.mac
+        ]
+
+        result = subprocess.check_output(arguments)
+        if result == b'':
+            print(' ... WEM label OK')
+        else:
+            self.fatal_error(" ... WEM label FAILED!")
+
+        arguments = [
+            os.path.join(WARP_CHARGER_GIT_PATH, 'label', 'print-package2-label.py'),
+            sku,
+            version,
+            serial_number,
+            production_date
+        ]
+
+        result = subprocess.check_output(arguments)
+        if result == b'':
+            print(' ... Package label OK')
+        else:
+            self.fatal_error(" ... Package label FAILED!")
+
+        print(' ... Done')
 
     def test_all(self):
         self.wem.set_rgb_value(0, 100, 0)
@@ -253,8 +350,11 @@ class EnergyManagerTester:
         self.test_input()
         self.wem.set_rgb_value(0, 200, 0)
         self.test_rs485()
+        self.wem.set_rgb_value(0, 225, 0)
+        self.test_sd_card()
         self.wem.set_rgb_value(0, 255, 0)
 
+        self.print_labels()
 
         self.result["end"] = now()
         with open("{}_{}_report_stage_2.json".format(self.ssid, now().replace(":", "-")), "w") as f:
