@@ -731,11 +731,11 @@ search_done:
         stats_head += 1 + written;
 
         if (electricity_price != 0) {
-            written = sprintf(stats_head, "%s: %d.%02d€ (%s: %.2f ct/kWh)",
+            written = sprintf(stats_head, "%s: %d.%02d€ (%.2f ct/kWh)%s",
                             english ? "Total cost" : "Gesamtkosten",
                             charged_cost_sum / 100, charged_cost_sum % 100,
-                            english ? "Electricity cost" : "Strompreis",
-                            electricity_price / 100.0f);
+                            electricity_price / 100.0f,
+                            seen_charges_without_meter ? (english ? " Incomplete!" : " Unvollständig!") : "");
             if (!english)
                 for(int i = 0; i < written; ++i)
                     if (stats_head[i] == '.')
