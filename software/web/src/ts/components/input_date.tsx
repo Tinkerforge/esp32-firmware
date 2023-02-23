@@ -21,6 +21,8 @@ import { h, Context } from "preact";
 import {useContext} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 
+import * as util from "../../ts/util";
+
 interface InputDateProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>, "value" | "class" | "id" | "type" | "onInput"> {
     idContext?: Context<string>
     date: Date
@@ -29,12 +31,29 @@ interface InputDateProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
 
 export function InputDate(props: InputDateProps) {
     let id = props.idContext === undefined ? "" : useContext(props.idContext);
+
+    const dateToValue = (date: Date) => {
+        try {
+            return util.leftPad(date.getFullYear(), 0, 4) + "-" + util.leftPad((date.getMonth() + 1), 0, 2) + "-" + util.leftPad(date.getDate(), 0, 2);
+        } catch (e) {
+            return "";
+        }
+    };
+
     return (
         <input class={"form-control " + props.className}
                id={id}
                type="date"
-               onInput={props.onDate ? (e) => props.onDate(new Date((e.target as HTMLInputElement).value)) : undefined}
+               onInput={props.onDate ? (e) => {
+                    let timeString = (e.target as HTMLInputElement).value;
+                    if (timeString == "")
+                        return;
+
+                    let [y, mIdx, d] = timeString.split(/-/g).map(x => parseInt(x));
+                    props.onDate(new Date(y, mIdx - 1, d))
+                } : undefined
+               }
                disabled={!props.onDate}
-               {...{valueAsDate: props.date}}/> //valueAsDate is not recognized for some reason? https://github.com/facebook/react/issues/11369 (no issue found for preact)
+               value={dateToValue(props.date)}/>
     );
 }
