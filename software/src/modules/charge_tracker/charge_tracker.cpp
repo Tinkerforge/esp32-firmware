@@ -434,9 +434,6 @@ static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp
 }
 
 static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, bool english, uint32_t electricity_price) {
-    const char * const unknown = english ? "unknown" : "unbekannt";
-    size_t unknown_len =  english ? ARRAY_SIZE("unknown") : ARRAY_SIZE("unbekannt");
-
     buf += 1 + timestamp_min_to_date_time_string(buf, cs.timestamp_minutes, english);
 
     users.get_display_name(cs.user_id, buf);
