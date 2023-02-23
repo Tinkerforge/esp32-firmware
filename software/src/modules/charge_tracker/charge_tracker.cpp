@@ -701,9 +701,9 @@ search_done:
 
         stats_head += sprintf(stats_head, "%s: ", english ? "Exported users" : "Exportierte Benutzer");
         if (user_filter == -2)
-            stats_head += sprintf(stats_head, "%s", english ? "All users" : "Alle Benutzer");
+            stats_head += sprintf(stats_head, "%s", english ? "all users" : "Alle Benutzer");
         else if (user_filter == -1)
-            stats_head += sprintf(stats_head, "%s", english ? "Deleted users" : "Gelöschte Benutzer");
+            stats_head += sprintf(stats_head, "%s", english ? "deleted users" : "Gelöschte Benutzer");
         else
             stats_head += users.get_display_name(user_filter, stats_head);
         ++stats_head;
