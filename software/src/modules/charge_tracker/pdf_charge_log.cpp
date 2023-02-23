@@ -61,12 +61,6 @@ unsigned int logo_png_len = 165;
 #define LOGO_BACKGROUND 0xFF545454
 
 #define DISPLAY_NAME_COLUMN 1
-const char * table_header = "Startzeit\0"
-                            "Anzeigename\0"
-                            "geladen (kWh)\0"
-                            "Ladedauer\0"
-                            "Zählerstand Start\0"
-                            "Kosten (€)";
 
 #define TABLE_HEADER_COLS 6
 
@@ -104,7 +98,15 @@ int get_streams_per_page(bool first_page, int *table_lines_to_place) {
     return result;
 }
 
-int init_pdf_generator(WebServerRequest *request, const char *title, const char *stats, int stats_lines, const char *letterhead, int letterhead_lines, uint16_t tracked_charges, std::function<int(const char * *)> table_lines_cb) {
+int init_pdf_generator(WebServerRequest *request,
+                       const char *title,
+                       const char *stats,
+                       int stats_lines,
+                       const char *letterhead,
+                       int letterhead_lines,
+                       const char *table_header,
+                       uint16_t tracked_charges,
+                       std::function<int(const char * *)> table_lines_cb) {
     struct pdf_info info;
     memset(&info, 0, sizeof(info));
     strncpy(info.title, title, ARRAY_SIZE(info.title) - 1);
@@ -149,7 +151,7 @@ int init_pdf_generator(WebServerRequest *request, const char *title, const char 
     });
 
 
-    pdf_add_stream_callback(pdf, [pages_to_be_created, table_lines_last_page, &table_content_placed, tracked_charges, table_lines_cb, stats, stats_lines, letterhead, letterhead_lines](struct pdf_doc *pdf, uint32_t page_num, uint32_t stream_num) -> int {
+    pdf_add_stream_callback(pdf, [pages_to_be_created, table_lines_last_page, &table_content_placed, tracked_charges, table_lines_cb, stats, stats_lines, letterhead, letterhead_lines, table_header](struct pdf_doc *pdf, uint32_t page_num, uint32_t stream_num) -> int {
         // Logo background
         if (stream_num == 0)
             return pdf_add_filled_rectangle(pdf, NULL, 0, PDF_A4_HEIGHT - TOP_MARGIN, PDF_A4_WIDTH, 75, 0, LOGO_BACKGROUND, 0);

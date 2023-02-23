@@ -768,12 +768,27 @@ search_done:
         request.beginChunkedResponse(200, "application/pdf");
 
 
+        const char * table_header_de = "Startzeit\0"
+                                       "Benutzer\0"
+                                       "geladen (kWh)\0"
+                                       "Ladedauer\0"
+                                       "Zählerstand Start\0"
+                                       "Kosten (€)";
+
+        const char * table_header_en = "Start time\0"
+                                       "User\0"
+                                       "Charged (kWh)\0"
+                                       "Duration\0"
+                                       "Meter start\0"
+                                       "Cost (€)";
+
+
         init_pdf_generator(&request,
                            "Title",
                            stats_buf, (electricity_price == 0) ? 5 : 6,
                            letterhead.get(), letterhead_lines,
+                           english ? table_header_en : table_header_de,
                            charge_records,
-
                            [this,
                             user_filter,
                             &table_lines_buffer,

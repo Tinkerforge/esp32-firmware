@@ -28,5 +28,6 @@ int init_pdf_generator(WebServerRequest *request,
                        int stats_lines,
                        const char *letterhead,
                        int letterhead_lines,
+                       const char *table_header,
                        uint16_t tracked_charges,
                        std::function<int(const char * *)> table_lines_cb);
