@@ -10,12 +10,12 @@
         "content": {
             "charge_tracker": "Ladetracker",
             "download": "Ladelog herunterladen",
-            "download_desc": "Herunterladen aller aufgezeichneten Ladevorgänge",
+            "download_desc": "",
             "download_btn": "Ladelog als CSV herunterladen",
             "download_btn_pdf": "Ladelog als PDF herunterladen",
 
-            "pdf_text": "Freitext für PDF",
-            "pdf_text_muted": "Freitext wird als 'Briefkopf' in exportierte PDFs eingesetzt.",
+            "pdf_text": "Briefkopf",
+            "pdf_text_muted": "",
 
             "tracked_charges": "Aufgezeichnete Ladevorgänge",
             "tracked_charges_muted": "",

@@ -10,12 +10,12 @@
         "content": {
             "charge_tracker": "Charge Tracker",
             "download": "Download charge log",
-            "download_desc": "Download file of all tracked charges",
+            "download_desc": "",
             "download_btn": "Download charge log as CSV",
             "download_btn_pdf": "Download charge log as PDF",
 
-            "pdf_text": "Freitext für PDF",
-            "pdf_text_muted": "Freitext wird als 'Briefkopf' in exportierte PDFs eingesetzt.",
+            "pdf_text": "Letterhead",
+            "pdf_text_muted": "",
 
             "tracked_charges": "Tracked charges",
             "tracked_charges_muted": "",
