@@ -10,7 +10,7 @@
             "error_ok": "OK",
             "error_network": "Netzwerkfehler",
             "error_contactor": "Schützfehler",
-            "error_bricklet": "Interner Fehler"
+            "error_internal": "Interner Fehler"
         },
         "navbar": {
             "energy_manager": "Einstellungen"

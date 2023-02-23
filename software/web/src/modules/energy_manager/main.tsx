@@ -34,7 +34,6 @@ import { InputTime } from "src/ts/components/input_time";
 import { ConfigForm } from "src/ts/components/config_form";
 import { FormSeparator } from "src/ts/components/form_separator";
 import { Button, ButtonGroup, Collapse } from "react-bootstrap";
-import { CollapsedSection } from "src/ts/components/collapsed_section";
 
 type StringStringTuple = [string, string];
 
@@ -75,9 +74,9 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
             return <></>;
 
         let error_flags_ok        = d.state.error_flags == 0;
-        let error_flags_bricklet  = d.state.error_flags & 0x40000000;
-        let error_flags_contactor = d.state.error_flags & 0x20000000;
-        let error_flags_network   = d.state.error_flags & 0x2;
+        let error_flags_internal  = d.state.error_flags & 0xFF000000;
+        let error_flags_contactor = d.state.error_flags & 0x00010000;
+        let error_flags_network   = d.state.error_flags & 0x00000002;
 
         return <>
             <FormRow label={__("energy_manager.status.mode")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
@@ -129,8 +128,8 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                     </Button>
                     <Button disabled
                         key="7"
-                        variant={(error_flags_bricklet ? "" : "outline-") + "danger"}>
-                        {__("energy_manager.status.error_bricklet")}
+                        variant={(error_flags_internal ? "" : "outline-") + "danger"}>
+                        {__("energy_manager.status.error_internal")}
                     </Button>
                 </ButtonGroup>
             </FormRow>
