@@ -45,12 +45,6 @@ const char * stats = "Wallbox: wallbox:innen\0"
                      "Gesamtbetrag: 2053.66 €";
 */
 
-const char * letterhead = "Herr von und zu Testuser\0"
-                          "Teststraße 123\0"
-                          "45678 Teststadt\0"
-                          "Testland";
-#define LETTERHEAD_LINES 4
-
 #define DISPLAY_NAME_COLUMN 1
 const char * table_header = "Startzeit\0"
                             "Anzeigename\0"
@@ -116,15 +110,10 @@ int get_streams_per_page(bool first_page, int *table_lines_to_place) {
     return result;
 }
 
-int init_pdf_generator(WebServerRequest *request, const char *stats, int stats_lines, uint16_t tracked_charges, std::function<int(const char * *)> table_lines_cb) {
-    struct pdf_info info = {
-        /*.creator =*/ "My software",
-        /*.producer =*/ "My software",
-        /*.title =*/ "My document",
-        /*.author =*/ "My name",
-        /*.subject =*/ "My subject",
-        /*.date =*/ "Today"
-    };
+int init_pdf_generator(WebServerRequest *request, const char *title, const char *stats, int stats_lines, const char *letterhead, int letterhead_lines, uint16_t tracked_charges, std::function<int(const char * *)> table_lines_cb) {
+    struct pdf_info info;
+    memset(&info, 0, sizeof(info));
+    strncpy(info.title, title, ARRAY_SIZE(info.title) - 1);
 
     struct pdf_doc *pdf = pdf_create(PDF_A4_WIDTH, PDF_A4_HEIGHT, &info);
     pdf_add_write_callback(pdf, [request](const void *buf, size_t len) -> int {
@@ -169,7 +158,7 @@ int init_pdf_generator(WebServerRequest *request, const char *stats, int stats_l
     });
 
 
-    pdf_add_stream_callback(pdf, [pages_to_be_created, table_lines_last_page, &table_content_placed, tracked_charges, table_lines_cb, stats, stats_lines](struct pdf_doc *pdf, uint32_t page_num, uint32_t stream_num) -> int {
+    pdf_add_stream_callback(pdf, [pages_to_be_created, table_lines_last_page, &table_content_placed, tracked_charges, table_lines_cb, stats, stats_lines, letterhead, letterhead_lines](struct pdf_doc *pdf, uint32_t page_num, uint32_t stream_num) -> int {
         // Logo background
         if (stream_num == 0)
             return pdf_add_filled_rectangle(pdf, NULL, 0, PDF_A4_HEIGHT - TOP_MARGIN, PDF_A4_WIDTH, 75, 0, LOGO_BACKGROUND, 0);
@@ -197,7 +186,7 @@ int init_pdf_generator(WebServerRequest *request, const char *stats, int stats_l
             // Letter head (top left)
             if (stream_num == 0) {
                 float offsets[2] = {0, LINE_WIDTH};
-                return pdf_add_multiple_text_spacing(pdf, NULL, letterhead, 4, 1, FONT_SIZE, LEFT_MARGIN, PDF_A4_HEIGHT - TOP_MARGIN - 10 - (LINE_HEIGHT * (stream_num + 1)), PDF_BLACK, 0, LINE_HEIGHT, offsets);
+                return pdf_add_multiple_text_spacing(pdf, NULL, letterhead, letterhead_lines, 1, FONT_SIZE, LEFT_MARGIN, PDF_A4_HEIGHT - TOP_MARGIN - 10 - (LINE_HEIGHT * (stream_num + 1)), PDF_BLACK, 0, LINE_HEIGHT, offsets);
             }
             --stream_num;
         }
