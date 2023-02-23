@@ -21,6 +21,8 @@ import { h, Context, Fragment } from "preact";
 import {useContext, useState} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 
+import * as util from "../../ts/util";
+
 interface InputTimeProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>, "id" | "type" | "onInput" | "value"> {
     idContext?: Context<string>
     value: [number, number];
@@ -31,7 +33,7 @@ export function InputTime(props: InputTimeProps) {
     let {idContext, value, onValue, ...p} = props;
 
     const [inputInFlight, setInputInFlight] = useState<string | null>(null);
-    let propValue = ("0" + value[0]).slice(-2) + ':' + ("0" + value[1]).slice(-2);
+    let propValue = util.leftPad(value[0], 0, 2) + ':' + util.leftPad(value[1], 0, 2);
     let v = inputInFlight === null ? propValue : inputInFlight;
 
     const sendInFlight = () => {

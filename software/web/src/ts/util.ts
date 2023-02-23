@@ -558,3 +558,12 @@ export function clamp(min: number | undefined, x: number, max: number | undefine
         result = Math.max(min, result);
     return result;
 }
+
+export function leftPad(s: string | number, c: string | number, len: number) {
+    s = s.toString();
+    c = c.toString();
+    while (s.length < len) {
+        s = c + s;
+    }
+    return s.slice(-len);
+}
