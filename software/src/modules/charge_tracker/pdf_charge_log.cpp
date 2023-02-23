@@ -45,6 +45,9 @@ const uint8_t logo_png[] = {
 unsigned int logo_png_len = 165;
 
 #define LEFT_MARGIN PDF_MM_TO_POINT(15)
+#define LETTERHEAD_LEFT_MARGIN PDF_MM_TO_POINT(25)
+#define LETTERHEAD_WIDTH PDF_MM_TO_POINT(80)
+
 #define RIGHT_MARGIN PDF_MM_TO_POINT(10)
 // TODO: This is the bottom margin of the logo background rectangle!
 // That is not what one expects to be the top margin of the page
@@ -173,8 +176,8 @@ int init_pdf_generator(WebServerRequest *request, const char *title, const char 
 
             // Letter head (top left)
             if (stream_num == 0) {
-                float offsets[2] = {0, LINE_WIDTH};
-                return pdf_add_multiple_text_spacing(pdf, NULL, letterhead, letterhead_lines, 1, FONT_SIZE, LEFT_MARGIN, PDF_A4_HEIGHT - TOP_MARGIN - 10 - (LINE_HEIGHT * (stream_num + 1)), PDF_BLACK, 0, LINE_HEIGHT, offsets);
+                float offsets[2] = {0, LETTERHEAD_WIDTH};
+                return pdf_add_multiple_text_spacing(pdf, NULL, letterhead, letterhead_lines, 1, FONT_SIZE, LETTERHEAD_LEFT_MARGIN, PDF_A4_HEIGHT - TOP_MARGIN - 10 - (LINE_HEIGHT * (stream_num + 1)), PDF_BLACK, 0, LINE_HEIGHT, offsets);
             }
             --stream_num;
         }
