@@ -34,9 +34,17 @@
 
 #ifdef GD_FLASH
 #include "GD_firmware.h"
-#include <LittleFS.h>
-#define GD_FIRMWARE_FILE "/GD_firmware.bin"
+#else
+const unsigned char GD_firmware[] = {};
+unsigned int GD_firmware_len = 0;
 #endif
+
+#include <LittleFS.h>
+#define GD_FIRMWARE_FILE_NAME "/GD_firmware.bin"
+#define GD_FIRMWARE_SKIP 0x8000
+File GD_firmware_file;
+size_t GD_firmware_filesize = 0;
+bool GD_boot_mode_requested = false;
 
 #include "HardwareSerial.h"
 #include <time.h>
@@ -72,7 +80,6 @@ EVSEV2 evse;
 }
 
 bool ready_for_next_chunk = false;
-size_t MAXLENGTH;
 byte flash_seq;
 uint32_t last_flash = 0;
 bool phases_active[3];
@@ -143,8 +150,8 @@ byte EnterAppMode[] = {0xAB, 0x00, 0x00, 0x03, 0x08, 0xFC, 0xFF, 0x00, 0x00, 0x0
 // ESP> W (2021-10-04 10:04:39) [PRIV_COMM, 1875]: Tx(cmd_AB len:20) :  FA 03 00 00 AB 16 0A 00 00 00 00 00 00 00 01 00 00 00 64 C0  ^M
 byte Handshake[] =   {0xAB, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
 //Flash verify:
-//byte FlashVerify[] = {0xAB, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x04, 0x00, 40, 0x00, /* 40 words */
-byte FlashVerify[811] = {0xAB, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x04, 0x00, 0x90, 0x01, /* 400 words */
+//byte FlashBuffer[] = {0xAB, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x04, 0x00, 40, 0x00, /* 40 words */
+byte FlashBuffer[811] = {0xAB, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x04, 0x00, 0x90, 0x01, /* 400 words */
      /*  0x00  */     0x68, 0x16, 0x00, 0x20, 0x1d, 0x25, 0x00, 0x08, 0x3b, 0x0e, 0x00, 0x08, 0x3d, 0x0e, 0x00, 0x08, /* example data */
      /*  0x10  */     0x41, 0x0e, 0x00, 0x08, 0x45, 0x0e, 0x00, 0x08, 0x49, 0x0e, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00,
      /*  0x20  */     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x4d, 0x0e, 0x00, 0x08,
@@ -245,30 +252,28 @@ void AC011K::log_hex_privcomm_line(byte *data) {
     #define LOG_LEN 4048 //TODO work without such a big buffer by writing line by line
     char log[LOG_LEN] = {0};
 
-    if (!(data[4] == 0xAB and data[14] == 3)) { // suppress logging of the whole GD firmware during flashing
-
-    char *local_log = log;
-    uint16_t len = (uint16_t)(data[7] << 8 | data[6]) + 10; // payload length + 10 bytes header and crc
-    if (len > 1000) { // mqtt buffer is the limiting factor
-        logger.printfln("ERROR: buffer (%d bytes) too big for mqtt buffer (max 1000).", len);
-        len = 1000;
-    }
-
-    int offset = 0;
-    for(uint16_t i = 0; i < len; i++) {
-        #define BUFFER_CHUNKS 20
-        if(i % BUFFER_CHUNKS == 0) {
-            if(i>0) { local_log += snprintf(local_log, LOG_LEN - (local_log - log), "\r\n\t\t"); }
-            if(i>=BUFFER_CHUNKS) { local_log += snprintf(local_log, LOG_LEN - (local_log - log), "\t"); }
-            local_log += snprintf(local_log, LOG_LEN - (local_log - log), "\t%.3d: ", offset);
-            offset = offset + BUFFER_CHUNKS;
+    //if (!(data[4] == 0xAB and data[14] == 3)) { // suppress logging of the whole GD firmware during flashing
+        char *local_log = log;
+        uint16_t len = (uint16_t)(data[7] << 8 | data[6]) + 10; // payload length + 10 bytes header and crc
+        if (len > 1000) { // mqtt buffer is the limiting factor
+            logger.printfln("ERROR: buffer (%d bytes) too big for mqtt buffer (max 1000).", len);
+            len = 1000;
         }
-        local_log += snprintf(local_log, LOG_LEN - (local_log - log), "%.2X ", data[i]);
-    }
-    local_log += snprintf(local_log, LOG_LEN - (local_log - log), "\r\n");
-    logger.write(log, local_log - log);
-    
-    }
+
+        int offset = 0;
+        for(uint16_t i = 0; i < len; i++) {
+            #define BUFFER_CHUNKS 20
+            if(i % BUFFER_CHUNKS == 0) {
+                if(i>0) { local_log += snprintf(local_log, LOG_LEN - (local_log - log), "\r\n\t\t"); }
+                if(i>=BUFFER_CHUNKS) { local_log += snprintf(local_log, LOG_LEN - (local_log - log), "\t"); }
+                local_log += snprintf(local_log, LOG_LEN - (local_log - log), "\t%.3d: ", offset);
+                offset = offset + BUFFER_CHUNKS;
+            }
+            local_log += snprintf(local_log, LOG_LEN - (local_log - log), "%.2X ", data[i]);
+        }
+        local_log += snprintf(local_log, LOG_LEN - (local_log - log), "\r\n");
+        logger.write(log, local_log - log);
+    //}
 }
 
 void AC011K::Serial2write(byte *data, int size) {
@@ -638,6 +643,8 @@ void AC011K::evse_slot_machine() {
 }
 
 void AC011K::update_evseStatus(uint8_t evseStatus) {
+    if (!initialized || this->firmware_update_running) { return; }
+
     //if(evse_hardware_configuration.get("initialized")->asBool()) { // only update the EVSE status if we support the hardware
     uint8_t last_iec61851_state = evse.evse_state.get("iec61851_state")->asUint();
     uint8_t last_evseStatus = evse.evse_state.get("GD_state")->asUint();
@@ -712,60 +719,29 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
 }
 
 
-#ifdef GD_FLASH
 /* GD Firmware updater */
 
-bool AC011K::handle_update_chunk(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length) {
+void AC011K::flashChunk(uint8_t *data, uint32_t chunk_index, size_t chunk_length) {
+    data[9]  = (chunk_length/2 & 0x000000FF); // number of words to process (therefore divided by 2)
+    data[10] = (chunk_length/2 & 0x0000FF00) >> 8;
 
-    if(chunk_index == 0) {
-        logger.printfln("EVSE RemoteUpdate, reset into boot mode");
-        RemoteUpdate[7] = 5; // Reset into boot mode
-        sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++, false);
+    //calculate address
+    uint32_t gd_address = chunk_index + 0x8000000; // 0x8000000 is the start address for the GD chip
+    data[5] = (gd_address & 0x000000FF);
+    data[6] = (gd_address & 0x0000FF00) >> 8;
+    data[3] = (gd_address & 0x00FF0000) >> 16;
+    data[4] = (gd_address & 0xFF000000) >> 24;
 
-        size_t chunk_offset = 0 + 0x8000;
-        size_t length = GD_firmware_len - 0x8000;
-
-        FlashVerify[7] = command; // flash write (3=write, 4=verify)
-
-        while (length > 0) {
-            while (!ready_for_next_chunk) {
-                loop(); //TODO make this more elegant
-            }
-
-            //calculate maxlength
-            size_t maxlength = 512;               // 512 byte chunks
-            if (length < 512) maxlength = length; // reminder
-            FlashVerify[9]  = (maxlength/2 & 0x000000FF); // number of words to process (therefore divided by 2)
-            FlashVerify[10] = (maxlength/2 & 0x0000FF00) >> 8;
-
-            //calculate address
-            uint32_t gd_address = chunk_index + chunk_offset + 0x8000000; // 0x8000000 is the start address for the GD chip
-            FlashVerify[5] = (gd_address & 0x000000FF);
-            FlashVerify[6] = (gd_address & 0x0000FF00) >> 8;
-            FlashVerify[3] = (gd_address & 0x00FF0000) >> 16;
-            FlashVerify[4] = (gd_address & 0xFF000000) >> 24;
-
-            logger.printfln("gd(%.2x%.2x%.2x%.2x) chunk_offset %d, l %d, ml %d", FlashVerify[3],FlashVerify[4],FlashVerify[5],FlashVerify[6], chunk_offset, length, maxlength);
-
-            if (update_aborted)
-                return true;
-
-            // copy data
-            memcpy(FlashVerify+11, GD_firmware + chunk_offset, maxlength);  // firmware file for upload button
-
-            MAXLENGTH = maxlength;
-            sendCommand(FlashVerify, maxlength+11, sendSequenceNumber++, false); // next chunk (11 bytes header) 
-            flash_seq = PrivCommTxBuffer[5];
-            last_flash = millis();
-            ready_for_next_chunk = false;
-
-            chunk_offset = chunk_offset + maxlength;
-            length = length - maxlength;
-        } // iterate through big chunks
-    } // first chunk
-    return true;
+    if(ac011k_hardware.config.get("verbose_communication")->asBool()) {
+        logger.printfln("Flash GD(%.2x%.2x%.2x%.2x), index %d, length %d", data[3],data[4],data[5],data[6], chunk_index, chunk_length);
+    }
+    sendCommand(data, chunk_length+11, sendSequenceNumber++, false); // next chunk (11 bytes header) 
+    if(chunk_index < 2000) {
+        log_hex_privcomm_line(PrivCommTxBuffer);
+    }
+    flash_seq = PrivCommTxBuffer[5];
+    last_flash = millis();
 }
-#endif
 
 void AC011K::update_all_data() {
     evse.update_all_data();
@@ -884,10 +860,11 @@ void AC011K::setup() {
 //        return;
 //    }
 
-        /* task_scheduler.scheduleOnce("reboot_GD", [this](){ */
+        /* task_scheduler.scheduleOnce([this](){ */
         /*     if(!initialized) { */
         /*         logger.printfln("   try to reset GD chip, cycle boot mode, app mode"); */
         /*         RemoteUpdate[7] = 5; // Reset into boot mode */
+        /*         GD_boot_mode_requested = true; */
         /*         sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++); */
         /*         sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++); */
         /*     } */
@@ -913,6 +890,10 @@ void AC011K::loop()
     static uint8_t cmd;
     static uint8_t seq;
     static uint16_t len;
+    static uint32_t gd_flash_index = 0;
+    static int GD_firmware_file_bytes_read = 0;
+    static int GD_firmware_flash_interval = 0;
+    static int GD_firmware_nextPercent = 0;
     uint16_t crc = 0;
     static bool cmd_to_process = false;
     static byte PrivCommRxState = PRIVCOMM_MAGIC;
@@ -1437,13 +1418,16 @@ void AC011K::loop()
                 break;
 
             case 0x0B:
-                logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - update reply: %.2X%.2X%.2X%.2X  %d (%s) - %s, fw update running: %s", cmd, seq, len, crc, FlashVerify[3], FlashVerify[4], FlashVerify[5], FlashVerify[6], PrivCommRxBuffer[10], cmd_0B_text[PrivCommRxBuffer[10]], PrivCommRxBuffer[12]==0 ?"success":"failure", this->firmware_update_running==true ?"true":"false");
+                if(ac011k_hardware.config.get("verbose_communication")->asBool()) {
+                    logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - update reply: %.2X%.2X%.2X%.2X  %d (%s) - %s", cmd, seq, len, crc, FlashBuffer[3], FlashBuffer[4], FlashBuffer[5], FlashBuffer[6], PrivCommRxBuffer[10], cmd_0B_text[PrivCommRxBuffer[10]], PrivCommRxBuffer[12]==0 ?"success":"failure");
+                }
                 if( PrivCommRxBuffer[12]==0 ) { // success
                     switch( PrivCommRxBuffer[10] ) {
                         case 5: // reset into boot mode
-                            if(this->firmware_update_running) {
+                            if(GD_boot_mode_requested || this->firmware_update_running) {
+                                this->firmware_update_running = true;
                                 logger.printfln("   reset into boot mode complete, handshake next");
-                                //sendCommand(Handshake, sizeof(Handshake), sendSequenceNumber++);
+                                GD_boot_mode_requested = false;
                                 RemoteUpdate[7] = 1; // handshake
                                 sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++);
                             } else {
@@ -1451,11 +1435,11 @@ void AC011K::loop()
                             }
                             break;
                         case 1: // handshake
-                            if(FlashVerify[7] == 3) { // flash write
+                            if(FlashBuffer[7] == 3) { // flash write
                                 logger.printfln("   handshake complete, flash erase next");
                                 RemoteUpdate[7] = 2; // flash erase
                                 sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++);
-                            } else if(FlashVerify[7] == 4) { // flash verify
+                            } else if(FlashBuffer[7] == 4) { // flash verify
                                 logger.printfln("   handshake complete, flash verify next");
                                 ready_for_next_chunk = true;
                             }
@@ -1463,24 +1447,91 @@ void AC011K::loop()
                         case 2: // flash erase
                             logger.printfln("   flash erase complete, flash write next");
                             ready_for_next_chunk = true;
+                            if (LittleFS.exists(GD_FIRMWARE_FILE_NAME)) {
+                                task_scheduler.scheduleOnce([this](){
+                                    logger.printfln("Start flashing the GD chip with Firmware from LittleFS.");
+                                    GD_firmware_file = LittleFS.open(GD_FIRMWARE_FILE_NAME);
+                                    if (GD_firmware_file.available()) {
+                                        GD_firmware_filesize = GD_firmware_file.size() - GD_FIRMWARE_SKIP;
+                                        GD_firmware_flash_interval = GD_firmware_filesize / 10;
+                                        GD_firmware_nextPercent = GD_firmware_flash_interval;
+                                        GD_firmware_file.seek(GD_FIRMWARE_SKIP); // the actual to be flashed firmware starts at offset 0x8000
+                                        gd_flash_index = GD_FIRMWARE_SKIP;
+                                        GD_firmware_file_bytes_read = GD_firmware_file.read(((uint8_t *)FlashBuffer)+11, 800); // 800 bytes is the max chunk size that the GD can flash
+                                        flashChunk(FlashBuffer, gd_flash_index, GD_firmware_file_bytes_read);
+                                    }
+                                }, 5000);
+                            } else {
+                                if (GD_firmware_len > 0) {
+                                    task_scheduler.scheduleOnce([this](){
+                                        logger.printfln("Start flashing the GD chip with build in firmware.");
+                                        GD_firmware_filesize = GD_firmware_len - GD_FIRMWARE_SKIP;
+                                        GD_firmware_flash_interval = GD_firmware_filesize / 10;
+                                        GD_firmware_nextPercent = GD_firmware_flash_interval;
+                                        gd_flash_index = GD_FIRMWARE_SKIP;
+                                        memcpy(((uint8_t *)FlashBuffer)+11, GD_firmware + gd_flash_index, 800); // 800 bytes is the max chunk size that the GD can flash
+                                        GD_firmware_file_bytes_read = 800;
+                                        flashChunk(FlashBuffer, gd_flash_index, GD_firmware_file_bytes_read);
+                                    }, 5000);
+                                } else {
+                                    logger.printfln("   there is no GD firmware ready to flash.");
+                                }
+                            }
                             break;
                         case 3: // flash write
+                            gd_flash_index += GD_firmware_file_bytes_read;
+                            if (LittleFS.exists(GD_FIRMWARE_FILE_NAME)) {
+                                if (GD_firmware_file.available()) {
+                                    GD_firmware_file_bytes_read = GD_firmware_file.read(((uint8_t *)FlashBuffer)+11, 800);
+                                    flashChunk(FlashBuffer, gd_flash_index, GD_firmware_file_bytes_read);
+                                } else {
+                                    task_scheduler.scheduleOnce([this](){
+                                        logger.printfln("Finished flashing, getting the GD chip back into app mode. The GD chip will reboot the ESP then.");
+                                        sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++);
+                                    }, 5000);
+                                    this->firmware_update_running = false;
+                                }
+                            } else { // flashing the GD chip with build in firmware
+                                if ((gd_flash_index + 800) <= GD_firmware_len) {
+                                    GD_firmware_file_bytes_read = 800;
+                                } else {
+                                    GD_firmware_file_bytes_read = GD_firmware_len - gd_flash_index;
+                                    if (this->firmware_update_running) {
+                                        task_scheduler.scheduleOnce([this](){
+                                            logger.printfln("Finished flashing, getting the GD chip back into app mode. \nThe GD chip will reboot the ESP then.");
+                                            sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++, false);
+                                        }, 5000);
+                                    }
+                                    this->firmware_update_running = false;
+                                }
+                                memcpy(((uint8_t *)FlashBuffer)+11, GD_firmware + gd_flash_index, GD_firmware_file_bytes_read);
+                                flashChunk(FlashBuffer, gd_flash_index, GD_firmware_file_bytes_read);
+                            }
+                            if (!ac011k_hardware.config.get("verbose_communication")->asBool()) {
+                                if (gd_flash_index >= GD_firmware_nextPercent) {
+                                    logger.printfln("GD firmware flash success %d%%.", (gd_flash_index - GD_FIRMWARE_SKIP) * 100 / GD_firmware_filesize);
+                                    GD_firmware_nextPercent = gd_flash_index - ((gd_flash_index - GD_FIRMWARE_SKIP) % GD_firmware_flash_interval) + GD_firmware_flash_interval;
+                                }
+                            }
+                            ready_for_next_chunk = true;
+                            break;
                         case 4: // verify
-                            //if (*((unsigned int) FlashVerify[3]) == 0x030800FE) {
-                            if (FlashVerify[3] == 0x03 && FlashVerify[4] == 0x08 && FlashVerify[5] == 0x00 && FlashVerify[6] == 0xFE) {
-                                logger.printfln("   finished flashing, getting the GD chip back into app mode");
-                                sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++);
+                            // this is wrong. the whole verifying does not work. the GD always responds with a success message.
+                            //if (*((unsigned int) FlashBuffer[3]) == 0x030800FE) {
+                            if (FlashBuffer[3] == 0x03 && FlashBuffer[4] == 0x08 && FlashBuffer[5] == 0x00 && FlashBuffer[6] == 0xFE) {
+                                logger.printfln("   finished verifying, getting the GD chip back into app mode");
+                                sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++, false);
                             }
                             ready_for_next_chunk = true;
                             break;
                         default:
-                            logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - privCommCmdABUpdateReq: %.2X%.2X%.2X%.2X  %d (%s) - %s", cmd, seq, len, crc, FlashVerify[3], FlashVerify[4], FlashVerify[5], FlashVerify[6], PrivCommRxBuffer[10], cmd_0B_text[PrivCommRxBuffer[10]], PrivCommRxBuffer[12]==0 ?"success":"failure");
+                            logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - privCommCmdABUpdateReq: %.2X%.2X%.2X%.2X  %d (%s) - %s", cmd, seq, len, crc, FlashBuffer[3], FlashBuffer[4], FlashBuffer[5], FlashBuffer[6], PrivCommRxBuffer[10], cmd_0B_text[PrivCommRxBuffer[10]], PrivCommRxBuffer[12]==0 ?"success":"failure");
                             logger.printfln("   getting the GD chip back into app mode");
                             sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++);
                             break;
                     }  //switch privCommCmdABUpdateReq success
                 } else {
-                    logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - privCommCmdABUpdateReq: %.2X%.2X%.2X%.2X  %d (%s) - %s", cmd, seq, len, crc, FlashVerify[3], FlashVerify[4], FlashVerify[5], FlashVerify[6], PrivCommRxBuffer[10], cmd_0B_text[PrivCommRxBuffer[10]], PrivCommRxBuffer[12]==0 ?"success":"failure");
+                    logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - update reply: %.2X%.2X%.2X%.2X  %d (%s) - %s", cmd, seq, len, crc, FlashBuffer[3], FlashBuffer[4], FlashBuffer[5], FlashBuffer[6], PrivCommRxBuffer[10], cmd_0B_text[PrivCommRxBuffer[10]], PrivCommRxBuffer[12]==0 ?"success":"failure");
                     logger.printfln("   getting the GD chip back into app mode");
                     update_aborted = true;
                     sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++);
@@ -1595,10 +1646,11 @@ void AC011K::loop()
      */
     
     //resend flash commands if needed
-    if(this->firmware_update_running && flash_seq == PrivCommTxBuffer[5] && !ready_for_next_chunk && deadline_elapsed(last_flash + 2000)) {
+    //if(this->firmware_update_running && flash_seq == PrivCommTxBuffer[5] && !ready_for_next_chunk && deadline_elapsed(last_flash + 3000)) {
+    if(this->firmware_update_running && flash_seq == PrivCommTxBuffer[5] && deadline_elapsed(last_flash + 3000)) {
         last_flash = millis();
-        logger.printfln("resend the last chunk fseq: %d, seq: %d rfnc: %s", flash_seq, PrivCommTxBuffer[5], ready_for_next_chunk?"true":"false");
-        sendCommand(FlashVerify, MAXLENGTH+11, sendSequenceNumber++); // next chunk (11 bytes header) 
+        logger.printfln("Waitng too long for the last ack, resend the last chunk. Index %d, Bytes: %d", gd_flash_index, GD_firmware_file_bytes_read);
+        flashChunk(FlashBuffer, gd_flash_index, GD_firmware_file_bytes_read);
     }
 
 
@@ -1656,14 +1708,10 @@ void AC011K::loop()
 void AC011K::register_urls()
 {
     evse.register_urls();
-#ifdef GD_FLASH
-
-#define U_FLASH 1
-
     server.on("/evse/reflash", HTTP_PUT, [this](WebServerRequest request){
         if (update_aborted)
             return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
-        this->firmware_update_running = false;
+        //this->firmware_update_running = false;
         if (!firmware_update_allowed) {
             request.send(423, "text/plain", "vehicle connected");
             return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
@@ -1676,9 +1724,23 @@ void AC011K::register_urls()
             this->firmware_update_running = false;
             return false;
         }
-        this->firmware_update_running = true;
-        logger.printfln("/evse/reflash %d (%d)", index, len);
-        return handle_update_chunk(3, request, index, data, len);
+        logger.printfln("GD reflash requested.");
+
+        if (!LittleFS.exists(GD_FIRMWARE_FILE_NAME) && GD_firmware_len == 0) {
+            logger.printfln("There is no GD firmware ready to flash.");
+            request.send(423, "text/plain", "No GD Firmware available to flash. Please upload one first.");
+            this->firmware_update_running = false;
+            return false;
+        }
+        task_scheduler.scheduleOnce([this](){
+            logger.printfln("Initiating GD flashing by putting GD chip into boot mode");
+            this->firmware_update_running = true;
+            RemoteUpdate[7] = 5; // Reset into boot mode
+            FlashBuffer[7] = 3; // flash write (3=write, 4=verify)
+            GD_boot_mode_requested = true;
+            sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++, false);
+        }, 2000);
+        return true;
     });
 
     server.on("/check_gd_firmware", HTTP_POST, [this](WebServerRequest request){
@@ -1731,35 +1793,20 @@ void AC011K::register_urls()
     });
 
     server.on("/write_gd_firmware", HTTP_POST, [this](WebServerRequest request){
-        if (update_aborted)
-            return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
-
-        this->firmware_update_running = false;
-
-        /* if(!Update.hasError()) { */
-        /*     logger.printfln("Firmware flashed successfully! Rebooting in one second."); */
-        /*     //task_scheduler.scheduleOnce([](){ESP.restart();}, 1000); */
-        /* } */
-
-        //return request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
+        if (update_aborted) return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
         return request.send(200, "text/plain", "Update ~~~");
     },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-
-        this->firmware_update_running = true;
-        return handle_gd_update_chunk(U_FLASH, request, index, data, len, final, request.contentLength());
+        return handle_gd_upload_chunk(request, index, data, len, final, request.contentLength());
     });
-#endif
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         GetRTC();
     }, 1000 * 60 * 10, 1000 * 60 * 10);
 }
 
-bool AC011K::handle_gd_update_chunk(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length) {
-    static File file;
-
+bool AC011K::handle_gd_upload_chunk(WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length) {
     if (chunk_index == 0 && !update_aborted) {
-        if (LittleFS.exists(GD_FIRMWARE_FILE) && !file) { LittleFS.remove(GD_FIRMWARE_FILE); }
+        if (LittleFS.exists(GD_FIRMWARE_FILE_NAME) && !GD_firmware_file) { LittleFS.remove(GD_FIRMWARE_FILE_NAME); }
         if (LittleFS.totalBytes() - LittleFS.usedBytes() < GD_firmware_len) {
             logger.printfln("Failed to cache GD firmware - not enough space on the LittleFS: %d bytes free, but %d bytes needed.", LittleFS.totalBytes() - LittleFS.usedBytes(), GD_firmware_len);
             request.send(400, "text/plain", "Failed to cache GD firmware - not enough space on the LittleFS.");
@@ -1768,14 +1815,14 @@ bool AC011K::handle_gd_update_chunk(int command, WebServerRequest request, size_
         }
 
         // Open the file for writing in binary mode
-        file = LittleFS.open(GD_FIRMWARE_FILE, "wb");
+        GD_firmware_file = LittleFS.open(GD_FIRMWARE_FILE_NAME, "wb");
     }
 
     if (update_aborted) {
         return false;
     }
 
-    if (!file) {
+    if (!GD_firmware_file) {
         logger.printfln("Failed to open file to write GD firmware into.");
         request.send(400, "text/plain", "Failed to open file to write GD firmware into.");
         update_aborted = true;
@@ -1797,15 +1844,15 @@ bool AC011K::handle_gd_update_chunk(int command, WebServerRequest request, size_
     }
 
     static size_t total_written = 0;
-    auto written = file.write(data, chunk_length);
+    auto written = GD_firmware_file.write(data, chunk_length);
     if (written != chunk_length) {
         logger.printfln("Failed to write update chunk with chunk_length %u; written %u, abort.", chunk_length, written);
         //request.send(400, "text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
         request.send(400, "text/plain", "Failed to write update, aborted.");
-        this->firmware_update_running = false;
+        //this->firmware_update_running = false;
         total_written = 0;
-        file.close();
-        if (LittleFS.exists(GD_FIRMWARE_FILE)) { LittleFS.remove(GD_FIRMWARE_FILE); }
+        GD_firmware_file.close();
+        if (LittleFS.exists(GD_FIRMWARE_FILE_NAME)) { LittleFS.remove(GD_FIRMWARE_FILE_NAME); }
         return false;
     }
     else {
@@ -1815,9 +1862,26 @@ bool AC011K::handle_gd_update_chunk(int command, WebServerRequest request, size_
     }
 
     if (final) {
-        file.close();
-        logger.printfln("total_written: %d", total_written);
+        GD_firmware_file.close();
+        logger.printfln("GD Firmware with %d bytes uploaded for future flashing.", total_written);
         total_written = 0;
+
+        if (!firmware_update_allowed) {
+            logger.printfln("It is a bad idea to flash the GD firmware while a vehicle is connected.");
+            request.send(423, "text/plain", "vehicle connected");
+            this->firmware_update_running = false;
+            return false;
+        }
+
+        task_scheduler.scheduleOnce([this](){
+            logger.printfln("Initiating GD flashing by putting GD chip into boot mode");
+            this->firmware_update_running = true;
+            RemoteUpdate[7] = 5; // Reset into boot mode
+            FlashBuffer[7] = 3; // flash write (3=write, 4=verify)
+            GD_boot_mode_requested = true;
+            sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++, false);
+        }, 2000);
+
         /* //logger.printfln("Failed to apply update: %s", Update.errorString()); */
         /* logger.printfln("Failed to apply update: %s", "Update.errorString()"); */
         /* //request.send(400, "text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str()); */
