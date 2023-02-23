@@ -1,9 +1,28 @@
-#include "pdfgen.h"
-#include "stdio.h"
-#include <string.h>
-#include <algorithm>
+/* esp32-firmware
+ * Copyright (C) 2023 Erik Fleckstein <erik@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
-#include "web_server.h"
+#include "pdf_charge_log.h"
+
+#include <stdio.h>
+#include <string.h>
+
+#include "pdfgen.h"
 #include "event_log.h"
 
 
@@ -37,13 +56,6 @@ unsigned int logo_png_len = 165;
 #define LINE_SPACING 4
 #define LINE_HEIGHT (FONT_SIZE + LINE_SPACING)
 #define LOGO_BACKGROUND 0xFF545454
-/*
-const char * stats = "Wallbox: wallbox:innen\0"
-                     "Exportiert am 31.01.2023\0"
-                     "Exportierter Zeitraum: Aufzeichnungsbeginn - 31.01.2023\0"
-                     "Gesamt geladene Energie: 7959.926 kWh\0"
-                     "Gesamtbetrag: 2053.66 €";
-*/
 
 #define DISPLAY_NAME_COLUMN 1
 const char * table_header = "Startzeit\0"
@@ -54,27 +66,6 @@ const char * table_header = "Startzeit\0"
                             "Kosten (€)";
 
 #define TABLE_HEADER_COLS 6
-/*
-const char * const table_line[] {
-    "08.04.2022 06:10",
-    "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",
-    "123,456",
-    "1002:42:40",
-    "6.123.909,848",
-    "999,99"
-};
-
-const char * const table_lines[] {
-    "08.04.2022 06:10", "ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ", "123,456", "1002:42:40", "6.123.909,848", "999,99",
-    "09.04.2022 06:10", "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", "123,456", "1002:42:40", "6.123.909,848", "999,99",
-    "10.04.2022 06:10", "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", "123,456", "1002:42:40", "6.123.909,848", "999,99",
-    "11.04.2022 06:10", "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", "123,456", "1002:42:40", "6.123.909,848", "999,99",
-    "12.04.2022 06:10", "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", "123,456", "1002:42:40", "6.123.909,848", "999,99",
-    "13.04.2022 06:10", "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", "123,456", "1002:42:40", "6.123.909,848", "999,99",
-    "14.04.2022 06:10", "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", "123,456", "1002:42:40", "6.123.909,848", "999,99",
-    "11.04.2022 06:10", "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", "123,456", "1002:42:40", "6.123.909,848", "999,99",
-};
-*/
 
 float table_column_offsets[] {
     (0 * (LINE_WIDTH / TABLE_HEADER_COLS)),
@@ -131,14 +122,11 @@ int init_pdf_generator(WebServerRequest *request, const char *title, const char 
     int table_lines_to_place = 0;
 
 
-    //printf("pdf_set_font %d %s\n", pdf_set_font(pdf, DEFAULT_FONT), pdf_get_err(pdf, NULL));
-
     table_lines_to_place = tracked_charges;
 
     while (table_lines_to_place > 0) {
         table_lines_last_page = table_lines_to_place;
         int streams = get_streams_per_page(pages_to_be_created == 0, &table_lines_to_place);
-        //printf("pdf_append_page %p %s\n", pdf_append_page(pdf, streams, 1), pdf_get_err(pdf, NULL));
         pdf_notify_page(pdf, streams, 1);
         ++pages_to_be_created;
     }

@@ -19,14 +19,13 @@
 
 #include "charge_tracker.h"
 
+#include <memory>
+
 #include "modules.h"
-
-#include <esp_random.h>
-
 #include "task_scheduler.h"
 #include "tools.h"
 
-#include <memory>
+#include "pdf_charge_log.h"
 
 struct ChargeStart {
     uint32_t timestamp_minutes = 0;
@@ -408,8 +407,6 @@ void ChargeTracker::setup()
     updateState();
 }
 
-extern int init_pdf_generator(WebServerRequest *request, const char *stats, int stats_lines, uint16_t tracked_charges, std::function<int(const char * *)> table_lines_cb);
-
 bool user_configured(uint8_t user_id) {
     for(int i = 0; i < users.user_config.get("users")->count(); ++i) {
         if (users.user_config.get("users")->get(i)->get("id")->asUint() == user_id) {
@@ -747,7 +744,24 @@ search_done:
 
         request.beginChunkedResponse(200, "application/pdf");
 
-        init_pdf_generator(&request, stats_buf, 6, charge_records, [this, user_filter, &table_lines_buffer, &f, first_file, first_charge, last_file, last_charge, &current_file, &current_charge, electricity_price](const char * * table_lines) {
+        init_pdf_generator(&request,
+                           "Title",
+                           stats_buf, 6,
+                           "1\02\03\04", 4,
+                           charge_records,
+
+                           [this,
+                            user_filter,
+                            &table_lines_buffer,
+                            &f,
+                            first_file,
+                            first_charge,
+                            last_file,
+                            last_charge,
+                            &current_file,
+                            &current_charge,
+                            electricity_price]
+                           (const char * * table_lines) {
             memset(table_lines_buffer, 0, ARRAY_SIZE(table_lines_buffer));
 
             int lines_generated = 0;
@@ -762,14 +776,12 @@ search_done:
                     current_charge = 0;
                 }
 
-                //logger.printfln("current_file %d", current_file);
                 if (!f) {
                     f =  LittleFS.open(chargeRecordFilename(current_file));
                     f.seek(CHARGE_RECORD_SIZE * current_charge);
                 }
 
                 for (; current_charge < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++current_charge) {
-                    //logger.printfln("current charge %d", current_charge);
                     if ((lines_generated == 8) || (current_file == last_file && current_charge > last_charge))
                         break;
                     if (f.read((uint8_t *)charge_buf, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
@@ -779,7 +791,6 @@ search_done:
                     memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
 
                     // No need to filter via start/end: we already know the first and last charge to be shown.
-
                     bool include_user = user_filter == USER_FILTER_ALL_USERS || (user_filter == USER_FILTER_DELETED_USERS && !user_configured(cs.user_id)) || cs.user_id == user_filter;
                     if (!include_user)
                         continue;
@@ -800,7 +811,6 @@ search_done:
                     break;
 
                 if (current_file == last_file && current_charge >= last_charge) {
-                    logger.printfln("argh %d %d", current_file, current_charge);
                     break;
                 }
             }
@@ -810,7 +820,6 @@ search_done:
 
 
             *table_lines = table_lines_buffer;
-            //logger.printfln("callback done");
             return lines_generated;
         });
 
