@@ -49,7 +49,7 @@ interface S {
     end_date: Date
     file_type: string
     pdf_text: string
-    csv_flavor: string
+    csv_flavor: 'excel' | 'rfc4180'
     show_spinner: boolean
     last_charges: Readonly<Charge[]>
 }
@@ -230,10 +230,10 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                         <FormRow label={__("charge_tracker.content.csv_flavor")} label_muted={__("charge_tracker.content.csv_flavor_muted")}>
                             <InputSelect
                                 value={state.csv_flavor}
-                                onValue={this.set("csv_flavor")}
+                                onValue={(v) => this.setState({csv_flavor: v as any})}
                                 items={[
-                                    ["0", __("charge_tracker.content.csv_flavor_excel")],
-                                    ["1", __("charge_tracker.content.csv_flavor_rfc4180")]
+                                    ["excel", __("charge_tracker.content.csv_flavor_excel")],
+                                    ["rfc4180", __("charge_tracker.content.csv_flavor_rfc4180")]
                                 ]}
                             />
                         </FormRow>
@@ -252,7 +252,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                                     end = new Date(Date.now());
 
                                 try {
-                                    await downloadChargeLog(parseInt(state.user_filter), start ,end, state.electricity_price);
+                                    await downloadChargeLog(state.csv_flavor, parseInt(state.user_filter), start ,end, state.electricity_price);
                                 } finally {
                                     this.setState({show_spinner: false});
                                 }
@@ -360,13 +360,16 @@ function update_last_charges() {
     feather.replace();
 }
 
-function to_csv_line(vals: string[]) {
+function to_csv_line(vals: string[], flavor: 'excel' | 'rfc4180') {
     let line = vals.map(entry => '"' + entry.replace(/\"/, '""') + '"');
 
-    return line.join(";") + "\r\n";
+    if (flavor == 'excel')
+        return line.join(";") + "\r\n";
+
+    return line.join(",") + "\n";
 }
 
-async function downloadChargeLog(user_filter: number, start_date: Date, end_date: Date, price?: number) {
+async function downloadChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, start_date: Date, end_date: Date, price?: number) {
     const [usernames, display_names] = await getAllUsernames()
         .catch(err => {
             util.add_alert("download-usernames", "danger", __("charge_tracker.script.download_usernames_failed"), err);
@@ -391,8 +394,12 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
                 typeof price == 'number' && price > 0 ? __("charge_tracker.script.csv_header_price") + util.toLocaleFixed(price / 100, 2) + "ct/kWh" : "",
             ];
 
-            let header = to_csv_line(line);
-            let result = header;
+            let result = "";
+            if (flavor == 'excel')
+                result += "sep=;\r\n";
+
+            let header = to_csv_line(line, flavor);
+            result += header;
             let users_config = API.get('users/config');
 
             let start = start_date.getTime() / 1000 / 60;
@@ -481,11 +488,14 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
                         price > 0 ? charged_price_string : ""
                     ];
 
-                    result += to_csv_line(line);
+                    result += to_csv_line(line, flavor);
                 }
             }
 
-            util.downloadToFile(util.win1252Encode(result), "charge-log", "csv", "text/csv; charset=windows-1252; header=present");
+            if (flavor == 'excel')
+                util.downloadToFile(util.win1252Encode(result), "charge-log", "csv", "text/csv; charset=windows-1252; header=present");
+            else
+            util.downloadToFile(result, "charge-log", "csv", "text/csv; charset=utf-8; header=present");
         })
         .catch(err => util.add_alert("download-charge-log", "alert-danger", __("charge_tracker.script.download_charge_log_failed"), err));
 }
