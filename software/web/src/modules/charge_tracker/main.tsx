@@ -85,6 +85,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
         this.state = {
             user_filter: "-2",
             file_type: "0",
+            csv_flavor: 'excel'
         } as any
     }
 
