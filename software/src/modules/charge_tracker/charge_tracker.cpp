@@ -793,7 +793,8 @@ search_done:
                             last_charge,
                             &current_file,
                             &current_charge,
-                            electricity_price]
+                            electricity_price,
+                            english]
                            (const char * * table_lines) {
             memset(table_lines_buffer, 0, ARRAY_SIZE(table_lines_buffer));
 
@@ -829,7 +830,7 @@ search_done:
                         continue;
 
 
-                    table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, true, electricity_price);
+                    table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, english, electricity_price);
                     ++lines_generated;
                 }
 
