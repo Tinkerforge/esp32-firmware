@@ -78,8 +78,7 @@ void ChargeTracker::pre_setup()
     });
 
     config = Config::Object({
-        {"electricity_price", Config::Uint16(0)},
-        {"pdf_text", Config::Str("", 0, 500)}
+        {"electricity_price", Config::Uint16(0)}
     });
 }
 
@@ -578,15 +577,18 @@ void ChargeTracker::register_urls()
         uint32_t current_timestamp_min = timestamp_minutes();
 
         bool english = false;
+        #define LETTERHEAD_SIZE 512
+        auto letterhead = std::unique_ptr<char[]>(new char[LETTERHEAD_SIZE]());
+        int letterhead_lines = 0;
 
         {
             StaticJsonDocument<192> doc;
-            char buf[512];
-            if (request.contentLength() > ARRAY_SIZE(buf))
+            auto buf = std::unique_ptr<char[]>(new char[1024]());
+            if (request.contentLength() > 1024)
                 return request.send(413);
-            request.receive(buf, ARRAY_SIZE(buf));
+            request.receive(buf.get(), 1024);
 
-            DeserializationError error = deserializeJson(doc, buf, ARRAY_SIZE(buf));
+            DeserializationError error = deserializeJson(doc, buf.get(), 1024);
             if (error) {
                 String error = String("Failed to deserialize string: ") + error.c_str();
                 return request.send(400, "text/plain", error.c_str());
@@ -597,8 +599,25 @@ void ChargeTracker::register_urls()
             user_filter = doc["user_filter"] | USER_FILTER_ALL_USERS;
             start_timestamp_min = doc["start_timestamp_min"] | 0l;
             end_timestamp_min = doc["end_timestamp_min"] | 0l;
+            english = doc["english"] | false;
             if (current_timestamp_min == 0)
                 current_timestamp_min = doc["current_timestamp_min"] | 0l;
+            if (doc.containsKey("letterhead")){
+                const char *lh = doc["letterhead"];
+                letterhead_lines = 1;
+                for(size_t i = 0; i < LETTERHEAD_SIZE; ++i) {
+                    if (lh[i] == '\0')
+                        break;
+                    if (lh[i] == '\n') {
+                        letterhead[i] = '\0';
+                        if (letterhead_lines == 6)
+                            break;
+                        ++letterhead_lines;
+                    }
+                    else
+                        letterhead[i] = lh[i];
+                }
+            }
         }
 
         char stats_buf[384];//42  9 "Wallbox: " + 32 display name + \0
@@ -691,12 +710,14 @@ search_done:
 
         stats_head += sprintf(stats_head, "%s: ", english ? "Exported period" : "Exportierter Zeitraum");
         if (start_timestamp_min == 0)
-            stats_head += sprintf(stats_head, "%s bis ", english ? "Record start" : "Aufzeichnungsbeginn");
+            stats_head += sprintf(stats_head, "%s", english ? "record start" : "Aufzeichnungsbeginn");
         else
             stats_head += timestamp_min_to_date_time_string(stats_head, start_timestamp_min, english);
 
+        stats_head += sprintf(stats_head, "%s", english ? " to " : " bis ");
+
         if (end_timestamp_min == 0)
-            stats_head += sprintf(stats_head, "%s", english ? "Record start" : (start_timestamp_min == 0 ? "-ende" : "Aufzeichnungsende"));
+            stats_head += sprintf(stats_head, "%s", english ? "record end" : (start_timestamp_min == 0 ? "-ende" : "Aufzeichnungsende"));
         else
             stats_head += timestamp_min_to_date_time_string(stats_head, end_timestamp_min, english);
         ++stats_head;
@@ -710,18 +731,20 @@ search_done:
 
         uint32_t electricity_price = charge_tracker.config.get("electricity_price")->asUint();
 
-        uint32_t total_cost = (charged_sum * electricity_price) / 100;
+        if (electricity_price != 0) {
+            uint32_t total_cost = (charged_sum * electricity_price) / 100;
 
-        written = sprintf(stats_head, "%s: %d.%d€ (%s: %.2f ct/kWh)",
-                          english ? "Total cost" : "Gesamtkosten",
-                          total_cost / 100, total_cost % 100,
-                          english ? "Electricity cost" : "Strompreis",
-                          electricity_price / 100.0f);
-        if (!english)
-            for(int i = 0; i < written; ++i)
-                if (stats_head[i] == '.')
-                    stats_head[i] = ',';
-        stats_head += 1 + written;
+            written = sprintf(stats_head, "%s: %d.%02d€ (%s: %.2f ct/kWh)",
+                            english ? "Total cost" : "Gesamtkosten",
+                            total_cost / 100, total_cost % 100,
+                            english ? "Electricity cost" : "Strompreis",
+                            electricity_price / 100.0f);
+            if (!english)
+                for(int i = 0; i < written; ++i)
+                    if (stats_head[i] == '.')
+                        stats_head[i] = ',';
+            stats_head += 1 + written;
+        }
 
         // TODO: this is currently unnecessary, however if we support other ways of requesting a PDF
         // we have to lock the pdf generator.
@@ -744,10 +767,11 @@ search_done:
 
         request.beginChunkedResponse(200, "application/pdf");
 
+
         init_pdf_generator(&request,
                            "Title",
-                           stats_buf, 6,
-                           "1\02\03\04", 4,
+                           stats_buf, (electricity_price == 0) ? 5 : 6,
+                           letterhead.get(), letterhead_lines,
                            charge_records,
 
                            [this,

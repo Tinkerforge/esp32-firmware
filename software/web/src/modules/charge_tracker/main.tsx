@@ -31,15 +31,13 @@ import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { InputText } from "../../ts/components/input_text";
 import { InputDate } from "../../ts/components/input_date";
-import { Button, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
+import { Button, Collapse, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
 import { InputSelect } from "src/ts/components/input_select";
 import { BatteryCharging, Calendar, Clock, Download, User } from "react-feather";
 import { getAllUsernames } from "../users/main";
 import { ConfigComponent } from "src/ts/components/config_component";
 import { ConfigForm } from "src/ts/components/config_form";
 import { InputFloat } from "src/ts/components/input_float";
-import { PDFDocument, PDFPage, StandardFonts, PDFFont, rgb } from "pdf-lib";
-import { logo_base64, logo_background_color } from "src/ts/branding"
 
 type Charge = API.getType['charge_tracker/last_charges'][0];
 type ChargetrackerConfig = API.getType['charge_tracker/config'];
@@ -49,8 +47,10 @@ interface S {
     user_filter_items: [string, string][]
     start_date: Date
     end_date: Date
+    file_type: string
+    pdf_text: string
+    csv_flavor: string
     show_spinner: boolean
-    show_pdf_spinner: boolean
     last_charges: Readonly<Charge[]>
 }
 
@@ -79,11 +79,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
 
         util.eventTarget.addEventListener('charge_tracker/config', () => {
             let conf = API.get('charge_tracker/config');
-            this.setState({electricity_price: conf.electricity_price, pdf_text: conf.pdf_text, });
+            this.setState({electricity_price: conf.electricity_price});
         });
 
         this.state = {
-            user_filter: "-2"
+            user_filter: "-2",
+            file_type: "0",
         } as any
     }
 
@@ -129,16 +130,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                     <FormRow label={__("charge_tracker.content.price")}>
                         <InputFloat value={state.electricity_price} onValue={this.set('electricity_price')} digits={2} unit={'ct/kWh'} max={65535} min={0}/>
                     </FormRow>
-
-                    <FormRow label={__("charge_tracker.content.pdf_text")} label_muted={__("charge_tracker.content.pdf_text_muted")}>
-                        <textarea name="test" class="text-monospace mb-1 form-control" id="test" value={state.pdf_text} onInput={(e) => {
-                            let value = (e.target as HTMLInputElement).value;
-                            if (new Blob([value]).size < 500)
-                                this.setState({pdf_text: value});
-                            else
-                                this.setState({pdf_text: state.pdf_text});
-                        }} cols={30} rows={10}/>
-                    </FormRow>
                 </ConfigForm>
 
                 <FormSeparator heading={__("charge_tracker.content.download")}/>
@@ -174,52 +165,105 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                     </div>
                 </FormRow>
 
-                <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
-                    <Button variant="primary" className="form-control mb-3" onClick={async () => {
-                        this.setState({show_spinner: true});
-
-                        let start = state.start_date ?? new Date(0);
-                        // Start and end dates are "invalid date" if the user clicks the input's clear button.
-                        if (isNaN(start.getTime()))
-                            start = new Date(0);
-
-                        let end = state.end_date ?? new Date(Date.now());
-                        if (isNaN(end.getTime()))
-                            end = new Date(Date.now());
-
-                        try {
-                            await downloadChargeLog(parseInt(state.user_filter), start ,end, state.electricity_price);
-                        } finally {
-                            this.setState({show_spinner: false});
-                        }
-                    }}>
-                        <span class="mr-2">{__("charge_tracker.content.download_btn")}</span>
-                        <Download/>
-                        <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
-                    </Button>
-
-                    <Button variant="primary" className="form-control" onClick={async () => {
-                        this.setState({show_pdf_spinner: true});
-
-                        let start = state.start_date ?? new Date(0);
-                        if (isNaN(start.getTime()))
-                            start = new Date(0);
-
-                        let end = state.end_date ?? new Date(Date.now());
-                        if (isNaN(end.getTime()))
-                            end = new Date(Date.now());
-
-                        try {
-                            await downloadPdf(parseInt(state.user_filter), start, end, state.pdf_text, state.electricity_price);
-                        } finally {
-                            this.setState({show_pdf_spinner: false});
-                        }
-                    }}>
-                        <span class="mr-2">{__("charge_tracker.content.download_btn_pdf")}</span>
-                        <Download/>
-                        <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_pdf_spinner}/>
-                    </Button>
+                <FormRow label={__("charge_tracker.content.file_type")} label_muted={__("charge_tracker.content.file_type_muted")}>
+                    <InputSelect
+                        value={state.file_type}
+                        onValue={this.set("file_type")}
+                        items={[
+                            ["0", __("charge_tracker.content.file_type_pdf")],
+                            ["1", __("charge_tracker.content.file_type_csv")]
+                        ]}
+                    />
                 </FormRow>
+
+                <Collapse in={state.file_type == "0"}>
+                    <div>
+                        <FormRow label={__("charge_tracker.content.pdf_text")} label_muted={__("charge_tracker.content.pdf_text_muted")}>
+                            <textarea name="test" class="text-monospace mb-1 form-control" id="test" value={state.pdf_text} onInput={(e) => {
+                                let value = (e.target as HTMLInputElement).value;
+                                if (new Blob([value]).size < 500)
+                                    this.setState({pdf_text: value});
+                                else
+                                    this.setState({pdf_text: state.pdf_text});
+                            }} cols={30} rows={6}/>
+                        </FormRow>
+
+                        <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
+                            <Button variant="primary" className="form-control mb-3" onClick={async () => {
+                                this.setState({show_spinner: true});
+
+                                let start = state.start_date ?? new Date(0);
+                                // Start and end dates are "invalid date" if the user clicks the input's clear button.
+                                if (isNaN(start.getTime()))
+                                    start = new Date(0);
+
+                                let end = state.end_date ?? new Date(Date.now());
+                                if (isNaN(end.getTime()))
+                                    end = new Date(Date.now());
+
+                                end.setHours(23, 59);
+
+                                try {
+                                    let pdf = await API.call("charge_tracker/pdf", {
+                                        api_not_final_acked: true,
+                                        english: navigator.languages.indexOf("de") == -1 || (navigator.languages.indexOf("de") > navigator.languages.indexOf("en")),
+                                        start_timestamp_min: start.getTime() / 1000 / 60,
+                                        end_timestamp_min: end.getTime() / 1000 / 60,
+                                        user_filter: parseInt(state.user_filter),
+                                        letterhead: state.pdf_text
+                                    }, "lalala");
+                                    util.downloadToFile(pdf, "charge-log", "pdf", "application/pdf");
+                                } finally {
+                                    this.setState({show_spinner: false});
+                                }
+                            }}>
+                                <span class="mr-2">{__("charge_tracker.content.download_btn_pdf")}</span>
+                                <Download/>
+                                <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
+                            </Button>
+                        </FormRow>
+                    </div>
+                </Collapse>
+
+                <Collapse in={state.file_type == "1"}>
+                    <div>
+                        <FormRow label={__("charge_tracker.content.csv_flavor")} label_muted={__("charge_tracker.content.csv_flavor_muted")}>
+                            <InputSelect
+                                value={state.csv_flavor}
+                                onValue={this.set("csv_flavor")}
+                                items={[
+                                    ["0", __("charge_tracker.content.csv_flavor_excel")],
+                                    ["1", __("charge_tracker.content.csv_flavor_rfc4180")]
+                                ]}
+                            />
+                        </FormRow>
+
+                        <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
+                            <Button variant="primary" className="form-control mb-3" onClick={async () => {
+                                this.setState({show_spinner: true});
+
+                                let start = state.start_date ?? new Date(0);
+                                // Start and end dates are "invalid date" if the user clicks the input's clear button.
+                                if (isNaN(start.getTime()))
+                                    start = new Date(0);
+
+                                let end = state.end_date ?? new Date(Date.now());
+                                if (isNaN(end.getTime()))
+                                    end = new Date(Date.now());
+
+                                try {
+                                    await downloadChargeLog(parseInt(state.user_filter), start ,end, state.electricity_price);
+                                } finally {
+                                    this.setState({show_spinner: false});
+                                }
+                            }}>
+                                <span class="mr-2">{__("charge_tracker.content.download_btn")}</span>
+                                <Download/>
+                                <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
+                            </Button>
+                        </FormRow>
+                    </div>
+                </Collapse>
 
                 <FormSeparator heading={__("charge_tracker.content.tracked_charges")}/>
 
@@ -320,362 +364,6 @@ function to_csv_line(vals: string[]) {
     let line = vals.map(entry => '"' + entry.replace(/\"/, '""') + '"');
 
     return line.join(";") + "\r\n";
-}
-
-//TODO:
-//  - Shorten translation
-
-const PDFSPACELEFT = 50;
-const PDFSPACERIGHT = 25
-
-interface PDFExport {
-    header: string[]
-    font?: PDFFont
-    doc: PDFDocument
-    font_size: number
-    spacing: number
-    pages: number
-    start_date: Date
-    end_date: Date
-    total_energy: number
-    total_amount: number
-}
-
-interface TextWrap {
-    text: string
-    lines: number
-}
-
-//we need a wrapper function to manually inject new lines if lines are to long because pdf-lib does not do this automaticly.
-const wrapText = (text: string, width: number, font: PDFFont, fontSize: number): TextWrap => {
-    let words = text.split(' ');
-    let line = '';
-    let result = '';
-    let lines = 1;
-    for (let n = 0; n < words.length; n++) {
-        // we need to filter this because pdf (or pdf-lib) only allows ascii characters in text.
-        words[n] = words[n].replace(/[^\u0000-\u00ff, \u20AC]/g, "");
-        words[n] = words[n].replace(/[\u00AD\u002D\u2011]/g, "");
-
-        //new lines must be handled by hand because they confuse the whithOfTextAtSize function.
-        const sub_line = words[n].split('\n');
-        if (sub_line.length > 1)
-        {
-            for (let l = 0; l < sub_line.length - 1; l++)
-            {
-                result += line + sub_line[l] + '\n';
-                line = '';
-                lines++;
-            }
-            words[n] = sub_line[sub_line.length - 1];
-        }
-        const testLine = line + words[n] + ' ';
-        const testWidth = font.widthOfTextAtSize(testLine, fontSize);
-        if (testWidth > width) {
-            result += line + '\n';
-            line = words[n] + ' ';
-            lines++;
-        } else {
-            line = testLine;
-        }
-    }
-    result += line;
-
-    let wrap: TextWrap = {
-        text: result,
-        lines: lines
-    }
-    return wrap;
-  }
-
-function insert_total_stats(doc: PDFExport) {
-    let page = doc.doc.getPage(0);
-    page.moveTo(page.getWidth() - 250, page.getHeight() - 100 - doc.spacing - 10);
-
-    let name = API.get("info/display_name");
-    let text = __("charge_tracker.script.pdf_charger") + name.display_name;
-    page.drawText(text);
-
-    page.moveDown(doc.font_size);
-
-    text = __("charge_tracker.script.pdf_export_date") + new Date(Date.now()).toLocaleDateString();
-    page.drawText(text);
-
-    page.moveDown(doc.font_size);
-
-    text = __("charge_tracker.script.pdf_export_period") + (doc.start_date.getTime() == 0 ? __("charge_tracker.script.pdf_begin_of_tracking") : doc.start_date.toLocaleDateString()) + " - " + doc.end_date.toLocaleDateString();
-    page.drawText(text);
-
-    page.moveDown(doc.font_size);
-
-    if (doc.total_energy > 0)
-    {
-        text = __("charge_tracker.script.pdf_total_energy") + doc.total_energy.toFixed(3) + " kWh";
-        page.drawText(text);
-
-        page.moveDown(doc.font_size);
-    }
-
-    if (doc.total_amount > 0)
-    {
-        text = __("charge_tracker.script.pdf_total_amount") + doc.total_amount.toFixed(2) + " €";
-        page.drawText(text);
-        console.log(page.getY());
-    }
-}
-
-function insert_line_pdf(page: PDFPage, spacing: number, vals: string[], font: PDFFont, font_size: number, draw_line: boolean): PDFPage {
-    let len = 0;
-    let lines = 0;
-    for (let i in vals)
-        if (vals[i] != "")
-            len++;
-    for (let i in vals)
-    {
-        if (vals[i] != "")
-        {
-            let wrap = wrapText(vals[i], (page.getWidth() - PDFSPACERIGHT) / (len + 1) - 5, font, font_size);
-            if (lines < wrap.lines)
-                lines = wrap.lines;
-            page.drawText(wrap.text, {
-                lineHeight: font_size
-            });
-            page.moveRight((page.getWidth() - PDFSPACERIGHT) / (len + 1));
-        }
-    }
-    let y = page.getY();
-    if (draw_line)
-        page.drawLine({
-            start: {x: PDFSPACELEFT, y: y - spacing * lines + spacing * 0.75},
-            end: {x: page.getWidth() - PDFSPACERIGHT, y: y - spacing * lines + spacing * 0.75},
-            thickness: 0.25
-        })
-    page.moveTo(PDFSPACELEFT, y - spacing * lines);
-    return page;
-}
-
-async function add_page(doc: PDFExport, is_first_page: boolean, letter_head?: string): Promise<PDFPage> {
-    let page = doc.doc.addPage();
-    page.setFontSize(doc.font_size);
-    page.setFont(doc.font);
-
-    page.moveTo(PDFSPACELEFT, page.getHeight() - 100);
-
-    let img = await doc.doc.embedPng(logo_base64);
-
-    page.drawRectangle({
-        x: 0,
-        width: page.getWidth(),
-        height: 75,
-        color: rgb(logo_background_color[0], logo_background_color[1], logo_background_color[2])
-    })
-
-    page.drawImage(img, {
-        y: page.getY() + 18
-    });
-
-    page.moveDown(doc.spacing + 10);
-    if (is_first_page && letter_head != undefined) {
-        let text = wrapText(letter_head, 250, doc.font, doc.font_size).text;
-        page.drawText(text, {
-            size: doc.font_size,
-            lineHeight: doc.font_size + 1
-        });
-
-        let lines = text.split('\n').length;
-        page.moveDown(doc.spacing * 2 + (lines * doc.font_size));
-
-        if (page.getY() > 630)
-            page.moveTo(page.getX(), 630);
-    }
-    page = insert_line_pdf(page, doc.spacing, doc.header, doc.font, doc.font_size, false);
-
-    page.drawLine({
-        start: {x: PDFSPACELEFT, y: page.getY() + doc.font_size + 2.5},
-        end: {x: page.getWidth() - PDFSPACERIGHT, y: page.getY() + doc.font_size + 2.5},
-        thickness: 0.5
-    });
-
-    return page
-}
-
-function duration_to_string(duration: number): string {
-    let tmp = Math.floor(duration / 3600);
-    let result = tmp < 9 ? "0" + tmp.toString() : tmp.toString();
-    result += ":";
-    tmp = Math.floor((duration - tmp * 3600) / 60);
-    result += tmp < 9 ? "0" + tmp.toString() : tmp.toString();
-    result += ":";
-    tmp = (duration % 60);
-    result += tmp < 9 ? "0" + tmp.toString() : tmp.toString();
-
-    return result;
-}
-
-async function downloadPdf(user_filter: number, start_date: Date, end_date: Date, letter_head: string, price?: number) {
-    const font_size = 9;
-    const line_spacing = 4;
-    const space = line_spacing + font_size;
-
-    const [usernames, display_names] = await getAllUsernames()
-        .catch(err => {
-            util.add_alert("download-usernames", "danger", __("charge_tracker.script.download_usernames_failed"), err);
-            return [null, null];
-        });
-
-    if (usernames == null || display_names == null)
-        return;
-
-        await util.download('/charge_tracker/charge_log')
-        .then(blob => blob.arrayBuffer())
-        .then(async (buffer) =>  {
-            let header = [
-                __("charge_tracker.script.pdf_header_start"),
-                __("charge_tracker.script.pdf_header_display_name"),
-                __("charge_tracker.script.pdf_header_energy"),
-                __("charge_tracker.script.pdf_header_duration"),
-                "",
-                __("charge_tracker.script.csv_header_meter_start"),
-                __("charge_tracker.script.csv_header_meter_end"),
-                __("charge_tracker.script.pdf_header_username"),
-                typeof price == 'number' && price > 0 ? __("charge_tracker.script.pdf_header_price") : "",
-            ];
-
-            let users_config = API.get('users/config');
-
-            let start = start_date.getTime() / 1000 / 60;
-
-            end_date.setHours(23, 59, 59, 999);
-            let end = end_date.getTime() / 1000 / 60;
-
-            let known_users = API.get('users/config').users.filter(u => u.id != 0).map(u => u.id);
-
-            let user_filtered = (x: number) => {
-                switch(user_filter) {
-                    case -2:
-                        return false;
-                    case -1:
-                        return known_users.indexOf(x) < 0;
-                    default:
-                        return x != user_filter;
-                }
-            }
-
-            if (start <= end)
-            {
-                let doc: PDFExport = {
-                    doc: await PDFDocument.create(),
-                    header: header,
-                    font_size: font_size,
-                    spacing: space,
-                    pages: 0,
-                    start_date: start_date,
-                    end_date: end_date,
-                    total_energy: 0,
-                    total_amount:0
-                }
-                doc.font = await doc.doc.embedFont(StandardFonts.TimesRoman);
-
-
-                let page = await add_page(doc, true, letter_head);
-
-                for (let i = 0; i < buffer.byteLength; i += 16)
-                {
-                    let view = new DataView(buffer, i, 16);
-
-                    let timestamp_minutes = view.getUint32(0, true);
-                    let meter_start = view.getFloat32(4, true);
-                    let user_id = view.getUint8(8);
-                    let charge_duration = view.getUint32(9, true) & 0x00FFFFFF;
-                    let meter_end = view.getFloat32(12, true);
-
-                    if (timestamp_minutes != 0 && timestamp_minutes < start)
-                    {
-                        for (let i = 0; i < doc.doc.getPageCount(); i++)
-                            doc.doc.removePage(i);
-                        page = await add_page(doc, true, letter_head);
-                        doc.total_amount = 0;
-                        doc.total_energy = 0;
-                        continue;
-                    }
-
-                    if (timestamp_minutes != 0 && timestamp_minutes > end)
-                        break;
-
-                    if (user_filtered(user_id))
-                        continue;
-
-                    if (page.getY() <= 50)
-                        page = await add_page(doc, false);
-
-                    let filtered = users_config.users.filter(x => x.id == user_id);
-
-                    let display_name = "";
-                    let username = "";
-                    if (user_id == 0) {
-                        if (filtered[0].display_name == "Anonymous")
-                            display_name = __("charge_tracker.script.pdf_unknown");
-                        else
-                            display_name = filtered[0].display_name;
-                        username = __("charge_tracker.script.pdf_unknown");
-                    }
-                    else if (filtered.length == 1) {
-                        display_name = filtered[0].display_name;
-                        username = filtered[0].username;
-                    }
-                    else {
-                        display_name = display_names[user_id];
-                        username = usernames[user_id];
-                    }
-
-                    let charged = (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? NaN : (meter_end - meter_start);
-                    doc.total_energy += Number.isNaN(charged) ? 0 : charged;
-                    let charged_string;
-                    let charged_price = typeof price == 'number' ? charged / 100 * price / 100 : 0;
-                    doc.total_amount += Number.isNaN(charged_price) ? 0 : charged_price;
-                    let charged_price_string;
-                    if (Number.isNaN(charged) || charged < 0) {
-                        charged_string = 'N/A';
-                        charged_price_string = 'N/A';
-                    } else {
-                        charged_string = util.toLocaleFixed(charged, 3);
-                        charged_price_string = util.toLocaleFixed(charged_price, 2);
-                    }
-
-                    let charge_duration_string: string = duration_to_string(charge_duration);
-
-                    let line = [
-                        util.timestamp_min_to_date(timestamp_minutes, __("charge_tracker.script.pdf_unknown")),
-                        display_name,
-                        charged_string,
-                        charge_duration_string,
-                        "",
-                        Number.isNaN(meter_start) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
-                        Number.isNaN(meter_end) ? 'N/A' : util.toLocaleFixed(meter_end, 3),
-                        username,
-                        price > 0 ? charged_price_string : ""
-                    ];
-
-                    page = insert_line_pdf(page, space, line, doc.font, doc.font_size, true);
-                }
-
-                for (let i = 0; i < doc.doc.getPageCount(); i++)
-                {
-                    let text = __("charge_tracker.script.pdf_page") + (i + 1).toString() + __("charge_tracker.script.pdf_page_of") + doc.doc.getPageCount().toString();
-                    page = doc.doc.getPage(i);
-                    page.drawText(text, {
-                        x: page.getWidth() / 2 - doc.font.widthOfTextAtSize(text, doc.font_size) / 2,
-                        y: 20
-                    });
-                }
-
-                insert_total_stats(doc);
-
-                let pdfData = await doc.doc.save();
-                util.downloadToFile(pdfData, "charge_log", "pdf", "application/pdf");
-            }
-        })
-        .catch(err => util.add_alert("download-charge-log", "alert-danger", __("charge_tracker.script.download_charge_log_failed"), err));
 }
 
 async function downloadChargeLog(user_filter: number, start_date: Date, end_date: Date, price?: number) {
