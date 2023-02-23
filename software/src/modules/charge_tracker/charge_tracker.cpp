@@ -581,8 +581,8 @@ void ChargeTracker::register_urls()
 
             DeserializationError error = deserializeJson(doc, buf.get(), 1024);
             if (error) {
-                String error = String("Failed to deserialize string: ") + error.c_str();
-                return request.send(400, "text/plain", error.c_str());
+                String errorString = String("Failed to deserialize string: ") + error.c_str();
+                return request.send(400, "text/plain", errorString.c_str());
             }
             if (!doc["api_not_final_acked"])
                 return request.send(400, "text/plain", "Please acknowledge that this API is subject to change!");
@@ -632,60 +632,62 @@ void ChargeTracker::register_urls()
 
         std::lock_guard<std::mutex> lock{records_mutex};
 
-        char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];
-        ChargeStart cs;
-        ChargeEnd ce;
-
         uint32_t electricity_price = charge_tracker.config.get("electricity_price")->asUint();
 
-        for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
-            File f = LittleFS.open(chargeRecordFilename(i));
+        {
+            char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];
+            ChargeStart cs;
+            ChargeEnd ce;
 
-            for (int j = 0; j < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++j) {
-                if (f.read((uint8_t *)charge_buf, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
-                    // This file is not "full". We don't have any tracked charges left.
-                    goto search_done;
+            for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
+                File f = LittleFS.open(chargeRecordFilename(i));
 
-                memcpy(&cs, charge_buf, sizeof(ChargeStart));
-                memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
+                for (int j = 0; j < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++j) {
+                    if (f.read((uint8_t *)charge_buf, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
+                        // This file is not "full". We don't have any tracked charges left.
+                        goto search_done;
 
-                if (cs.timestamp_minutes != 0 && start_timestamp_min != 0 && cs.timestamp_minutes < start_timestamp_min) {
-                    // We know when this charge started and it was before the requested start date.
-                    // This means that all charges before and including this one can't be relevant.
-                    charge_records = 0;
-                    first_file = -1;
-                    first_charge = -1;
-                    continue;
-                }
+                    memcpy(&cs, charge_buf, sizeof(ChargeStart));
+                    memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
 
-                if (cs.timestamp_minutes != 0 && end_timestamp_min != 0 && cs.timestamp_minutes > end_timestamp_min) {
-                    // This charge started after the requested end date. We are done searching.
+                    if (cs.timestamp_minutes != 0 && start_timestamp_min != 0 && cs.timestamp_minutes < start_timestamp_min) {
+                        // We know when this charge started and it was before the requested start date.
+                        // This means that all charges before and including this one can't be relevant.
+                        charge_records = 0;
+                        first_file = -1;
+                        first_charge = -1;
+                        continue;
+                    }
+
+                    if (cs.timestamp_minutes != 0 && end_timestamp_min != 0 && cs.timestamp_minutes > end_timestamp_min) {
+                        // This charge started after the requested end date. We are done searching.
+                        last_file = i;
+                        last_charge = j;
+                        goto search_done;
+                    }
+
+                    bool include_user = user_filter == USER_FILTER_ALL_USERS || (user_filter == USER_FILTER_DELETED_USERS && !user_configured(cs.user_id)) || cs.user_id == user_filter;
+                    if (!include_user)
+                        continue;
+
+                    if (first_file == -1)
+                        first_file = i;
+
+                    if (first_charge == -1)
+                        first_charge = j;
+
                     last_file = i;
                     last_charge = j;
-                    goto search_done;
-                }
+                    ++charge_records;
 
-                bool include_user = user_filter == USER_FILTER_ALL_USERS || (user_filter == USER_FILTER_DELETED_USERS && !user_configured(cs.user_id)) || cs.user_id == user_filter;
-                if (!include_user)
-                    continue;
-
-                if (first_file == -1)
-                    first_file = i;
-
-                if (first_charge == -1)
-                    first_charge = j;
-
-                last_file = i;
-                last_charge = j;
-                ++charge_records;
-
-                if (isnan(ce.meter_end) || isnan(cs.meter_start))
-                    seen_charges_without_meter = true;
-                else {
-                    double charged = ce.meter_end - cs.meter_start;
-                    charged_sum += charged;
-                    if (electricity_price != 0)
-                        charged_cost_sum += round(charged * electricity_price / 100.0f);
+                    if (isnan(ce.meter_end) || isnan(cs.meter_start))
+                        seen_charges_without_meter = true;
+                    else {
+                        double charged = ce.meter_end - cs.meter_start;
+                        charged_sum += charged;
+                        if (electricity_price != 0)
+                            charged_cost_sum += round(charged * electricity_price / 100.0f);
+                    }
                 }
             }
         }
