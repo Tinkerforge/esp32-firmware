@@ -98,6 +98,7 @@ export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigM
         let blob = await util.put('/' + topic, payload);
         if (reboot_string)
             util.getShowRebootModalFn(reboot_string)();
+        return blob;
     } catch (e) {
         util.add_alert(topic.replace("/", "_") + '_failed', 'alert-danger', error_string, e);
         throw e;
