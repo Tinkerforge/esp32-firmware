@@ -484,26 +484,20 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
         buf += 1 + written;
     }
 
-    float centi_cent_per_kwh = electricity_price;
-    if (centi_cent_per_kwh == 0) {
+    if (electricity_price == 0) {
         memcpy(buf, "---", ARRAY_SIZE("---"));
         buf += ARRAY_SIZE("---");
     } else if (isnan(ce.meter_end) || isnan(cs.meter_start)) {
         memcpy(buf, "N/A", ARRAY_SIZE("N/A"));
         buf += ARRAY_SIZE("N/A");
     } else {
-        float charged = ce.meter_end - cs.meter_start;
-        float cost = charged * centi_cent_per_kwh / 10000;
-        if (cost > 9999.99) {
+        double charged = ce.meter_end - cs.meter_start;
+        uint32_t cost = round(charged * electricity_price / 100.0f);
+        if (cost > 999999) {
             memcpy(buf, ">=10000", ARRAY_SIZE(">=10000"));
             buf += ARRAY_SIZE(">=10000");
         } else {
-            int written = sprintf(buf, "%.2f", cost);
-            if (!english)
-                for(int i = 0; i < written; ++i)
-                    if (buf[i] == '.')
-                        buf[i] = ',';
-            buf += 1 + written;
+            buf += 1 + sprintf(buf, "%d%c%02d", cost / 100, english ? '.' : ',', cost % 100);
         }
     }
     return buf;
@@ -630,6 +624,7 @@ void ChargeTracker::register_urls()
 
 
         double charged_sum = 0;
+        uint32_t charged_cost_sum = 0;
         bool seen_charges_without_meter = false;
 
         int charge_records = 0;
@@ -643,6 +638,8 @@ void ChargeTracker::register_urls()
         char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];
         ChargeStart cs;
         ChargeEnd ce;
+
+        uint32_t electricity_price = charge_tracker.config.get("electricity_price")->asUint();
 
         for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
             File f = LittleFS.open(chargeRecordFilename(i));
@@ -687,8 +684,12 @@ void ChargeTracker::register_urls()
 
                 if (isnan(ce.meter_end) || isnan(cs.meter_start))
                     seen_charges_without_meter = true;
-                else
-                    charged_sum += (ce.meter_end - cs.meter_start);
+                else {
+                    double charged = ce.meter_end - cs.meter_start;
+                    charged_sum += charged;
+                    if (electricity_price != 0)
+                        charged_cost_sum += round(charged * electricity_price / 100.0f);
+                }
             }
         }
 search_done:
@@ -729,14 +730,10 @@ search_done:
                     stats_head[i] = ',';
         stats_head += 1 + written;
 
-        uint32_t electricity_price = charge_tracker.config.get("electricity_price")->asUint();
-
         if (electricity_price != 0) {
-            uint32_t total_cost = (charged_sum * electricity_price) / 100;
-
             written = sprintf(stats_head, "%s: %d.%02d€ (%s: %.2f ct/kWh)",
                             english ? "Total cost" : "Gesamtkosten",
-                            total_cost / 100, total_cost % 100,
+                            charged_cost_sum / 100, charged_cost_sum % 100,
                             english ? "Electricity cost" : "Strompreis",
                             electricity_price / 100.0f);
             if (!english)
