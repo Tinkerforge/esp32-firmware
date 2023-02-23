@@ -555,15 +555,9 @@ struct pdf_doc *pdf_create(float width, float height, const struct pdf_info *inf
     if (!obj->info->date[0]) {
         time_t now = time(nullptr);
         struct tm tm;
-#ifdef _WIN32
-        struct tm *tmp;
-        tmp = localtime(&now);
-        tm = *tmp;
-#else
         localtime_r(&now, &tm);
-#endif
-        strftime(obj->info->date, sizeof(obj->info->date), "%Y%m%d%H%M%SZ",
-                 &tm);
+        // ISO 8601 date time with time offset
+        strftime(obj->info->date, sizeof(obj->info->date), "%FT%T%z", &tm);
     }
 
     if (pdf_set_font(pdf, DEFAULT_FONT) < 0) {
