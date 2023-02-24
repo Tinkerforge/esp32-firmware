@@ -1023,16 +1023,14 @@ int pdf_save_file(struct pdf_doc *pdf)
     // Insert the pages and catalog objects last, we will know all page offsets by now.
     auto *pages = pdf_add_object(pdf, OBJ_pages);
     if (!pages) {
-        pdf_destroy(pdf);
-        return 0;
+        return -1;
     }
     if (pdf_save_object(pdf, pages->index) >= 0)
         xref_count++;
 
     auto *catalog = pdf_add_object(pdf, OBJ_catalog);
     if (!catalog) {
-        pdf_destroy(pdf);
-        return 0;
+        return -1;
     }
     if (pdf_save_object(pdf, catalog->index) >= 0)
         xref_count++;
