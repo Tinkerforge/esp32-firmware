@@ -560,6 +560,7 @@ void ChargeTracker::register_urls()
     }, true);
 
     server.on("/charge_tracker/pdf", HTTP_PUT, [this](WebServerRequest request) {
+        logger.printfln("Beginning PDF generation. Please ignore timeout errors (rc -1 etc.) for the next minute!");
         #define USER_FILTER_ALL_USERS -2
         #define USER_FILTER_DELETED_USERS -1
         int user_filter = USER_FILTER_ALL_USERS;
@@ -858,7 +859,7 @@ search_done:
             *table_lines = table_lines_buffer;
             return lines_generated;
         });
-
+        logger.printfln("PDF generation done.");
         return request.endChunkedResponse();
     });
 }
