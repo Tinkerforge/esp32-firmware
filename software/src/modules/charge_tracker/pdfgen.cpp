@@ -2114,11 +2114,11 @@ static int pdf_add_png_data(struct pdf_doc *pdf, struct pdf_object *page,
                     return -EINVAL;
                 }
                 palette_buffer_length = (size_t)(chunk_length / 3);
-                if (palette_buffer_length > 256 ||
+                if (palette_buffer_length > PNG_MAX_PALETTE_SIZE ||
                     palette_buffer_length == 0) {
                     pdf_set_err(pdf, -EINVAL,
-                                "PNG palette length invalid: %zd",
-                                palette_buffer_length);
+                                "PNG palette length invalid or too large: %zd; max supported %d",
+                                palette_buffer_length, PNG_MAX_PALETTE_SIZE);
                     return -EINVAL;
                 }
 
