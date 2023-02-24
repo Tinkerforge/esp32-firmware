@@ -106,7 +106,7 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
                                        />
                     </FormRow>
 
-                    <FormRow label={__("wireguard.content.preshared_key")}>
+                    <FormRow label={__("wireguard.content.preshared_key")} label_muted={__("wireguard.content.preshared_key_muted")}>
                         <InputPassword maxLength={44}
                                        value={state.preshared_key}
                                        onValue={this.set("preshared_key")}

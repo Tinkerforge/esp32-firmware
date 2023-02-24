@@ -22,10 +22,10 @@
             "first_charge_timestamp": "Ältester aufgezeichneter Ladevorgang",
             "first_charge_timestamp_muted": "",
             "user_filter": "Benutzerfilter",
-            "user_filter_muted": "Heruntergeladene Datei wird nur Ladevorgänge des ausgewählten Benutzers beinhalten",
+            "user_filter_muted": "heruntergeladene Datei wird nur Ladevorgänge des ausgewählten Benutzers beinhalten",
 
             "date_filter": "Zeitfilter",
-            "date_filter_muted": "Heruntergeladene Datei wird nur Ladevorgänge in der ausgewählten Zeitspanne beinhalten",
+            "date_filter_muted": "heruntergeladene Datei wird nur Ladevorgänge in der ausgewählten Zeitspanne beinhalten",
             "from": "von",
             "to": "bis",
             "last_charges": "Letzte Ladevorgänge",

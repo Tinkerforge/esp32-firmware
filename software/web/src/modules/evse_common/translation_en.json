@@ -20,8 +20,8 @@
             "evse_settings": "Charge Settings"
         },
         "content": {
-            "status": "State",
-            "settings": "Settings",
+            "status": "Charge Status",
+            "settings": "Charge Settings",
             "evse": "Charge Controller (EVSE)",
             "iec_state": "IEC 61851 state",
             "iec_state_a": "A (disconnected)",

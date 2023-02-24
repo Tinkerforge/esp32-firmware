@@ -22,7 +22,7 @@
             "pass": "Passwort oder Hex-Key",
 
             "reset": "Zurücksetzen",
-            "reset_muted": "Setzt den gesamten OCPP-Zustand zurück",
+            "reset_muted": "setzt den gesamten OCPP-Zustand zurück",
             "reset_title": "OCPP-Zustand zurücksetzen?",
             "reset_title_text": "Hiermit wird der gesamte OCPP-Zustand zurückgesetzt. <strong>Bisher nicht erfolgreich übertragene Transaktionsdaten gehen verloren</strong>.",
             "abort_reset": "Abbrechen",

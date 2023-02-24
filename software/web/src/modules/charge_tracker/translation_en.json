@@ -22,10 +22,10 @@
             "first_charge_timestamp": "Oldest tracked charge",
             "first_charge_timestamp_muted": "",
             "user_filter": "User filter",
-            "user_filter_muted": "Downloaded file will only contain charges of the selected user",
+            "user_filter_muted": "downloaded file will only contain charges of the selected user",
 
             "date_filter": "Time filter",
-            "date_filter_muted": "Downloaded file will only contain charges in the selected date range",
+            "date_filter_muted": "downloaded file will only contain charges in the selected date range",
             "from": "from",
             "to": "to",
             "last_charges": "Last charges",
