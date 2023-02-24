@@ -206,7 +206,7 @@ export class MqttStatus extends Component<{}, MqttStatusState>
             return <></>;
 
         return <>
-                <FormRow label={__("mqtt.status.connection")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("mqtt.status.connection")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <IndicatorGroup
                         style="width: 100%"
                         class="flex-wrap"

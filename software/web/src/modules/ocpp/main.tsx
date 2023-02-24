@@ -304,7 +304,7 @@ export class OcppStatus extends Component<{}, OcppStatusState>
             return <></>;
 
         return <>
-                <FormRow label={__("ocpp.status.ocpp")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("ocpp.status.ocpp")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <IndicatorGroup
                         style="width: 100%"
                         class="flex-wrap"
@@ -316,7 +316,7 @@ export class OcppStatus extends Component<{}, OcppStatusState>
                         ]}/>
                 </FormRow>
 
-                <FormRow label={__("ocpp.status.status")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("ocpp.status.status")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                         <InputText value={this.getStatusLine()} />
                 </FormRow>
 

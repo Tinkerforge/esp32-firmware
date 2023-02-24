@@ -566,7 +566,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 
 
         return <>
-            <FormRow label={__("charge_manager.status.charge_manager")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+            <FormRow label={__("charge_manager.status.charge_manager")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                 <IndicatorGroup
                     style="width: 100%"
                     class="flex-wrap"
@@ -579,7 +579,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
             </FormRow>
 
             {state.energyManagerMode ? null:
-                <FormRow label={__("charge_manager.status.available_current")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("charge_manager.status.available_current")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <InputFloat min={0} max={state.config.maximum_available_current} digits={3} unit="A"
                         value={state.available_current.current}
                         onValue={(v) => API.save("charge_manager/available_current", {"current": v}, __("charge_manager.script.set_available_current_failed"))}
@@ -587,7 +587,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                 </FormRow>
             }
 
-            <FormRow label={__("charge_manager.status.managed_boxes")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+            <FormRow label={__("charge_manager.status.managed_boxes")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                 {util.range(Math.ceil(cards.length / 2)).map(i =>
                     <div class="card-deck mb-4">
                         {cards[2 * i]}

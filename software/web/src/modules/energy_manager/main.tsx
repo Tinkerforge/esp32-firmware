@@ -79,7 +79,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
         let error_flags_network   = d.state.error_flags & 0x00000002;
 
         return <>
-            <FormRow label={__("energy_manager.status.mode")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+            <FormRow label={__("energy_manager.status.mode")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                 <div class="input-group">
                     {d.config.excess_charging_enable ? <>
                         <Button
@@ -109,7 +109,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                     </Button>
                 </div>
             </FormRow>
-            <FormRow label={__("energy_manager.status.status")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+            <FormRow label={__("energy_manager.status.status")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                 <ButtonGroup className="flex-wrap w-100">
                     <Button disabled
                         key="13"
