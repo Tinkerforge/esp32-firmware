@@ -1469,8 +1469,10 @@ void AC011K::loop()
                                         GD_firmware_flash_interval = GD_firmware_filesize / 10;
                                         GD_firmware_nextPercent = GD_firmware_flash_interval;
                                         gd_flash_index = GD_FIRMWARE_SKIP;
-                                        memcpy(((uint8_t *)FlashBuffer)+11, GD_firmware + gd_flash_index, 800); // 800 bytes is the max chunk size that the GD can flash
+#ifdef GD_FLASH
                                         GD_firmware_file_bytes_read = 800;
+                                        memcpy(((uint8_t *)FlashBuffer)+11, GD_firmware + gd_flash_index, GD_firmware_file_bytes_read); // 800 bytes is the max chunk size that the GD can flash
+#endif
                                         flashChunk(FlashBuffer, gd_flash_index, GD_firmware_file_bytes_read);
                                     }, 5000);
                                 } else {
@@ -1504,7 +1506,9 @@ void AC011K::loop()
                                     }
                                     this->firmware_update_running = false;
                                 }
+#ifdef GD_FLASH
                                 memcpy(((uint8_t *)FlashBuffer)+11, GD_firmware + gd_flash_index, GD_firmware_file_bytes_read);
+#endif
                                 flashChunk(FlashBuffer, gd_flash_index, GD_firmware_file_bytes_read);
                             }
                             if (!ac011k_hardware.config.get("verbose_communication")->asBool()) {
