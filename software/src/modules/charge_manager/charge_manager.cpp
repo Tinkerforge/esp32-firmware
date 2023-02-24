@@ -764,8 +764,8 @@ void ChargeManager::register_urls()
     api.addCommand("charge_manager/available_current_update", &charge_manager_available_current, {}, [this](){
         this->last_available_current_update = millis();
     }, false);
-    api.addState("charge_manager/control_pilot_disconnect", &charge_manager_control_pilot_disconnect, {}, 1000);
-    api.addCommand("charge_manager/control_pilot_disconnect_update", &charge_manager_control_pilot_disconnect, {}, [](){}, false);
+    //api.addState("charge_manager/control_pilot_disconnect", &charge_manager_control_pilot_disconnect, {}, 1000);
+    //api.addCommand("charge_manager/control_pilot_disconnect_update", &charge_manager_control_pilot_disconnect, {}, [](){}, false);
 }
 
 void ChargeManager::loop()
