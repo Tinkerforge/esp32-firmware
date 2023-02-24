@@ -60,8 +60,8 @@ export class NTP extends ConfigComponent<'ntp/config'> {
     }
 
     render(props: {}, state: Readonly<NTPConfig>) {
-        if (!state || Object.keys(state).length == 0)
-            return (<></>);
+        if (!util.allow_render)
+            return <></>
 
         let splt = state.timezone.split("/");
 

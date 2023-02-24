@@ -85,7 +85,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
     }
 
     render(props: {}, s: Readonly<EVSEState>) {
-        if (!s || !s.slots)
+        if (!util.allow_render)
             return (<></>);
 
         let {state,
@@ -431,7 +431,7 @@ class EVSEV2Settings extends Component<{}, EVSESSettingsState>
 
     render(props: {}, s: Readonly<EVSESSettingsState>)
     {
-        if (!s || !s.button_cfg)
+        if (!util.allow_render)
             return <></>;
 
         let {

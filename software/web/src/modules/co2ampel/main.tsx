@@ -40,8 +40,8 @@ export class Co2 extends ConfigComponent<'co2/config'> {
     }
 
     render(props: {}, state: Readonly<Co2Config>) {
-        if (!state)
-            return (<></>);
+        if (!util.allow_render)
+            return <></>
 
         return (
             <>

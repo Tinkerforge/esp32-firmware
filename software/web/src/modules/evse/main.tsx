@@ -83,7 +83,7 @@ export class EVSE extends Component<{}, EVSEState> {
     }
 
     render(props: {}, s: Readonly<EVSEState>) {
-        if (!s || !s.slots)
+        if (!util.allow_render)
             return (<></>);
 
         let {state,
@@ -429,7 +429,7 @@ class EVSESettings extends Component<{}, EVSESettingsState>
     }
     render(props: {}, s: EVSESettingsState)
     {
-        if (!s || !s.slots)
+        if (!util.allow_render)
             return (<></>);
 
         let {

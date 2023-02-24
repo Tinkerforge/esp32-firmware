@@ -431,7 +431,7 @@ export class Meter extends Component<{}, MeterState> {
     }
 
     render(props: {}, state: Readonly<MeterState>) {
-        if (!state || !state.all_values) {
+        if (!util.allow_render) {
             return (<></>);
         }
 

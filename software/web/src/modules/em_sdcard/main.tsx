@@ -42,7 +42,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
     }
 
     render(props: {}, state: Readonly<EMSDcardState>) {
-        if (!state || state.manufacturer_id === undefined)
+        if (!util.allow_render)
             return (<></>);
 
         if (state.sd_status == 51) { // No card
@@ -105,7 +105,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
             case 51: sd_status = "ERROR_NO_CARD"; break;
             default: sd_status = "Unknown error code " + state.sd_status;
         }
-        
+
         let lfs_status;
         switch(state.lfs_status) {
             case   0: lfs_status = "OK"; break;

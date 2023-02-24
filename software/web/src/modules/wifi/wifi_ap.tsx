@@ -18,6 +18,7 @@
  */
 
 import * as API from "../../ts/api";
+import * as util from "../../ts/util";
 
 import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
@@ -53,8 +54,8 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
     }
 
     override render(props: {}, state: Readonly<APConfig & WifiAPState>) {
-        if (!state)
-            return (<></>);
+        if (!util.allow_render)
+            return <></>
 
         return (
             <>

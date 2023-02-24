@@ -70,7 +70,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
     }
 
     render(props: {}, d: Readonly<EnergyManagerAllData>) {
-        if (!d || !d.state || !d.config || !d.runtime_config)
+        if (!util.allow_render)
             return <></>;
 
         let error_flags_ok        = d.state.error_flags == 0;
@@ -155,8 +155,8 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
     }
 
     render(props: {}, s: Readonly<API.getType['energy_manager/config'] & EnergyManagerState>) {
-        if (!s || !s.state)
-            return <></>;
+        if (!util.allow_render)
+            return <></>
 
         let mode_list: StringStringTuple[] = [];
         if (s.excess_charging_enable) {

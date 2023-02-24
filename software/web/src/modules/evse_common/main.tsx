@@ -104,7 +104,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
 
     render(props: {}, state: EVSEStatusState)
     {
-        if (!state || !state.state || !state.slots)
+        if (!util.allow_render)
             return <></>;
 
         let theoretical_max = Math.min(state.slots[0].max_current, state.slots[1].max_current);

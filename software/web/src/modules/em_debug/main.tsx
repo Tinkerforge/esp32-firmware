@@ -61,7 +61,7 @@ export class EMDebug extends Component<{}, EMDebugState> {
     }
 
     render(props: {}, s: Readonly<EMDebugState>) {
-        if (!s || !s.state) {
+        if (!util.allow_render) {
             return (<></>);
         }
 

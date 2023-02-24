@@ -41,8 +41,8 @@ export class Network extends ConfigComponent<'network/config'> {
     }
 
     render(props: {}, state: Readonly<NetworkConfig>) {
-        if (!state)
-            return (<></>);
+        if (!util.allow_render)
+            return <></>
 
         return (
             <>

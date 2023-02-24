@@ -179,6 +179,8 @@ const RECONNECT_TIME = 12000;
 
 export let eventTarget: API.APIEventTarget = new API.APIEventTarget();
 
+export let allow_render: boolean = false;
+
 export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.APIEventTarget) => void) {
     if (!first) {
         add_alert("event_connection_lost", "alert-warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
@@ -222,6 +224,8 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
         for (let topic of topics) {
             API.trigger(topic, eventTarget);
         }
+
+        allow_render = true;
     }
 
     continuation(ws, eventTarget);

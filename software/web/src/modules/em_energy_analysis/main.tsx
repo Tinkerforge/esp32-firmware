@@ -20,6 +20,7 @@
 import $ from "../../ts/jq";
 
 import * as API from "../../ts/api";
+import * as util from "../../ts/util";
 
 import { h, render, Fragment, Component, ComponentChild } from "preact";
 import { __ } from "../../ts/translation";
@@ -44,7 +45,7 @@ export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
     }
 
     render(props: {}, state: Readonly<EMEnergyAnalysisState>) {
-        if (!state) {
+        if (!util.allow_render) {
             return (<></>);
         }
 

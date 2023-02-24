@@ -91,7 +91,7 @@ export class EventLog extends Component<{}, EventLogState> {
     }
 
     render(props: {}, state: Readonly<EventLogState>) {
-        if (!state)
+        if (!util.allow_render)
             return (<></>);
 
         return (

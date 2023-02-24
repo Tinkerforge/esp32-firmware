@@ -244,8 +244,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
     }
 
     render(props: {}, state: ChargeManagerConfig & ChargeManagerState) {
-        if (!state || !state.chargers)
-            return (<></>);
+        if (!util.allow_render)
+            return <></>
 
         let addChargerCard = <div class="col mb-4">
                 <Card className="h-100" key={999}>
@@ -518,7 +518,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
     }
 
     render(props: {}, state: Readonly<ChargeManagerStatusState>) {
-        if (!state || !state.config || !state.config.enable_charge_manager)
+        if (!util.allow_render)
             return <></>;
 
         let cards = state.state.chargers.map((c, i) => {

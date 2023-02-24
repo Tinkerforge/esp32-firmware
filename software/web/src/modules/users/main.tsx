@@ -272,8 +272,8 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     }
 
     override render(props: {}, state: UsersConfig & UsersState) {
-        if (!state || !state.users)
-            return (<></>);
+        if (!util.allow_render)
+            return <></>
 
         let addUserCard = this.state.next_user_id != 0 ? <div class="col mb-4">
                 <Card className="h-100" key={999}>

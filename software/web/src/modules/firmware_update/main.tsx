@@ -91,7 +91,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
     }
 
     render(props: {}, state: Readonly<FirmwareUpdateConfig>) {
-        if (!state)
+        if (!util.allow_render)
             return (<></>);
 
         // TODO: why not use the charge tracker module here?

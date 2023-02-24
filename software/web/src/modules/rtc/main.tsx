@@ -94,8 +94,8 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
 
 
     render(props: {}, state: RTCConfig & RtcPageState) {
-        if (!state || !state.state)
-            return <></>;
+        if (!util.allow_render)
+            return <></>
 
         return <>
                     <ConfigForm id="rtc_config_form"

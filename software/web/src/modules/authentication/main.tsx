@@ -55,8 +55,8 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
     }
 
     override render(props: {}, state: AuthenticationState) {
-        if (!state)
-            return (<></>);
+        if (!util.allow_render)
+            return <></>
 
         let auth_allowed = this.http_auth_allowed();
 

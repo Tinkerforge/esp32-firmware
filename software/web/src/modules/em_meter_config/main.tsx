@@ -51,8 +51,8 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
     }
 
     render(props: {}, state: Readonly<API.getType['energy_manager/meter_config'] & EMMeterConfigState>) {
-        if (!state || !state.em_state)
-            return (<></>);
+        if (!util.allow_render)
+            return <></>
 
         let em = state.em_state;
 
