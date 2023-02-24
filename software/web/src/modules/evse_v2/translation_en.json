@@ -38,13 +38,6 @@
             "control_pilot_disconnect_desc_muted": "",
             "control_pilot_disconnect": "Control Pilot Disconnect",
 
-            "control_pilot_cfg": "Control Pilot configuration",
-            "control_pilot_cfg_muted": "Simulates unplugging and plugging the charging cable",
-            "control_pilot_disconnected": "Disconnected",
-            "control_pilot_connected": "Connected",
-            "control_pilot_automatic": "Automatic",
-            "control_pilot_state": "Control Pilot state",
-
             "dc_fault_current_state": "DC fault protector state",
             "dc_fault_current_state_desc": "",
             "dc_fault_current_ok": "OK",

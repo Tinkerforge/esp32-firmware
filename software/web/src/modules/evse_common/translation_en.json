@@ -9,8 +9,6 @@
             "error": "Error",
             "configured_charging_current": "Configured charging current",
             "allowed_charging_current": "Allowed charging current",
-            "charging_current_minimum": "6 A",
-            "charging_current_maximum": "Max",
             "charge_control": "Charge control",
             "start_charging": "Start",
             "stop_charging": "Stop"
@@ -22,7 +20,6 @@
         "content": {
             "status": "Charge Status",
             "settings": "Charge Settings",
-            "evse": "Charge Controller (EVSE)",
             "iec_state": "IEC 61851 state",
             "iec_state_a": "A (disconnected)",
             "iec_state_b": "B (connected)",

@@ -6,9 +6,7 @@
             "manager": "Activated",
             "error": "Error",
             "managed_boxes": "Managed chargers",
-            "available_current": "Available current",
-            "available_current_minimum": "0 A",
-            "available_current_maximum": "..."
+            "available_current": "Available current"
         },
         "navbar": {
             "charge_manager": null
@@ -40,8 +38,8 @@
             "add_charger_modal_save": "Save",
             "add_charger_modal_found": "Discovered chargers",
 
-            "multi_broadcast_modal_title": "Reserved/dangerous ip-addresses found",
-            "multi_broadcast_modal_body": "These reseved or potentially dangerous ip-addresses were detected: ",
+            "multi_broadcast_modal_title": "Reserved, multi- or broadcast ip addresses found",
+            "multi_broadcast_modal_body": "These reserved, multi- or broadcast ip addresses were detected: ",
             "multi_broadcast_modal_body_end": "Are you sure that you want to save the settings?",
             "multi_broadcast_modal_save": "Yes",
             "multi_broadcast_modal_cancel": "Cancel",

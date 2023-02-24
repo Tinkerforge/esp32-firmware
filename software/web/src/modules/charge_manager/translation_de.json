@@ -6,9 +6,7 @@
             "manager": "Aktiviert",
             "error": "Fehler",
             "managed_boxes": "Kontrollierte Wallboxen",
-            "available_current": "Verfügbarer Strom",
-            "available_current_minimum": "0 A",
-            "available_current_maximum": "..."
+            "available_current": "Verfügbarer Strom"
         },
         "navbar": {
             "charge_manager": null
@@ -28,7 +26,7 @@
             "maximum_available_current": "Maximaler Gesamtstrom",
             "maximum_available_current_muted": "Maximal zulässiger Ladestrom aller Wallboxen in Summe. Dies ist üblicherweise die Nennbelastbarkeit der gemeinsamen Zuleitung.",
             "minimum_current": "Minimaler Ladestrom",
-            "minimum_current_muted": "geringster Ladestrom, der von deinem Fahrzeug unterstützt wird",
+            "minimum_current_muted": "geringster Ladestrom, der vom Fahrzeug unterstützt wird",
 
             "configuration_mode": "Experteneinstellungen",
             "configuration_mode_muted": "",
@@ -40,8 +38,8 @@
             "add_charger_modal_save": "Hinzufügen",
             "add_charger_modal_found": "Gefundene Wallboxen",
 
-            "multi_broadcast_modal_title": "Reservierte/Gefährliche IP-Adresse(n) gefunden",
-            "multi_broadcast_modal_body": "Folgende reservierte oder potenziell gefährliche IP-Adressen wurden gefunden: ",
+            "multi_broadcast_modal_title": "Reservierte, Multi- oder Broadcast IP-Adresse(n) gefunden",
+            "multi_broadcast_modal_body": "Folgende reservierte, Multi- oder Broadcast-IP-Adressen wurden gefunden: ",
             "multi_broadcast_modal_body_end": "Sind sie sicher, dass sie die Einstellungen übernehmen wollen?",
             "multi_broadcast_modal_save": "Übernehmen",
             "multi_broadcast_modal_cancel": "Abbrechen",

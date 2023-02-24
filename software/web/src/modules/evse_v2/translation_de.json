@@ -38,13 +38,6 @@
             "control_pilot_disconnect_desc_muted": "",
             "control_pilot_disconnect": "Control Pilot Disconnect",
 
-            "control_pilot_cfg": "Control Pilot-Einstellung",
-            "control_pilot_cfg_muted": "Täuscht Abziehen und Anstecken des Ladekabels vor",
-            "control_pilot_disconnected": "Getrennt",
-            "control_pilot_connected": "Verbunden",
-            "control_pilot_automatic": "Automatisch",
-            "control_pilot_state": "Control Pilot-Zustand",
-
             "dc_fault_current_state": "DC-Fehlerstromzustand",
             "dc_fault_current_state_desc": "",
             "dc_fault_current_ok": "OK",

@@ -9,8 +9,6 @@
             "error": "Fehler",
             "configured_charging_current": "Konfigurierter Ladestrom",
             "allowed_charging_current": "Erlaubter Ladestrom",
-            "charging_current_minimum": "6 A",
-            "charging_current_maximum": "Max",
             "charge_control": "Ladesteuerung",
             "start_charging": "Start",
             "stop_charging": "Stop"
@@ -22,7 +20,6 @@
         "content": {
             "status": "Ladestatus",
             "settings": "Ladeeinstellungen",
-            "evse": "Ladecontroller (EVSE)",
             "iec_state": "IEC-61851-Zustand",
             "iec_state_a": "A (getrennt)",
             "iec_state_b": "B (verbunden)",
