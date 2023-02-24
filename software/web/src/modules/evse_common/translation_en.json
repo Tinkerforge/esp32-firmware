@@ -16,8 +16,8 @@
             "stop_charging": "Stop"
         },
         "navbar": {
-            "evse": "State",
-            "evse_settings": "Settings"
+            "evse": "Charge Status",
+            "evse_settings": "Charge Settings"
         },
         "content": {
             "status": "State",

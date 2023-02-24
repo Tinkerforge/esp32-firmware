@@ -2,7 +2,7 @@
     "evse_start": {
         "status": {},
         "navbar": {
-            "evse_start": "Charge Controller"
+            "evse_start": "Charger"
         },
         "content": {},
         "script": {}
