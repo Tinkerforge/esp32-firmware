@@ -305,14 +305,6 @@ float pdf_page_width(const struct pdf_object *page);
 struct pdf_object *pdf_append_page(struct pdf_doc *pdf, uint32_t stream_count, uint32_t image_count);
 
 /**
- * Save the given pdf document to the given FILE output
- * @param pdf PDF document to save
- * @param fp FILE pointer to store the data into (must be writable)
- * @return < 0 on failure, >= 0 on success
- */
-int pdf_save_file(struct pdf_doc *pdf);
-
-/**
  * Add a text string to the document
  * @param pdf PDF document to add to
  * @param page Page to add object to (NULL => most recently added page)

@@ -1074,27 +1074,6 @@ int pdf_save_file(struct pdf_doc *pdf)
     return 0;
 }
 
-int pdf_save(struct pdf_doc *pdf, const char *filename)
-{
-    FILE *fp;
-    int e;
-
-    if (filename == nullptr)
-        fp = stdout;
-    else if ((fp = fopen(filename, "w")) == nullptr)
-        return pdf_set_err(pdf, -errno, "Unable to open '%s': %s", filename,
-                           strerror(errno));
-
-    e = pdf_save_file(pdf);
-
-    if (fp != stdout)
-        if (fclose(fp) != 0 && e >= 0)
-            return pdf_set_err(pdf, -errno, "Unable to close '%s': %s",
-                               filename, strerror(errno));
-
-    return e;
-}
-
 static int pdf_add_stream(struct pdf_doc *pdf, const char *buffer)
 {
     size_t len;
@@ -2282,7 +2261,6 @@ static int pdf_add_png_data(struct pdf_doc *pdf, struct pdf_object *page,
                                    &display_width, &display_height)) {
         return -1;
     }
-    success = true;
 
     if (page == nullptr)
         page = pdf_get_page(pdf, obj);
@@ -2293,10 +2271,7 @@ static int pdf_add_png_data(struct pdf_doc *pdf, struct pdf_object *page,
     image_stream->image_stream.width = display_width;
     image_stream->image_stream.height = display_height;
 
-    if (success)
-        return 0;
-    else
-        return pdf->errval;
+    return 0;
 }
 
 
