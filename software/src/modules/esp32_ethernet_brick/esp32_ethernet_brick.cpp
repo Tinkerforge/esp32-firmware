@@ -149,7 +149,7 @@ void ESP32EthernetBrick::setup()
     blue_led_pin = BLUE_LED;
     button_pin = BUTTON;
 
-#if defined(BUILD_NAME_ENERGY_MANAGER) || defined(BUILD_NAME_WARP2)
+#if defined(BUILD_NAME_ENERGY_MANAGER)
     check_for_factory_reset();
 #endif
 
