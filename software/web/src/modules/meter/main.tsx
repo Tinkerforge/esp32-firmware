@@ -214,6 +214,9 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         [60,          "{HH}:{mm}", null,                                            null,  null,                                             null, null, null, 1],
                     ],
                 },
+                {
+                    size: 55,
+                }
             ],
             scales: {
                 y: {
