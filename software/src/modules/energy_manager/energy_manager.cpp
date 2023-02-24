@@ -354,7 +354,7 @@ void EnergyManager::update_all_data()
         if ((all_data.contactor_check_state & 1) == 0) {
             logger.printfln("Contactor check tripped. Check contactor.");
             contactor_check_tripped = true;
-            set_error(ERROR_FLAGS_CONTACTOR);
+            set_error(ERROR_FLAGS_CONTACTOR_MASK);
         }
     }
 }
@@ -383,9 +383,9 @@ void EnergyManager::update_all_data_struct()
 
 void EnergyManager::update_status_led()
 {
-    if (error_flags & ERROR_FLAGS_ALL_ERRORS)
+    if (error_flags & ERROR_FLAGS_ALL_ERRORS_MASK)
         rgb_led.set_status(EmRgbLed::Status::Error);
-    else if (error_flags & ERROR_FLAGS_ALL_WARNINGS)
+    else if (error_flags & ERROR_FLAGS_ALL_WARNINGS_MASK)
         rgb_led.set_status(EmRgbLed::Status::Warning);
     else
         rgb_led.set_status(EmRgbLed::Status::OK);
@@ -396,6 +396,11 @@ void EnergyManager::clr_error(uint32_t error_mask)
     error_flags &= ~error_mask;
     energy_manager_state.get("error_flags")->updateUint(error_flags);
     update_status_led();
+}
+
+bool EnergyManager::is_error(uint32_t error_bit_pos)
+{
+    return (error_flags >> error_bit_pos) & 1;
 }
 
 void EnergyManager::set_error(uint32_t error_mask)
@@ -410,7 +415,7 @@ void EnergyManager::check_bricklet_reachable(int rc) {
         consecutive_bricklet_errors = 0;
         if (!bricklet_reachable) {
             bricklet_reachable = true;
-            clr_error(ERROR_FLAGS_BRICKLET);
+            clr_error(ERROR_FLAGS_BRICKLET_MASK);
             logger.printfln("energy_manager: Bricklet is reachable again.");
         }
     } else {
@@ -421,7 +426,7 @@ void EnergyManager::check_bricklet_reachable(int rc) {
         }
         if (bricklet_reachable && ++consecutive_bricklet_errors >= 8) {
             bricklet_reachable = false;
-            set_error(ERROR_FLAGS_BRICKLET);
+            set_error(ERROR_FLAGS_BRICKLET_MASK);
             logger.printfln("energy_manager: Bricklet is unreachable.");
         }
     }
@@ -740,7 +745,7 @@ void EnergyManager::update_energy()
 #endif
 }
 
-void EnergyManager::get_sdcard_info(struct sdcard_info *data)
+bool EnergyManager::get_sdcard_info(struct sdcard_info *data)
 {
     int rc = tf_warp_energy_manager_get_sd_information(
         &device,
@@ -756,8 +761,16 @@ void EnergyManager::get_sdcard_info(struct sdcard_info *data)
 
     check_bricklet_reachable(rc);
 
-    if (rc != TF_E_OK)
+    if (rc != TF_E_OK) {
+        set_error(ERROR_FLAGS_SDCARD_MASK);
         logger.printfln("energy_manager: Failed to get SD card information. Error %i", rc);
+        return false;
+    }
+
+    if (is_error(ERROR_FLAGS_SDCARD_BIT_POS))
+        clr_error(ERROR_FLAGS_SDCARD_MASK);
+
+    return true;
 }
 
 bool EnergyManager::format_sdcard()

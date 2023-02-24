@@ -84,16 +84,24 @@ void EMSDcard::loop()
 void EMSDcard::update_sdcard_info()
 {
     struct sdcard_info data;
-    bzero(&data, sizeof(data));
 
-    energy_manager.get_sdcard_info(&data);
-
-    sdcard_state.get("sd_status")->updateUint(data.sd_status);
-    sdcard_state.get("lfs_status")->updateUint(data.lfs_status);
-    sdcard_state.get("card_type")->updateUint(data.card_type);
-    sdcard_state.get("sector_count")->updateUint(data.sector_count);
-    sdcard_state.get("sector_size")->updateUint(data.sector_size);
-    sdcard_state.get("manufacturer_id")->updateUint(data.manufacturer_id);
-    sdcard_state.get("product_rev")->updateUint(data.product_rev);
-    sdcard_state.get("product_name")->updateString(data.product_name);
+    if (energy_manager.get_sdcard_info(&data)) {
+        sdcard_state.get("sd_status")->updateUint(data.sd_status);
+        sdcard_state.get("lfs_status")->updateUint(data.lfs_status);
+        sdcard_state.get("card_type")->updateUint(data.card_type);
+        sdcard_state.get("sector_count")->updateUint(data.sector_count);
+        sdcard_state.get("sector_size")->updateUint(data.sector_size);
+        sdcard_state.get("manufacturer_id")->updateUint(data.manufacturer_id);
+        sdcard_state.get("product_rev")->updateUint(data.product_rev);
+        sdcard_state.get("product_name")->updateString(data.product_name);
+    } else {
+        sdcard_state.get("sd_status")->updateUint(255);
+        sdcard_state.get("lfs_status")->updateUint(255);
+        sdcard_state.get("card_type")->updateUint(0);
+        sdcard_state.get("sector_count")->updateUint(0);
+        sdcard_state.get("sector_size")->updateUint(0);
+        sdcard_state.get("manufacturer_id")->updateUint(0);
+        sdcard_state.get("product_rev")->updateUint(0);
+        sdcard_state.get("product_name")->updateString("None.");
+    }
 }
