@@ -507,6 +507,7 @@ static struct pdf_object *pdf_add_object(struct pdf_doc *pdf, int type)
     if (!pdf)
         return nullptr;
 
+    obj.page_id = -1;
     obj.type = type;
 
     switch(obj.type) {
