@@ -164,7 +164,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
             return {
                 width: div.clientWidth,
-                height: div.clientWidth / aspect_ratio,
+                height: Math.floor(div.clientWidth / aspect_ratio),
             }
         }
 
@@ -241,7 +241,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 return;
             }
 
-            this.uplot.setSize(get_size());
+            this.uplot.setSize(size);
         };
 
         try {
@@ -262,7 +262,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     }
 
     render(props?: UplotWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
-        return <div ref={this.div_ref} id={props.id} class={props.class} />
+        return <div><div ref={this.div_ref} id={props.id} class={props.class} /></div>;
     }
 
     set_data(data: UplotData) {
