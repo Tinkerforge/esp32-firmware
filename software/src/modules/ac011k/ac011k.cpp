@@ -57,6 +57,8 @@ extern WebServer server;
 extern API api;
 extern bool firmware_update_allowed;
 bool convert_intel_hex_to_bin = false;
+char intelHexLine[] = ":10000000681600201D2500083B0E00083D0E000864\r\n\0"; // this is what the intel hex format that the GD firmware comes in looks like
+int intelHexLineIndex = 0; // this shall be pointing at the last char of an incomplete intelHexLine (0 at first and 0+x for a line where the \r\n is missing. That line has to be filled before processing.)
 
 #ifdef EXPERIMENTAL
 /* experimental: Test command receiver */
@@ -1757,19 +1759,19 @@ void AC011K::register_urls()
             logger.printfln("Checking if the upload is a GD firmware that I would recognize.");
             const char GD_intel_hex_firmware_identifier[] = "AC011K-";
             const char GD_bin_firmware_identifier[] = {0x68, 0x16, 0x00, 0x20, 0x1d, 0x25, 0x00, 0x08,0x3b, 0x0e, 0x00, 0x08, 0x3d, 0x0e, 0x00, 0x08};
-            char* ptr = strstr((const char*)data, GD_intel_hex_firmware_identifier);
+            char* ptr = (char*)memmem(data, len, GD_intel_hex_firmware_identifier, sizeof(GD_intel_hex_firmware_identifier));
             if (ptr != NULL) {
                 logger.printfln("%s found at position %d", GD_intel_hex_firmware_identifier, ptr - (const char*)data);
                 update_aborted = false;
                 convert_intel_hex_to_bin = true;
             } else {
-                ptr = strstr((const char*)data, GD_bin_firmware_identifier);
+                ptr = (char*)memmem(data, len, GD_bin_firmware_identifier, sizeof(GD_bin_firmware_identifier));
                 if (ptr != NULL) {
                     logger.printfln("Binary GD firmware found at position %d", ptr - (const char*)data);
                     update_aborted = false;
                     convert_intel_hex_to_bin = false;
                 } else {
-                    logger.printfln("This is not a GD firmware that I would recognize.");
+                    logger.printfln("This is not a GD firmware that I would recognize. len: %d", len);
                     request.send(400, "text/plain", "This is not a GD firmware that I would recognize.");
                     convert_intel_hex_to_bin = false;
                     update_aborted = true;
@@ -1838,13 +1840,79 @@ bool AC011K::handle_gd_upload_chunk(WebServerRequest request, size_t chunk_index
     }
 
     if (convert_intel_hex_to_bin) {
-        // convert every chunk to bin before write and correct chunk_lenght
-        if (chunk_index == 0) {
+        // convert every chunk to bin before write and correct chunk_length
+
+        logger.printfln("chunk_index %d, chunk_length %d, final %s, complete_length %d\n",chunk_index, chunk_length, final ? "true" : "false", complete_length);
+            //const char GD_intel_hex_firmware_identifier[] = "AC011K-";
+            //const char GD_bin_firmware_identifier[] = {0x68, 0x16, 0x00, 0x20, 0x1d, 0x25, 0x00, 0x08,0x3b, 0x0e, 0x00, 0x08, 0x3d, 0x0e, 0x00, 0x08};
+            //char intelHexLine[] = ":10000000681600201D2500083B0E00083D0E000864\r\n"; // this is what the intel hex format that the GD firmware comes in looks like
+            //int intelHexLineIndex = *intelHexLine; // this shall be pointing at the last char of an incomplete intelHexLine (0 at first and 0+x for a line where the \r\n is missing. That line has to be compleeted and processed next.)
+
+        int dataProcessed = 0;
+        while (dataProcessed < chunk_length) {
+            char* lineStart = (char*)memmem((const char*)data + dataProcessed, chunk_length, "\r\n:", 3); // Start of a "to be decoded" intelHexLine
+            if(lineStart != NULL) {
+                lineStart = lineStart+2; // count from the ":", not the linebreak
+                int lineStartIndex = lineStart - (const char*)data;
+                int lineReminder = chunk_length - lineStartIndex;
+                char* lineEnd = (char*)memmem(lineStart, lineReminder, "\r\n", 2); // End of this "to be decoded" intelHexLine
+                if(lineEnd != NULL) {
+                    int intelHexLineLength = lineEnd - lineStart;
+                    if((intelHexLineIndex + intelHexLineLength) < sizeof(intelHexLine)) {
+                        memcpy(intelHexLine + intelHexLineIndex, lineStart, intelHexLineLength);
+                        logger.printfln("process intelHexLine: %s", intelHexLine);
+                        intelHexLineIndex = 0;
+                    } else {
+                        logger.printfln("ERROR: intelHexLine has not enought space to fit what I got. This should never happen. The line before was:\n%s", intelHexLine);
+                        request.send(400, "text/plain", "ERROR: Input line is too long. This should never happen.");
+                        update_aborted = true;
+                        return false;
+                    }
+                } else {
+                    if((intelHexLineIndex + lineReminder) < sizeof(intelHexLine)) {
+                        memcpy(intelHexLine + intelHexLineIndex, lineStart, lineReminder);
+                        intelHexLine[intelHexLineIndex + lineReminder + 1] = 0;
+                        logger.printfln("store p intelHexLine: %s", intelHexLine);
+                        intelHexLineIndex += lineReminder;
+                    } else {
+                        logger.printfln("error: intelHexLine has not enought space to fit what I got. This should never happen. The line before was:\n%s", intelHexLine);
+                        request.send(400, "text/plain", "error: Input line is too long. This should never happen.");
+                        update_aborted = true;
+                        return false;
+                    }
+                    dataProcessed = chunk_length; // we know we are done with this chunk
+                }
+                dataProcessed += lineStartIndex; // probably we have processed more, but this level of accuracy should do.
+            }
+        }
+
+            /* if((chunk_length-lineStart)>=9) { // at least the intel record header has to be there to go on. */
+
+            /* } */
+
+            /* fullLine */
+
+            /* int count, type, code, checksum, i, tmpAddr; */
+            /* sscanf(intelHexLineIndex+1, "%2x", &count);             // count of bytes in the line */
+            /* sscanf(intelHexLineIndex+3, "%4x", &tmpAddr);           // address of the code */
+            /* sscanf(intelHexLineIndex+7, "%2x", &type);              // record type (0: Data Record, 1: End of File Record, 2: Extended Segment Address Record) */
+            /* sscanf(intelHexLineIndex+9+count*2, "%2x", &checksum);  // checksum */
+
+            /* if(type == 0) { */
+            /*     memcpy(intelHexLineIndex, lineStart, ) */
+            /*     logger.printfln("chunk_index %d, chunk_length %d, final %s, complete_length %d\n%s",chunk_index, chunk_length, final ? "true" : "false", complete_length); */
+
+            /* } */
+
+            //memcpy(((uint8_t *)FlashBuffer)+11, GD_firmware + gd_flash_index, GD_firmware_file_bytes_read); // 800 bytes is the max chunk size that the GD can flash
+
+        if (final) {
             logger.printfln("I would have to convert the intel hex to bin, but I can't yet.");
             request.send(400, "text/plain", "I would have to convert the intel hex to bin, but I can't yet.");
             update_aborted = true;
             return false;
         }
+        return true;
     }
 
     static size_t total_written = 0;
