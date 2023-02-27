@@ -286,4 +286,5 @@
 - Add boost mode (through EVSE 2.0 Bricklet firmware 2.1.9)
 - Add EV wakeup (through EVSE 2.0 Bricklet firmware 2.1.9)
 - Fix CP disconnect API (through EVSE 2.0 Bricklet firmware 2.1.9)
+- Make sure contactor is not turned off under load (through EVSE 2.0 Bricklet firmware 2.1.9)
 - Silence confusing web socket error message
