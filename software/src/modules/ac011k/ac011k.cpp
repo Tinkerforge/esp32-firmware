@@ -1527,7 +1527,8 @@ void AC011K::loop()
                 if(ac011k_hardware.config.get("verbose_communication")->asBool() 
                     // report on changes
                     || (evse.evse_low_level_state.get("cp_pwm_duty_cycle")->asUint() != getPrivCommRxBufferUint16(17)) //duty
-                    || (evse.evse_low_level_state.get("adc_values")->get(6)->asUint() != getPrivCommRxBufferUint16(19))) { //cpVolt
+                    // || (evse.evse_low_level_state.get("adc_values")->get(6)->asUint() != getPrivCommRxBufferUint16(19)) //cpVolt
+                  ) { 
                     logger.printfln("Charging parameter report - duty:%d cpVolt:%d power factors:%d/%d/%d %d offset0:%d offset1:%d leakcurr:%d AMBTemp:%d lock:%d",
                         getPrivCommRxBufferUint16(17), // duty
                         getPrivCommRxBufferUint16(19), // cpVolt
