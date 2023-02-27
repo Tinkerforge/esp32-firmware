@@ -434,6 +434,11 @@ void EnergyManager::update_all_data_struct()
     );
 
     check_bricklet_reachable(rc);
+
+    if (rc == TF_E_OK) {
+        all_data.last_update = millis();
+        all_data.is_valid = true;
+    }
 }
 
 void EnergyManager::update_status_led()

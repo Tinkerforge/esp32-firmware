@@ -86,6 +86,9 @@
 #define ERROR_FLAGS_ALL_WARNINGS_MASK       (0x0000FFFF)
 
 typedef struct {
+    uint32_t last_update;
+    bool is_valid;
+
     bool contactor_value;
 
     uint8_t rgb_value_r;
