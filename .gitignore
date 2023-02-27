@@ -2,6 +2,14 @@
 *.pyc
 __pycache__
 provisioning/staging_password.txt
+provisioning/staging-password.txt
 provisioning/printer_host_bag.txt
 provisioning/esptool
 provisioning/cp210x-cfg
+provisioning/tinkerforge
+.vscode/
+software/src/modules/valovo*
+software/src/modules/modbus_reader/tinkerforge
+software/valovo_*
+software/changelog_valovo_*
+software/*_valovo_*
