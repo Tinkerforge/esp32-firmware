@@ -357,6 +357,7 @@ function update_last_charges() {
         </div>`
     }).reverse();
 
+    $('#status-charge_tracker').prop("hidden", charges.length == 0);
     $('#charge_tracker_status_last_charges').html(last_charges_html.join(""));
     feather.replace();
 }

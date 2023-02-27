@@ -300,7 +300,7 @@ export class OcppStatus extends Component<{}, OcppStatusState>
 
     render(props: {}, state: OcppStatusState)
     {
-        if (!util.allow_render)
+        if (!util.allow_render || !state.config.enable)
             return <></>;
 
         return <>

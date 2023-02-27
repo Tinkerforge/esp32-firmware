@@ -202,7 +202,7 @@ export class MqttStatus extends Component<{}, MqttStatusState>
 
     render(props: {}, state: MqttStatusState)
     {
-        if (!util.allow_render)
+        if (!util.allow_render || !state.config.enable_mqtt)
             return <></>;
 
         return <>

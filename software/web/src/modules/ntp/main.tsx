@@ -153,6 +153,7 @@ export function init() {
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('ntp/state', update_state);
+    source.addEventListener('ntp/config', () => $('#status-ntp').prop("hidden", !API.get("ntp/config").enable));
 }
 
 export function update_sidebar_state(module_init: any) {

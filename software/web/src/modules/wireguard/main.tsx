@@ -160,7 +160,7 @@ export class WireGuardStatus extends Component<{}, WireGuardStatusState>
 
     render(props: {}, state: WireGuardStatusState)
     {
-        if (!util.allow_render)
+        if (!util.allow_render || !state.config.enable)
             return <></>;
 
         return <>
