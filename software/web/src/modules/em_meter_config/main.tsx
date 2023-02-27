@@ -24,8 +24,8 @@ import * as API from "../../ts/api";
 
 import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/components/config_page_header";
-import { Switch } from "src/ts/components/switch";
+//import { ConfigPageHeader } from "../../ts/components/config_page_header";
+//import { Switch } from "src/ts/components/switch";
 import { ConfigComponent } from "src/ts/components/config_component";
 import { ConfigForm } from "src/ts/components/config_form";
 import { FormRow } from "src/ts/components/form_row";
@@ -36,7 +36,7 @@ import { IndicatorGroup } from "src/ts/components/indicator_group";
 import { InputFloat } from "src/ts/components/input_float";
 
 interface EMMeterConfigState {
-    em_state: API.getType['energy_manager/state']
+    meter_state: API.getType['energy_manager/meter_state']
 }
 
 export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config', {}, EMMeterConfigState> {
@@ -45,8 +45,8 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
               __("em_meter_config.script.save_failed"),
               __("em_meter_config.script.reboot_content_changed"));
 
-        util.eventTarget.addEventListener('energy_manager/state', () => {
-            this.setState({em_state: API.get('energy_manager/state')});
+        util.eventTarget.addEventListener('energy_manager/meter_state', () => {
+            this.setState({meter_state: API.get('energy_manager/meter_state')});
         });
     }
 
@@ -54,7 +54,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
         if (!util.allow_render)
             return <></>
 
-        let em = state.em_state;
+        let meter_state = state.meter_state;
 
         return (
             <>
@@ -78,7 +78,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
 
                             <FormRow label={__("em_meter_config.content.sdm_available")}>
                                 <IndicatorGroup
-                                    value={Math.max(0, em.energy_meter_type - 1)} // Skip type 1: SDM72DM
+                                    value={Math.max(0, meter_state.energy_meter_type - 1)} // Skip type 1: SDM72DM
                                     items={[
                                         ["secondary", __("em_meter_config.content.sdm_none")],
                                         ["primary", __("em_meter_config.content.sdm_630")],
@@ -89,15 +89,15 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
                             </FormRow>
 
                             <FormRow label={__("em_meter_config.content.sdm_power")}>
-                                <InputFloat value={em.energy_meter_power} digits={3} unit={'kW'} />
+                                <InputFloat value={meter_state.energy_meter_power} digits={3} unit={'kW'} />
                             </FormRow>
 
                             <FormRow label={__("em_meter_config.content.sdm_energy_import")} label_muted={__("em_meter_config.content.sdm_energy_import_muted")}>
-                                <InputFloat value={em.energy_meter_energy_import} digits={0} unit={'kWh'} />
+                                <InputFloat value={meter_state.energy_meter_energy_import} digits={0} unit={'kWh'} />
                             </FormRow>
 
                             <FormRow label={__("em_meter_config.content.sdm_energy_export")} label_muted={__("em_meter_config.content.sdm_energy_export_muted")}>
-                                <InputFloat value={em.energy_meter_energy_export} digits={0} unit={'kWh'} />
+                                <InputFloat value={meter_state.energy_meter_energy_export} digits={0} unit={'kWh'} />
                             </FormRow>
                         </div>
                     </Collapse>

@@ -24,19 +24,17 @@ import * as util from "../../ts/util";
 import { __ }    from "../../ts/translation";
 
 import { h, render, Fragment, Component } from "preact";
-import { Button } from "react-bootstrap";
 
 import { FormRow        } from "../../ts/components/form_row";
 import { FormSeparator  } from "../../ts/components/form_separator";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputFloat     } from "../../ts/components/input_float";
-import { InputNumber    } from "../../ts/components/input_number";
 import { InputText      } from "../../ts/components/input_text";
 import { PageHeader     } from "../../ts/components/page_header";
 import { DebugLogger    } from "../../ts/components/debug_logger";
 
 interface EMDebugState {
-    state: API.getType['energy_manager/state'];
+    debug_state: API.getType['energy_manager/debug_state'];
     debug_running: boolean;
     debug_status: string;
 }
@@ -47,8 +45,8 @@ export class EMDebug extends Component<{}, EMDebugState> {
     constructor() {
         super();
 
-        util.eventTarget.addEventListener('energy_manager/state', () => {
-            this.setState({state: API.get('energy_manager/state')});
+        util.eventTarget.addEventListener('energy_manager/debug_state', () => {
+            this.setState({debug_state: API.get('energy_manager/debug_state')});
         });
 
         util.eventTarget.addEventListener("energy_manager/debug_header", (e) => {
@@ -75,7 +73,7 @@ export class EMDebug extends Component<{}, EMDebugState> {
                 <FormSeparator heading={__("em_debug.content.low_level_state")} />
                 <FormRow label={__("em_debug.content.contactor_control")}>
                     <IndicatorGroup
-                        value={s.state.contactor ? 1 : 0}
+                        value={s.debug_state.contactor ? 1 : 0}
                         items={[
                             ["secondary", __("em_debug.content.contactor_off")],
                             ["primary", __("em_debug.content.contactor_on")],
@@ -84,7 +82,7 @@ export class EMDebug extends Component<{}, EMDebugState> {
 
                 <FormRow label={__("em_debug.content.contactor_check")}>
                     <IndicatorGroup
-                        value={s.state.contactor_check_state ? 0 : 1} // intentionally inverted, OK is first
+                        value={s.debug_state.contactor_check_state ? 0 : 1} // intentionally inverted, OK is first
                         items={[
                             ["success", __("em_debug.content.contactor_check_ok")],
                             ["danger", __("em_debug.content.contactor_check_fail")],
@@ -93,7 +91,7 @@ export class EMDebug extends Component<{}, EMDebugState> {
 
                 <FormRow label={__("em_debug.content.state_led")} label_muted={__("em_debug.content.state_led_names")}>
                     <div class="row mx-n1">
-                        {s.state.led_rgb.map((x, i) => (
+                        {s.debug_state.led_rgb.map((x, i) => (
                             <div key={i} class="mb-1 col-4 px-1">
                                 <InputText value={x} />
                             </div>
@@ -103,7 +101,7 @@ export class EMDebug extends Component<{}, EMDebugState> {
 
                 <FormRow label={__("em_debug.content.gpios")} label_muted={__("em_debug.content.gpio_names_0")}>
                     <div class="row mx-n1">
-                        {[...s.state.gpio_input_state, s.state.gpio_output_state].map((x, j) => (
+                        {[...s.debug_state.gpio_input_state, s.debug_state.gpio_output_state].map((x, j) => (
                             <IndicatorGroup vertical key={j} class="mb-1 col px-1"
                                 value={x ? 0 : 1} //intentionally inverted: the high button is the first
                                 items={[
@@ -115,7 +113,7 @@ export class EMDebug extends Component<{}, EMDebugState> {
                 </FormRow>
 
                 <FormRow label={__("em_debug.content.state_input_voltage")}>
-                    <InputFloat value={s.state.input_voltage} digits={3} unit={'V'} />
+                    <InputFloat value={s.debug_state.input_voltage} digits={3} unit={'V'} />
                 </FormRow>
             </>
         )

@@ -1,15 +1,21 @@
-export interface state {
-    error_flags: number,
+export interface debug_state {
     contactor: boolean,
     led_rgb: number[],
     gpio_input_state: boolean[],
     gpio_output_state: boolean,
     input_voltage: number,
     contactor_check_state: number,
+}
+
+export interface meter_state {
     energy_meter_type: number,
     energy_meter_power: number,
     energy_meter_energy_import: number,
     energy_meter_energy_export: number,
+}
+
+export interface status_state {
+    error_flags: number,
 }
 
 export interface config {

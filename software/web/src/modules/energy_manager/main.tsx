@@ -37,13 +37,12 @@ import { Button, ButtonGroup, Collapse } from "react-bootstrap";
 
 type StringStringTuple = [string, string];
 
-interface EnergyManagerState {
-    state: API.getType['energy_manager/state']
+interface DebugMode {
     debug_mode: boolean
 }
 
 interface EnergyManagerAllData {
-    state: API.getType['energy_manager/state']
+    status: API.getType['energy_manager/status_state']
     config: API.getType['energy_manager/config']
     runtime_config: API.getType['energy_manager/runtime_config']
 }
@@ -52,8 +51,8 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
     constructor() {
         super();
 
-        util.eventTarget.addEventListener('energy_manager/state', () => {
-            this.setState({state: API.get('energy_manager/state')});
+        util.eventTarget.addEventListener('energy_manager/status_state', () => {
+            this.setState({status: API.get('energy_manager/status_state')});
         });
 
         util.eventTarget.addEventListener('energy_manager/config', () => {
@@ -73,10 +72,10 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
         if (!util.allow_render)
             return <></>;
 
-        let error_flags_ok        = d.state.error_flags == 0;
-        let error_flags_internal  = d.state.error_flags & 0xFF000000;
-        let error_flags_contactor = d.state.error_flags & 0x00010000;
-        let error_flags_network   = d.state.error_flags & 0x00000002;
+        let error_flags_ok        = d.status.error_flags == 0;
+        let error_flags_internal  = d.status.error_flags & 0xFF000000;
+        let error_flags_contactor = d.status.error_flags & 0x00010000;
+        let error_flags_network   = d.status.error_flags & 0x00000002;
 
         return <>
             <FormRow label={__("energy_manager.status.mode")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
@@ -139,22 +138,18 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
 
 render(<EnergyManagerStatus/>, $('#status-energy_manager')[0])
 
-export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, EnergyManagerState> {
+export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, DebugMode> {
     constructor() {
         super('energy_manager/config',
             __("energy_manager.script.save_failed"),
             __("energy_manager.script.reboot_content_changed"));
-
-        util.eventTarget.addEventListener('energy_manager/state', () => {
-            this.setState({state: API.get('energy_manager/state')});
-        });
 
         util.eventTarget.addEventListener('info/modules', () => {
             this.setState({debug_mode: !!((API.get('info/modules') as any).debug)})
         });
     }
 
-    render(props: {}, s: Readonly<API.getType['energy_manager/config'] & EnergyManagerState>) {
+    render(props: {}, s: Readonly<API.getType['energy_manager/config'] & DebugMode>) {
         if (!util.allow_render)
             return <></>
 
