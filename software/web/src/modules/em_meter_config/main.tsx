@@ -115,14 +115,6 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
                             <div>TBD</div>
                         </div>
                     </Collapse>
-
-                    <Collapse in={state.meter_type >= 2}>
-                        <div>
-                            <a class="nav-link" data-toggle="tab" role="tab" aria-controls="meter" aria-selected="true" href="#meter">
-                                {__("em_meter_config.content.generic_details")}
-                            </a>
-                        </div>
-                    </Collapse>
                 </ConfigForm>
             </>
         )
