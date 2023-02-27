@@ -232,17 +232,7 @@ bool CMNetworking::seq_num_invalid(uint16_t received_sn, uint16_t last_seen_sn) 
 
 void CMNetworking::register_manager(std::vector<String> &&hosts,
                                     const std::vector<String> &names,
-                                    std::function<void(uint8_t,  // client_id
-                                                       uint8_t,  // iec61851_state
-                                                       uint8_t,  // charger_state
-                                                       uint8_t,  // error_state
-                                                       uint32_t, // uptime
-                                                       uint32_t, // charging_time
-                                                       uint16_t, // allowed_charging_current
-                                                       uint16_t, // supported_current
-                                                       bool,     // cp_disconnect_supported
-                                                       bool      // cp_disconnected_state
-                                                       )> manager_callback,
+                                    std::function<void(uint8_t /* client_id */, cm_state_v1 *)> manager_callback,
                                     std::function<void(uint8_t, uint8_t)> manager_error_callback)
 {
     hostnames = hosts;
@@ -325,17 +315,8 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
             return;
         }
 
-        manager_callback(charger_idx,
-                         state_pkt.v1.iec61851_state,
-                         state_pkt.v1.charger_state,
-                         state_pkt.v1.error_state,
-                         state_pkt.v1.evse_uptime,
-                         state_pkt.v1.charging_time,
-                         state_pkt.v1.allowed_charging_current,
-                         state_pkt.v1.supported_current,
-                         CM_FEATURE_FLAGS_CP_DISCONNECT_IS_SET(state_pkt.v1.feature_flags),
-                         CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(state_pkt.v1.state_flags));
-        }, 100, 100);
+        manager_callback(charger_idx, &state_pkt.v1);
+    }, 100, 100);
 }
 
 bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested)
