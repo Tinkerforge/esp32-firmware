@@ -759,6 +759,9 @@ bool EnergyManager::get_sdcard_info(struct sdcard_info *data)
         &data->manufacturer_id
     );
 
+    // Product name retrieved from the SD card is an unterminated 5-character string, so we have to terminate it here.
+    data->product_name[sizeof(data->product_name) - 1] = 0;
+
     check_bricklet_reachable(rc);
 
     if (rc != TF_E_OK) {
