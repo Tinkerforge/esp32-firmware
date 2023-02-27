@@ -141,12 +141,12 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
             yes_variant: "danger"
         }))
             return;
-        await API.save_maybe('evse/management_enabled', {"enabled": this.state.managementEnabled}, translate_unchecked("evse.script.save_failed"));
+        await API.save_maybe('evse/management_enabled', {"enabled": this.state.managementEnabled}, translate_unchecked("charge_manager.script.save_failed"));
         await super.sendSave(t, cfg);
     }
 
     override async sendReset(t: "charge_manager/config"){
-        await API.save_maybe('evse/management_enabled', {"enabled": false}, translate_unchecked("evse.script.save_failed"));
+        await API.save_maybe('evse/management_enabled', {"enabled": false}, translate_unchecked("charge_manager.script.save_failed"));
         await super.sendReset(t);
     }
 
