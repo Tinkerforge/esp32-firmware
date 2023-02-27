@@ -35,7 +35,7 @@ import { InputIndicator } from "../../ts/components/input_indicator";
 import { Switch } from "../../ts/components/switch";
 import { Button} from "react-bootstrap";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
-import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_GLOBAL, EVSE_SLOT_GP_INPUT, EVSE_SLOT_SHUTDOWN_INPUT } from "../evse_common/api";
+import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_GLOBAL, EVSE_SLOT_GP_INPUT, EVSE_SLOT_OCPP, EVSE_SLOT_SHUTDOWN_INPUT } from "../evse_common/api";
 import { InputFile } from "src/ts/components/input_file";
 import { DebugLogger } from "../../ts/components/debug_logger"
 import { extend } from "jquery";
@@ -197,7 +197,9 @@ export class EVSE extends Component<{}, EVSEState> {
                             variant = slot.max_current == min ? "warning" : "primary";
                         }
 
-                        if (i == EVSE_SLOT_GP_INPUT || i == EVSE_SLOT_SHUTDOWN_INPUT)
+                        let has_ocpp = API.get_maybe("ocpp/config") != null;
+
+                        if (i == EVSE_SLOT_GP_INPUT || i == EVSE_SLOT_SHUTDOWN_INPUT || (!has_ocpp && i == EVSE_SLOT_OCPP))
                             return <></>
 
                         if (i != EVSE_SLOT_GLOBAL && i != EVSE_SLOT_EXTERNAL)
