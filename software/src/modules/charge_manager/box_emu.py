@@ -74,7 +74,7 @@ print(state_len)
 
 
 listen_addr = sys.argv[1]
-uid = struct.unpack('>I', ipaddress.ip_address(listen_addr))[0]
+uid = struct.unpack('>I', ipaddress.ip_address(listen_addr).packed)[0]
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((listen_addr, 34128))
