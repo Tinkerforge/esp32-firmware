@@ -33,7 +33,7 @@ import { InputSelect } from "src/ts/components/input_select";
 import { Collapse } from "react-bootstrap";
 import { FormSeparator } from "src/ts/components/form_separator";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
-import { InputFloat } from "src/ts/components/input_float";
+import { OutputFloat } from "src/ts/components/output_float";
 
 interface EMMeterConfigState {
     meter_state: API.getType['energy_manager/meter_state']
@@ -89,15 +89,15 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
                             </FormRow>
 
                             <FormRow label={__("em_meter_config.content.sdm_power")}>
-                                <InputFloat value={meter_state.energy_meter_power} digits={3} unit={'kW'} />
+                                <OutputFloat value={meter_state.energy_meter_power} digits={3} scale={3} unit={'kW'} />
                             </FormRow>
 
                             <FormRow label={__("em_meter_config.content.sdm_energy_import")} label_muted={__("em_meter_config.content.sdm_energy_import_muted")}>
-                                <InputFloat value={meter_state.energy_meter_energy_import} digits={0} unit={'kWh'} />
+                                <OutputFloat value={meter_state.energy_meter_energy_import} digits={3} scale={0} unit={'kWh'} />
                             </FormRow>
 
                             <FormRow label={__("em_meter_config.content.sdm_energy_export")} label_muted={__("em_meter_config.content.sdm_energy_export_muted")}>
-                                <InputFloat value={meter_state.energy_meter_energy_export} digits={0} unit={'kWh'} />
+                                <OutputFloat value={meter_state.energy_meter_energy_export} digits={3} scale={0} unit={'kWh'} />
                             </FormRow>
                         </div>
                     </Collapse>
