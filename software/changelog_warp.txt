@@ -334,6 +334,7 @@
 - Improve translations
 - Add API to retrieve core dump
 - Add watchdog protecting against firmware lock-ups
+- Improve WiFi connection establishment speed
 - Fix WiFi not allowing configuration to be saved if only the selected network has changed
 - Fix float configuration values being dropped if configuration is saved by pressing enter in float input
 - Fix charge manager, nfc and users modal form submission
