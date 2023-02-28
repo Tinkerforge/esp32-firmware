@@ -1,7 +1,7 @@
 {
     "meter": {
         "status": {
-            "charge_history": "Ladeverlauf",
+            "charge_history": null,
             "current_power": "Leistungsaufnahme"
         },
         "navbar": {
