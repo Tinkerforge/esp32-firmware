@@ -45,15 +45,18 @@ export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
     }
 
     render(props: {}, state: Readonly<EMEnergyAnalysisState>) {
-        if (!util.allow_render) {
-            return (<></>);
-        }
+        //if (!util.allow_render) {
+        //    return (<></>);
+        //}
+        // TODO Add this back in. It's commented out because otherwise the stuff below won't render because this module doesn't have any event listeners to trigger rendering later.
 
         return (
             <>
                 <PageHeader title={__("em_energy_analysis.content.em_energy_analysis")} colClasses="col-xl-10"/>
                 <div class="row">
                     <div class="col-xl-10">
+                        <p>Coming soon.™ 🙂</p>
+                        <p>Dieses Feature hat es leider nicht bis zur Veröffentlichung des Energy Managers geschafft und wird in Kürze über ein Firmwareupdate zur Verfügung gestellt. Stay tuned und sieh gelegentlich nach, ob auf der <a href="https://www.warp-charger.com/energy-manager.html">Website des Energy Managers</a> eine neue Firmware bereitsteht.</p>
                         <div id="em_energy_analysis_chart" class="em-energy-analysis-chart">
                         </div>
                     </div>
