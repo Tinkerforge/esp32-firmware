@@ -46,20 +46,20 @@ void hexdump(char *buffer, size_t length) {
 
 
 typedef struct {
-    char *binOutput;         // Buffer for binary output data
-    char *inputGlueBuf;      // Buffer for incomplete input records
+    char *binOutput;            // Buffer for binary output data
+    char *inputGlueBuf;         // Buffer for incomplete input records
     uint32_t inputReminderLen;  // length of not processed hex input in the glue buffer
     uint32_t binOutputLen;      // Length of already converted binary data in output buffer
     uint32_t totalBytesOut;     // Length of already converted binary data in total
+    uint32_t lastAddr;          // address from the last decoded record (to find where padding is needed)
 } parse_state;
 
 
 int parse_record(parse_state *state, char *record) {
     uint8_t buf[MAX_RECORD_LEN];
     uint8_t checksum = 0;
-    int i, count, record_data_len, type, addr, lastAddr;
+    int i, count, record_data_len, type, addr;
     if(record[0] != ':') {
-        lastAddr = 0;
         return 0; // Invalid record format, but we just ignore it
     }
     count = sscanf(record, ":%2x%4x%2x", &record_data_len, &addr, &type);
@@ -67,14 +67,18 @@ int parse_record(parse_state *state, char *record) {
         fprintf(stderr, "Invalid record format\n");
         return -1; // Invalid record format
     }
-    checksum = record_data_len + (type & 0xff) + (addr & 0xff) + (addr >> 8);
-    for(i = 0; i < record_data_len; i++) {
+    checksum = record_data_len + (addr & 0xff) + (addr >> 8) + type;
+    for(i = 0; i < record_data_len+1; i++) { // +1 because of the checksum field itself
         count = sscanf(record + 9 + i * 2, "%2hhx", &buf[i]);
         if(count != 1) {
             fprintf(stderr, "Invalid data format\n");
             return -1; // Invalid data format
         }
         checksum += buf[i];
+    }
+    if(checksum != 0) {
+        fprintf(stderr, "Checksum (%x) error in: %s", checksum, record);
+        return -1; // Checksum error
     }
     switch (type) {
         case 0: // Data record
@@ -85,15 +89,15 @@ int parse_record(parse_state *state, char *record) {
                     return -1;
                 }
             }
-            if(lastAddr != addr && addr != 0) {
-                fprintf(stderr, "Padding needed from %x to %x\n", lastAddr, addr);
+            if(state->lastAddr != addr && addr != 0) {
+                fprintf(stderr, "Padding needed from %x to %x\n", state->lastAddr, addr);
                 // first flush the buffer
                 if(state->binOutputLen > 0) {
                     fwrite(state->binOutput, 1, state->binOutputLen, stdout);
                     state->binOutputLen = 0;
                 }
                 // than the padding
-                for(i = lastAddr; i < addr; i++) {
+                for(i = state->lastAddr; i < addr; i++) {
                     printf("%c", 0xff);
                     state->totalBytesOut++;
                 }
@@ -102,7 +106,7 @@ int parse_record(parse_state *state, char *record) {
                 state->binOutput[state->binOutputLen++] = buf[i];
             }
             state->totalBytesOut += record_data_len;
-            lastAddr = addr + record_data_len;
+            state->lastAddr = addr + record_data_len;
             break;
         case 1: // End-of-file record
             break;
@@ -112,7 +116,7 @@ int parse_record(parse_state *state, char *record) {
             /*     fprintf(stderr, "Invalid Extended Linear Address format\n"); */
             /*     return -1; // Invalid data format */
             /* } */
-            /* fprintf(stderr, "Extended Linear Address Record %c%c%c%c / total bytes: %d   addr: %d, %d\n", record[9], record[10], record[11], record[12], state->totalBytesOut, addr, lastAddr); */
+            /* fprintf(stderr, "Extended Linear Address Record %c%c%c%c / total bytes: %d   addr: %d, %d\n", record[9], record[10], record[11], record[12], state->totalBytesOut, addr, state->lastAddr); */
             break;
         case 5: // Start address record
             // it's always :04000005080081313D in our case
@@ -122,20 +126,7 @@ int parse_record(parse_state *state, char *record) {
             fprintf(stderr, "WARN: Unsupported record type: %02x\n%s\n\n", type, record);
             return 0;
     }
-
-    // TODO: the checksum does not compute :-(   it should work as follows: (from `man srec_intel`)
-    // Each record ends with a Checksum field that contains the ASCII hexadecimal representation of the two's complement of the
-    // 8-bit bytes that result from converting each pair of ASCII hexadecimal digits to one byte of binary, from and including the
-    // Record Length field to and including the last byte of the Data field. Therefore, the sum of all the ASCII pairs in a record
-    // after converting to binary, from the Record Length field to and including the Checksum field, is zero.
-    if(checksum != 0) {
-        //fprintf(stderr, "Checksum (%x) error in: %s", checksum, record);
-        return 0; // Checksum error but ignoring
-        return -1; // Checksum error
-    } else {
-        //fprintf(stderr, "Checksum (%x) correct!: %s", checksum, record);
-        return 0;
-    }
+    return 0;
 }
 
 int parse_input(parse_state *state, char *input, int len) {
@@ -198,13 +189,12 @@ int parse_input(parse_state *state, char *input, int len) {
 }
 
 int main() {
-    char input[BUF_SIZE];
+    char input[BUF_SIZE] = {0};
     parse_state state = {0};
 
     // Parse input data from standard input
-    for(int count = 1;; ++count) {
-    //while(1) {
-        int len = read(STDIN_FILENO, input, sizeof(input)-1);
+    while(1) {
+        int len = read(STDIN_FILENO, input, sizeof(input)-1); // -1 to be sure the whole buffer is 0 terminated
         if(len == 0) {
             break; // End of input
         }
