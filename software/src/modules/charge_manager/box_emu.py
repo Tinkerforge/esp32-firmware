@@ -154,7 +154,7 @@ resp_allowed_charging_current.setSuffix(" A")
 layout.addRow("Allowed charging current", resp_allowed_charging_current)
 
 resp_supported_current = QSpinBox()
-resp_supported_current.setMinimum(6)
+resp_supported_current.setMinimum(0)
 resp_supported_current.setMaximum(32)
 resp_supported_current.setSuffix(" A")
 layout.addRow("Supported current", resp_supported_current)
