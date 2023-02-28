@@ -69,7 +69,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
     }
 
     render(props: {}, d: Readonly<EnergyManagerAllData>) {
-        if (!util.allow_render)
+        if (!util.allow_render || !API.get("info/modules").energy_manager)
             return <></>;
 
         let error_flags_ok        = d.status.error_flags == 0;
@@ -150,7 +150,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
     }
 
     render(props: {}, s: Readonly<API.getType['energy_manager/config'] & DebugMode>) {
-        if (!util.allow_render)
+        if (!util.allow_render || !API.get("info/modules").energy_manager)
             return <></>
 
         let mode_list: StringStringTuple[] = [];
