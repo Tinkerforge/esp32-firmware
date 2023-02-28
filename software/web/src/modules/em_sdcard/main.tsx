@@ -30,14 +30,14 @@ import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputText      } from "../../ts/components/input_text";
 import { PageHeader     } from "../../ts/components/page_header";
 
-type EMSDcardState = API.getType['em_sdcard/state'];
+type EMSDcardState = API.getType['energy_manager/sdcard_state'];
 
 export class EMSDcard extends Component<{}, EMSDcardState> {
     constructor() {
         super();
 
-        util.eventTarget.addEventListener('em_sdcard/state', () => {
-            this.setState(API.get('em_sdcard/state'));
+        util.eventTarget.addEventListener('energy_manager/sdcard_state', () => {
+            this.setState(API.get('energy_manager/sdcard_state'));
         });
     }
 
@@ -163,7 +163,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
                             return;
 
                         try {
-                            await util.put("/em_sdcard_format", {"do_i_know_what_i_am_doing": true});
+                            await util.put("/energy_manager/sdcard_format", {"do_i_know_what_i_am_doing": true});
                         } catch (error) {
                             util.add_alert("sdcard_format_failed", "alert-danger", __("em_sdcard.script.sdcard_format_error"), error);
                         }

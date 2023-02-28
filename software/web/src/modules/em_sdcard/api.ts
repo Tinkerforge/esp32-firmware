@@ -1,4 +1,5 @@
-export interface state {
+//APIPath:energy_manager/
+export interface sdcard_state {
     sd_status: number,
     lfs_status: number,
     card_type: number,

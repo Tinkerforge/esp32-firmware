@@ -48,9 +48,9 @@ void EMSDcard::setup()
 
 void EMSDcard::register_urls()
 {
-    api.addState("em_sdcard/state", &sdcard_state, {}, 1000);
+    api.addState("energy_manager/sdcard_state", &sdcard_state, {}, 1000);
 
-    api.addRawCommand("em_sdcard_format", [this](char *c, size_t s) -> String {
+    api.addRawCommand("energy_manager/sdcard_format", [this](char *c, size_t s) -> String {
         StaticJsonDocument<16> doc;
 
         DeserializationError error = deserializeJson(doc, c, s);
