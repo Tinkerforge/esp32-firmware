@@ -114,6 +114,7 @@ void ChargeManager::pre_setup()
             {},
             new Config{Config::Object({
                 {"name", Config::Str("", 0, 32)},
+                {"uid", Config::Uint32(0)},
                 {"last_update", Config::Uint32(0)},
                 {"uptime", Config::Uint32(0)},
                 {"supported_current", Config::Uint16(0)}, // maximum current supported by the charger
@@ -130,7 +131,11 @@ void ChargeManager::pre_setup()
                 {"allocated_current", Config::Uint16(0)}, // last current limit send to the charger
 
                 {"state", Config::Uint8(0)}, // 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
-                {"error", Config::Uint8(0)} // 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed
+                {"error", Config::Uint8(0)}, // 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed
+
+                {"charger_state", Config::Uint8(0)},
+                {"power_total", Config::Float(0)},
+                {"energy_abs", Config::Float(0)},
             })},
             0, MAX_CLIENTS, Config::type_id<Config::ConfObject>()
         )}
@@ -201,6 +206,7 @@ void ChargeManager::start_manager_task()
                 return;
             }
 
+            target->get("uid")->updateUint(state->esp32_uid);
             target->get("uptime")->updateUint(state->evse_uptime);
 
             // A charger wants to charge if:
@@ -220,6 +226,9 @@ void ChargeManager::start_manager_task()
             target->get("cp_disconnect_supported")->updateBool(CM_FEATURE_FLAGS_CP_DISCONNECT_IS_SET(state->feature_flags));
             target->get("cp_disconnect_state")->updateBool(CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(state->state_flags));
             target->get("last_update")->updateUint(millis());
+            target->get("charger_state")->updateUint(state->charger_state);
+            target->get("power_total")->updateFloat(state->power_total);
+            target->get("energy_abs")->updateFloat(state->energy_abs);
 
             if (state->error_state != 0) {
                 target->get("error")->updateUint(CHARGE_MANAGER_CLIENT_ERROR_START + state->error_state);
