@@ -1,13 +1,13 @@
 {
     "em_meter_config": {
         "status": {
-            "em_meter_config": "Stromzähler"
+            "em_meter_config": "Stromzähler-Einstellungen"
         },
         "navbar": {
-            "em_meter_config": "Stromzähler"
+            "em_meter_config": "Stromzähler-Einstellungen"
         },
         "content": {
-            "em_meter_config": "Stromzähler",
+            "em_meter_config": "Stromzähler-Einstellungen",
             "meter_type": "Stromzähler-Typ",
             "meter_type_muted": "zum Messen der Strombilanz am Hausanschluss",
             "type_none": "Kein Stromzähler",

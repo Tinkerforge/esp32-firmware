@@ -467,6 +467,8 @@ export class Meter extends Component<{}, MeterState> {
                             <FormRow label={__("meter.content.power")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
                                 <OutputFloat value={this.state.values.power} digits={0} scale={0} unit="W"/>
                             </FormRow>
+                            {!API.hasFeature("energy_manager") ? // TODO Remove hack when meter module is removed from Energy Manager.
+                            <>
                             <FormRow label={__("meter.content.energy")} label_muted={__("meter.content.energy_since_reset")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
                                 <OutputFloat value={this.state.values.energy_rel} digits={3} scale={0} unit="kWh"/>
                                 <Button className="form-control mt-2" onClick={async () => {
@@ -488,6 +490,7 @@ export class Meter extends Component<{}, MeterState> {
                             <FormRow label={__("meter.content.energy")} label_muted={__("meter.content.energy_lifetime")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
                                 <OutputFloat value={this.state.values.energy_abs} digits={3} scale={0} unit="kWh"/>
                             </FormRow>
+                            </> : undefined}
 
                             {API.hasFeature("meter_phases") ?
                             <>
@@ -617,5 +620,6 @@ export function update_sidebar_state(module_init: any) {
     // Don't use meter navbar link if the Energy Manager module is loaded.
     // The energy manager has its own meter configuration module and a link
     // to the meter frontend directly in the configuration module instead of the navbar.
-    meter_show_navbar = !module_init.energy_manager;
+    meter_show_navbar = true;
+    //meter_show_navbar = !module_init.energy_manager;
 }

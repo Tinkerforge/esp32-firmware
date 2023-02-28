@@ -1,13 +1,13 @@
 {
     "em_meter_config": {
         "status": {
-            "em_meter_config": "Energy Meter"
+            "em_meter_config": "Energy Meter Settings"
         },
         "navbar": {
-            "em_meter_config": "Energy Meter"
+            "em_meter_config": "Energy Meter Settings"
         },
         "content": {
-            "em_meter_config": "Energy Meter",
+            "em_meter_config": "Energy Meter Settings",
             "meter_type": "Energy meter type",
             "meter_type_muted": "to measure the energy balance at the building's grid connection",
             "type_none": "No meter",
