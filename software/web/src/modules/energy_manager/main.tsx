@@ -37,10 +37,6 @@ import { Button, ButtonGroup, Collapse } from "react-bootstrap";
 
 type StringStringTuple = [string, string];
 
-interface DebugMode {
-    debug_mode: boolean
-}
-
 interface EnergyManagerAllData {
     status: API.getType['energy_manager/state']
     config: API.getType['energy_manager/config']
@@ -138,6 +134,10 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
 
 render(<EnergyManagerStatus/>, $('#status-energy_manager')[0])
 
+interface DebugMode {
+    debug_mode: boolean
+}
+
 export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, DebugMode & API.getType['energy_manager/debug_config']> {
     constructor() {
         super('energy_manager/config',
@@ -146,6 +146,11 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
         util.eventTarget.addEventListener('info/modules', () => {
             this.setState({debug_mode: !!((API.get('info/modules') as any).debug)})
+        });
+
+
+        util.eventTarget.addEventListener('energy_manager/debug_config', () => {
+            this.setState({...API.get('energy_manager/debug_config')});
         });
     }
 
@@ -469,15 +474,9 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                 unit="min"
                                 value={s.hysteresis_time}
                                 onValue={this.set('hysteresis_time')}
-                                min={s.hysteresis_wear_accepted ? 0 : 10}
+                                min={0}
                                 max={60}
                             />
-                        </FormRow>
-
-                        <FormRow label={__("energy_manager.content.hysteresis_wear_accepted")}>
-                            <Switch desc={__("energy_manager.content.hysteresis_wear_accepted_desc")}
-                                checked={s.hysteresis_wear_accepted}
-                                onClick={() => { this.toggle('hysteresis_wear_accepted')(); if (s.hysteresis_wear_accepted && s.hysteresis_time < 10) this.setState({ hysteresis_time: 10 }); }} />
                         </FormRow>
                     </> : null }
                 </ConfigForm>

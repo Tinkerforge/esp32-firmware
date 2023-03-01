@@ -151,7 +151,9 @@ void EnergyManager::setup()
         return;
     }
 
+#if MODULE_DEBUG_AVAILABLE()
     api.restorePersistentConfig("energy_manager/debug_config", &debug_config);
+#endif
     debug_config_in_use = debug_config;
 
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
@@ -289,7 +291,9 @@ void EnergyManager::register_urls()
 #endif
 
     api.addPersistentConfig("energy_manager/config", &config, {}, 1000);
+#if MODULE_DEBUG_AVAILABLE()
     api.addPersistentConfig("energy_manager/debug_config", &debug_config, {}, 1000);
+#endif
     api.addState("energy_manager/state", &state, {}, 1000);
     api.addState("energy_manager/low_level_state", &low_level_state, {}, 1000);
     api.addState("energy_manager/meter_state", &meter_state, {}, 1000);

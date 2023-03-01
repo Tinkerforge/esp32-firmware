@@ -45,7 +45,6 @@ export interface config {
 
 export interface debug_config {
     hysteresis_time: number,
-    hysteresis_wear_accepted: boolean,
     target_power_from_grid: number,
 }
 
