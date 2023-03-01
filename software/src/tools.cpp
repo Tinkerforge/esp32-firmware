@@ -566,6 +566,7 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
     TF_Unknown bricklet;
 
     int rc = tf_unknown_create(&bricklet, tfp);
+    defer {tf_unknown_destroy(&bricklet);};
 
     if (rc != TF_E_OK) {
         logger->printfln("%s init failed (rc %d).", name, rc);
@@ -616,8 +617,6 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
             return -1;
         }
     }
-
-    tf_unknown_destroy(&bricklet);
 
     return 0;
 }
