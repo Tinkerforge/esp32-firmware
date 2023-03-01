@@ -26,16 +26,16 @@
 
 InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf, bool level_init)
 {
-    String pin_func_str            = String("input") + num_name + "_config";
-    String pin_limit_str           = String("input") + num_name + "_config_limit";
-    String pin_when_str            = String("input") + num_name + "_config_when";
-    String pin_rising_mode_str     = String("input") + num_name + "_config_rising_mode";
-    String pin_falling_mode_str    = String("input") + num_name + "_config_falling_mode";
+    String pin_func_str            = String("input") + num_name + "_rule_then";
+    String pin_limit_str           = String("input") + num_name + "_rule_then_limit";
+    String pin_when_str            = String("input") + num_name + "_rule_is";
+    String pin_on_high_str     = String("input") + num_name + "_rule_then_on_high";
+    String pin_on_low_str    = String("input") + num_name + "_rule_then_on_low";
     uint32_t pin_conf_func         = conf.get(pin_func_str )->asUint();
-    uint32_t pin_conf_limit_ma     = conf.get(pin_limit_str)->asUint() * 1000;
+    uint32_t pin_conf_limit_ma     = conf.get(pin_limit_str)->asUint();
     uint32_t pin_conf_when         = conf.get(pin_when_str)->asUint();
-    uint32_t pin_conf_rising_mode  = conf.get(pin_rising_mode_str)->asUint();
-    uint32_t pin_conf_falling_mode = conf.get(pin_falling_mode_str)->asUint();
+    uint32_t pin_conf_on_high  = conf.get(pin_on_high_str)->asUint();
+    uint32_t pin_conf_on_low = conf.get(pin_on_low_str)->asUint();
 
     // Don't risk crashing on an invalid function pointer, so make sure that update_func is always set to something sensible.
     update_func = &InputPin::nop;
@@ -58,8 +58,8 @@ InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf
             break;
         case INPUT_CONFIG_SWITCH_MODE:
             update_func = &InputPin::switch_mode;
-            rising_mode  = pin_conf_rising_mode;
-            falling_mode = pin_conf_falling_mode;
+            rising_mode  = pin_conf_on_high;
+            falling_mode = pin_conf_on_low;
             break;
         default:
             logger.printfln("energy_manager/InputPin: Unknown INPUT_CONFIG type %u for input %u", pin_conf_func, num_name);

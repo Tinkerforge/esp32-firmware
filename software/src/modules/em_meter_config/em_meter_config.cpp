@@ -27,7 +27,7 @@ void EMMeterConfig::pre_setup()
 {
     // States
     config = Config::Object({
-        {"meter_type", Config::Uint8(0)}    });
+        {"meter_source", Config::Uint8(0)}    });
 }
 
 void EMMeterConfig::setup()
@@ -36,7 +36,7 @@ void EMMeterConfig::setup()
 
     config_in_use = config;
 
-    // config_in_use.get("meter_type")->asUint8()
+    // config_in_use.get("meter_source")->asUint8()
 
     initialized = true;
 }

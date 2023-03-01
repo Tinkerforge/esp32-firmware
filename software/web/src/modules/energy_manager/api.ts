@@ -1,8 +1,6 @@
-export interface debug_state {
+export interface low_level_state {
     contactor: boolean,
     led_rgb: number[],
-    gpio_input_state: boolean[],
-    gpio_output_state: boolean,
     input_voltage: number,
     contactor_check_state: number,
 }
@@ -14,8 +12,12 @@ export interface meter_state {
     energy_meter_energy_export: number,
 }
 
-export interface status_state {
+export interface state {
+    phase_switched: number,
     error_flags: number,
+    input3_state: boolean,
+    input4_state: boolean,
+    relay_state: boolean,
 }
 
 export interface config {
@@ -25,26 +27,29 @@ export interface config {
     excess_charging_enable: boolean,
     contactor_installed: boolean,
     phase_switching_mode: number,
-    target_power_from_grid: number,
     guaranteed_power: number,
-    hysteresis_time: number,
-    hysteresis_wear_accepted: boolean,
     relay_config: number,
-    relay_config_when: number,
-    relay_config_is: number,
-    input3_config: number,
-    input3_config_limit: number,
-    input3_config_when: number,
-    input3_config_rising_mode: number,
-    input3_config_falling_mode: number,
-    input4_config: number,
-    input4_config_limit: number,
-    input4_config_when: number,
-    input4_config_rising_mode: number,
-    input4_config_falling_mode: number
+    relay_rule_when: number,
+    relay_rule_is: number,
+    input3_rule_then: number,
+    input3_rule_then_limit: number,
+    input3_rule_is: number,
+    input3_rule_then_on_high: number,
+    input3_rule_then_on_low: number,
+    input4_rule_then: number,
+    input4_rule_then_limit: number,
+    input4_rule_is: number,
+    input4_rule_then_on_high: number,
+    input4_rule_then_on_low: number
 }
 
-export interface runtime_config {
+export interface debug_config {
+    hysteresis_time: number,
+    hysteresis_wear_accepted: boolean,
+    target_power_from_grid: number,
+}
+
+export interface charge_mode {
     mode: number
 }
 

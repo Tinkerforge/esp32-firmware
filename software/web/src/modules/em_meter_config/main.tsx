@@ -59,7 +59,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
         return (
             <>
                 <ConfigForm id="em_meter_config_config_form" title={__("em_meter_config.content.em_meter_config")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
-                    <FormRow label={__("em_meter_config.content.meter_type")} label_muted={__("em_meter_config.content.meter_type_muted")}>
+                    <FormRow label={__("em_meter_config.content.meter_source")} label_muted={__("em_meter_config.content.meter_source_muted")}>
                         <InputSelect
                             items={[
                                     ["0", __("em_meter_config.content.type_none")],
@@ -68,11 +68,11 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
                                     //["3", __("em_meter_config.content.type_modbus_tcp")],
                                     ["100", __("em_meter_config.content.type_custom")],
                                 ]}
-                            value={state.meter_type}
-                            onValue={(v) => this.setState({meter_type: parseInt(v)})}/>
+                            value={state.meter_source}
+                            onValue={(v) => this.setState({meter_source: parseInt(v)})}/>
                     </FormRow>
 
-                    <Collapse in={state.meter_type == 1}>
+                    <Collapse in={state.meter_source == 1}>
                         <div>
                             <FormSeparator heading={__("em_meter_config.content.conf_sdm")}/>
 
@@ -102,14 +102,14 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
                         </div>
                     </Collapse>
 
-                    <Collapse in={state.meter_type == 2}>
+                    <Collapse in={state.meter_source == 2}>
                         <div>
                             <FormSeparator heading={__("em_meter_config.content.conf_sunspec")}/>
                             <div>TBD</div>
                         </div>
                     </Collapse>
 
-                    <Collapse in={state.meter_type == 3}>
+                    <Collapse in={state.meter_source == 3}>
                         <div>
                             <FormSeparator heading={__("em_meter_config.content.conf_modbus_tcp")}/>
                             <div>TBD</div>

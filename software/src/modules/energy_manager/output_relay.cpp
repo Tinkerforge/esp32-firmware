@@ -38,8 +38,8 @@ static bool cmp_dummy(int32_t a, int32_t b)
 OutputRelay::OutputRelay(const ConfigRoot &conf)
 {
     const uint32_t relay_conf_func  = conf.get("relay_config"     )->asUint();
-    const uint32_t relay_conf_when  = conf.get("relay_config_when")->asUint();
-    const uint32_t relay_conf_is    = conf.get("relay_config_is"  )->asUint();
+    const uint32_t relay_conf_when  = conf.get("relay_rule_when")->asUint();
+    const uint32_t relay_conf_is    = conf.get("relay_rule_is"  )->asUint();
 
     // Don't risk crashing on an invalid pointer, so make sure that the function pointers are always set to something sensible.
     update_func = &OutputRelay::nop;
@@ -48,72 +48,70 @@ OutputRelay::OutputRelay(const ConfigRoot &conf)
     switch(relay_conf_func) {
         case RELAY_CONFIG_RULE_BASED:
             switch(relay_conf_when) {
-                case RELAY_CONFIG_IF_INPUT3:
-                case RELAY_CONFIG_IF_INPUT4:
-                    if (relay_conf_is == RELAY_CONFIG_IS_HIGH) {
+                case RELAY_CONFIG_WHEN_INPUT3:
+                case RELAY_CONFIG_WHEN_INPUT4:
+                    if (relay_conf_is == RELAY_RULE_IS_HIGH) {
                         ref_val = 1;
-                    } else if (relay_conf_is == RELAY_CONFIG_IS_LOW) {
+                    } else if (relay_conf_is == RELAY_RULE_IS_LOW) {
                         ref_val = 0;
                     } else {
-                        logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_IS type %u", relay_conf_is);
+                        logger.printfln("energy_manager/OutputRelay: Unknown RELAY_RULE_IS type %u", relay_conf_is);
                         input_val = nullptr;
                         ref_val = -1;
                         break;
                     }
                     update_func = &OutputRelay::input_controlled;
-                    if (relay_conf_when == RELAY_CONFIG_IF_INPUT3)
+                    if (relay_conf_when == RELAY_CONFIG_WHEN_INPUT3)
                         input_val = &(energy_manager.all_data.input[0]);
                     else
                         input_val = &(energy_manager.all_data.input[1]);
                     break;
-                case RELAY_CONFIG_IF_PHASE_SWITCHING:
+                case RELAY_CONFIG_WHEN_PHASE_SWITCHING:
                     input_val = nullptr;
-                    if (relay_conf_is == RELAY_CONFIG_IS_1PHASE) {
+                    if (relay_conf_is == RELAY_RULE_IS_1PHASE) {
                         ref_val = 0;
-                    } else if (relay_conf_is == RELAY_CONFIG_IS_3PHASE) {
+                    } else if (relay_conf_is == RELAY_RULE_IS_3PHASE) {
                         ref_val = 1;
                     } else {
-                        logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_IS type %u for phase switching mode", relay_conf_is);
+                        logger.printfln("energy_manager/OutputRelay: Unknown RELAY_RULE_IS type %u for phase switching mode", relay_conf_is);
                         ref_val = -1;
                         break;
                     }
                     update_func = &OutputRelay::phase_switching_state;
                     break;
-                case RELAY_CONFIG_IF_CONTACTOR_CHECK:
+                case RELAY_CONFIG_WHEN_CONTACTOR_CHECK:
                     input_val = nullptr;
-                    if (relay_conf_is == RELAY_CONFIG_IS_CONTACTOR_OK) {
+                    if (relay_conf_is == RELAY_RULE_IS_CONTACTOR_OK) {
                         // Checks against contactor_check_tripped, not contactor_check_state.
                         ref_val = 0;
-                    } else if (relay_conf_is == RELAY_CONFIG_IS_CONTACTOR_FAIL) {
+                    } else if (relay_conf_is == RELAY_RULE_IS_CONTACTOR_FAIL) {
                         ref_val = 1;
                     } else {
-                        logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_IS type %u for contactor check mode", relay_conf_is);
+                        logger.printfln("energy_manager/OutputRelay: Unknown RELAY_RULE_IS type %u for contactor check mode", relay_conf_is);
                         ref_val = -1;
                         break;
                     }
                     update_func = &OutputRelay::contactor_check_tripped;
                     break;
-                case RELAY_CONFIG_IF_POWER_AVAILABLE:
+                case RELAY_CONFIG_WHEN_POWER_AVAILABLE:
                     input_val = nullptr;
-                    if (relay_conf_is == RELAY_CONFIG_IS_POWER_INSUFFIC) {
+                    if (relay_conf_is == RELAY_RULE_IS_POWER_INSUFFIC) {
                         ref_val = 0;
-                    } else if (relay_conf_is == RELAY_CONFIG_IS_POWER_SUFFIC) {
+                    } else if (relay_conf_is == RELAY_RULE_IS_POWER_SUFFIC) {
                         ref_val = 1;
                     } else {
-                        logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_IS type %u for power available mode", relay_conf_is);
+                        logger.printfln("energy_manager/OutputRelay: Unknown RELAY_RULE_IS type %u for power available mode", relay_conf_is);
                         ref_val = -1;
                         break;
                     }
                     update_func = &OutputRelay::power_sufficient;
                     break;
-                case RELAY_CONFIG_IF_GRID_DRAW:
+                case RELAY_CONFIG_WHEN_GRID_DRAW:
                     switch(relay_conf_is) {
-                        case RELAY_CONFIG_IS_GT0: cmp_func = &cmp_gt; break;
-                        case RELAY_CONFIG_IS_GE0: cmp_func = &cmp_ge; break;
-                        case RELAY_CONFIG_IS_LE0: cmp_func = &cmp_le; break;
-                        case RELAY_CONFIG_IS_LT0: cmp_func = &cmp_lt; break;
+                        case RELAY_RULE_IS_GT0: cmp_func = &cmp_gt; break;
+                        case RELAY_RULE_IS_LE0: cmp_func = &cmp_le; break;
                         default:
-                            logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_IS type %u for grid draw mode", relay_conf_is);
+                            logger.printfln("energy_manager/OutputRelay: Unknown RELAY_RULE_IS type %u for grid draw mode", relay_conf_is);
                             // cmp_func already set to cmp_dummy.
                     }
                     update_func = &OutputRelay::grid_draw;

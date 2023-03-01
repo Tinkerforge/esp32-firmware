@@ -42,30 +42,30 @@ interface DebugMode {
 }
 
 interface EnergyManagerAllData {
-    status: API.getType['energy_manager/status_state']
+    status: API.getType['energy_manager/state']
     config: API.getType['energy_manager/config']
-    runtime_config: API.getType['energy_manager/runtime_config']
+    charge_mode: API.getType['energy_manager/charge_mode']
 }
 
 export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
     constructor() {
         super();
 
-        util.eventTarget.addEventListener('energy_manager/status_state', () => {
-            this.setState({status: API.get('energy_manager/status_state')});
+        util.eventTarget.addEventListener('energy_manager/state', () => {
+            this.setState({status: API.get('energy_manager/state')});
         });
 
         util.eventTarget.addEventListener('energy_manager/config', () => {
             this.setState({config: API.get('energy_manager/config')});
         });
 
-        util.eventTarget.addEventListener('energy_manager/runtime_config', () => {
-            this.setState({runtime_config: API.get('energy_manager/runtime_config')});
+        util.eventTarget.addEventListener('energy_manager/charge_mode', () => {
+            this.setState({charge_mode: API.get('energy_manager/charge_mode')});
         });
     }
 
     change_mode(mode: number) {
-        API.save('energy_manager/runtime_config', {"mode": mode}, __("energy_manager.script.mode_change_failed"));
+        API.save('energy_manager/charge_mode', {"mode": mode}, __("energy_manager.script.mode_change_failed"));
     }
 
     render(props: {}, d: Readonly<EnergyManagerAllData>) {
@@ -83,26 +83,26 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                     {d.config.excess_charging_enable ? <>
                         <Button
                             className="form-control mr-2 rounded-right"
-                            variant={d.runtime_config.mode == 2 ? "primary" : "secondary"}
+                            variant={d.charge_mode.mode == 2 ? "primary" : "secondary"}
                             onClick={() => this.change_mode(2)}>
                             {__("energy_manager.status.mode_pv")}
                         </Button>
                         <Button
                             className="form-control mr-2 rounded-left rounded-right"
-                            variant={d.runtime_config.mode == 3 ? "primary" : "secondary"}
+                            variant={d.charge_mode.mode == 3 ? "primary" : "secondary"}
                             onClick={() => this.change_mode(3)}>
                             {__("energy_manager.status.mode_min_pv")}
                         </Button>
                     </>: <></>}
                     <Button
                         className="form-control mr-2 rounded-left rounded-right"
-                        variant={d.runtime_config.mode == 0 ? "primary" : "secondary"}
+                        variant={d.charge_mode.mode == 0 ? "primary" : "secondary"}
                         onClick={() => this.change_mode(0)}>
                         {__("energy_manager.status.mode_fast")}
                     </Button>
                     <Button
                         className="form-control rounded-left"
-                        variant={d.runtime_config.mode == 1 ? "primary" : "secondary"}
+                        variant={d.charge_mode.mode == 1 ? "primary" : "secondary"}
                         onClick={() => this.change_mode(1)}>
                         {__("energy_manager.status.mode_off")}
                     </Button>
@@ -138,7 +138,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
 
 render(<EnergyManagerStatus/>, $('#status-energy_manager')[0])
 
-export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, DebugMode> {
+export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, DebugMode & API.getType['energy_manager/debug_config']> {
     constructor() {
         super('energy_manager/config',
             __("energy_manager.script.save_failed"),
@@ -149,7 +149,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         });
     }
 
-    render(props: {}, s: Readonly<API.getType['energy_manager/config'] & DebugMode>) {
+    render(props: {}, s: Readonly<API.getType['energy_manager/config'] & DebugMode & API.getType['energy_manager/debug_config']>) {
         if (!util.allow_render || !API.get("info/modules").energy_manager)
             return <></>
 
@@ -223,7 +223,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                     <FormRow label={__("energy_manager.content.contactor_installed")}>
                         <Switch desc={__("energy_manager.content.contactor_installed_desc")}
                                 checked={s.contactor_installed}
-                                onClick={() => this.setState({contactor_installed: !this.state.contactor_installed, input3_config: this.state.contactor_installed ? this.state.input3_config : 1})}/>
+                                onClick={() => this.setState({contactor_installed: !this.state.contactor_installed, input3_rule_then: this.state.contactor_installed ? this.state.input3_rule_then : 1})}/>
                     </FormRow>
 
                     <FormRow label={__("energy_manager.content.phase_switching_mode")}>
@@ -257,7 +257,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
                     <Collapse in={s.relay_config == 1}>
                         <div>
-                            <FormRow label={__("energy_manager.content.relay_config_when")}>
+                            <FormRow label={__("energy_manager.content.relay_rule_when")}>
                                 <InputSelect
                                     required={s.relay_config == 1}
                                     items={[
@@ -268,11 +268,11 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                             ["4", __("energy_manager.content.power_available")],
                                             ["5", __("energy_manager.content.grid_draw")],
                                         ]}
-                                    value={s.relay_config_when}
-                                    onValue={(v) => this.setState({relay_config_when: parseInt(v)})}/>
+                                    value={s.relay_rule_when}
+                                    onValue={(v) => this.setState({relay_rule_when: parseInt(v)})}/>
                             </FormRow>
 
-                            <FormRow label={__("energy_manager.content.relay_config_is")}>
+                            <FormRow label={__("energy_manager.content.relay_rule_is")}>
                                 <InputSelect
                                     required={s.relay_config == 1}
                                     items={({0: [
@@ -297,14 +297,12 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                             ],
                                             5: [
                                                 ["8", __("energy_manager.content.grid_gt0")],
-                                                ["9", __("energy_manager.content.grid_ge0")],
-                                                ["10", __("energy_manager.content.grid_le0")],
-                                                ["11", __("energy_manager.content.grid_lt0")]
+                                                ["9", __("energy_manager.content.grid_le0")]
                                             ],
-                                        }[s.relay_config_when] as [string, string][])
+                                        }[s.relay_rule_when] as [string, string][])
                                     }
-                                    value={s.relay_config_is}
-                                    onValue={(v) => this.setState({relay_config_is: parseInt(v)})}/>
+                                    value={s.relay_rule_is}
+                                    onValue={(v) => this.setState({relay_rule_is: parseInt(v)})}/>
                             </FormRow>
 
                             <FormRow label={__("energy_manager.content.relay_config_then")}>
@@ -315,7 +313,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
                     <FormSeparator heading={__("energy_manager.content.input3")}/>
 
-                    <FormRow label={__("energy_manager.content.input3_config")}>
+                    <FormRow label={__("energy_manager.content.input3_rule_then")}>
                         <InputSelect
                             required
                             items={s.contactor_installed ?
@@ -327,57 +325,58 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                     ["4", __("energy_manager.content.input_switch_mode")],
                                 ]
                             }
-                            value={s.input3_config}
-                            onValue={(v) => this.setState({input3_config: parseInt(v)})}
+                            value={s.input3_rule_then}
+                            onValue={(v) => this.setState({input3_rule_then: parseInt(v)})}
                             disabled={s.contactor_installed}/>
                     </FormRow>
 
-                    <Collapse in={s.input3_config >= 2}>
+                    <Collapse in={s.input3_rule_then >= 2}>
                         <div>
-                            <Collapse in={s.input3_config == 2 || s.input3_config == 3}>
+                            <Collapse in={s.input3_rule_then == 2 || s.input3_rule_then == 3}>
                                 <div>
                                     <FormRow label={__("energy_manager.content.input_when")}>
                                         <InputSelect
-                                            required={s.input3_config == 2 || s.input3_config == 3}
+                                            required={s.input3_rule_then == 2 || s.input3_rule_then == 3}
                                             items={[
                                                 ["0", __("energy_manager.content.input_high")],
                                                 ["1", __("energy_manager.content.input_low")],
                                             ]}
-                                            value={s.input3_config_when}
-                                            onValue={(v) => this.setState({ input3_config_when: parseInt(v) })} />
+                                            value={s.input3_rule_is}
+                                            onValue={(v) => this.setState({ input3_rule_is: parseInt(v) })} />
                                     </FormRow>
                                 </div>
                             </Collapse>
 
-                            <Collapse in={s.input3_config == 3}>
+                            <Collapse in={s.input3_rule_then == 3}>
                                 <div>
                                     <FormRow label={__("energy_manager.content.limit_to_current")}>
-                                    <InputNumber
-                                        required={s.input3_config == 3}
+                                    <InputFloat
+                                        //required={s.input3_rule_then == 3}
+                                        digits={3}
                                         unit={"A"}
-                                        value={s.input3_config_limit}
-                                        onValue={this.set('input3_config_limit')}
+                                        value={s.input3_rule_then_limit}
+                                        onValue={this.set('input3_rule_then_limit')}
                                         min={0}
-                                        max={125}
+                                        max={125000}
                                         />
                                     </FormRow>
                                 </div>
                             </Collapse>
-                            <Collapse in={s.input3_config == 4}>
+                            <Collapse in={s.input3_rule_then == 4}>
                                 <div>
                                     <FormRow label={__("energy_manager.content.input_when_closing")}>
                                         <InputSelect
-                                            required={s.input3_config == 4}
+                                            required={s.input3_rule_then == 4}
                                             items={mode_list_for_inputs}
-                                            value={s.input3_config_rising_mode}
-                                            onValue={(v) => this.setState({ input3_config_rising_mode: parseInt(v) })} />
+                                            value={s.input3_rule_then_on_high}
+                                            onValue={(v) => this.setState({ input3_rule_then_on_high: parseInt(v) })} />
                                     </FormRow>
                                     <FormRow label={__("energy_manager.content.input_when_opening")}>
                                         <InputSelect
-                                            required={s.input3_config == 4}
+                                            required={s.input3_rule_then == 4}
                                             items={mode_list_for_inputs}
-                                            value={s.input3_config_falling_mode}
-                                            onValue={(v) => this.setState({ input3_config_falling_mode: parseInt(v) })} />
+                                            value={s.input3_rule_then_on_low}
+                                            onValue={(v) => this.setState({ input3_rule_then_on_low: parseInt(v) })} />
                                     </FormRow>
                                 </div>
                             </Collapse>
@@ -386,7 +385,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
                     <FormSeparator heading={__("energy_manager.content.input4")}/>
 
-                    <FormRow label={__("energy_manager.content.input4_config")}>
+                    <FormRow label={__("energy_manager.content.input4_rule_then")}>
                         <InputSelect
                             required
                             items={[
@@ -396,56 +395,56 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                     ["4", __("energy_manager.content.input_switch_mode")],
                                 ]
                             }
-                            value={s.input4_config}
-                            onValue={(v) => this.setState({input4_config: parseInt(v)})}/>
+                            value={s.input4_rule_then}
+                            onValue={(v) => this.setState({input4_rule_then: parseInt(v)})}/>
                     </FormRow>
 
-                    <Collapse in={s.input4_config >= 2}>
+                    <Collapse in={s.input4_rule_then >= 2}>
                         <div>
-                            <Collapse in={s.input4_config == 2 || s.input4_config == 3}>
+                            <Collapse in={s.input4_rule_then == 2 || s.input4_rule_then == 3}>
                                 <div>
                                     <FormRow label={__("energy_manager.content.input_when")}>
                                         <InputSelect
-                                            required={s.input4_config == 2 || s.input4_config == 3}
+                                            required={s.input4_rule_then == 2 || s.input4_rule_then == 3}
                                             items={[
                                                 ["0", __("energy_manager.content.input_high")],
                                                 ["1", __("energy_manager.content.input_low")],
                                             ]}
-                                            value={s.input4_config_when}
-                                            onValue={(v) => this.setState({ input4_config_when: parseInt(v) })} />
+                                            value={s.input4_rule_is}
+                                            onValue={(v) => this.setState({ input4_rule_is: parseInt(v) })} />
                                     </FormRow>
                                 </div>
                             </Collapse>
 
-                            <Collapse in={s.input4_config == 3}>
+                            <Collapse in={s.input4_rule_then == 3}>
                                 <div>
                                     <FormRow label={__("energy_manager.content.limit_to_current")}>
                                         <InputNumber
-                                            required={s.input4_config == 3}
+                                            required={s.input4_rule_then == 3}
                                             unit={"A"}
-                                            value={s.input4_config_limit}
-                                            onValue={this.set('input4_config_limit')}
+                                            value={s.input4_rule_then_limit}
+                                            onValue={this.set('input4_rule_then_limit')}
                                             min={0}
                                             max={125}
                                             />
                                     </FormRow>
                                 </div>
                             </Collapse>
-                            <Collapse in={s.input4_config == 4}>
+                            <Collapse in={s.input4_rule_then == 4}>
                                 <div>
                                     <FormRow label={__("energy_manager.content.input_when_closing")}>
                                         <InputSelect
-                                            required={s.input4_config == 4}
+                                            required={s.input4_rule_then == 4}
                                             items={mode_list_for_inputs}
-                                            value={s.input4_config_rising_mode}
-                                            onValue={(v) => this.setState({ input4_config_rising_mode: parseInt(v) })} />
+                                            value={s.input4_rule_then_on_high}
+                                            onValue={(v) => this.setState({ input4_rule_then_on_high: parseInt(v) })} />
                                     </FormRow>
                                     <FormRow label={__("energy_manager.content.input_when_opening")}>
                                         <InputSelect
-                                            required={s.input4_config == 4}
+                                            required={s.input4_rule_then == 4}
                                             items={mode_list_for_inputs}
-                                            value={s.input4_config_falling_mode}
-                                            onValue={(v) => this.setState({ input4_config_falling_mode: parseInt(v) })} />
+                                            value={s.input4_rule_then_on_low}
+                                            onValue={(v) => this.setState({ input4_rule_then_on_low: parseInt(v) })} />
                                     </FormRow>
                                 </div>
                             </Collapse>

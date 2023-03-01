@@ -8,8 +8,8 @@
         },
         "content": {
             "em_meter_config": "Energy Meter Settings",
-            "meter_type": "Energy meter type",
-            "meter_type_muted": "to measure the energy balance at the building's grid connection",
+            "meter_source": "Energy meter type",
+            "meter_source_muted": "to measure the energy balance at the building's grid connection",
             "type_none": "No meter",
             "type_sdm": "SDM630*/SDM72* connected to WARP Energy Manager",
             "type_sunspec": "SunSpec-compatible energy meter via Modbus-TCP",
