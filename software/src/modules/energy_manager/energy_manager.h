@@ -161,13 +161,14 @@ public:
 
     bool debug = false;
 
-    ConfigRoot energy_manager_debug_state;
-    ConfigRoot energy_manager_meter_state;
-    ConfigRoot energy_manager_status_state;
-    ConfigRoot energy_manager_config;
-    ConfigRoot energy_manager_config_in_use;
-    ConfigRoot energy_manager_runtime_config;
-    ConfigRoot energy_manager_runtime_config_update;
+    ConfigRoot energy_manager_state;
+    ConfigRoot debug_state;
+    ConfigRoot meter_state;
+    ConfigRoot status_state;
+    ConfigRoot config;
+    ConfigRoot config_in_use;
+    ConfigRoot runtime_config;
+    ConfigRoot runtime_config_update;
 
     EnergyManagerAllData all_data;
 
