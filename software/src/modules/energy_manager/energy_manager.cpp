@@ -232,6 +232,8 @@ void EnergyManager::setup()
         this->update_io();
     }, 250, 250);
 
+    start_network_check_task();
+
     if (max_current_unlimited_ma == 0) {
         logger.printfln("energy_manager: No maximum current configured for chargers. Disabling energy distribution.");
         return;
@@ -455,6 +457,26 @@ void EnergyManager::update_io()
 
     input3->update(all_data.input[0]);
     input4->update(all_data.input[1]);
+}
+
+void EnergyManager::start_network_check_task()
+{
+    task_scheduler.scheduleWithFixedDelay([this](){
+        bool connected = false;
+#if MODULE_ETHERNET_AVAILABLE()
+        connected = ethernet.get_connection_state() == EthernetState::CONNECTED;
+#endif
+#if MODULE_WIFI_AVAILABLE()
+        if (!connected)
+            connected = wifi.get_connection_state() == WifiState::CONNECTED;
+#endif
+        if (connected) {
+            if (is_error(ERROR_FLAGS_NETWORK_BIT_POS))
+                clr_error(ERROR_FLAGS_NETWORK_MASK);
+        } else {
+            set_error(ERROR_FLAGS_NETWORK_MASK);
+        }
+    }, 0, 5000);
 }
 
 void EnergyManager::start_auto_reset_task()

@@ -193,6 +193,7 @@ private:
     void update_io();
     void update_energy();
 
+    void start_network_check_task();
     void start_auto_reset_task();
     void schedule_auto_reset_task();
     void set_available_current(uint32_t current);
