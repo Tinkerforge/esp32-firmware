@@ -61,7 +61,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
 
         let manufacturer;
         switch(state.manufacturer_id) {
-            case 0x00: manufacturer ="None"; break;
+            case 0x00: manufacturer = "None"; break;
             case 0x01: manufacturer = "Panasonic"; break;
             case 0x02: manufacturer = "Toshiba"; break;
             case 0x03: manufacturer = "SanDisk"; break;
