@@ -464,19 +464,40 @@ void EnergyManager::update_io()
 void EnergyManager::start_network_check_task()
 {
     task_scheduler.scheduleWithFixedDelay([this](){
-        bool connected = false;
+        bool disconnected;
+        do {
 #if MODULE_ETHERNET_AVAILABLE()
-        connected = ethernet.get_connection_state() == EthernetState::CONNECTED;
+            if (ethernet.get_connection_state() == EthernetState::CONNECTED) {
+                disconnected = false;
+                break;
+            }
 #endif
 #if MODULE_WIFI_AVAILABLE()
-        if (!connected)
-            connected = wifi.get_connection_state() == WifiState::CONNECTED;
+            if (wifi.get_connection_state() == WifiState::CONNECTED) {
+                disconnected = false;
+                break;
+            }
 #endif
-        if (connected) {
+#if MODULE_ETHERNET_AVAILABLE()
+            if (ethernet.is_enabled()) {
+                disconnected = true;
+                break;
+            }
+#endif
+#if MODULE_WIFI_AVAILABLE()
+            if (wifi.is_sta_enabled()) {
+                disconnected = true;
+                break;
+            }
+#endif
+            disconnected = false;
+        } while (0);
+
+        if (disconnected) {
+            set_error(ERROR_FLAGS_NETWORK_MASK);
+        } else {
             if (is_error(ERROR_FLAGS_NETWORK_BIT_POS))
                 clr_error(ERROR_FLAGS_NETWORK_MASK);
-        } else {
-            set_error(ERROR_FLAGS_NETWORK_MASK);
         }
     }, 0, 5000);
 }

@@ -187,9 +187,14 @@ void Ethernet::loop()
 {
 }
 
-EthernetState Ethernet::get_connection_state()
+EthernetState Ethernet::get_connection_state() const
 {
     if (!initialized)
         return EthernetState::NOT_CONFIGURED;
     return (EthernetState)ethernet_state.get("connection_state")->asUint();
+}
+
+bool Ethernet::is_enabled() const
+{
+    return ethernet_config_in_use.get("enable_ethernet")->asBool();
 }

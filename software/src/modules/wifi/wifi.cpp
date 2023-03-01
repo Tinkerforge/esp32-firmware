@@ -666,7 +666,7 @@ void Wifi::loop()
     }
 }
 
-WifiState Wifi::get_connection_state()
+WifiState Wifi::get_connection_state() const
 {
     if (!wifi_sta_config_in_use.get("enable_sta")->asBool())
         return WifiState::NOT_CONFIGURED;
@@ -687,6 +687,11 @@ WifiState Wifi::get_connection_state()
             // this will only be reached with WL_SCAN_COMPLETED, but this value is never set
             return WifiState::CONNECTED;
     }
+}
+
+bool Wifi::is_sta_enabled() const
+{
+    return wifi_sta_config_in_use.get("enable_sta")->asBool();
 }
 
 int Wifi::get_ap_state()

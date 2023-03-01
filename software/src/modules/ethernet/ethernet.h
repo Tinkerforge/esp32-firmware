@@ -41,7 +41,8 @@ public:
 
     bool was_connected = false;
 
-    EthernetState get_connection_state();
+    EthernetState get_connection_state() const;
+    bool is_enabled() const;
 
 private:
     ConfigRoot ethernet_config;

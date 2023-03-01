@@ -41,7 +41,8 @@ public:
 
     bool was_connected = false;
 
-    WifiState get_connection_state();
+    WifiState get_connection_state() const;
+    bool is_sta_enabled() const;
 
 private:
     void apply_soft_ap_config_and_start();
