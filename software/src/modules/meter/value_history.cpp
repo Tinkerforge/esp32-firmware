@@ -231,22 +231,31 @@ float ValueHistory::samples_per_second()
 {
     float samples_per_second = 0;
 
-    if (this->samples_last_interval > 0) {
+    // Only calculate samples_per_second based on the last interval
+    // if we have seen at least 2 values. With the API meter module,
+    // it can happen that we see exactly one value in the first interval.
+    // In this case 0 samples_per_second is reported for the next
+    // interval (i.e. four minutes).
+    if (this->samples_last_interval > 1) {
         uint32_t duration = end_last_interval - begin_last_interval;
 
         if (duration > 0) {
             // (samples_last_interval - 1) because there are N samples but only (N - 1) gaps
             // between them covering (end_last_interval - begin_last_interval) milliseconds
-            samples_per_second = (float)(this->samples_last_interval - 1) / duration * 1000;
+            samples_per_second = ((float)(this->samples_last_interval - 1)) / duration * 1000;
         }
     }
+    // Checking only for > 0 in this branch is fine: If we have seen
+    // 0 or 1 samples in the last interval and exactly 1 in this interval,
+    // we can only report that samples_per_second is 0.
+    // This fixes itself when the next sample arrives.
     else if (this->samples_this_interval > 0) {
         uint32_t duration = end_this_interval - begin_this_interval;
 
         if (duration > 0) {
             // (samples_this_interval - 1) because there are N samples but only (N - 1) gaps
             // between them covering (end_this_interval - begin_this_interval) milliseconds
-            samples_per_second = (float)(this->samples_this_interval - 1) / duration * 1000;
+            samples_per_second = ((float)(this->samples_this_interval - 1)) / duration * 1000;
         }
     }
 
