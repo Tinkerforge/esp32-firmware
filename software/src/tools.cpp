@@ -39,6 +39,8 @@
 
 #include <arpa/inet.h>
 
+extern TF_HAL *hal;
+
 const char *tf_reset_reason()
 {
     esp_reset_reason_t reason = esp_reset_reason();
@@ -564,6 +566,10 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
 {
     TFPSwap tfp_swap(tfp);
     TF_Unknown bricklet;
+    auto old_timeout = tf_hal_get_timeout(hal);
+    defer {tf_hal_set_timeout(hal, old_timeout);};
+    tf_hal_set_timeout(hal, 2500 * 1000);
+
 
     int rc = tf_unknown_create(&bricklet, tfp);
     defer {tf_unknown_destroy(&bricklet);};
