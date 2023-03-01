@@ -25,9 +25,7 @@
 #include "modules.h"
 
 static bool cmp_gt(int32_t a, int32_t b) { return a >  b; }
-static bool cmp_ge(int32_t a, int32_t b) { return a >= b; }
 static bool cmp_le(int32_t a, int32_t b) { return a <= b; }
-static bool cmp_lt(int32_t a, int32_t b) { return a <  b; }
 
 static bool cmp_dummy(int32_t a, int32_t b)
 {
