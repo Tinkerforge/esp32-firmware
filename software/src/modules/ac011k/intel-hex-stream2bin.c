@@ -14,7 +14,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define MAX_RECORD_LEN 256
+#define MAX_RECORD_LEN 267 // shall not be smaller than 256+11 because of record definition, no point for it to be bigger
 #define BUF_SIZE 2048
 
 #include <stdio.h>
@@ -44,6 +44,23 @@ void hexdump(char *buffer, size_t length) {
     }
 }
 
+int hex_to_int(const char *hex, size_t len) {
+    int val = 0;
+    int digit = 0;
+    for (size_t i = 0; i < len; i++) {
+        if (hex[i] >= '0' && hex[i] <= '9') {
+            digit = hex[i] - '0';
+        } else if (hex[i] >= 'A' && hex[i] <= 'F') {
+            digit = hex[i] - 'A' + 10;
+        } else if (hex[i] >= 'a' && hex[i] <= 'f') {
+            digit = hex[i] - 'a' + 10;
+        } else {
+            return -1;
+        }
+        val = (val << 4) + digit;
+    }
+    return val;
+}
 
 typedef struct {
     char *binOutput;            // Buffer for binary output data
@@ -58,21 +75,33 @@ typedef struct {
 int parse_record(parse_state *state, char *record) {
     uint8_t buf[MAX_RECORD_LEN];
     uint8_t checksum = 0;
-    int i, count, record_data_len, type, addr;
+    int i, record_data_len, type, addr;
     if(record[0] != ':') {
         return 0; // Invalid record format, but we just ignore it
     }
-    count = sscanf(record, ":%2x%4x%2x", &record_data_len, &addr, &type);
-    if(count != 3) {
-        fprintf(stderr, "Invalid record format\n");
+    record_data_len = hex_to_int(record + 1, 2);
+    if(record_data_len < 0) {
+        fprintf(stderr, "Invalid record data length\n");
+        return -1; // Invalid record format
+    }
+    addr = hex_to_int(record + 3, 4);
+    if(addr < 0) {
+        fprintf(stderr, "Invalid record addr\n");
+        return -1; // Invalid record format
+    }
+    type = hex_to_int(record + 7, 2);
+    if(type < 0) {
+        fprintf(stderr, "Invalid record type\n");
         return -1; // Invalid record format
     }
     checksum = record_data_len + (addr & 0xff) + (addr >> 8) + type;
     for(i = 0; i < record_data_len+1; i++) { // +1 because of the checksum field itself
-        count = sscanf(record + 9 + i * 2, "%2hhx", &buf[i]);
-        if(count != 1) {
+        int byte = hex_to_int(record + 9 + i * 2, 2);
+        if(byte < 0) {
             fprintf(stderr, "Invalid data format\n");
             return -1; // Invalid data format
+        } else {
+            buf[i] = byte;
         }
         checksum += buf[i];
     }
@@ -111,8 +140,8 @@ int parse_record(parse_state *state, char *record) {
         case 1: // End-of-file record
             break;
         case 4: // Extended Linear Address Record
-            /* count = sscanf(record + 9, "%4x", &addr); */
-            /* if(count != 1) { */
+            /* addr = hex_to_int(record + 9, 4); */
+            /* if(addr < 0) { */
             /*     fprintf(stderr, "Invalid Extended Linear Address format\n"); */
             /*     return -1; // Invalid data format */
             /* } */
@@ -142,7 +171,6 @@ int parse_input(parse_state *state, char *input, int len) {
     if(state->inputReminderLen > 0) {
         // process the glue buffer (filled with the start of the newly arrived input)
         memcpy(state->inputGlueBuf + state->inputReminderLen, input, MAX_RECORD_LEN - state->inputReminderLen);
-        state->inputGlueBuf[MAX_RECORD_LEN - 1] = 0;
         ret = parse_record(state, state->inputGlueBuf);
         if(ret != 0) {
             return ret;
@@ -194,7 +222,7 @@ int main() {
 
     // Parse input data from standard input
     while(1) {
-        int len = read(STDIN_FILENO, input, sizeof(input)-1); // -1 to be sure the whole buffer is 0 terminated
+        int len = read(STDIN_FILENO, input, sizeof(input));
         if(len == 0) {
             break; // End of input
         }
