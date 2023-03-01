@@ -564,7 +564,7 @@ private:
 
 int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force)
 {
-    TFPSwap tfp_swap();
+    TFPSwap tfp_swap(tfp);
     TF_Unknown bricklet;
     auto old_timeout = tf_hal_get_timeout(&hal);
     defer {tf_hal_set_timeout(&hal, old_timeout);};
