@@ -502,6 +502,7 @@ int AC011K::bs_evse_start_charging() {
         case 258:
         case 460:
         case 538:
+        case 653:
         case 805:
         case 812:
         case 888:
@@ -561,6 +562,7 @@ int AC011K::bs_evse_set_max_charging_current(uint16_t max_current) {
         case 258:
         case 460:
         case 538:
+        case 653:
         case 805:
         case 812:
         case 888:
@@ -1058,8 +1060,8 @@ void AC011K::loop()
                                 && (evse.evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 1435)  // higest known working version (we assume earlier versions work as well)
                             )
                             || (   
-                                evse.evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.2.", 0)  // known working: 1.2.460
-                                && (evse.evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 460)  // higest known working version (we assume earlier versions work as well)
+                                evse.evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.2.", 0)  // known working: 1.2.653
+                                && (evse.evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 653)  // higest known working version (we assume earlier versions work as well)
                             )
                         );
                     evse.evse_hardware_configuration.get("initialized")->updateBool(evse.initialized);
