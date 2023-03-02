@@ -614,6 +614,11 @@ def main(stage3):
             browser.get("http://{}".format(ssid))
 
             element = WebDriverWait(browser, 10).until(
+                EC.element_to_be_clickable((By.ID, "sidebar-evse-group"))
+            )
+            element.click()
+
+            element = WebDriverWait(browser, 10).until(
                 EC.element_to_be_clickable((By.ID, "sidebar-evse"))
             )
             element.click()
