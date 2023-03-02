@@ -131,7 +131,7 @@ static void register_default_urls(void) {
 }
 
 void setup(void) {
-    Serial.begin(115200);
+    Serial.begin({{{monitor_speed}}});
 
     logger.setup();
 

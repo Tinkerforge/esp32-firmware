@@ -262,6 +262,7 @@ def main():
     build_flags = env.GetProjectOption("build_flags")
     frontend_debug = env.GetProjectOption("custom_frontend_debug") == "true"
     web_only = env.GetProjectOption("custom_web_only") == "true"
+    monitor_speed = env.GetProjectOption("monitor_speed")
 
     is_release = len(subprocess.run(["git", "tag", "--contains", "HEAD"], check=True, capture_output=True).stdout) > 0
     is_dirty = len(subprocess.run(["git", "diff"], check=True, capture_output=True).stdout) > 0
@@ -423,7 +424,8 @@ def main():
         '{{{module_loop}}}': '\n    '.join(['{}.loop();'.format(x.under) for x in backend_modules]),
         '{{{display_name}}}': display_name,
         '{{{display_name_upper}}}': display_name.upper(),
-        '{{{module_init_config}}}': ',\n        '.join('{{"{0}", Config::Bool({0}.initialized)}}'.format(x.under) for x in backend_modules if not x.under.startswith("hidden_"))
+        '{{{module_init_config}}}': ',\n        '.join('{{"{0}", Config::Bool({0}.initialized)}}'.format(x.under) for x in backend_modules if not x.under.startswith("hidden_")),
+        '{{{monitor_speed}}}': str(monitor_speed),
     })
 
 
