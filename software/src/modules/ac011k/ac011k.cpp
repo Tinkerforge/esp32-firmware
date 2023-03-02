@@ -42,6 +42,9 @@ unsigned int GD_firmware_len = 0;
 #include <LittleFS.h>
 #define GD_FIRMWARE_FILE_NAME "/GD_firmware.bin"
 #define GD_FIRMWARE_SKIP 0x8000
+#define MAX_RECORD_LEN 267 // shall not be smaller than 256+11 because of record definition, no point for it to be bigger
+#define BUF_SIZE 2048
+
 File GD_firmware_file;
 size_t GD_firmware_filesize = 0;
 bool GD_boot_mode_requested = false;
@@ -72,6 +75,190 @@ char receiveCommandBuffer[UDP_RX_PACKET_MAX_SIZE];  // buffer to hold incoming U
 
 Rtc rtc;
 EVSEV2 evse;
+
+int hex_to_int(const char *hex, size_t len) {
+    int val = 0;
+    int digit = 0;
+    for (size_t i = 0; i < len; i++) {
+        if (hex[i] >= '0' && hex[i] <= '9') {
+            digit = hex[i] - '0';
+        } else if (hex[i] >= 'A' && hex[i] <= 'F') {
+            digit = hex[i] - 'A' + 10;
+        } else if (hex[i] >= 'a' && hex[i] <= 'f') {
+            digit = hex[i] - 'a' + 10;
+        } else {
+            return -1;
+        }
+        val = (val << 4) + digit;
+    }
+    return val;
+}
+
+typedef struct {
+    char *binOutput;            // Buffer for binary output data
+    char *inputGlueBuf;         // Buffer for incomplete input records
+    uint32_t inputReminderLen;  // length of not processed hex input in the glue buffer
+    uint32_t binOutputLen;      // Length of already converted binary data in output buffer
+    uint32_t totalBytesOut;     // Length of already converted binary data in total
+    uint32_t lastAddr;          // address from the last decoded record (to find where padding is needed)
+    File file;                  // file to write the binary to (expected to be open already)
+} parse_state;
+
+parse_state state = {NULL, NULL, 0, 0, 0, 0};
+
+int parse_record(parse_state *state, char *record) {
+    uint8_t buf[MAX_RECORD_LEN];
+    uint8_t checksum = 0;
+    int i, record_data_len, type, addr;
+    if(record[0] != ':') {
+        return 0; // Invalid record format, but we just ignore it
+    }
+    record_data_len = hex_to_int(record + 1, 2);
+    if(record_data_len < 0) {
+        logger.printfln("Invalid record data length");
+        return -1; // Invalid record format
+    }
+    addr = hex_to_int(record + 3, 4);
+    if(addr < 0) {
+        logger.printfln("Invalid record addr");
+        return -1; // Invalid record format
+    }
+    type = hex_to_int(record + 7, 2);
+    if(type < 0) {
+        logger.printfln("Invalid record type");
+        return -1; // Invalid record format
+    }
+    checksum = record_data_len + (addr & 0xff) + (addr >> 8) + type;
+    for(i = 0; i < record_data_len+1; i++) { // +1 because of the checksum field itself
+        int byte = hex_to_int(record + 9 + i * 2, 2);
+        if(byte < 0) {
+            logger.printfln("Invalid data format");
+            return -1; // Invalid data format
+        } else {
+            buf[i] = byte;
+        }
+        checksum += buf[i];
+    }
+    if(checksum != 0) {
+        logger.printfln("Checksum (%x) error in: %s", checksum, record);
+        return -1; // Checksum error
+    }
+    switch (type) {
+        case 0: // Data record
+            if(state->binOutput == NULL) {
+                state->binOutput = (char*)malloc(BUF_SIZE / 2);
+                if(state->binOutput == NULL) {
+                    logger.printfln("Error: Out of memory");
+                    return -1;
+                }
+            }
+            if(state->lastAddr != addr && addr != 0 && state->lastAddr != 0) {
+                //logger.printfln("Padding needed from %x to %x", state->lastAddr, addr);
+                // first flush the buffer
+                if(state->binOutputLen > 0) {
+                    auto written = state->file.write((uint8_t*)state->binOutput, state->binOutputLen);
+                    if (written != state->binOutputLen) {
+                        logger.printfln("Failed to write update chunk with chunk_length %u; written %u, abort.", state->binOutputLen, written);
+                        //request.send(400, "text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
+                        //request.send(400, "text/plain", "Failed to write update, aborted.");
+                        //this->firmware_update_running = false;
+                        state->file.close();
+                        if (LittleFS.exists(GD_FIRMWARE_FILE_NAME)) { LittleFS.remove(GD_FIRMWARE_FILE_NAME); }
+                        return -1;
+                    }
+                    state->binOutputLen = 0;
+                }
+                // than the padding
+                uint8_t ff = 0xff;
+                for(i = state->lastAddr; i < addr; i++) {
+                    auto written = state->file.write(&ff, 1);
+                    state->totalBytesOut++;
+                }
+            }
+            for(i = 0; i < record_data_len; i++) {
+                state->binOutput[state->binOutputLen++] = buf[i];
+            }
+            state->totalBytesOut += record_data_len;
+            state->lastAddr = addr + record_data_len;
+            break;
+        case 1: // End-of-file record
+            break;
+        case 4: // Extended Linear Address Record
+            /* addr = hex_to_int(record + 9, 4); */
+            /* if(addr < 0) { */
+            /*     logger.printfln("Invalid Extended Linear Address format"); */
+            /*     return -1; // Invalid data format */
+            /* } */
+            /* logger.printfln("Extended Linear Address Record %c%c%c%c / total bytes: %d   addr: %d, %d", record[9], record[10], record[11], record[12], state->totalBytesOut, addr, state->lastAddr); */
+            break;
+        case 5: // Start address record
+            // it's always :04000005080081313D in our case
+            break;
+        default:
+            // Ignore all other record types
+            logger.printfln("WARN: Unsupported record type: %02x\n%s\n", type, record);
+            return 0;
+    }
+    return 0;
+}
+
+int parse_input(parse_state *state, char *input, int len) {
+    int ret = 0;
+    char *start, *end;
+    if(state->inputGlueBuf == NULL) {
+        state->inputGlueBuf = (char*)malloc(MAX_RECORD_LEN);
+        if(state->inputGlueBuf == NULL) {
+            logger.printfln("Error: Out of memory");
+            return -1;
+        }
+    }
+    if(state->inputReminderLen > 0) {
+        // process the glue buffer (filled with the start of the newly arrived input)
+        memcpy(state->inputGlueBuf + state->inputReminderLen, input, MAX_RECORD_LEN - state->inputReminderLen);
+        ret = parse_record(state, state->inputGlueBuf);
+        if(ret != 0) {
+            return ret;
+        }
+        state->inputReminderLen = 0;
+        // move on to the rest of the input buffer
+        start = (char*)memmem(input, len, "\n", 1); // look for first newline in input buffer
+        if(start == NULL) {
+            logger.printfln("Error: no newline to end the last record");
+            return -1;
+        }
+        start += 1; // move to first char after newline
+    } else {
+        // start processing all complete records in the buffer
+        start = input;
+    }
+    end = input + len;
+    while(start < end) {
+        char *newline = (char*)memmem(start, end - start, "\n", 1);
+        if(newline == NULL) {
+            // we don't have a newline in the input buffer before it ends
+            // copy input reminder to glue buffer, to have it when are called next time
+            int reminder = input + len - start;
+            if (reminder > MAX_RECORD_LEN) {
+                logger.printfln("Error: reminder of hex input does not fit into MAX_RECORD_LEN");
+                return -1;
+            }
+            state->inputReminderLen = end - start;
+            memcpy(state->inputGlueBuf, start, state->inputReminderLen);
+            break; // Incomplete record, parse more input when called again
+        }
+        ret = parse_record(state, start);
+        if(ret != 0) {
+            return ret;
+        }
+        start = newline + 1;
+    }
+    // Output converted data to stdout in chunks
+    if(state->binOutputLen > 0) {
+        auto written = state->file.write((uint8_t*)state->binOutput, state->binOutputLen);
+        state->binOutputLen = 0;
+    }
+    return 0;
+}
 
 ::time_t GetTimeZoneOffset () {
   static const time_t seconds = 0; // any arbitrary value works!
@@ -864,16 +1051,6 @@ void AC011K::setup() {
 //        return;
 //    }
 
-        /* task_scheduler.scheduleOnce([this](){ */
-        /*     if(!initialized) { */
-        /*         logger.printfln("   try to reset GD chip, cycle boot mode, app mode"); */
-        /*         RemoteUpdate[7] = 5; // Reset into boot mode */
-        /*         GD_boot_mode_requested = true; */
-        /*         sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++); */
-        /*         sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++); */
-        /*     } */
-        /* }, 5000); */
-
     // patch transaction number into command templates
     sprintf((char*)StartChargingA7 +1, "%06d", transactionNumber);
     sprintf((char*)StopChargingA7  +1, "%06d", transactionNumber);
@@ -1540,9 +1717,8 @@ void AC011K::loop()
                     }  //switch privCommCmdABUpdateReq success
                 } else {
                     logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - update reply: %.2X%.2X%.2X%.2X  %d (%s) - %s", cmd, seq, len, crc, FlashBuffer[3], FlashBuffer[4], FlashBuffer[5], FlashBuffer[6], PrivCommRxBuffer[10], cmd_0B_text[PrivCommRxBuffer[10]], PrivCommRxBuffer[12]==0 ?"success":"failure");
-                    logger.printfln("   getting the GD chip back into app mode");
+                    logger.printfln("Something went wrong with GD boot or GD app mode switching.");
                     update_aborted = true;
-                    sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++);
                 }
                 break;
 
@@ -1783,7 +1959,7 @@ void AC011K::register_urls()
             logger.printfln("Checking if the upload is a GD firmware that I would recognize.");
             void* ptr = memmem(data, len, GD_intel_hex_firmware_identifier, sizeof(GD_intel_hex_firmware_identifier));
             if (ptr != NULL) {
-                logger.printfln("Found the AC011K identifyer at position.");
+                logger.printfln("Found the AC011K identifyer. This seems to be a GD firmware.");
                 update_aborted = false;
                 convert_intel_hex_to_bin = true;
             } else {
@@ -1847,6 +2023,8 @@ bool AC011K::handle_gd_upload_chunk(WebServerRequest request, size_t chunk_index
         return false;
     }
 
+    state.file = GD_firmware_file;
+
     if (update_aborted) {
         return false;
     }
@@ -1854,67 +2032,97 @@ bool AC011K::handle_gd_upload_chunk(WebServerRequest request, size_t chunk_index
     if (convert_intel_hex_to_bin) {
         // convert every chunk to bin before write and correct chunk_length
 
-        logger.printfln("chunk_index %d, chunk_length %d, final %s, complete_length %d\n",chunk_index, chunk_length, final ? "true" : "false", complete_length);
+        if(ac011k_hardware.config.get("verbose_communication")->asBool()) {
+            logger.printfln("chunk_index %d, chunk_length %d, final %s, complete_length %d\n",chunk_index, chunk_length, final ? "true" : "false", complete_length);
+        }
  
-            //memcpy(((uint8_t *)FlashBuffer)+11, GD_firmware + gd_flash_index, GD_firmware_file_bytes_read); // 800 bytes is the max chunk size that the GD can flash
+        // Parse input data
+        int ret = parse_input(&state, (char*)data, chunk_length);
+        if(ret < 0) {
+            logger.printfln("Failed to parse hex GD firmware.");
+            request.send(400, "text/plain", "Failed to parse GD firmware from hex to bin, format error.");
+            update_aborted = true;
+            free(state.inputGlueBuf);
+            free(state.binOutput);
+            return false;
+        }
 
         if (final) {
-            logger.printfln("I would have to convert the intel hex to bin, but I can't yet.");
-            request.send(400, "text/plain", "I would have to convert the intel hex to bin, but I can't yet.");
-            update_aborted = true;
-            return false;
+            GD_firmware_file.close();
+            logger.printfln("GD Firmware successfuly uploaded for future flashing. (converted %d bytes hex to %d bytes bin)", complete_length, state.totalBytesOut);
+            //request.send(200, "text/plain", "GD Firmware with +state.totalBytesOut+ bytes uploaded for future flashing."); //TODO
+
+            // Clean up
+            free(state.inputGlueBuf);
+            free(state.binOutput);
+
+            if (!firmware_update_allowed) {
+                logger.printfln("It is a bad idea to flash the GD firmware while a vehicle is connected.");
+                request.send(423, "text/plain", "vehicle connected");
+                this->firmware_update_running = false;
+                return false;
+            }
+
+            task_scheduler.scheduleOnce([this](){
+                    logger.printfln("Initiating GD flashing by putting GD chip into boot mode");
+                    this->firmware_update_running = true;
+                    RemoteUpdate[7] = 5; // Reset into boot mode
+                    FlashBuffer[7] = 3; // flash write (3=write, 4=verify)
+                    GD_boot_mode_requested = true;
+                    sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++, false);
+            }, 2000);
         }
         return true;
-    }
-
-    static size_t total_written = 0;
-    auto written = GD_firmware_file.write(data, chunk_length);
-    if (written != chunk_length) {
-        logger.printfln("Failed to write update chunk with chunk_length %u; written %u, abort.", chunk_length, written);
-        //request.send(400, "text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
-        request.send(400, "text/plain", "Failed to write update, aborted.");
-        //this->firmware_update_running = false;
-        total_written = 0;
-        GD_firmware_file.close();
-        if (LittleFS.exists(GD_FIRMWARE_FILE_NAME)) { LittleFS.remove(GD_FIRMWARE_FILE_NAME); }
-        return false;
-    }
-    else {
-        total_written += written;
-        //data[chunk_length-1] = 0;
-        //logger.printfln("total_written: %d, chunk chunk_length: %d, txt: %s", total_written, chunk_length, data);
-    }
-
-    if (final) {
-        GD_firmware_file.close();
-        logger.printfln("GD Firmware with %d bytes uploaded for future flashing.", total_written);
-        total_written = 0;
-
-        if (!firmware_update_allowed) {
-            logger.printfln("It is a bad idea to flash the GD firmware while a vehicle is connected.");
-            request.send(423, "text/plain", "vehicle connected");
-            this->firmware_update_running = false;
+    } else {
+        static size_t total_written = 0;
+        auto written = GD_firmware_file.write(data, chunk_length);
+        if (written != chunk_length) {
+            logger.printfln("Failed to write update chunk with chunk_length %u; written %u, abort.", chunk_length, written);
+            //request.send(400, "text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
+            request.send(400, "text/plain", "Failed to write update, aborted.");
+            //this->firmware_update_running = false;
+            total_written = 0;
+            GD_firmware_file.close();
+            if (LittleFS.exists(GD_FIRMWARE_FILE_NAME)) { LittleFS.remove(GD_FIRMWARE_FILE_NAME); }
             return false;
         }
+        else {
+            total_written += written;
+            //data[chunk_length-1] = 0;
+            //logger.printfln("total_written: %d, chunk chunk_length: %d, txt: %s", total_written, chunk_length, data);
+        }
 
-        task_scheduler.scheduleOnce([this](){
-            logger.printfln("Initiating GD flashing by putting GD chip into boot mode");
-            this->firmware_update_running = true;
-            RemoteUpdate[7] = 5; // Reset into boot mode
-            FlashBuffer[7] = 3; // flash write (3=write, 4=verify)
-            GD_boot_mode_requested = true;
-            sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++, false);
-        }, 2000);
+        if (final) {
+            GD_firmware_file.close();
+            logger.printfln("GD Firmware successfuly uploaded for future flashing. (%d bytes)", total_written);
+            //request.send(200, "text/plain", "GD Firmware with +total_written+ bytes uploaded for future flashing."); //TODO
+            total_written = 0;
 
-        /* //logger.printfln("Failed to apply update: %s", Update.errorString()); */
-        /* logger.printfln("Failed to apply update: %s", "Update.errorString()"); */
-        /* //request.send(400, "text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str()); */
-        /* request.send(400, "text/plain", (String("Failed to apply update: ") + "Update.errorString()").c_str()); */
-        /* this->firmware_update_running = false; */
-        /* //Update.abort(); */
-        /* return false; */
+            if (!firmware_update_allowed) {
+                logger.printfln("It is a bad idea to flash the GD firmware while a vehicle is connected.");
+                request.send(423, "text/plain", "vehicle connected");
+                this->firmware_update_running = false;
+                return false;
+            }
+
+            task_scheduler.scheduleOnce([this](){
+                    logger.printfln("Initiating GD flashing by putting GD chip into boot mode");
+                    this->firmware_update_running = true;
+                    RemoteUpdate[7] = 5; // Reset into boot mode
+                    FlashBuffer[7] = 3; // flash write (3=write, 4=verify)
+                    GD_boot_mode_requested = true;
+                    sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++, false);
+            }, 2000);
+
+            /* //logger.printfln("Failed to apply update: %s", Update.errorString()); */
+            /* logger.printfln("Failed to apply update: %s", "Update.errorString()"); */
+            /* //request.send(400, "text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str()); */
+            /* request.send(400, "text/plain", (String("Failed to apply update: ") + "Update.errorString()").c_str()); */
+            /* this->firmware_update_running = false; */
+            /* //Update.abort(); */
+            /* return false; */
+        }
     }
-
     return true;
 }
 
