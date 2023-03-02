@@ -6,7 +6,7 @@
             "em_debug": "Debug"
         },
         "content": {
-            "em_debug": "Energy Manager Debug",
+            "em_debug": "Energy Manager-Debug",
             "protocol": "Energy Manager-Protokoll",
             "debug_description": "Protokoll erstellen",
             "debug_description_muted": "zur Diagnose bei Problemen",
@@ -21,7 +21,7 @@
             "contactor_check_ok": "Keine Störung erkannt",
             "contactor_check_fail": "Störung erkannt",
             "state_led": "LED",
-            "state_led_names": "Rot, Grün, Blau",
+            "state_led_names": "rot, grün, blau",
             "gpios": "Ein-/Ausgänge",
             "gpio_names_0": "Eingang 3, Eingang 4, Ausgang",
             "state_input_voltage": "Eingangsspannung",

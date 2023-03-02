@@ -13,7 +13,7 @@
             "debug_start": "Start",
             "debug_stop": "Stop + Download",
 
-            "low_level_state": "Low-level state",
+            "low_level_state": "Low level state",
             "contactor_control": "Contactor control",
             "contactor_off": "Contactor open (one phase active)",
             "contactor_on": "Contactor closed (three phases active)",
@@ -21,7 +21,7 @@
             "contactor_check_ok": "No fault detected",
             "contactor_check_fail": "Fault detected",
             "state_led": "LED",
-            "state_led_names": "Red, Green, Blue",
+            "state_led_names": "red, green, blue",
             "gpios": "Inputs/Outputs",
             "gpio_names_0": "Input 3, Input 4, Output",
             "state_input_voltage": "Input voltage",

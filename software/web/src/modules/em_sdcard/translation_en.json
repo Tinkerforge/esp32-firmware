@@ -1,10 +1,10 @@
 {
     "em_sdcard": {
         "navbar": {
-            "em_sdcard": "SD card"
+            "em_sdcard": "SD Card"
         },
         "content": {
-            "header": "Energy Manager SD card",
+            "header": "Energy Manager SD Card",
 
             "manufacturer_id": "Manufacturer ID",
             "product_name": "Product code",
