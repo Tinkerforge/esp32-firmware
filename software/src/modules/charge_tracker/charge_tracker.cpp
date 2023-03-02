@@ -657,6 +657,8 @@ void ChargeTracker::register_urls()
                         charge_records = 0;
                         first_file = -1;
                         first_charge = -1;
+                        charged_sum = 0;
+                        charged_cost_sum = 0;
                         continue;
                     }
 
