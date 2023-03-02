@@ -238,7 +238,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                     <FormRow label={__("energy_manager.content.contactor_installed")}>
                         <Switch desc={__("energy_manager.content.contactor_installed_desc")}
                                 checked={s.contactor_installed}
-                                onClick={() => this.setState({contactor_installed: !this.state.contactor_installed, input3_rule_then: this.state.contactor_installed ? this.state.input3_rule_then : 1})}/>
+                                onClick={() => this.setState({contactor_installed: !this.state.contactor_installed, input4_rule_then: this.state.contactor_installed ? this.state.input4_rule_then : 1})}/>
                     </FormRow>
 
                     <FormRow label={__("energy_manager.content.phase_switching_mode")}>
