@@ -135,7 +135,7 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, ssid, stag
         if not 0.2 < sps < 2.5:
             fatal_error("Expected between 0.2 and 2.5 energy meter samples per second, but got {}".format(sps))
         if len(samples) < 2:
-            fatal_error("Expected at least 10 samples but got {}".format(len(samples)))
+            fatal_error("Expected at least 2 samples but got {}".format(len(samples)))
 
         error_count = evse.get_energy_meter_errors()
         if any(x != 0 for x in error_count):
