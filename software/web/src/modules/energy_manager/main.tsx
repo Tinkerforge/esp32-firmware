@@ -330,18 +330,14 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                     <FormRow label={__("energy_manager.content.input3_rule_then")}>
                         <InputSelect
                             required
-                            items={s.contactor_installed ?
-                                [["1", __("energy_manager.content.contactor_check")]] :
-                                [
-                                    ["0", __("energy_manager.content.input_unused")],
-                                    ["2", __("energy_manager.content.block_charging")],
-                                    ["3", __("energy_manager.content.limit_max_current")],
-                                    ["4", __("energy_manager.content.input_switch_mode")],
-                                ]
-                            }
+                            items={[
+                                ["0", __("energy_manager.content.input_unused")],
+                                ["2", __("energy_manager.content.block_charging")],
+                                ["3", __("energy_manager.content.limit_max_current")],
+                                ["4", __("energy_manager.content.input_switch_mode")],
+                            ]}
                             value={s.input3_rule_then}
-                            onValue={(v) => this.setState({input3_rule_then: parseInt(v)})}
-                            disabled={s.contactor_installed}/>
+                            onValue={(v) => this.setState({input3_rule_then: parseInt(v)})} />
                     </FormRow>
 
                     <Collapse in={s.input3_rule_then >= 2}>
@@ -402,7 +398,9 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                     <FormRow label={__("energy_manager.content.input4_rule_then")}>
                         <InputSelect
                             required
-                            items={[
+                            items={s.contactor_installed ? [
+                                    ["1", __("energy_manager.content.contactor_check")]
+                                ] : [
                                     ["0", __("energy_manager.content.input_unused")],
                                     ["2", __("energy_manager.content.block_charging")],
                                     ["3", __("energy_manager.content.limit_max_current")],
@@ -410,7 +408,8 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                 ]
                             }
                             value={s.input4_rule_then}
-                            onValue={(v) => this.setState({input4_rule_then: parseInt(v)})}/>
+                            onValue={(v) => this.setState({input4_rule_then: parseInt(v)})}
+                            disabled={s.contactor_installed} />
                     </FormRow>
 
                     <Collapse in={s.input4_rule_then >= 2}>
