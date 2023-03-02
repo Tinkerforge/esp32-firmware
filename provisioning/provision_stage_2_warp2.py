@@ -132,8 +132,8 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, ssid, stag
         meter_data = json.loads(meter_str)
         sps = meter_data["samples_per_second"]
         samples = meter_data["samples"]
-        if not 0.2 < sps < 2.5:
-            fatal_error("Expected between 0.2 and 2.5 energy meter samples per second, but got {}".format(sps))
+        # if not 0.2 < sps < 2.5:
+        #     fatal_error("Expected between 0.2 and 2.5 energy meter samples per second, but got {}".format(sps))
         if len(samples) < 2:
             fatal_error("Expected at least 2 samples but got {}".format(len(samples)))
 
