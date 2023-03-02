@@ -154,6 +154,16 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         });
     }
 
+    override async sendSave(t: "energy_manager/config", cfg: API.getType['energy_manager/config']) {
+        if (this.state.debug_mode) {
+            await API.save('energy_manager/debug_config', {
+                    hysteresis_time: this.state.hysteresis_time,
+                    target_power_from_grid: this.state.target_power_from_grid
+                }, __("energy_manager.script.save_failed"));
+        }
+        await super.sendSave(t, cfg);
+    }
+
     render(props: {}, s: Readonly<API.getType['energy_manager/config'] & DebugMode & API.getType['energy_manager/debug_config']>) {
         if (!util.allow_render || !API.get("info/modules").energy_manager)
             return <></>
