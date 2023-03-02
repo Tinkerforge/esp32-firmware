@@ -262,9 +262,8 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                     <FormRow label={__("energy_manager.content.relay_config")}>
                         <InputSelect
                             items={[
-                                    ["0", __("energy_manager.content.relay_unused")],
+                                    ["0", __("energy_manager.content.relay_manual")],
                                     ["1", __("energy_manager.content.relay_rules")],
-                                    ["2", __("energy_manager.content.extern")],
                                 ]}
                             value={s.relay_config}
                             onValue={(v) => this.setState({relay_config: parseInt(v)})}/>

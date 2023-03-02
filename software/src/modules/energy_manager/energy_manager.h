@@ -38,9 +38,8 @@
 #define PHASE_SWITCHING_ALWAYS_1PHASE   1
 #define PHASE_SWITCHING_ALWAYS_3PHASE   2
 
-#define RELAY_CONFIG_DISABLED           0
+#define RELAY_CONFIG_MANUAL             0
 #define RELAY_CONFIG_RULE_BASED         1
-#define RELAY_CONFIG_EXTERNAL           2
 
 #define RELAY_CONFIG_WHEN_INPUT3          0
 #define RELAY_CONFIG_WHEN_INPUT4          1

@@ -122,16 +122,10 @@ OutputRelay::OutputRelay(const ConfigRoot &conf)
                     ref_val = -1;
             }
             break;
-        case RELAY_CONFIG_DISABLED:
-            energy_manager.set_output(false);
-            // update_func already set to nop.
-            input_val = nullptr;
-            ref_val = -1;
-            break;
         default:
             logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG type %u", relay_conf_func);
             /* FALLTHROUGH */
-        case RELAY_CONFIG_EXTERNAL:
+        case RELAY_CONFIG_MANUAL:
             // update_func already set to nop.
             input_val = nullptr;
             ref_val = -1;
