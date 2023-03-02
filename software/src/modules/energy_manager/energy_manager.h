@@ -101,6 +101,7 @@ typedef struct {
     bool output;
     uint16_t voltage;
     uint8_t contactor_check_state;
+    uint32_t uptime;
 } EnergyManagerAllData;
 
 struct sdcard_info {

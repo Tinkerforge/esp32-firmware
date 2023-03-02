@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-02-10.      *
+ * This file was automatically generated on 2023-03-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -166,24 +166,29 @@ int tf_warp_energy_manager_get_response_expected(TF_WARPEnergyManager *warp_ener
                 *ret_response_expected = (warp_energy_manager->response_expected[0] & (1 << 2)) != 0;
             }
             break;
-        case TF_WARP_ENERGY_MANAGER_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_WARP_ENERGY_MANAGER_FUNCTION_SET_DATE_TIME:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (warp_energy_manager->response_expected[0] & (1 << 3)) != 0;
             }
             break;
-        case TF_WARP_ENERGY_MANAGER_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_WARP_ENERGY_MANAGER_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (warp_energy_manager->response_expected[0] & (1 << 4)) != 0;
             }
             break;
-        case TF_WARP_ENERGY_MANAGER_FUNCTION_RESET:
+        case TF_WARP_ENERGY_MANAGER_FUNCTION_SET_STATUS_LED_CONFIG:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (warp_energy_manager->response_expected[0] & (1 << 5)) != 0;
             }
             break;
-        case TF_WARP_ENERGY_MANAGER_FUNCTION_WRITE_UID:
+        case TF_WARP_ENERGY_MANAGER_FUNCTION_RESET:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (warp_energy_manager->response_expected[0] & (1 << 6)) != 0;
+            }
+            break;
+        case TF_WARP_ENERGY_MANAGER_FUNCTION_WRITE_UID:
+            if (ret_response_expected != NULL) {
+                *ret_response_expected = (warp_energy_manager->response_expected[0] & (1 << 7)) != 0;
             }
             break;
         default:
@@ -224,32 +229,39 @@ int tf_warp_energy_manager_set_response_expected(TF_WARPEnergyManager *warp_ener
                 warp_energy_manager->response_expected[0] &= ~(1 << 2);
             }
             break;
-        case TF_WARP_ENERGY_MANAGER_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_WARP_ENERGY_MANAGER_FUNCTION_SET_DATE_TIME:
             if (response_expected) {
                 warp_energy_manager->response_expected[0] |= (1 << 3);
             } else {
                 warp_energy_manager->response_expected[0] &= ~(1 << 3);
             }
             break;
-        case TF_WARP_ENERGY_MANAGER_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_WARP_ENERGY_MANAGER_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (response_expected) {
                 warp_energy_manager->response_expected[0] |= (1 << 4);
             } else {
                 warp_energy_manager->response_expected[0] &= ~(1 << 4);
             }
             break;
-        case TF_WARP_ENERGY_MANAGER_FUNCTION_RESET:
+        case TF_WARP_ENERGY_MANAGER_FUNCTION_SET_STATUS_LED_CONFIG:
             if (response_expected) {
                 warp_energy_manager->response_expected[0] |= (1 << 5);
             } else {
                 warp_energy_manager->response_expected[0] &= ~(1 << 5);
             }
             break;
-        case TF_WARP_ENERGY_MANAGER_FUNCTION_WRITE_UID:
+        case TF_WARP_ENERGY_MANAGER_FUNCTION_RESET:
             if (response_expected) {
                 warp_energy_manager->response_expected[0] |= (1 << 6);
             } else {
                 warp_energy_manager->response_expected[0] &= ~(1 << 6);
+            }
+            break;
+        case TF_WARP_ENERGY_MANAGER_FUNCTION_WRITE_UID:
+            if (response_expected) {
+                warp_energy_manager->response_expected[0] |= (1 << 7);
+            } else {
+                warp_energy_manager->response_expected[0] &= ~(1 << 7);
             }
             break;
         default:
@@ -988,7 +1000,66 @@ int tf_warp_energy_manager_get_state(TF_WARPEnergyManager *warp_energy_manager, 
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_warp_energy_manager_get_all_data_1(TF_WARPEnergyManager *warp_energy_manager, bool *ret_contactor_value, uint8_t *ret_r, uint8_t *ret_g, uint8_t *ret_b, float *ret_power, float *ret_energy_import, float *ret_energy_export, uint8_t *ret_energy_meter_type, uint32_t ret_error_count[6], bool ret_input[2], bool *ret_output, uint16_t *ret_voltage, uint8_t *ret_contactor_check_state) {
+int tf_warp_energy_manager_get_uptime(TF_WARPEnergyManager *warp_energy_manager, uint32_t *ret_uptime) {
+    if (warp_energy_manager == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_UPTIME, 0, _response_expected);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 4) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uptime != NULL) { *ret_uptime = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
+        tf_tfp_packet_processed(warp_energy_manager->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 4) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_warp_energy_manager_get_all_data_1(TF_WARPEnergyManager *warp_energy_manager, bool *ret_contactor_value, uint8_t *ret_r, uint8_t *ret_g, uint8_t *ret_b, float *ret_power, float *ret_energy_import, float *ret_energy_export, uint8_t *ret_energy_meter_type, uint32_t ret_error_count[6], bool ret_input[2], bool *ret_output, uint16_t *ret_voltage, uint8_t *ret_contactor_check_state, uint32_t *ret_uptime) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
     }
@@ -1020,7 +1091,7 @@ int tf_warp_energy_manager_get_all_data_1(TF_WARPEnergyManager *warp_energy_mana
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (_error_code != 0 || _length != 46) {
+        if (_error_code != 0 || _length != 50) {
             tf_packet_buffer_remove(_recv_buf, _length);
         } else {
             if (ret_contactor_value != NULL) { *ret_contactor_value = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
@@ -1036,6 +1107,7 @@ int tf_warp_energy_manager_get_all_data_1(TF_WARPEnergyManager *warp_energy_mana
             if (ret_output != NULL) { *ret_output = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_voltage != NULL) { *ret_voltage = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
             if (ret_contactor_check_state != NULL) { *ret_contactor_check_state = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_uptime != NULL) { *ret_uptime = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
@@ -1049,7 +1121,7 @@ int tf_warp_energy_manager_get_all_data_1(TF_WARPEnergyManager *warp_energy_mana
 
     _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (_error_code == 0 && _length != 46) {
+    if (_error_code == 0 && _length != 50) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
@@ -1127,7 +1199,7 @@ int tf_warp_energy_manager_get_sd_information(TF_WARPEnergyManager *warp_energy_
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_warp_energy_manager_set_sd_wallbox_data_point(TF_WARPEnergyManager *warp_energy_manager, uint8_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status) {
+int tf_warp_energy_manager_set_sd_wallbox_data_point(TF_WARPEnergyManager *warp_energy_manager, uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
     }
@@ -1143,18 +1215,18 @@ int tf_warp_energy_manager_set_sd_wallbox_data_point(TF_WARPEnergyManager *warp_
     }
 
     bool _response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_SD_WALLBOX_DATA_POINT, 9, _response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_SD_WALLBOX_DATA_POINT, 12, _response_expected);
 
     uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    _send_buf[0] = (uint8_t)wallbox_id;
-    _send_buf[1] = (uint8_t)year;
-    _send_buf[2] = (uint8_t)month;
-    _send_buf[3] = (uint8_t)day;
-    _send_buf[4] = (uint8_t)hour;
-    _send_buf[5] = (uint8_t)minute;
-    _send_buf[6] = (uint8_t)flags;
-    power = tf_leconvert_uint16_to(power); memcpy(_send_buf + 7, &power, 2);
+    wallbox_id = tf_leconvert_uint32_to(wallbox_id); memcpy(_send_buf + 0, &wallbox_id, 4);
+    _send_buf[4] = (uint8_t)year;
+    _send_buf[5] = (uint8_t)month;
+    _send_buf[6] = (uint8_t)day;
+    _send_buf[7] = (uint8_t)hour;
+    _send_buf[8] = (uint8_t)minute;
+    _send_buf[9] = (uint8_t)flags;
+    power = tf_leconvert_uint16_to(power); memcpy(_send_buf + 10, &power, 2);
 
     uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
@@ -1197,7 +1269,7 @@ int tf_warp_energy_manager_set_sd_wallbox_data_point(TF_WARPEnergyManager *warp_
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_warp_energy_manager_get_sd_wallbox_data_points(TF_WARPEnergyManager *warp_energy_manager, uint8_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status) {
+int tf_warp_energy_manager_get_sd_wallbox_data_points(TF_WARPEnergyManager *warp_energy_manager, uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
     }
@@ -1213,17 +1285,17 @@ int tf_warp_energy_manager_get_sd_wallbox_data_points(TF_WARPEnergyManager *warp
     }
 
     bool _response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_SD_WALLBOX_DATA_POINTS, 8, _response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_SD_WALLBOX_DATA_POINTS, 11, _response_expected);
 
     uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    _send_buf[0] = (uint8_t)wallbox_id;
-    _send_buf[1] = (uint8_t)year;
-    _send_buf[2] = (uint8_t)month;
-    _send_buf[3] = (uint8_t)day;
-    _send_buf[4] = (uint8_t)hour;
-    _send_buf[5] = (uint8_t)minute;
-    amount = tf_leconvert_uint16_to(amount); memcpy(_send_buf + 6, &amount, 2);
+    wallbox_id = tf_leconvert_uint32_to(wallbox_id); memcpy(_send_buf + 0, &wallbox_id, 4);
+    _send_buf[4] = (uint8_t)year;
+    _send_buf[5] = (uint8_t)month;
+    _send_buf[6] = (uint8_t)day;
+    _send_buf[7] = (uint8_t)hour;
+    _send_buf[8] = (uint8_t)minute;
+    amount = tf_leconvert_uint16_to(amount); memcpy(_send_buf + 9, &amount, 2);
 
     uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
@@ -1266,7 +1338,7 @@ int tf_warp_energy_manager_get_sd_wallbox_data_points(TF_WARPEnergyManager *warp
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_warp_energy_manager_set_sd_wallbox_daily_data_point(TF_WARPEnergyManager *warp_energy_manager, uint8_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint32_t energy, uint8_t *ret_status) {
+int tf_warp_energy_manager_set_sd_wallbox_daily_data_point(TF_WARPEnergyManager *warp_energy_manager, uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint32_t energy, uint8_t *ret_status) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
     }
@@ -1282,15 +1354,15 @@ int tf_warp_energy_manager_set_sd_wallbox_daily_data_point(TF_WARPEnergyManager 
     }
 
     bool _response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_SD_WALLBOX_DAILY_DATA_POINT, 8, _response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_SD_WALLBOX_DAILY_DATA_POINT, 11, _response_expected);
 
     uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    _send_buf[0] = (uint8_t)wallbox_id;
-    _send_buf[1] = (uint8_t)year;
-    _send_buf[2] = (uint8_t)month;
-    _send_buf[3] = (uint8_t)day;
-    energy = tf_leconvert_uint32_to(energy); memcpy(_send_buf + 4, &energy, 4);
+    wallbox_id = tf_leconvert_uint32_to(wallbox_id); memcpy(_send_buf + 0, &wallbox_id, 4);
+    _send_buf[4] = (uint8_t)year;
+    _send_buf[5] = (uint8_t)month;
+    _send_buf[6] = (uint8_t)day;
+    energy = tf_leconvert_uint32_to(energy); memcpy(_send_buf + 7, &energy, 4);
 
     uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
@@ -1333,7 +1405,7 @@ int tf_warp_energy_manager_set_sd_wallbox_daily_data_point(TF_WARPEnergyManager 
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_warp_energy_manager_get_sd_wallbox_daily_data_points(TF_WARPEnergyManager *warp_energy_manager, uint8_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status) {
+int tf_warp_energy_manager_get_sd_wallbox_daily_data_points(TF_WARPEnergyManager *warp_energy_manager, uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
     }
@@ -1349,15 +1421,15 @@ int tf_warp_energy_manager_get_sd_wallbox_daily_data_points(TF_WARPEnergyManager
     }
 
     bool _response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_SD_WALLBOX_DAILY_DATA_POINTS, 5, _response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_SD_WALLBOX_DAILY_DATA_POINTS, 8, _response_expected);
 
     uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    _send_buf[0] = (uint8_t)wallbox_id;
-    _send_buf[1] = (uint8_t)year;
-    _send_buf[2] = (uint8_t)month;
-    _send_buf[3] = (uint8_t)day;
-    _send_buf[4] = (uint8_t)amount;
+    wallbox_id = tf_leconvert_uint32_to(wallbox_id); memcpy(_send_buf + 0, &wallbox_id, 4);
+    _send_buf[4] = (uint8_t)year;
+    _send_buf[5] = (uint8_t)month;
+    _send_buf[6] = (uint8_t)day;
+    _send_buf[7] = (uint8_t)amount;
 
     uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
@@ -1728,6 +1800,135 @@ int tf_warp_energy_manager_format_sd(TF_WARPEnergyManager *warp_energy_manager, 
     _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_warp_energy_manager_set_date_time(TF_WARPEnergyManager *warp_energy_manager, uint8_t seconds, uint8_t minutes, uint8_t hours, uint8_t days, uint8_t days_of_week, uint8_t month, uint16_t year) {
+    if (warp_energy_manager == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_DATE_TIME, &_response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_DATE_TIME, 8, _response_expected);
+
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
+
+    _send_buf[0] = (uint8_t)seconds;
+    _send_buf[1] = (uint8_t)minutes;
+    _send_buf[2] = (uint8_t)hours;
+    _send_buf[3] = (uint8_t)days;
+    _send_buf[4] = (uint8_t)days_of_week;
+    _send_buf[5] = (uint8_t)month;
+    year = tf_leconvert_uint16_to(year); memcpy(_send_buf + 6, &year, 2);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(warp_energy_manager->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_warp_energy_manager_get_date_time(TF_WARPEnergyManager *warp_energy_manager, uint8_t *ret_seconds, uint8_t *ret_minutes, uint8_t *ret_hours, uint8_t *ret_days, uint8_t *ret_days_of_week, uint8_t *ret_month, uint16_t *ret_year) {
+    if (warp_energy_manager == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_DATE_TIME, 0, _response_expected);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 8) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_seconds != NULL) { *ret_seconds = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_minutes != NULL) { *ret_minutes = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_hours != NULL) { *ret_hours = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_days != NULL) { *ret_days = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_days_of_week != NULL) { *ret_days_of_week = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_month != NULL) { *ret_month = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_year != NULL) { *ret_year = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
+        tf_tfp_packet_processed(warp_energy_manager->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 8) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 

@@ -46,6 +46,7 @@ void EnergyManager::pre_setup()
         {"led_rgb", Config::Array({Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)},
             new Config{Config::Uint8(0)}, 3, 3, Config::type_id<Config::ConfUint>())
         },
+        {"uptime", Config::Uint32(0)},
     });
     meter_state = Config::Object({
         {"energy_meter_type", Config::Uint8(0)},
@@ -345,6 +346,7 @@ void EnergyManager::update_all_data()
     state.get("relay_state")->updateBool(all_data.output);
     low_level_state.get("input_voltage")->updateUint(all_data.voltage);
     low_level_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
+    low_level_state.get("uptime")->updateUint(all_data.uptime);
 
     if (all_data.energy_meter_type != METER_TYPE_NONE) {
         meter_state.get("energy_meter_type")->updateUint(all_data.energy_meter_type);
@@ -385,7 +387,8 @@ void EnergyManager::update_all_data_struct()
         all_data.input,
         &all_data.output,
         &all_data.voltage,
-        &all_data.contactor_check_state
+        &all_data.contactor_check_state,
+        &all_data.uptime
     );
 
     check_bricklet_reachable(rc);
