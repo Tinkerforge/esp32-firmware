@@ -611,17 +611,7 @@ def main(stage3):
     try:
         if qr_variant != "B":
             browser = webdriver.Firefox()
-            browser.get("http://{}".format(ssid))
-
-            element = WebDriverWait(browser, 10).until(
-                EC.element_to_be_clickable((By.ID, "sidebar-evse-group"))
-            )
-            element.click()
-
-            element = WebDriverWait(browser, 10).until(
-                EC.element_to_be_clickable((By.ID, "sidebar-evse"))
-            )
-            element.click()
+            browser.get("http://{}/#evse".format(ssid))
 
         print("Performing the electrical tests")
         stage3.test_wallbox()
