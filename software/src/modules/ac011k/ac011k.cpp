@@ -1716,6 +1716,18 @@ void AC011K::loop()
 void AC011K::register_urls()
 {
     evse.register_urls();
+
+    api.addCommand("evse/reset", Config::Null() , {}, [this](){
+        if (evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_A) {
+                logger.printfln("OK, I'll try to get the GD chip into app mode.");
+                GD_boot_mode_requested = true;
+                // This maybe shoud do both, boot mode -> app mode, but new flashing does that, so idk.
+                //RemoteUpdate[7] = 5; // Reset GD into boot mode
+                //sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++);
+                sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++);
+        }
+    }, true);
+
     server.on("/evse/reflash", HTTP_PUT, [this](WebServerRequest request){
         if (update_aborted)
             return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
