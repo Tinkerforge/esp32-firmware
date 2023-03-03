@@ -16,7 +16,7 @@
             "gd_firmware_update_label": "GD Firmware-Aktualisierung",
             "gd_firmware_update_desc": "<a href=\"{{{firmware_url}}}\">Firmware-Download</a>",
             "browse": "Durchsuchen",
-            "select_file": "warpAC011K_firmware_X_Y_Z_merged.bin",
+            "select_file": "warpAC011K_firmware_X_Y_Z_hextime_merged.bin",
             "gd_select_file": "AC011K-AE-25_V1.2.460.hex oder AC011K-AE-25_V1.2.460.bin",
             "update": "Hochladen",
             "current_spiffs": "Konfigurationsversion",

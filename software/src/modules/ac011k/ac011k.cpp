@@ -1947,7 +1947,16 @@ void AC011K::register_urls()
     },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
         //const char GD_intel_hex_firmware_identifier[] = "AC011K-"; //this does not work, it should have been the same as the line below, but isn't
         const char GD_intel_hex_firmware_identifier[] = {0x41, 0x43, 0x30, 0x31, 0x31, 0x4B, 0x2D};
-        const char GD_bin_firmware_identifier[] = {0x68, 0x16, 0x00, 0x20, 0x1d, 0x25, 0x00, 0x08,0x3b, 0x0e, 0x00, 0x08, 0x3d, 0x0e, 0x00, 0x08};
+        const char GD_bin_firmware_identifier[] = {
+            // the following sequence is in all known GD firmwares so far (2023-3-3)
+            // :1001500000F002F800F03AF80AA090E8000C82449F
+            // :100160008344AAF10107DA4501D100F02FF8AFF27C
+            // :10017000090EBAE80F0013F0010F18BFFB1A43F085
+            0x00, 0xf0, 0x02, 0xf8, 0x00, 0xf0, 0x3a, 0xf8, 0x0a, 0xa0, 0x90, 0xe8,
+            0x00, 0x0c, 0x82, 0x44, 0x83, 0x44, 0xaa, 0xf1, 0x01, 0x07, 0xda, 0x45,
+            0x01, 0xd1, 0x00, 0xf0, 0x2f, 0xf8, 0xaf, 0xf2, 0x09, 0x0e, 0xba, 0xe8,
+            0x0f, 0x00, 0x13, 0xf0, 0x01, 0x0f, 0x18, 0xbf, 0xfb, 0x1a, 0x43, 0xf0
+        };
         if (len < max(sizeof(GD_intel_hex_firmware_identifier), sizeof(GD_bin_firmware_identifier))) {
             logger.printfln("This is too small for a GD firmware.");
             request.send(400, "text/plain", "This is not a GD firmware. Too small.");
@@ -1963,7 +1972,9 @@ void AC011K::register_urls()
                 update_aborted = false;
                 convert_intel_hex_to_bin = true;
             } else {
-                if (memcmp(data, GD_bin_firmware_identifier, sizeof(GD_bin_firmware_identifier)) == 0) {
+                ptr = memmem(data, len, GD_bin_firmware_identifier, sizeof(GD_intel_hex_firmware_identifier));
+                if (ptr != NULL) {
+                //if (memcmp(data, GD_bin_firmware_identifier, sizeof(GD_bin_firmware_identifier)) == 0) {
                     logger.printfln("Binary GD firmware found.");
                     update_aborted = false;
                     convert_intel_hex_to_bin = false;
