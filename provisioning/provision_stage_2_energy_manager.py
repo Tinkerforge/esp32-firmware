@@ -319,9 +319,15 @@ class EnergyManagerTester:
 
         result = subprocess.check_output(arguments)
         if result == b'':
-            print(' ... WEM label OK')
+            print(' ... WEM label 1 OK')
         else:
-            self.fatal_error(" ... WEM label FAILED!")
+            self.fatal_error(" ... WEM label 1 FAILED!")
+
+        result = subprocess.check_output(arguments)
+        if result == b'':
+            print(' ... WEM label 2 OK')
+        else:
+            self.fatal_error(" ... WEM label 1 FAILED!")
 
         arguments = [
             os.path.join(WARP_CHARGER_GIT_PATH, 'label', 'print-package2-label.py'),
