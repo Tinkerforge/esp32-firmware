@@ -371,8 +371,9 @@ class EnergyManagerTester:
 
 if __name__ == "__main__":
     try:
-        emt = EnergyManagerTester()
-        emt.test_all()
+        while True:
+            emt = EnergyManagerTester()
+            emt.test_all()
     except FatalError:
         sys.exit(1)
     except Exception as e:
