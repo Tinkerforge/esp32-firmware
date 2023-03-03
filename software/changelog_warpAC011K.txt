@@ -63,3 +63,17 @@
 2022-12-17: 2.0.11 (<unknown>)
 - Step up
 
+2023-03-04: 2.0.12 (<unknown>)
+- GD firmware flashing via Web UI
+- Add GD-firmware-downloader.sh to be able to build with embedded GD firmware
+- Add RealTimeClock support
+- Persist energy meter values
+- Add propper NFC/RFID tag support
+- Config reset via microswitch SW3
+- Make slots work just like on the original firmware
+- Lots of documentation
+- Lots of code clean up
+- Lots of upstream bug fixes
+- Improve logging (less clutter, more info)
+- Add git hash to filename of intermediate builds
+
