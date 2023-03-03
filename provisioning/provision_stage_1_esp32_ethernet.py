@@ -74,7 +74,6 @@ def main():
     with wifi(ssid, passphrase):
         req = urllib.request.Request("http://10.0.0.1/ethernet/config_update",
                                      data=json.dumps({"enable_ethernet":True,
-                                                      "hostname":ssid,
                                                       "ip": "192.168.123.123",
                                                       "gateway":"0.0.0.0",
                                                       "subnet":"255.255.0.0",
@@ -103,7 +102,6 @@ def main():
         start = time.time()
         req = urllib.request.Request("http://192.168.123.123/ethernet/config_update",
                                  data=json.dumps({"enable_ethernet":True,
-                                                  "hostname":ssid,
                                                   "ip":"0.0.0.0",
                                                   "gateway":"0.0.0.0",
                                                   "subnet":"0.0.0.0",
