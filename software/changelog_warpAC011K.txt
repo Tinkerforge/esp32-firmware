@@ -63,7 +63,7 @@
 2022-12-17: 2.0.11 (<unknown>)
 - Step up
 
-2023-03-04: 2.0.12 (<unknown>)
+2023-03-04: 2.0.12 (5cb32453)
 - GD firmware flashing via Web UI
 - Add GD-firmware-downloader.sh to be able to build with embedded GD firmware
 - Add RealTimeClock support
