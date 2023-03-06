@@ -76,21 +76,19 @@ void TaskScheduler::loop()
 {
     std::unique_ptr<Task> task;
 
-    this->task_mutex.lock();
+    {
+        std::lock_guard<std::mutex> l{this->task_mutex};
         if(tasks.empty()) {
-            this->task_mutex.unlock();
-            return;
-        }
-        const auto &task_ptr = tasks.top();
-
-        if(!deadline_elapsed(task_ptr->next_deadline_ms)) {
-            this->task_mutex.unlock();
             return;
         }
 
-        task = std::unique_ptr<Task>(task_ptr);
+        if(!deadline_elapsed(tasks.top()->next_deadline_ms)) {
+            return;
+        }
+
+        task = std::unique_ptr<Task>(tasks.top());
         tasks.pop();
-    this->task_mutex.unlock();
+    }
 
     if (!task->fn) {
         logger.printfln("Invalid task");
