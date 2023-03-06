@@ -10,6 +10,7 @@
             "error_ok": "OK",
             "error_network": "Netzwerkfehler",
             "error_contactor": "Schützfehler",
+            "error_config": "Ungültige Konfiguration",
             "error_internal": "Interner Fehler"
         },
         "navbar": {

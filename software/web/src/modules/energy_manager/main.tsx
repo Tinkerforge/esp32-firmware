@@ -71,6 +71,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
         let error_flags_ok        = d.status.error_flags == 0;
         let error_flags_internal  = d.status.error_flags & 0xFF000000;
         let error_flags_contactor = d.status.error_flags & 0x00010000;
+        let error_flags_config    = d.status.error_flags & 0x00000004;
         let error_flags_network   = d.status.error_flags & 0x00000002;
 
         return <>
@@ -107,22 +108,22 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
             <FormRow label={__("energy_manager.status.status")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                 <ButtonGroup className="flex-wrap w-100">
                     <Button disabled
-                        key="13"
                         variant={(error_flags_ok ? "" : "outline-") + "success"}>
                         {__("energy_manager.status.error_ok")}
                     </Button>
                     <Button disabled
-                        key="42"
                         variant={(error_flags_network ? "" : "outline-") + "warning"}>
                         {__("energy_manager.status.error_network")}
                     </Button>
                     <Button disabled
-                        key="99"
+                        variant={(error_flags_config ? "" : "outline-") + "warning"}>
+                        {__("energy_manager.status.error_config")}
+                    </Button>
+                    <Button disabled
                         variant={(error_flags_contactor ? "" : "outline-") + "danger"}>
                         {__("energy_manager.status.error_contactor")}
                     </Button>
                     <Button disabled
-                        key="7"
                         variant={(error_flags_internal ? "" : "outline-") + "danger"}>
                         {__("energy_manager.status.error_internal")}
                     </Button>

@@ -243,9 +243,11 @@ void EnergyManager::setup()
 
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
     // Can't check for chargers in setup() because CM's setup() hasn't run yet to load the charger configuration.
-    task_scheduler.scheduleOnce([](){
-        if (!charge_manager.have_chargers())
+    task_scheduler.scheduleOnce([this](){
+        if (!charge_manager.have_chargers()) {
             logger.printfln("energy_manager: No chargers configured. Won't try to distribute energy.");
+            set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
+        }
     }, 0);
 #else
     logger.printfln("energy_manager: Module 'Charge Manager' not available. Disabling energy distribution.");
@@ -263,6 +265,13 @@ void EnergyManager::setup()
 
     if (config_in_use.get("auto_reset_mode")->asBool())
         start_auto_reset_task();
+
+    task_scheduler.scheduleOnce([this](){
+        if (excess_charging_enable && em_meter_config.config_in_use.get("meter_source")->asUint() == 0) {
+            set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
+            logger.printfln("energy_manager: Excess charging enabled but no meter configured.");
+        }
+    }, 0);
 }
 
 void EnergyManager::register_urls()
