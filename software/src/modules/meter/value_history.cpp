@@ -31,7 +31,7 @@ void ValueHistory::setup()
     for (int i = 0; i < history.size(); ++i) {
         //float f = 5000.0 * sin(PI/120.0 * i) + 5000.0;
         // Use negative state to mark that these are pre-filled.
-        history.push(-1);
+        history.push(INT16_MIN);
     }
 
 #if MODULE_WS_AVAILABLE()
@@ -127,7 +127,7 @@ void ValueHistory::add_sample(float sample)
             int16_t history_val;
 
             if (samples_this_interval == 0) {
-                history_val = -1; // TODO push 0 or -1 here? -1 will be translated into null when sending as json. However we document that there is only at most one block of null values at the start of the array indicating a reboot
+                history_val = INT16_MIN; // TODO push 0 or int16_t min here? int16_t min will be translated into null when sending as json. However we document that there is only at most one block of null values at the start of the array indicating a reboot
             } else {
                 float live_sum = 0;
                 int16_t live_val;
@@ -155,7 +155,7 @@ void ValueHistory::add_sample(float sample)
             int buf_written;
             const char *prefix = "{\"topic\":\"meter/history_samples\",\"payload\":{\"samples\":";
 
-            if (history_val < 0) {
+            if (history_val == INT16_MIN) {
                 buf_written = asprintf(&buf, "%s[null]}}\n", prefix);
             } else {
                 buf_written = asprintf(&buf, "%s[%d]}}\n", prefix, (int)history_val);
@@ -203,16 +203,16 @@ size_t ValueHistory::format_history(char *buf, size_t buf_size)
         buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[]}", offset);
     }
     else {
-        // Negative values are prefilled, because the ESP was booted less than 48 hours ago.
-        if (val < 0) {
+        // int16_t min values are prefilled, because the ESP was booted less than 48 hours ago.
+        if (val == INT16_MIN) {
             buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[%s", offset, "null");
         } else {
             buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[%d", offset, (int)val);
         }
 
         for (int i = 1; i < history.used() && history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
-            // Negative values are prefilled, because the ESP was booted less than 48 hours ago.
-            if (val < 0) {
+            // int16_t min values are prefilled, because the ESP was booted less than 48 hours ago.
+            if (val == INT16_MIN) {
                 buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", ",null");
             } else {
                 buf_written += snprintf(buf + buf_written, buf_size - buf_written, ",%d", (int)val);
