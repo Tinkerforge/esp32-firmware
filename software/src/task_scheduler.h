@@ -40,7 +40,7 @@ struct Task {
     Task(std::function<void(void)> fn, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once);
 };
 
-bool compare(const Task &a, const Task &b);
+bool compare(const Task *a, const Task *b);
 
 class TaskScheduler
 {
@@ -60,7 +60,7 @@ public:
 
 private:
     std::mutex task_mutex;
-    std::priority_queue<Task, std::vector<Task>, decltype(&compare)> tasks;
+    std::priority_queue<Task *, std::vector<Task *>, decltype(&compare)> tasks;
 };
 
 // Make global variable available everywhere because it is not declared in modules.h.
