@@ -13,7 +13,7 @@ export interface meter_state {
 }
 
 export interface state {
-    phase_switched: number,
+    phases_switched: number,
     error_flags: number,
     input3_state: boolean,
     input4_state: boolean,

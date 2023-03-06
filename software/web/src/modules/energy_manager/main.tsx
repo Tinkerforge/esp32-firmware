@@ -117,6 +117,14 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                     </Button>
                 </div>
             </FormRow>
+            <FormRow label={__("energy_manager.status.phase_switching")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <IndicatorGroup
+                    value={d.status.phases_switched == 1 ? 0 : d.status.phases_switched == 3 ? 1 : 42}
+                    items={[
+                        ["primary", __("energy_manager.status.one_phase")],
+                        ["primary", __("energy_manager.status.three_phase")],
+                    ]} />
+            </FormRow>
             <FormRow label={__("energy_manager.status.status")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                 <ButtonGroup className="flex-wrap w-100">
                     <Button disabled
