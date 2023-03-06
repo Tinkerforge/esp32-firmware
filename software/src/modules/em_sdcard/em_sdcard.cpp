@@ -39,6 +39,9 @@ void EMSDcard::pre_setup()
 
 void EMSDcard::setup()
 {
+    if (!energy_manager.initialized)
+        return;
+
     update_sdcard_info();
 
     task_scheduler.scheduleWithFixedDelay([this](){

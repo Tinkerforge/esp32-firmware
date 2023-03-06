@@ -385,9 +385,6 @@ void EnergyManager::update_all_data()
 
 void EnergyManager::update_all_data_struct()
 {
-    if (!device_found)
-        return;
-
     int rc = tf_warp_energy_manager_get_all_data_1(
         &device,
         &all_data.contactor_value,
@@ -816,9 +813,6 @@ void EnergyManager::update_energy()
 
 bool EnergyManager::get_sdcard_info(struct sdcard_info *data)
 {
-    if (!device_found)
-        return false;
-
     int rc = tf_warp_energy_manager_get_sd_information(
         &device,
         &data->sd_status,
@@ -850,9 +844,6 @@ bool EnergyManager::get_sdcard_info(struct sdcard_info *data)
 
 bool EnergyManager::format_sdcard()
 {
-    if (!device_found)
-        return false;
-
     uint8_t ret_format_status;
     int rc = tf_warp_energy_manager_format_sd(&device, 0x4223ABCD, &ret_format_status);
 
@@ -863,9 +854,6 @@ bool EnergyManager::format_sdcard()
 
 uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
 {
-    if (!device_found)
-        return 0;
-
     uint16_t len = 0;
     int rc = tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, &len);
 
@@ -876,9 +864,6 @@ uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
 
 void EnergyManager::set_output(bool output)
 {
-    if (!device_found)
-        return;
-
     int result = tf_warp_energy_manager_set_output(&device, output);
 
     // Don't check if bricklet is reachable because the setter call won't tell us.
@@ -889,9 +874,6 @@ void EnergyManager::set_output(bool output)
 
 void EnergyManager::set_rgb_led(uint8_t r, uint8_t g, uint8_t b)
 {
-    if (!device_found)
-        return;
-
     int rc = tf_warp_energy_manager_set_rgb_value(&device, r, g, b);
 
     // Don't check if bricklet is reachable because the setter call won't tell us.
