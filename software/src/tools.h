@@ -103,6 +103,20 @@ public:
 
 void list_dir(fs::FS &fs, const char * dirname, uint8_t depth, uint8_t current_depth = 0);
 
+template <typename T>
+T clamp(T min, T val, T max)
+{
+    if (val < min) {
+        return min;
+    }
+
+    if (val > max) {
+        return max;
+    }
+
+    return val;
+}
+
 // https://stackoverflow.com/a/42060129
 #ifndef defer
 struct defer_dummy {};
