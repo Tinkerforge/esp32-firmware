@@ -34,6 +34,8 @@
 // full green
 #define HUE_EXPORT   120
 // full magenta
+#define HUE_UNCONFIG 300
+// full magenta
 #define HUE_UNKNOWN  300
 
 // should be a power of 2
@@ -48,6 +50,7 @@ public:
         OK = 0,
         Warning = 1,
         Error = 2,
+        Unconfigured = 3,
     };
     enum class GridBalance {
         Export = 0,

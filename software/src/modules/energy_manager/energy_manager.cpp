@@ -143,12 +143,15 @@ void EnergyManager::setup()
     if (!device_found)
         return;
 
+    rgb_led.setup();
+
     // Forgets all settings when new setting is introduced: "Failed to restore persistent config config: JSON object is missing key 'input3_rule_then_limit'\nJSON object is missing key 'input4_rule_then_limit'"
     api.restorePersistentConfig("energy_manager/config", &config);
     config_in_use = config;
 
     if ((config_in_use.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !config_in_use.get("contactor_installed")->asBool()) {
         logger.printfln("energy_manager: Invalid configuration: Automatic phase switching selected but no contactor installed.");
+        rgb_led.set_status(EmRgbLed::Status::Unconfigured);
         return;
     }
 
@@ -165,8 +168,6 @@ void EnergyManager::setup()
 #endif
 
     update_all_data();
-
-    rgb_led.setup();
 
     // Set up output relay and input pins
     output = new OutputRelay(config_in_use);
@@ -236,6 +237,7 @@ void EnergyManager::setup()
 
     if (max_current_unlimited_ma == 0) {
         logger.printfln("energy_manager: No maximum current configured for chargers. Disabling energy distribution.");
+        rgb_led.set_status(EmRgbLed::Status::Unconfigured);
         return;
     }
 
@@ -247,6 +249,7 @@ void EnergyManager::setup()
     }, 0);
 #else
     logger.printfln("energy_manager: Module 'Charge Manager' not available. Disabling energy distribution.");
+    rgb_led.set_status(EmRgbLed::Status::Unconfigured);
     return;
 #endif
 
