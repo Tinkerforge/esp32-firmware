@@ -7,6 +7,8 @@ assignees: ''
 ---
 <!-- please alter/replace the text below to make your point clear -->
 
+<!-- Keine Scheu!  Auch komplett in deutsch ist OK.  Aber bitte mit logs. -->
+
 ## Describe the bug
 
 A clear and concise description of what the bug is.
