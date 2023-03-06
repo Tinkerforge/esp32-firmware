@@ -22,6 +22,8 @@
 //#include "bindings/errors.h"
 
 #include "api.h"
+#include "event_log.h"
+#include "modules.h"
 
 void EMMeterConfig::pre_setup()
 {
@@ -36,7 +38,9 @@ void EMMeterConfig::setup()
 
     config_in_use = config;
 
-    // config_in_use.get("meter_source")->asUint8()
+    if (config_in_use.get("meter_source")->asUint() == 100) {
+        meter.updateMeterState(2, METER_TYPE_MQTT);
+    }
 
     initialized = true;
 }
