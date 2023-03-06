@@ -81,7 +81,7 @@ public:
         size_t buffer_idx = idx / items_per_slot;
         size_t buffer_offset = idx % items_per_slot;
 
-        AlignedT bits = (AlignedT(1) << (sizeof(T) * 8)) - 1;
+        AlignedT bits = typename std::make_unsigned<T>::type(-1LL);
         AlignedT write_mask = bits << (buffer_offset * 8 * sizeof(T));
         AlignedT keep_mask = ~write_mask;
 
@@ -98,7 +98,7 @@ public:
         size_t buffer_idx = idx / items_per_slot;
         size_t buffer_offset = idx % items_per_slot;
 
-        AlignedT bits = (AlignedT(1) << (sizeof(T) * 8)) - 1;
+        AlignedT bits = typename std::make_unsigned<T>::type(-1LL);
 
         return (buffer[buffer_idx] >> (buffer_offset * 8 * sizeof(T))) & bits;
     }
