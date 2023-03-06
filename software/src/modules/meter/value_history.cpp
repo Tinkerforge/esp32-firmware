@@ -28,10 +28,12 @@ void ValueHistory::setup()
     history.clear();
     live.clear();
 
+    METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
+
     for (int i = 0; i < history.size(); ++i) {
         //float f = 5000.0 * sin(PI/120.0 * i) + 5000.0;
         // Use negative state to mark that these are pre-filled.
-        history.push(INT16_MIN);
+        history.push(val_min);
     }
 
 #if MODULE_WS_AVAILABLE()
@@ -98,7 +100,8 @@ void ValueHistory::register_urls(String base_url)
 
 void ValueHistory::add_sample(float sample)
 {
-    int16_t val = std::min(INT16_MAX, (int)roundf(sample));
+    METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
+    METER_VALUE_HISTORY_VALUE_TYPE val = clamp(val_min + 1, (int)roundf(sample), (int)std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::max());
     live.push(val);
     live_last_update = millis();
     end_this_interval = live_last_update;
@@ -123,14 +126,14 @@ void ValueHistory::add_sample(float sample)
     // start history task when first sample arrives. this adds the first sample to the
     // history immediately to avoid and empty history for the first history period
     if (live.used() == 1) {
-        task_scheduler.scheduleWithFixedDelay([this](){
-            int16_t history_val;
+        task_scheduler.scheduleWithFixedDelay([this, val_min](){
+            METER_VALUE_HISTORY_VALUE_TYPE history_val;
 
             if (samples_this_interval == 0) {
-                history_val = INT16_MIN; // TODO push 0 or int16_t min here? int16_t min will be translated into null when sending as json. However we document that there is only at most one block of null values at the start of the array indicating a reboot
+                history_val = val_min; // TODO push 0 or intxy_t min here? intxy_t min will be translated into null when sending as json. However we document that there is only at most one block of null values at the start of the array indicating a reboot
             } else {
-                float live_sum = 0;
-                int16_t live_val;
+                double live_sum = 0;
+                METER_VALUE_HISTORY_VALUE_TYPE live_val;
                 for(int i = 0; i < samples_this_interval; ++i) {
                     live.peek_offset(&live_val, live.used() - 1 - i);
                     live_sum += live_val;
@@ -155,7 +158,7 @@ void ValueHistory::add_sample(float sample)
             int buf_written;
             const char *prefix = "{\"topic\":\"meter/history_samples\",\"payload\":{\"samples\":";
 
-            if (history_val == INT16_MIN) {
+            if (history_val == val_min) {
                 buf_written = asprintf(&buf, "%s[null]}}\n", prefix);
             } else {
                 buf_written = asprintf(&buf, "%s[%d]}}\n", prefix, (int)history_val);
@@ -173,16 +176,16 @@ size_t ValueHistory::format_live(char *buf, size_t buf_size)
 {
     size_t buf_written = 0;
     uint32_t offset = millis() - live_last_update;
-    int16_t val;
+    METER_VALUE_HISTORY_VALUE_TYPE val;
 
     if (!live.peek(&val)) {
         buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[]}", offset, samples_per_second());
     }
     else {
-        buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[%d", offset, samples_per_second(), val);
+        buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[%d", offset, samples_per_second(), (int)val);
 
         for (int i = 1; (i < live.used() - 1) && live.peek_offset(&val, i) && buf_written < buf_size; ++i) {
-            buf_written += snprintf(buf + buf_written, buf_size - buf_written, ",%d", val);
+            buf_written += snprintf(buf + buf_written, buf_size - buf_written, ",%d", (int)val);
         }
 
         if (buf_written < buf_size) {
@@ -195,24 +198,25 @@ size_t ValueHistory::format_live(char *buf, size_t buf_size)
 
 size_t ValueHistory::format_history(char *buf, size_t buf_size)
 {
+    METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
     size_t buf_written = 0;
     uint32_t offset = millis() - history_last_update;
-    int16_t val;
+    METER_VALUE_HISTORY_VALUE_TYPE val;
 
     if (!history.peek(&val)) {
         buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[]}", offset);
     }
     else {
-        // int16_t min values are prefilled, because the ESP was booted less than 48 hours ago.
-        if (val == INT16_MIN) {
+        // intxy_t min values are prefilled, because the ESP was booted less than 48 hours ago.
+        if (val == val_min) {
             buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[%s", offset, "null");
         } else {
             buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[%d", offset, (int)val);
         }
 
         for (int i = 1; i < history.used() && history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
-            // int16_t min values are prefilled, because the ESP was booted less than 48 hours ago.
-            if (val == INT16_MIN) {
+            // intxy_t min values are prefilled, because the ESP was booted less than 48 hours ago.
+            if (val == val_min) {
                 buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", ",null");
             } else {
                 buf_written += snprintf(buf + buf_written, buf_size - buf_written, ",%d", (int)val);

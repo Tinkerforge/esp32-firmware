@@ -39,6 +39,10 @@
 
 #define RING_BUF_SIZE (HISTORY_HOURS * 60 / HISTORY_MINUTE_INTERVAL)
 
+#ifndef METER_VALUE_HISTORY_VALUE_TYPE
+#define METER_VALUE_HISTORY_VALUE_TYPE int16_t
+#endif
+
 class ValueHistory
 {
 public:
@@ -61,7 +65,7 @@ public:
     uint32_t begin_last_interval = 0;
     uint32_t end_last_interval = 0;
 
-    TF_Ringbuffer<int16_t,
+    TF_Ringbuffer<METER_VALUE_HISTORY_VALUE_TYPE,
                   3 * 60 * HISTORY_MINUTE_INTERVAL,
                   uint32_t,
 #if defined(BOARD_HAS_PSRAM)
@@ -72,7 +76,7 @@ public:
                   heap_caps_free> live;
     uint32_t live_last_update = 0;
 
-    TF_Ringbuffer<int16_t,
+    TF_Ringbuffer<METER_VALUE_HISTORY_VALUE_TYPE,
                   RING_BUF_SIZE,
                   uint32_t,
 #if defined(BOARD_HAS_PSRAM)
