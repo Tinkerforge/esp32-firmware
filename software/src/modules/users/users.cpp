@@ -476,7 +476,7 @@ void Users::search_next_free_user() {
 
 int Users::get_display_name(uint8_t user_id, char *ret_buf)
 {
-    for (auto &cfg : user_config.get("users")->asArray()) {
+    for (auto &cfg : user_config.get("users")) {
         if (cfg.get("id")->asUint() == user_id) {
             String s = cfg.get("display_name")->asString();
             strncpy(ret_buf, s.c_str(), 32);
