@@ -174,7 +174,7 @@ void API::addRawCommand(const String &path, std::function<String(char *, size_t)
     }
 }
 
-void API::addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<bool(String *)> callback)
+void API::addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback)
 {
     if (already_registered(path, "response"))
         return;

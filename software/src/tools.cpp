@@ -855,3 +855,54 @@ time_t ms_until_time(int h, int m) {
 	}
 	return delay;
 }
+
+bool Ownership::try_acquire(uint32_t owner_id)
+{
+    mutex.lock();
+
+    if (owner_id == current_owner_id) {
+        return true;
+    }
+
+    mutex.unlock();
+
+    return false;
+}
+
+void Ownership::release()
+{
+    mutex.unlock();
+}
+
+uint32_t Ownership::current()
+{
+    return current_owner_id;
+}
+
+uint32_t Ownership::next()
+{
+    mutex.lock();
+
+    uint32_t owner_id = ++current_owner_id;
+
+    mutex.unlock();
+
+    return owner_id;
+}
+
+OwnershipGuard::OwnershipGuard(Ownership *ownership, uint32_t owner_id): ownership(ownership)
+{
+    acquired = ownership->try_acquire(owner_id);
+}
+
+OwnershipGuard::~OwnershipGuard()
+{
+    if (acquired) {
+        ownership->release();
+    }
+}
+
+bool OwnershipGuard::have_ownership()
+{
+    return acquired;
+}

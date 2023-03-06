@@ -20,6 +20,7 @@
 #pragma once
 
 #include "api.h"
+#include "tools.h"
 
 bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len);
 
@@ -40,6 +41,9 @@ public:
     bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
     void pushRawStateUpdate(const String &payload, const String &path) override;
     void wifiAvailable() override;
+    WebServerRequestReturnProtect api_handler_get(WebServerRequest req);
+    WebServerRequestReturnProtect api_handler_put(WebServerRequest req);
 
     bool initialized = false;
+    Ownership response_ownership;
 };

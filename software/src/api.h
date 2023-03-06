@@ -27,6 +27,8 @@
 
 #include "config.h"
 #include "web_server.h"
+#include "chunked_response.h"
+#include "tools.h"
 
 struct StateRegistration {
     String path;
@@ -53,7 +55,7 @@ struct RawCommandRegistration {
 struct ResponseRegistration {
     String path;
     ConfigRoot *config;
-    std::function<bool(String *)> callback;
+    std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback;
     std::vector<String> keys_to_censor_in_debug_report;
 };
 
@@ -88,7 +90,7 @@ public:
     bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
     //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms, std::function<void(void)> callback);
     void addRawCommand(const String &path, std::function<String(char *, size_t)> callback, bool is_action);
-    void addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<bool(String *)> callback);
+    void addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback);
 
     bool hasFeature(const char *name);
 

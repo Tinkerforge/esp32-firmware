@@ -126,3 +126,31 @@ template <class F> deferrer<F> operator*(defer_dummy, F f) { return {f}; }
 #define DEFER(LINE) DEFER_(LINE)
 #define defer auto DEFER(__LINE__) = defer_dummy{} *[&]()
 #endif
+
+class Ownership
+{
+public:
+    Ownership() {};
+
+    bool try_acquire(uint32_t owner_id);
+    void release();
+    uint32_t current();
+    uint32_t next();
+
+private:
+    uint32_t current_owner_id = 0;
+    std::mutex mutex;
+};
+
+class OwnershipGuard
+{
+public:
+    OwnershipGuard(Ownership *ownership, uint32_t owner_id);
+    ~OwnershipGuard();
+
+    bool have_ownership();
+
+private:
+    Ownership *ownership;
+    bool acquired;
+};

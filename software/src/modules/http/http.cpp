@@ -30,6 +30,40 @@
 #define RECV_BUF_SIZE 2048
 #endif
 
+class HTTPChunkedResponse : public IBaseChunkedResponse
+{
+public:
+    HTTPChunkedResponse(WebServerRequest *request): request(request) {}
+
+    void begin(bool success)
+    {
+        request->beginChunkedResponse(success ? 200 : 400, "text/plain");
+    }
+
+    bool write(const char *buf, size_t buf_size)
+    {
+        int result = request->sendChunk(buf, buf_size);
+
+        if (result != ESP_OK) {
+            printf("sendChunk failed: %d\n", result);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    void end(String error)
+    {
+        if (error == "") {
+            request->endChunkedResponse();
+        }
+    }
+
+private:
+    WebServerRequest *request;
+};
+
 static char recv_buf[RECV_BUF_SIZE] = {0};
 
 static int strncmp_with_same_len(const char *left, const char *right, size_t right_len) {
@@ -127,7 +161,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
 // Also we know (because of the custom matcher) that req.uriCStr() contains an API path,
 // we only have to find out which one.
 // Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
-WebServerRequestReturnProtect api_handler_get(WebServerRequest req)
+WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
 {
     for (size_t i = 0; i < api.states.size(); i++)
     {
@@ -147,7 +181,7 @@ WebServerRequestReturnProtect api_handler_get(WebServerRequest req)
     return req.send(405, "text/html", "Request method for this URI is not handled by server");
 }
 
-WebServerRequestReturnProtect api_handler_put(WebServerRequest req) {
+WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
     for (size_t i = 0; i < api.commands.size(); i++)
         if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0)
             return run_command(req, i);
@@ -188,16 +222,42 @@ WebServerRequestReturnProtect api_handler_put(WebServerRequest req) {
             logger.printfln("Failed to receive response payload: error code %d", bytes_written);
             return req.send(400);
         } else if (bytes_written == 0 && api.responses[i].config->is_null()) {
-            String response;
-            bool success = api.responses[i].callback(&response);
-            return req.send(success ? 200 : 400, "text/html", response.c_str());
+            uint32_t response_owner_id = response_ownership.current();
+            HTTPChunkedResponse http_response(&req);
+            QueuedChunkedResponse queued_response(&http_response, 500);
+            BufferedChunkedResponse buffered_response(&queued_response);
+            auto &callback = api.responses[i].callback;
+
+            task_scheduler.scheduleOnce([this, &callback, &buffered_response, response_owner_id]{callback(&buffered_response, &response_ownership, response_owner_id);}, 0);
+
+            String error = queued_response.wait();
+
+            if (error != "") {
+                logger.printfln("Response processing failed: %s", error.c_str());
+            }
+
+            response_ownership.next();
+            return WebServerRequestReturnProtect{};
         }
 
         String message = api.responses[i].config->update_from_cstr(recv_buf, bytes_written);
         if (message == "") {
-            String response;
-            bool success = api.responses[i].callback(&response);
-            return req.send(success ? 200 : 400, "text/html", response.c_str());
+            uint32_t response_owner_id = response_ownership.current();
+            HTTPChunkedResponse http_response(&req);
+            QueuedChunkedResponse queued_response(&http_response, 500);
+            BufferedChunkedResponse buffered_response(&queued_response);
+            auto &callback = api.responses[i].callback;
+
+            task_scheduler.scheduleOnce([this, &callback, &buffered_response, response_owner_id]{callback(&buffered_response, &response_ownership, response_owner_id);}, 0);
+
+            String error = queued_response.wait();
+
+            if (error != "") {
+                logger.printfln("Response processing failed: %s", error.c_str());
+            }
+
+            response_ownership.next();
+            return WebServerRequestReturnProtect{};
         }
         return req.send(400, "text/html", message.c_str());
     }
@@ -224,9 +284,9 @@ WebServerRequestReturnProtect api_handler_put(WebServerRequest req) {
 
 void Http::register_urls()
 {
-    server.on("/*", HTTP_GET, api_handler_get);
-    server.on("/*", HTTP_PUT, api_handler_put);
-    server.on("/*", HTTP_POST, api_handler_put);
+    server.on("/*", HTTP_GET, [this](WebServerRequest request){return api_handler_get(request);});
+    server.on("/*", HTTP_PUT, [this](WebServerRequest request){return api_handler_put(request);});
+    server.on("/*", HTTP_POST, [this](WebServerRequest request){return api_handler_put(request);});
 }
 
 void Http::loop()
