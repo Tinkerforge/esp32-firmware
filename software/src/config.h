@@ -519,6 +519,17 @@ struct Config {
 
             explicit operator Config*(){return conf;}
 
+            // Allowing to call begin and end directly on
+            // the wrapper makes it easier to use
+            // range-based for loops.
+            std::vector<Config>::iterator begin() {
+                return conf->begin();
+            }
+
+            std::vector<Config>::iterator end() {
+                return conf->end();
+            }
+
         private:
             Config *conf;
 
@@ -627,6 +638,24 @@ struct Config {
         }
         std::vector<Config> &children = this->asArray();
         return children.size();
+    }
+
+    std::vector<Config>::iterator begin() {
+        if (!this->is<Config::ConfArray>()) {
+            logger.printfln("Tried to get count of a node that is not an array!");
+            delay(100);
+            return std::vector<Config>::iterator();
+        }
+        return this->asArray().begin();
+    }
+
+    std::vector<Config>::iterator end() {
+        if (!this->is<Config::ConfArray>()) {
+            logger.printfln("Tried to get count of a node that is not an array!");
+            delay(100);
+            return std::vector<Config>::iterator();
+        }
+        return this->asArray().end();
     }
 
     template<typename ConfigT>
