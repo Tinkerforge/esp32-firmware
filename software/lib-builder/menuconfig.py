@@ -1,3 +1,5 @@
+#!/usr/bin/python3 -u
+
 import shutil
 import subprocess
 import sys
