@@ -11,7 +11,9 @@
             "error_network": "Netzwerkfehler",
             "error_contactor": "Schützfehler",
             "error_config": "Ungültige Konfiguration",
-            "error_internal": "Interner Fehler"
+            "error_internal": "Interner Fehler",
+
+            "no_bricklet": "Interner Fehler, Bricklet nicht gefunden"
         },
         "navbar": {
             "energy_manager": "Einstellungen"

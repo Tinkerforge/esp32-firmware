@@ -27,6 +27,7 @@ import { __ } from "../../ts/translation";
 import { ConfigComponent } from "src/ts/components/config_component";
 import { FormRow } from "src/ts/components/form_row";
 import { Switch } from "src/ts/components/switch";
+import { IndicatorGroup } from "src/ts/components/indicator_group";
 import { InputSelect } from "src/ts/components/input_select";
 import { InputFloat } from "src/ts/components/input_float";
 import { InputNumber } from "src/ts/components/input_number";
@@ -65,8 +66,19 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
     }
 
     render(props: {}, d: Readonly<EnergyManagerAllData>) {
-        if (!util.allow_render || !API.get("info/modules").energy_manager)
+        if (!util.allow_render) {
             return <></>;
+        }
+
+        if (!API.get("info/modules").energy_manager) {
+            return <>
+                <IndicatorGroup
+                    value={0}
+                    items={[
+                        ["danger", __("energy_manager.status.no_bricklet")],
+                    ]} />
+            </>;
+        }
 
         let error_flags_ok        = d.status.error_flags == 0;
         let error_flags_internal  = d.status.error_flags & 0xFF000000;

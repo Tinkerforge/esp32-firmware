@@ -140,8 +140,10 @@ void EnergyManager::check_debug()
 void EnergyManager::setup()
 {
     setup_energy_manager();
-    if (!device_found)
+    if (!device_found) {
+        set_error(ERROR_FLAGS_BRICKLET_MASK);
         return;
+    }
 
     rgb_led.setup();
 
@@ -276,6 +278,9 @@ void EnergyManager::setup()
 
 void EnergyManager::register_urls()
 {
+    // Always export state so that the status page can show an error when no bricklet was found.
+    api.addState("energy_manager/state", &state, {}, 1000);
+
     if (!device_found)
         return;
 
@@ -307,7 +312,6 @@ void EnergyManager::register_urls()
 #if MODULE_DEBUG_AVAILABLE()
     api.addPersistentConfig("energy_manager/debug_config", &debug_config, {}, 1000);
 #endif
-    api.addState("energy_manager/state", &state, {}, 1000);
     api.addState("energy_manager/low_level_state", &low_level_state, {}, 1000);
     api.addState("energy_manager/meter_state", &meter_state, {}, 1000);
 
@@ -432,7 +436,9 @@ void EnergyManager::set_error(uint32_t error_mask)
 {
     error_flags |= error_mask;
     state.get("error_flags")->updateUint(error_flags);
-    update_status_led();
+
+    if (device_found)
+        update_status_led();
 }
 
 void EnergyManager::check_bricklet_reachable(int rc) {

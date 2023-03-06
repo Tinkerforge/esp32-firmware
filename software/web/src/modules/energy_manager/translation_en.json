@@ -11,7 +11,9 @@
             "error_network": "Network error",
             "error_contactor": "Contactor error",
             "error_config": "Invalid configuration",
-            "error_internal": "Internal error"
+            "error_internal": "Internal error",
+
+            "no_bricklet": "Internal error, bricklet not found"
         },
         "navbar": {
             "energy_manager": "Settings"

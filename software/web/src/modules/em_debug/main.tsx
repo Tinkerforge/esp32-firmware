@@ -64,7 +64,9 @@ export class EMDebug extends Component<{}, EMDebugState> {
     }
 
     render(props: {}, s: Readonly<EMDebugState>) {
-        if (!util.allow_render) {
+        // Must check presence of low_level_state here because an update to /state might trigger
+        // a render when no bricklet is available and /state is the only exported state.
+        if (!util.allow_render || !s.low_level_state) {
             return (<></>);
         }
 
