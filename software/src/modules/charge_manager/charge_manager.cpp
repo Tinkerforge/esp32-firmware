@@ -176,7 +176,7 @@ void ChargeManager::start_manager_task()
         names.push_back(charger.get("name")->asString());
     }
 
-    cm_networking.register_manager(std::move(hosts), names, [this, &chargers](
+    cm_networking.register_manager(std::move(hosts), names, [this, chargers](
             uint8_t client_id,
             uint8_t iec61851_state,
             uint8_t charger_state,
@@ -187,7 +187,7 @@ void ChargeManager::start_manager_task()
             uint16_t supported_current,
             bool cp_disconnect_supported,
             bool cp_disconnected_state
-        ){
+        ) mutable {
             auto target = charge_manager_state.get("chargers")->get(client_id);
             // Don't update if the uptimes are the same.
             // This means, that the EVSE hangs or the communication
@@ -249,7 +249,7 @@ void ChargeManager::start_manager_task()
 
     uint32_t cm_send_delay = 1000 / chargers->count();
 
-    task_scheduler.scheduleWithFixedDelay([this, &chargers](){
+    task_scheduler.scheduleWithFixedDelay([this, chargers]() mutable {
         static int i = 0;
 
         if (i >= chargers->count())
