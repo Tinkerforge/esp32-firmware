@@ -1,5 +1,6 @@
 interface Charger {
     name: string,
+    uid: number,
     last_update: number,
     uptime: number,
     supported_current: number,
@@ -7,10 +8,16 @@ interface Charger {
     wants_to_charge: boolean,
     wants_to_charge_low_priority: boolean,
     is_charging: boolean,
+    cp_disconnect_supported: boolean,
+    cp_disconnect_state: boolean,
+    cp_disconnect: boolean,
     last_sent_config: number,
     allocated_current: number,
     state: number,
-    error: number
+    error: number,
+    charger_state: number,
+    power_total: number,
+    energy_abs: number
 }
 
 interface ServCharger {
