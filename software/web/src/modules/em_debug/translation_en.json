@@ -13,7 +13,9 @@
             "debug_start": "Start",
             "debug_stop": "Stop + Download",
 
-            "low_level_state": "Low level state",
+            "internal_state": "Internal state",
+
+            "low_level_state": "Low-level state",
             "contactor_control": "Contactor control",
             "contactor_off": "Contactor open (one phase active)",
             "contactor_on": "Contactor closed (three phases active)",

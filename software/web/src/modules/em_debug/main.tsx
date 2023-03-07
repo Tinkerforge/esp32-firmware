@@ -25,13 +25,13 @@ import { __ }    from "../../ts/translation";
 
 import { h, render, Fragment, Component } from "preact";
 
+import { DebugLogger    } from "../../ts/components/debug_logger";
 import { FormRow        } from "../../ts/components/form_row";
 import { FormSeparator  } from "../../ts/components/form_separator";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
-import { InputFloat     } from "../../ts/components/input_float";
 import { InputText      } from "../../ts/components/input_text";
+import { OutputFloat    } from "../../ts/components/output_float";
 import { PageHeader     } from "../../ts/components/page_header";
-import { DebugLogger    } from "../../ts/components/debug_logger";
 
 interface EMDebugState {
     low_level_state: API.getType['energy_manager/low_level_state'];
@@ -77,6 +77,102 @@ export class EMDebug extends Component<{}, EMDebugState> {
                 <FormSeparator heading={__("em_debug.content.protocol")} />
                 <DebugLogger prefix="energy_manager" debug="energy_manager/debug" debugHeader="energy_manager/debug_header" translationPrefix="em_debug"/>
 
+                <FormSeparator heading={__("em_debug.content.internal_state")} />
+                <FormRow label="power at meter">
+                    <OutputFloat value={s.low_level_state.power_at_meter} digits={3} scale={3} unit={'kW'} />
+                </FormRow>
+                <FormRow label="power available">
+                    <OutputFloat value={s.low_level_state.power_available} digits={3} scale={3} unit={'kW'} />
+                </FormRow>
+                <FormRow label="overall min power">
+                    <OutputFloat value={s.low_level_state.overall_min_power} digits={3} scale={3} unit={'kW'} />
+                </FormRow>
+                <FormRow label="threshold 3to1">
+                    <OutputFloat value={s.low_level_state.threshold_3to1} digits={3} scale={3} unit={'kW'} />
+                </FormRow>
+                <FormRow label="threshold 1to3">
+                    <OutputFloat value={s.low_level_state.threshold_1to3} digits={3} scale={3} unit={'kW'} />
+                </FormRow>
+                <FormRow label="CM allocated current">
+                    <OutputFloat value={s.low_level_state.charge_manager_allocated_current} digits={3} scale={3} unit={'A'} />
+                </FormRow>
+                <FormRow label="max current limited">
+                    <OutputFloat value={s.low_level_state.max_current_limited} digits={3} scale={3} unit={'A'} />
+                </FormRow>
+                <FormRow label="uptime past hysteresis">
+                    <IndicatorGroup
+                        value={s.low_level_state.uptime_past_hysteresis ? 1 : 0}
+                        items={[
+                            ["secondary", "false"],
+                            ["primary",   "true" ],
+                        ]} />
+                </FormRow>
+                <FormRow label="is 3phase">
+                    <IndicatorGroup
+                        value={s.low_level_state.is_3phase ? 1 : 0}
+                        items={[
+                            ["secondary", "false"],
+                            ["primary",   "true" ],
+                        ]} />
+                </FormRow>
+                <FormRow label="wants 3phase">
+                    <IndicatorGroup
+                        value={s.low_level_state.wants_3phase ? 1 : 0}
+                        items={[
+                            ["secondary", "false"],
+                            ["primary",   "true" ],
+                        ]} />
+                </FormRow>
+                <FormRow label="wants 3phase last">
+                    <IndicatorGroup
+                        value={s.low_level_state.wants_3phase_last ? 1 : 0}
+                        items={[
+                            ["secondary", "false"],
+                            ["primary",   "true" ],
+                        ]} />
+                </FormRow>
+                <FormRow label="is on last">
+                    <IndicatorGroup
+                        value={s.low_level_state.is_on_last ? 1 : 0}
+                        items={[
+                            ["secondary", "false"],
+                            ["primary",   "true" ],
+                        ]} />
+                </FormRow>
+                <FormRow label="wants on last">
+                    <IndicatorGroup
+                        value={s.low_level_state.wants_on_last ? 1 : 0}
+                        items={[
+                            ["secondary", "false"],
+                            ["primary",   "true" ],
+                        ]} />
+                </FormRow>
+                <FormRow label="phase state change blocked">
+                    <IndicatorGroup
+                        value={s.low_level_state.phase_state_change_blocked ? 1 : 0}
+                        items={[
+                            ["secondary", "false"],
+                            ["primary",   "true" ],
+                        ]} />
+                </FormRow>
+                <FormRow label="on state change blocked">
+                    <IndicatorGroup
+                        value={s.low_level_state.on_state_change_blocked ? 1 : 0}
+                        items={[
+                            ["secondary", "false"],
+                            ["primary",   "true" ],
+                        ]} />
+                </FormRow>
+                <FormRow label="charging blocked">
+                    <InputText value={"0x" + s.low_level_state.charging_blocked.toString(16)}/>
+                </FormRow>
+                <FormRow label="switching state">
+                    <InputText value={s.low_level_state.switching_state}/>
+                </FormRow>
+                <FormRow label="consecutive bricklet errors">
+                    <InputText value={s.low_level_state.consecutive_bricklet_errors}/>
+                </FormRow>
+
                 <FormSeparator heading={__("em_debug.content.low_level_state")} />
                 <FormRow label={__("em_debug.content.contactor_control")}>
                     <IndicatorGroup
@@ -120,7 +216,7 @@ export class EMDebug extends Component<{}, EMDebugState> {
                 </FormRow>
 
                 <FormRow label={__("em_debug.content.state_input_voltage")}>
-                    <InputFloat value={s.low_level_state.input_voltage} digits={3} unit={'V'} />
+                    <OutputFloat value={s.low_level_state.input_voltage} digits={3} scale={3} unit={'V'} />
                 </FormRow>
             </>
         )

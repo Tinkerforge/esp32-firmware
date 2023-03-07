@@ -13,6 +13,8 @@
             "debug_start": "Start",
             "debug_stop": "Stop + Download",
 
+            "internal_state": "Interner Zustand",
+
             "low_level_state": "Low-Level-Zustand",
             "contactor_control": "Schützsteuerung",
             "contactor_off": "Schütz offen (eine Phase aktiv)",
