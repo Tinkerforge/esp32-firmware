@@ -693,8 +693,12 @@ struct Config {
 
     const bool &asBool() const;
 
+private:
+    // This is a gigantic footgun: The reference is invalidated after the module setup,
+    // because of the ConfSlot array shrinkToFit calls.
     std::vector<Config> &asArray();
 
+public:
     template<typename T, typename ConfigT>
     bool update_value(T value) {
         if (!this->is<ConfigT>()) {
