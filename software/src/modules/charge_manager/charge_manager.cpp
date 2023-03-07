@@ -167,16 +167,16 @@ uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint
 
 void ChargeManager::start_manager_task()
 {
-    std::vector<Config> &chargers = charge_manager_config_in_use.get("chargers")->asArray();
+    auto chargers = charge_manager_config_in_use.get("chargers");
 
     std::vector<String> hosts;
     std::vector<String> names;
-    for (int i = 0; i < chargers.size(); ++i) {
-        hosts.push_back(chargers[i].get("host")->asString());
-        names.push_back(chargers[i].get("name")->asString());
+    for (auto &charger : chargers) {
+        hosts.push_back(charger.get("host")->asString());
+        names.push_back(charger.get("name")->asString());
     }
 
-    cm_networking.register_manager(std::move(hosts), names, [this, chargers](
+    cm_networking.register_manager(std::move(hosts), names, [this, &chargers](
             uint8_t client_id,
             uint8_t iec61851_state,
             uint8_t charger_state,
@@ -195,7 +195,7 @@ void ChargeManager::start_manager_task()
             // the management will stop all charging after some time.
             if (target->get("uptime")->asUint() == uptime) {
                 logger.printfln("Received stale charger state from %s (%s). Reported EVSE uptime (%u) is the same as in the last state. Is the EVSE still reachable?",
-                    chargers[client_id].get("name")->asEphemeralCStr(), chargers[client_id].get("host")->asEphemeralCStr(),
+                    chargers->get(client_id)->get("name")->asEphemeralCStr(), chargers->get(client_id)->get("host")->asEphemeralCStr(),
                     uptime);
                 if (deadline_elapsed(target->get("last_update")->asUint() + 10000)) {
                     target->get("state")->updateUint(5);
@@ -247,12 +247,12 @@ void ChargeManager::start_manager_task()
         target->get("error")->updateUint(error);
     });
 
-    uint32_t cm_send_delay = 1000 / chargers.size();
+    uint32_t cm_send_delay = 1000 / chargers->count();
 
-    task_scheduler.scheduleWithFixedDelay([this, chargers](){
+    task_scheduler.scheduleWithFixedDelay([this, &chargers](){
         static int i = 0;
 
-        if (i >= chargers.size())
+        if (i >= chargers->count())
             i = 0;
 
         auto state = charge_manager_state.get("chargers")->get(i);
