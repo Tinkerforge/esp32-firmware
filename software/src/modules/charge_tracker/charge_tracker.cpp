@@ -145,7 +145,7 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
         }
 
         ce.charge_duration = charge_duration_seconds;
-        ce.meter_end = meter_end;
+        ce.meter_end = meter_end == 0 ? NAN : meter_end;
 
         uint8_t buf[sizeof(ChargeEnd)] = {0};
         memcpy(buf, &ce, sizeof(ce));
