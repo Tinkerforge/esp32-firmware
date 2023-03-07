@@ -493,7 +493,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                 value={s.target_power_from_grid}
                                 onValue={this.set('target_power_from_grid')}
                                 digits={3}
-                                min={0}
+                                min={-43470}
                                 max={345000}
                             />
                         </FormRow>
