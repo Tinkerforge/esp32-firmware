@@ -446,7 +446,7 @@ export class Meter extends Component<{}, MeterState> {
                             <div class="row mb-3 pt-3 pr-0 pr-lg-3">
                                 <div class="d-flex justify-content-between align-items-center border-bottom col">
                                     <span class="h3">{__("meter.status.charge_history")}</span>
-                                    <div>
+                                    <div class="mb-2">
                                         <InputSelect value={this.state.chart_selected} onValue={(v) => {
                                             let chart_selected: "live"|"history" = v as any;
 
@@ -463,7 +463,14 @@ export class Meter extends Component<{}, MeterState> {
                             <UplotWrapper ref={this.uplot_wrapper_ref} id="meter_chart" class="meter-chart" sidebar_id="meter" y_min={undefined} y_max={undefined} />
                         </div>
                         <div class="col-lg-6 col-xl-4">
-                            <FormSeparator heading={__("meter.content.statistics")} colClasses="col"/>
+                            <div class="row mb-3 pt-3">
+                                <div class="d-flex justify-content-between align-items-center border-bottom col">
+                                    <span class="h3">{__("meter.content.statistics")}</span>
+                                    <div class="mb-2" style="visibility: hidden;">
+                                        <InputSelect items={[["a", "a"]]} />
+                                    </div>
+                                </div>
+                            </div>
                             <FormRow label={__("meter.content.power")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
                                 <OutputFloat value={this.state.values.power} digits={0} scale={0} unit="W"/>
                             </FormRow>
