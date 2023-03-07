@@ -94,7 +94,7 @@ export class ChargeCondition extends ConfigComponent<'charge_condition/config', 
                 <InputFloat value={state.state.target_energy_kwh != 0 ? state.state.target_energy_kwh - (state.meter_abs * 1000) : 0}
                             digits={3} unit={"kwh"}/>
             </FormRow>
-
+            
         return (
             <>
                 <ConfigForm title="Charge Condition"

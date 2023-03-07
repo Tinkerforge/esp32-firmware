@@ -112,17 +112,22 @@ void ChargeCondition::register_urls()
     }, true);
 
  #if MODULE_EVSE_V2_AVAILABLE()
-    evse_v2.set_charge_condition(32000, true);
+    evse_v2.set_charge_condition_slot(32000, true);
  #elif MODULE_EVSE_AVAILABLE()
-    evse.set_charge_condition(32000, true);
+    evse.set_charge_condition_slot(32000, true);
  #endif
     task_scheduler.scheduleWithFixedDelay([this](){
         static bool was_charging = false;
 
         if (charge_tracker.current_charge.get("user_id")->asInt() != -1)
         {
+ #if MODULE_EVSE_V2_AVAILABLE()
             if (!was_charging)
                 state.get("start_timestamp_mil")->updateUint(evse_v2.evse_low_level_state.get("uptime")->asUint());
+ #elif MODULE_EVSE_AVAILABLE()
+            if (!was_charging)
+                state.get("start_timestamp_mil")->updateUint(evse.evse_low_level_state.get("uptime")->asUint());
+ #endif
             if (api.hasFeature("meter") && !was_charging)
                 state.get("start_energy_kwh")->updateUint((uint32_t)(charge_tracker.current_charge.get("meter_start")->asFloat() * 1000));
             if (config_in_use.get("duration_limit")->asUint() > 0)
@@ -134,17 +139,17 @@ void ChargeCondition::register_urls()
 
                 int time_left = map_duration(config_in_use.get("duration_limit")->asUint()) - (evse_v2.evse_low_level_state.get("uptime")->asUint() - state.get("start_timestamp_mil")->asUint());
                 if (time_left <= 0)
-                    evse_v2.set_charge_condition(0, true);
+                    evse_v2.set_charge_condition_slot(0, true);
  #elif MODULE_EVSE_AVAILABLE()
                 if (state.get("start_timestamp_mil")->asUint() == 0)
                     state.get("start_timestamp_mil")->updateUint(evse.evse_low_level_state.get("uptime")->asUint());
 
                 if (state.get("target_timestamp_mil")->asUint() == 0)
-                    state.get("target_timestamp_mil")->updateUint(evse.evse_low_level_state.get("uptime")->asUint() + map_duration(config_in_use.get("duration_limit")->asUint()))
+                    state.get("target_timestamp_mil")->updateUint(evse.evse_low_level_state.get("uptime")->asUint() + map_duration(config_in_use.get("duration_limit")->asUint()));
 
                 int time_left = map_duration(config_in_use.get("duration_limit")->asUint()) - (evse.evse_low_level_state.get("uptime")->asUint() - state.get("start_timestamp_mil")->asUint());
                 if (time_left <= 0)
-                    evse.set_charge_condition(0, true);
+                    evse.set_charge_condition_slot(0, true);
  #endif
             }
 
@@ -155,9 +160,9 @@ void ChargeCondition::register_urls()
                 if (state.get("target_energy_kwh")->asUint() <= (uint32_t)(meter.values.get("energy_abs")->asFloat() * 1000))
                 {
  #if MODULE_EVSE_V2_AVAILABLE()
-                        evse_v2.set_charge_condition(0, true);
+                        evse_v2.set_charge_condition_slot(0, true);
  #elif MODULE_EVSE_AVAILABLE()
-                        evse.set_charge_condition(0, true);
+                        evse.set_charge_condition_slot(0, true);
  #endif
                 }
             }
@@ -170,9 +175,9 @@ void ChargeCondition::register_urls()
 
             api.restorePersistentConfig("charge_condition/config", &config_in_use);
  #if MODULE_EVSE_V2_AVAILABLE()
-            evse_v2.set_charge_condition(32000, true);
+            evse_v2.set_charge_condition_slot(32000, true);
  #elif MODULE_EVSE_AVAILABLE()
-            evse.set_charge_condition(32000, true);
+            evse.set_charge_condition_slot(32000, true);
  #endif
             state.get("start_timestamp_mil")->updateUint(0);
             state.get("start_energy_kwh")->updateUint(0);
@@ -184,7 +189,9 @@ void ChargeCondition::register_urls()
     if (config_in_use.get("time_restriction_enabled")->asBool())
     {
  #if MODULE_EVSE_V2_AVAILABLE()
-        evse_v2.set_charge_time_restriction(32000, true);
+        evse_v2.set_charge_time_restriction_slot(32000, true);
+ #elif MODULE_EVSE_AVAILABLE()
+        evse.set_charge_time_restriction_slot(32000, true);
  #endif
 
         task_scheduler.scheduleWithFixedDelay([this]() {
@@ -197,7 +204,9 @@ void ChargeCondition::register_urls()
                 uint32_t hours = config_in_use.get("blocked_hours")->get((tm_now.tm_wday + 6) % 7)->asUint();
                 bool forbidden = hours & (1 << tm_now.tm_hour);
  #if MODULE_EVSE_V2_AVAILABLE()
-                evse_v2.set_charge_time_restriction(forbidden ? 0: 32000, true);
+                evse_v2.set_charge_time_restriction_slot(forbidden ? 0: 32000, true);
+ #elif MODULE_EVSE_AVAILABLE()
+                evse.set_charge_time_restriction_slot(forbidden ? 0: 32000, true);
  #endif
             }
         }, 0, 1000);
