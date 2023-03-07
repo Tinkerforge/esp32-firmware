@@ -466,7 +466,7 @@ async function downloadChargeLog(flavor: 'excel' | 'rfc4180', user_filter: numbe
                         username = usernames[user_id];
                     }
 
-                    let charged = (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? NaN : (meter_end - meter_start);
+                    let charged = (Number.isNaN(meter_start) || Number.isNaN(meter_end) || meter_end < meter_start) ? NaN : (meter_end - meter_start);
                     let charged_string;
                     let charged_price = typeof price == 'number' ? charged / 100 * price / 100 : 0;
                     let charged_price_string;

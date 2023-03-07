@@ -336,6 +336,10 @@ bool ChargeTracker::currentlyCharging()
     return (file.size() % CHARGE_RECORD_SIZE) == sizeof(ChargeStart);
 }
 
+bool charged_invalid(ChargeStart cs, ChargeEnd ce) {
+    return isnan(cs.meter_start) || isnan(ce.meter_end) || ce.meter_end < cs.meter_start;
+}
+
 void ChargeTracker::readNRecords(File *f, size_t records_to_read)
 {
     uint8_t buf[CHARGE_RECORD_SIZE];
@@ -353,7 +357,7 @@ void ChargeTracker::readNRecords(File *f, size_t records_to_read)
         last_charges.get(last_charges.count() - 1)->get("timestamp_minutes")->updateUint(cs.timestamp_minutes);
         last_charges.get(last_charges.count() - 1)->get("charge_duration")->updateUint(ce.charge_duration);
         last_charges.get(last_charges.count() - 1)->get("user_id")->updateUint(cs.user_id);
-        last_charges.get(last_charges.count() - 1)->get("energy_charged")->updateFloat((isnan(cs.meter_start) || isnan(ce.meter_end)) ? NAN : ce.meter_end - cs.meter_start);
+        last_charges.get(last_charges.count() - 1)->get("energy_charged")->updateFloat(charged_invalid(cs, ce) ? NAN : ce.meter_end - cs.meter_start);
     }
 }
 
@@ -439,7 +443,7 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
     users.get_display_name(cs.user_id, buf);
     buf += 1 + strnlen(buf, DISPLAY_NAME_LENGTH);
 
-    if (isnan(ce.meter_end) || isnan(cs.meter_start)) {
+    if (charged_invalid(cs, ce)) {
         memcpy(buf, "N/A", ARRAY_SIZE("N/A"));
         buf += ARRAY_SIZE("N/A");
     } else {
@@ -484,7 +488,7 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
     if (electricity_price == 0) {
         memcpy(buf, "---", ARRAY_SIZE("---"));
         buf += ARRAY_SIZE("---");
-    } else if (isnan(ce.meter_end) || isnan(cs.meter_start)) {
+    } else if (charged_invalid(cs, ce)) {
         memcpy(buf, "N/A", ARRAY_SIZE("N/A"));
         buf += ARRAY_SIZE("N/A");
     } else {
@@ -683,7 +687,7 @@ void ChargeTracker::register_urls()
                     last_charge = j;
                     ++charge_records;
 
-                    if (isnan(ce.meter_end) || isnan(cs.meter_start))
+                    if (charged_invalid(cs, ce))
                         seen_charges_without_meter = true;
                     else {
                         double charged = ce.meter_end - cs.meter_start;
