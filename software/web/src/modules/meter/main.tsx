@@ -118,15 +118,9 @@ interface UplotWrapperProps {
 class UplotWrapper extends Component<UplotWrapperProps, {}> {
     uplot: uPlot;
     pending_data: UplotData;
-    visible: boolean;
+    visible: boolean = false;
     div_ref = createRef();
     observer: ResizeObserver;
-
-    constructor() {
-        super();
-
-        this.visible = false;
-    }
 
     shouldComponentUpdate() {
         return false;
