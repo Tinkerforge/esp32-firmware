@@ -37,7 +37,6 @@ import { InputSelect } from "src/ts/components/input_select";
 import { FormSeparator } from "src/ts/components/form_separator";
 import { InputNumber } from "src/ts/components/input_number";
 import { InputFloat } from "src/ts/components/input_float";
-import { DateTimePicker} from "src/ts/components/datetime_picker"
 import { Switch } from "src/ts/components/switch";
 
 type ChargeConditionConfig = API.getType["charge_condition/config"];
@@ -77,6 +76,20 @@ export class ChargeCondition extends ConfigComponent<'charge_condition/config', 
         })
     }
 
+    maxBitmap(): number {
+        let num = 0;
+        for (let i = 0; i < 24; i++)
+        {
+            let tmp = 1 << i;
+            num = num | tmp;
+        }
+        return num;
+    }
+
+    hackToAllowSave() {
+        document.getElementById("charge_condition_config_form").dispatchEvent(new Event('input'));
+    }
+
     render(props: {}, state: ChargeConditionConfig & ChargeConditionState) {
 
         if (!state || !state.state)
@@ -94,7 +107,9 @@ export class ChargeCondition extends ConfigComponent<'charge_condition/config', 
                 <InputFloat value={state.state.target_energy_kwh != 0 ? state.state.target_energy_kwh - (state.meter_abs * 1000) : 0}
                             digits={3} unit={"kwh"}/>
             </FormRow>
-            
+
+        //TODO: Investigate
+
         return (
             <>
                 <ConfigForm title="Charge Condition"
@@ -133,8 +148,29 @@ export class ChargeCondition extends ConfigComponent<'charge_condition/config', 
                                 desc="lalala"
                                 checked={state.time_restriction_enabled}/>
                     </FormRow>
-                    <FormRow label="Selector">
-                        <DateTimePicker onValue={(v) => this.setState({blocked_hours: v})} value={state.blocked_hours}/>
+                    <FormRow label="Set all">
+                        <div class="input-group">
+                        <Button onClick={() => {
+                                let time_restriction_tmp: number[] = [this.maxBitmap()];
+                                for (let i = 0; i < 6; i++)
+                                    time_restriction_tmp.push(this.maxBitmap());
+                                this.setState({blocked_hours: time_restriction_tmp});
+                                this.hackToAllowSave();
+                            }}
+                            variant="danger"
+                            className="form-control rounded-right mr-2">
+                            {__("charge_condition.content.disable_all")}
+                        </Button>
+                        <Button onClick={() => {
+                                let time_restriction_tmp: number[] = [0, 0, 0, 0, 0, 0, 0];
+                                this.setState({blocked_hours: time_restriction_tmp});
+                                this.hackToAllowSave();
+                            }}
+                            variant="primary"
+                            className="form-control rounded-left">
+                                {__("charge_condition.content.enable_all")}
+                        </Button>
+                        </div>
                     </FormRow>
                 </ConfigForm>
             </>
