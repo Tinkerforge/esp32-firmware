@@ -7,6 +7,8 @@
             "charge_condition": "lalala"
         },
         "content": {
+            "enable_all": "Alles erlauben",
+            "disable_all": "Alles verbieten"
         },
         "script": {
         }
