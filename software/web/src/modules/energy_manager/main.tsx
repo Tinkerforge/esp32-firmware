@@ -89,36 +89,40 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
 
         return <>
             <FormRow label={__("energy_manager.status.mode")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
-                <div class="input-group">
+                <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
                     <Button
-                        className="form-control mr-2 rounded-right"
+                        style="display: flex;align-items: center;justify-content: center;"
+                        className="m-1 rounded-right"
                         variant={d.config.excess_charging_enable ? (d.charge_mode.mode == 2 ? "success" : "primary") : "secondary"}
                         disabled={!d.config.excess_charging_enable || d.charge_mode.mode == 2}
                         onClick={() => this.change_mode(2)}>
-                        {!d.config.excess_charging_enable ? <Circle size="20"/> : (d.charge_mode.mode == 2 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span style="vertical-align: text-top;">{__("energy_manager.status.mode_pv")}</span>
+                        {!d.config.excess_charging_enable ? <Circle size="20"/> : (d.charge_mode.mode == 2 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.mode_pv")}</span>
                     </Button>
                     <Button
-                        className="form-control mr-2 rounded-left rounded-right"
+                        style="display: flex;align-items: center;justify-content: center;"
+                        className="m-1 rounded-left rounded-right"
                         variant={d.config.excess_charging_enable ? (d.charge_mode.mode == 3 ? "success" : "primary") : "secondary"}
                         disabled={!d.config.excess_charging_enable || d.charge_mode.mode == 3}
                         onClick={() => this.change_mode(3)}>
-                        {!d.config.excess_charging_enable ? <Circle size="20"/> : (d.charge_mode.mode == 3 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span style="vertical-align: text-top;">{__("energy_manager.status.mode_min_pv")}</span>
+                        {!d.config.excess_charging_enable ? <Circle size="20"/> : (d.charge_mode.mode == 3 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.mode_min_pv")}</span>
                     </Button>
                     <Button
-                        className="form-control mr-2 rounded-left rounded-right"
+                        style="display: flex;align-items: center;justify-content: center;"
+                        className="m-1 rounded-left rounded-right"
                         variant={d.charge_mode.mode == 0 ? "success" : "primary"}
                         disabled={d.charge_mode.mode == 0}
                         onClick={() => this.change_mode(0)}>
-                        {d.charge_mode.mode == 0 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span style="vertical-align: text-top;">{__("energy_manager.status.mode_fast")}</span>
+                        {d.charge_mode.mode == 0 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.mode_fast")}</span>
                     </Button>
                     <Button
-                        className="form-control rounded-left"
+                        style="display: flex;align-items: center;justify-content: center;"
+                        className="m-1 rounded-left"
                         variant={d.charge_mode.mode == 1 ? "success" : "primary"}
                         disabled={d.charge_mode.mode == 1}
                         onClick={() => this.change_mode(1)}>
-                        {d.charge_mode.mode == 1 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span style="vertical-align: text-top;">{__("energy_manager.status.mode_off")}</span>
+                        {d.charge_mode.mode == 1 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.mode_off")}</span>
                     </Button>
-                </div>
+                </ButtonGroup>
             </FormRow>
             <FormRow label={__("energy_manager.status.phase_switching")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                 <IndicatorGroup
