@@ -1,8 +1,6 @@
 export interface config {
     duration_limit: number
     energy_limit_kwh: number
-    time_restriction_enabled: boolean
-    blocked_hours: number[]
 }
 
 export interface state {
@@ -23,6 +21,4 @@ export interface override_energy {
 export interface live_config {
     duration_limit: number
     energy_limit_kwh: number
-    time_restriction_enabled: boolean
-    blocked_hours: number[]
 }

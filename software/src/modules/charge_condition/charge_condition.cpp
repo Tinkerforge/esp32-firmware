@@ -32,14 +32,6 @@ void ChargeCondition::pre_setup()
     config = ConfigRoot{Config::Object({
         {"duration_limit", Config::Uint(0, 0, 10)},
         {"energy_limit_kwh", Config::Uint32(0)},
-        {"time_restriction_enabled", Config::Bool(false)},
-        {"blocked_hours", Config::Array({Config::Uint32(0),
-                                        Config::Uint32(0),
-                                        Config::Uint32(0),
-                                        Config::Uint32(0),
-                                        Config::Uint32(0),
-                                        Config::Uint32(0),
-                                        Config::Uint32(0)}, new Config(Config::Uint32(0)), 7, 7, Config::type_id<Config::ConfUint>())}
     })};
 
     state = ConfigRoot{Config::Object({
@@ -185,33 +177,7 @@ void ChargeCondition::register_urls()
             state.get("target_energy_kwh")->updateUint(0);
         }
     }, 0, 1000);
-
-    if (config_in_use.get("time_restriction_enabled")->asBool())
-    {
- #if MODULE_EVSE_V2_AVAILABLE()
-        evse_v2.set_charge_time_restriction_slot(32000, true);
- #elif MODULE_EVSE_AVAILABLE()
-        evse.set_charge_time_restriction_slot(32000, true);
- #endif
-
-        task_scheduler.scheduleWithFixedDelay([this]() {
-            timeval now;
-
-            if (clock_synced(&now))
-            {
-                tm tm_now;
-                localtime_r(&now.tv_sec, &tm_now);
-                uint32_t hours = config_in_use.get("blocked_hours")->get((tm_now.tm_wday + 6) % 7)->asUint();
-                bool forbidden = hours & (1 << tm_now.tm_hour);
- #if MODULE_EVSE_V2_AVAILABLE()
-                evse_v2.set_charge_time_restriction_slot(forbidden ? 0: 32000, true);
- #elif MODULE_EVSE_AVAILABLE()
-                evse.set_charge_time_restriction_slot(forbidden ? 0: 32000, true);
- #endif
-            }
-        }, 0, 1000);
 #endif
-    }
 }
 
 void ChargeCondition::loop()

@@ -142,36 +142,6 @@ export class ChargeCondition extends ConfigComponent<'charge_condition/config', 
                                                 util.format_timespan(0)}/>
                     </FormRow>
                     {has_meter ? energy_display : <></>}
-                    <FormSeparator/>
-                    <FormRow label="Activate time">
-                        <Switch onClick={() => this.setState({time_restriction_enabled: !state.time_restriction_enabled})}
-                                desc="lalala"
-                                checked={state.time_restriction_enabled}/>
-                    </FormRow>
-                    <FormRow label="Set all">
-                        <div class="input-group">
-                        <Button onClick={() => {
-                                let time_restriction_tmp: number[] = [this.maxBitmap()];
-                                for (let i = 0; i < 6; i++)
-                                    time_restriction_tmp.push(this.maxBitmap());
-                                this.setState({blocked_hours: time_restriction_tmp});
-                                this.hackToAllowSave();
-                            }}
-                            variant="danger"
-                            className="form-control rounded-right mr-2">
-                            {__("charge_condition.content.disable_all")}
-                        </Button>
-                        <Button onClick={() => {
-                                let time_restriction_tmp: number[] = [0, 0, 0, 0, 0, 0, 0];
-                                this.setState({blocked_hours: time_restriction_tmp});
-                                this.hackToAllowSave();
-                            }}
-                            variant="primary"
-                            className="form-control rounded-left">
-                                {__("charge_condition.content.enable_all")}
-                        </Button>
-                        </div>
-                    </FormRow>
                 </ConfigForm>
             </>
         );
