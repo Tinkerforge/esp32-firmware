@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-03-02.      *
+ * This file was automatically generated on 2023-03-08.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -72,7 +72,7 @@ typedef struct TF_WARPEnergyManager {
 
 #endif
     uint16_t magic;
-    uint8_t response_expected[1];
+    uint8_t response_expected[2];
 } TF_WARPEnergyManager;
 
 /**
@@ -204,6 +204,16 @@ typedef struct TF_WARPEnergyManager {
  * \ingroup TF_WARPEnergyManager
  */
 #define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_DATE_TIME 30
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_FUNCTION_SET_LED_STATE 31
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_LED_STATE 32
 
 /**
  * \ingroup TF_WARPEnergyManager
@@ -358,6 +368,26 @@ typedef struct TF_WARPEnergyManager {
  * \ingroup TF_WARPEnergyManager
  */
 #define TF_WARP_ENERGY_MANAGER_FORMAT_STATUS_FORMAT_ERROR 2
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_LED_PATTERN_OFF 0
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_LED_PATTERN_ON 1
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_LED_PATTERN_BLINKING 2
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_LED_PATTERN_BREATHING 3
 
 /**
  * \ingroup TF_WARPEnergyManager
@@ -808,6 +838,20 @@ int tf_warp_energy_manager_set_date_time(TF_WARPEnergyManager *warp_energy_manag
  * TODO
  */
 int tf_warp_energy_manager_get_date_time(TF_WARPEnergyManager *warp_energy_manager, uint8_t *ret_seconds, uint8_t *ret_minutes, uint8_t *ret_hours, uint8_t *ret_days, uint8_t *ret_days_of_week, uint8_t *ret_month, uint16_t *ret_year);
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ *
+ *
+ */
+int tf_warp_energy_manager_set_led_state(TF_WARPEnergyManager *warp_energy_manager, uint8_t pattern, uint16_t hue);
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ *
+ *
+ */
+int tf_warp_energy_manager_get_led_state(TF_WARPEnergyManager *warp_energy_manager, uint8_t *ret_pattern, uint16_t *ret_hue);
 
 /**
  * \ingroup TF_WARPEnergyManager
