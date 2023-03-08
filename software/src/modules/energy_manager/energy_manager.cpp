@@ -164,8 +164,6 @@ void EnergyManager::setup()
         return;
     }
 
-    rgb_led.setup();
-
     // Forgets all settings when new setting is introduced: "Failed to restore persistent config config: JSON object is missing key 'input3_rule_then_limit'\nJSON object is missing key 'input4_rule_then_limit'"
     api.restorePersistentConfig("energy_manager/config", &config);
     config_in_use = config;
@@ -922,12 +920,12 @@ void EnergyManager::set_output(bool output)
         logger.printfln("energy_manager: Failed to set output relay: error %i", result);
 }
 
-void EnergyManager::set_rgb_led(uint8_t r, uint8_t g, uint8_t b)
+void EnergyManager::set_rgb_led(uint8_t pattern, uint16_t hue)
 {
-    int rc = tf_warp_energy_manager_set_rgb_value(&device, r, g, b);
+    int rc = tf_warp_energy_manager_set_led_state(&device, pattern, hue);
 
     // Don't check if bricklet is reachable because the setter call won't tell us.
 
     if (rc != TF_E_OK)
-        logger.printfln("energy_manager: Failed to set RGB LED values: error %i. Continuing anyway.", rc);
+        logger.printfln("energy_manager: Failed to set LED state: error %i. Continuing anyway.", rc);
 }

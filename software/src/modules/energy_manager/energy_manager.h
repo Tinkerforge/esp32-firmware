@@ -157,7 +157,7 @@ public:
     bool format_sdcard();
     uint16_t get_energy_meter_detailed_values(float *ret_values);
     void set_output(bool output);
-    void set_rgb_led(uint8_t r, uint8_t g, uint8_t b);
+    void set_rgb_led(uint8_t pattern, uint16_t hue);
 
     bool debug = false;
 
