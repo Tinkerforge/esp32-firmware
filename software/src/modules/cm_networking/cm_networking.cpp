@@ -29,7 +29,6 @@
 #include "web_server.h"
 
 #include <ESPmDNS.h>
-#include "NetBIOS.h"
 #include "lwip/ip_addr.h"
 #include "lwip/opt.h"
 #include "lwip/dns.h"
