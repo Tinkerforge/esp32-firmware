@@ -206,12 +206,10 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
         const has_meter = API.hasFeature("meter");
 
         const get_energy_left = () => {
-            let energy: number;
+            let energy = state.target_energy_kwh / 1000 - meter_abs;
             if (state.start_energy_kwh == 0)
                 energy = config_in_use.energy_limit_kwh / 1000;
-            else if (energy > 0)
-                energy = energy = state.target_energy_kwh / 1000 - meter_abs;
-            else
+            else if (energy < 0)
                 energy = 0;
 
             let ret = util.toLocaleFixed(energy, 3);
