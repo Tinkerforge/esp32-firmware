@@ -164,6 +164,8 @@ void EnergyManager::setup()
         return;
     }
 
+    update_status_led();
+
     // Forgets all settings when new setting is introduced: "Failed to restore persistent config config: JSON object is missing key 'input3_rule_then_limit'\nJSON object is missing key 'input4_rule_then_limit'"
     api.restorePersistentConfig("energy_manager/config", &config);
     config_in_use = config;
