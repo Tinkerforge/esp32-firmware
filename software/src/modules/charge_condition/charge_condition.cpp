@@ -165,7 +165,12 @@ void ChargeCondition::register_urls()
         {
             was_charging = false;
 
-            api.restorePersistentConfig("charge_condition/config", &config_in_use);
+            if (!api.restorePersistentConfig("charge_condition/config", &config_in_use))
+            {
+                config_in_use.get("duration_limit")->updateUint(config.get("duration_limit")->asUint());
+                config_in_use.get("energy_limit_kwh")->updateUint(config.get("energy_limit_kwh")->asUint());
+            }
+
  #if MODULE_EVSE_V2_AVAILABLE()
             evse_v2.set_charge_condition_slot(32000, true);
  #elif MODULE_EVSE_AVAILABLE()

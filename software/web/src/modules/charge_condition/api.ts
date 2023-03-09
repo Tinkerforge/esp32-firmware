@@ -3,6 +3,11 @@ export interface config {
     energy_limit_kwh: number
 }
 
+export interface live_config {
+    duration_limit: number
+    energy_limit_kwh: number
+}
+
 export interface state {
     start_timestamp_mil: number
     start_energy_kwh: number
@@ -16,9 +21,4 @@ export interface override_duration {
 
 export interface override_energy {
     energy: number
-}
-
-export interface live_config {
-    duration_limit: number
-    energy_limit_kwh: number
 }

@@ -142,17 +142,15 @@ export class ChargeCondition extends ConfigComponent<'charge_condition/config', 
                                                 util.format_timespan(0)}/>
                     </FormRow>
                     {has_meter ? energy_display : <></>}
-                </ConfigForm>
             </>
         );
     }
 }
 
-render(<ChargeCondition/>, $('#charge_condition')[0]);
-
 interface ChargeConditionOverrideState extends ChargeConditionState
 {
-    config: API.getType['charge_condition/live_config']
+    config_in_use: API.getType['charge_condition/live_config']
+    config: API.getType['charge_condition/config']
 }
 
 class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState>
@@ -170,8 +168,11 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
 
 
         util.eventTarget.addEventListener("charge_condition/live_config", () => {
-            console.log("update live cfg");
-            this.setState({config: API.get("charge_condition/live_config")});
+            this.setState({config_in_use: API.get("charge_condition/live_config")});
+        })
+
+        util.eventTarget.addEventListener("charge_condition/config", () => {
+            this.setState({config: API.get("charge_condition/config")})
         })
 
         util.eventTarget.addEventListener("charge_condition/state", () => {
@@ -194,33 +195,35 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
     render(props: {}, s: ChargeConditionOverrideState)
     {
         let {state,
+            config_in_use,
             config,
             evse_uptime,
             meter_abs} = s;
 
-        if (!state || !config)
+        if (!state || !config_in_use || !config)
             return <></>;
 
         const has_meter = API.hasFeature("meter");
 
         const energy_override = <FormRow label="Energy override" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
-                                <InputFloat value={config.energy_limit_kwh}
+                                <InputFloat value={config_in_use.energy_limit_kwh}
                                             onValue={(v) => {
-                                                this.setState({config: {...config, energy_limit_kwh: v}});
+                                                this.setState({config_in_use: {...config_in_use, energy_limit_kwh: v}});
                                                 API.call("charge_condition/override_energy", {energy: v}, "Error");
                                             }}
                                             digits={3} min={0} max={100000} unit={"kwh"}/>
                             </FormRow>
 
-        const energy_left = <FormRow label="Energy über" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4" hidden={config.energy_limit_kwh == 0}>
+        const energy_left = <FormRow label="Energy über" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4" hidden={config_in_use.energy_limit_kwh == 0}>
                                 <InputFloat value={state.target_energy_kwh - (meter_abs * 1000) > 0 ? state.target_energy_kwh - (meter_abs * 1000) : 0}
                                             digits={3} unit={"kwh"}/>
                             </FormRow>
 
         return <>
                 <FormRow label="Override" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                    <div class="input-group">
                     <InputSelect items={[
-                            ["0", "Aus"],
+                            ["0", "Unbegrenzt"],
                             ["1", "15 Min"],
                             ["2", "30 Min"],
                             ["3", "45 Min"],
@@ -232,14 +235,26 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
                             ["9", "8 H"],
                             ["10", "12 H"]
                         ]}
-                        value={config.duration_limit}
+                        value={config_in_use.duration_limit}
                         onValue={(v) => {
-                            this.setState({config: {...config, duration_limit: Number(v)}})
+                            this.setState({config_in_use: {...config_in_use, duration_limit: Number(v)}})
                             API.call("charge_condition/override_duration", {duration: Number(v)}, "Error");
                     }}/>
+                    <div class="input-group-append">
+                    <Button onClick={() => {
+                                this.setState({config_in_use: {...config_in_use, duration_limit: config.duration_limit}})
+                                API.call("charge_condition/override_duration", {duration: config.duration_limit}, "Error");
+                            }}
+                            className="form-control"
+                            variant="primary"
+                            hidden={config.duration_limit == config_in_use.duration_limit}>
+                        {__("charge_condition.content.reset")}
+                    </Button>
+                    </div>
+                    </div>
                 </FormRow>
                 <FormRow label="Zeit über" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4"
-                            hidden={config.duration_limit === 0}>
+                            hidden={config_in_use.duration_limit === 0}>
                     <InputText value={state.target_timestamp_mil - evse_uptime > 0 ?
                                             util.format_timespan(Math.floor((state.target_timestamp_mil - evse_uptime) / 1000)) :
                                                 util.format_timespan(0)}/>
