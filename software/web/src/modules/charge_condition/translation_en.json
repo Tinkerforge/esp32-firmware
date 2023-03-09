@@ -8,7 +8,9 @@
         },
         "content": {
             "enable_all": "Alles erlauben",
-            "disable_all": "Alles verbieten"
+            "disable_all": "Alles verbieten",
+            "reset": "Reset",
+            "overridden": "(overridden)"
         },
         "script": {
         }

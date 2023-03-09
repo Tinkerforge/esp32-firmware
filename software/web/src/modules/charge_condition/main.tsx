@@ -205,23 +205,76 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
 
         const has_meter = API.hasFeature("meter");
 
+        const get_energy_left = () => {
+            let energy: number;
+            if (state.start_energy_kwh == 0)
+                energy = config_in_use.energy_limit_kwh / 1000;
+            else if (energy > 0)
+                energy = energy = state.target_energy_kwh / 1000 - meter_abs;
+            else
+                energy = 0;
+
+            let ret = util.toLocaleFixed(energy, 3);
+
+            if (config_in_use.energy_limit_kwh != config.energy_limit_kwh)
+                ret += " " + __("charge_condition.content.overridden");
+
+            return ret;
+        }
+
+        const get_duration_left = () => {
+            let duration: number;
+            state.target_timestamp_mil - evse_uptime > 0 ?
+                                            util.format_timespan(Math.floor((state.target_timestamp_mil - evse_uptime) / 1000)) :
+                                                util.format_timespan(0)
+            duration = state.target_timestamp_mil / 1000;
+            if (state.start_timestamp_mil != 0)
+                duration = Math.floor((state.target_timestamp_mil - evse_uptime) / 1000);
+            if (state.target_timestamp_mil - evse_uptime < 0 && state.start_timestamp_mil != 0)
+                duration = 0;
+
+            let ret = util.format_timespan(duration);
+
+            if (config.duration_limit != config_in_use.duration_limit)
+                ret += " " +__("charge_condition.content.overridden");
+
+            return ret;
+        }
+
+
         const energy_override = <FormRow label="Energy override" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
-                                <InputFloat value={config_in_use.energy_limit_kwh}
-                                            onValue={(v) => {
-                                                this.setState({config_in_use: {...config_in_use, energy_limit_kwh: v}});
-                                                API.call("charge_condition/override_energy", {energy: v}, "Error");
-                                            }}
-                                            digits={3} min={0} max={100000} unit={"kwh"}/>
+                                    <InputFloat value={config_in_use.energy_limit_kwh}
+                                                onValue={(v) => {
+                                                    this.setState({config_in_use: {...config_in_use, energy_limit_kwh: v}});
+                                                    API.call("charge_condition/override_energy", {energy: v}, "Error");
+                                                }}
+                                                digits={3} min={0} max={100000} unit={"kwh"}/>
                             </FormRow>
 
-        const energy_left = <FormRow label="Energy über" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4" hidden={config_in_use.energy_limit_kwh == 0}>
-                                <InputFloat value={state.target_energy_kwh - (meter_abs * 1000) > 0 ? state.target_energy_kwh - (meter_abs * 1000) : 0}
-                                            digits={3} unit={"kwh"}/>
+        const energy_left = <FormRow label="Energy über" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4"
+                                         hidden={config_in_use.energy_limit_kwh == 0 && config_in_use.energy_limit_kwh == config.energy_limit_kwh}>
+                                <InputGroup>
+                                    <InputText value={get_energy_left()}/>
+                                    <InputGroup.Append>
+                                        <div class="form-control input-group-text">
+                                            kwh
+                                        </div>
+                                    </InputGroup.Append>
+                                    <InputGroup.Append>
+                                        <Button onClick={() => {
+                                            this.setState({config_in_use: {...config_in_use, energy_limit_kwh: config.energy_limit_kwh}});
+                                            API.call("charge_condition/override_energy", {energy: config.energy_limit_kwh}, "Error");
+                                        }}
+                                        variant="primary"
+                                        hidden={config_in_use.energy_limit_kwh == config.energy_limit_kwh}>
+                                            {__("charge_condition.content.reset")}
+                                        </Button>
+                                    </InputGroup.Append>
+                                </InputGroup>
                             </FormRow>
 
         return <>
                 <FormRow label="Override" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
-                    <div class="input-group">
                     <InputSelect items={[
                             ["0", "Unbegrenzt"],
                             ["1", "15 Min"],
