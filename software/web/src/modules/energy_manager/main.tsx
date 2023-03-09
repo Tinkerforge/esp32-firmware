@@ -167,6 +167,8 @@ interface DebugMode {
 }
 
 export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, DebugMode & API.getType['energy_manager/debug_config']> {
+    old_input4_rule_then = -1;
+
     constructor() {
         super('energy_manager/config',
             __("energy_manager.script.save_failed"),
@@ -175,7 +177,6 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         util.eventTarget.addEventListener('info/modules', () => {
             this.setState({debug_mode: !!((API.get('info/modules') as any).debug)})
         });
-
 
         util.eventTarget.addEventListener('energy_manager/debug_config', () => {
             this.setState({...API.get('energy_manager/debug_config')});
@@ -208,6 +209,10 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
             mode_list_for_inputs.push([tuple[0], __("energy_manager.content.input_switch_to") + " " + tuple[1]]);
         }
         mode_list_for_inputs.push(["255", __("energy_manager.content.input_mode_nothing")]);
+
+        // Remember previous input4_rule_then setting so that it can be restored after toggling the contactor installed setting multiple times.
+        if (this.old_input4_rule_then < 0)
+            this.old_input4_rule_then = this.state.input4_rule_then == 1 ? 0 : this.state.input4_rule_then;
 
         return (
             <>
@@ -298,7 +303,8 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                     <FormRow label={__("energy_manager.content.contactor_installed")}>
                         <Switch desc={__("energy_manager.content.contactor_installed_desc")}
                                 checked={s.contactor_installed}
-                                onClick={() => this.setState({contactor_installed: !this.state.contactor_installed, input4_rule_then: this.state.contactor_installed ? this.state.input4_rule_then : 1})}/>
+                                onClick={() => this.setState({contactor_installed: !this.state.contactor_installed, input4_rule_then: this.state.contactor_installed ? this.old_input4_rule_then : 1})} // input4_rule_then setting inverted because it checks the not-yet-toggled state of contactor_installed.
+                        />
                     </FormRow>
 
                     <FormRow label={__("energy_manager.content.phase_switching_mode")}>
