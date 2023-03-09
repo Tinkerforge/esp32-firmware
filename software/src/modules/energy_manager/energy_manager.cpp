@@ -172,7 +172,7 @@ void EnergyManager::setup()
 
     if ((config_in_use.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !config_in_use.get("contactor_installed")->asBool()) {
         logger.printfln("energy_manager: Invalid configuration: Automatic phase switching selected but no contactor installed.");
-        rgb_led.set_status(EmRgbLed::Status::Unconfigured);
+        set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
         return;
     }
 
@@ -262,7 +262,7 @@ void EnergyManager::setup()
 
     if (max_current_unlimited_ma == 0) {
         logger.printfln("energy_manager: No maximum current configured for chargers. Disabling energy distribution.");
-        rgb_led.set_status(EmRgbLed::Status::Unconfigured);
+        set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
         return;
     }
 
@@ -276,7 +276,7 @@ void EnergyManager::setup()
     }, 0);
 #else
     logger.printfln("energy_manager: Module 'Charge Manager' not available. Disabling energy distribution.");
-    rgb_led.set_status(EmRgbLed::Status::Unconfigured);
+    set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
     return;
 #endif
 
@@ -438,7 +438,9 @@ void EnergyManager::update_all_data_struct()
 
 void EnergyManager::update_status_led()
 {
-    if (error_flags & ERROR_FLAGS_ALL_ERRORS_MASK)
+    if (error_flags & ERROR_FLAGS_BAD_CONFIG_MASK)
+        rgb_led.set_status(EmRgbLed::Status::BadConfig);
+    else if (error_flags & ERROR_FLAGS_ALL_ERRORS_MASK)
         rgb_led.set_status(EmRgbLed::Status::Error);
     else if (error_flags & ERROR_FLAGS_ALL_WARNINGS_MASK)
         rgb_led.set_status(EmRgbLed::Status::Warning);

@@ -82,9 +82,9 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
         }
 
         let error_flags_ok        = d.status.error_flags == 0;
-        let error_flags_internal  = d.status.error_flags & 0xFF000000;
+        let error_flags_config    = d.status.error_flags & 0x80000000;
+        let error_flags_internal  = d.status.error_flags & 0x7F000000;
         let error_flags_contactor = d.status.error_flags & 0x00010000;
-        let error_flags_config    = d.status.error_flags & 0x00000004;
         let error_flags_network   = d.status.error_flags & 0x00000002;
 
         return <>
@@ -143,16 +143,17 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                         {__("energy_manager.status.error_network")}
                     </Button>
                     <Button disabled
-                        variant={(error_flags_config ? "" : "outline-") + "warning"}>
-                        {__("energy_manager.status.error_config")}
-                    </Button>
-                    <Button disabled
                         variant={(error_flags_contactor ? "" : "outline-") + "danger"}>
                         {__("energy_manager.status.error_contactor")}
                     </Button>
                     <Button disabled
                         variant={(error_flags_internal ? "" : "outline-") + "danger"}>
                         {__("energy_manager.status.error_internal")}
+                    </Button>
+                    <Button disabled
+                        variant={(error_flags_config ? "" : "outline-") + "danger"}
+                        style="background-color:#CA1F7B">
+                        {__("energy_manager.status.error_config")}
                     </Button>
                 </ButtonGroup>
             </FormRow>

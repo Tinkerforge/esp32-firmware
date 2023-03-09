@@ -39,8 +39,8 @@ void EmRgbLed::update_led()
             H = HUE_WARNING;
         else if (status == Status::Error)
             H = HUE_ERROR;
-        else if (status == Status::Unconfigured)
-            H = HUE_UNCONFIG;
+        else if (status == Status::BadConfig)
+            H = HUE_BADCONFIG;
         else
             H = HUE_UNKNOWN;
 

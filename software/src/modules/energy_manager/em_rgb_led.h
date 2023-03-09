@@ -22,26 +22,21 @@
 #include "config.h"
 
 // full green
-#define HUE_OK       120
+#define HUE_OK          120
 // full yellow
-#define HUE_WARNING   60
+#define HUE_WARNING      60
 // full red
-#define HUE_ERROR      0
+#define HUE_ERROR         0
 // full yellow
-#define HUE_IMPORT    60
+#define HUE_IMPORT       60
 // full blue
-#define HUE_BALANCED 240
+#define HUE_BALANCED    240
 // full green
-#define HUE_EXPORT   120
+#define HUE_EXPORT      120
 // full magenta
-#define HUE_UNCONFIG 300
+#define HUE_BADCONFIG   300
 // full magenta
-#define HUE_UNKNOWN  300
-
-// should be a power of 2
-#define BLINK_PERIOD  16
-
-#define LED_TASK_INTERVAL 25
+#define HUE_UNKNOWN     300
 
 class EmRgbLed
 {
@@ -50,7 +45,7 @@ public:
         OK = 0,
         Warning = 1,
         Error = 2,
-        Unconfigured = 3,
+        BadConfig = 3,
     };
     enum class GridBalance {
         Export = 0,
