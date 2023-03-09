@@ -293,24 +293,23 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
                             this.setState({config_in_use: {...config_in_use, duration_limit: Number(v)}})
                             API.call("charge_condition/override_duration", {duration: Number(v)}, "Error");
                     }}/>
-                    <div class="input-group-append">
-                    <Button onClick={() => {
-                                this.setState({config_in_use: {...config_in_use, duration_limit: config.duration_limit}})
-                                API.call("charge_condition/override_duration", {duration: config.duration_limit}, "Error");
-                            }}
-                            className="form-control"
-                            variant="primary"
-                            hidden={config.duration_limit == config_in_use.duration_limit}>
-                        {__("charge_condition.content.reset")}
-                    </Button>
-                    </div>
-                    </div>
                 </FormRow>
                 <FormRow label="Zeit über" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4"
-                            hidden={config_in_use.duration_limit === 0}>
-                    <InputText value={state.target_timestamp_mil - evse_uptime > 0 ?
-                                            util.format_timespan(Math.floor((state.target_timestamp_mil - evse_uptime) / 1000)) :
-                                                util.format_timespan(0)}/>
+                            hidden={config_in_use.duration_limit === 0 && config_in_use.duration_limit == config.duration_limit}>
+                    <InputGroup>
+                        <InputText value={get_duration_left()}/>
+                        <InputGroup.Append>
+                            <Button onClick={() => {
+                                        this.setState({config_in_use: {...config_in_use, duration_limit: config.duration_limit}})
+                                        API.call("charge_condition/override_duration", {duration: config.duration_limit}, "Error");
+                                    }}
+                                    className="form-control"
+                                    variant="primary"
+                                    hidden={config.duration_limit == config_in_use.duration_limit}>
+                                {__("charge_condition.content.reset")}
+                            </Button>
+                        </InputGroup.Append>
+                    </InputGroup>
                 </FormRow>
                 {has_meter ? <>{energy_override}{energy_left}</> : <></>}
             </>
