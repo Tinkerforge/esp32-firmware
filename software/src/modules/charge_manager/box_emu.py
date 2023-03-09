@@ -229,7 +229,7 @@ def send():
                     state_len,                                  # length
                     next_seq_num,
                     protocol_version if not resp_wrong_proto_version.isChecked() else 0,
-                    0,                                          # features
+                    0x7F,                                          # features
                     uid,
                     uptime,
                     charging_time,
