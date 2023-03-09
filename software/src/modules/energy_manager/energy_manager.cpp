@@ -80,9 +80,10 @@ void EnergyManager::pre_setup()
         {"auto_reset_mode", Config::Bool(false)},
         {"auto_reset_time", Config::Uint(0, 0, 1439)},
         {"excess_charging_enable", Config::Bool(false)},
+        {"target_power_from_grid", Config::Int32(0)}, // in watt
+        {"guaranteed_power", Config::Uint(0, 0, 22000)}, // in watt
         {"contactor_installed", Config::Bool(false)},
         {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
-        {"guaranteed_power", Config::Uint(0, 0, 22000)}, // in watt
         {"relay_config", Config::Uint8(0)},
         {"relay_rule_when", Config::Uint8(0)},
         {"relay_rule_is", Config::Uint8(0)},
@@ -113,7 +114,6 @@ void EnergyManager::pre_setup()
 
     debug_config = Config::Object({
         {"hysteresis_time", Config::Uint(HYSTERESIS_MIN_TIME_MINUTES, 0, 60)}, // in minutes
-        {"target_power_from_grid", Config::Int32(0)}, // in watt
     });
 
     // Runtime config
@@ -196,7 +196,7 @@ void EnergyManager::setup()
     // Cache config for energy update
     default_mode                = config_in_use.get("default_mode")->asUint();
     excess_charging_enable      = config_in_use.get("excess_charging_enable")->asBool();
-    target_power_from_grid_w    = debug_config_in_use.get("target_power_from_grid")->asInt();          // watt
+    target_power_from_grid_w    = config_in_use.get("target_power_from_grid")->asInt();          // watt
     guaranteed_power_w          = config_in_use.get("guaranteed_power")->asUint();               // watt
     contactor_installed         = config_in_use.get("contactor_installed")->asBool();
     phase_switching_mode        = config_in_use.get("phase_switching_mode")->asUint();
@@ -639,7 +639,7 @@ void EnergyManager::update_energy()
         }
 
         // TODO Evil: Allow runtime changes, overrides input pins!
-        target_power_from_grid_w    = debug_config.get("target_power_from_grid")->asInt(); // watt
+        target_power_from_grid_w    = config.get("target_power_from_grid")->asInt(); // watt
 
         int32_t p_error_w;
         if (!excess_charging_enable) {

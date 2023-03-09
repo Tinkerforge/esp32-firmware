@@ -37,6 +37,17 @@
             "enable_excess_charging_desc": "Wenn aktiviert, regelt der Energy Manager die an ihn angeschlossenen Verbraucher abhängig vom Überschuss einer vorhandenen Photovoltaikanlage. Wenn deaktiviert, wird die maximale Leistung unter Einhaltung der maximale Strombelastbarkeit der Zuleitungen erlaubt.",
             "guaranteed_power": "Min + PV: Mindest-Ladeleistung",
             "guaranteed_power_muted": "Leistung, die auch ohne Überschuss garantiert mindestens für alle angeschlossenen Wallboxen in Summe zur Verfügung steht.",
+            "target_power_from_grid": "Soll-Netzbezug",
+            "target_power_from_grid_muted": "Sollwert für Überschussregelung",
+            "control_behavior": "Regelverhalten",
+            "control_behavior_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "target_power_n200": "Sehr konservativ (-200 W)",
+            "target_power_n100": "Konservativ (-100 W)",
+            "target_power_n50": "Leicht konservativ (-50 W) – lade Batteriespeicher zuerst",
+            "target_power_0": "Ausgeglichen (±0 W) – empfohlen ohne Batteriespeicher",
+            "target_power_p50": "Leicht aggressiv (50 W) – verwende Batteriespeicher für Fahrzeugladung",
+            "target_power_p100": "Aggressiv (100 W)",
+            "target_power_p200": "Sehr agressiv (200 W)",
             "contactor_installed": "Schütz angeschlossen",
             "contactor_installed_desc": "Der Energy Manager verfügt über ein Schütz, mit dem die von ihm verwalteten Wallboxen zwischen ein- und dreiphasigem Anschluss umgeschaltet werden können.",
             "phase_switching_mode": "Phasenumschaltung",
@@ -89,12 +100,8 @@
             "input_mode_nothing": "Modus nicht wechseln",
 
             "header_expert_settings": "Experteneinstellungen",
-            "target_power_from_grid": "Soll-Netzbezug",
-            "target_power_from_grid_muted": "Sollwert für Überschussregelung",
             "hysteresis_time": "Hysterese-Zeit",
-            "hysteresis_time_muted": "Minimale Wartezeit vor Phasenumschaltungen bzw. Anfang und Ende eines Ladevorganges, um die Ladeelektronik des Fahrzeuges nicht durch häufige Schaltvorgänge zu belasten.",
-            "hysteresis_wear_accepted": "Übermäßigen Verschleiß akzeptieren",
-            "hysteresis_wear_accepted_desc": "Ich akzeptiere den übermäßigen Verschleiß der Ladeelektronik meines Fahrzeuges durch häufige Schaltvorgänge. Dies ermöglicht es, eine kurze Hysterese-Zeite zu verwenden."
+            "hysteresis_time_muted": "Minimale Wartezeit vor Phasenumschaltungen bzw. Anfang und Ende eines Ladevorganges, um die Ladeelektronik des Fahrzeuges nicht durch häufige Schaltvorgänge zu belasten."
         },
         "script": {
             "save_failed": "Speichern der Energy Manager-Einstellungen fehlgeschlagen.",

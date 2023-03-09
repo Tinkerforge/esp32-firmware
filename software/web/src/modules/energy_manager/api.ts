@@ -44,9 +44,10 @@ export interface config {
     auto_reset_mode: boolean,
     auto_reset_time: number,
     excess_charging_enable: boolean,
+    target_power_from_grid: number,
+    guaranteed_power: number,
     contactor_installed: boolean,
     phase_switching_mode: number,
-    guaranteed_power: number,
     relay_config: number,
     relay_rule_when: number,
     relay_rule_is: number,
@@ -64,7 +65,6 @@ export interface config {
 
 export interface debug_config {
     hysteresis_time: number,
-    target_power_from_grid: number,
 }
 
 export interface charge_mode {

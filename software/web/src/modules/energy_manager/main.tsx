@@ -19,23 +19,23 @@
 
 import $ from "../../ts/jq";
 
-import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
-import { h, render, Fragment, Component} from "preact";
+import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
-import { ConfigComponent } from "src/ts/components/config_component";
-import { FormRow } from "src/ts/components/form_row";
-import { Switch } from "src/ts/components/switch";
-import { IndicatorGroup } from "src/ts/components/indicator_group";
-import { InputSelect } from "src/ts/components/input_select";
-import { InputFloat } from "src/ts/components/input_float";
-import { InputNumber } from "src/ts/components/input_number";
-import { InputTime } from "src/ts/components/input_time";
-import { ConfigForm } from "src/ts/components/config_form";
-import { FormSeparator } from "src/ts/components/form_separator";
-import { Button, ButtonGroup, Collapse } from "react-bootstrap";
-import { CheckCircle, Circle, XCircle } from "react-feather";
+
+import { h, render, Fragment, Component } from "preact";
+import { Button, ButtonGroup, Collapse  } from "react-bootstrap";
+import { CheckCircle, Circle            } from "react-feather";
+import { ConfigComponent } from "../../ts/components/config_component";
+import { ConfigForm      } from "../../ts/components/config_form";
+import { FormRow         } from "../../ts/components/form_row";
+import { FormSeparator   } from "../../ts/components/form_separator";
+import { IndicatorGroup  } from "../../ts/components/indicator_group";
+import { InputFloat      } from "../../ts/components/input_float";
+import { InputNumber     } from "../../ts/components/input_number";
+import { InputSelect     } from "../../ts/components/input_select";
+import { InputTime       } from "../../ts/components/input_time";
+import { Switch          } from "../../ts/components/switch";
 
 type StringStringTuple = [string, string];
 
@@ -186,7 +186,6 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         if (this.state.debug_mode) {
             await API.save('energy_manager/debug_config', {
                     hysteresis_time: this.state.hysteresis_time,
-                    target_power_from_grid: this.state.target_power_from_grid
                 }, __("energy_manager.script.save_failed"));
         }
         await super.sendSave(t, cfg);
@@ -252,16 +251,49 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                 onClick={this.toggle('excess_charging_enable')}/>
                     </FormRow>
 
-                    <FormRow label={__("energy_manager.content.guaranteed_power")} label_muted={__("energy_manager.content.guaranteed_power_muted")}>
-                        <InputFloat
-                            unit="kW"
-                            value={s.guaranteed_power}
-                            onValue={this.set('guaranteed_power')}
-                            digits={3}
-                            min={0}
-                            max={22000}
-                            />
-                    </FormRow>
+                    <Collapse in={s.excess_charging_enable}>
+                        <div>
+                            <FormRow label={__("energy_manager.content.guaranteed_power")} label_muted={__("energy_manager.content.guaranteed_power_muted")}>
+                                <InputFloat
+                                    unit="kW"
+                                    value={s.guaranteed_power}
+                                    onValue={this.set('guaranteed_power')}
+                                    digits={3}
+                                    min={0}
+                                    max={22000}
+                                />
+                            </FormRow>
+
+                            {s.debug_mode ?
+                                <FormRow label={__("energy_manager.content.target_power_from_grid")} label_muted={__("energy_manager.content.target_power_from_grid_muted")}>
+                                    <InputFloat
+                                        unit="kW"
+                                        value={s.target_power_from_grid}
+                                        onValue={this.set('target_power_from_grid')}
+                                        digits={3}
+                                        min={-43470}
+                                        max={345000}
+                                    />
+                                </FormRow>
+                            : <>
+                                <FormRow label={__("energy_manager.content.control_behavior")} label_muted={__("energy_manager.content.control_behavior_muted")}>
+                                    <InputSelect
+                                        items={[
+                                            ["-200", __("energy_manager.content.target_power_n200")],
+                                            ["-100", __("energy_manager.content.target_power_n100")],
+                                            [ "-50", __("energy_manager.content.target_power_n50" )],
+                                            [   "0", __("energy_manager.content.target_power_0"   )],
+                                            [  "50", __("energy_manager.content.target_power_p50" )],
+                                            [ "100", __("energy_manager.content.target_power_p100")],
+                                            [ "200", __("energy_manager.content.target_power_p200")],
+                                        ]}
+                                        value={s.target_power_from_grid}
+                                        onValue={(v) => this.setState({target_power_from_grid: parseInt(v)})}
+                                    />
+                                </FormRow>
+                            </>}
+                        </div>
+                    </Collapse>
 
                     <FormRow label={__("energy_manager.content.contactor_installed")}>
                         <Switch desc={__("energy_manager.content.contactor_installed_desc")}
@@ -494,17 +526,6 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
                     {s.debug_mode ? <>
                         <FormSeparator heading={__("energy_manager.content.header_expert_settings")} />
-                        <FormRow label={__("energy_manager.content.target_power_from_grid")} label_muted={__("energy_manager.content.target_power_from_grid_muted")}>
-                            <InputFloat
-                                unit="kW"
-                                value={s.target_power_from_grid}
-                                onValue={this.set('target_power_from_grid')}
-                                digits={3}
-                                min={-43470}
-                                max={345000}
-                            />
-                        </FormRow>
-
                         <FormRow label={__("energy_manager.content.hysteresis_time")} label_muted={__("energy_manager.content.hysteresis_time_muted")}>
                             <InputNumber
                                 unit="min"
