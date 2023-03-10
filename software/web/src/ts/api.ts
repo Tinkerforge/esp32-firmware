@@ -24,7 +24,7 @@ import $ from "./jq";
 
 export {type ConfigMap as getType, type Modules};
 
-type EventMap = {
+export type EventMap = {
     [key in keyof ConfigMap]: MessageEvent<Readonly<ConfigMap[key]>>;
 }
 

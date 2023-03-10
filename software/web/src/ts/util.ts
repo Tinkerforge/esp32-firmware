@@ -24,6 +24,7 @@ import * as API from "./api";
 import { __ } from "./translation";
 
 import { AsyncModal } from "./components/async_modal";
+import { api_cache } from "./api_defs";
 
 export function reboot() {
     API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
@@ -176,6 +177,14 @@ let wsReconnectCallback: () => void = null;
 let ws: WebSocket = null;
 
 const RECONNECT_TIME = 12000;
+
+export function addApiEventListener<T extends keyof API.EventMap>(type: T, listener: (this: API.APIEventTarget, ev: API.EventMap[T]) => any, options?: boolean | AddEventListenerOptions) {
+    eventTarget.addEventListener(type, listener);
+    if (api_cache[type])
+    {
+        API.trigger(type, eventTarget);
+    }
+}
 
 export let eventTarget: API.APIEventTarget = new API.APIEventTarget();
 
