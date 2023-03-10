@@ -41,6 +41,7 @@ import { DebugLogger } from "../../ts/components/debug_logger";
 import { ConfigComponent } from "src/ts/components/config_component";
 import { InputFloat } from "src/ts/components/input_float";
 import { InputSelect } from "src/ts/components/input_select";
+import { ConfigForm } from "src/ts/components/config_form";
 import { extend } from "jquery";
 
 interface EVSEState {
@@ -475,8 +476,8 @@ class EVSESettings extends ConfigComponent<"charge_condition/config", {}, EVSESe
             </FormRow>;
 
         return <>
-                <PageHeader title={__("evse.content.settings")}/>
 
+                <ConfigForm id="evse_settings" title={__("evse.content.settings")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                 <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
                     <Switch desc={__("evse.content.auto_start_enable")}
                             checked={!auto_start_charging.auto_start_charging}
@@ -521,6 +522,7 @@ class EVSESettings extends ConfigComponent<"charge_condition/config", {}, EVSESe
                     onValue={(v) => this.setState({duration_limit: Number(v)})}/>
                 </FormRow>
                 {has_meter ? energy_settings : <></>}
+            </ConfigForm>
             </>;
     }
 }
