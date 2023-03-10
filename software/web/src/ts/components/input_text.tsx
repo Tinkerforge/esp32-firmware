@@ -56,7 +56,7 @@ export function InputText<T extends (InputTextProps | InputTextWithValidationPro
                 id={id}
                 type="text"
                 onInput={props.onValue ? (e) => {
-                    if ((props.maxLength != undefined && new Blob([(e.target as HTMLInputElement).value]).size < props.maxLength) ||
+                    if ((props.maxLength != undefined && new Blob([(e.target as HTMLInputElement).value]).size <= props.maxLength) ||
                             props.maxLength == undefined)
                         props.onValue((e.target as HTMLInputElement).value);
                     else

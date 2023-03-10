@@ -85,7 +85,7 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
                                                         : (props.placeholder ?? __("component.input_password.unchanged"))}
                         onInput={(e) => {
                             let value: string = (e.target as HTMLInputElement).value;
-                            if ((props.maxLength != undefined && new Blob([(e.target as HTMLInputElement).value]).size < props.maxLength) ||
+                            if ((props.maxLength != undefined && new Blob([(e.target as HTMLInputElement).value]).size <= props.maxLength) ||
                                     props.maxLength == undefined)
                                 props.onValue(value.length > 0 ? value : null);
                             else
