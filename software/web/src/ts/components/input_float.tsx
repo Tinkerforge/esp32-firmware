@@ -84,6 +84,9 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
         setInputInFlight(null);
     }
 
+    let floatMin = 'min' in props ? props.min / pow10 : 0;
+    let floatMax = 'max' in props ? props.max / pow10 : 0;
+
     return (
         <div class="input-group">
             <input class="form-control no-spin"
@@ -100,9 +103,10 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                        onfocusout={'onValue' in props ? () => sendInFlight() : undefined}
                        value={value}
                        disabled={!('onValue' in props)}
-                       inputMode="decimal"/>
+                       inputMode="decimal"
+                       style="min-width: 5em;"/>
             <div class="input-group-append">
-                <div class="form-control input-group-text">
+                <div class={"form-control input-group-text" + ('showMinMax' in props ? " d-none d-sm-block" : "")}>
                     {this.props.unit}
                 </div>
                 {'onValue' in props ?
@@ -141,13 +145,13 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                                 setTarget(props.min);
                             }}
                             >
-                        {(props.min / pow10).toString() + " " + props.unit}
+                        {((floatMin - Math.trunc(floatMin) < Math.pow(10, -props.digits)) ? Math.trunc(floatMin) : util.toLocaleFixed(floatMin, props.digits)) + " " + props.unit}
                     </Button>
                     <Button variant="primary" onClick={() => {
                                 setTarget(props.max);
                             }}
                             >
-                        {(props.max / pow10).toString() + " " + props.unit}
+                        {((floatMax - Math.trunc(floatMax) < Math.pow(10, -props.digits)) ? Math.trunc(floatMax) : util.toLocaleFixed(floatMax, props.digits)) + " " + props.unit}
                     </Button>
                 </ButtonGroup>
             }
