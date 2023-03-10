@@ -155,7 +155,8 @@
             "slot_10": "Modbus TCP clearance",
             "slot_11": "OCPP",
             "slot_12": "Lalala",
-            "slot_13": "Time restriction"
+            "slot_13": "Time restriction",
+            "reboot_content_changed": "Charge Settings"
         }
     }
 }

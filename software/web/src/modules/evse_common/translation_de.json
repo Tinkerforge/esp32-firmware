@@ -155,7 +155,9 @@
             "slot_10": "Modbus TCP-Freigabe",
             "slot_11": "OCPP",
             "slot_12": "Lalala",
-            "slot_13": "Zeit Restriktion"
+            "slot_13": "Zeit Restriktion",
+
+            "reboot_content_changed": "Ladeeinstellungen"
         }
     }
 }

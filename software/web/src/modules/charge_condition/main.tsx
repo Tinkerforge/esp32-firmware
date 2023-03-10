@@ -32,7 +32,7 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { FormGroup } from "../../ts/components/form_group";
 import { InputText } from "../../ts/components/input_text";
-import { Button, Card, Collapse, ListGroup, Modal } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Collapse, InputGroup, ListGroup, Modal } from "react-bootstrap";
 import { InputSelect } from "src/ts/components/input_select";
 import { FormSeparator } from "src/ts/components/form_separator";
 import { InputNumber } from "src/ts/components/input_number";
@@ -62,29 +62,8 @@ export class ChargeCondition extends ConfigComponent<'charge_condition/config', 
             meter_abs: 0,
             evse_uptime: 0
         } as any;
-
-        util.eventTarget.addEventListener("charge_condition/state", () => {
-            this.setState({state: API.get("charge_condition/state")});
-        });
-
-        util.eventTarget.addEventListener("meter/values", () => {
-            this.setState({meter_abs: API.get("meter/values").energy_abs});
-        })
-
-        util.eventTarget.addEventListener("evse/low_level_state", () => {
-            this.setState({evse_uptime: API.get("evse/low_level_state").uptime});
-        })
     }
 
-    maxBitmap(): number {
-        let num = 0;
-        for (let i = 0; i < 24; i++)
-        {
-            let tmp = 1 << i;
-            num = num | tmp;
-        }
-        return num;
-    }
 
     hackToAllowSave() {
         document.getElementById("charge_condition_config_form").dispatchEvent(new Event('input'));
@@ -95,53 +74,9 @@ export class ChargeCondition extends ConfigComponent<'charge_condition/config', 
         if (!state || !state.state)
             return (<></>);
 
-        let has_meter = API.hasFeature("meter");
-
-        let energy_settings = <FormRow label="Energie Einstellung">
-                <InputFloat value={state.energy_limit_kwh}
-                            onValue={(v) => this.setState({energy_limit_kwh: v})}
-                            digits={3} min={0} max={100000} unit={"kwh"}/>
-            </FormRow>;
-
-        let energy_display = <FormRow label="Energy über">
-                <InputFloat value={state.state.target_energy_kwh != 0 ? state.state.target_energy_kwh - (state.meter_abs * 1000) : 0}
-                            digits={3} unit={"kwh"}/>
-            </FormRow>
-
-        //TODO: Investigate
 
         return (
             <>
-                <ConfigForm title="Charge Condition"
-                            id="charge_condition_config_form"
-                            isModified={this.isModified()}
-                            onSave={() => this.save()}
-                            onReset={() => this.reset()}
-                            onDirtyChange={(d) => this.ignore_updates = d}>
-                    <FormRow label="Zeit Einstellung">
-                        <InputSelect items={[
-                            ["0", "Aus"],
-                            ["1", "15 Min"],
-                            ["2", "30 Min"],
-                            ["3", "45 Min"],
-                            ["4", "1 H"],
-                            ["5", "2 H"],
-                            ["6", "3 H"],
-                            ["7", "4 H"],
-                            ["8", "6 H"],
-                            ["9", "8 H"],
-                            ["10", "12 H"]
-                        ]}
-                        value={state.duration_limit}
-                        onValue={(v) => this.setState({duration_limit: Number(v)})}/>
-                    </FormRow>
-                    {has_meter ? energy_settings : <></>}
-                    <FormRow label="Zeit über">
-                        <InputText value={state.state.target_timestamp_mil - state.evse_uptime > 0 ?
-                                            util.format_timespan(Math.floor((state.state.target_timestamp_mil - state.evse_uptime) / 1000)) :
-                                                util.format_timespan(0)}/>
-                    </FormRow>
-                    {has_meter ? energy_display : <></>}
             </>
         );
     }
