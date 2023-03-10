@@ -47,6 +47,9 @@ function update_wifi_state() {
     if (state.sta_ip != "0.0.0.0") {
         $('#wifi_state_sta_ip').html(state.sta_ip);
         $('#wifi_state_sta_rssi').html(wifi_symbol(state.sta_rssi));
+    } else {
+        $('#wifi_state_sta_ip').html("");
+        $('#wifi_state_sta_rssi').html("");
     }
 }
 
