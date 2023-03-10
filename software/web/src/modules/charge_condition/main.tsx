@@ -19,67 +19,23 @@
 
 import $ from "../../ts/jq";
 
-import feather from "../../ts/feather";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render, Fragment, Component } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 
-import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import { FormGroup } from "../../ts/components/form_group";
 import { InputText } from "../../ts/components/input_text";
-import { Button, ButtonGroup, Card, Collapse, InputGroup, ListGroup, Modal } from "react-bootstrap";
+import { Button, InputGroup } from "react-bootstrap";
 import { InputSelect } from "src/ts/components/input_select";
-import { FormSeparator } from "src/ts/components/form_separator";
-import { InputNumber } from "src/ts/components/input_number";
 import { InputFloat } from "src/ts/components/input_float";
-import { Switch } from "src/ts/components/switch";
 
-type ChargeConditionConfig = API.getType["charge_condition/config"];
 
 interface ChargeConditionState {
     state: API.getType["charge_condition/state"]
     meter_abs: number
     evse_uptime: number
-}
-
-export class ChargeCondition extends ConfigComponent<'charge_condition/config', {}, ChargeConditionState> {
-
-
-    constructor() {
-        super('charge_condition/config',
-              __("charge_manager.script.save_failed"),
-              __("charge_manager.script.reboot_content_changed"));
-
-        this.state = {
-            duration_limit: 0,
-            energy_limit_kwh: 0,
-            time_restriction_enabled: false,
-            meter_abs: 0,
-            evse_uptime: 0
-        } as any;
-    }
-
-
-    hackToAllowSave() {
-        document.getElementById("charge_condition_config_form").dispatchEvent(new Event('input'));
-    }
-
-    render(props: {}, state: ChargeConditionConfig & ChargeConditionState) {
-
-        if (!state || !state.state)
-            return (<></>);
-
-
-        return (
-            <>
-            </>
-        );
-    }
 }
 
 interface ChargeConditionOverrideState extends ChargeConditionState
@@ -157,9 +113,6 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
 
         const get_duration_left = () => {
             let duration: number;
-            state.target_timestamp_mil - evse_uptime > 0 ?
-                                            util.format_timespan(Math.floor((state.target_timestamp_mil - evse_uptime) / 1000)) :
-                                                util.format_timespan(0)
             duration = state.target_timestamp_mil / 1000;
             if (state.start_timestamp_mil != 0)
                 duration = Math.floor((state.target_timestamp_mil - evse_uptime) / 1000);
