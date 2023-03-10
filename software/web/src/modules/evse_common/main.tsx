@@ -47,15 +47,15 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
 
         this.timeout = null;
 
-        util.eventTarget.addEventListener('evse/state', () => {
+        util.addApiEventListener('evse/state', () => {
             this.setState({state: API.get('evse/state')})
         });
 
-        util.eventTarget.addEventListener('evse/auto_start_charging', () => {
+        util.addApiEventListener('evse/auto_start_charging', () => {
             this.setState({auto_start: API.get('evse/auto_start_charging')})
         })
 
-        util.eventTarget.addEventListener('evse/slots', () => {
+        util.addApiEventListener('evse/slots', () => {
             let slots = API.get('evse/slots');
             this.setState({slots: slots, configured_current: Math.min(slots[0].max_current, slots[1].max_current, slots[5].max_current)});
         })

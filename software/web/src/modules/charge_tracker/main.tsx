@@ -62,22 +62,22 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                 __("charge_tracker.script.save_failed"),
                 __("charge_tracker.script.reboot_content_changed"));
 
-        util.eventTarget.addEventListener('users/config', () => {
+        util.addApiEventListener('users/config', () => {
             let user_filter_items: [string, string][] = API.get('users/config').users.map(x => [x.id.toString(), (x.display_name == "Anonymous" && x.id == 0) ? __("charge_tracker.script.unknown_users") : x.display_name]);
             user_filter_items.unshift(["-1",  __("charge_tracker.script.deleted_users")]);
             user_filter_items.unshift(["-2", __("charge_tracker.script.all_users")]);
             this.setState({user_filter_items: user_filter_items});
         });
 
-        util.eventTarget.addEventListener('charge_tracker/state', () => {
+        util.addApiEventListener('charge_tracker/state', () => {
             this.setState({...API.get('charge_tracker/state')});
         });
 
-        util.eventTarget.addEventListener('charge_tracker/last_charges', () => {
+        util.addApiEventListener('charge_tracker/last_charges', () => {
             this.setState({last_charges: API.get('charge_tracker/last_charges')});
         });
 
-        util.eventTarget.addEventListener('charge_tracker/config', () => {
+        util.addApiEventListener('charge_tracker/config', () => {
             let conf = API.get('charge_tracker/config');
             this.setState({electricity_price: conf.electricity_price});
         });

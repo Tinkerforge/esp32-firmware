@@ -78,18 +78,18 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         } as any;
 
         // Does not check if the event exists, in case the evse module is not compiled in.
-        util.eventTarget.addEventListener_unchecked('evse/management_enabled', () => {
+        util.addApiEventListener_unchecked('evse/management_enabled', () => {
             let evse_enabled = API.get_maybe('evse/management_enabled');
             if (evse_enabled != null) {
                 this.setState({managementEnabled: evse_enabled.enabled});
             }
         });
 
-        util.eventTarget.addEventListener('charge_manager/scan_result', () => {
+        util.addApiEventListener('charge_manager/scan_result', () => {
             this.addScanResults( API.get('charge_manager/scan_result') as ScanCharger[]);
         });
 
-        util.eventTarget.addEventListener('info/modules', () => {
+        util.addApiEventListener('info/modules', () => {
             this.setState({energyManagerMode: !!((API.get('info/modules') as any).energy_manager)})
         });
     }
@@ -496,23 +496,23 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
     constructor() {
         super();
 
-        util.eventTarget.addEventListener('charge_manager/state', () => {
+        util.addApiEventListener('charge_manager/state', () => {
             this.setState({state: API.get_maybe('charge_manager/state')})
         });
 
-        util.eventTarget.addEventListener('charge_manager/available_current', () => {
+        util.addApiEventListener('charge_manager/available_current', () => {
             this.setState({available_current: API.get_maybe('charge_manager/available_current')})
         });
 
-        util.eventTarget.addEventListener('charge_manager/config', () => {
+        util.addApiEventListener('charge_manager/config', () => {
             this.setState({config: API.get_maybe('charge_manager/config')})
         });
 
-        util.eventTarget.addEventListener('info/modules', () => {
+        util.addApiEventListener('info/modules', () => {
             this.setState({energyManagerMode: !!((API.get('info/modules') as any).energy_manager)})
         });
 
-        util.eventTarget.addEventListener('info/keep_alive', () => {
+        util.addApiEventListener('info/keep_alive', () => {
             this.setState({uptime: API.get('info/keep_alive').uptime})
         });
     }

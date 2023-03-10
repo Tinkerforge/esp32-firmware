@@ -353,23 +353,23 @@ export class Meter extends Component<{}, MeterState> {
             i += e.three_phase ? 3 : 1;
         }
 
-        util.eventTarget.addEventListener("meter/state", () => {
+        util.addApiEventListener("meter/state", () => {
             this.setState({state: API.get("meter/state")});
         });
 
-        util.eventTarget.addEventListener("meter/values", () => {
+        util.addApiEventListener("meter/values", () => {
             this.setState({values: API.get("meter/values")});
         });
 
-        util.eventTarget.addEventListener("meter/phases", () => {
+        util.addApiEventListener("meter/phases", () => {
             this.setState({phases: API.get("meter/phases")});
         });
 
-        util.eventTarget.addEventListener("meter/all_values", () => {
+        util.addApiEventListener("meter/all_values", () => {
             this.setState({all_values: API.get("meter/all_values")});
         });
 
-        util.eventTarget.addEventListener("meter/live", () => {
+        util.addApiEventListener("meter/live", () => {
             let live = API.get("meter/live");
 
             this.live_data = calculate_live_data(live.offset, live.samples_per_second, live.samples);
@@ -380,7 +380,7 @@ export class Meter extends Component<{}, MeterState> {
             }
         });
 
-        util.eventTarget.addEventListener("meter/live_samples", () => {
+        util.addApiEventListener("meter/live_samples", () => {
             let live = API.get("meter/live_samples");
             let live_extra = calculate_live_data(0, live.samples_per_second, live.samples);
 
@@ -400,7 +400,7 @@ export class Meter extends Component<{}, MeterState> {
             }
         });
 
-        util.eventTarget.addEventListener("meter/history", () => {
+        util.addApiEventListener("meter/history", () => {
             let history = API.get("meter/history");
 
             this.history_data = calculate_history_data(history.offset, history.samples);
@@ -410,7 +410,7 @@ export class Meter extends Component<{}, MeterState> {
             }
         });
 
-        util.eventTarget.addEventListener("meter/history_samples", () => {
+        util.addApiEventListener("meter/history_samples", () => {
             let history = API.get("meter/history_samples");
 
             this.history_data = calculate_history_data(0, array_append(this.history_data.samples, history.samples, 720));
@@ -554,7 +554,7 @@ export class StatusMeterChart extends Component<{}, {}> {
     constructor() {
         super();
 
-        util.eventTarget.addEventListener("meter/history", () => {
+        util.addApiEventListener("meter/history", () => {
             let history = API.get("meter/history");
 
             this.history_data = calculate_history_data(history.offset, history.samples);
@@ -562,7 +562,7 @@ export class StatusMeterChart extends Component<{}, {}> {
             this.update_uplot();
         });
 
-        util.eventTarget.addEventListener("meter/history_samples", () => {
+        util.addApiEventListener("meter/history_samples", () => {
             let history = API.get("meter/history_samples");
 
             this.history_data = calculate_history_data(0, array_append(this.history_data.samples, history.samples, 720));

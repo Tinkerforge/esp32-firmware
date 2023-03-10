@@ -54,11 +54,11 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
             debug_status: ""
         }
 
-        util.eventTarget.addEventListener(this.props.debugHeader, (e) => {
+        util.addApiEventListener(this.props.debugHeader, (e) => {
             this.debug_log += e.data + "\n";
         }, false);
 
-        util.eventTarget.addEventListener(this.props.debug, (e) => {
+        util.addApiEventListener(this.props.debug, (e) => {
             this.debug_log += e.data + "\n";
         }, false);
     }

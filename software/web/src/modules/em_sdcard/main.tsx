@@ -36,7 +36,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
     constructor() {
         super();
 
-        util.eventTarget.addEventListener('energy_manager/sdcard_state', () => {
+        util.addApiEventListener('energy_manager/sdcard_state', () => {
             this.setState(API.get('energy_manager/sdcard_state'));
         });
     }

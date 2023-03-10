@@ -55,11 +55,11 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
               __("nfc.script.save_failed"),
               __("nfc.script.reboot_content_changed"));
 
-        util.eventTarget.addEventListener('users/config', () => {
+        util.addApiEventListener('users/config', () => {
             this.setState({userCfg: API.get('users/config')});
         });
 
-        util.eventTarget.addEventListener('nfc/seen_tags', () => {
+        util.addApiEventListener('nfc/seen_tags', () => {
             this.setState({seen_tags: API.get('nfc/seen_tags')});
         });
 

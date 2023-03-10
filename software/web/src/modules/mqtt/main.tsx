@@ -48,11 +48,11 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
               __("mqtt.script.save_failed"),
               __("mqtt.script.reboot_content_changed"));
 
-        util.eventTarget.addEventListener('mqtt/auto_discovery_config', () => {
+        util.addApiEventListener('mqtt/auto_discovery_config', () => {
             this.setState({auto_discovery_config: API.get('mqtt/auto_discovery_config')});
         });
 
-        util.eventTarget.addEventListener('mqtt/meter_config', () => {
+        util.addApiEventListener('mqtt/meter_config', () => {
             this.setState({meter_config: API.get('mqtt/meter_config')});
         });
     }
@@ -191,11 +191,11 @@ export class MqttStatus extends Component<{}, MqttStatusState>
     {
         super();
 
-        util.eventTarget.addEventListener('mqtt/state', () => {
+        util.addApiEventListener('mqtt/state', () => {
             this.setState({state: API.get('mqtt/state')})
         });
 
-        util.eventTarget.addEventListener('mqtt/config', () => {
+        util.addApiEventListener('mqtt/config', () => {
             this.setState({config: API.get('mqtt/config')})
         });
     }

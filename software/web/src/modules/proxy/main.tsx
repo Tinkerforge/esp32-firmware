@@ -48,11 +48,11 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
             __("proxy.script.save_failed"),
             __("proxy.script.reboot_content_changed"));
 
-        util.eventTarget.addEventListener('proxy/devices', () => {
+        util.addApiEventListener('proxy/devices', () => {
             this.setState({devices: API.get('proxy/devices')});
         });
 
-        util.eventTarget.addEventListener('proxy/error_counters', () => {
+        util.addApiEventListener('proxy/error_counters', () => {
             this.setState({error_counters: API.get('proxy/error_counters')});
         });
 

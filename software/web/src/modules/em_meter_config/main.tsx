@@ -45,7 +45,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
               __("em_meter_config.script.save_failed"),
               __("em_meter_config.script.reboot_content_changed"));
 
-        util.eventTarget.addEventListener('energy_manager/meter_state', () => {
+        util.addApiEventListener('energy_manager/meter_state', () => {
             this.setState({meter_state: API.get('energy_manager/meter_state')});
         });
     }

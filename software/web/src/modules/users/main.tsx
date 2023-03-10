@@ -95,7 +95,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
         this.state = {userSlotEnabled: false, showModal: false, newUser: {id: 0, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: ""}} as any;
 
-        util.eventTarget.addEventListener('evse/slots', () => {
+        util.addApiEventListener('evse/slots', () => {
             this.setState({userSlotEnabled: API.get('evse/slots')[EVSE_SLOT_USER].active});
         });
     }

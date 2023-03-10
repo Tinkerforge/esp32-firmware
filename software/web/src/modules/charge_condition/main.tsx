@@ -102,23 +102,23 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
 
 
 
-        util.eventTarget.addEventListener("charge_condition/live_config", () => {
+        util.addApiEventListener("charge_condition/live_config", () => {
             this.setState({config_in_use: API.get("charge_condition/live_config")});
         })
 
-        util.eventTarget.addEventListener("charge_condition/config", () => {
+        util.addApiEventListener("charge_condition/config", () => {
             this.setState({config: API.get("charge_condition/config")})
         })
 
-        util.eventTarget.addEventListener("charge_condition/state", () => {
+        util.addApiEventListener("charge_condition/state", () => {
             this.setState({state: API.get("charge_condition/state")});
         })
 
-        util.eventTarget.addEventListener("meter/values", () => {
+        util.addApiEventListener("meter/values", () => {
             this.setState({meter_abs: API.get("meter/values").energy_abs});
         })
 
-        util.eventTarget.addEventListener("evse/low_level_state", () => {
+        util.addApiEventListener("evse/low_level_state", () => {
             this.setState({evse_uptime: API.get("evse/low_level_state").uptime});
         })
     }

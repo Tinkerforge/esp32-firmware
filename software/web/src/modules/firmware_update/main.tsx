@@ -36,7 +36,7 @@ type FirmwareUpdateConfig = API.getType['info/version'];
 export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
     constructor() {
         super();
-        util.eventTarget.addEventListener('info/version', () => {
+        util.addApiEventListener('info/version', () => {
             let newState = API.get('info/version');
             if (this.state != null && this.state.firmware != null && this.state.firmware != newState.firmware)
                 window.location.reload();

@@ -34,7 +34,7 @@ export class Debug extends Component<{}, API.getType['debug/state']> {
     constructor() {
         super();
 
-        util.eventTarget.addEventListener('debug/state', () => {
+        util.addApiEventListener('debug/state', () => {
             this.setState(API.get('debug/state'));
         });
 

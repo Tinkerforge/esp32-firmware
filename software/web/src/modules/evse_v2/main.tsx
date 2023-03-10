@@ -71,23 +71,23 @@ export class EVSEV2 extends Component<{}, EVSEState> {
     constructor() {
         super();
 
-        util.eventTarget.addEventListener('evse/state', () => {
+        util.addApiEventListener('evse/state', () => {
             this.setState({state: API.get('evse/state')});
         });
 
-        util.eventTarget.addEventListener('evse/low_level_state', () => {
+        util.addApiEventListener('evse/low_level_state', () => {
             this.setState({ll_state: API.get('evse/low_level_state')});
         });
 
-        util.eventTarget.addEventListener('evse/hardware_configuration', () => {
+        util.addApiEventListener('evse/hardware_configuration', () => {
             this.setState({hardware_cfg: API.get('evse/hardware_configuration')});
         });
 
-        util.eventTarget.addEventListener('evse/slots', () => {
+        util.addApiEventListener('evse/slots', () => {
             this.setState({slots: API.get('evse/slots')});
         });
 
-        util.eventTarget.addEventListener('evse/control_pilot_disconnect', () => {
+        util.addApiEventListener('evse/control_pilot_disconnect', () => {
             this.setState({control_pilot_disconnect: API.get('evse/control_pilot_disconnect')});
         });
     }
@@ -414,26 +414,26 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
             __("evse.script.save_failed"),
             __("evse.script.reboot_content_changed"));
 
-        util.eventTarget.addEventListener('evse/gpio_configuration', () => {
+        util.addApiEventListener('evse/gpio_configuration', () => {
             this.setState({gpio_cfg: API.get('evse/gpio_configuration')});
         });
 
-        util.eventTarget.addEventListener('evse/button_configuration', () => {
+        util.addApiEventListener('evse/button_configuration', () => {
             this.setState({button_cfg: API.get('evse/button_configuration')});
         });
 
-        util.eventTarget.addEventListener('evse/ev_wakeup', () => {
+        util.addApiEventListener('evse/ev_wakeup', () => {
             this.setState({ev_wakeup: API.get('evse/ev_wakeup')});
         });
 
-        util.eventTarget.addEventListener('evse/boost_mode', () => {
+        util.addApiEventListener('evse/boost_mode', () => {
             this.setState({boost_mode: API.get('evse/boost_mode')});
         });
 
-        util.eventTarget.addEventListener('evse/auto_start_charging', () => {
+        util.addApiEventListener('evse/auto_start_charging', () => {
             this.setState({auto_start_charging: API.get('evse/auto_start_charging')});
         });
-        util.eventTarget.addEventListener('evse/slots', () => {
+        util.addApiEventListener('evse/slots', () => {
             this.setState({slots: API.get('evse/slots')});
         })
 

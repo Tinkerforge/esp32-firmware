@@ -49,15 +49,15 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
     constructor() {
         super();
 
-        util.eventTarget.addEventListener('energy_manager/state', () => {
+        util.addApiEventListener('energy_manager/state', () => {
             this.setState({status: API.get('energy_manager/state')});
         });
 
-        util.eventTarget.addEventListener('energy_manager/config', () => {
+        util.addApiEventListener('energy_manager/config', () => {
             this.setState({config: API.get('energy_manager/config')});
         });
 
-        util.eventTarget.addEventListener('energy_manager/charge_mode', () => {
+        util.addApiEventListener('energy_manager/charge_mode', () => {
             this.setState({charge_mode: API.get('energy_manager/charge_mode')});
         });
     }
@@ -174,11 +174,12 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
             __("energy_manager.script.save_failed"),
             __("energy_manager.script.reboot_content_changed"));
 
-        util.eventTarget.addEventListener('info/modules', () => {
+        util.addApiEventListener('info/modules', () => {
             this.setState({debug_mode: !!((API.get('info/modules') as any).debug)})
         });
 
-        util.eventTarget.addEventListener('energy_manager/debug_config', () => {
+
+        util.addApiEventListener('energy_manager/debug_config', () => {
             this.setState({...API.get('energy_manager/debug_config')});
         });
     }

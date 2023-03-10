@@ -49,11 +49,11 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
               __("ocpp.script.save_failed"),
               __("ocpp.script.reboot_content_changed"));
 
-        util.eventTarget.addEventListener('ocpp/state', () => {
+        util.addApiEventListener('ocpp/state', () => {
             this.setState({state: API.get('ocpp/state')});
         });
 
-        util.eventTarget.addEventListener('ocpp/configuration', () => {
+        util.addApiEventListener('ocpp/configuration', () => {
             this.setState({configuration: API.get('ocpp/configuration')});
         });
     }
@@ -243,11 +243,11 @@ export class OcppStatus extends Component<{}, OcppStatusState>
     {
         super();
 
-        util.eventTarget.addEventListener('ocpp/state', () => {
+        util.addApiEventListener('ocpp/state', () => {
             this.setState({state: API.get('ocpp/state')})
         });
 
-        util.eventTarget.addEventListener('ocpp/config', () => {
+        util.addApiEventListener('ocpp/config', () => {
             this.setState({config: API.get('ocpp/config')})
         });
     }

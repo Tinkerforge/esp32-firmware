@@ -46,19 +46,19 @@ export class EMDebug extends Component<{}, EMDebugState> {
     constructor() {
         super();
 
-        util.eventTarget.addEventListener('energy_manager/low_level_state', () => {
+        util.addApiEventListener('energy_manager/low_level_state', () => {
             this.setState({low_level_state: API.get('energy_manager/low_level_state')});
         });
 
-        util.eventTarget.addEventListener('energy_manager/state', () => {
+        util.addApiEventListener('energy_manager/state', () => {
             this.setState({state: API.get('energy_manager/state')});
         });
 
-        util.eventTarget.addEventListener("energy_manager/debug_header", (e) => {
+        util.addApiEventListener("energy_manager/debug_header", (e) => {
             this.debug_log += e.data + "\n";
         }, false);
 
-        util.eventTarget.addEventListener("energy_manager/debug", (e) => {
+        util.addApiEventListener("energy_manager/debug", (e) => {
             this.debug_log += e.data + "\n";
         }, false);
     }

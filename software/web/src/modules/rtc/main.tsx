@@ -47,7 +47,7 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
               __("rtc.script.save_failed"),
               __("rtc.script.reboot_content_changed"));
 
-        util.eventTarget.addEventListener("rtc/time", () =>{
+        util.addApiEventListener("rtc/time", () =>{
             let time = API.get("rtc/time");
 
             if (!this.state.state)

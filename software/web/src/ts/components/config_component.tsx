@@ -51,12 +51,12 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         this.error_string = error_string;
         this.reboot_string = reboot_string;
 
-        util.eventTarget.addEventListener(t, () => {
+        util.addApiEventListener(t, () => {
             if (!this.ignore_updates)
                 this.setState(API.get(t) as Partial<API.getType[Config] & S>);
         });
 
-        util.eventTarget.addEventListener((t + "_modified") as Config, () => {
+        util.addApiEventListener((t + "_modified") as Config, () => {
             if (!this.ignore_updates)
                 this.setState(API.get(t) as Partial<API.getType[Config] & S>);
         })

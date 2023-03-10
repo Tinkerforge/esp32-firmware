@@ -149,11 +149,11 @@ export class WireGuardStatus extends Component<{}, WireGuardStatusState>
     {
         super();
 
-        util.eventTarget.addEventListener('wireguard/state', () => {
+        util.addApiEventListener('wireguard/state', () => {
             this.setState({state: API.get('wireguard/state')})
         });
 
-        util.eventTarget.addEventListener('wireguard/config', () => {
+        util.addApiEventListener('wireguard/config', () => {
             this.setState({config: API.get('wireguard/config')})
         });
     }

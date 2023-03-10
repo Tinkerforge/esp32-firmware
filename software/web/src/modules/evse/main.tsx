@@ -61,23 +61,23 @@ export class EVSE extends Component<{}, EVSEState> {
     constructor() {
         super();
 
-        util.eventTarget.addEventListener('evse/state', () => {
+        util.addApiEventListener('evse/state', () => {
             this.setState({state: API.get('evse/state')});
         });
 
-        util.eventTarget.addEventListener('evse/low_level_state', () => {
+        util.addApiEventListener('evse/low_level_state', () => {
             this.setState({ll_state: API.get('evse/low_level_state')});
         });
 
-        util.eventTarget.addEventListener('evse/hardware_configuration', () => {
+        util.addApiEventListener('evse/hardware_configuration', () => {
             this.setState({hardware_cfg: API.get('evse/hardware_configuration')});
         });
 
-        util.eventTarget.addEventListener('evse/slots', () => {
+        util.addApiEventListener('evse/slots', () => {
             this.setState({slots: API.get('evse/slots')});
         });
 
-        util.eventTarget.addEventListener('evse/user_calibration', () => {
+        util.addApiEventListener('evse/user_calibration', () => {
             this.setState({user_calibration: API.get('evse/user_calibration')});
         });
     }
@@ -417,15 +417,15 @@ class EVSESettings extends Component<{}, EVSESettingsState>
     {
         super();
 
-        util.eventTarget.addEventListener('evse/boost_mode', () => {
+        util.addApiEventListener('evse/boost_mode', () => {
             this.setState({boost_mode: API.get('evse/boost_mode')});
         });
 
-        util.eventTarget.addEventListener('evse/auto_start_charging', () => {
+        util.addApiEventListener('evse/auto_start_charging', () => {
             this.setState({auto_start_charging: API.get('evse/auto_start_charging')});
         });
 
-        util.eventTarget.addEventListener('evse/slots', () => {
+        util.addApiEventListener('evse/slots', () => {
             this.setState({slots: API.get('evse/slots')});
         });
     }
