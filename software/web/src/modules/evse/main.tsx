@@ -37,7 +37,10 @@ import { Button} from "react-bootstrap";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
 import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_GLOBAL, EVSE_SLOT_GP_INPUT, EVSE_SLOT_OCPP, EVSE_SLOT_SHUTDOWN_INPUT } from "../evse_common/api";
 import { InputFile } from "src/ts/components/input_file";
-import { DebugLogger } from "../../ts/components/debug_logger"
+import { DebugLogger } from "../../ts/components/debug_logger";
+import { ConfigComponent } from "src/ts/components/config_component";
+import { InputFloat } from "src/ts/components/input_float";
+import { InputSelect } from "src/ts/components/input_select";
 import { extend } from "jquery";
 
 interface EVSEState {
@@ -52,7 +55,11 @@ interface EVSESettingsState {
     slots: Readonly<API.getType['evse/slots']>;
     boost_mode: API.getType['evse/boost_mode'];
     auto_start_charging: API.getType['evse/auto_start_charging'];
+    meter_abs: number;
+    evse_uptime: number;
 }
+
+type ChargeConditionConfig = API.getType["charge_condition/config"];
 
 let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
 
@@ -411,11 +418,13 @@ export class EVSE extends Component<{}, EVSEState> {
 
 render(<EVSE />, $('#evse')[0]);
 
-class EVSESettings extends Component<{}, EVSESettingsState>
+class EVSESettings extends ConfigComponent<"charge_condition/config", {}, EVSESettingsState>
 {
     constructor()
     {
-        super();
+        super("charge_condition/config",
+        __("evse.script.save_failed"),
+        __("evse.script.reboot_content_changed"));
 
         util.addApiEventListener('evse/boost_mode', () => {
             this.setState({boost_mode: API.get('evse/boost_mode')});
@@ -428,8 +437,26 @@ class EVSESettings extends Component<{}, EVSESettingsState>
         util.addApiEventListener('evse/slots', () => {
             this.setState({slots: API.get('evse/slots')});
         });
+
+
+        util.addApiEventListener("meter/values", () => {
+            this.setState({meter_abs: API.get("meter/values").energy_abs});
+        })
+
+        util.addApiEventListener("evse/low_level_state", () => {
+            this.setState({evse_uptime: API.get("evse/low_level_state").uptime});
+        })
     }
-    render(props: {}, s: EVSESettingsState)
+
+    override async sendSave(t: "charge_condition/config", cfg: EVSESettingsState & ChargeConditionConfig): Promise<void> {
+        await API.save('evse/auto_start_charging', {"auto_start_charging": this.state.auto_start_charging.auto_start_charging}, __("evse.script.save_failed"));
+        await API.save('evse/external_enabled', {"enabled": this.state.slots[EVSE_SLOT_EXTERNAL].active}, __("evse.script.save_failed"));
+        await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, __("evse.script.save_failed"));
+        super.sendSave(t, cfg);
+    }
+
+
+    render(props: {}, s: EVSESettingsState & ChargeConditionConfig)
     {
         if (!util.allow_render)
             return (<></>);
@@ -439,6 +466,14 @@ class EVSESettings extends Component<{}, EVSESettingsState>
             boost_mode,
             auto_start_charging} = s;
 
+        const has_meter = API.hasFeature("meter");
+
+        const energy_settings = <FormRow label={__("charge_condition.content.energy_limit")}>
+                <InputFloat value={s.energy_limit_kwh}
+                            onValue={(v) => this.setState({energy_limit_kwh: v})}
+                            digits={3} min={0} max={100000} unit={"kwh"}/>
+            </FormRow>;
+
         return <>
                 <PageHeader title={__("evse.content.settings")}/>
 
@@ -446,8 +481,9 @@ class EVSESettings extends Component<{}, EVSESettingsState>
                     <Switch desc={__("evse.content.auto_start_enable")}
                             checked={!auto_start_charging.auto_start_charging}
                             onClick={async () => {
-                                let inverted = !auto_start_charging.auto_start_charging;
-                                await API.save('evse/auto_start_charging', {"auto_start_charging": inverted}, __("evse.script.save_failed"));
+                                let tmp = auto_start_charging;
+                                tmp.auto_start_charging = !auto_start_charging.auto_start_charging;
+                                this.setState({auto_start_charging: tmp});
                             }}/>
                 </FormRow>
 
@@ -455,19 +491,36 @@ class EVSESettings extends Component<{}, EVSESettingsState>
                     <Switch desc={__("evse.content.external_enable")}
                             checked={slots[EVSE_SLOT_EXTERNAL].active}
                             onClick={async () => {
-                                let inverted = !slots[EVSE_SLOT_EXTERNAL].active;
-                                await API.save('evse/external_enabled', {"enabled": inverted}, __("evse.script.save_failed"));
+                                let tmp_slots = slots;
+                                tmp_slots[EVSE_SLOT_EXTERNAL].active = !slots[EVSE_SLOT_EXTERNAL].active;
+                                this.setState({slots: tmp_slots});
                             }}/>
                 </FormRow>
 
                 <FormRow label={__("evse.content.boost_mode_desc")} label_muted={__("evse.content.boost_mode_desc_muted")}>
                     <Switch desc={__("evse.content.boost_mode")}
                             checked={boost_mode.enabled}
-                            onClick={async () => {
-                                let inverted = !boost_mode.enabled;
-                                await API.save('evse/boost_mode', {"enabled": inverted}, __("evse.script.save_failed"));
-                            }}/>
+                            onClick={async () => this.setState({boost_mode: {enabled: !boost_mode.enabled}})}/>
                 </FormRow>
+
+                <FormRow label={__("charge_condition.content.duration_limit")}>
+                    <InputSelect items={[
+                        ["0", __("charge_condition.content.unlimited")],
+                        ["1", __("charge_condition.content.min15")],
+                        ["2", __("charge_condition.content.min30")],
+                        ["3", __("charge_condition.content.min45")],
+                        ["4", __("charge_condition.content.h1")],
+                        ["5", __("charge_condition.content.h2")],
+                        ["6", __("charge_condition.content.h3")],
+                        ["7", __("charge_condition.content.h4")],
+                        ["8", __("charge_condition.content.h6")],
+                        ["9", __("charge_condition.content.h8")],
+                        ["10", __("charge_condition.content.h12")]
+                    ]}
+                    value={s.duration_limit}
+                    onValue={(v) => this.setState({duration_limit: Number(v)})}/>
+                </FormRow>
+                {has_meter ? energy_settings : <></>}
             </>;
     }
 }
