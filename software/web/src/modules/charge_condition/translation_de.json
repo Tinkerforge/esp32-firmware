@@ -7,12 +7,28 @@
             "charge_condition": "lalala"
         },
         "content": {
-            "enable_all": "Alles erlauben",
-            "disable_all": "Alles verbieten",
             "reset": "Reset",
-            "overridden": "(überschrieben)"
+            "overridden": "(überschrieben)",
+            "override_energy": "Energylimit überschreiben",
+            "override_duration": "Zeitlimit überschreiben",
+            "duration_limit": "Ladezeitlimit",
+            "energy_limit": "Energie Ladelimit",
+            "time_left": "Ladezeit übrig",
+            "energy_left": "Energie übrig",
+            "unlimited": "Unbegrenzt",
+            "min15": "15 Minuten",
+            "min30": "30 Minuten",
+            "min45": "45 Minuten",
+            "h1": "1 Stunde",
+            "h2": "2 Stunden",
+            "h3": "3 Stunden",
+            "h4": "4 Stunden",
+            "h6": "6 Stunden",
+            "h8": "8 Stunden",
+            "h12": "12 Stunden"
         },
         "script": {
+            "override_failed": "Überscheiben fehlgeschlagen"
         }
     }
 }

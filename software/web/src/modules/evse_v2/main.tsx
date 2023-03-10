@@ -476,7 +476,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
 
         const has_meter = API.hasFeature("meter");
 
-        const energy_settings = <FormRow label="Energie Einstellung">
+        const energy_settings = <FormRow label={__("charge_condition.content.energy_limit")}>
                 <InputFloat value={s.energy_limit_kwh}
                             onValue={(v) => this.setState({energy_limit_kwh: v})}
                             digits={3} min={0} max={100000} unit={"kwh"}/>
@@ -570,19 +570,19 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
                                 onClick={async () => this.setState({boost_mode: {enabled: !boost_mode.enabled}})}/>
                     </FormRow>
 
-                    <FormRow label="Zeit Einstellung">
+                    <FormRow label={__("charge_condition.content.duration_limit")}>
                         <InputSelect items={[
-                            ["0", "Aus"],
-                            ["1", "15 Min"],
-                            ["2", "30 Min"],
-                            ["3", "45 Min"],
-                            ["4", "1 H"],
-                            ["5", "2 H"],
-                            ["6", "3 H"],
-                            ["7", "4 H"],
-                            ["8", "6 H"],
-                            ["9", "8 H"],
-                            ["10", "12 H"]
+                            ["0", __("charge_condition.content.unlimited")],
+                            ["1", __("charge_condition.content.min15")],
+                            ["2", __("charge_condition.content.min30")],
+                            ["3", __("charge_condition.content.min45")],
+                            ["4", __("charge_condition.content.h1")],
+                            ["5", __("charge_condition.content.h2")],
+                            ["6", __("charge_condition.content.h3")],
+                            ["7", __("charge_condition.content.h4")],
+                            ["8", __("charge_condition.content.h6")],
+                            ["9", __("charge_condition.content.h8")],
+                            ["10", __("charge_condition.content.h12")]
                         ]}
                         value={s.duration_limit}
                         onValue={(v) => this.setState({duration_limit: Number(v)})}/>

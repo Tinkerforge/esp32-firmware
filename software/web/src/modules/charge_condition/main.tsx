@@ -128,16 +128,16 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
         }
 
 
-        const energy_override = <FormRow label="Energy override" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+        const energy_override = <FormRow label={__("charge_condition.content.override_energy")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
                                     <InputFloat value={config_in_use.energy_limit_kwh}
                                                 onValue={(v) => {
                                                     this.setState({config_in_use: {...config_in_use, energy_limit_kwh: v}});
-                                                    API.call("charge_condition/override_energy", {energy: v}, "Error");
+                                                    API.call("charge_condition/override_energy", {energy: v}, __("charge_condition.script.override_failed"));
                                                 }}
                                                 digits={3} min={0} max={100000} unit={"kwh"}/>
                             </FormRow>
 
-        const energy_left = <FormRow label="Energy über" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4"
+        const energy_left = <FormRow label={__("charge_condition.content.energy_left")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4"
                                          hidden={config_in_use.energy_limit_kwh == 0 && config_in_use.energy_limit_kwh == config.energy_limit_kwh}>
                                 <InputGroup>
                                     <InputText value={get_energy_left()}/>
@@ -149,7 +149,7 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
                                     <InputGroup.Append>
                                         <Button onClick={() => {
                                             this.setState({config_in_use: {...config_in_use, energy_limit_kwh: config.energy_limit_kwh}});
-                                            API.call("charge_condition/override_energy", {energy: config.energy_limit_kwh}, "Error");
+                                            API.call("charge_condition/override_energy", {energy: config.energy_limit_kwh}, __("charge_condition.script.override_failed"));
                                         }}
                                         variant="primary"
                                         hidden={config_in_use.energy_limit_kwh == config.energy_limit_kwh}>
@@ -160,34 +160,34 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
                             </FormRow>
 
         return <>
-                <FormRow label="Override" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("charge_condition.content.override_duration")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
                     <InputSelect items={[
-                            ["0", "Unbegrenzt"],
-                            ["1", "15 Min"],
-                            ["2", "30 Min"],
-                            ["3", "45 Min"],
-                            ["4", "1 H"],
-                            ["5", "2 H"],
-                            ["6", "3 H"],
-                            ["7", "4 H"],
-                            ["8", "6 H"],
-                            ["9", "8 H"],
-                            ["10", "12 H"]
+                            ["0", __("charge_condition.content.unlimited")],
+                            ["1", __("charge_condition.content.min15")],
+                            ["2", __("charge_condition.content.min30")],
+                            ["3", __("charge_condition.content.min45")],
+                            ["4", __("charge_condition.content.h1")],
+                            ["5", __("charge_condition.content.h2")],
+                            ["6", __("charge_condition.content.h3")],
+                            ["7", __("charge_condition.content.h4")],
+                            ["8", __("charge_condition.content.h6")],
+                            ["9", __("charge_condition.content.h8")],
+                            ["10", __("charge_condition.content.h12")]
                         ]}
                         value={config_in_use.duration_limit}
                         onValue={(v) => {
                             this.setState({config_in_use: {...config_in_use, duration_limit: Number(v)}})
-                            API.call("charge_condition/override_duration", {duration: Number(v)}, "Error");
+                            API.call("charge_condition/override_duration", {duration: Number(v)}, __("charge_condition.script.override_failed"));
                     }}/>
                 </FormRow>
-                <FormRow label="Zeit über" labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4"
+                <FormRow label={__("charge_condition.content.time_left")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4"
                             hidden={config_in_use.duration_limit === 0 && config_in_use.duration_limit == config.duration_limit}>
                     <InputGroup>
                         <InputText value={get_duration_left()}/>
                         <InputGroup.Append>
                             <Button onClick={() => {
                                         this.setState({config_in_use: {...config_in_use, duration_limit: config.duration_limit}})
-                                        API.call("charge_condition/override_duration", {duration: config.duration_limit}, "Error");
+                                        API.call("charge_condition/override_duration", {duration: config.duration_limit}, __("charge_condition.script.override_failed"));
                                     }}
                                     className="form-control"
                                     variant="primary"
