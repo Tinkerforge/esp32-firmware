@@ -705,9 +705,16 @@ void EnergyManager::update_energy()
         // CP disconnect support unknown if some chargers haven't replied yet.
         if (!charge_manager.seen_all_chargers()) {
             // Don't constantly complain if we don't have any chargers configured.
-            if (charge_manager.have_chargers())
-                logger.printfln("energy_manager: Not seen all chargers yet.");
+            if (charge_manager.have_chargers()) {
+                if (!printed_not_seen_all_chargers) {
+                    logger.printfln("energy_manager: Not seen all chargers yet.");
+                    printed_not_seen_all_chargers = true;
+                }
+            }
             return;
+        } else if (!printed_seen_all_chargers) {
+            logger.printfln("energy_manager: Seen all chargers.");
+            printed_seen_all_chargers = true;
         }
 
         // Check how many phases are wanted.

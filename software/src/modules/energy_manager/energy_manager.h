@@ -208,6 +208,8 @@ private:
     InputPin *input4;
 
     uint32_t last_debug_check                    = 0;
+    bool     printed_not_seen_all_chargers       = false;
+    bool     printed_seen_all_chargers           = false;
     bool     uptime_past_hysteresis              = false;
     uint32_t consecutive_bricklet_errors         = 0;
     bool     bricklet_reachable                  = true;
