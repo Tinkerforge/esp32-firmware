@@ -119,6 +119,9 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
             if (state.target_timestamp_mil - evse_uptime < 0 && state.start_timestamp_mil != 0)
                 duration = 0;
 
+            if (config_in_use.duration_limit == 0 && config_in_use.duration_limit != config.duration_limit)
+                return __("charge_condition.content.unlimited") + " " + __("charge_condition.content.overridden");
+
             let ret = util.format_timespan(duration);
 
             if (config.duration_limit != config_in_use.duration_limit)
