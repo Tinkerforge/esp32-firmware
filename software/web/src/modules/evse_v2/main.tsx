@@ -454,6 +454,18 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
         super.sendSave(t, cfg);
     }
 
+    //TODO: Substitute hardcoded values after evse-reset-api is available.
+
+    override async sendReset(t: "charge_condition/config"): Promise<void> {
+        await API.save('evse/auto_start_charging', {"auto_start_charging": true}, __("evse.script.save_failed"));
+        await API.save('evse/external_enabled', {"enabled": false}, __("evse.script.save_failed"));
+        await API.save('evse/button_configuration', {"button": 2}, __("evse.script.save_failed"));
+        await API.save('evse/gpio_configuration', {"input": 0, "output": 1, "shutdown_input": 0}, __("evse.script.gpio_configuration_failed"));
+        await API.save('evse/ev_wakeup', {"enabled": true}, __("evse.script.save_failed"));
+        await API.save('evse/boost_mode', {"enabled": false}, __("evse.script.save_failed"));
+        super.sendReset(t);
+    }
+
     render(props: {}, s: EVSESSettingsState & ChargeConditionConfig)
     {
         if (!util.allow_render)
@@ -515,7 +527,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
                                     ]}
                                 value={gpio_cfg.shutdown_input}
                                 onValue={async (v) => {
-                                    let cfg = {...API.get('evse/gpio_configuration')};
+                                    let cfg = gpio_cfg;
                                     cfg.shutdown_input = parseInt(v);
                                     this.setState({gpio_cfg: cfg});
                                 }}
@@ -529,7 +541,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
                                     ]}
                                 value={gpio_cfg.input}
                                 onValue={async (v) => {
-                                    let cfg = {...API.get('evse/gpio_configuration')};
+                                    let cfg = gpio_cfg;
                                     cfg.input = parseInt(v);
                                     this.setState({gpio_cfg: cfg});
                                 }}
@@ -544,7 +556,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
                                     ]}
                                 value={gpio_cfg.output}
                                 onValue={async (v) => {
-                                    let cfg = {...API.get('evse/gpio_configuration')};
+                                    let cfg = gpio_cfg;
                                     cfg.output = parseInt(v);
                                     this.setState({gpio_cfg: cfg});
                                 }}

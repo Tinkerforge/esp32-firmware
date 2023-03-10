@@ -456,6 +456,13 @@ class EVSESettings extends ConfigComponent<"charge_condition/config", {}, EVSESe
         super.sendSave(t, cfg);
     }
 
+    override async sendReset(t: "charge_condition/config"): Promise<void> {
+        await API.save('evse/auto_start_charging', {"auto_start_charging": true}, __("evse.script.save_failed"));
+        await API.save('evse/external_enabled', {"enabled": false}, __("evse.script.save_failed"));
+        await API.save('evse/boost_mode', {"enabled": false}, __("evse.script.save_failed"));
+        super.sendReset(t);
+    }
+
 
     render(props: {}, s: EVSESettingsState & ChargeConditionConfig)
     {
