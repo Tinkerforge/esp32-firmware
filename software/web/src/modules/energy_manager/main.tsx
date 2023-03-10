@@ -151,8 +151,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                         {__("energy_manager.status.error_internal")}
                     </Button>
                     <Button disabled
-                        variant={(error_flags_config ? "" : "outline-") + "danger"}
-                        style="background-color:#CA1F7B">
+                        variant={(error_flags_config ? "" : "outline-") + "danger"}>
                         {__("energy_manager.status.error_config")}
                     </Button>
                 </ButtonGroup>
