@@ -90,12 +90,12 @@ bool MqttMeter::onMqttMessage(char *topic, size_t topic_len, char *data, size_t 
     }
 
     uint32_t meter_type = meter.state.get("type")->asUint();
-    if (meter_type != METER_TYPE_MQTT) {
+    if (meter_type != METER_TYPE_CUSTOM_BASIC) {
         if (meter_type != METER_TYPE_NONE) {
             logger.printfln("mqtt_meter: Detected presence of a conflicting meter, type %u. The MQTT meter should be disabled.", meter_type);
             return true;
         }
-        meter.updateMeterState(2, METER_TYPE_MQTT);
+        meter.updateMeterState(2, METER_TYPE_CUSTOM_BASIC);
     }
 
     float power      = doc["power"     ].as<float>();

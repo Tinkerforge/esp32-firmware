@@ -39,7 +39,7 @@
 #define METER_TYPE_SDM630MCTV2 5
 
 // Supported by mqtt_meter module
-#define METER_TYPE_MQTT 200
+#define METER_TYPE_CUSTOM_BASIC 200
 
 // Supported by https://github.com/warp-more-hardware
 #define METER_TYPE_INTERNAL 254

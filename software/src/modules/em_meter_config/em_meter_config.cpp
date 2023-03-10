@@ -39,7 +39,7 @@ void EMMeterConfig::setup()
     config_in_use = config;
 
     if (config_in_use.get("meter_source")->asUint() == 100) {
-        meter.updateMeterState(2, METER_TYPE_MQTT);
+        meter.updateMeterState(2, METER_TYPE_CUSTOM_BASIC);
     }
 
     initialized = true;
