@@ -186,6 +186,15 @@ export function addApiEventListener<T extends keyof API.EventMap>(type: T, liste
     }
 }
 
+export function addApiEventListener_unchecked(type: string, callback: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
+    eventTarget.addEventListener_unchecked(type, callback, options);
+    let api_cache_any = api_cache as any;
+    if (api_cache_any[type])
+    {
+        API.trigger_unchecked(type, eventTarget);
+    }
+}
+
 export let eventTarget: API.APIEventTarget = new API.APIEventTarget();
 
 export let allow_render: boolean = false;

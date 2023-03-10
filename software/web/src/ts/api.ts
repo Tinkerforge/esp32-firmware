@@ -79,6 +79,10 @@ export function trigger<T extends keyof ConfigMap>(topic: T, event_source: APIEv
     event_source.dispatchEvent(new MessageEvent<Readonly<ConfigMap[T]>>(topic, {'data': get(topic)}));
 }
 
+export function trigger_unchecked<T extends keyof ConfigMap>(topic: string, event_source: APIEventTarget) {
+    event_source.dispatchEvent(new MessageEvent<Readonly<ConfigMap[T]>>(topic, {'data': get(topic as any)}));
+}
+
 export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
     return call(<any>(topic + "_update"), payload, error_string, reboot_string);
 }
