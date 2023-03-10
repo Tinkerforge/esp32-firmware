@@ -18,8 +18,10 @@
  */
 
 import { h, Context } from "preact";
-import {useContext} from "preact/hooks";
+import {useContext, useRef} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
+import { Button } from "react-bootstrap";
+import { ArrowLeft, ArrowRight } from "react-feather";
 
 import * as util from "../../ts/util";
 
@@ -27,9 +29,11 @@ interface InputDateProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
     idContext?: Context<string>
     date: Date
     onDate?: (value: Date) => void
+    buttons?: "year"|"month"|"day"
 }
 
 export function InputDate(props: InputDateProps) {
+    const input = useRef<HTMLInputElement>();
     let id = props.idContext === undefined ? "" : useContext(props.idContext);
 
     const dateToValue = (date: Date) => {
@@ -40,20 +44,75 @@ export function InputDate(props: InputDateProps) {
         }
     };
 
-    return (
-        <input class={"form-control " + props.className}
-               id={id}
-               type="date"
-               onInput={props.onDate ? (e) => {
-                    let timeString = (e.target as HTMLInputElement).value;
-                    if (timeString == "")
-                        return;
+    const valueToDate = (value: string) => {
+        let [y, mIdx, d] = value.split(/-/g).map(x => parseInt(x));
 
-                    let [y, mIdx, d] = timeString.split(/-/g).map(x => parseInt(x));
-                    props.onDate(new Date(y, mIdx - 1, d))
-                } : undefined
-               }
-               disabled={!props.onDate}
-               value={dateToValue(props.date)}/>
+        return new Date(y, mIdx - 1, d);
+    }
+
+    return (
+        <div class="input-group">
+            <input class={"form-control " + props.className}
+                   ref={input}
+                   id={id}
+                   type="date"
+                   onInput={props.onDate ? (e) => {
+                           let timeString = (e.target as HTMLInputElement).value;
+                           if (timeString == "")
+                               return;
+
+                           props.onDate(valueToDate(timeString));
+                       } : undefined
+                   }
+                   disabled={!props.onDate}
+                   value={dateToValue(props.date)}/>
+            {props.onDate && props.buttons ? <div class="input-group-append">
+                <Button variant="primary"
+                        className="form-control px-1"
+                        style="margin-right: .125rem !important;"
+                        onClick={() => {
+                            let date = valueToDate(dateToValue(props.date));
+
+                            if (props.buttons == "year") {
+                                date.setFullYear(date.getFullYear() - 1);
+                            }
+
+                            if (props.buttons == "month") {
+                                date.setMonth(date.getMonth() - 1);
+                            }
+
+                            if (props.buttons == "day") {
+                                date.setDate(date.getDate() - 1);
+                            }
+
+                            props.onDate(date);
+                            input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
+                        }}>
+                    <ArrowLeft/>
+                </Button>
+                <Button variant="primary"
+                        className="form-control px-1 rounded-right"
+                        onClick={() => {
+                            let date = valueToDate(dateToValue(props.date));
+
+                            if (props.buttons == "year") {
+                                date.setFullYear(date.getFullYear() + 1);
+                            }
+
+                            if (props.buttons == "month") {
+                                date.setMonth(date.getMonth() + 1);
+                            }
+
+                            if (props.buttons == "day") {
+                                date.setDate(date.getDate() + 1);
+                            }
+
+                            props.onDate(date);
+                            input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
+                        }}>
+                    <ArrowRight/>
+                </Button>
+            </div> : null }
+        </div>
     );
 }
