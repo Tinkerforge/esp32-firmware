@@ -103,6 +103,9 @@ void ChargeCondition::register_urls()
         state.get("target_energy_kwh")->updateUint(state.get("start_energy_kwh")->asUint() + override_energy.get("energy")->asUint());
     }, true);
 
+    //if we dont set the target timestamp right away we will have 0 seconds left displayed in the webinterface until we start and end a charge.
+    state.get("target_timestamp_mil")->updateUint(map_duration(config_in_use.get("duration_limit")->asUint()));
+
  #if MODULE_EVSE_V2_AVAILABLE()
     evse_v2.set_charge_condition_slot(32000, true);
  #elif MODULE_EVSE_AVAILABLE()
@@ -178,7 +181,7 @@ void ChargeCondition::register_urls()
  #endif
             state.get("start_timestamp_mil")->updateUint(0);
             state.get("start_energy_kwh")->updateUint(0);
-            state.get("target_timestamp_mil")->updateUint(0);
+            state.get("target_timestamp_mil")->updateUint(map_duration(config_in_use.get("duration_limit")->asUint()));
             state.get("target_energy_kwh")->updateUint(0);
         }
     }, 0, 1000);
