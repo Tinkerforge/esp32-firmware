@@ -56,7 +56,6 @@ interface EVSESSettingsState {
     ev_wakeup: API.getType['evse/ev_wakeup'];
     boost_mode: API.getType['evse/boost_mode'];
     auto_start_charging: API.getType['evse/auto_start_charging'];
-    state: API.getType["charge_condition/state"]
     meter_abs: number
     evse_uptime: number
 }
@@ -436,11 +435,6 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
             this.setState({slots: API.get('evse/slots')});
         })
 
-        util.addApiEventListener("charge_condition/state", () => {
-            console.log("Update state");
-            this.setState({state: API.get("charge_condition/state")});
-        });
-
         util.addApiEventListener("meter/values", () => {
             this.setState({meter_abs: API.get("meter/values").energy_abs});
         })
@@ -471,8 +465,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
             gpio_cfg,
             ev_wakeup,
             boost_mode,
-            auto_start_charging,
-            state} = s;
+            auto_start_charging} = s;
 
         const has_meter = API.hasFeature("meter");
 
