@@ -79,10 +79,6 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
         })
     }
 
-    async timeOutHandler(n: number)
-    {
-    }
-
     render(props: {}, s: ChargeConditionOverrideState)
     {
         let {state,
