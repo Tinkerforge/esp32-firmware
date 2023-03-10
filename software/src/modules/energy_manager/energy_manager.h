@@ -192,7 +192,7 @@ private:
     void clr_error(uint32_t error_mask);
     void set_error(uint32_t error_mask);
     bool is_error(uint32_t error_bit_pos);
-    void check_bricklet_reachable(int rc);
+    void check_bricklet_reachable(int rc, const char *context);
     void update_all_data_struct();
     void update_io();
     void update_energy();

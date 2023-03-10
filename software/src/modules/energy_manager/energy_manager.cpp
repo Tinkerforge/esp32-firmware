@@ -433,7 +433,7 @@ void EnergyManager::update_all_data_struct()
         &all_data.uptime
     );
 
-    check_bricklet_reachable(rc);
+    check_bricklet_reachable(rc, "update_all_data_struct");
 
     if (rc == TF_E_OK) {
         all_data.last_update = millis();
@@ -474,7 +474,7 @@ void EnergyManager::set_error(uint32_t error_mask)
         update_status_led();
 }
 
-void EnergyManager::check_bricklet_reachable(int rc) {
+void EnergyManager::check_bricklet_reachable(int rc, const char *context) {
     if (rc == TF_E_OK) {
         consecutive_bricklet_errors = 0;
         if (!bricklet_reachable) {
@@ -484,14 +484,14 @@ void EnergyManager::check_bricklet_reachable(int rc) {
         }
     } else {
         if (rc == TF_E_TIMEOUT) {
-            logger.printfln("energy_manager: bricklet access timed out.");
+            logger.printfln("energy_manager (%s): Bricklet access timed out.", context);
         } else {
-            logger.printfln("energy_manager: bricklet access returned error %d.", rc);
+            logger.printfln("energy_manager (%s): Bricklet access returned error %d.", context, rc);
         }
         if (bricklet_reachable && ++consecutive_bricklet_errors >= 8) {
             bricklet_reachable = false;
             set_error(ERROR_FLAGS_BRICKLET_MASK);
-            logger.printfln("energy_manager: Bricklet is unreachable.");
+            logger.printfln("energy_manager (%s): Bricklet is unreachable.", context);
         }
     }
     low_level_state.get("consecutive_bricklet_errors")->updateUint(consecutive_bricklet_errors);
@@ -892,7 +892,7 @@ bool EnergyManager::get_sdcard_info(struct sdcard_info *data)
     // Product name retrieved from the SD card is an unterminated 5-character string, so we have to terminate it here.
     data->product_name[sizeof(data->product_name) - 1] = 0;
 
-    check_bricklet_reachable(rc);
+    check_bricklet_reachable(rc, "get_sdcard_info");
 
     if (rc != TF_E_OK) {
         set_error(ERROR_FLAGS_SDCARD_MASK);
@@ -911,7 +911,7 @@ bool EnergyManager::format_sdcard()
     uint8_t ret_format_status;
     int rc = tf_warp_energy_manager_format_sd(&device, 0x4223ABCD, &ret_format_status);
 
-    check_bricklet_reachable(rc);
+    check_bricklet_reachable(rc, "format_sdcard");
 
     return rc == TF_E_OK && ret_format_status == TF_WARP_ENERGY_MANAGER_FORMAT_STATUS_OK;
 }
@@ -921,7 +921,7 @@ uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
     uint16_t len = 0;
     int rc = tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, &len);
 
-    check_bricklet_reachable(rc);
+    check_bricklet_reachable(rc, "get_energy_meter_detailed_values");
 
     return rc == TF_E_OK ? len : 0;
 }
