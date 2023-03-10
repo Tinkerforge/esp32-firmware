@@ -92,6 +92,14 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                 <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
                     <Button
                         style="display: flex;align-items: center;justify-content: center;"
+                        className="m-1 rounded-left"
+                        variant={d.charge_mode.mode == 1 ? "success" : "primary"}
+                        disabled={d.charge_mode.mode == 1}
+                        onClick={() => this.change_mode(1)}>
+                        {d.charge_mode.mode == 1 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.mode_off")}</span>
+                    </Button>
+                    <Button
+                        style="display: flex;align-items: center;justify-content: center;"
                         className="m-1 rounded-right"
                         variant={d.config.excess_charging_enable ? (d.charge_mode.mode == 2 ? "success" : "primary") : "secondary"}
                         disabled={!d.config.excess_charging_enable || d.charge_mode.mode == 2}
@@ -113,14 +121,6 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                         disabled={d.charge_mode.mode == 0}
                         onClick={() => this.change_mode(0)}>
                         {d.charge_mode.mode == 0 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.mode_fast")}</span>
-                    </Button>
-                    <Button
-                        style="display: flex;align-items: center;justify-content: center;"
-                        className="m-1 rounded-left"
-                        variant={d.charge_mode.mode == 1 ? "success" : "primary"}
-                        disabled={d.charge_mode.mode == 1}
-                        onClick={() => this.change_mode(1)}>
-                        {d.charge_mode.mode == 1 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.mode_off")}</span>
                     </Button>
                 </ButtonGroup>
             </FormRow>
