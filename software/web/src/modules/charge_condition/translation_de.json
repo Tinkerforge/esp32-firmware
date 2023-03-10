@@ -9,7 +9,7 @@
         "content": {
             "reset": "Reset",
             "overridden": "(überschrieben)",
-            "override_energy": "Energylimit überschreiben",
+            "override_energy": "Energielimit überschreiben",
             "override_duration": "Zeitlimit überschreiben",
             "duration_limit": "Ladezeitlimit",
             "energy_limit": "Energie Ladelimit",
