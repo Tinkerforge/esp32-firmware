@@ -81,7 +81,7 @@ void EnergyManager::pre_setup()
         {"auto_reset_time", Config::Uint(0, 0, 1439)},
         {"excess_charging_enable", Config::Bool(false)},
         {"target_power_from_grid", Config::Int32(0)}, // in watt
-        {"guaranteed_power", Config::Uint(0, 0, 22000)}, // in watt
+        {"guaranteed_power", Config::Uint(1380, 1380, 22080)}, // in watt
         {"contactor_installed", Config::Bool(false)},
         {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
         {"relay_config", Config::Uint8(0)},
