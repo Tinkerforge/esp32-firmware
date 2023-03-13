@@ -141,10 +141,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             this.visible = true;
 
             if (this.pending_data !== undefined) {
-                let pending_data = this.pending_data;
-                this.pending_data = undefined;
-
-                this.set_data(pending_data);
+                this.set_data(this.pending_data);
             }
         });
 

@@ -71,5 +71,45 @@ export interface charge_mode {
     mode: number
 }
 
+export interface history_wallbox_5min_changed {
+    uid: number,
+    year: number,
+    month: number,
+    day: number,
+    hour: number,
+    minute: number,
+    flags: number,
+    power: number
+}
+
+export interface history_wallbox_daily_changed {
+    uid: number,
+    year: number,
+    month: number,
+    day: number,
+    energy: number
+}
+
+export interface history_energy_manager_5min_changed {
+    year: number,
+    month: number,
+    day: number,
+    hour: number,
+    minute: number,
+    flags: number,
+    power_grid: number,
+    power_general: number[]
+}
+
+export interface history_energy_manager_daily_changed {
+    year: number,
+    month: number,
+    day: number,
+    energy_grid_in: number,
+    energy_grid_out: number,
+    energy_general_in: number[],
+    energy_general_out: number[]
+}
+
 export type debug_header = string;
 export type debug = string;

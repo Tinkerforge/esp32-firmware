@@ -8,12 +8,15 @@
         },
         "content": {
             "em_energy_analysis": "Energy Analysis",
-            "comming_soon_1": "Coming soon.™ 🙂",
-            "comming_soon_2": "This feature did not make it in time for the release of the Energy Manager. It will be added soon in an upcoming firmware update. Stay tuned and check occasionally for an update on ",
-            "comming_soon_3": "warp-charger.com",
-            "comming_soon_4": "."
+            "no_data": "No data available!",
+            "loading": "Loading data...",
+            "date": "Date"
         },
         "script": {
+            "time": "Time of day",
+            "time_legend_format": "{YYYY}-{MM}-{DD} {HH}:{mm}",
+            "power": "Power",
+            "grid_connection": "Grid Connection"
         }
     }
 }

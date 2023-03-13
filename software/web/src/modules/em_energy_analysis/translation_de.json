@@ -8,12 +8,15 @@
         },
         "content": {
             "em_energy_analysis": "Energiebilanz",
-            "comming_soon_1": "Coming soon.™ 🙂",
-            "comming_soon_2": "Dieses Feature hat es leider nicht bis zur Veröffentlichung des Energy Managers geschafft und wird in Kürze über ein Firmware-Aktualisierung zur Verfügung gestellt. Stay tuned und sieh gelegentlich nach, ob auf ",
-            "comming_soon_3": "warp-charger.com",
-            "comming_soon_4": " eine neue Firmware bereitsteht."
+            "no_data": "Keine Daten vorhanden!",
+            "loading": "Lade Daten...",
+            "date": "Datum"
         },
         "script": {
+            "time": "Uhrzeit",
+            "time_legend_format": "{DD}.{MM}.{YYYY} {HH}:{mm}",
+            "power": "Leistung",
+            "grid_connection": "Netzanschluss"
         }
     }
 }

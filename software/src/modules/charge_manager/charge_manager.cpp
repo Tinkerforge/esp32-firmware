@@ -134,6 +134,7 @@ void ChargeManager::pre_setup()
                 {"error", Config::Uint8(0)}, // 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed
 
                 {"charger_state", Config::Uint8(0)},
+                {"meter_supported", Config::Bool(false)},
                 {"power_total", Config::Float(0)},
                 {"energy_abs", Config::Float(0)},
             })},
@@ -227,6 +228,7 @@ void ChargeManager::start_manager_task()
             target->get("cp_disconnect_state")->updateBool(CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(state->state_flags));
             target->get("last_update")->updateUint(millis());
             target->get("charger_state")->updateUint(state->charger_state);
+            target->get("meter_supported")->updateBool(CM_FEATURE_FLAGS_METER_IS_SET(state->feature_flags));
             target->get("power_total")->updateFloat(state->power_total);
             target->get("energy_abs")->updateFloat(state->energy_abs);
 

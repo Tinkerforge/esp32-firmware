@@ -121,6 +121,35 @@ void EnergyManager::pre_setup()
         {"mode", Config::Uint(0, 0, 3)},
     });
     charge_mode_update = charge_mode;
+
+    // history
+    history_wallbox_5min = Config::Object({
+        {"uid", Config::Uint32(0)},
+        // date in UTC to avoid DST overlap problems
+        {"year", Config::Uint(0, 2000, 2255)},
+        {"month", Config::Uint(0, 1, 12)},
+        {"day", Config::Uint(0, 1, 31)},
+    });
+
+    history_wallbox_daily = Config::Object({
+        {"uid", Config::Uint32(0)},
+        // date in local time to have the days properly aligned
+        {"year", Config::Uint(0, 2000, 2255)},
+        {"month", Config::Uint(0, 1, 12)},
+    });
+
+    history_energy_manager_5min = Config::Object({
+        // date in UTC to avoid DST overlap problems
+        {"year", Config::Uint(0, 2000, 2255)},
+        {"month", Config::Uint(0, 1, 12)},
+        {"day", Config::Uint(0, 1, 31)},
+    });
+
+    history_energy_manager_daily = Config::Object({
+        // date in local time to have the days properly aligned
+        {"year", Config::Uint(0, 2000, 2255)},
+        {"month", Config::Uint(0, 1, 12)},
+    });
 }
 
 void EnergyManager::apply_defaults()
@@ -189,6 +218,8 @@ void EnergyManager::setup()
 #endif
 
     update_all_data();
+
+    task_scheduler.scheduleWithFixedDelay([this](){collect_data_points();}, 10000, 10000);
 
     // Set up output relay and input pins
     output = new OutputRelay(config_in_use);
@@ -356,6 +387,11 @@ void EnergyManager::register_urls()
 
         logger.printfln("energy_manager: Switched mode %i->%i", old_mode, mode);
     }, false);
+
+    api.addResponse("energy_manager/history_wallbox_5min", &history_wallbox_5min, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_5min_response(response, ownership, owner_id);});
+    api.addResponse("energy_manager/history_wallbox_daily", &history_wallbox_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_daily_response(response, ownership, owner_id);});
+    api.addResponse("energy_manager/history_energy_manager_5min", &history_energy_manager_5min, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_5min_response(response, ownership, owner_id);});
+    api.addResponse("energy_manager/history_energy_manager_daily", &history_energy_manager_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_daily_response(response, ownership, owner_id);});
 
     this->DeviceModule::register_urls();
 }

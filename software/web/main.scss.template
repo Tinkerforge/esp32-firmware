@@ -506,7 +506,7 @@ body {
 
 .em-energy-analysis-chart {
     position: relative;
-    aspect-ratio: 1.5;
+    aspect-ratio: 2;
 }
 
 #status_meter_chart_container .u-value {
