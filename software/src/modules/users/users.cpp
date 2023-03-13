@@ -358,37 +358,35 @@ void Users::setup()
     bool charge_start_tracked = charge_tracker.currentlyCharging();
     bool charging = get_charger_state() == 2 || get_charger_state() == 3;
 
+
     if (charge_start_tracked && !charging) {
-        if (std::isnan(get_energy()) || get_energy() == 0)
+        float override_value = get_energy();
+
+        // This can be 0 if the EVSE 2.0 already reports the meter as available,
+        // but has not read any value from it.
+        if (std::isnan(override_value) || override_value == 0.0f)
         {
-#if MODULE_EVSE_AVAILABLE()
-            for (unsigned long i = millis(); millis() < i + 10000 && meter.values.get("energy_abs")->asFloat() == 0;)
+            auto start = millis();
+#if MODULE_EVSE_AVAILABLE() && MODULE_MODBUS_METER_AVAILABLE()
+            while(!deadline_elapsed(start + 10000) && meter.values.get("energy_abs")->asFloat() == 0)
             {
-                //TODO: test with warp1
                 modbus_meter.checkRS485State();
                 modbus_meter.loop();
-                delay(500);
+                delay(50);
             }
-        }
-
-        if (meter.values.get("energy_abs")->asFloat() == 0)
-            this->stop_charging(0, true);
-        else
-            this->stop_charging(0, true, meter.values.get("energy_abs")->asFloat());
-
+            override_value = meter.values.get("energy_abs")->asFloat();
 #elif MODULE_EVSE_V2_AVAILABLE()
-            for (unsigned long i = millis(); millis() < i + 10000 && evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat() == 0;)
+            while(!deadline_elapsed(start + 10000) && evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat() == 0)
             {
                 evse_v2.update_all_data();
-                delay(500);
+                delay(250);
             }
+            override_value = evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat();
+#endif
         }
 
-        if (evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat() == 0)
-            this->stop_charging(0, true);
-        else
-            this->stop_charging(0, true, evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
-#endif
+        // ChargeTracker::endCharge replaces 0 with NAN.
+        this->stop_charging(0, true, override_value);
     }
 
     if (charging) {
