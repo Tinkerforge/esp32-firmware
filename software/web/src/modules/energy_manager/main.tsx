@@ -242,13 +242,6 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                         </div>
                     </Collapse>
 
-                    <FormSeparator heading={__("energy_manager.content.header_charge_management")} />
-                    <FormRow label="">
-                        <div class="pt-3 pb-4">
-                            {__("energy_manager.content.charge_management_explainer")}
-                        </div>
-                    </FormRow>
-
                     <FormSeparator heading={__("energy_manager.content.header_excess_charging")} />
                     <FormRow label={__("energy_manager.content.enable_excess_charging")} label_muted={__("energy_manager.content.enable_excess_charging_muted")}>
                         <Switch desc={__("energy_manager.content.enable_excess_charging_desc")}
@@ -321,6 +314,13 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                             }
                             value={s.phase_switching_mode}
                             onValue={(v) => this.setState({phase_switching_mode: parseInt(v)})}/>
+                    </FormRow>
+
+                    <FormSeparator heading={__("energy_manager.content.header_charge_management")} />
+                    <FormRow label="">
+                        <div class="pt-3 pb-4">
+                            {__("energy_manager.content.charge_management_explainer")}
+                        </div>
                     </FormRow>
 
                     <FormSeparator heading={__("energy_manager.content.relay")}/>
