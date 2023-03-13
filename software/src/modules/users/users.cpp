@@ -359,7 +359,24 @@ void Users::setup()
     bool charging = get_charger_state() == 2 || get_charger_state() == 3;
 
     if (charge_start_tracked && !charging) {
-        this->stop_charging(0, true);
+        if (std::isnan(get_energy()))
+        {
+            for (unsigned long i = millis(); millis() < i + 10000 && evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat() == 0;)
+            {
+                //TODO: test with warp1
+#if MODULE_EVSE_AVAILABLE()
+                    modbus_meter.loop();
+#elif MODULE_EVSE_V2_AVAILABLE()
+                    evse_v2.update_all_data();
+                delay(500);
+            }
+#endif
+        }
+        
+        if (evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat() == 0)
+            this->stop_charging(0, true);
+        else
+            this->stop_charging(0, true, evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
     }
 
     if (charging) {
@@ -893,7 +910,7 @@ bool Users::start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth
     return true;
 }
 
-bool Users::stop_charging(uint8_t user_id, bool force)
+bool Users::stop_charging(uint8_t user_id, bool force, float meter_abs)
 {
     if (charge_tracker.currentlyCharging()) {
         UserSlotInfo info;
@@ -917,7 +934,10 @@ bool Users::stop_charging(uint8_t user_id, bool force)
             charge_duration = now_seconds - start_seconds;
         }
 
-        charge_tracker.endCharge(charge_duration, get_energy());
+        if (meter_abs)
+            charge_tracker.endCharge(charge_duration, meter_abs);
+        else
+            charge_tracker.endCharge(charge_duration, get_energy());
     }
 
     zero_user_slot_info();
