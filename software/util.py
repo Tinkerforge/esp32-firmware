@@ -194,8 +194,8 @@ def parse_ts_file(path, name, used_placeholders, template_literals):
     with open(path, 'r') as f:
         content = f.read()
 
-    placeholders = re.findall('__\(([^\)]*)', content)
-    placeholders_unchecked = re.findall('translate_unchecked\(([^\)]*)', content)
+    placeholders = [x.strip() for x in re.findall('__\(([^\)]*)', content)]
+    placeholders_unchecked = [x.strip() for x in re.findall('translate_unchecked\(([^\)]*)', content)]
 
     template_literal_keys = [x for x in placeholders_unchecked if x[0] == '`' and x[-1] == '`' and '${' in x and '}' in x]
     placeholders = [x for x in placeholders if x not in template_literal_keys]
