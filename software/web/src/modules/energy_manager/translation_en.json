@@ -30,7 +30,7 @@
             "auto_reset_charging_mode_desc": "Automatically sets the charging mode back to the default.",
             "auto_reset_time": "Reset at",
 
-            "header_charge_management": "Dynamic charge management",
+            "header_charge_management": "Dynamic load management",
             "charge_management_explainer": "The Energy Manager adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)",
 
             "header_excess_charging": "Photovoltaic excess charging",
