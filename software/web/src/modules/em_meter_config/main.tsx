@@ -55,6 +55,14 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
             return <></>
 
         let meter_state = state.meter_state;
+        let local_meter_type;
+        switch (meter_state.energy_meter_type) {
+            case  0: local_meter_type =  0; break; // None
+            case  2: local_meter_type =  1; break; // SDM630
+            case  3: local_meter_type =  2; break; // SDM72DMV2
+            case  5: local_meter_type =  3; break; // SDM630MCTV2
+            default: local_meter_type = -1; // SDM72DM, SDM72CTM, unknown
+        }
 
         return (
             <>
@@ -78,12 +86,11 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
 
                             <FormRow label={__("em_meter_config.content.sdm_available")}>
                                 <IndicatorGroup
-                                    value={Math.max(0, meter_state.energy_meter_type - 1)} // Skip type 1: SDM72DM
+                                    value={local_meter_type}
                                     items={[
                                         ["secondary", __("em_meter_config.content.sdm_none")],
                                         ["primary", __("em_meter_config.content.sdm_630")],
                                         ["primary", __("em_meter_config.content.sdm_72dmv2")],
-                                        ["primary", __("em_meter_config.content.sdm_72ctm")],
                                         ["primary", __("em_meter_config.content.sdm_630mctv2")],
                                     ]}/>
                             </FormRow>
