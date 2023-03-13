@@ -25,8 +25,6 @@
 #include "device_module.h"
 #include "evse_bricklet_firmware_bin.embedded.h"
 
-//TODO: Implement evse changes for timed charging.
-
 #define CHARGING_SLOT_COUNT 14
 #define CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE 20
 
