@@ -444,6 +444,18 @@ de_hyph = [
     "Über-schuss-regel-ung",
     "über-mäßigen",
     "über-schritten",
+    "Aus-ge-glichen",
+    "Batterie-speicher",
+    "Drei-phasig",
+    "Fahr-zeugen",
+    "Kon-ser-va-tiv",
+    "Min-dest-lade-leistung",
+    "Photo-voltaik",
+    "Regel-ver-halten",
+    "Standard-lade-modus",
+    "Un-voll-ständige",
+    "kon-ser-va-tiv",
+    "Fahr-zeug-lade-vor-gänge"
 ]
 
 en_hyph = [
@@ -565,6 +577,13 @@ en_hyph = [
     "hyster-esis",
     "oc-ca-sion-al-ly",
     "photo-voltaic",
+    "Ag-gres-sive",
+    "Con-ser-va-tive",
+    "In-com-plete",
+    "Photo-voltaic",
+    "ag-gres-sive",
+    "con-ser-va-tive",
+    "re-com-mend-ed"
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
