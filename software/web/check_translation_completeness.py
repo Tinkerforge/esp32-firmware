@@ -52,10 +52,10 @@ def main():
 
     used_placeholders, template_literals = util.parse_ts_files(ts_files)
 
-    with open('./src/ts/translation.json', 'r') as f:
+    with open('./src/ts/translation.json', 'r', encoding='utf-8') as f:
         translation = json.loads(f.read())
 
-    with open("./src/index.html") as f:
+    with open('./src/index.html', 'r', encoding='utf-8') as f:
         content = f.read()
 
     used_placeholders += flatten([x.split(" ") for x in re.findall('data-i18n="([^"]*)"', content)])

@@ -20,7 +20,7 @@ def make_absolute_path(path):
 
 @app.route('/')
 def index():
-    with open(make_absolute_path('build/index.standalone.html'), 'r') as f:
+    with open(make_absolute_path('build/index.standalone.html'), 'r', encoding='utf-8') as f:
         return f.read()
 
 

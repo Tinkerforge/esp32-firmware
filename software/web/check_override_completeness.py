@@ -51,7 +51,7 @@ def main():
 
         translation = {}
         for f in override_files:
-            with open(f) as file:
+            with open(f, 'r', encoding='utf-8') as file:
                 util.merge(translation, {re.search("translation_([^_]*)_override", f).groups()[0]: json.load(file)})
 
         env_overrides[env] = {}
