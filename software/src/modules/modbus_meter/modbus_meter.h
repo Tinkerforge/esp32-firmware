@@ -42,6 +42,8 @@ public:
     void register_urls();
     void loop();
 
+    void checkRS485State();
+
     enum class UserDataDone {
         NOT_DONE,
         DONE,
@@ -61,7 +63,6 @@ public:
 private:
     void modbus_read();
     void setupRS485();
-    void checkRS485State();
     const RegRead *getNextRead(bool *trigger_fast_read_done, bool *trigger_slow_read_done);
 
     TF_RS485 rs485;

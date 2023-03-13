@@ -359,24 +359,36 @@ void Users::setup()
     bool charging = get_charger_state() == 2 || get_charger_state() == 3;
 
     if (charge_start_tracked && !charging) {
-        if (std::isnan(get_energy()))
+        if (std::isnan(get_energy()) || get_energy() == 0)
         {
-            for (unsigned long i = millis(); millis() < i + 10000 && evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat() == 0;)
+#if MODULE_EVSE_AVAILABLE()
+            for (unsigned long i = millis(); millis() < i + 10000 && meter.values.get("energy_abs")->asFloat() == 0;)
             {
                 //TODO: test with warp1
-#if MODULE_EVSE_AVAILABLE()
-                    modbus_meter.loop();
-#elif MODULE_EVSE_V2_AVAILABLE()
-                    evse_v2.update_all_data();
+                modbus_meter.checkRS485State();
+                modbus_meter.loop();
                 delay(500);
             }
-#endif
         }
-        
+
+        if (meter.values.get("energy_abs")->asFloat() == 0)
+            this->stop_charging(0, true);
+        else
+            this->stop_charging(0, true, meter.values.get("energy_abs")->asFloat());
+
+#elif MODULE_EVSE_V2_AVAILABLE()
+            for (unsigned long i = millis(); millis() < i + 10000 && evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat() == 0;)
+            {
+                evse_v2.update_all_data();
+                delay(500);
+            }
+        }
+
         if (evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat() == 0)
             this->stop_charging(0, true);
         else
             this->stop_charging(0, true, evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
+#endif
     }
 
     if (charging) {
