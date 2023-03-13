@@ -28,9 +28,9 @@
             "sdm_available": "Connected Meter",
             "sdm_power": "Power draw",
             "sdm_energy_import": "Import",
-            "sdm_energy_import_muted": "Total draw from grid",
+            "sdm_energy_import_muted": "",
             "sdm_energy_export": "Export",
-            "sdm_energy_export_muted": "Total feed to grid",
+            "sdm_energy_export_muted": "",
 
             "generic_details": "Show generic energy meter details"
         },

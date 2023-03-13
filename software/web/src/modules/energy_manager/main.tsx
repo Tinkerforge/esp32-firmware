@@ -206,7 +206,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
         let mode_list_for_inputs: StringStringTuple[] = [];
         for (let tuple of mode_list) {
-            mode_list_for_inputs.push([tuple[0], __("energy_manager.content.input_switch_to") + " " + tuple[1]]);
+            mode_list_for_inputs.push([tuple[0], __("energy_manager.content.input_switch_to_prefix") + tuple[1] + __("energy_manager.content.input_switch_to_suffix")]);
         }
         mode_list_for_inputs.push(["255", __("energy_manager.content.input_mode_nothing")]);
 
@@ -218,7 +218,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
             <>
                 <ConfigForm id="energy_manager_config_form" title={__("energy_manager.content.page_header")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
 
-                    <FormRow label={__("energy_manager.content.default_mode")}>
+                    <FormRow label={__("energy_manager.content.default_mode")} label_muted={__("energy_manager.content.default_mode_muted")}>
                         <InputSelect
                             required
                             items={mode_list}
@@ -242,15 +242,15 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                         </div>
                     </Collapse>
 
-                    <FormSeparator heading={__("energy_manager.content.header_load_management")} />
+                    <FormSeparator heading={__("energy_manager.content.header_charge_management")} />
                     <FormRow label="">
                         <div class="pt-3 pb-4">
-                            {__("energy_manager.content.load_management_explainer")}
+                            {__("energy_manager.content.charge_management_explainer")}
                         </div>
                     </FormRow>
 
                     <FormSeparator heading={__("energy_manager.content.header_excess_charging")} />
-                    <FormRow label={__("energy_manager.content.enable_excess_charging")}>
+                    <FormRow label={__("energy_manager.content.enable_excess_charging")} label_muted={__("energy_manager.content.enable_excess_charging_muted")}>
                         <Switch desc={__("energy_manager.content.enable_excess_charging_desc")}
                                 checked={s.excess_charging_enable}
                                 onClick={this.toggle('excess_charging_enable')}/>

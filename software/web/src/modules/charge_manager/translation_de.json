@@ -24,7 +24,7 @@
             "default_available_current_muted": "wird nach Neustart des Lastmanagers verwendet",
             "default_available_current_invalid": "Der voreingestellt verfügbare Strom darf höchstens so groß sein wie der maximale Gesamtstrom.",
             "maximum_available_current": "Maximaler Gesamtstrom",
-            "maximum_available_current_muted": "Maximal zulässiger Ladestrom aller Wallboxen in Summe. Dies ist üblicherweise die Nennbelastbarkeit der gemeinsamen Zuleitung.",
+            "maximum_available_current_muted": "maximal zulässiger Ladestrom aller Wallboxen in Summe. Dies ist üblicherweise die Nennbelastbarkeit der gemeinsamen Zuleitung.",
             "minimum_current": "Minimaler Ladestrom",
             "minimum_current_muted": "geringster Ladestrom, der vom Fahrzeug unterstützt wird",
 

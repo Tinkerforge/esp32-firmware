@@ -1,13 +1,13 @@
 {
     "charge_manager": {
         "status": {
-            "charge_manager": "Wallboxes"
+            "charge_manager": "Charge management"
         },
         "navbar": {
-            "charge_manager": "Wallboxes"
+            "charge_manager": "Chargers"
         },
         "content": {
-            "charge_manager": "Wallboxes"
+            "charge_manager": "Chargers"
         }
     },
     "event_log": {

@@ -1,7 +1,7 @@
 {
     "charge_manager": {
         "status": {
-            "charge_manager": "Wallboxen"
+            "charge_manager": "Lastmanagement"
         },
         "navbar": {
             "charge_manager": "Wallboxen"

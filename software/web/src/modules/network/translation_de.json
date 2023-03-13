@@ -2,7 +2,7 @@
     "network": {
         "status": {},
         "navbar": {
-            "network": "Allgemein"
+            "network": "Einstellungen"
         },
         "content": {
             "network": "Netzwerk",

@@ -9,7 +9,7 @@
         "content": {
             "em_meter_config": "Stromzähler-Einstellungen",
             "meter_source": "Stromzähler-Typ",
-            "meter_source_muted": "zum Messen der Strombilanz am Hausanschluss",
+            "meter_source_muted": "zur Messung der Energiebilanz am Hausanschluss",
             "type_none": "Kein Stromzähler",
             "type_sdm": "SDM630*/SDM72* am WARP Energy Manager",
             "type_sunspec": "SunSpec-kompatibler Stromzähler per Modbus-TCP",
@@ -28,9 +28,9 @@
             "sdm_available": "Angeschlossener Zähler",
             "sdm_power": "Leistungsaufnahme",
             "sdm_energy_import": "Netzbezug",
-            "sdm_energy_import_muted": "Gesamt",
+            "sdm_energy_import_muted": "",
             "sdm_energy_export": "Netzeinspeisung",
-            "sdm_energy_export_muted": "Gesamt",
+            "sdm_energy_export_muted": "",
 
             "generic_details": "Zeige Detailansicht für generischen Stromzähler"
         },

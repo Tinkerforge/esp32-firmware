@@ -58,7 +58,7 @@
             "jumper_config_unconfigured": "Unkonfiguriert",
             "evse_version": "Hardware-Version des Ladecontrollers",
             "charging_current": "Ladestromgrenzen",
-            "charging_current_muted": "minimum der Ladestromgrenzen",
+            "charging_current_muted": "Minimum der Ladestromgrenzen",
             "reset_slot": "Freigeben",
             "low_level_state": "Low-Level-Zustand",
             "led_state": "LED-Zustand",
