@@ -257,8 +257,9 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                     value={s.guaranteed_power}
                                     onValue={this.set('guaranteed_power')}
                                     digits={3}
-                                    min={0}
+                                    min={230 * 6 * (s.phase_switching_mode == 2 ? 3 : 1)}
                                     max={22000}
+                                    showMinMax
                                 />
                             </FormRow>
 
