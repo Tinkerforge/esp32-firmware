@@ -314,7 +314,14 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                 ]
                             }
                             value={s.phase_switching_mode}
-                            onValue={(v) => this.setState({phase_switching_mode: parseInt(v)})}/>
+                            onValue={(v) => {
+                                this.setState({phase_switching_mode: parseInt(v)});
+                                if (v == "2") {
+                                    this.setState({guaranteed_power: Math.max(this.state.guaranteed_power, 230 * 6 * 3)});
+                                } else if (this.state.guaranteed_power == (230 * 6 * 3)) {
+                                    this.setState({guaranteed_power: Math.max(230 * 6, API.get("energy_manager/config").guaranteed_power)});
+                                }
+                                }}/>
                     </FormRow>
 
                     <FormSeparator heading={__("energy_manager.content.header_load_management")} />
