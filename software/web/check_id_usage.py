@@ -6,7 +6,7 @@ html_id = re.compile('id=["\']([^"\'\s]*)["\'\s]')
 jquery_id = re.compile('\$\([\'"]#([^\'"\s,]*)[\'"\s]') #todo handle more complex css selectors
 js_id = re.compile('getElementById\([\'"]([^\'"\s]*)[\'"\s]')
 
-with open("./src/index.html") as f:
+with open('./src/index.html', 'r', encoding='utf-8') as f:
     html_ids = set(html_id.findall(f.read()))
 
 ts_files = []
@@ -32,7 +32,7 @@ ts_files.append(os.path.join("src", "main.ts"))
 
 js_ids = set()
 for file in ts_files:
-    with open(file) as f:
+    with open(file, 'r', encoding='utf-8') as f:
         content = f.read()
     js_ids.update(jquery_id.findall(content))
     js_ids.update(js_id.findall(content))

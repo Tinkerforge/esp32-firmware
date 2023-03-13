@@ -46,11 +46,11 @@ def download_package_json(package_name, url, commit):
     os.replace(package_json_path + '.tmp', package_json_path)
 
 def write_config_json(config_json):
-    with open(make_absolute_path(os.path.join('packages', 'config.json')), 'w') as f:
+    with open(make_absolute_path(os.path.join('packages', 'config.json')), 'w', encoding='utf-8') as f:
         f.write(json.dumps(config_json, indent=4) + '\n')
 
 def main():
-    with open(make_absolute_path(os.path.join('packages', 'config.json')), 'r') as f:
+    with open(make_absolute_path(os.path.join('packages', 'config.json')), 'r', encoding='utf-8') as f:
         config_json = json.loads(f.read())
 
     exisiting_package_names = set()

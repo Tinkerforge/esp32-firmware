@@ -14,7 +14,7 @@ VERSION = '2.1.0'
 
 print('Updating packages')
 
-with open('packages/config.json', 'r') as f:
+with open('packages/config.json', 'r', encoding='utf-8') as f:
     config_json = json.loads(f.read())
 
 config = {}

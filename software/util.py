@@ -191,7 +191,7 @@ def merge(left, right, path=[]):
     return left
 
 def parse_ts_file(path, name, used_placeholders, template_literals):
-    with open(path, 'r') as f:
+    with open(path, 'r', encoding='utf-8') as f:
         content = f.read()
 
     placeholders = [x.strip() for x in re.findall('__\(([^\)]*)', content)]

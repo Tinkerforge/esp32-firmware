@@ -11,7 +11,7 @@ import re
 import shutil
 import subprocess
 
-with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'r') as f:
+with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'r', encoding='utf-8') as f:
     firmware_basename = f.read().strip()
 
 partitions = env.GetProjectOption('board_build.partitions')

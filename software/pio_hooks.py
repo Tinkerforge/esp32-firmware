@@ -500,22 +500,22 @@ def main():
             branding_path = potential_branding_path
 
         if os.path.exists(os.path.join(mod_path, 'navbar.html')):
-            with open(os.path.join(mod_path, 'navbar.html'), encoding='utf-8') as f:
+            with open(os.path.join(mod_path, 'navbar.html'), 'r', encoding='utf-8') as f:
                 navbar_entries.append(f.read())
 
         if os.path.exists(os.path.join(mod_path, 'content.html')):
-            with open(os.path.join(mod_path, 'content.html'), encoding='utf-8') as f:
+            with open(os.path.join(mod_path, 'content.html'), 'r', encoding='utf-8') as f:
                 content_entries.append(f.read())
 
         if os.path.exists(os.path.join(mod_path, 'status.html')):
-            with open(os.path.join(mod_path, 'status.html'), encoding='utf-8') as f:
+            with open(os.path.join(mod_path, 'status.html'), 'r', encoding='utf-8') as f:
                 status_entries.append(f.read())
 
         if os.path.exists(os.path.join(mod_path, 'main.ts')) or os.path.exists(os.path.join(mod_path, 'main.tsx')):
             main_ts_entries.append(frontend_module.under)
 
         if os.path.exists(os.path.join(mod_path, 'api.ts')):
-            with open(os.path.join(mod_path, 'api.ts'), encoding='utf-8') as f:
+            with open(os.path.join(mod_path, 'api.ts'), 'r', encoding='utf-8') as f:
                 content = f.read()
 
             api_path = frontend_module.under + "/"
@@ -589,7 +589,7 @@ def main():
     with open(logo_path, 'rb') as f:
         logo_base64 = b64encode(f.read()).decode('ascii')
 
-    with open(branding_path, 'r') as f:
+    with open(branding_path, 'r', encoding='utf-8') as f:
         branding = f.read()
 
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
