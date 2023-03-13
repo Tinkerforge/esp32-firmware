@@ -553,7 +553,11 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
             }
 
             return  <div class="card">
-                        <h5 class="card-header">{c.name}</h5>
+                        <h5 class="card-header">
+                            <a target="_blank" rel="noopener noreferrer" href={ state.config.chargers[i].host != "127.0.0.1" ? "http://" + state.config.chargers[i].host : "#"}>
+                                {c.name}
+                            </a>
+                        </h5>
                         <div class={"card-body " + c_body_classes}>
                             <h5 class="card-title">{c_state}</h5>
                             <p class="card-text">{c_info}</p>
