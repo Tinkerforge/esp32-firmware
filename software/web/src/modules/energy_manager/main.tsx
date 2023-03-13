@@ -317,10 +317,10 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                             onValue={(v) => this.setState({phase_switching_mode: parseInt(v)})}/>
                     </FormRow>
 
-                    <FormSeparator heading={__("energy_manager.content.header_charge_management")} />
+                    <FormSeparator heading={__("energy_manager.content.header_load_management")} />
                     <FormRow label="">
                         <div class="pt-3 pb-4">
-                            {__("energy_manager.content.charge_management_explainer")}
+                            {__("energy_manager.content.load_management_explainer")}
                         </div>
                     </FormRow>
 
