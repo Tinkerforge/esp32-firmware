@@ -289,12 +289,12 @@ void EnergyManager::set_energy_manager_5min_data_point(struct tm *utc,
         char power_general_str[6][12] = {"null", "null", "null", "null", "null", "null"};
 
         if (power_grid != INT32_MAX) {
-            snprintf(power_grid_str, sizeof(power_grid_str), "%u", power_grid);
+            snprintf(power_grid_str, sizeof(power_grid_str), "%d", power_grid);
         }
 
         for (int i = 0; i < 6; ++i) {
             if (power_general[i] != INT32_MAX) {
-                snprintf(power_general_str[i], sizeof(power_general_str[i]), "%u", power_general[i]);
+                snprintf(power_general_str[i], sizeof(power_general_str[i]), "%d", power_general[i]);
             }
         }
 
