@@ -31,14 +31,17 @@
 void EnergyManager::collect_data_points()
 {
     struct timeval tv;
+    struct tm utc;
+    struct tm local;
 
     if (!clock_synced(&tv)) {
         return;
     }
 
-    struct tm utc;
     gmtime_r(&tv.tv_sec, &utc);
+    localtime_r(&tv.tv_sec, &local);
 
+    // 5min data
     int current_5min_slot = utc.tm_min / 5;
 
     if (current_5min_slot != last_history_5min_slot) {
@@ -53,10 +56,12 @@ void EnergyManager::collect_data_points()
                 uint16_t power = UINT16_MAX;
 
                 if (charger.get("meter_supported")->asBool()) {
-                    power = clamp((uint64_t)0, (uint64_t)roundf(charger.get("power_total")->asFloat()), (uint64_t)UINT16_MAX - 1); // W
+                    power = clamp<uint64_t>(0,
+                                            roundf(charger.get("power_total")->asFloat()),
+                                            UINT16_MAX - 1); // W
                 }
 
-                set_wallbox_5min_data_point(&utc, uid, flags, power);
+                set_wallbox_5min_data_point(&utc, &local, uid, flags, power);
             }
         }
 
@@ -71,20 +76,20 @@ void EnergyManager::collect_data_points()
             flags |= all_data.output   ? 0b1000 : 0;
 
             if (meter.state.get("state")->asUint() == 2) {
-                power_grid = clamp((int64_t)INT32_MIN, (int64_t)roundf(meter.values.get("power")->asFloat()), (int64_t)INT32_MAX - 1); // W
+                power_grid = clamp<int64_t>(INT32_MIN,
+                                            roundf(meter.values.get("power")->asFloat()),
+                                            INT32_MAX - 1); // W
             }
 
             // FIXME: fill power_general
 
-            set_energy_manager_5min_data_point(&utc, flags, power_grid, power_general);
+            set_energy_manager_5min_data_point(&utc, &local, flags, power_grid, power_general);
         }
 
         last_history_5min_slot = current_5min_slot;
     }
 
-    struct tm local;
-    localtime_r(&tv.tv_sec, &local);
-
+    // daily data
     int current_daily_slot = local.tm_year * 366 + local.tm_yday;
 
     if (current_daily_slot != last_history_daily_slot && local.tm_hour == 23 && local.tm_min >= 55) {
@@ -96,7 +101,9 @@ void EnergyManager::collect_data_points()
                 uint32_t energy = UINT32_MAX;
 
                 if (charger.get("meter_supported")->asBool()) {
-                    energy = clamp((uint64_t)0, (uint64_t)roundf(charger.get("energy_abs")->asFloat() * 100.0), (uint64_t)UINT32_MAX - 1); // kWh -> dWh
+                    energy = clamp<uint64_t>(0,
+                                             roundf(charger.get("energy_abs")->asFloat() * 100.0),
+                                             UINT32_MAX - 1); // kWh -> dWh
                 }
 
                 set_wallbox_daily_data_point(&local, uid, energy);
@@ -110,8 +117,12 @@ void EnergyManager::collect_data_points()
             uint32_t energy_general_out[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
 
             if (meter.state.get("state")->asUint() == 2 && api.hasFeature("meter_all_values")) {
-                energy_grid_in = clamp((uint64_t)0, (uint64_t)roundf(meter.all_values.get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat() * 100.0), (uint64_t)UINT32_MAX - 1); // kWh -> dWh
-                energy_grid_out = clamp((uint64_t)0, (uint64_t)roundf(meter.all_values.get(METER_ALL_VALUES_TOTAL_EXPORT_KWH)->asFloat() * 100.0), (uint64_t)UINT32_MAX - 1); // kWh -> dWh
+                energy_grid_in = clamp<uint64_t>(0,
+                                                 roundf(meter.all_values.get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat() * 100.0),
+                                                 UINT32_MAX - 1); // kWh -> dWh
+                energy_grid_out = clamp<uint64_t>(0,
+                                                  roundf(meter.all_values.get(METER_ALL_VALUES_TOTAL_EXPORT_KWH)->asFloat() * 100.0),
+                                                  UINT32_MAX - 1); // kWh -> dWh
             }
 
             // FIXME: fill energy_general_in and energy_general_out
@@ -123,20 +134,29 @@ void EnergyManager::collect_data_points()
     }
 }
 
-void EnergyManager::set_wallbox_5min_data_point(struct tm *utc, uint32_t uid, uint8_t flags, uint16_t power /* W */)
+void EnergyManager::set_wallbox_5min_data_point(struct tm *utc, struct tm *local, uint32_t uid, uint8_t flags, uint16_t power /* W */)
 {
     uint8_t status;
-    uint8_t year = utc->tm_year - 100;
-    uint8_t month = utc->tm_mon + 1;
-    uint8_t day = utc->tm_mday;
-    uint8_t hour = utc->tm_hour;
-    uint8_t minute = (utc->tm_min / 5) * 5;
-    int rc = tf_warp_energy_manager_set_sd_wallbox_data_point(&device, uid, year, month, day, hour, minute, flags, power, &status);
+    uint8_t utc_year = utc->tm_year - 100;
+    uint8_t utc_month = utc->tm_mon + 1;
+    uint8_t utc_day = utc->tm_mday;
+    uint8_t utc_hour = utc->tm_hour;
+    uint8_t utc_minute = (utc->tm_min / 5) * 5;
+    int rc = tf_warp_energy_manager_set_sd_wallbox_data_point(&device,
+                                                              uid,
+                                                              utc_year,
+                                                              utc_month,
+                                                              utc_day,
+                                                              utc_hour,
+                                                              utc_minute,
+                                                              flags,
+                                                              power,
+                                                              &status);
 
     check_bricklet_reachable(rc, "set_wallbox_5min_data_point");
 
     //logger.printfln("set_wallbox_5min_data_point: u%u %d-%02d-%02d %02d:%02d f%u p%u",
-    //                uid, 2000 + year, month, day, hour, minute, flags, power);
+    //                uid, 2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power);
 
     if (rc != TF_E_OK) {
         logger.printfln("energy_manager: Failed to set wallbox 5min data point: error %d", rc);
@@ -145,9 +165,37 @@ void EnergyManager::set_wallbox_5min_data_point(struct tm *utc, uint32_t uid, ui
         logger.printfln("energy_manager: Failed to set wallbox 5min data point: status %u", status);
     }
     else {
+        char power_str[6] = "null";
+
+        if (power != UINT16_MAX) {
+            snprintf(power_str, sizeof(power_str), "%u", power);
+        }
+
+        uint8_t local_year = local->tm_year - 100;
+        uint8_t local_month = local->tm_mon + 1;
+        uint8_t local_day = local->tm_mday;
+        uint8_t local_hour = local->tm_hour;
+        uint8_t local_minute = (local->tm_min / 5) * 5;
         char *buf;
-        int buf_written = asprintf(&buf, "{\"topic\":\"energy_manager/history_wallbox_5min_changed\",\"payload\":{\"uid\":%u,\"year\":%u,\"month\":%u,\"day\":%u,\"hour\":%u,\"minute\":%u,\"flags\":%u,\"power\":%u}}\n",
-                                   uid, 2000 + year, month, day, hour, minute, flags, power);
+        int buf_written = asprintf(&buf,
+                                   "{\"topic\":\"energy_manager/history_wallbox_5min_changed\","
+                                    "\"payload\":{"
+                                    "\"uid\":%u,"
+                                    "\"year\":%u,"
+                                    "\"month\":%u,"
+                                    "\"day\":%u,"
+                                    "\"hour\":%u,"
+                                    "\"minute\":%u,"
+                                    "\"flags\":%u,"
+                                    "\"power\":%s}}\n",
+                                   uid,
+                                   2000 + local_year,
+                                   local_month,
+                                   local_day,
+                                   local_hour,
+                                   local_minute,
+                                   flags,
+                                   power_str);
 
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, buf_written);
@@ -175,9 +223,26 @@ void EnergyManager::set_wallbox_daily_data_point(struct tm *local, uint32_t uid,
         logger.printfln("energy_manager: Failed to set wallbox daily data point: status %u", status);
     }
     else {
+        char energy_str[12] = "null";
+
+        if (energy != UINT32_MAX) {
+            snprintf(energy_str, sizeof(energy_str), "%.2f", energy / 100.0); // dWh -> kWh
+        }
+
         char *buf;
-        int buf_written = asprintf(&buf, "{\"topic\":\"energy_manager/history_wallbox_daily_changed\",\"payload\":{\"uid\":%u,\"year\":%u,\"month\":%u,\"day\":%u,\"energy\":%.2f}}\n",
-                                   uid, 2000 + year, month, day, energy / 100.0);
+        int buf_written = asprintf(&buf,
+                                   "{\"topic\":\"energy_manager/history_wallbox_daily_changed\","
+                                    "\"payload\":{"
+                                    "\"uid\":%u,"
+                                    "\"year\":%u,"
+                                    "\"month\":%u,"
+                                    "\"day\":%u,"
+                                    "\"energy\":%s}}\n",
+                                   uid,
+                                   2000 + year,
+                                   month,
+                                   day,
+                                   energy_str);
 
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, buf_written);
@@ -185,20 +250,33 @@ void EnergyManager::set_wallbox_daily_data_point(struct tm *local, uint32_t uid,
     }
 }
 
-void EnergyManager::set_energy_manager_5min_data_point(struct tm *utc, uint8_t flags, int32_t power_grid /* W */, int32_t power_general[6] /* W */)
+void EnergyManager::set_energy_manager_5min_data_point(struct tm *utc,
+                                                       struct tm *local,
+                                                       uint8_t flags,
+                                                       int32_t power_grid /* W */,
+                                                       int32_t power_general[6] /* W */)
 {
     uint8_t status;
-    uint8_t year = utc->tm_year - 100;
-    uint8_t month = utc->tm_mon + 1;
-    uint8_t day = utc->tm_mday;
-    uint8_t hour = utc->tm_hour;
-    uint8_t minute = (utc->tm_min / 5) * 5;
-    int rc = tf_warp_energy_manager_set_sd_energy_manager_data_point(&device, year, month, day, hour, minute, flags, power_grid, power_general, &status);
+    uint8_t utc_year = utc->tm_year - 100;
+    uint8_t utc_month = utc->tm_mon + 1;
+    uint8_t utc_day = utc->tm_mday;
+    uint8_t utc_hour = utc->tm_hour;
+    uint8_t utc_minute = (utc->tm_min / 5) * 5;
+    int rc = tf_warp_energy_manager_set_sd_energy_manager_data_point(&device,
+                                                                     utc_year,
+                                                                     utc_month,
+                                                                     utc_day,
+                                                                     utc_hour,
+                                                                     utc_minute,
+                                                                     flags,
+                                                                     power_grid,
+                                                                     power_general,
+                                                                     &status);
 
     check_bricklet_reachable(rc, "set_energy_manager_5min_data_point");
 
     //logger.printfln("set_energy_manager_5min_data_point: %d-%02d-%02d %02d:%02d f%u gr%d ge%d,%d,%d,%d,%d,%d",
-    //                2000 + year, month, day, hour, minute, flags, power_grid, power_general[0], power_general[1], power_general[2], power_general[3], power_general[4], power_general[5]);
+    //                2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power_grid, power_general[0], power_general[1], power_general[2], power_general[3], power_general[4], power_general[5]);
 
     if (rc != TF_E_OK) {
         logger.printfln("energy_manager: Failed to set energy manager 5min data point: error %d", rc);
@@ -207,9 +285,49 @@ void EnergyManager::set_energy_manager_5min_data_point(struct tm *utc, uint8_t f
         logger.printfln("energy_manager: Failed to set energy manager 5min data point: status %u", status);
     }
     else {
+        char power_grid_str[12] = "null";
+        char power_general_str[6][12] = {"null", "null", "null", "null", "null", "null"};
+
+        if (power_grid != INT32_MAX) {
+            snprintf(power_grid_str, sizeof(power_grid_str), "%u", power_grid);
+        }
+
+        for (int i = 0; i < 6; ++i) {
+            if (power_general[i] != INT32_MAX) {
+                snprintf(power_general_str[i], sizeof(power_general_str[i]), "%u", power_general[i]);
+            }
+        }
+
+        uint8_t local_year = local->tm_year - 100;
+        uint8_t local_month = local->tm_mon + 1;
+        uint8_t local_day = local->tm_mday;
+        uint8_t local_hour = local->tm_hour;
+        uint8_t local_minute = (local->tm_min / 5) * 5;
         char *buf;
-        int buf_written = asprintf(&buf, "{\"topic\":\"energy_manager/history_energy_manager_5min_changed\",\"payload\":{\"year\":%u,\"month\":%u,\"day\":%u,\"hour\":%u,\"minute\":%u,\"flags\":%u,\"power_grid\":%d,\"power_general\":[%d,%d,%d,%d,%d,%d]}}\n",
-                                   2000 + year, month, day, hour, minute, flags, power_grid, power_general[0], power_general[1], power_general[2], power_general[3], power_general[4], power_general[5]);
+        int buf_written = asprintf(&buf,
+                                   "{\"topic\":\"energy_manager/history_energy_manager_5min_changed\","
+                                    "\"payload\":{"
+                                    "\"year\":%u,"
+                                    "\"month\":%u,"
+                                    "\"day\":%u,"
+                                    "\"hour\":%u,"
+                                    "\"minute\":%u,"
+                                    "\"flags\":%u,"
+                                    "\"power_grid\":%s,"
+                                    "\"power_general\":[%s,%s,%s,%s,%s,%s]}}\n",
+                                   2000 + local_year,
+                                   local_month,
+                                   local_day,
+                                   local_hour,
+                                   local_minute,
+                                   flags,
+                                   power_grid_str,
+                                   power_general_str[0],
+                                   power_general_str[1],
+                                   power_general_str[2],
+                                   power_general_str[3],
+                                   power_general_str[4],
+                                   power_general_str[5]);
 
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, buf_written);
@@ -250,12 +368,59 @@ void EnergyManager::set_energy_manager_daily_data_point(struct tm *local,
     }
     else if (status != 0) {
         logger.printfln("energy_manager: Failed to set energy manager daily data point: status %u", status);
-    } else {
+    }
+    else {
+        char energy_grid_in_str[13] = "null";
+        char energy_grid_out_str[13] = "null";
+        char energy_general_in_str[6][13] = {"null", "null", "null", "null", "null", "null"};
+        char energy_general_out_str[6][13] = {"null", "null", "null", "null", "null", "null"};
+
+        if (energy_grid_in != INT32_MAX) {
+            snprintf(energy_grid_in_str, sizeof(energy_grid_in_str), "%.2f", energy_grid_in / 100.0); // dWh -> kWh
+        }
+
+        if (energy_grid_out != INT32_MAX) {
+            snprintf(energy_grid_out_str, sizeof(energy_grid_out_str), "%.2f", energy_grid_out / 100.0); // dWh -> kWh
+        }
+
+        for (int i = 0; i < 6; ++i) {
+            if (energy_general_in[i] != INT32_MAX) {
+                snprintf(energy_general_in_str[i], sizeof(energy_general_in_str[i]), "%.2f", energy_general_in[i] / 100.0); // dWh -> kWh
+            }
+
+            if (energy_general_out[i] != INT32_MAX) {
+                snprintf(energy_general_out_str[i], sizeof(energy_general_out_str[i]), "%.2f", energy_general_out[i] / 100.0); // dWh -> kWh
+            }
+        }
+
         char *buf;
-        int buf_written = asprintf(&buf, "{\"topic\":\"energy_manager/history_energy_manager_daily_changed\",\"payload\":{\"year\":%u,\"month\":%u,\"day\":%u,\"energy_grid_in\":%.2f,\"energy_grid_out\":%.2f,\"energy_general_in\":[%.2f,%.2f,%.2f,%.2f,%.2f,%.2f],\"energy_general_out\":[%.2f,%.2f,%.2f,%.2f,%.2f,%.2f]}}\n",
-                                   2000 + year, month, day, energy_grid_in / 100.0, energy_grid_out / 100.0,
-                                   energy_general_in[0] / 100.0, energy_general_in[1] / 100.0, energy_general_in[2] / 100.0, energy_general_in[3] / 100.0, energy_general_in[4] / 100.0, energy_general_in[5] / 100.0,
-                                   energy_general_out[0] / 100.0, energy_general_out[1] / 100.0, energy_general_out[2] / 100.0, energy_general_out[3] / 100.0, energy_general_out[4] / 100.0, energy_general_out[5] / 100.0);
+        int buf_written = asprintf(&buf,
+                                   "{\"topic\":\"energy_manager/history_energy_manager_daily_changed\","
+                                    "\"payload\":{"
+                                    "\"year\":%u,"
+                                    "\"month\":%u,"
+                                    "\"day\":%u,"
+                                    "\"energy_grid_in\":%s,"
+                                    "\"energy_grid_out\":%s,"
+                                    "\"energy_general_in\":[%s,%s,%s,%s,%s,%s],"
+                                    "\"energy_general_out\":[%s,%s,%s,%s,%s,%s]}}\n",
+                                   2000 + year,
+                                   month,
+                                   day,
+                                   energy_grid_in_str,
+                                   energy_grid_out_str,
+                                   energy_general_in_str[0],
+                                   energy_general_in_str[1],
+                                   energy_general_in_str[2],
+                                   energy_general_in_str[3],
+                                   energy_general_in_str[4],
+                                   energy_general_in_str[5],
+                                   energy_general_out_str[0],
+                                   energy_general_out_str[1],
+                                   energy_general_out_str[2],
+                                   energy_general_out_str[3],
+                                   energy_general_out_str[4],
+                                   energy_general_out_str[5]);
 
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, buf_written);
@@ -270,6 +435,11 @@ typedef struct {
     bool call_begin;
     bool write_comma;
     uint16_t next_offset;
+    uint32_t uid;
+    uint8_t utc_end_year;
+    uint8_t utc_end_month;
+    uint8_t utc_end_day;
+    uint16_t utc_end_slots;
 } StreamMetadata;
 
 static StreamMetadata metadata_array[4];
@@ -334,13 +504,13 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
             p->power = UINT16_MAX;
         }
 
-        write_success = response->writef("%u,", p->flags);
+        write_success = response->writef("%u", p->flags);
 
         if (write_success) {
             if (p->power != UINT16_MAX) {
-                write_success = response->writef("%u", p->power);
+                write_success = response->writef(",%u", p->power);
             } else {
-                write_success = response->writef("null");
+                write_success = response->writef(",null");
             }
 
             if (write_success && i < actual_length - sizeof(Wallbox5minData)) {
@@ -353,14 +523,59 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
     metadata->next_offset += 60;
 
     if (metadata->next_offset >= data_length) {
-        if (write_success) {
-            write_success = response->writen("]");
+        if (metadata->utc_end_slots > 0) {
+            if (!write_success) {
+                response->flush();
+                response->end("write error");
+
+                tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(device, nullptr, nullptr);
+            } else {
+                task_scheduler.scheduleOnce([device, metadata, response]{
+                    uint8_t status;
+                    int rc = tf_warp_energy_manager_get_sd_wallbox_data_points(device,
+                                                                               metadata->uid,
+                                                                               metadata->utc_end_year,
+                                                                               metadata->utc_end_month,
+                                                                               metadata->utc_end_day,
+                                                                               0,
+                                                                               0,
+                                                                               metadata->utc_end_slots,
+                                                                               &status);
+
+                    metadata->next_offset = 0;
+                    metadata->utc_end_slots = 0;
+
+                    if (rc != TF_E_OK || status != 0) {
+                        if (rc != TF_E_OK) {
+                            logger.printfln("energy_manager: Failed to continue getting wallbox 5min data point: error %d", rc);
+                        }
+                        else if (status != 0) {
+                            logger.printfln("energy_manager: Failed to continue getting wallbox 5min data point: status %u", status);
+                        }
+
+                        OwnershipGuard ownership_guard2(metadata->response_ownership, metadata->response_owner_id);
+
+                        if (ownership_guard2.have_ownership()) {
+                            response->flush();
+                            response->end("continuation error");
+                        }
+
+                        tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(device, nullptr, nullptr);
+                    }
+                }, 0);
+            }
+        }
+        else {
+            if (write_success) {
+                write_success = response->writen("]");
+            }
+
+            write_success &= response->flush();
+            response->end(write_success ? "" : "write error");
+
+            tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(device, nullptr, nullptr);
         }
 
-        write_success &= response->flush();
-        response->end(write_success ? "" : "write error");
-
-        tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(device, nullptr, nullptr);
         return;
     }
 
@@ -376,13 +591,73 @@ void EnergyManager::history_wallbox_5min_response(IChunkedResponse *response, Ow
 {
     uint32_t uid = history_wallbox_5min.get("uid")->asUint();
 
-    // date in UTC to avoid DST overlap problems
-    uint8_t year = history_wallbox_5min.get("year")->asUint() - 2000;
-    uint8_t month = history_wallbox_5min.get("month")->asUint();
-    uint8_t day = history_wallbox_5min.get("day")->asUint();
+    // history is stored with date in UTC to avoid DST overlap problems.
+    // API accepts date in localtime, convert from localtime to UTC
+    uint8_t local_year = history_wallbox_5min.get("year")->asUint() - 2000;
+    uint8_t local_month = history_wallbox_5min.get("month")->asUint();
+    uint8_t local_day = history_wallbox_5min.get("day")->asUint();
+
+    struct tm local_start;
+    struct tm local_end;
+
+    memset(&local_start, 0, sizeof(local_start));
+    memset(&local_end, 0, sizeof(local_end));
+
+    local_start.tm_year = local_year + 100;
+    local_start.tm_mon = local_month - 1;
+    local_start.tm_mday = local_day;
+
+    local_end.tm_year = local_year + 100;
+    local_end.tm_mon = local_month - 1;
+    local_end.tm_mday = local_day + 1;
+
+    time_t time_start = mktime(&local_start);
+    time_t time_end = mktime(&local_end);
+    struct tm utc_start;
+    struct tm utc_end;
+
+    gmtime_r(&time_start, &utc_start);
+    gmtime_r(&time_end, &utc_end);
+
+    uint8_t utc_start_year = utc_start.tm_year - 100;
+    uint8_t utc_start_month = utc_start.tm_mon + 1;
+    uint8_t utc_start_day = utc_start.tm_mday;
+    uint8_t utc_start_hour = utc_start.tm_hour;
+    uint8_t utc_start_minute = utc_start.tm_min;
+    uint16_t utc_start_slots = ((23 - utc_start_hour) * 60 + (60 - utc_start_minute)) / 5; // till midnight
+
+    uint8_t utc_end_year = utc_end.tm_year - 100;
+    uint8_t utc_end_month = utc_end.tm_mon + 1;
+    uint8_t utc_end_day = utc_end.tm_mday;
+    uint8_t utc_end_hour = utc_end.tm_hour;
+    uint8_t utc_end_minute = utc_end.tm_min;
+    uint16_t utc_end_slots = (utc_end_hour * 60 + utc_end_minute) / 5; // since midnight
 
     uint8_t status;
-    int rc = tf_warp_energy_manager_get_sd_wallbox_data_points(&device, uid, year, month, day, 0, 0, 288, &status);
+    int rc;
+
+    if (utc_start_slots > 0) {
+        rc = tf_warp_energy_manager_get_sd_wallbox_data_points(&device,
+                                                               uid,
+                                                               utc_start_year,
+                                                               utc_start_month,
+                                                               utc_start_day,
+                                                               utc_start_hour,
+                                                               utc_start_minute,
+                                                               utc_start_slots,
+                                                               &status);
+    } else {
+        rc = tf_warp_energy_manager_get_sd_wallbox_data_points(&device,
+                                                               uid,
+                                                               utc_end_year,
+                                                               utc_end_month,
+                                                               utc_end_day,
+                                                               utc_end_hour,
+                                                               utc_end_minute,
+                                                               utc_end_slots,
+                                                               &status);
+        utc_end_slots = 0;
+    }
 
     //logger.printfln("history_wallbox_5min_response: u%u %d-%02d-%02d",
     //                uid, 2000 + year, month, day);
@@ -415,6 +690,11 @@ void EnergyManager::history_wallbox_5min_response(IChunkedResponse *response, Ow
         metadata->call_begin = true;
         metadata->write_comma = false;
         metadata->next_offset = 0;
+        metadata->uid = uid;
+        metadata->utc_end_year = utc_end_year;
+        metadata->utc_end_month = utc_end_month;
+        metadata->utc_end_day = utc_end_day;
+        metadata->utc_end_slots = utc_end_slots;
 
         tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(&device, wallbox_5min_data_points_handler, metadata);
     }
@@ -630,13 +910,13 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
             }
         }
 
-        write_success = response->writef("%u,", p->flags);
+        write_success = response->writef("%u", p->flags);
 
         if (write_success) {
             if (p->power_grid != INT32_MAX) {
-                write_success = response->writef("%d", p->power_grid);
+                write_success = response->writef(",%d", p->power_grid);
             } else {
-                write_success = response->writef("null");
+                write_success = response->writef(",null");
             }
 
             for (int k = 0; k < 6 && write_success; ++k) {
@@ -657,14 +937,58 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
     metadata->next_offset += 58;
 
     if (metadata->next_offset >= data_length) {
-        if (write_success) {
-            write_success = response->writen("]");
+        if (metadata->utc_end_slots > 0) {
+            if (!write_success) {
+                response->flush();
+                response->end("write error");
+
+                tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(device, nullptr, nullptr);
+            } else {
+                task_scheduler.scheduleOnce([device, metadata, response]{
+                    uint8_t status;
+                    int rc = tf_warp_energy_manager_get_sd_energy_manager_data_points(device,
+                                                                                      metadata->utc_end_year,
+                                                                                      metadata->utc_end_month,
+                                                                                      metadata->utc_end_day,
+                                                                                      0,
+                                                                                      0,
+                                                                                      metadata->utc_end_slots,
+                                                                                      &status);
+
+                    metadata->next_offset = 0;
+                    metadata->utc_end_slots = 0;
+
+                    if (rc != TF_E_OK || status != 0) {
+                        if (rc != TF_E_OK) {
+                            logger.printfln("energy_manager: Failed to continue getting energy manager 5min data point: error %d", rc);
+                        }
+                        else if (status != 0) {
+                            logger.printfln("energy_manager: Failed to continue getting energy manager 5min data point: status %u", status);
+                        }
+
+                        OwnershipGuard ownership_guard2(metadata->response_ownership, metadata->response_owner_id);
+
+                        if (ownership_guard2.have_ownership()) {
+                            response->flush();
+                            response->end("continuation error");
+                        }
+
+                        tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(device, nullptr, nullptr);
+                    }
+                }, 0);
+            }
+        }
+        else {
+            if (write_success) {
+                write_success = response->writen("]");
+            }
+
+            write_success &= response->flush();
+            response->end(write_success ? "" : "write error");
+
+            tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(device, nullptr, nullptr);
         }
 
-        write_success &= response->flush();
-        response->end(write_success ? "" : "write error");
-
-        tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(device, nullptr, nullptr);
         return;
     }
 
@@ -680,13 +1004,71 @@ void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *respo
                                                          Ownership *response_ownership,
                                                          uint32_t response_owner_id)
 {
-    // date in UTC to avoid DST overlap problems
-    uint8_t year = history_energy_manager_5min.get("year")->asUint() - 2000;
-    uint8_t month = history_energy_manager_5min.get("month")->asUint();
-    uint8_t day = history_energy_manager_5min.get("day")->asUint();
+    // history is stored with date in UTC to avoid DST overlap problems.
+    // API accepts date in localtime, convert from localtime to UTC
+    uint8_t local_year = history_energy_manager_5min.get("year")->asUint() - 2000;
+    uint8_t local_month = history_energy_manager_5min.get("month")->asUint();
+    uint8_t local_day = history_energy_manager_5min.get("day")->asUint();
+
+    struct tm local_start;
+    struct tm local_end;
+
+    memset(&local_start, 0, sizeof(local_start));
+    memset(&local_end, 0, sizeof(local_end));
+
+    local_start.tm_year = local_year + 100;
+    local_start.tm_mon = local_month - 1;
+    local_start.tm_mday = local_day;
+
+    local_end.tm_year = local_year + 100;
+    local_end.tm_mon = local_month - 1;
+    local_end.tm_mday = local_day + 1;
+
+    time_t time_start = mktime(&local_start);
+    time_t time_end = mktime(&local_end);
+    struct tm utc_start;
+    struct tm utc_end;
+
+    gmtime_r(&time_start, &utc_start);
+    gmtime_r(&time_end, &utc_end);
+
+    uint8_t utc_start_year = utc_start.tm_year - 100;
+    uint8_t utc_start_month = utc_start.tm_mon + 1;
+    uint8_t utc_start_day = utc_start.tm_mday;
+    uint8_t utc_start_hour = utc_start.tm_hour;
+    uint8_t utc_start_minute = utc_start.tm_min;
+    uint16_t utc_start_slots = ((23 - utc_start_hour) * 60 + (60 - utc_start_minute)) / 5; // till midnight
+
+    uint8_t utc_end_year = utc_end.tm_year - 100;
+    uint8_t utc_end_month = utc_end.tm_mon + 1;
+    uint8_t utc_end_day = utc_end.tm_mday;
+    uint8_t utc_end_hour = utc_end.tm_hour;
+    uint8_t utc_end_minute = utc_end.tm_min;
+    uint16_t utc_end_slots = (utc_end_hour * 60 + utc_end_minute) / 5; // since midnight
 
     uint8_t status;
-    int rc = tf_warp_energy_manager_get_sd_energy_manager_data_points(&device, year, month, day, 0, 0, 288, &status);
+    int rc;
+
+    if (utc_start_slots > 0) {
+        rc = tf_warp_energy_manager_get_sd_energy_manager_data_points(&device,
+                                                                      utc_start_year,
+                                                                      utc_start_month,
+                                                                      utc_start_day,
+                                                                      utc_start_hour,
+                                                                      utc_start_minute,
+                                                                      utc_start_slots,
+                                                                      &status);
+    }
+    else {
+        rc = tf_warp_energy_manager_get_sd_energy_manager_data_points(&device,
+                                                                      utc_end_year,
+                                                                      utc_end_month,
+                                                                      utc_end_day,
+                                                                      utc_start_hour,
+                                                                      utc_start_minute,
+                                                                      utc_start_slots,
+                                                                      &status);
+    }
 
     //logger.printfln("history_energy_manager_5min_response: %d-%02d-%02d",
     //                2000 + year, month, day);
@@ -719,6 +1101,10 @@ void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *respo
         metadata->call_begin = true;
         metadata->write_comma = false;
         metadata->next_offset = 0;
+        metadata->utc_end_year = utc_end_year;
+        metadata->utc_end_month = utc_end_month;
+        metadata->utc_end_day = utc_end_day;
+        metadata->utc_end_slots = utc_end_slots;
 
         tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(&device, energy_manager_5min_data_points_handler, metadata);
     }

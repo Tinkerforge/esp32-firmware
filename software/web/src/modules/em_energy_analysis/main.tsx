@@ -371,13 +371,10 @@ export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
 
                     data.timestamp = Date.now();
                     data.flags[slot] = changed.flags;
+                    data.power[slot] = changed.power;
 
                     if ((changed.flags & 0x80 /* no data */) == 0) {
                         data.empty = false;
-                        data.power[slot] = changed.power;
-                    }
-                    else {
-                        data.power[slot] = null;
                     }
                 }
 
@@ -403,15 +400,11 @@ export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
 
                 data.timestamp = Date.now();
                 data.flags[slot] = changed.flags;
+                data.power_grid[slot] = changed.power_grid;
+                data.power_general[slot] = changed.power_general;
 
                 if ((changed.flags & 0x80 /* no data */) == 0) {
                     data.empty = false;
-                    data.power_grid[slot] = changed.power_grid;
-                    data.power_general[slot] = changed.power_general;
-                }
-                else {
-                    data.power_grid[slot] = null;
-                    data.power_general[slot] = [null, null, null, null, null, null];
                 }
 
                 this.schedule_uplot_update();

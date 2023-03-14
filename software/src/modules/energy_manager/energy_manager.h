@@ -255,9 +255,9 @@ private:
     void history_wallbox_daily_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
     void history_energy_manager_5min_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
     void history_energy_manager_daily_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
-    void set_wallbox_5min_data_point(struct tm *utc, uint32_t uid, uint8_t flags, uint16_t power /* W */);
+    void set_wallbox_5min_data_point(struct tm *utc, struct tm *local, uint32_t uid, uint8_t flags, uint16_t power /* W */);
     void set_wallbox_daily_data_point(struct tm *local, uint32_t uid, uint32_t energy /* dWh */);
-    void set_energy_manager_5min_data_point(struct tm *utc, uint8_t flags, int32_t power_grid /* W */, int32_t power_general[6] /* W */);
+    void set_energy_manager_5min_data_point(struct tm *utc, struct tm *local, uint8_t flags, int32_t power_grid /* W */, int32_t power_general[6] /* W */);
     void set_energy_manager_daily_data_point(struct tm *local, uint32_t energy_grid_in /* dWh */, uint32_t energy_grid_out /* dWh */,
                                              uint32_t energy_general_in[6] /* dWh */, uint32_t energy_general_out[6] /* dWh */);
 
