@@ -236,7 +236,8 @@ void Wifi::apply_soft_ap_config_and_start()
 
     int counter = 0;
     while (ip != WiFi.softAPIP()) {
-        WiFi.softAPConfig(ip, gateway, subnet);
+        if (!WiFi.softAPConfig(ip, gateway, subnet))
+            logger.printfln("WiFi.softAPConfig() failed. Try different Access Point settings.");
         ++counter;
     }
     logger.printfln("Had to configure soft AP IP address %d times.", counter);
