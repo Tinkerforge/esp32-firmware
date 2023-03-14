@@ -43,6 +43,8 @@ interface Wallbox5minData {
 };
 
 interface WallboxDailyData {
+    timestamp: number;
+    empty: boolean;
     energy: number[]; // kWh
 };
 
@@ -55,6 +57,8 @@ interface EnergyManager5minData {
 };
 
 interface EnergyManagerDailyData {
+    timestamp: number;
+    empty: boolean;
     energy_grid_in: number[]; // kWh
     energy_grid_out: number[]; // kWh
     energy_general_in: number[][]; // kWh
@@ -315,7 +319,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     uplot_5min_status_cache: { [id: string]: UplotData } = {};
     uplot_daily_cache: { [id: string]: UplotData } = {};
     wallbox_5min_cache: { [id: number]: { [id: string]: Wallbox5minData } } = {};
-    wallbox_daily_cache: { [id: string]: WallboxDailyData } = {};
+    wallbox_daily_cache: { [id: string]: { [id: string]: WallboxDailyData } } = {};
     energy_manager_5min_cache: { [id: string]: EnergyManager5minData } = {};
     energy_manager_daily_cache: { [id: string]: EnergyManagerDailyData } = {};
     chargers: Charger[] = [];
