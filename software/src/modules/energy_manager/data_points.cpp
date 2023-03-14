@@ -226,7 +226,7 @@ void EnergyManager::set_wallbox_daily_data_point(struct tm *local, uint32_t uid,
         char energy_str[12] = "null";
 
         if (energy != UINT32_MAX) {
-            snprintf(energy_str, sizeof(energy_str), "%.2f", energy / 100.0); // dWh -> kWh
+            snprintf(energy_str, sizeof(energy_str), "%.2f", (double)energy / 100.0); // dWh -> kWh
         }
 
         char *buf;
@@ -376,20 +376,20 @@ void EnergyManager::set_energy_manager_daily_data_point(struct tm *local,
         char energy_general_out_str[6][13] = {"null", "null", "null", "null", "null", "null"};
 
         if (energy_grid_in != INT32_MAX) {
-            snprintf(energy_grid_in_str, sizeof(energy_grid_in_str), "%.2f", energy_grid_in / 100.0); // dWh -> kWh
+            snprintf(energy_grid_in_str, sizeof(energy_grid_in_str), "%.2f", (double)energy_grid_in / 100.0); // dWh -> kWh
         }
 
         if (energy_grid_out != INT32_MAX) {
-            snprintf(energy_grid_out_str, sizeof(energy_grid_out_str), "%.2f", energy_grid_out / 100.0); // dWh -> kWh
+            snprintf(energy_grid_out_str, sizeof(energy_grid_out_str), "%.2f", (double)energy_grid_out / 100.0); // dWh -> kWh
         }
 
         for (int i = 0; i < 6; ++i) {
             if (energy_general_in[i] != INT32_MAX) {
-                snprintf(energy_general_in_str[i], sizeof(energy_general_in_str[i]), "%.2f", energy_general_in[i] / 100.0); // dWh -> kWh
+                snprintf(energy_general_in_str[i], sizeof(energy_general_in_str[i]), "%.2f", (double)energy_general_in[i] / 100.0); // dWh -> kWh
             }
 
             if (energy_general_out[i] != INT32_MAX) {
-                snprintf(energy_general_out_str[i], sizeof(energy_general_out_str[i]), "%.2f", energy_general_out[i] / 100.0); // dWh -> kWh
+                snprintf(energy_general_out_str[i], sizeof(energy_general_out_str[i]), "%.2f", (double)energy_general_out[i] / 100.0); // dWh -> kWh
             }
         }
 
@@ -756,7 +756,7 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
 
     for (i = 0; i < actual_length && write_success; ++i) {
         if (data_chunk_data[i] != UINT32_MAX) {
-            write_success = response->writef("%.2f", data_chunk_data[i] / 100.0); // dWh -> kWh
+            write_success = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // dWh -> kWh
         } else {
             write_success = response->writen("null");
         }
@@ -1166,7 +1166,7 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
 
     for (i = 0; i < actual_length && write_success; ++i) {
         if (data_chunk_data[i] != UINT32_MAX) {
-            write_success = response->writef("%.2f", data_chunk_data[i] / 100.0); // dWh -> kWh
+            write_success = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // dWh -> kWh
         } else {
             write_success = response->writen("null");
         }
