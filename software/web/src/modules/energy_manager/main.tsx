@@ -92,7 +92,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                 <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
                     <Button
                         style="display: flex;align-items: center;justify-content: center;"
-                        className="m-1 rounded-left"
+                        className="m-1 rounded-left rounded-right"
                         variant={d.charge_mode.mode == 1 ? "success" : "primary"}
                         disabled={d.charge_mode.mode == 1}
                         onClick={() => this.change_mode(1)}>
@@ -100,7 +100,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                     </Button>
                     <Button
                         style="display: flex;align-items: center;justify-content: center;"
-                        className="m-1 rounded-right"
+                        className="m-1 rounded-left rounded-right"
                         variant={d.config.excess_charging_enable ? (d.charge_mode.mode == 2 ? "success" : "primary") : "secondary"}
                         disabled={!d.config.excess_charging_enable || d.charge_mode.mode == 2}
                         onClick={() => this.change_mode(2)}>
