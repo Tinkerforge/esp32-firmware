@@ -52,7 +52,8 @@
             "max_only_suffix": " characters allowed",
             "min_max_prefix": "At least ",
             "min_max_infix": " but at most ",
-            "min_max_suffix": " characters allowed"
+            "min_max_suffix": " characters allowed",
+            "required": "Field must not be empty"
         },
         "input_file": {
             "uploading": "uploading..."

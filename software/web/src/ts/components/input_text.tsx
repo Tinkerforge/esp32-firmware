@@ -39,9 +39,12 @@ interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<H
 
 export function InputText<T extends (InputTextProps | InputTextWithValidationProps)>(props: util.NoExtraProperties<InputTextProps, T> | InputTextWithValidationProps) {
     let id = props.idContext === undefined ? "" : useContext(props.idContext);
+
     let invalidFeedback = undefined;
     if ("invalidFeedback" in props && props.invalidFeedback)
         invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
+    else if ("required" in props && props.value === "")
+        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.required")}</div>;
     else if ("minLength" in props && !("maxLength" in props))
         invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_only_prefix") + props.minLength.toString() + __("component.input_text.min_only_suffix")}</div>;
     else if (!("minLength" in props) && "maxLength" in props)
