@@ -394,12 +394,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     let slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
 
                     data.timestamp = Date.now();
+                    data.empty = false;
                     data.flags[slot] = changed.flags;
                     data.power[slot] = changed.power;
-
-                    if ((changed.flags & 0x80 /* no data */) == 0) {
-                        data.empty = false;
-                    }
                 }
 
                 this.schedule_uplot_update();
@@ -423,13 +420,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
 
                 data.timestamp = Date.now();
+                data.empty = false;
                 data.flags[slot] = changed.flags;
                 data.power_grid[slot] = changed.power_grid;
                 data.power_general[slot] = changed.power_general;
-
-                if ((changed.flags & 0x80 /* no data */) == 0) {
-                    data.empty = false;
-                }
 
                 this.schedule_uplot_update();
             }
