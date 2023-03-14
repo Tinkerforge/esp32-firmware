@@ -97,26 +97,32 @@ void EnergyManager::collect_data_points()
             uint32_t last_update = charger.get("last_update")->asUint();
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
+                bool have_data = false;
                 uint32_t uid = charger.get("uid")->asUint();
                 uint32_t energy = UINT32_MAX;
 
                 if (charger.get("meter_supported")->asBool()) {
+                    have_data = true;
                     energy = clamp<uint64_t>(0,
                                              roundf(charger.get("energy_abs")->asFloat() * 100.0),
                                              UINT32_MAX - 1); // kWh -> dWh
                 }
 
-                set_wallbox_daily_data_point(&local, uid, energy);
+                if (have_data) {
+                    set_wallbox_daily_data_point(&local, uid, energy);
+                }
             }
         }
 
         if (all_data.is_valid && !deadline_elapsed(all_data.last_update + MAX_DATA_AGE)) {
+            bool have_data = false;
             uint32_t energy_grid_in = UINT32_MAX; // dWh
             uint32_t energy_grid_out = UINT32_MAX; // dWh
             uint32_t energy_general_in[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
             uint32_t energy_general_out[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
 
             if (meter.state.get("state")->asUint() == 2 && api.hasFeature("meter_all_values")) {
+                have_data = true;
                 energy_grid_in = clamp<uint64_t>(0,
                                                  roundf(meter.all_values.get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat() * 100.0),
                                                  UINT32_MAX - 1); // kWh -> dWh
@@ -127,7 +133,9 @@ void EnergyManager::collect_data_points()
 
             // FIXME: fill energy_general_in and energy_general_out
 
-            set_energy_manager_daily_data_point(&local, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out);
+            if (have_data) {
+                set_energy_manager_daily_data_point(&local, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out);
+            }
         }
 
         last_history_daily_slot = current_daily_slot;
