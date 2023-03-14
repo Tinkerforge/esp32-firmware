@@ -217,14 +217,25 @@ void EnergyManager::set_energy_manager_5min_data_point(struct tm *utc, uint8_t f
     }
 }
 
-void EnergyManager::set_energy_manager_daily_data_point(struct tm *local, uint32_t energy_grid_in /* dWh */, uint32_t energy_grid_out /* dWh */,
-                                                        uint32_t energy_general_in[6] /* dWh */, uint32_t energy_general_out[6] /* dWh */)
+void EnergyManager::set_energy_manager_daily_data_point(struct tm *local,
+                                                        uint32_t energy_grid_in /* dWh */,
+                                                        uint32_t energy_grid_out /* dWh */,
+                                                        uint32_t energy_general_in[6] /* dWh */,
+                                                        uint32_t energy_general_out[6] /* dWh */)
 {
     uint8_t status;
     uint8_t year = local->tm_year - 100;
     uint8_t month = local->tm_mon + 1;
     uint8_t day = local->tm_mday;
-    int rc = tf_warp_energy_manager_set_sd_energy_manager_daily_data_point(&device, year, month, day, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out, &status);
+    int rc = tf_warp_energy_manager_set_sd_energy_manager_daily_data_point(&device,
+                                                                           year,
+                                                                           month,
+                                                                           day,
+                                                                           energy_grid_in,
+                                                                           energy_grid_out,
+                                                                           energy_general_in,
+                                                                           energy_general_out,
+                                                                           &status);
 
     check_bricklet_reachable(rc, "set_energy_manager_daily_data_point");
 
@@ -411,7 +422,11 @@ void EnergyManager::history_wallbox_5min_response(IChunkedResponse *response, Ow
     check_bricklet_reachable(rc, "history_wallbox_5min_response");
 }
 
-static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device, uint16_t data_length, uint16_t data_chunk_offset, uint32_t data_chunk_data[15], void *user_data)
+static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
+                                              uint16_t data_length,
+                                              uint16_t data_chunk_offset,
+                                              uint32_t data_chunk_data[15],
+                                              void *user_data)
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
     IChunkedResponse *response = metadata->response;
@@ -434,7 +449,8 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device, uint
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("energy_manager: Failed to get wallbox daily data point: stream out of sync (%u != %u)", metadata->next_offset, data_chunk_offset);
+        logger.printfln("energy_manager: Failed to get wallbox daily data point: stream out of sync (%u != %u)",
+                        metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
             write_success = response->writen("]");
@@ -493,7 +509,9 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device, uint
     }
 }
 
-void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id)
+void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
+                                                   Ownership *response_ownership,
+                                                   uint32_t response_owner_id)
 {
     uint32_t uid = history_wallbox_daily.get("uid")->asUint();
 
@@ -548,7 +566,11 @@ typedef struct {
     int32_t power_general[6]; // W
 } __attribute__((__packed__)) EnergyManager5MinData;
 
-static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[58], void *user_data)
+static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device,
+                                                    uint16_t data_length,
+                                                    uint16_t data_chunk_offset,
+                                                    uint8_t data_chunk_data[58],
+                                                    void *user_data)
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
     IChunkedResponse *response = metadata->response;
@@ -571,7 +593,8 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("energy_manager: Failed to get energy manager 5min data point: stream out of sync (%u != %u)", metadata->next_offset, data_chunk_offset);
+        logger.printfln("energy_manager: Failed to get energy manager 5min data point: stream out of sync (%u != %u)",
+                        metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
             write_success = response->writen("]");
@@ -653,7 +676,9 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
     }
 }
 
-void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id)
+void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *response,
+                                                         Ownership *response_ownership,
+                                                         uint32_t response_owner_id)
 {
     // date in UTC to avoid DST overlap problems
     uint8_t year = history_energy_manager_5min.get("year")->asUint() - 2000;
@@ -701,7 +726,11 @@ void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *respo
     check_bricklet_reachable(rc, "history_energy_manager_5min_response");
 }
 
-static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *device, uint16_t data_length, uint16_t data_chunk_offset, uint32_t data_chunk_data[14], void *user_data)
+static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *device,
+                                                     uint16_t data_length,
+                                                     uint16_t data_chunk_offset,
+                                                     uint32_t data_chunk_data[14],
+                                                     void *user_data)
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
     IChunkedResponse *response = metadata->response;
@@ -724,7 +753,8 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("energy_manager: Failed to get energy manager daily data point: stream out of sync (%u != %u)", metadata->next_offset, data_chunk_offset);
+        logger.printfln("energy_manager: Failed to get energy manager daily data point: stream out of sync (%u != %u)",
+                        metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
             write_success = response->writen("]");
@@ -783,7 +813,9 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
     }
 }
 
-void EnergyManager::history_energy_manager_daily_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id)
+void EnergyManager::history_energy_manager_daily_response(IChunkedResponse *response,
+                                                          Ownership *response_ownership,
+                                                          uint32_t response_owner_id)
 {
     // date in local time to have the days properly aligned
     uint8_t year = history_energy_manager_daily.get("year")->asUint() - 2000;
