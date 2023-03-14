@@ -1,0 +1,14 @@
+{
+    "em_energy_analysis_status": {
+        "status": {
+            "history": "Grid connection",
+            "grid_connection_power": "Power draw"
+        },
+        "navbar": {
+        },
+        "content": {
+        },
+        "script": {
+        }
+    }
+}

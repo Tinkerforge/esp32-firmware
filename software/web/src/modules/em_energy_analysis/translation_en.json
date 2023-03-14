@@ -16,7 +16,7 @@
             "time": "Time of day",
             "time_legend_format": "{YYYY}-{MM}-{DD} {HH}:{mm}",
             "power": "Power",
-            "grid_connection": "Grid Connection"
+            "grid_connection": "Grid connection"
         }
     }
 }

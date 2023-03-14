@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
-import { h, render, createRef, Fragment, Component, ComponentChild } from "preact";
+import { h, render, createRef, Fragment, Component, ComponentChild, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 import { InputDate } from "../../ts/components/input_date";
@@ -263,7 +263,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     show: true,
                     pxAlign: 0,
                     spanGaps: false,
-                    label: __("em_energy_analysis.script.power") + ' ' + name, // FIXME
+                    label: __("em_energy_analysis.script.power") + (name ? ' ' + name: ''), // FIXME
                     value: (self: uPlot, rawValue: number) => rawValue !== null ? rawValue + " W" : null,
                     stroke: colors[this.series_count % colors.length],
                     width: 2,
@@ -277,6 +277,22 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     }
 }
 
+export class EMEnergyAnalysisStatusChart extends Component<{}, {}> {
+    uplot_wrapper_ref = createRef();
+
+    render(props: {}, state: {}) {
+        return (
+            <>
+                <UplotWrapper ref={this.uplot_wrapper_ref} id="em_energy_analysis_status_chart" class="em-energy-analysis-status-chart" sidebar_id="status" y_min={0} y_max={1500} />
+            </>
+        )
+    }
+}
+
+interface EMEnergyAnalysisProps {
+    status_ref: RefObject<EMEnergyAnalysisStatusChart>;
+}
+
 interface EMEnergyAnalysisState {
     current_5min_date: Date;
 }
@@ -286,10 +302,12 @@ interface Charger {
     name: string;
 }
 
-export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
+export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyAnalysisState> {
     uplot_wrapper_ref = createRef();
+    status_ref: RefObject<EMEnergyAnalysisStatusChart> = null;
     uplot_update_timeout: number = null;
     uplot_5min_cache: { [id: string]: UplotData } = {};
+    uplot_5min_status_cache: { [id: string]: UplotData } = {};
     uplot_daily_cache: { [id: string]: UplotData } = {};
     wallbox_5min_cache: { [id: number]: { [id: string]: Wallbox5minData } } = {};
     wallbox_daily_cache: { [id: string]: WallboxDailyData } = {};
@@ -297,8 +315,10 @@ export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
     energy_manager_daily_cache: { [id: string]: EnergyManagerDailyData } = {};
     chargers: Charger[] = [];
 
-    constructor() {
-        super();
+    constructor(props: EMEnergyAnalysisProps) {
+        super(props);
+
+        this.status_ref = props.status_ref;
 
         let current_5min_date: Date = new Date();
 
@@ -310,11 +330,6 @@ export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
         this.state = {
             current_5min_date: current_5min_date
         } as any;
-
-        // We have to use jquery here or else the events don't fire?
-        $('#sidebar-em-energy-analysis').on('shown.bs.tab', () => {
-            this.update_current_5min_cache();
-        });
 
         util.eventTarget.addEventListener('charge_manager/state', () => {
             let state = API.get('charge_manager/state');
@@ -412,6 +427,12 @@ export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
         });
     }
 
+    componentDidMount() {
+        this.update_current_5min_cache();
+
+        // FIXME: update all caches
+    }
+
     date_to_5min_key(date: Date) {
         let year: number = date.getFullYear();
         let month: number = date.getMonth() + 1;
@@ -482,6 +503,46 @@ export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
         }
 
         this.uplot_5min_cache[key] = uplot_data;
+    }
+
+    update_uplot_5min_status_cache(date: Date) {
+        let key = this.date_to_5min_key(date);
+        let uplot_data = this.uplot_5min_status_cache[key];
+        let needs_update = false;
+
+        if (!uplot_data) {
+            needs_update = true;
+        }
+        else {
+            let energy_manager_data = this.energy_manager_5min_cache[key];
+
+            if (energy_manager_data && uplot_data.timestamp < energy_manager_data.timestamp) {
+                needs_update = true;
+            }
+        }
+
+        if (!needs_update) {
+            return;
+        }
+
+        let slot_count = 288;
+        let timestamps: number[] = new Array(slot_count);
+        let base = date.getTime() / 1000;
+
+        for (let slot = 0; slot < slot_count; ++slot) {
+            timestamps[slot] = base + slot * 300;
+        }
+
+        uplot_data = {timestamp: Date.now(), names: [null], values: [timestamps]};
+
+        let energy_manager_data = this.energy_manager_5min_cache[key];
+
+        if (energy_manager_data && !energy_manager_data.empty) {
+            uplot_data.names.push(null);
+            uplot_data.values.push(energy_manager_data.power_grid);
+        }
+
+        this.uplot_5min_status_cache[key] = uplot_data;
     }
 
     async update_wallbox_5min_cache_all(date: Date) {
@@ -724,7 +785,7 @@ export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
                     return;
                 }
 
-                this.update_plot();
+                this.update_uplot();
             });
 
         // FIXME: reload daily cache as well
@@ -752,7 +813,7 @@ export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
                     return;
                 }
 
-                this.update_plot();
+                this.update_uplot();
             });
     }
 
@@ -763,18 +824,34 @@ export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
 
         this.uplot_update_timeout = window.setTimeout(() => {
             this.uplot_update_timeout = null;
-            this.update_plot();
+            this.update_uplot();
         }, 100);
     }
 
-    update_plot() {
-        this.update_uplot_5min_cache(this.state.current_5min_date);
-
-        let key = this.date_to_5min_key(this.state.current_5min_date);
-        let data = this.uplot_5min_cache[key];
-
+    update_uplot() {
         if (this.uplot_wrapper_ref.current) {
+            this.update_uplot_5min_cache(this.state.current_5min_date);
+
+            let key = this.date_to_5min_key(this.state.current_5min_date);
+            let data = this.uplot_5min_cache[key];
+
             this.uplot_wrapper_ref.current.set_data(data);
+        }
+
+        if (this.status_ref.current && this.status_ref.current.uplot_wrapper_ref.current) {
+            let status_date: Date = new Date();
+
+            status_date.setHours(0);
+            status_date.setMinutes(0);
+            status_date.setSeconds(0);
+            status_date.setMilliseconds(0);
+
+            this.update_uplot_5min_status_cache(status_date);
+
+            let key = this.date_to_5min_key(status_date);
+            let data = this.uplot_5min_status_cache[key];
+
+            this.status_ref.current.uplot_wrapper_ref.current.set_data(data);
         }
     }
 
@@ -800,14 +877,24 @@ export class EMEnergyAnalysis extends Component<{}, EMEnergyAnalysisState> {
     }
 }
 
-render(<EMEnergyAnalysis />, $('#em-energy-analysis')[0]);
+let status_ref = createRef();
+
+render(<EMEnergyAnalysisStatusChart ref={status_ref} />, $('#status_em_energy_analysis_status_chart_container')[0]);
+
+render(<EMEnergyAnalysis status_ref={status_ref} />, $('#em-energy-analysis')[0]);
+
+function update_meter_values() {
+    let values = API.get('meter/values');
+
+    $('#status_em_energy_analysis_status_grid_connection_power').val(util.toLocaleFixed(values.power, 0) + " W");
+}
 
 export function init() {
 
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
-
+    source.addEventListener('meter/values', update_meter_values);
 }
 
 export function update_sidebar_state(module_init: any) {

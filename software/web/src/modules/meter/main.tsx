@@ -588,7 +588,7 @@ export class StatusMeterChart extends Component<{}, {}> {
 
 render(<StatusMeterChart />, $('#status_meter_chart_container')[0]);
 
-let meter_show_navbar = true;
+let meter_show_status = true;
 
 function update_meter_values() {
     let values = API.get('meter/values');
@@ -602,22 +602,18 @@ export function init() {
 function update_module_visibility() {
     let have_meter = API.hasFeature('meter');
 
-    // Don't use meter navbar link if the Energy Manager module is loaded.
-    $('#sidebar-meter').prop('hidden', !meter_show_navbar || !have_meter);
-    $('#status-meter').prop('hidden', !meter_show_navbar || !have_meter);
+    $('#sidebar-meter').prop('hidden', !have_meter);
+
+    // Don't use meter status if the Energy Manager module is loaded.
+    // The Energy Manager has its own status component
+    $('#status-meter').prop('hidden', !meter_show_status || !have_meter);
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('meter/values', update_meter_values);
-    /*source.addEventListener('meter/phases', update_meter_phases);
-    source.addEventListener('meter/all_values', update_evse_v2_all_values);*/
     source.addEventListener('info/features', update_module_visibility);
 }
 
 export function update_sidebar_state(module_init: any) {
-    // Don't use meter navbar link if the Energy Manager module is loaded.
-    // The energy manager has its own meter configuration module and a link
-    // to the meter frontend directly in the configuration module instead of the navbar.
-    meter_show_navbar = true;
-    //meter_show_navbar = !module_init.energy_manager;
+    meter_show_status = !module_init.energy_manager;
 }

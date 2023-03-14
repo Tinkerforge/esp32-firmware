@@ -1,0 +1,14 @@
+{
+    "em_energy_analysis_status": {
+        "status": {
+            "history": "Netzanschluss",
+            "grid_connection_power": "Leistungsaufnahme"
+        },
+        "navbar": {
+        },
+        "content": {
+        },
+        "script": {
+        }
+    }
+}
