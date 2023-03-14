@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Context, Fragment } from "preact";
+import { h, Context, Fragment, VNode, toChildArray } from "preact";
 import {useContext} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { __ } from "../translation";
@@ -28,6 +28,7 @@ interface InputTextProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
     idContext?: Context<string>
     onValue?: (value: string) => void
     class?: string
+    children?: VNode | VNode[]
 }
 
 interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "className"> {
@@ -35,6 +36,7 @@ interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<H
     onValue?: (value: string) => void
     invalidFeedback: string
     class?: string
+    children?: VNode | VNode[]
 }
 
 export function InputText<T extends (InputTextProps | InputTextWithValidationProps)>(props: util.NoExtraProperties<InputTextProps, T> | InputTextWithValidationProps) {
@@ -52,20 +54,30 @@ export function InputText<T extends (InputTextProps | InputTextWithValidationPro
     else if ("minLength" in props && "maxLength" in props)
         invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_max_prefix") + props.minLength.toString() + __("component.input_text.min_max_infix") + props.maxLength.toString() + __("component.input_text.min_max_suffix")}</div>;
 
+    let inner = <input {...props}
+                    class={"form-control " + (props.class ?? "")}
+                    id={id}
+                    type="text"
+                    onInput={props.onValue ? (e) => {
+                        if ((props.maxLength != undefined && new Blob([(e.target as HTMLInputElement).value]).size <= props.maxLength) ||
+                                props.maxLength == undefined)
+                            props.onValue((e.target as HTMLInputElement).value);
+                        else
+                            props.onValue(props.value as string);
+                    } : undefined}
+                    readonly={!props.onValue}/>
+
+    if (props.children) {
+        return <div class="input-group">
+            {inner}
+            {props.children}
+            {invalidFeedback}
+        </div>
+    }
+
     return (
         <>
-            <input {...props}
-                class={"form-control " + (props.class ?? "")}
-                id={id}
-                type="text"
-                onInput={props.onValue ? (e) => {
-                    if ((props.maxLength != undefined && new Blob([(e.target as HTMLInputElement).value]).size <= props.maxLength) ||
-                            props.maxLength == undefined)
-                        props.onValue((e.target as HTMLInputElement).value);
-                    else
-                        props.onValue(props.value as string);
-                } : undefined}
-                readonly={!props.onValue}/>
+            {inner}
             {invalidFeedback}
         </>
     );
