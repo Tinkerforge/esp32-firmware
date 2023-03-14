@@ -376,7 +376,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                         <div class="card-header d-flex justify-content-between align-items-center">
                             {charger_symbol}
                             <Button variant="outline-dark" size="sm"
-                                    style={c.host == "127.0.0.1" ? "visibility: hidden;" : ""}
+                                    style={!state.energyManagerMode && c.host == "127.0.0.1" ? "visibility: hidden;" : ""}
                                     onClick={() => {
                                         this.setState({chargers: state.chargers.filter((v, idx) => idx != i)});
                                         this.hackToAllowSave();} }>
