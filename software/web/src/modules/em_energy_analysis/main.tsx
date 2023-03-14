@@ -69,14 +69,19 @@ interface UplotWrapperProps {
     y_max: number;
 }
 
+// https://seaborn.pydata.org/tutorial/color_palettes.html#qualitative-color-palettes
+// sns.color_palette("tab10")
 const colors = [
-    '#0072bd',
-    '#d95319',
-    '#edb120',
-    '#7e2f8e',
-    '#77ac30',
-    '#4dbeee',
-    '#a2142f',
+    '#1f77b4',
+    '#ff7f0e',
+    '#2ca02c',
+    '#d62728',
+    '#9467bd',
+    '#8c564b',
+    '#e377c2',
+    '#7f7f7f',
+    '#bcbd22',
+    '#17becf',
 ];
 
 class UplotWrapper extends Component<UplotWrapperProps, {}> {
@@ -265,7 +270,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     spanGaps: false,
                     label: __("em_energy_analysis.script.power") + (name ? ' ' + name: ''), // FIXME
                     value: (self: uPlot, rawValue: number) => rawValue !== null ? rawValue + " W" : null,
-                    stroke: colors[this.series_count % colors.length],
+                    stroke: colors[(this.series_count - 1) % colors.length],
                     width: 2,
                 });
 
@@ -450,22 +455,22 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             needs_update = true;
         }
         else {
-            for (let charger of this.chargers) {
-                if (this.wallbox_5min_cache[charger.uid]) {
-                    let wallbox_data = this.wallbox_5min_cache[charger.uid][key];
+            let energy_manager_data = this.energy_manager_5min_cache[key];
 
-                    if (wallbox_data && uplot_data.timestamp < wallbox_data.timestamp) {
-                        needs_update = true;
-                        break;
-                    }
-                }
+            if (energy_manager_data && uplot_data.timestamp < energy_manager_data.timestamp) {
+                needs_update = true;
             }
 
             if (!needs_update) {
-                let energy_manager_data = this.energy_manager_5min_cache[key];
+                for (let charger of this.chargers) {
+                    if (this.wallbox_5min_cache[charger.uid]) {
+                        let wallbox_data = this.wallbox_5min_cache[charger.uid][key];
 
-                if (energy_manager_data && uplot_data.timestamp < energy_manager_data.timestamp) {
-                    needs_update = true;
+                        if (wallbox_data && uplot_data.timestamp < wallbox_data.timestamp) {
+                            needs_update = true;
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -484,6 +489,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         uplot_data = {timestamp: Date.now(), names: [null], values: [timestamps]};
 
+        let energy_manager_data = this.energy_manager_5min_cache[key];
+
+        if (energy_manager_data && !energy_manager_data.empty) {
+            uplot_data.names.push(__("em_energy_analysis.script.grid_connection"));
+            uplot_data.values.push(energy_manager_data.power_grid);
+        }
+
         for (let charger of this.chargers) {
             if (this.wallbox_5min_cache[charger.uid]) {
                 let wallbox_data = this.wallbox_5min_cache[charger.uid][key];
@@ -493,13 +505,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.values.push(wallbox_data.power);
                 }
             }
-        }
-
-        let energy_manager_data = this.energy_manager_5min_cache[key];
-
-        if (energy_manager_data && !energy_manager_data.empty) {
-            uplot_data.names.push(__("em_energy_analysis.script.grid_connection"));
-            uplot_data.values.push(energy_manager_data.power_grid);
         }
 
         this.uplot_5min_cache[key] = uplot_data;
