@@ -51,7 +51,9 @@
             "mode_manager": "Charge manager",
             "mode_managed": "Externally controlled",
 
-            "managed_boxes": "Managed chargers"
+            "managed_boxes": "Managed chargers",
+
+            "host_exists": "Host already exists"
         },
         "script": {
             "charge_state_0": "No vehicle connected",

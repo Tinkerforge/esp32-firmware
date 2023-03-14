@@ -51,7 +51,9 @@
             "mode_manager": "Lastmanager",
             "mode_managed": "Fremdgesteuert",
 
-            "managed_boxes": "Kontrollierte Wallboxen"
+            "managed_boxes": "Kontrollierte Wallboxen",
+
+            "host_exists": "Host existiert bereits"
         },
         "script": {
             "charge_state_0": "Kein Fahrzeug angeschlossen",

@@ -123,6 +123,14 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         document.getElementById("charge_manager_config_form").dispatchEvent(new Event('input'));
     }
 
+    override async isSaveAllowed(cfg: config): Promise<boolean> {
+        for (let i = 0; i < cfg.chargers.length; i++)
+            for (let a = i + 1; a < cfg.chargers.length; a++)
+                if (cfg.chargers[a].host == cfg.chargers[i].host)
+                    return false;
+        return true;
+    }
+
     override async sendSave(t: "charge_manager/config", cfg: config) {
         const modal = util.async_modal_ref.current;
         let illegal_chargers = "";
@@ -141,6 +149,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
             yes_variant: "danger"
         }))
             return;
+
         await API.save_maybe('evse/management_enabled', {"enabled": this.state.managementEnabled}, translate_unchecked("charge_manager.script.save_failed"));
         await super.sendSave(t, cfg);
     }
@@ -346,6 +355,19 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                     />
             </FormRow>
 
+        const check_host = (host: string, idx: number): string => {
+            let ret: string;
+            state.chargers.forEach((charger, i) => {
+                if (charger.host == host && idx != i)
+                {
+                    ret = __("charge_manager.content.host_exists");
+                    return;
+                }
+            });
+
+            return ret;
+        }
+
         let chargers = <FormRow label={__("charge_manager.content.managed_boxes")}>
                 <div class="row row-cols-1 row-cols-md-2">
                 {state.chargers.map((c, i) => (
@@ -372,7 +394,9 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                 <InputText value={c.host}
                                         onValue={(v) => this.setCharger(i, {host: v})}
                                         maxLength={64}
-                                        required/>
+                                        required
+                                        class={check_host(c.host, i) != undefined ? "is-invalid" : ""}
+                                        invalidFeedback={check_host(c.host, i)}/>
                             </FormGroup>
                         </Card.Body>
                     </Card>
@@ -405,7 +429,9 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                 <InputText value={state.newCharger.host}
                                         onValue={(v) => this.setState({newCharger: {...state.newCharger, host: v}})}
                                         maxLength={64}
-                                        required/>
+                                        required
+                                        class={check_host(state.newCharger.host, -1) != undefined ? "is-invalid" : ""}
+                                        invalidFeedback={check_host(state.newCharger.host, -1)}/>
                             </FormGroup>
                             <FormGroup label={__("charge_manager.content.add_charger_modal_found")}>
                                 <ListGroup>
