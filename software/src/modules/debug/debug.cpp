@@ -53,14 +53,6 @@ void Debug::setup()
     initialized = true;
 }
 
-TaskFunction_t task()
-{
-    for (;;)
-    {
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
-
 void Debug::register_urls()
 {
     api.addState("debug/state", &debug_state, {}, 1000);
