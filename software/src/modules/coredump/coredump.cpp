@@ -56,11 +56,11 @@ void Coredump::register_urls()
 
     tf_coredump_json["firmware_version"] = build_version_full_str();
 
-    String coredump_json;
+    String tf_coredump_json_string;
 
-    serializeJson(tf_coredump_json, coredump_json);
+    serializeJson(tf_coredump_json, tf_coredump_json_string);
 
-    String tf_coredump_string = tf_coredump_prefix + coredump_json + tf_coredump_postfix;
+    String tf_coredump_string = tf_coredump_prefix + tf_coredump_json_string + tf_coredump_postfix;
 
     if (tf_coredump_string.length() >= TF_COREDUMP_DATA_BUFF_SIZE)
         esp_system_abort("Coredump data is too big for buffer");
