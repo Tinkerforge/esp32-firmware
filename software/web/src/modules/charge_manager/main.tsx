@@ -90,7 +90,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         });
 
         util.addApiEventListener('info/modules', () => {
-            this.setState({energyManagerMode: !!((API.get('info/modules') as any).energy_manager)})
+            this.setState({energyManagerMode: !!((API.get('info/modules') as any).energy_manager) && !((API.get('info/modules') as any).evse_v2) && !((API.get('info/modules') as any).evse)})
         });
     }
 
