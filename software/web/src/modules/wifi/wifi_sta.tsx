@@ -217,18 +217,17 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     </FormRow>
 
                     <FormRow label={__("wifi.content.sta_ssid")}>
-                        <div class="input-group">
                             <InputText required={state.enable_sta}
                                     maxLength={32}
                                     value={state.ssid}
-                                    onValue={this.set("ssid")}/>
-                            <Dropdown className="input-group-append" onToggle={this.toggleDropdown}>
-                                <Dropdown.Toggle className="form-control rounded-right">{__("wifi.content.sta_scan")}</Dropdown.Toggle>
-                                <Dropdown.Menu align="right">
-                                    {this.get_scan_results(state)}
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        </div>
+                                    onValue={this.set("ssid")}>
+                                <Dropdown className="input-group-append" onToggle={this.toggleDropdown}>
+                                    <Dropdown.Toggle className="form-control rounded-right">{__("wifi.content.sta_scan")}</Dropdown.Toggle>
+                                    <Dropdown.Menu align="right">
+                                        {this.get_scan_results(state)}
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </InputText>
                     </FormRow>
 
                     <FormRow label={__("wifi.content.sta_bssid")}>
