@@ -43,16 +43,20 @@ type DeepKeys<T, S extends string> =
 
 let active_translation: Translation = translation['en'];
 
-for (let language of navigator.languages) {
-    language = language.substr(0, 2);
+export function select_language() {
+    for (let language of navigator.languages) {
+        language = language.substr(0, 2);
 
-    if (translation.hasOwnProperty(language)) {
-        active_translation = translation[language];
-        break;
+        if (translation.hasOwnProperty(language)) {
+            active_translation = translation[language];
+            break;
+        }
+
+        console.log("Sorry, got no translation for " + language);
     }
-
-    console.log("Sorry, got no translation for " + language);
 }
+
+select_language();
 
 function translate<S extends string>(key: string): GetDictValue<S, Translation> {
     let key_parts = key.split(".");

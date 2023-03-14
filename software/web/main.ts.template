@@ -24,7 +24,7 @@ import "bootstrap";
 import * as feather from 'feather-icons';
 import * as util from "./ts/util";
 import * as API from "./ts/api";
-import { __, translate_data_i18n } from "./ts/translation";
+import { __, translate_data_i18n, select_language } from "./ts/translation";
 
 import { init_async_modal } from "./ts/components/async_modal";
 
@@ -168,6 +168,14 @@ $(window).on('pageshow', (ev) => {
     feather.replace();
 
     translate_data_i18n();
+
+    // Disabled for now.
+    //  We somwhow have to force preact to re-render all components for this to work.
+    /*window.addEventListener('languagechange', () => {
+        console.log("language change!");
+        select_language();
+        translate_data_i18n();
+    });*/
 
     $('a[data-toggle="tab"]').on('show.bs.tab', () => {
         $('a[data-toggle="tab"]').not(<Element>event.target).removeClass("active");
