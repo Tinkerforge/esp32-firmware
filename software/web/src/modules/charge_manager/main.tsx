@@ -578,7 +578,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                 c_info = translate_unchecked(`charge_manager.script.charge_error_${c.error}`);
             }
 
-            const name_link = state.config.chargers[i].host == "127.0.0.1" ? c.name : <a target="_blank" rel="noopener noreferrer" href={state.config.chargers[i].host}>{c.name}</a>
+            const name_link = state.config.chargers[i].host == "127.0.0.1" ? c.name : <a target="_blank" rel="noopener noreferrer" href={"http://" + state.config.chargers[i].host}>{c.name}</a>
 
             return  <div class="card">
                         <h5 class="card-header">
