@@ -24,7 +24,7 @@
             "sdm_72dmv2": "SDM72DM V2",
             "sdm_630mctv2": "SDM630MCT V2",
             "sdm_details": "Show energy meter details",
-            "sdm_available": "Connected Meter",
+            "sdm_available": "Connected meter",
             "sdm_power": "Power draw",
             "sdm_energy_import": "Import",
             "sdm_energy_import_muted": "",

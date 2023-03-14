@@ -20,12 +20,12 @@
         },
         "input_password": {
             "to_be_cleared": "Wird beim Speichern geleert",
-            "unchanged": "unverändert"
+            "unchanged": "Unverändert"
         },
         "ip_configuration": {
             "ip_configuration": "IP-Konfiguration",
-            "dhcp": "automatisch (DHCP)",
-            "static": "statisch",
+            "dhcp": "Automatisch (DHCP)",
+            "static": "Statisch",
 
             "static_ip": "IP-Adresse",
             "subnet": "Subnetzmaske",
@@ -65,7 +65,7 @@
         "event_connection_lost_title": null,
         "event_connection_lost": "Verbindung wird wiederhergestellt...",
         "to_be_cleared": "Wird beim Speichern geleert",
-        "unchanged": "unverändert",
+        "unchanged": "Unverändert",
 
         "upload_abort": "Upload abgebrochen",
         "upload_error": "Fehler beim Hochladen",

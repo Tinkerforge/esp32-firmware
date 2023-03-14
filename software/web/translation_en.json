@@ -20,12 +20,12 @@
         },
         "input_password": {
             "to_be_cleared": "Will be cleared on save.",
-            "unchanged": "unchanged"
+            "unchanged": "Unchanged"
         },
         "ip_configuration": {
             "ip_configuration": "IP configuration",
-            "dhcp": "automatic (DHCP)",
-            "static": "static",
+            "dhcp": "Automatic (DHCP)",
+            "static": "Static",
 
             "static_ip": "IP address",
             "subnet": "Subnet mask",
@@ -65,7 +65,7 @@
         "event_connection_lost_title": null,
         "event_connection_lost": "Connection will be reestablished...",
         "to_be_cleared": "Will be cleared on save.",
-        "unchanged": "unchanged",
+        "unchanged": "Unchanged",
 
         "upload_abort": "Upload aborted",
         "upload_error": "Upload error",

@@ -4,7 +4,7 @@
             "ntp": "Time Synchronization"
         },
         "status": {
-            "ntp": "Time Synchronization",
+            "ntp": "Time synchronization",
             "deactivated": "Deactivated",
             "not_synced": "Not synchronized",
             "synced": "Synchronized"
