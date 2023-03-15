@@ -127,7 +127,7 @@ void ChargeCondition::register_urls()
                 state.get("start_energy_kwh")->updateUint((uint32_t)(charge_tracker.current_charge.get("meter_start")->asFloat() * 1000));
 
             int time_left = map_duration(config_in_use.get("duration_limit")->asUint())
-                                            - (evse_v2.evse_low_level_state.get("uptime")->asUint()
+                                            - (evse.evse_low_level_state.get("uptime")->asUint()
                                             - state.get("start_timestamp_mil")->asUint());
 
             if (config_in_use.get("duration_limit")->asUint() > 0)
