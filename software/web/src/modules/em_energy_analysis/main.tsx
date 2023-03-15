@@ -76,7 +76,7 @@ interface UplotWrapperProps {
 // https://seaborn.pydata.org/tutorial/color_palettes.html#qualitative-color-palettes
 // sns.color_palette("tab10")
 const colors = [
-    '#1f77b4',
+    '#007bff', // '#1f77b4', use bootstrap blue instead of tab10 blue, to avoid subtle conflict between plot and button blue
     '#ff7f0e',
     '#2ca02c',
     '#d62728',
