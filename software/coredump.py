@@ -60,6 +60,6 @@ if __name__ == '__main__':
                 coredump.dbg_corefile()
             else:
                 print("Firmware {} not found".format(tf_coredump_data['firmware_file_name'] + ".elf"))
-        except:
-            if os.exists(core_dump_path):
+        finally:
+            if os.path.exists(core_dump_path):
                 os.remove(core_dump_path)
