@@ -53,6 +53,7 @@ interface EnergyManager5minData {
     empty: boolean;
     flags: number[]; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = output, bit 7 = no data
     power_grid: number[]; // W
+    power_grid_empty: boolean;
     power_general: number[][]; // W
 };
 
@@ -425,6 +426,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 data.power_grid[slot] = changed.power_grid;
                 data.power_general[slot] = changed.power_general;
 
+                if (data.power_grid[slot] !== null) {
+                    data.power_grid_empty = false;
+                }
+
                 this.schedule_uplot_update();
             }
         });
@@ -540,7 +545,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
-        if (energy_manager_data && !energy_manager_data.empty) {
+        if (energy_manager_data && !energy_manager_data.power_grid_empty) {
             uplot_data.names.push(null);
             uplot_data.values.push(energy_manager_data.power_grid);
         }
@@ -658,6 +663,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
             if ((data.flags[slot] & 0x80 /* no data */) == 0) {
                 data.empty = false;
+            }
+
+            if (data.power_grid[slot] !== null) {
+                data.power_grid_empty = false;
             }
         }
 
