@@ -24,7 +24,7 @@
 class Coredump
 {
 public:
-    Coredump() {}
+    Coredump();
 
     void pre_setup();
     void setup();

@@ -32,6 +32,29 @@
 //Buffer size of 555 Bytes so that we have a buffer size of 500 + 55 pre + postfix.
 COREDUMP_DRAM_ATTR char tf_coredump_data[TF_COREDUMP_DATA_BUFF_SIZE];
 
+Coredump::Coredump() {
+    String tf_coredump_prefix = "___tf_coredump_data_start___";
+    String tf_coredump_suffix = "___tf_coredump_data_end___";
+
+    StaticJsonDocument<500> tf_coredump_json;
+    tf_coredump_json["firmware_version"] = build_version_full_str();
+    tf_coredump_json["firmware_file_name"] = build_filename_str();
+
+    String tf_coredump_json_string;
+    serializeJson(tf_coredump_json, tf_coredump_json_string);
+
+    String tf_coredump_string = tf_coredump_prefix;
+
+    if (tf_coredump_prefix.length () + tf_coredump_json_string.length() + tf_coredump_suffix.length() >= TF_COREDUMP_DATA_BUFF_SIZE) {
+        logger.printfln("Coredump data is too big for buffer");
+    } else {
+        tf_coredump_string += tf_coredump_json_string;
+    }
+    tf_coredump_string += tf_coredump_suffix;
+
+    memcpy(tf_coredump_data, tf_coredump_string.c_str(), tf_coredump_string.length());
+}
+
 void Coredump::pre_setup()
 {
     coredump_state = Config::Object({
@@ -48,22 +71,6 @@ void Coredump::setup()
 void Coredump::register_urls()
 {
     api.addState("coredump/state", &coredump_state, {}, 1000);
-
-    String tf_coredump_prefix = "___tf_coredump_data_start___";
-    String tf_coredump_postfix = "___tf_coredump_data_end___";
-
-    DynamicJsonDocument tf_coredump_json(500);
-    tf_coredump_json["firmware_version"] = build_version_full_str();
-    tf_coredump_json["firmware_file_name"] = build_filename_str();
-
-    String tf_coredump_json_string;
-    serializeJson(tf_coredump_json, tf_coredump_json_string);
-
-    String tf_coredump_string = tf_coredump_prefix + tf_coredump_json_string + tf_coredump_postfix;
-    if (tf_coredump_string.length() >= TF_COREDUMP_DATA_BUFF_SIZE)
-        esp_system_abort("Coredump data is too big for buffer");
-
-    memcpy(tf_coredump_data, tf_coredump_string.c_str(), tf_coredump_string.length());
 
     server.on("/coredump/erase", HTTP_GET, [this](WebServerRequest request) {
         esp_core_dump_image_erase();
@@ -105,6 +112,7 @@ void Coredump::register_urls()
             }
             request.sendChunk((char *)buffer + (i == 0 ? 20 : 0), to_send - (i == 0 ? 20 : 0));
         }
+
 
         return request.endChunkedResponse();
     });
