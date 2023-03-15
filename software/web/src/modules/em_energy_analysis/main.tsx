@@ -72,6 +72,7 @@ interface UplotWrapperProps {
     sidebar_id: string;
     y_min: number;
     y_max: number;
+    marker_width_reduction: number;
 }
 
 // https://seaborn.pydata.org/tutorial/color_palettes.html#qualitative-color-palettes
@@ -226,11 +227,11 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     render(props?: UplotWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
         return (
             <div>
-                <div ref={this.no_data_ref} style="position: absolute; width: calc(100% - 30px); top: 47%; visibility: hidden; text-align: center;">
-                    <span class="h3">{__("em_energy_analysis.content.no_data")}</span>
+                <div ref={this.no_data_ref} style={`position: absolute; width: calc(100% - ${props.marker_width_reduction}px); height: 100%; visibility: hidden; display: flex;`}>
+                    <span class="h3" style="margin: auto;">{__("em_energy_analysis.content.no_data")}</span>
                 </div>
-                <div ref={this.loading_ref} style="position: absolute; width: calc(100% - 30px); top: 47%; visibility: hidden; text-align: center;">
-                    <span class="h3">{__("em_energy_analysis.content.loading")}</span>
+                <div ref={this.loading_ref} style={`position: absolute; width: calc(100% - ${props.marker_width_reduction}px); height: 100%; visibility: hidden; display: flex;`}>
+                    <span class="h3" style="margin: auto;">{__("em_energy_analysis.content.loading")}</span>
                 </div>
                 <div ref={this.div_ref} id={props.id} class={props.class} />
             </div>
@@ -293,7 +294,13 @@ export class EMEnergyAnalysisStatusChart extends Component<{}, {}> {
     render(props: {}, state: {}) {
         return (
             <>
-                <UplotWrapper ref={this.uplot_wrapper_ref} id="em_energy_analysis_status_chart" class="em-energy-analysis-status-chart" sidebar_id="status" y_min={0} y_max={1500} />
+                <UplotWrapper ref={this.uplot_wrapper_ref}
+                              id="em_energy_analysis_status_chart"
+                              class="em-energy-analysis-status-chart"
+                              sidebar_id="status"
+                              y_min={0}
+                              y_max={1500}
+                              marker_width_reduction={8} />
             </>
         )
     }
@@ -885,7 +892,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 <PageHeader title={__("em_energy_analysis.content.em_energy_analysis")} colClasses="col-xl-10"/>
                 <div class="row">
                     <div class="col-xl-10 mb-3">
-                        <UplotWrapper ref={this.uplot_wrapper_ref} id="em_energy_analysis_chart" class="em-energy-analysis-chart" sidebar_id="em-energy-analysis" y_min={undefined} y_max={undefined} />
+                        <UplotWrapper ref={this.uplot_wrapper_ref}
+                                      id="em_energy_analysis_chart"
+                                      class="em-energy-analysis-chart"
+                                      sidebar_id="em-energy-analysis"
+                                      y_min={undefined}
+                                      y_max={undefined}
+                                      marker_width_reduction={30} />
                     </div>
                 </div>
                 <FormRow label={__("em_energy_analysis.content.date")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
