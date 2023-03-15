@@ -40,66 +40,66 @@ interface DetailedViewEntry {
     desc: string,
     three_phase: boolean,
     unit: string,
-    sdm630_only: boolean
+    meter_types: number[]
     digits: 0|1|2|3
 }
 
-function entry(name: string, three_phase: boolean, unit: string, sdm630_only: boolean, digits: 0|1|2|3) : DetailedViewEntry {
-    return {i: 0, name: translate_unchecked(`meter.content.detailed_${name}`), desc: translate_unchecked(`meter.content.detailed_${name}_desc`), three_phase: three_phase, unit: unit, sdm630_only: sdm630_only, digits: digits}
+function entry(name: string, three_phase: boolean, unit: string, meter_types: (2|3|4|5|200)[], digits: 0|1|2|3) : DetailedViewEntry {
+    return {i: 0, name: translate_unchecked(`meter.content.detailed_${name}`), desc: translate_unchecked(`meter.content.detailed_${name}_desc`), three_phase: three_phase, unit: unit, meter_types: meter_types, digits: digits}
 }
 
 const entries: DetailedViewEntry[] = [
-    entry("line_to_neutral_volts",             true,  "V",     false, 1),
-    entry("current",                           true,  "A",     false, 3),
-    entry("power",                             true,  "W",     false, 0),
-    entry("volt_amps",                         true,  "VA",    false, 0),
-    entry("volt_amps_reactive",                true,  "var",   false, 0),
-    entry("power_factor",                      true,  "",      false, 3),
-    entry("phase_angle",                       true,  "°",     true,  1),
-    entry("average_line_to_neutral_volts",     false, "V",     true,  1),
-    entry("average_line_current",              false, "A",     false, 3),
-    entry("sum_of_line_currents",              false, "A",     false, 3),
-    entry("total_system_power",                false, "W",     false, 0),
-    entry("total_system_volt_amps",            false, "VA",    false, 0),
-    entry("total_system_var",                  false, "var",   false, 0),
-    entry("total_system_power_factor",         false, "",      false, 3),
-    entry("total_system_phase_angle",          false, "°",     true,  1),
-    entry("frequency_of_supply_voltages",      false, "Hz",    false, 3),
-    entry("total_import_kwh",                  false, "kWh",   false, 3),
-    entry("total_export_kwh",                  false, "kWh",   false, 3),
-    entry("total_import_kvarh",                false, "kvarh", true,  3),
-    entry("total_export_kvarh",                false, "kvarh", true,  3),
-    entry("total_vah",                         false, "kVAh",  true,  3),
-    entry("ah",                                false, "Ah",    true,  3),
-    entry("total_system_power_demand",         false, "W",     true,  0),
-    entry("maximum_total_system_power_demand", false, "W",     true,  0),
-    entry("total_system_va_demand",            false, "VA",    true,  0),
-    entry("maximum_total_system_va_demand",    false, "VA",    true,  0),
-    entry("neutral_current_demand",            false, "A",     true,  3),
-    entry("maximum_neutral_current_demand",    false, "A",     true,  3),
-    entry("line1_to_line2_volts",              false, "V",     false, 1),
-    entry("line2_to_line3_volts",              false, "V",     false, 1),
-    entry("line3_to_line1_volts",              false, "V",     false, 1),
-    entry("average_line_to_line_volts",        false, "V",     false, 1),
-    entry("neutral_current",                   false, "A",     false, 3),
-    entry("ln_volts_thd",                      true,  "%",     true,  1),
-    entry("current_thd",                       true,  "%",     true,  1),
-    entry("average_line_to_neutral_volts_thd", false, "%",     true,  1),
-    entry("average_line_current_thd",          false, "%",     true,  1),
-    entry("current_demand",                    true,  "A",     true,  3),
-    entry("maximum_current_demand",            true,  "A",     true,  3),
-    entry("line1_to_line2_volts_thd",          false, "%",     true,  1),
-    entry("line2_to_line3_volts_thd",          false, "%",     true,  1),
-    entry("line3_to_line1_volts_thd",          false, "%",     true,  1),
-    entry("average_line_to_line_volts_thd",    false, "%",     true,  1),
-    entry("total_kwh_sum",                     false, "kWh",   false, 3),
-    entry("total_kvarh_sum",                   false, "kvarh", false, 3),
-    entry("import_kwh",                        true,  "kWh",   true,  3),
-    entry("export_kwh",                        true,  "kWh",   true,  3),
-    entry("total_kwh",                         true,  "kWh",   true,  3),
-    entry("import_kvarh",                      true,  "kvarh", true,  3),
-    entry("export_kvarh",                      true,  "kvarh", true,  3),
-    entry("total_kvarh",                       true,  "kvarh", true,  3)
+    entry("line_to_neutral_volts",             true,  "V",     [2, 3, 5, 200], 1),
+    entry("current",                           true,  "A",     [2, 3, 5, 200], 3),
+    entry("power",                             true,  "W",     [2, 3, 4, 5, 200], 0),
+    entry("volt_amps",                         true,  "VA",    [2, 3, 5, 200], 0),
+    entry("volt_amps_reactive",                true,  "var",   [2, 3, 5, 200], 0),
+    entry("power_factor",                      true,  "",      [2, 3, 5, 200], 3),
+    entry("phase_angle",                       true,  "°",     [2, 5, 200],  1),
+    entry("average_line_to_neutral_volts",     false, "V",     [2, 5, 200],  1),
+    entry("average_line_current",              false, "A",     [2, 3, 5, 200], 3),
+    entry("sum_of_line_currents",              false, "A",     [2, 3, 5, 200], 3),
+    entry("total_system_power",                false, "W",     [2, 3, 4, 5, 200], 0),
+    entry("total_system_volt_amps",            false, "VA",    [2, 3, 5, 200], 0),
+    entry("total_system_var",                  false, "var",   [2, 3, 5, 200], 0),
+    entry("total_system_power_factor",         false, "",      [2, 3, 5, 200], 3),
+    entry("total_system_phase_angle",          false, "°",     [2, 5, 200],  1),
+    entry("frequency_of_supply_voltages",      false, "Hz",    [2, 3, 5, 200], 3),
+    entry("total_import_kwh",                  false, "kWh",   [2, 3, 4, 5, 200], 3),
+    entry("total_export_kwh",                  false, "kWh",   [2, 3, 4, 5, 200], 3),
+    entry("total_import_kvarh",                false, "kvarh", [2, 5, 200],  3),
+    entry("total_export_kvarh",                false, "kvarh", [2, 5, 200],  3),
+    entry("total_vah",                         false, "kVAh",  [2, 5, 200],  3),
+    entry("ah",                                false, "Ah",    [2, 5, 200],  3),
+    entry("total_system_power_demand",         false, "W",     [2, 5, 200],  0),
+    entry("maximum_total_system_power_demand", false, "W",     [2, 5, 200],  0),
+    entry("total_system_va_demand",            false, "VA",    [2, 5, 200],  0),
+    entry("maximum_total_system_va_demand",    false, "VA",    [2, 5, 200],  0),
+    entry("neutral_current_demand",            false, "A",     [2, 5, 200],  3),
+    entry("maximum_neutral_current_demand",    false, "A",     [2, 5, 200],  3),
+    entry("line1_to_line2_volts",              false, "V",     [2, 3, 5, 200], 1),
+    entry("line2_to_line3_volts",              false, "V",     [2, 3, 5, 200], 1),
+    entry("line3_to_line1_volts",              false, "V",     [2, 3, 5, 200], 1),
+    entry("average_line_to_line_volts",        false, "V",     [2, 3, 5, 200], 1),
+    entry("neutral_current",                   false, "A",     [2, 3, 5, 200], 3),
+    entry("ln_volts_thd",                      true,  "%",     [2, 5, 200],  1),
+    entry("current_thd",                       true,  "%",     [2, 5, 200],  1),
+    entry("average_line_to_neutral_volts_thd", false, "%",     [2, 5, 200],  1),
+    entry("average_line_current_thd",          false, "%",     [2, 5, 200],  1),
+    entry("current_demand",                    true,  "A",     [2, 5, 200],  3),
+    entry("maximum_current_demand",            true,  "A",     [2, 5, 200],  3),
+    entry("line1_to_line2_volts_thd",          false, "%",     [2, 5, 200],  1),
+    entry("line2_to_line3_volts_thd",          false, "%",     [2, 5, 200],  1),
+    entry("line3_to_line1_volts_thd",          false, "%",     [2, 5, 200],  1),
+    entry("average_line_to_line_volts_thd",    false, "%",     [2, 5, 200],  1),
+    entry("total_kwh_sum",                     false, "kWh",   [2, 3, 4, 5, 200], 3),
+    entry("total_kvarh_sum",                   false, "kvarh", [2, 3, 5, 200], 3),
+    entry("import_kwh",                        true,  "kWh",   [2, 5, 200],  3),
+    entry("export_kwh",                        true,  "kWh",   [2, 5, 200],  3),
+    entry("total_kwh",                         true,  "kWh",   [2, 5, 200],  3),
+    entry("import_kvarh",                      true,  "kvarh", [2, 5, 200],  3),
+    entry("export_kvarh",                      true,  "kvarh", [2, 5, 200],  3),
+    entry("total_kvarh",                       true,  "kvarh", [2, 5, 200],  3)
 ];
 
 interface UplotData {
@@ -523,7 +523,7 @@ export class Meter extends Component<{}, MeterState> {
                     {API.hasFeature("meter_all_values") ?
                     <CollapsedSection colClasses="col-xl-10" label={__("meter.content.detailed_values")}>
                         {
-                        entries.filter(e => state.state.type == 2 ? true : !e.sdm630_only).map(e => <FormRow label={e.name} label_muted={e.desc} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
+                        entries.filter(e => e.meter_types.indexOf(state.state.type) > 0).map(e => <FormRow label={e.name} label_muted={e.desc} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
                             {e.three_phase ? <div class="row">
                                 <div class="mb-1 col-12 col-sm-4">
                                     <OutputFloat value={this.state.all_values[e.i + 0]} digits={e.digits} scale={0} unit={e.unit}/>
