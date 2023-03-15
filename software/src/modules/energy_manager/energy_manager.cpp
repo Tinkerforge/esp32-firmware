@@ -54,7 +54,9 @@ void EnergyManager::pre_setup()
         {"is_on_last", Config::Bool(false)},
         {"wants_on_last", Config::Bool(false)},
         {"phase_state_change_blocked", Config::Bool(false)},
+        {"phase_state_change_delay", Config::Uint32(0)},
         {"on_state_change_blocked", Config::Bool(false)},
+        {"on_state_change_delay", Config::Uint32(0)},
         {"charging_blocked", Config::Uint32(0)},
         {"switching_state", Config::Uint32(0)},
         {"consecutive_bricklet_errors", Config::Uint32(0)},
@@ -790,7 +792,9 @@ void EnergyManager::update_energy()
         bool phase_state_change_is_blocked = a_after_b(phase_state_change_blocked_until, time_now);
         bool on_state_change_is_blocked = a_after_b(on_state_change_blocked_until, time_now);
         low_level_state.get("phase_state_change_blocked")->updateBool(phase_state_change_is_blocked);
+        low_level_state.get("phase_state_change_delay")->updateUint(phase_state_change_is_blocked ? phase_state_change_blocked_until - time_now : 0);
         low_level_state.get("on_state_change_blocked")->updateBool(on_state_change_is_blocked);
+        low_level_state.get("on_state_change_delay")->updateUint(on_state_change_is_blocked ? on_state_change_blocked_until - time_now : 0);
 
         // Check if phase switching is allowed right now.
         bool switch_phases = false;

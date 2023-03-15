@@ -63,6 +63,14 @@ export class EMDebug extends Component<{}, EMDebugState> {
         }, false);
     }
 
+    ms2time(ms: number) {
+        let s = ms / 1000;
+        let m = Math.trunc(s / 60);
+        s = Math.trunc(s % 60);
+
+        return m.toString() + "m " + s.toString() + "s";
+    }
+
     render(props: {}, s: Readonly<EMDebugState>) {
         // Must check presence of low_level_state here because an update to /state might trigger
         // a render when no bricklet is available and /state is the only exported state.
@@ -155,6 +163,9 @@ export class EMDebug extends Component<{}, EMDebugState> {
                             ["primary",   "true" ],
                         ]} />
                 </FormRow>
+                <FormRow label="phase state change delay">
+                    <InputText value={this.ms2time(s.low_level_state.phase_state_change_delay)}/>
+                </FormRow>
                 <FormRow label="on state change blocked">
                     <IndicatorGroup
                         value={s.low_level_state.on_state_change_blocked ? 1 : 0}
@@ -162,6 +173,9 @@ export class EMDebug extends Component<{}, EMDebugState> {
                             ["secondary", "false"],
                             ["primary",   "true" ],
                         ]} />
+                </FormRow>
+                <FormRow label="on state change delay">
+                    <InputText value={this.ms2time(s.low_level_state.on_state_change_delay)}/>
                 </FormRow>
                 <FormRow label="charging blocked">
                     <InputText value={"0x" + s.low_level_state.charging_blocked.toString(16)}/>
