@@ -162,6 +162,9 @@ public:
     void set_output(bool output);
     void set_rgb_led(uint8_t pattern, uint16_t hue);
 
+    void set_time(const timeval &tv);
+    struct timeval get_time();
+
     bool debug = false;
 
     ConfigRoot state;

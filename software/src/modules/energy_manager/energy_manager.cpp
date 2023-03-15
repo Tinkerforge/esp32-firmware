@@ -985,3 +985,49 @@ void EnergyManager::set_rgb_led(uint8_t pattern, uint16_t hue)
     if (rc != TF_E_OK)
         logger.printfln("energy_manager: Failed to set LED state: error %i. Continuing anyway.", rc);
 }
+
+void EnergyManager::set_time(const timeval &tv)
+{
+    tm date_time;
+    gmtime_r(&tv.tv_sec, &date_time);
+    date_time.tm_yday += 1900;
+
+    if (date_time.tm_sec > 59)
+        date_time.tm_sec = 59;
+
+    int ret = tf_warp_energy_manager_set_date_time(&device,
+                                                    date_time.tm_sec,
+                                                    date_time.tm_min,
+                                                    date_time.tm_hour,
+                                                    date_time.tm_mday,
+                                                    date_time.tm_wday,
+                                                    date_time.tm_mon,
+                                                    date_time.tm_year);
+
+    if (ret)
+        logger.printfln("Setting datetime on energy-manager-bricklet failed with code %i", ret);
+}
+
+struct timeval EnergyManager::get_time()
+{
+    tm date_time;
+    int ret = tf_warp_energy_manager_get_date_time(&device,
+                                                    (uint8_t *)&date_time.tm_sec,
+                                                    (uint8_t *)&date_time.tm_min,
+                                                    (uint8_t *)&date_time.tm_hour,
+                                                    (uint8_t *)&date_time.tm_mday,
+                                                    (uint8_t *)&date_time.tm_wday,
+                                                    (uint8_t *)&date_time.tm_mon,
+                                                    (uint16_t *)&date_time.tm_year);
+
+    timeval time;
+
+    if (ret)
+    {
+        logger.printfln("getting datetime on energy-manager-bricklet failed with code %i", ret);
+        time.tv_sec = 0;
+        time.tv_usec = 0;
+        return time;
+    }
+
+}
