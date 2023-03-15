@@ -510,12 +510,12 @@ void EVSE::set_charge_condition_slot(uint16_t current, bool enabled)
 {
     is_in_bootloader(tf_evse_set_charging_slot(&device, CHARGING_SLOT_CHARGING_CONDITION, current, enabled, true));
 }
-
+/*
 void EVSE::set_charge_time_restriction_slot(uint16_t current, bool enabled)
 {
     is_in_bootloader(tf_evse_set_charging_slot(&device, CHARGING_SLOT_TIME_RESTRICTION, current, enabled, true));
 }
-
+*/
 void EVSE::set_ocpp_current(uint16_t current)
 {
      is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_OCPP, current));

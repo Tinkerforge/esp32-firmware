@@ -112,7 +112,6 @@
             "slot_9": "Modbus TCP current",
             "slot_10": "Modbus TCP clearance",
             "slot_11": "OCPP",
-            "slot_13": "Time restriction"
             "slot_12": "Energy/Time limit"
         },
         "script": {
@@ -154,7 +153,6 @@
             "slot_9": "Modbus TCP",
             "slot_10": "Modbus TCP clearance",
             "slot_11": "OCPP",
-            "slot_13": "Time restriction",
             "slot_12": "Energy/Time limit",
             "reboot_content_changed": "Charge Settings"
         }
