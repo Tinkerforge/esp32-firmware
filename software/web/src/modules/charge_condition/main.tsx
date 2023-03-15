@@ -133,7 +133,7 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
                                                     this.setState({config_in_use: {...config_in_use, energy_limit_kwh: v}});
                                                     API.call("charge_condition/override_energy", {energy: v}, __("charge_condition.script.override_failed"));
                                                 }}
-                                                digits={3} min={0} max={100000} unit={"kwh"}/>
+                                                digits={3} min={0} max={100000} unit={"kWh"}/>
                             </FormRow>
 
         const energy_left = <FormRow label={__("charge_condition.content.energy_left")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4"
@@ -142,7 +142,7 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
                                     <InputText value={get_energy_left()}/>
                                     <InputGroup.Append>
                                         <div class="form-control input-group-text">
-                                            kwh
+                                            kWh
                                         </div>
                                     </InputGroup.Append>
                                     <InputGroup.Append>
