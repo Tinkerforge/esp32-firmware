@@ -50,23 +50,29 @@ export function InputDate(props: InputDateProps) {
         return new Date(y, mIdx - 1, d);
     }
 
+    let inner = <input class={"form-control " + props.className}
+        ref={input}
+        id={id}
+        type="date"
+        onInput={props.onDate ? (e) => {
+                let timeString = (e.target as HTMLInputElement).value;
+                if (timeString == "")
+                    return;
+
+                props.onDate(valueToDate(timeString));
+            } : undefined
+        }
+        disabled={!props.onDate}
+        value={dateToValue(props.date)}/>
+
+    if (!props.onDate || !props.buttons) {
+        return inner;
+    }
+
     return (
         <div class="input-group">
-            <input class={"form-control " + props.className}
-                   ref={input}
-                   id={id}
-                   type="date"
-                   onInput={props.onDate ? (e) => {
-                           let timeString = (e.target as HTMLInputElement).value;
-                           if (timeString == "")
-                               return;
-
-                           props.onDate(valueToDate(timeString));
-                       } : undefined
-                   }
-                   disabled={!props.onDate}
-                   value={dateToValue(props.date)}/>
-            {props.onDate && props.buttons ? <div class="input-group-append">
+            {inner}
+            <div class="input-group-append">
                 <Button variant="primary"
                         className="form-control px-1"
                         style="margin-right: .125rem !important;"
@@ -112,7 +118,7 @@ export function InputDate(props: InputDateProps) {
                         }}>
                     <ArrowRight/>
                 </Button>
-            </div> : null }
+            </div>
         </div>
     );
 }
