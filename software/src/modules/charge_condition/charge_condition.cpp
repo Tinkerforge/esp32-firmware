@@ -135,16 +135,17 @@ void ChargeCondition::register_urls()
                 int time_left = map_duration(config_in_use.get("duration_limit")->asUint()) - (evse_v2.evse_low_level_state.get("uptime")->asUint() - state.get("start_timestamp_mil")->asUint());
                 if (time_left <= 0)
                     evse_v2.set_charge_condition_slot(0, true);
+                else
+                    evse_v2.set_charge_condition_slot(32000, true);
  #elif MODULE_EVSE_AVAILABLE()
-                if (state.get("start_timestamp_mil")->asUint() == 0)
-                    state.get("start_timestamp_mil")->updateUint(evse.evse_low_level_state.get("uptime")->asUint());
-
                 if (state.get("target_timestamp_mil")->asUint() == 0)
                     state.get("target_timestamp_mil")->updateUint(evse.evse_low_level_state.get("uptime")->asUint() + map_duration(config_in_use.get("duration_limit")->asUint()));
 
                 int time_left = map_duration(config_in_use.get("duration_limit")->asUint()) - (evse.evse_low_level_state.get("uptime")->asUint() - state.get("start_timestamp_mil")->asUint());
                 if (time_left <= 0)
                     evse.set_charge_condition_slot(0, true);
+                else
+                    evse.set_charge_condition_slot(32000, true);
  #endif
             }
 
