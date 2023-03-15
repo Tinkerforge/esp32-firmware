@@ -27,7 +27,7 @@
 
 #include "esp_core_dump.h"
 
-#define TF_COREDUMP_DATA_BUFF_SIZE 500
+#define TF_COREDUMP_DATA_BUFF_SIZE 200
 
 //Buffer size of 555 Bytes so that we have a buffer size of 500 + 55 pre + postfix.
 COREDUMP_DRAM_ATTR char tf_coredump_data[TF_COREDUMP_DATA_BUFF_SIZE];
