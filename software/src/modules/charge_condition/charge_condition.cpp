@@ -119,16 +119,18 @@ void ChargeCondition::register_urls()
  #if MODULE_EVSE_V2_AVAILABLE()
             if (!was_charging)
                 state.get("start_timestamp_mil")->updateUint(evse_v2.evse_low_level_state.get("uptime")->asUint());
+            int time_left = map_duration(config_in_use.get("duration_limit")->asUint())
+                                            - (evse_v2.evse_low_level_state.get("uptime")->asUint()
+                                            - state.get("start_timestamp_mil")->asUint());
  #elif MODULE_EVSE_AVAILABLE()
             if (!was_charging)
                 state.get("start_timestamp_mil")->updateUint(evse.evse_low_level_state.get("uptime")->asUint());
- #endif
-            if (api.hasFeature("meter") && !was_charging)
-                state.get("start_energy_kwh")->updateUint((uint32_t)(charge_tracker.current_charge.get("meter_start")->asFloat() * 1000));
-
             int time_left = map_duration(config_in_use.get("duration_limit")->asUint())
                                             - (evse.evse_low_level_state.get("uptime")->asUint()
                                             - state.get("start_timestamp_mil")->asUint());
+ #endif
+            if (api.hasFeature("meter") && !was_charging)
+                state.get("start_energy_kwh")->updateUint((uint32_t)(charge_tracker.current_charge.get("meter_start")->asFloat() * 1000));
 
             if (config_in_use.get("duration_limit")->asUint() > 0)
             {
