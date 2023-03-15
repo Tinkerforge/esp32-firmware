@@ -156,11 +156,17 @@ void ChargeCondition::register_urls()
                 if (state.get("target_energy_kwh")->asUint() <= (uint32_t)(meter.values.get("energy_abs")->asFloat() * 1000))
                 {
  #if MODULE_EVSE_V2_AVAILABLE()
-                        evse_v2.set_charge_condition_slot(0, true);
+                    evse_v2.set_charge_condition_slot(0, true);
  #elif MODULE_EVSE_AVAILABLE()
-                        evse.set_charge_condition_slot(0, true);
+                    evse.set_charge_condition_slot(0, true);
  #endif
                 }
+                else
+ #if MODULE_EVSE_V2_AVAILABLE()
+                    evse_v2.set_charge_condition_slot(32000, true);
+ #elif MODULE_EVSE_AVAILABLE()
+                    evse.set_charge_condition_slot(32000, true);
+ #endif
             }
 
             was_charging = true;
