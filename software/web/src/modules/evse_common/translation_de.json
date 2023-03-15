@@ -112,8 +112,8 @@
             "slot_9": "Modbus TCP-Strom",
             "slot_10": "Modbus TCP-Freigabe",
             "slot_11": "OCPP",
-            "slot_12": "Lalala",
             "slot_13": "Zeit Restriktion"
+            "slot_12": "Energie-/Zeitlimit"
         },
         "script": {
             "error_code": "Fehlercode",
@@ -154,8 +154,8 @@
             "slot_9": "Modbus TCP",
             "slot_10": "Modbus TCP-Freigabe",
             "slot_11": "OCPP",
-            "slot_12": "Lalala",
             "slot_13": "Zeit Restriktion",
+            "slot_12": "Energie-/Zeitlimit",
 
             "reboot_content_changed": "Ladeeinstellungen"
         }
