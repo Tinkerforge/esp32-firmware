@@ -27,6 +27,9 @@
 #include "task_scheduler.h"
 #include "tools.h"
 #include "web_server.h"
+#include "build.h"
+
+#include "musl_libc_timegm.h"
 
 void EnergyManager::pre_setup()
 {
@@ -340,6 +343,24 @@ void EnergyManager::register_urls()
 
     if (!device_found)
         return;
+
+    server.on("/em/set", HTTP_GET, [this](WebServerRequest request) {
+        timeval tv;
+        gettimeofday(&tv, NULL);
+
+        set_time(tv);
+        return request.send(200, "ok");
+    });
+
+    server.on("/em/get", HTTP_GET, [this](WebServerRequest request) {
+        timeval tv = get_time();
+        timeval tv2;
+        gettimeofday(&tv2, NULL);
+
+        logger.printfln("%li", tv.tv_sec);
+        logger.printfln("%li", tv2.tv_sec);
+        return request.send(200, "ok");
+    });
 
 #if MODULE_WS_AVAILABLE()
     server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
@@ -990,7 +1011,10 @@ void EnergyManager::set_time(const timeval &tv)
 {
     tm date_time;
     gmtime_r(&tv.tv_sec, &date_time);
-    date_time.tm_yday += 1900;
+
+
+    date_time.tm_year -= 100;
+    date_time.tm_mday -= 1;
 
     if (date_time.tm_sec > 59)
         date_time.tm_sec = 59;
@@ -1004,23 +1028,50 @@ void EnergyManager::set_time(const timeval &tv)
                                                     date_time.tm_mon,
                                                     date_time.tm_year);
 
+    logger.printfln("sec: %i, min: %i, hour: %i, mday: %i, wday: %i, mon: %i, year: %i", date_time.tm_sec,
+                                                                                        date_time.tm_min,
+                                                                                        date_time.tm_hour,
+                                                                                        date_time.tm_mday,
+                                                                                        date_time.tm_wday,
+                                                                                        date_time.tm_mon,
+                                                                                        date_time.tm_year);
+
     if (ret)
         logger.printfln("Setting datetime on energy-manager-bricklet failed with code %i", ret);
+    logger.printfln("Set time");
 }
 
 struct timeval EnergyManager::get_time()
 {
     tm date_time;
-    int ret = tf_warp_energy_manager_get_date_time(&device,
-                                                    (uint8_t *)&date_time.tm_sec,
-                                                    (uint8_t *)&date_time.tm_min,
-                                                    (uint8_t *)&date_time.tm_hour,
-                                                    (uint8_t *)&date_time.tm_mday,
-                                                    (uint8_t *)&date_time.tm_wday,
-                                                    (uint8_t *)&date_time.tm_mon,
-                                                    (uint16_t *)&date_time.tm_year);
-
     timeval time;
+
+    uint8_t tm_sec;
+    uint8_t tm_min;
+    uint8_t tm_hour;
+    uint8_t tm_mday;
+    uint8_t tm_wday;
+    uint8_t tm_mon;
+    uint16_t tm_year;
+
+    int ret = tf_warp_energy_manager_get_date_time(&device,
+                                                    &tm_sec,
+                                                    &tm_min,
+                                                    &tm_hour,
+                                                    &tm_mday,
+                                                    &tm_wday,
+                                                    &tm_mon,
+                                                    &tm_year);
+
+
+
+    logger.printfln("sec: %u, min: %u, hour: %u, mday: %u, wday: %u, mon: %u, year: %u", tm_sec,
+                                                                                            tm_min,
+                                                                                            tm_hour,
+                                                                                            tm_mday,
+                                                                                            tm_wday,
+                                                                                            tm_mon,
+                                                                                            tm_year);
 
     if (ret)
     {
@@ -1030,4 +1081,37 @@ struct timeval EnergyManager::get_time()
         return time;
     }
 
+    date_time.tm_sec = tm_sec;
+    date_time.tm_min = tm_min;
+    date_time.tm_hour = tm_hour;
+    date_time.tm_mday = tm_mday;
+    date_time.tm_wday = tm_wday;
+    date_time.tm_mon = tm_mon;
+    date_time.tm_year = tm_year;
+
+    logger.printfln("sec: %i, min: %i, hour: %i, mday: %i, wday: %i, mon: %i, year: %i",    date_time.tm_sec,
+                                                                                            date_time.tm_min,
+                                                                                            date_time.tm_hour,
+                                                                                            date_time.tm_mday,
+                                                                                            date_time.tm_wday,
+                                                                                            date_time.tm_mon,
+                                                                                            date_time.tm_year);
+
+    date_time.tm_year += 100;
+    date_time.tm_mday += 1;
+
+    time.tv_sec = timegm(&date_time);
+
+    logger.printfln("build: %i", build_timestamp());
+    logger.printfln("time: %li", time.tv_sec);
+
+    if (time.tv_sec < build_timestamp())
+    {
+        struct timeval tmp;
+        tmp.tv_sec = 0;
+        tmp.tv_usec = 0;
+        return tmp;
+    }
+
+    return time;
 }

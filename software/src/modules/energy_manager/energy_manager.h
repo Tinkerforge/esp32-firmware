@@ -165,6 +165,8 @@ public:
     void set_time(const timeval &tv);
     struct timeval get_time();
 
+    void update_system_time();
+
     bool debug = false;
 
     ConfigRoot state;
