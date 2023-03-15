@@ -369,13 +369,7 @@ def main():
         f.write('const char *build_timestamp_hex_str(void);\n')
         f.write('const char *build_version_full_str(void);\n')
         f.write('const char *build_info_str(void);\n')
-
-    with open(os.path.join('src', 'build.cpp'), 'w', encoding='utf-8') as f:
-        f.write('#include "build.h"\n')
-        f.write('uint32_t build_timestamp(void) {{ return {}; }}\n'.format(timestamp))
-        f.write('const char *build_timestamp_hex_str(void) {{ return "{:x}"; }}\n'.format(timestamp))
-        f.write('const char *build_version_full_str(void) {{ return "{}.{}.{}-{:x}"; }}\n'.format(*version, timestamp))
-        f.write('const char *build_info_str(void) {{ return "git url: {}, git branch: {}, git commit id: {}"; }}\n'.format(git_url, branch_name, git_commit_id))
+        f.write('const char *build_filename_str(void);')
 
     firmware_basename = '{}_firmware{}_{}_{:x}{}'.format(
         name,
@@ -384,6 +378,14 @@ def main():
         timestamp,
         dirty_suffix,
     )
+    with open(os.path.join('src', 'build.cpp'), 'w', encoding='utf-8') as f:
+        f.write('#include "build.h"\n')
+        f.write('uint32_t build_timestamp(void) {{ return {}; }}\n'.format(timestamp))
+        f.write('const char *build_timestamp_hex_str(void) {{ return "{:x}"; }}\n'.format(timestamp))
+        f.write('const char *build_version_full_str(void) {{ return "{}.{}.{}-{:x}"; }}\n'.format(*version, timestamp))
+        f.write('const char *build_info_str(void) {{ return "git url: {}, git branch: {}, git commit id: {}"; }}\n'.format(git_url, branch_name, git_commit_id))
+        f.write('const char *build_filename_str(void){{return "{}"; }}\n'.format(firmware_basename))
+
 
     with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
         f.write(firmware_basename)

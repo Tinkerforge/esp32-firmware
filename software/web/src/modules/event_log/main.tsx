@@ -70,6 +70,14 @@ export class EventLog extends Component<{}, EventLogState> {
             .catch(e => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), e.message))
     }
 
+    blobToBase64(blob: Blob) {
+        return new Promise((resolve, _) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+        })
+    }
+
     async download_debug_report() {
         let timeout = window.setTimeout(() => this.setState({show_spinner: true}), 1000);
 
@@ -80,6 +88,11 @@ export class EventLog extends Component<{}, EventLogState> {
             debug_log += await util.download("/debug_report").then(blob => blob.text());
             debug_log += "\n\n";
             debug_log += await util.download("/event_log").then(blob => blob.text());
+            debug_log += "\n\n___CORE_DUMP_START___\n\n";
+            try {
+                debug_log += await util.download("/coredump/coredump.elf").then(blob => this.blobToBase64(blob));
+            }
+            catch {}
 
             util.downloadToFile(debug_log, "debug-report", "txt", "text/plain");
         } catch (e) {

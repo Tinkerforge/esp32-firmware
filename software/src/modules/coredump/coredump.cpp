@@ -54,6 +54,7 @@ void Coredump::register_urls()
 
     DynamicJsonDocument tf_coredump_json(500);
     tf_coredump_json["firmware_version"] = build_version_full_str();
+    tf_coredump_json["firmware_file_name"] = build_filename_str();
 
     String tf_coredump_json_string;
     serializeJson(tf_coredump_json, tf_coredump_json_string);
