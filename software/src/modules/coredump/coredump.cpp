@@ -39,6 +39,7 @@ Coredump::Coredump() {
     StaticJsonDocument<500> tf_coredump_json;
     tf_coredump_json["firmware_version"] = build_version_full_str();
     tf_coredump_json["firmware_file_name"] = build_filename_str();
+    tf_coredump_json["commit_id"] = build_commit_id_str();
 
     String tf_coredump_json_string;
     serializeJson(tf_coredump_json, tf_coredump_json_string);
