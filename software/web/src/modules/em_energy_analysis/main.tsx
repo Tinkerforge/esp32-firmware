@@ -637,7 +637,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         let month: number = date.getMonth() + 1;
         let day: number = date.getDate();
         let slot_count = 288;
-        let data: EnergyManager5minData = {timestamp: now, empty: true, flags: new Array(slot_count), power_grid: new Array(slot_count), power_general: new Array(slot_count)};
+        let data: EnergyManager5minData = {
+            timestamp: now,
+            empty: true,
+            flags: new Array(slot_count),
+            power_grid: new Array(slot_count),
+            power_grid_empty: true,
+            power_general: new Array(slot_count)
+        };
         let response: string = '';
 
         try {
