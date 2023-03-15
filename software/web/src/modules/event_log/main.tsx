@@ -70,10 +70,10 @@ export class EventLog extends Component<{}, EventLogState> {
             .catch(e => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), e.message))
     }
 
-    blobToBase64(blob: Blob) {
+    blobToBase64(blob: Blob): Promise<string> {
         return new Promise((resolve, _) => {
             const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
+            reader.onloadend = () => resolve(reader.result as string);
             reader.readAsDataURL(blob);
         })
     }
@@ -88,11 +88,17 @@ export class EventLog extends Component<{}, EventLogState> {
             debug_log += await util.download("/debug_report").then(blob => blob.text());
             debug_log += "\n\n";
             debug_log += await util.download("/event_log").then(blob => blob.text());
-            debug_log += "\n\n___CORE_DUMP_START___\n\n";
             try {
-                debug_log += await util.download("/coredump/coredump.elf").then(blob => this.blobToBase64(blob));
+                let blob = await util.download("/coredump/coredump.elf");
+                let base64 = await this.blobToBase64(blob);
+                base64 = base64.replace(/(.{80})/g, "$1\n");
+                debug_log += "\n\n___CORE_DUMP_START___\n\n";
+                debug_log += base64;
             }
-            catch {}
+            catch (e) {
+                if (typeof(e) == "string" && e.includes("404"))
+                    debug_log += "\n\nNo core dump recorded.";
+            }
 
             util.downloadToFile(debug_log, "debug-report", "txt", "text/plain");
         } catch (e) {
