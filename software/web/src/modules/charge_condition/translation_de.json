@@ -2,11 +2,13 @@
     "charge_condition": {
         "content": {
             "reset": "Reset",
-            "overridden": "(überschrieben)",
-            "override_energy": "Energielimit überschreiben",
-            "override_duration": "Zeitlimit überschreiben",
-            "duration_limit": "Ladezeitlimit",
-            "energy_limit": "Energie Ladelimit",
+            "overridden": "(aktiv)",
+            "configured": "(konfiguriert)",
+            "left": " verbleibend",
+            "override_energy": "Energielimit",
+            "override_duration": "Zeitlimit",
+            "duration_limit": "Zeitlimit",
+            "energy_limit": "Energielimit",
             "time_left": "Ladezeit übrig",
             "energy_left": "Energie übrig",
             "unlimited": "Unbegrenzt",

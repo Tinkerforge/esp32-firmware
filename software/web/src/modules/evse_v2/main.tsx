@@ -482,10 +482,25 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
         const has_meter = API.hasFeature("meter");
 
         const energy_settings = <FormRow label={__("charge_condition.content.energy_limit")}>
-                <InputFloat value={s.energy_limit_kwh}
-                            onValue={(v) => this.setState({energy_limit_kwh: v})}
-                            digits={3} min={0} max={100000} unit={"kwh"}/>
-            </FormRow>;
+        <InputSelect items={[
+            ["0", __("charge_condition.content.unlimited")],
+            ["5000", util.toLocaleFixed(5, 0) + " kWh"],
+            ["10000", util.toLocaleFixed(10, 0) + " kWh"],
+            ["15000", util.toLocaleFixed(15, 0) + " kWh"],
+            ["20000", util.toLocaleFixed(20, 0) + " kWh"],
+            ["25000", util.toLocaleFixed(25, 0) + " kWh"],
+            ["30000", util.toLocaleFixed(30, 0) + " kWh"],
+            ["40000", util.toLocaleFixed(40, 0) + " kWh"],
+            ["50000", util.toLocaleFixed(50, 0) + " kWh"],
+            ["60000", util.toLocaleFixed(60, 0) + " kWh"],
+            ["70000", util.toLocaleFixed(70, 0) + " kWh"],
+            ["80000", util.toLocaleFixed(80, 0) + " kWh"],
+            ["90000", util.toLocaleFixed(90, 0) + " kWh"],
+            ["100000", util.toLocaleFixed(100, 0) + " kWh"]
+        ]}
+        value={s.energy_limit_wh}
+        onValue={(v) => this.setState({energy_limit_wh: Number(v)})}/>
+    </FormRow>;
 
         return <>
                 <ConfigForm id="evse_settings" title={__("evse.content.settings")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>

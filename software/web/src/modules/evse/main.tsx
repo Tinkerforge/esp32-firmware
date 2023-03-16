@@ -42,7 +42,6 @@ import { ConfigComponent } from "src/ts/components/config_component";
 import { InputFloat } from "src/ts/components/input_float";
 import { InputSelect } from "src/ts/components/input_select";
 import { ConfigForm } from "src/ts/components/config_form";
-import { extend } from "jquery";
 
 interface EVSEState {
     state: API.getType['evse/state'];
@@ -477,8 +476,8 @@ class EVSESettings extends ConfigComponent<"charge_condition/config", {}, EVSESe
         const has_meter = API.hasFeature("meter");
 
         const energy_settings = <FormRow label={__("charge_condition.content.energy_limit")}>
-                <InputFloat value={s.energy_limit_kwh}
-                            onValue={(v) => this.setState({energy_limit_kwh: v})}
+                <InputFloat value={s.energy_limit_wh}
+                            onValue={(v) => this.setState({energy_limit_wh: v})}
                             digits={3} min={0} max={100000} unit={"kwh"}/>
             </FormRow>;
 

@@ -93,110 +93,119 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
         const has_meter = API.hasFeature("meter");
 
         const get_energy_left = () => {
-            let energy = state.target_energy_kwh / 1000 - meter_abs;
-            if (state.start_energy_kwh == 0)
-                energy = config_in_use.energy_limit_kwh / 1000;
-            else if (energy < 0)
-                energy = 0;
+            let ret = "";
+            if (config_in_use.energy_limit_wh == 0)
+                ret = __("charge_condition.content.unlimited")
+            else {
+                let energy = state.target_energy_kwh - meter_abs;
+                if (state.start_energy_kwh == null)
+                    energy = config_in_use.energy_limit_wh / 1000.0;
+                else if (energy < 0)
+                    energy = 0;
 
-            let ret = util.toLocaleFixed(energy, 3);
-
-            if (config_in_use.energy_limit_kwh != config.energy_limit_kwh)
-                ret += " " + __("charge_condition.content.overridden");
+                ret = util.toLocaleFixed(energy, 3) + " kWh";
+            }
 
             return ret;
         }
 
         const get_duration_left = () => {
-            if (config_in_use.duration_limit == 0 && config_in_use.duration_limit != config.duration_limit)
-                return __("charge_condition.content.unlimited") + " " + __("charge_condition.content.overridden");
+            let ret = "";
+            if (config_in_use.duration_limit == 0)
+                ret = __("charge_condition.content.unlimited")
+            else {
+                let duration: number;
+                duration = state.target_timestamp_ms;
+                if (state.start_timestamp_ms != 0)
+                    duration = Math.floor((state.target_timestamp_ms - evse_uptime));
+                if (state.target_timestamp_ms - evse_uptime < 0 && state.start_timestamp_ms != 0)
+                    duration = 0;
 
-            let duration: number;
-            duration = state.target_timestamp_mil / 1000;
-            if (state.start_timestamp_mil != 0)
-                duration = Math.floor((state.target_timestamp_mil - evse_uptime) / 1000);
-            if (state.target_timestamp_mil - evse_uptime < 0 && state.start_timestamp_mil != 0)
-                duration = 0;
-
-            let ret = util.format_timespan(duration);
-
-            if (config.duration_limit != config_in_use.duration_limit)
-                ret += " " +__("charge_condition.content.overridden");
+                ret = util.format_timespan(Math.floor(duration / 1000));
+            }
 
             return ret;
         }
 
+        let duration_items: [string, string][] = [
+            ["disabled", get_duration_left()],
+            ["0", __("charge_condition.content.unlimited")],
+            ["1", __("charge_condition.content.min15")],
+            ["2", __("charge_condition.content.min30")],
+            ["3", __("charge_condition.content.min45")],
+            ["4", __("charge_condition.content.h1")],
+            ["5", __("charge_condition.content.h2")],
+            ["6", __("charge_condition.content.h3")],
+            ["7", __("charge_condition.content.h4")],
+            ["8", __("charge_condition.content.h6")],
+            ["9", __("charge_condition.content.h8")],
+            ["10", __("charge_condition.content.h12")]
+        ];
 
-        const energy_override = <FormRow label={__("charge_condition.content.override_energy")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
-                                    <InputFloat value={config_in_use.energy_limit_kwh}
-                                                onValue={(v) => {
-                                                    this.setState({config_in_use: {...config_in_use, energy_limit_kwh: v}});
-                                                    API.call("charge_condition/override_energy", {energy: v}, __("charge_condition.script.override_failed"));
-                                                }}
-                                                digits={3} min={0} max={100000} unit={"kWh"}/>
-                            </FormRow>
+        if (config_in_use.duration_limit != 0)
+            duration_items[0][1] = duration_items[config_in_use.duration_limit + 1][1] + ", " + get_duration_left() + __("charge_condition.content.left");
 
-        const energy_left = <FormRow label={__("charge_condition.content.energy_left")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4"
-                                         hidden={config_in_use.energy_limit_kwh == 0 && config_in_use.energy_limit_kwh == config.energy_limit_kwh}>
-                                <InputGroup>
-                                    <InputText value={get_energy_left()}/>
-                                    <InputGroup.Append>
-                                        <div class="form-control input-group-text">
-                                            kWh
-                                        </div>
-                                    </InputGroup.Append>
-                                    <InputGroup.Append>
-                                        <Button onClick={() => {
-                                            this.setState({config_in_use: {...config_in_use, energy_limit_kwh: config.energy_limit_kwh}});
-                                            API.call("charge_condition/override_energy", {energy: config.energy_limit_kwh}, __("charge_condition.script.override_failed"));
-                                        }}
-                                        variant="primary"
-                                        hidden={config_in_use.energy_limit_kwh == config.energy_limit_kwh}>
-                                            {__("charge_condition.content.reset")}
-                                        </Button>
-                                    </InputGroup.Append>
-                                </InputGroup>
-                            </FormRow>
+        let energy_items: [string, string][] = [
+            ["disabled", get_energy_left()],
+            ["0", __("charge_condition.content.unlimited")],
+            ["5000", util.toLocaleFixed(5, 0) + " kWh"],
+            ["10000", util.toLocaleFixed(10, 0) + " kWh"],
+            ["15000", util.toLocaleFixed(15, 0) + " kWh"],
+            ["20000", util.toLocaleFixed(20, 0) + " kWh"],
+            ["25000", util.toLocaleFixed(25, 0) + " kWh"],
+            ["30000", util.toLocaleFixed(30, 0) + " kWh"],
+            ["40000", util.toLocaleFixed(40, 0) + " kWh"],
+            ["50000", util.toLocaleFixed(50, 0) + " kWh"],
+            ["60000", util.toLocaleFixed(60, 0) + " kWh"],
+            ["70000", util.toLocaleFixed(70, 0) + " kWh"],
+            ["80000", util.toLocaleFixed(80, 0) + " kWh"],
+            ["90000", util.toLocaleFixed(90, 0) + " kWh"],
+            ["100000", util.toLocaleFixed(100, 0) + " kWh"]
+        ];
+
+        if (config_in_use.energy_limit_wh != 0)
+            energy_items[0][1] = util.toLocaleFixed(config_in_use.energy_limit_wh / 1000, 0) + " kWh" + ", " + get_energy_left() + __("charge_condition.content.left");
+
+        let conf_idx = energy_items.findIndex(x => x[0] == config.energy_limit_wh.toString())
+        if (conf_idx == -1)
+            energy_items = [energy_items[0],
+                            [config.energy_limit_wh.toString(), util.toLocaleFixed(config.energy_limit_wh / 1000.0, 3) + " kWh " + __("charge_condition.content.configured")],
+                            ...energy_items.slice(1)];
+        else
+            energy_items[conf_idx][1] += " " + __("charge_condition.content.configured");
+
+        if (config.energy_limit_wh != config_in_use.energy_limit_wh) {
+            let conf_idx = energy_items.findIndex(x => x[0] == config_in_use.energy_limit_wh.toString())
+            if (conf_idx == -1)
+                console.log("ups");
+            else
+                energy_items[conf_idx][1] += " " + __("charge_condition.content.overridden");
+        }
+
+
+        duration_items[config.duration_limit + 1][1] += " " + __("charge_condition.content.configured");
+        if (config.duration_limit != config_in_use.duration_limit)
+            duration_items[config_in_use.duration_limit + 1][1] += " " + __("charge_condition.content.overridden");
 
         return <>
                 <FormRow label={__("charge_condition.content.override_duration")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
-                    <InputSelect items={[
-                            ["0", __("charge_condition.content.unlimited")],
-                            ["1", __("charge_condition.content.min15")],
-                            ["2", __("charge_condition.content.min30")],
-                            ["3", __("charge_condition.content.min45")],
-                            ["4", __("charge_condition.content.h1")],
-                            ["5", __("charge_condition.content.h2")],
-                            ["6", __("charge_condition.content.h3")],
-                            ["7", __("charge_condition.content.h4")],
-                            ["8", __("charge_condition.content.h6")],
-                            ["9", __("charge_condition.content.h8")],
-                            ["10", __("charge_condition.content.h12")]
-                        ]}
-                        value={config_in_use.duration_limit}
+                    <InputSelect items={duration_items}
+                        value={"disabled"}
                         onValue={(v) => {
                             this.setState({config_in_use: {...config_in_use, duration_limit: Number(v)}})
                             API.call("charge_condition/override_duration", {duration: Number(v)}, __("charge_condition.script.override_failed"));
                     }}/>
                 </FormRow>
-                <FormRow label={__("charge_condition.content.time_left")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4"
-                            hidden={config_in_use.duration_limit === 0 && config_in_use.duration_limit == config.duration_limit}>
-                    <InputGroup>
-                        <InputText value={get_duration_left()}/>
-                        <InputGroup.Append>
-                            <Button onClick={() => {
-                                        this.setState({config_in_use: {...config_in_use, duration_limit: config.duration_limit}})
-                                        API.call("charge_condition/override_duration", {duration: config.duration_limit}, __("charge_condition.script.override_failed"));
-                                    }}
-                                    className="form-control"
-                                    variant="primary"
-                                    hidden={config.duration_limit == config_in_use.duration_limit}>
-                                {__("charge_condition.content.reset")}
-                            </Button>
-                        </InputGroup.Append>
-                    </InputGroup>
-                </FormRow>
-                {has_meter ? <>{energy_override}{energy_left}</> : <></>}
+                {has_meter ? <>{
+                    <FormRow label={__("charge_condition.content.override_energy")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                        <InputSelect items={energy_items}
+                            value={"disabled"}
+                            onValue={(v) => {
+                                this.setState({config_in_use: {...config_in_use, energy_limit_wh: Number(v)}})
+                                API.call("charge_condition/override_energy", {energy_wh: Number(v)}, __("charge_condition.script.override_failed"));
+                        }}/>
+                    </FormRow>
+                }</> : <></>}
             </>
     }
 }

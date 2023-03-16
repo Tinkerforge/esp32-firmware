@@ -2,9 +2,11 @@
     "charge_condition": {
         "content": {
             "reset": "Reset",
-            "overridden": "(overridden)",
-            "override_energy": "Override energy limit",
-            "override_duration": "Override time limit",
+            "overridden": "(active)",
+            "configured": "(configured)",
+            "left": " left",
+            "override_energy": "Energy limit",
+            "override_duration": "Time limit",
             "duration_limit": "Charging duration limit",
             "energy_limit": "Charging energy limit",
             "time_left": "Charging time left",
