@@ -417,6 +417,11 @@ void EnergyManager::register_urls()
     api.addResponse("energy_manager/history_energy_manager_daily", &history_energy_manager_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_daily_response(response, ownership, owner_id);});
 
     this->DeviceModule::register_urls();
+
+    //update system time every 10 minutes from energy manager bricklet
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        update_system_time();
+    }, 1000 * 60 * 10, 1000 * 60 * 10);
 }
 
 void EnergyManager::loop()
