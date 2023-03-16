@@ -111,95 +111,78 @@ void ChargeCondition::register_urls()
  #elif MODULE_EVSE_AVAILABLE()
     evse.set_charge_condition_slot(32000, true);
  #endif
+
+
     task_scheduler.scheduleWithFixedDelay([this](){
         static bool was_charging = false;
+        bool charging = charge_tracker.current_charge.get("user_id")->asInt() != -1;
 
-        if (charge_tracker.current_charge.get("user_id")->asInt() != -1)
-        {
- #if MODULE_EVSE_V2_AVAILABLE()
-            if (!was_charging)
-                state.get("start_timestamp_mil")->updateUint(evse_v2.evse_low_level_state.get("uptime")->asUint());
-            int time_left = map_duration(config_in_use.get("duration_limit")->asUint())
-                                            - (evse_v2.evse_low_level_state.get("uptime")->asUint()
-                                            - state.get("start_timestamp_mil")->asUint());
- #elif MODULE_EVSE_AVAILABLE()
-            if (!was_charging)
-                state.get("start_timestamp_mil")->updateUint(evse.evse_low_level_state.get("uptime")->asUint());
-            int time_left = map_duration(config_in_use.get("duration_limit")->asUint())
-                                            - (evse.evse_low_level_state.get("uptime")->asUint()
-                                            - state.get("start_timestamp_mil")->asUint());
- #endif
-            if (api.hasFeature("meter") && !was_charging)
-                state.get("start_energy_kwh")->updateUint((uint32_t)(charge_tracker.current_charge.get("meter_start")->asFloat() * 1000));
-
-            if (config_in_use.get("duration_limit")->asUint() > 0)
+        if (!charging) {
+            if (was_charging)
             {
- #if MODULE_EVSE_V2_AVAILABLE()
+                was_charging = false;
 
-                if (!was_charging)
-                    state.get("target_timestamp_mil")->updateUint(state.get("start_timestamp_mil")->asUint()
-                                                                    + map_duration(config_in_use.get("duration_limit")->asUint()));
-
-                if (time_left <= 0)
-                    evse_v2.set_charge_condition_slot(0, true);
-                else if (config_in_use.get("energy_limit_kwh")->asUint() == 0
-                        || state.get("target_energy_kwh")->asUint() > (uint32_t)(meter.values.get("energy_abs")->asFloat() * 1000))
-                    evse_v2.set_charge_condition_slot(32000, true);
- #elif MODULE_EVSE_AVAILABLE()
-                if (state.get("target_timestamp_mil")->asUint() == 0)
-                    state.get("target_timestamp_mil")->updateUint(evse.evse_low_level_state.get("uptime")->asUint() + map_duration(config_in_use.get("duration_limit")->asUint()));
-
-                if (time_left <= 0)
-                    evse.set_charge_condition_slot(0, true);
-                else if (config_in_use.get("energy_limit_kwh")->asUint() == 0
-                        || state.get("target_energy_kwh")->asUint() > (uint32_t)(meter.values.get("energy_abs")->asFloat() * 1000))
-                    evse.set_charge_condition_slot(32000, true);
- #endif
-            }
-
-            if (api.hasFeature("meter") && config_in_use.get("energy_limit_kwh")->asUint() > 0)
-            {
-                if (!was_charging)
-                    state.get("target_energy_kwh")->updateUint(state.get("start_energy_kwh")->asUint()
-                                                                + config_in_use.get("energy_limit_kwh")->asUint());
-                if (state.get("target_energy_kwh")->asUint() <= (uint32_t)(meter.values.get("energy_abs")->asFloat() * 1000))
+                if (!api.restorePersistentConfig("charge_condition/config", &config_in_use))
                 {
- #if MODULE_EVSE_V2_AVAILABLE()
-                    evse_v2.set_charge_condition_slot(0, true);
- #elif MODULE_EVSE_AVAILABLE()
-                    evse.set_charge_condition_slot(0, true);
- #endif
+                    config_in_use.get("duration_limit")->updateUint(config.get("duration_limit")->asUint());
+                    config_in_use.get("energy_limit_kwh")->updateUint(config.get("energy_limit_kwh")->asUint());
                 }
-                else if (config_in_use.get("duration_limit")->asUint() == 0 || time_left > 0)
- #if MODULE_EVSE_V2_AVAILABLE()
-                    evse_v2.set_charge_condition_slot(32000, true);
- #elif MODULE_EVSE_AVAILABLE()
-                    evse.set_charge_condition_slot(32000, true);
- #endif
-            }
 
-            was_charging = true;
+#if MODULE_EVSE_V2_AVAILABLE()
+                evse_v2.set_charge_condition_slot(32000, true);
+#elif MODULE_EVSE_AVAILABLE()
+                evse.set_charge_condition_slot(32000, true);
+#endif
+                state.get("start_timestamp_mil")->updateUint(0);
+                state.get("start_energy_kwh")->updateUint(0);
+                state.get("target_timestamp_mil")->updateUint(map_duration(config_in_use.get("duration_limit")->asUint()));
+                state.get("target_energy_kwh")->updateUint(0);
+            }
+            return;
         }
-        else if (was_charging)
+
+
+#if MODULE_EVSE_V2_AVAILABLE()
+        auto uptime = evse_v2.evse_low_level_state.get("uptime")->asUint();
+#elif MODULE_EVSE_AVAILABLE()
+        auto uptime = evse.evse_low_level_state.get("uptime")->asUint();
+#endif
+        if (!was_charging) {
+            state.get("start_timestamp_mil")->updateUint(uptime);
+            if (api.hasFeature("meter") && !isnan(charge_tracker.current_charge.get("meter_start")->asFloat()))
+                state.get("start_energy_kwh")->updateUint((uint32_t)(charge_tracker.current_charge.get("meter_start")->asFloat() * 1000));
+        }
+
+        uint16_t target_current = 32000;
+
+        if (config_in_use.get("duration_limit")->asUint() > 0)
         {
-            was_charging = false;
+            if (!was_charging)
+                state.get("target_timestamp_mil")->updateUint(state.get("start_timestamp_mil")->asUint()
+                                                                + map_duration(config_in_use.get("duration_limit")->asUint()));
 
-            if (!api.restorePersistentConfig("charge_condition/config", &config_in_use))
-            {
-                config_in_use.get("duration_limit")->updateUint(config.get("duration_limit")->asUint());
-                config_in_use.get("energy_limit_kwh")->updateUint(config.get("energy_limit_kwh")->asUint());
-            }
-
- #if MODULE_EVSE_V2_AVAILABLE()
-            evse_v2.set_charge_condition_slot(32000, true);
- #elif MODULE_EVSE_AVAILABLE()
-            evse.set_charge_condition_slot(32000, true);
- #endif
-            state.get("start_timestamp_mil")->updateUint(0);
-            state.get("start_energy_kwh")->updateUint(0);
-            state.get("target_timestamp_mil")->updateUint(map_duration(config_in_use.get("duration_limit")->asUint()));
-            state.get("target_energy_kwh")->updateUint(0);
+            if (a_after_b(uptime, state.get("target_timestamp_mil")->asUint()))
+                target_current = 0;
         }
+
+        if (api.hasFeature("meter") && config_in_use.get("energy_limit_kwh")->asUint() > 0)
+        {
+            if (!was_charging)
+                state.get("target_energy_kwh")->updateUint(state.get("start_energy_kwh")->asUint()
+                                                            + config_in_use.get("energy_limit_kwh")->asUint());
+
+            if (state.get("target_energy_kwh")->asUint() <= (uint32_t)(meter.values.get("energy_abs")->asFloat() * 1000))
+                target_current = 0;
+        }
+
+#if MODULE_EVSE_V2_AVAILABLE()
+        evse_v2.set_charge_condition_slot(target_current, true);
+#elif MODULE_EVSE_AVAILABLE()
+        evse.set_charge_condition_slot(target_current, true);
+#endif
+
+        was_charging = true;
+
     }, 0, 1000);
 #endif
 }
