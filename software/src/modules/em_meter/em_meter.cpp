@@ -80,11 +80,14 @@ void EMMeter::setupEM(bool update_module_initialized)
 
     task_scheduler.scheduleWithFixedDelay([this](){
         float result[METER_ALL_VALUES_COUNT] = {0};
-        if (energy_manager.get_energy_meter_detailed_values(result) != 0)
+        if (energy_manager.get_energy_meter_detailed_values(result) < METER_ALL_VALUES_COUNT)
             return;
 
         meter.updateMeterAllValues(result);
     }, 1000, 1000);
+
+    bool triple_true[3] = {true, true, true};
+    meter.updateMeterPhases(triple_true, triple_true);
 
     initialized = true;
 
