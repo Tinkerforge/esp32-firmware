@@ -42,6 +42,7 @@ interface ChargeConditionOverrideState extends ChargeConditionState
 {
     config_in_use: API.getType['charge_condition/live_config']
     config: API.getType['charge_condition/config']
+    electricity_price: number
 }
 
 class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState>
@@ -77,6 +78,10 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
         util.addApiEventListener("evse/low_level_state", () => {
             this.setState({evse_uptime: API.get("evse/low_level_state").uptime});
         })
+
+        util.addApiEventListener("charge_tracker/config", () => {
+            this.setState({electricity_price: API.get("charge_tracker/config").electricity_price});
+        })
     }
 
     render(props: {}, s: ChargeConditionOverrideState)
@@ -85,7 +90,8 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
             config_in_use,
             config,
             evse_uptime,
-            meter_abs} = s;
+            meter_abs,
+            electricity_price} = s;
 
         if (!state || !config_in_use || !config)
             return <></>;
@@ -143,7 +149,7 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
         ];
 
         if (config_in_use.duration_limit != 0)
-            duration_items[0][1] = duration_items[config_in_use.duration_limit + 1][1] + ", " + get_duration_left() + __("charge_condition.content.left");
+            duration_items[0][1] = duration_items[config_in_use.duration_limit + 1][1] + " | " + get_duration_left() + __("charge_condition.content.left");
 
         let energy_items: [string, string][] = [
             ["disabled", get_energy_left()],
@@ -163,13 +169,23 @@ class ChargeConditionOverride extends Component<{}, ChargeConditionOverrideState
             ["100000", util.toLocaleFixed(100, 0) + " kWh"]
         ];
 
+        if (electricity_price > 0) {
+            for(let i = 2; i < energy_items.length; ++i) {
+                energy_items[i][1] += ` (~ ${util.toLocaleFixed(electricity_price / 10000 * parseFloat(energy_items[i][0]) / 1000, 2)} €)`
+            }
+        }
+
         if (config_in_use.energy_limit_wh != 0)
-            energy_items[0][1] = util.toLocaleFixed(config_in_use.energy_limit_wh / 1000, 0) + " kWh" + ", " + get_energy_left() + __("charge_condition.content.left");
+            energy_items[0][1] = util.toLocaleFixed(config_in_use.energy_limit_wh / 1000, 0) + " kWh" + " | " + get_energy_left() + __("charge_condition.content.left");
 
         let conf_idx = energy_items.findIndex(x => x[0] == config.energy_limit_wh.toString())
         if (conf_idx == -1)
             energy_items = [energy_items[0],
-                            [config.energy_limit_wh.toString(), util.toLocaleFixed(config.energy_limit_wh / 1000.0, 3) + " kWh " + __("charge_condition.content.configured")],
+                            [config.energy_limit_wh.toString(),
+                             util.toLocaleFixed(config.energy_limit_wh / 1000.0, 3)
+                             + " kWh "
+                             + (electricity_price > 0 ? ` (~ ${util.toLocaleFixed(electricity_price / 10000 * config.energy_limit_wh / 1000, 2)} €)` : "")
+                             + __("charge_condition.content.configured")],
                             ...energy_items.slice(1)];
         else
             energy_items[conf_idx][1] += " " + __("charge_condition.content.configured");
