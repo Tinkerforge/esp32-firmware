@@ -6,6 +6,7 @@ if sys.hexversion < 0x3060000:
     print('Python >= 3.6 required')
     sys.exit(1)
 
+import glob
 import os
 import re
 import shutil
@@ -22,6 +23,24 @@ env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.elf",
     env.VerboseAction(lambda **kwargs: os.makedirs("build", exist_ok=True), "Ensuring build dir exists")
 )
+
+if env.GetProjectOption("custom_autoclean_build_dir", default="false") == "true": # Option is a string, not a Python boolean.
+    firmware_name = env.GetProjectOption("custom_name") + "_firmware"
+
+    def delete_old(fwname):
+        fileList = glob.glob('build/{}*'.format(fwname))
+        for filePath in fileList:
+            try:
+                os.remove(filePath)
+            except:
+                pass
+        return None
+
+    env.AddPostAction(
+        "$BUILD_DIR/${PROGNAME}.elf",
+        env.VerboseAction(lambda **kwargs: delete_old(firmware_name),
+                          "Cleaning old {}_*".format(firmware_name))
+    )
 
 def copy2(src, dst): # hide shutil.copy2 return value
     shutil.copy2(src, dst)
