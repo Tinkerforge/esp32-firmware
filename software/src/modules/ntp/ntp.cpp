@@ -20,6 +20,7 @@
 
 #include "api.h"
 #include "task_scheduler.h"
+#include "event_log.h"
 
 #include "modules.h"
 
@@ -63,6 +64,17 @@ static void ntp_sync_cb(struct timeval *t)
         }, 0);
     }
 #endif
+#if MODULE_ENERGY_MANAGER_AVAILABLE()
+    if (api.hasFeature("energy_manager"))
+    {
+        task_scheduler.scheduleOnce([]() {
+            timeval time;
+            gettimeofday(&time, nullptr);
+            energy_manager.set_time(time);
+        },0);
+    }
+#endif
+
 }
 
 // Because there is the risk of a race condition with the rtc module,
