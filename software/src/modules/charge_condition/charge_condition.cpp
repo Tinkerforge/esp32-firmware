@@ -20,7 +20,7 @@
 #include "charge_condition.h"
 
 #include <Arduino.h>
-#include "time.h"
+
 #include "api.h"
 #include "task_scheduler.h"
 #include "tools.h"
@@ -31,14 +31,14 @@ void ChargeCondition::pre_setup()
 {
     config = ConfigRoot{Config::Object({
         {"duration_limit", Config::Uint(0, 0, 10)},
-        {"energy_limit_kwh", Config::Uint32(0)},
+        {"energy_limit_wh", Config::Uint32(0)},
     })};
 
     state = ConfigRoot{Config::Object({
-        {"start_timestamp_mil", Config::Uint32(0)},
-        {"start_energy_kwh", Config::Uint32(0)},
-        {"target_timestamp_mil", Config::Uint32(0)},
-        {"target_energy_kwh", Config::Uint32(0)}
+        {"start_timestamp_ms", Config::Uint32(0)},
+        {"start_energy_kwh", Config::Float(NAN)},
+        {"target_timestamp_ms", Config::Uint32(0)},
+        {"target_energy_kwh", Config::Float(NAN)}
     })};
 
     override_duration = ConfigRoot{Config::Object({
@@ -46,7 +46,7 @@ void ChargeCondition::pre_setup()
     })};
 
     override_energy = ConfigRoot{Config::Object({
-        {"energy", Config::Uint32(0)}
+        {"energy_wh", Config::Uint32(0)}
     })};
 }
 
@@ -95,16 +95,16 @@ void ChargeCondition::register_urls()
 
     api.addCommand("charge_condition/override_duration", &override_duration, {}, [this]() {
         config_in_use.get("duration_limit")->updateUint(override_duration.get("duration")->asUint());
-        state.get("target_timestamp_mil")->updateUint(state.get("start_timestamp_mil")->asUint() + map_duration(override_duration.get("duration")->asUint()));
+        state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint() + map_duration(override_duration.get("duration")->asUint()));
     }, true);
 
     api.addCommand("charge_condition/override_energy", &override_energy, {}, [this]() {
-        config_in_use.get("energy_limit_kwh")->updateUint(override_energy.get("energy")->asUint());
-        state.get("target_energy_kwh")->updateUint(state.get("start_energy_kwh")->asUint() + override_energy.get("energy")->asUint());
+        config_in_use.get("energy_limit_wh")->updateUint(override_energy.get("energy_wh")->asUint());
+        state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + override_energy.get("energy_wh")->asUint() / 1000.0);
     }, true);
 
     //if we dont set the target timestamp right away we will have 0 seconds left displayed in the webinterface until we start and end a charge.
-    state.get("target_timestamp_mil")->updateUint(map_duration(config_in_use.get("duration_limit")->asUint()));
+    state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration_limit")->asUint()));
 
  #if MODULE_EVSE_V2_AVAILABLE()
     evse_v2.set_charge_condition_slot(32000, true);
@@ -125,7 +125,7 @@ void ChargeCondition::register_urls()
                 if (!api.restorePersistentConfig("charge_condition/config", &config_in_use))
                 {
                     config_in_use.get("duration_limit")->updateUint(config.get("duration_limit")->asUint());
-                    config_in_use.get("energy_limit_kwh")->updateUint(config.get("energy_limit_kwh")->asUint());
+                    config_in_use.get("energy_limit_wh")->updateUint(config.get("energy_limit_wh")->asUint());
                 }
 
 #if MODULE_EVSE_V2_AVAILABLE()
@@ -133,10 +133,10 @@ void ChargeCondition::register_urls()
 #elif MODULE_EVSE_AVAILABLE()
                 evse.set_charge_condition_slot(32000, true);
 #endif
-                state.get("start_timestamp_mil")->updateUint(0);
-                state.get("start_energy_kwh")->updateUint(0);
-                state.get("target_timestamp_mil")->updateUint(map_duration(config_in_use.get("duration_limit")->asUint()));
-                state.get("target_energy_kwh")->updateUint(0);
+                state.get("start_timestamp_ms")->updateUint(0);
+                state.get("start_energy_kwh")->updateFloat(NAN);
+                state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration_limit")->asUint()));
+                state.get("target_energy_kwh")->updateFloat(NAN);
             }
             return;
         }
@@ -148,9 +148,9 @@ void ChargeCondition::register_urls()
         auto uptime = evse.evse_low_level_state.get("uptime")->asUint();
 #endif
         if (!was_charging) {
-            state.get("start_timestamp_mil")->updateUint(uptime);
+            state.get("start_timestamp_ms")->updateUint(uptime);
             if (api.hasFeature("meter") && !isnan(charge_tracker.current_charge.get("meter_start")->asFloat()))
-                state.get("start_energy_kwh")->updateUint((uint32_t)(charge_tracker.current_charge.get("meter_start")->asFloat() * 1000));
+                state.get("start_energy_kwh")->updateFloat(charge_tracker.current_charge.get("meter_start")->asFloat());
         }
 
         uint16_t target_current = 32000;
@@ -158,20 +158,23 @@ void ChargeCondition::register_urls()
         if (config_in_use.get("duration_limit")->asUint() > 0)
         {
             if (!was_charging)
-                state.get("target_timestamp_mil")->updateUint(state.get("start_timestamp_mil")->asUint()
+                state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint()
                                                                 + map_duration(config_in_use.get("duration_limit")->asUint()));
 
-            if (a_after_b(uptime, state.get("target_timestamp_mil")->asUint()))
+            if (a_after_b(uptime, state.get("target_timestamp_ms")->asUint()))
                 target_current = 0;
         }
 
-        if (api.hasFeature("meter") && config_in_use.get("energy_limit_kwh")->asUint() > 0)
+        if (api.hasFeature("meter") && config_in_use.get("energy_limit_wh")->asUint() > 0)
         {
-            if (!was_charging)
-                state.get("target_energy_kwh")->updateUint(state.get("start_energy_kwh")->asUint()
-                                                            + config_in_use.get("energy_limit_kwh")->asUint());
+            auto start = state.get("start_energy_kwh")->asFloat();
+            if (!was_charging && !isnan(start))
+                state.get("target_energy_kwh")->updateFloat(start + config_in_use.get("energy_limit_wh")->asUint() / 1000.0);
 
-            if (state.get("target_energy_kwh")->asUint() <= (uint32_t)(meter.values.get("energy_abs")->asFloat() * 1000))
+            auto target = state.get("target_energy_kwh")->asFloat();
+            auto now = meter.values.get("energy_abs")->asFloat();
+
+            if (!isnan(target) && !isnan(now) && target <= now)
                 target_current = 0;
         }
 
