@@ -2035,10 +2035,6 @@ static int pdf_add_png_data(struct pdf_doc *pdf, struct pdf_object *page,
                             uint32_t colour_background_hint,
                             const uint8_t *png_data, size_t png_data_length)
 {
-    // indicates if we return an error or add the img at the
-    // end of the function
-    bool success = false;
-
     // string stream used for writing color space (and palette) info
     // into the pdf
     struct dstr colour_space = INIT_DSTR;

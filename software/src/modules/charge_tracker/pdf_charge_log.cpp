@@ -138,23 +138,23 @@ int init_pdf_generator(WebServerRequest *request,
 
     table_lines_to_place = tracked_charges;
 
-    pdf_add_page_callback(pdf, [&table_lines_last_page, &pages_created, &table_lines_to_place](struct pdf_doc *pdf, uint32_t page_num) -> int {
+    pdf_add_page_callback(pdf, [&table_lines_last_page, &pages_created, &table_lines_to_place](struct pdf_doc *pdf_doc, uint32_t page_num) -> int {
         table_lines_last_page = table_lines_to_place;
         int streams = get_streams_per_page(pages_created == 0, &table_lines_to_place);
-        pdf_append_page(pdf, streams, 1);
+        pdf_append_page(pdf_doc, streams, 1);
         ++pages_created;
         return 0;
     });
 
-    pdf_add_image_callback(pdf, [](struct pdf_doc *pdf, uint32_t page_num, uint32_t image_num) -> int {
-        return pdf_add_png_image_data(pdf, NULL, LEFT_MARGIN, PDF_A4_HEIGHT - 100 + 18, -1, 75 - 18 * 2, LOGO_BACKGROUND, logo_png, logo_png_len);
+    pdf_add_image_callback(pdf, [](struct pdf_doc *pdf_doc, uint32_t page_num, uint32_t image_num) -> int {
+        return pdf_add_png_image_data(pdf_doc, NULL, LEFT_MARGIN, PDF_A4_HEIGHT - 100 + 18, -1, 75 - 18 * 2, LOGO_BACKGROUND, logo_png, logo_png_len);
     });
 
 
-    pdf_add_stream_callback(pdf, [pages_to_be_created, table_lines_last_page, &table_content_placed, tracked_charges, table_lines_cb, stats, stats_lines, letterhead, letterhead_lines, table_header](struct pdf_doc *pdf, uint32_t page_num, uint32_t stream_num) -> int {
+    pdf_add_stream_callback(pdf, [pages_to_be_created, table_lines_last_page, &table_content_placed, tracked_charges, table_lines_cb, stats, stats_lines, letterhead, letterhead_lines, table_header](struct pdf_doc *pdf_doc, uint32_t page_num, uint32_t stream_num) -> int {
         // Logo background
         if (stream_num == 0)
-            return pdf_add_filled_rectangle(pdf, NULL, 0, PDF_A4_HEIGHT - TOP_MARGIN, PDF_A4_WIDTH, 75, 0, LOGO_BACKGROUND, 0);
+            return pdf_add_filled_rectangle(pdf_doc, NULL, 0, PDF_A4_HEIGHT - TOP_MARGIN, PDF_A4_WIDTH, 75, 0, LOGO_BACKGROUND, 0);
         --stream_num;
 
         // Page number
@@ -162,8 +162,8 @@ int init_pdf_generator(WebServerRequest *request,
             float width = 0.0f;
             char buf[32] = {};
             snprintf(buf, ARRAY_SIZE(buf), "Seite %d von %d", page_num + 1, pages_to_be_created);
-            pdf_get_font_text_width(pdf, DEFAULT_FONT, buf, FONT_SIZE, &width);
-            return pdf_add_text(pdf, NULL, buf, FONT_SIZE, (PDF_A4_WIDTH - width) / 2, BOTTOM_MARGIN, PDF_BLACK);
+            pdf_get_font_text_width(pdf_doc, DEFAULT_FONT, buf, FONT_SIZE, &width);
+            return pdf_add_text(pdf_doc, NULL, buf, FONT_SIZE, (PDF_A4_WIDTH - width) / 2, BOTTOM_MARGIN, PDF_BLACK);
         }
         --stream_num;
 
@@ -172,14 +172,14 @@ int init_pdf_generator(WebServerRequest *request,
             // Stats block (top right)
             if (stream_num == 0) {
                 float offsets[2] = {0, LINE_WIDTH};
-                return pdf_add_multiple_text_spacing(pdf, NULL, stats, stats_lines, 1, FONT_SIZE, LEFT_MARGIN + table_column_offsets[2], PDF_A4_HEIGHT - TOP_MARGIN - 10 - (LINE_HEIGHT * 1), PDF_BLACK, 0, LINE_HEIGHT, offsets);
+                return pdf_add_multiple_text_spacing(pdf_doc, NULL, stats, stats_lines, 1, FONT_SIZE, LEFT_MARGIN + table_column_offsets[2], PDF_A4_HEIGHT - TOP_MARGIN - 10 - (LINE_HEIGHT * 1), PDF_BLACK, 0, LINE_HEIGHT, offsets);
             }
             --stream_num;
 
             // Letter head (top left)
             if (stream_num == 0) {
                 float offsets[2] = {0, LETTERHEAD_WIDTH};
-                return pdf_add_multiple_text_spacing(pdf, NULL, letterhead, letterhead_lines, 1, FONT_SIZE, LETTERHEAD_LEFT_MARGIN, PDF_A4_HEIGHT - TOP_MARGIN - 10 - (LINE_HEIGHT * (stream_num + 1)), PDF_BLACK, 0, LINE_HEIGHT, offsets);
+                return pdf_add_multiple_text_spacing(pdf_doc, NULL, letterhead, letterhead_lines, 1, FONT_SIZE, LETTERHEAD_LEFT_MARGIN, PDF_A4_HEIGHT - TOP_MARGIN - 10 - (LINE_HEIGHT * (stream_num + 1)), PDF_BLACK, 0, LINE_HEIGHT, offsets);
             }
             --stream_num;
         }
@@ -188,7 +188,7 @@ int init_pdf_generator(WebServerRequest *request,
 
         // Table header
         if (stream_num == 0) {
-            return pdf_add_multiple_text_spacing(pdf, NULL, table_header, 1, 6, FONT_SIZE, LEFT_MARGIN, content_offset, PDF_BLACK, 0, LINE_HEIGHT, table_column_offsets, false);
+            return pdf_add_multiple_text_spacing(pdf_doc, NULL, table_header, 1, 6, FONT_SIZE, LEFT_MARGIN, content_offset, PDF_BLACK, 0, LINE_HEIGHT, table_column_offsets, false);
         }
         --stream_num;
 
@@ -197,7 +197,7 @@ int init_pdf_generator(WebServerRequest *request,
             auto table_lines = (page_num + 1) == pages_to_be_created ? table_lines_last_page : (page_num == 0 ? TABLE_LINES_FIRST_PAGE : TABLE_LINES_PER_PAGE);
 
             if (stream_num == 0) {
-                return pdf_add_horizontal_lines(pdf, nullptr, LEFT_MARGIN, table_line_offset, PDF_A4_WIDTH - RIGHT_MARGIN, table_line_offset, 0.5, PDF_BLACK, LINE_HEIGHT * 1.2, table_lines, true);
+                return pdf_add_horizontal_lines(pdf_doc, nullptr, LEFT_MARGIN, table_line_offset, PDF_A4_WIDTH - RIGHT_MARGIN, table_line_offset, 0.5, PDF_BLACK, LINE_HEIGHT * 1.2, table_lines, true);
             }
 
             --stream_num;
@@ -214,7 +214,7 @@ int init_pdf_generator(WebServerRequest *request,
         // TODO: check if lines_generated != lines and if so handle this somehow.
         (void) lines_generated;
 
-        return pdf_add_multiple_text_spacing(pdf, NULL, lines_string, lines, 6, FONT_SIZE, LEFT_MARGIN, table_text_offset, PDF_BLACK, 0, LINE_HEIGHT * 1.2, table_column_offsets);
+        return pdf_add_multiple_text_spacing(pdf_doc, NULL, lines_string, lines, 6, FONT_SIZE, LEFT_MARGIN, table_text_offset, PDF_BLACK, 0, LINE_HEIGHT * 1.2, table_column_offsets);
     });
 
     pdf_save_file(pdf);
