@@ -1033,9 +1033,6 @@ void EnergyManager::set_time(const timeval &tv)
     date_time.tm_year -= 100;
     date_time.tm_mday -= 1;
 
-    if (date_time.tm_sec > 59)
-        date_time.tm_sec = 59;
-
     int ret = tf_warp_energy_manager_set_date_time(&device,
                                                     date_time.tm_sec,
                                                     date_time.tm_min,
@@ -1088,6 +1085,7 @@ struct timeval EnergyManager::get_time()
     date_time.tm_year = tm_year + 100;
 
     time.tv_sec = timegm(&date_time);
+    time.tv_usec = 0;
 
     if (time.tv_sec < build_timestamp())
     {
