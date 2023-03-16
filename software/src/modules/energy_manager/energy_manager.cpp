@@ -345,7 +345,6 @@ void EnergyManager::setup()
         logger.printfln("Set system time from Energy Manager Bricklet at %lu,%03lu", secs, ms);
     } else
         logger.printfln("Energy Manager Bricklet has no time set!");
-
 }
 
 void EnergyManager::register_urls()
@@ -1028,7 +1027,6 @@ void EnergyManager::set_time(const timeval &tv)
 {
     tm date_time;
     gmtime_r(&tv.tv_sec, &date_time);
-
 
     date_time.tm_year -= 100;
     date_time.tm_mday -= 1;
