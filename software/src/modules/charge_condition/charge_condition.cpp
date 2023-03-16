@@ -148,7 +148,7 @@ void ChargeCondition::register_urls()
         auto uptime = evse.evse_low_level_state.get("uptime")->asUint();
 #endif
         if (!was_charging) {
-            state.get("start_timestamp_ms")->updateUint(uptime);
+            state.get("start_timestamp_ms")->updateUint(charge_tracker.current_charge.get("evse_uptime_start")->asUint());
             if (api.hasFeature("meter") && !isnan(charge_tracker.current_charge.get("meter_start")->asFloat()))
                 state.get("start_energy_kwh")->updateFloat(charge_tracker.current_charge.get("meter_start")->asFloat());
         }
