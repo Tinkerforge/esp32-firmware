@@ -1028,17 +1028,8 @@ void EnergyManager::set_time(const timeval &tv)
                                                     date_time.tm_mon,
                                                     date_time.tm_year);
 
-    logger.printfln("sec: %i, min: %i, hour: %i, mday: %i, wday: %i, mon: %i, year: %i", date_time.tm_sec,
-                                                                                        date_time.tm_min,
-                                                                                        date_time.tm_hour,
-                                                                                        date_time.tm_mday,
-                                                                                        date_time.tm_wday,
-                                                                                        date_time.tm_mon,
-                                                                                        date_time.tm_year);
-
     if (ret)
         logger.printfln("Setting datetime on energy-manager-bricklet failed with code %i", ret);
-    logger.printfln("Set time");
 }
 
 struct timeval EnergyManager::get_time()
@@ -1063,16 +1054,6 @@ struct timeval EnergyManager::get_time()
                                                     &tm_mon,
                                                     &tm_year);
 
-
-
-    logger.printfln("sec: %u, min: %u, hour: %u, mday: %u, wday: %u, mon: %u, year: %u", tm_sec,
-                                                                                            tm_min,
-                                                                                            tm_hour,
-                                                                                            tm_mday,
-                                                                                            tm_wday,
-                                                                                            tm_mon,
-                                                                                            tm_year);
-
     if (ret)
     {
         logger.printfln("getting datetime on energy-manager-bricklet failed with code %i", ret);
@@ -1084,26 +1065,12 @@ struct timeval EnergyManager::get_time()
     date_time.tm_sec = tm_sec;
     date_time.tm_min = tm_min;
     date_time.tm_hour = tm_hour;
-    date_time.tm_mday = tm_mday;
+    date_time.tm_mday = tm_mday + 1;
     date_time.tm_wday = tm_wday;
     date_time.tm_mon = tm_mon;
-    date_time.tm_year = tm_year;
-
-    logger.printfln("sec: %i, min: %i, hour: %i, mday: %i, wday: %i, mon: %i, year: %i",    date_time.tm_sec,
-                                                                                            date_time.tm_min,
-                                                                                            date_time.tm_hour,
-                                                                                            date_time.tm_mday,
-                                                                                            date_time.tm_wday,
-                                                                                            date_time.tm_mon,
-                                                                                            date_time.tm_year);
-
-    date_time.tm_year += 100;
-    date_time.tm_mday += 1;
+    date_time.tm_year = tm_year + 100;
 
     time.tv_sec = timegm(&date_time);
-
-    logger.printfln("build: %i", build_timestamp());
-    logger.printfln("time: %li", time.tv_sec);
 
     if (time.tv_sec < build_timestamp())
     {
@@ -1114,4 +1081,32 @@ struct timeval EnergyManager::get_time()
     }
 
     return time;
+}
+
+void EnergyManager::update_system_time()
+{
+    // We have to make sure, we don't try to update the system clock
+    // while NTP also sets the clock.
+    // To prevent this, we skip updating the system clock if NTP
+    // did update it while we were fetching the current time from the RTC.
+
+    uint32_t count;
+    {
+        std::lock_guard<std::mutex> lock{ntp.mtx};
+        count = ntp.sync_counter;
+    }
+
+    struct timeval t = this->get_time();
+    if (t.tv_sec == 0 && t.tv_usec == 0)
+        return;
+
+    {
+        std::lock_guard<std::mutex> lock{ntp.mtx};
+        if (count != ntp.sync_counter)
+            // NTP has just updated the system time. We assume that this time is more accurate the the RTC's.
+            return;
+
+        settimeofday(&t, nullptr);
+        ntp.set_synced();
+    }
 }
