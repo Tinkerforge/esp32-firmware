@@ -1,7 +1,7 @@
 2023-03-02: 1.0.0 (9899e34b)
 - Initial release
 
-2023-03-16: 1.0.1 (<unknown>)
+2023-03-16: 1.0.1 (2bfdca33)
 - Add energy analysis
 - Add magenta LED blink for configuration errors
 - Add aggressive/conservative control behaviour modes
