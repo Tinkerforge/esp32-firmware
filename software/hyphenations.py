@@ -455,7 +455,8 @@ de_hyph = [
     "Standard-lade-modus",
     "Un-voll-ständige",
     "kon-ser-va-tiv",
-    "Fahr-zeug-lade-vor-gänge"
+    "Fahr-zeug-lade-vor-gänge",
+    "Netz-an-schluss"
 ]
 
 en_hyph = [
@@ -583,7 +584,8 @@ en_hyph = [
     "Photo-voltaic",
     "ag-gres-sive",
     "con-ser-va-tive",
-    "re-com-mend-ed"
+    "re-com-mend-ed",
+    "dis-tor-tion"
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
