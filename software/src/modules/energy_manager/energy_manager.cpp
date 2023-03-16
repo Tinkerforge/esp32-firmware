@@ -334,6 +334,18 @@ void EnergyManager::setup()
             logger.printfln("energy_manager: Excess charging enabled but no meter configured.");
         }
     }, 0);
+
+    struct timeval time = get_time();
+    if (time.tv_sec != 0) {
+        settimeofday(&time, nullptr);
+
+        auto now = millis();
+        auto secs = now / 1000;
+        auto ms = now % 1000;
+        logger.printfln("Set system time from Energy Manager Bricklet at %lu,%03lu", secs, ms);
+    } else
+        logger.printfln("Energy Manager Bricklet has no time set!");
+
 }
 
 void EnergyManager::register_urls()
