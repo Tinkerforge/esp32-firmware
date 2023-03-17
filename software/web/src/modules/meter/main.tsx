@@ -601,7 +601,7 @@ export class Meter extends Component<{}, MeterState> {
                     {API.hasFeature("meter_all_values") ?
                     <CollapsedSection colClasses="col-xl-10" label={__("meter.content.detailed_values")}>
                         {
-                        entries.filter(e => e.meter_types.indexOf(state.state.type) > 0).map(e => <FormRow label={e.name} label_muted={e.desc} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
+                        entries.filter(e => e.meter_types.indexOf(state.state.type) >= 0).map(e => <FormRow label={e.name} label_muted={e.desc} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
                             {e.three_phase ? <div class="row">
                                 <div class="mb-1 col-12 col-sm-4">
                                     <OutputFloat value={this.state.all_values[e.i + 0]} digits={e.digits} scale={0} unit={e.unit}/>
