@@ -246,9 +246,12 @@ def hyphenate_translation(translation, parent_key=None):
 
 def repair_rtc_dir():
     path = os.path.abspath("src/modules/rtc")
-    os.remove(path + "/real_time_clock_v2_bricklet_firmware_bin.digest")
-    os.remove(path + "/real_time_clock_v2_bricklet_firmware_bin.embedded.cpp")
-    os.remove(path + "/real_time_clock_v2_bricklet_firmware_bin.embedded.h")
+    try:
+        os.remove(path + "/real_time_clock_v2_bricklet_firmware_bin.digest")
+        os.remove(path + "/real_time_clock_v2_bricklet_firmware_bin.embedded.cpp")
+        os.remove(path + "/real_time_clock_v2_bricklet_firmware_bin.embedded.h")
+    except:
+        pass
 
 def main():
     if env.IsCleanTarget():
