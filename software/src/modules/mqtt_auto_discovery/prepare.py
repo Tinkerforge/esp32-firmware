@@ -129,16 +129,6 @@ Entity(True, Component.NUMBER, Feature.EVSE, "globalcurrent", "evse/external_cur
      "icon": "mdi:gauge"},
     {}),
 
-Entity(True, Component.SWITCH, Feature.EVSE, "autocharge", "evse/auto_start_charging", "Ladevorgang automatisch starten", "Start charging automatically",
-    {"value_template":"{{value_json.auto_start_charging}}",
-     "state_on":"true",
-     "state_off":"false",
-     "payload_on":"true",
-     "payload_off":"false",
-     "icon": "mdi:ev-plug-type2"},
-    {"state_on":"True",
-     "state_off":"False"}),
-
 Entity(True, Component.BUTTON, Feature.EVSE, "startcharge", "evse/start_charging", "Ladevorgang starten", "Start charging",
     {"payload_press": "null",   # for Home Assistant
      "payload_on":"null",       # for Domoticz
