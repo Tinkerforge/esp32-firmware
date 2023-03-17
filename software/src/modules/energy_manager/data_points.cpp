@@ -75,6 +75,7 @@ void EnergyManager::collect_data_points()
             flags |= all_data.input[1] ? 0b0100 : 0;
             flags |= all_data.output   ? 0b1000 : 0;
 
+            // FIXME: how to tell if meter data is stale?
             if (meter.state.get("state")->asUint() == 2) {
                 power_grid = clamp<int64_t>(INT32_MIN,
                                             roundf(meter.values.get("power")->asFloat()),
@@ -114,6 +115,7 @@ void EnergyManager::collect_data_points()
             }
         }
 
+        // FIXME: should we even look at all-data validity if we don't use any of it?
         if (all_data.is_valid && !deadline_elapsed(all_data.last_update + MAX_DATA_AGE)) {
             bool have_data = false;
             uint32_t energy_grid_in = UINT32_MAX; // dWh
@@ -121,6 +123,7 @@ void EnergyManager::collect_data_points()
             uint32_t energy_general_in[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
             uint32_t energy_general_out[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
 
+            // FIXME: how to tell if meter data is stale?
             if (meter.state.get("state")->asUint() == 2 && api.hasFeature("meter_all_values")) {
                 have_data = true;
                 energy_grid_in = clamp<uint64_t>(0,
