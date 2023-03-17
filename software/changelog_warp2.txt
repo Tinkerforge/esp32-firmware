@@ -321,7 +321,7 @@
 - Don't set energy meter configuration continuously (through EVSE 2.0 Bricklet firmware 2.1.10)
 - Fix last meter value always being reported as 0 (through EVSE 2.0 Bricklet firmware 2.1.10)
 
-2023-03-16: 2.1.1 (<unknown>)
+2023-03-16: 2.1.1 (f7d5e161)
 - Add MQTT auto discovery
 - Add time and energy limits for charging
 - Add core dump to debug report
