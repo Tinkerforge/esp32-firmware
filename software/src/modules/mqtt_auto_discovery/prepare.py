@@ -119,7 +119,7 @@ Entity(True, Component.SENSOR, Feature.EVSE, "chargerstate", "evse/state", "Fahr
      "icon": "mdi:ev-plug-type2"},
     {}),
 
-Entity(True, Component.NUMBER, Feature.EVSE, "globalcurrent", "evse/global_current", "Konfigurierter Ladestrom", "Configured charging current",
+Entity(True, Component.NUMBER, Feature.EVSE, "globalcurrent", "evse/external_current", "Konfigurierter Ladestrom", "Configured charging current",
     {"value_template":"{{value_json.current}}",
      "unit_of_measurement":"mA",
      "min": 6000,
