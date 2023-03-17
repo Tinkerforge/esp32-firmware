@@ -25,7 +25,7 @@
             "gpio_out_high": "Hochohmig",
             "gpio_out_low": "Verbunden mit Masse",
             "button_configuration": "Tastereinstellung",
-            "button_configuration_muted": "Aktion, die bei Druck des Tasters ausgeführt wird",
+            "button_configuration_muted": "Aktion, die bei Druck des Tasters ausgeführt wird.",
             "button_configuration_deactivated": "Keine Aktion",
             "button_configuration_start_charging": "Ladestart",
             "button_configuration_stop_charging": "Ladestop",

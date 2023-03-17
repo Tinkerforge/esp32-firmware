@@ -26,7 +26,7 @@
             "topic_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, oder ein # oder + enthalten.",
             "client_name": "Client-ID",
             "interval": "Maximales Sendeintervall",
-            "interval_muted": "Daten werden nur bei Änderung übertragen",
+            "interval_muted": "Daten werden nur bei Änderung übertragen.",
             "auto_discovery_mode": "Auto Discovery Modus",
             "auto_discovery_mode_muted": "Unterstützt automatische Erkennung durch eine Hausautomatisierung.",
             "auto_discovery_mode_disabled": "Deaktiviert",
