@@ -306,13 +306,16 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             if (y_diff < y_diff_min) {
                 let y_center = y_min + y_diff / 2;
 
-                y_min = Math.floor(y_center - y_diff_min / 2);
-                y_max = Math.ceil(y_center + y_diff_min / 2);
+                let new_y_min = Math.floor(y_center - y_diff_min / 2);
+                let new_y_max = Math.ceil(y_center + y_diff_min / 2);
 
-                if (y_min < 0) {
-                    // avoid negative range, the meter power cannot be negative
+                if (new_y_min < 0 && y_min >= 0) {
+                    // avoid negative range, if actual minimum is positive
                     y_min = 0;
                     y_max = y_diff_min;
+                } else {
+                    y_min = new_y_min;
+                    y_max = new_y_max;
                 }
             }
         }
