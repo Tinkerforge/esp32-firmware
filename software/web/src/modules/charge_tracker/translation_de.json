@@ -60,10 +60,10 @@
             "csv_header_price": "Ladekosten in €; Arbeitspreis ",
 
             "unknown_user": "Unbekannter Benutzer",
-            "unknown_users": "unbekannte Benutzer",
+            "unknown_users": "Unbekannte Benutzer",
             "deleted_user": "Gelöschter Benutzer",
-            "deleted_users": "gelöschte Benutzer",
-            "all_users": "alle Benutzer",
+            "deleted_users": "Gelöschte Benutzer",
+            "all_users": "Alle Benutzer",
             "unknown_charge_start": "Unbekannter Startzeitpunkt",
 
             "remove_failed": "Löschen der aufgezeichneten Ladevorgänge fehlgeschlagen",

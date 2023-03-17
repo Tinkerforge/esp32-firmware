@@ -19,10 +19,10 @@
 
             "add_user_modal_title": "Benutzer hinzufügen",
             "add_user_modal_username": "Benutzername",
-            "add_user_modal_username_desc": "zur Anmeldung im Webinterface",
+            "add_user_modal_username_desc": "Zur Anmeldung im Webinterface",
             "add_user_modal_username_invalid": "Benutzername ist bereits vergeben (aktiver Nutzer)",
             "add_user_modal_display_name": "Anzeigename",
-            "add_user_modal_display_name_desc": "zur Anzeige im Ladeprotokoll und Webinterface",
+            "add_user_modal_display_name_desc": "Zur Anzeige im Ladeprotokoll und Webinterface",
             "add_user_modal_current": "Maximaler Ladestrom",
             "add_user_modal_password": "Passwort",
             "add_user_modal_password_desc": "Anmeldung deaktiviert",

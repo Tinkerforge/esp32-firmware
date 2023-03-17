@@ -60,10 +60,10 @@
             "csv_header_price": "Charging costs in € Working price ",
 
             "unknown_user": "Unknown user",
-            "unknown_users": "unknown users",
+            "unknown_users": "Unknown users",
             "deleted_user": "Deleted user",
-            "deleted_users": "deleted users",
-            "all_users": "all users",
+            "deleted_users": "Deleted users",
+            "all_users": "All users",
             "unknown_charge_start": "Unknown start time",
 
             "remove_failed": "Failed to remove tracked charges",
