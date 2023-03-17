@@ -30,7 +30,7 @@
 void MqttAutoDiscovery::pre_setup()
 {
     config = ConfigRoot(Config::Object({
-        {"auto_discovery_mode", Config::Int32(-1)},
+        {"auto_discovery_mode", Config::Uint(MQTT_AUTO_DISCOVERY_MODE_MIN, MQTT_AUTO_DISCOVERY_MODE_MIN, MQTT_AUTO_DISCOVERY_MODE_MAX)},
         {"auto_discovery_prefix", Config::Str("homeassistant", 1, 64)}
     }),  [](Config &cfg) -> String {
         const String &global_topic_prefix = mqtt.mqtt_config.get("global_topic_prefix")->asString();
@@ -46,12 +46,6 @@ void MqttAutoDiscovery::pre_setup()
 void MqttAutoDiscovery::setup()
 {
     api.restorePersistentConfig("mqtt/auto_discovery_config", &config);
-
-    int32_t mode = config.get("auto_discovery_mode")->asInt();
-    if ((mode < MQTT_AUTO_DISCOVERY_MODE_MIN) || (MQTT_AUTO_DISCOVERY_MODE_MAX < mode)) {
-        mode = static_cast<int32_t>(MqttAutoDiscoveryMode::DISCOVERY_DISABLED);
-        config.get("auto_discovery_mode")->updateInt(mode);
-    }
 
     config_in_use = config;
     initialized = true;
@@ -74,7 +68,7 @@ void MqttAutoDiscovery::setup()
     if (subscribed_topics_difference_discovery == '\0')
         subscribed_topics_difference_discovery = '/';
 
-    if (mode == static_cast<int32_t>(MqttAutoDiscoveryMode::DISCOVERY_DISABLED))
+    if (config.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>() == MqttAutoDiscoveryMode::DISCOVERY_DISABLED)
         return;
 
     mqtt_auto_discovery.prepare_topics();
@@ -121,14 +115,14 @@ void MqttAutoDiscovery::prepare_topics()
 {
     const String &auto_discovery_prefix = config_in_use.get("auto_discovery_prefix")->asString();
     const String &client_name = mqtt.mqtt_config_in_use.get("client_name")->asString();
-    const int32_t mode = config_in_use.get("auto_discovery_mode")->asInt();
+    const MqttAutoDiscoveryMode mode = config_in_use.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>();
     unsigned int topic_length;
 
-    if (mode == static_cast<int32_t>(MqttAutoDiscoveryMode::DISCOVERY_DISABLED))
+    if (mode == MqttAutoDiscoveryMode::DISCOVERY_DISABLED)
         return;
 
     for (size_t i = 0; i < TOPIC_COUNT; ++i) {
-        const char *static_info = mqtt_discovery_topic_infos[i].static_infos[mode];
+        const char *static_info = mqtt_discovery_topic_infos[i].static_infos[(size_t)mode - 1];
         if (!static_info) // No static info? Skip topic.
             continue;
 
@@ -176,7 +170,7 @@ void MqttAutoDiscovery::subscribe_to_own()
 void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_len, size_t data_len)
 {
     // auto discovery is disabled. remove all entities
-    if (config_in_use.get("auto_discovery_mode")->asInt() == static_cast<int32_t>(MqttAutoDiscoveryMode::DISCOVERY_DISABLED)) {
+    if (config_in_use.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>() == MqttAutoDiscoveryMode::DISCOVERY_DISABLED) {
         if (data_len == 0) //already removed
             return;
 
@@ -217,7 +211,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
     } else {
         // deal with one topic
         if (api.hasFeature(mqtt_discovery_topic_infos[topic_num].feature)) {
-            const char *static_info = mqtt_discovery_topic_infos[topic_num].static_infos[config_in_use.get("auto_discovery_mode")->asInt()];
+            const char *static_info = mqtt_discovery_topic_infos[topic_num].static_infos[config_in_use.get("auto_discovery_mode")->asUint() - 1];
             if (static_info) { // No static info? Skip topic.
                 const String &topic_prefix = mqtt.mqtt_config_in_use.get("global_topic_prefix")->asString();
                 const char *name = mqtt_discovery_topic_infos[topic_num].name_de;

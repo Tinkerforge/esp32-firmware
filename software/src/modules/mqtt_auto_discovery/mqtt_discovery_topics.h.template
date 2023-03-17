@@ -1,13 +1,13 @@
 
 #define TOPIC_COUNT ({{{topic_count}}})
 #define MAX_JSON_LEN ({{{max_json_len}}})
-#define MQTT_AUTO_DISCOVERY_MODE_MIN (-1)
-#define MQTT_AUTO_DISCOVERY_MODE_MAX (1)
+#define MQTT_AUTO_DISCOVERY_MODE_MIN (0)
+#define MQTT_AUTO_DISCOVERY_MODE_MAX (2)
 
 enum class MqttAutoDiscoveryMode {
-    DISCOVERY_DISABLED = -1,
-    GENERIC = 0,
-    HOMEASSISTANT = 1,
+    DISCOVERY_DISABLED = 0,
+    GENERIC = 1,
+    HOMEASSISTANT = 2,
 };
 
 enum class MqttDiscoveryType {
