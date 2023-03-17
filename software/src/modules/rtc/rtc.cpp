@@ -53,12 +53,21 @@ void Rtc::pre_setup()
 void Rtc::setup()
 {
     api.restorePersistentConfig("rtc/config", &rtc_config);
-
-    initialized = true;
 }
 
 void Rtc::register_urls()
 {
+}
+
+void Rtc::loop() {}
+
+void Rtc::register_backend(IRtcBackend *_backend)
+{
+    if (backend || !_backend)
+        return;
+
+    backend = _backend;
+
     api.addPersistentConfig("rtc/config", &rtc_config, {}, 1000);
 
     api.addState("rtc/time", &time, {}, 100);
@@ -97,21 +106,12 @@ void Rtc::register_urls()
     }, 0, 200);
 
     api.addFeature("rtc");
+    initialized = true;
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         update_system_time();
     }, 1000 * 60 * 10, 1000 * 60 * 10);
 
-}
-
-void Rtc::loop() {}
-
-void Rtc::register_backend(IRtcBackend *_backend)
-{
-    if (backend || !_backend)
-        return;
-
-    backend = _backend;
 
     timeval tv;
     if (clock_synced(&tv))
