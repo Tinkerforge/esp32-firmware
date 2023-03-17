@@ -335,6 +335,8 @@ void Mqtt::setup()
 #endif
     }
 
+    mqtt_config_in_use = mqtt_config;
+
     if (!mqtt_config.get("enable_mqtt")->asBool()) {
         initialized = true;
         return;
@@ -348,7 +350,7 @@ void Mqtt::setup()
     esp_log_level_set("TRANSPORT", ESP_LOG_NONE);
     esp_log_level_set("OUTBOX", ESP_LOG_NONE);
 
-    mqtt_config_in_use = mqtt_config;
+
 
     esp_mqtt_client_config_t mqtt_cfg = {};
 
