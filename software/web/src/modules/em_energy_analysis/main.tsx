@@ -33,6 +33,7 @@ interface UplotData {
     timestamp: number;
     names: string[];
     values: number[][];
+    stacked: boolean[];
 }
 
 interface Wallbox5minData {
@@ -70,30 +71,46 @@ interface UplotWrapperProps {
     id: string;
     class: string;
     sidebar_id: string;
-    y_min: number;
-    y_max: number;
+    y_min?: number;
+    y_max?: number;
+    y_step?: number;
     marker_width_reduction: number;
 }
 
 // https://seaborn.pydata.org/tutorial/color_palettes.html#qualitative-color-palettes
 // sns.color_palette("tab10")
-const colors = [
-    '#007bff', // '#1f77b4', use bootstrap blue instead of tab10 blue, to avoid subtle conflict between plot and button blue
-    '#ff7f0e',
-    '#2ca02c',
-    '#d62728',
-    '#9467bd',
-    '#8c564b',
-    '#e377c2',
-    '#7f7f7f',
-    '#bcbd22',
-    '#17becf',
+const strokes = [
+    'rgb(  0, 123, 255)', // use bootstrap blue instead of tab10 blue, to avoid subtle conflict between plot and button blue
+    'rgb(255, 127,  14)',
+    'rgb( 44, 160,  44)',
+    'rgb(214,  39,  40)',
+    'rgb(148, 103, 189)',
+    'rgb(140,  86,  75)',
+    'rgb(227, 119, 194)',
+    'rgb(127, 127, 127)',
+    'rgb(188, 189,  34)',
+    'rgb( 23, 190, 207)',
+];
+
+const fills = [
+    'rgb(  0, 123, 255, 0.1)', // use bootstrap blue instead of tab10 blue, to avoid subtle conflict between plot and button blue
+    'rgb(255, 127,  14, 0.1)',
+    'rgb( 44, 160,  44, 0.1)',
+    'rgb(214,  39,  40, 0.1)',
+    'rgb(148, 103, 189, 0.1)',
+    'rgb(140,  86,  75, 0.1)',
+    'rgb(227, 119, 194, 0.1)',
+    'rgb(127, 127, 127, 0.1)',
+    'rgb(188, 189,  34, 0.1)',
+    'rgb( 23, 190, 207, 0.1)',
 ];
 
 class UplotWrapper extends Component<UplotWrapperProps, {}> {
     uplot: uPlot;
     series_count: number = 1;
+    data: UplotData;
     pending_data: UplotData;
+    series_visibility: boolean[];
     visible: boolean = false;
     div_ref = createRef();
     no_data_ref = createRef();
@@ -181,17 +198,25 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             scales: {
                 y: {
                     range: {
-                        max: {
-                            soft: this.props.y_max,
-                            mode: (this.props.y_max !== undefined ? 1 : 3) as uPlot.Range.SoftMode,
-                        },
                         min: {
-                            soft: this.props.y_min,
-                            mode: (this.props.y_min !== undefined ? 1 : 3) as uPlot.Range.SoftMode,
+                            mode: 1 as uPlot.Range.SoftMode,
+                        },
+                        max: {
+                            mode: 1 as uPlot.Range.SoftMode,
                         },
                     },
                 },
             },
+            plugins: [
+                {
+                    hooks: {
+                        setSeries: (self: uPlot, seriesIdx: number, opts: uPlot.Series) => {
+                            this.series_visibility[seriesIdx] = opts.show;
+                            this.update_internal_data();
+                        },
+                    },
+                },
+            ],
         };
 
         let div = this.div_ref.current;
@@ -244,16 +269,150 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         this.loading_ref.current.style.visibility = 'visible';
     }
 
+    get_series_opts(i: number): uPlot.Series {
+        let name = this.data.names[i];
+
+        return {
+            show: true,
+            pxAlign: 0,
+            spanGaps: false,
+            label: __("em_energy_analysis.script.power") + (name ? ' ' + name: ''),
+            value: (self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => rawValue !== null ? this.data.values[seriesIdx][idx] + " W" : null,
+            stroke: strokes[(i - 1) % strokes.length],
+            fill: fills[(i - 1) % fills.length],
+            width: 2,
+        };
+    }
+
+    update_internal_data() {
+        let y_min: number = this.props.y_min;
+        let y_max: number = this.props.y_max;
+        let last_stacked_values: number[] = [];
+
+        this.uplot.delBand(null);
+
+        for (let i = 1; i < this.data.values.length; ++i) {
+            if (!this.data.stacked[i]) {
+                for (let k = 0; k < this.data.values[i].length; ++k) {
+                    let value = this.data.values[i][k];
+
+                    if (value !== null) {
+                        if (y_min === undefined || value < y_min) {
+                            y_min = value;
+                        }
+
+                        if (y_min === undefined || value > y_max) {
+                            y_max = value;
+                        }
+                    }
+                }
+            }
+            else {
+                let stacked_values: number[] = new Array(this.data.values[i].length);
+
+                for (let k = 0; k < this.data.values[i].length; ++k) {
+                    if (last_stacked_values[k] !== null
+                        && last_stacked_values[k] !== undefined
+                        && this.data.values[i][k] !== null
+                        && this.data.values[i][k] !== undefined) {
+                        stacked_values[k] = last_stacked_values[k] + this.data.values[i][k];
+                    } else {
+                        stacked_values[k] = this.data.values[i][k];
+                    }
+
+                    if (stacked_values[k] !== null) {
+                        if (stacked_values[k] < y_min) {
+                            y_min = stacked_values[k];
+                        }
+
+                        if (stacked_values[k] > y_max) {
+                            y_max = stacked_values[k];
+                        }
+                    }
+                }
+
+                last_stacked_values = stacked_values;
+            }
+        }
+
+        if (y_min === undefined && y_max === undefined) {
+            y_min = 0;
+            y_max = 0;
+        }
+        else if (y_min === undefined) {
+            y_min = y_max;
+        }
+        else if (y_max === undefined) {
+            y_max = y_min;
+        }
+
+        let y_step = this.props.y_step;
+
+        if (y_step !== undefined) {
+            y_min = Math.floor(y_min / y_step) * y_step;
+            y_max = Math.ceil(y_max / y_step) * y_step;
+        }
+
+        this.uplot.setScale('y', {min: y_min, max: y_max});
+
+        let uplot_values: number[][] = [];
+        last_stacked_values = [];
+
+        for (let i = 0; i < this.data.values.length; ++i) {
+            if (!this.data.stacked[i] || !this.series_visibility[i]) {
+                uplot_values.push(this.data.values[i]);
+            }
+            else {
+                let stacked_values: number[] = new Array(this.data.values[i].length);
+
+                for (let k = 0; k < this.data.values[i].length; ++k) {
+                    if (last_stacked_values[k] !== null
+                        && last_stacked_values[k] !== undefined
+                        && this.data.values[i][k] !== null
+                        && this.data.values[i][k] !== undefined) {
+                        stacked_values[k] = last_stacked_values[k] + this.data.values[i][k];
+                    } else {
+                        stacked_values[k] = this.data.values[i][k];
+                    }
+                }
+
+                uplot_values.push(stacked_values);
+                last_stacked_values = stacked_values;
+            }
+        }
+
+        this.uplot.setData(uplot_values as any);
+
+        let last_stacked_index: number = null;
+
+        for (let i = 1; i < this.data.values.length; ++i) {
+            if (this.data.stacked[i] && this.series_visibility[i]) {
+                if (last_stacked_index === null) {
+                    this.uplot.delSeries(i);
+                    this.uplot.addSeries(this.get_series_opts(i), i);
+                } else {
+                    this.uplot.addBand({
+                        series: [i, last_stacked_index],
+                        fill: fills[(i - 1) % fills.length],
+                    });
+                }
+
+                last_stacked_index = i;
+            }
+        }
+    }
+
     set_data(data: UplotData) {
         if (!this.uplot || !this.visible) {
             this.pending_data = data;
             return;
         }
 
+        this.data = data;
         this.pending_data = undefined;
         this.loading_ref.current.style.visibility = 'hidden';
 
-        if (!data || data.names.length <= 1) {
+        if (!this.data || this.data.names.length <= 1) {
             this.div_ref.current.style.visibility = 'hidden';
             this.no_data_ref.current.style.visibility = 'visible';
         }
@@ -267,23 +426,15 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 this.uplot.delSeries(this.series_count);
             }
 
-            while (this.series_count < data.names.length) {
-                let name = data.names[this.series_count];
+            this.series_visibility = [true];
 
-                this.uplot.addSeries({
-                    show: true,
-                    pxAlign: 0,
-                    spanGaps: false,
-                    label: __("em_energy_analysis.script.power") + (name ? ' ' + name: ''), // FIXME
-                    value: (self: uPlot, rawValue: number) => rawValue !== null ? rawValue + " W" : null,
-                    stroke: colors[(this.series_count - 1) % colors.length],
-                    width: 2,
-                });
-
+            while (this.series_count < this.data.names.length) {
+                this.uplot.addSeries(this.get_series_opts(this.series_count));
+                this.series_visibility[this.series_count] = true;
                 ++this.series_count;
             }
 
-            this.uplot.setData(data.values as any);
+            this.update_internal_data();
         }
     }
 }
@@ -497,13 +648,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             timestamps[slot] = base + slot * 300;
         }
 
-        uplot_data = {timestamp: Date.now(), names: [null], values: [timestamps]};
+        uplot_data = {timestamp: Date.now(), names: [null], values: [timestamps], stacked: [false]};
 
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
         if (energy_manager_data && !energy_manager_data.empty) {
             uplot_data.names.push(__("em_energy_analysis.script.grid_connection"));
             uplot_data.values.push(energy_manager_data.power_grid);
+            uplot_data.stacked.push(false);
         }
 
         for (let charger of this.chargers) {
@@ -513,6 +665,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 if (wallbox_data && !wallbox_data.empty) {
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(wallbox_data.power);
+                    uplot_data.stacked.push(true);
                 }
             }
         }
@@ -548,13 +701,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             timestamps[slot] = base + slot * 300;
         }
 
-        uplot_data = {timestamp: Date.now(), names: [null], values: [timestamps]};
+        uplot_data = {timestamp: Date.now(), names: [null], values: [timestamps], stacked: [false]};
 
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
         if (energy_manager_data && !energy_manager_data.power_grid_empty) {
             uplot_data.names.push(null);
             uplot_data.values.push(energy_manager_data.power_grid);
+            uplot_data.stacked.push(false);
         }
 
         this.uplot_5min_status_cache[key] = uplot_data;
@@ -896,8 +1050,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                       id="em_energy_analysis_chart"
                                       class="em-energy-analysis-chart"
                                       sidebar_id="em-energy-analysis"
-                                      y_min={undefined}
-                                      y_max={undefined}
+                                      y_min={0}
+                                      y_max={100}
+                                      y_step={10}
                                       marker_width_reduction={30} />
                     </div>
                 </div>
