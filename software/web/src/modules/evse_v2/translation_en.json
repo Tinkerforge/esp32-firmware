@@ -17,6 +17,13 @@
             "gpio_shutdown_on_open": "Shut down on open",
             "gpio_shutdown_on_close": "Shut down on close",
             "not_configured": "Not configured",
+            "active_low_blocked": "Blocks if closed",
+            "active_low_prefix": "Limits charge current to ",
+            "active_low_suffix": " if closed",
+            "active_high_blocked": "Blocks if open",
+            "active_high_prefix": "Limits charge current to ",
+            "active_high_suffix": "if open",
+
             "todo": "Have a feature request? Write an e-mail to info@tinkerforge.com",
             "gpio_in": "General purpose input",
             "gpio_in_muted": "readable on GPIO 16",

@@ -17,6 +17,13 @@
             "gpio_shutdown_on_open": "Abschalten wenn geöffnet",
             "gpio_shutdown_on_close": "Abschalten wenn geschlossen",
             "not_configured": "Nicht konfiguriert",
+            "active_low_blocked": "Blockiert wenn geschlossen",
+            "active_low_prefix": "Limitiert Ladestrom auf ",
+            "active_low_suffix": " wenn geschlossen",
+            "active_high_blocked": "Blockiert wenn geöffnet",
+            "active_high_prefix": "Limitiert Ladestrom auf ",
+            "active_high_suffix": " wenn geöffnet",
+
             "todo": "Ideen bzw. Wünsche? Schreib eine Mail an info@tinkerforge.com",
             "gpio_in": "Konfigurierbarer Eingang",
             "gpio_in_muted": "kann als GPIO 16 gelesen werden",

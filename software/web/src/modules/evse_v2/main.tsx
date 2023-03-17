@@ -551,8 +551,24 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
 
                     <FormRow label={__("evse.content.gpio_in")} label_muted={__("evse.content.gpio_in_muted")}>
                         <InputSelect items={[
-                                        ["0",__("evse.content.not_configured")],
-                                        ["disabled",__("evse.content.todo")]
+                                        ["0", __("evse.content.not_configured")],
+                                        ["1",  __("evse.content.active_low_blocked")],
+                                        ["2", __("evse.content.active_low_prefix")  + '6 A' + __("evse.content.active_low_suffix")],
+                                        ["3", __("evse.content.active_low_prefix")  + '8 A' + __("evse.content.active_low_suffix")],
+                                        ["4", __("evse.content.active_low_prefix")  + '10 A' + __("evse.content.active_low_suffix")],
+                                        ["5", __("evse.content.active_low_prefix")  + '13 A' + __("evse.content.active_low_suffix")],
+                                        ["6", __("evse.content.active_low_prefix")  + '16 A' + __("evse.content.active_low_suffix")],
+                                        ["7", __("evse.content.active_low_prefix")  + '20 A' + __("evse.content.active_low_suffix")],
+                                        ["8", __("evse.content.active_low_prefix")  + '25 A' + __("evse.content.active_low_suffix")],
+                                        ["9",  __("evse.content.active_high_blocked")],
+                                        ["10", __("evse.content.active_high_prefix")  + '6 A' + __("evse.content.active_high_suffix")],
+                                        ["11", __("evse.content.active_high_prefix")  + '8 A' + __("evse.content.active_high_suffix")],
+                                        ["12", __("evse.content.active_high_prefix")  + '10 A' + __("evse.content.active_high_suffix")],
+                                        ["13", __("evse.content.active_high_prefix")  + '13 A' + __("evse.content.active_high_suffix")],
+                                        ["14", __("evse.content.active_high_prefix")  + '16 A' + __("evse.content.active_high_suffix")],
+                                        ["15", __("evse.content.active_high_prefix")  + '20 A' + __("evse.content.active_high_suffix")],
+                                        ["16", __("evse.content.active_high_prefix")  + '25 A' + __("evse.content.active_high_suffix")],
+                                        ["disabled", __("evse.content.todo")]
                                     ]}
                                 value={gpio_cfg.input}
                                 onValue={async (v) => {
