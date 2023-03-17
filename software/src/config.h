@@ -691,6 +691,19 @@ struct Config {
 
     const int32_t &asInt() const;
 
+    template<typename T>
+    const T& asEnum() const {
+        if (this->is<ConfUint>()) {
+            return (const T&) this->asUint();
+        } else if (this->is<ConfInt>()) {
+            return (const T&) this->asInt();
+        } else {
+            logger.printfln("asEnum: Config has wrong type. This is %s, (not a ConfInt or ConfUint)", this->to_string().c_str());
+            delay(100);
+            return (const T&) this->asUint();
+        }
+    }
+
     const bool &asBool() const;
 
 private:
