@@ -1,11 +1,11 @@
-export interface config {
-    duration_limit: number
-    energy_limit_wh: number
+export interface default_limits {
+    duration: number
+    energy_wh: number
 }
 
-export interface live_config {
-    duration_limit: number
-    energy_limit_wh: number
+export interface active_limits {
+    duration: number
+    energy_wh: number
 }
 
 export interface state {

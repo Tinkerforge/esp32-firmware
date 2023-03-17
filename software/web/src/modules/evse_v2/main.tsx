@@ -60,7 +60,7 @@ interface EVSESSettingsState {
     evse_uptime: number
 }
 
-type ChargeConditionConfig = API.getType["charge_condition/config"];
+type ChargeLimitsConfig = API.getType["charge_limits/default_limits"];
 
 let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
 
@@ -404,11 +404,11 @@ export class EVSEV2 extends Component<{}, EVSEState> {
 
 render(<EVSEV2 />, $('#evse')[0]);
 
-class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSESSettingsState>
+class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {}, EVSESSettingsState>
 {
     constructor()
     {
-        super("charge_condition/config",
+        super("charge_limits/default_limits",
             __("evse.script.save_failed"),
             __("evse.script.reboot_content_changed"));
 
@@ -444,7 +444,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
         })
     }
 
-    override async sendSave(t: "charge_condition/config", cfg: EVSESSettingsState & ChargeConditionConfig): Promise<void> {
+    override async sendSave(t: "charge_limits/default_limits", cfg: EVSESSettingsState & ChargeLimitsConfig): Promise<void> {
         await API.save('evse/auto_start_charging', {"auto_start_charging": this.state.auto_start_charging.auto_start_charging}, __("evse.script.save_failed"));
         await API.save('evse/external_enabled', {"enabled": this.state.slots[EVSE_SLOT_EXTERNAL].active}, __("evse.script.save_failed"));
         await API.save('evse/button_configuration', {"button": this.state.button_cfg.button}, __("evse.script.save_failed"));
@@ -456,7 +456,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
 
     //TODO: Substitute hardcoded values after evse-reset-api is available.
 
-    override async sendReset(t: "charge_condition/config"): Promise<void> {
+    override async sendReset(t: "charge_limits/default_limits"): Promise<void> {
         await API.save('evse/auto_start_charging', {"auto_start_charging": true}, __("evse.script.save_failed"));
         await API.save('evse/external_enabled', {"enabled": false}, __("evse.script.save_failed"));
         await API.save('evse/button_configuration', {"button": 2}, __("evse.script.save_failed"));
@@ -466,7 +466,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
         super.sendReset(t);
     }
 
-    render(props: {}, s: EVSESSettingsState & ChargeConditionConfig)
+    render(props: {}, s: EVSESSettingsState & ChargeLimitsConfig)
     {
         if (!util.allow_render)
             return <></>;
@@ -481,9 +481,9 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
 
         const has_meter = API.hasFeature("meter");
 
-        const energy_settings = <FormRow label={__("charge_condition.content.energy_limit")}>
+        const energy_settings = <FormRow label={__("charge_limits.content.energy")} label_muted={__("charge_limits.content.energy_muted")}>
         <InputSelect items={[
-            ["0", __("charge_condition.content.unlimited")],
+            ["0", __("charge_limits.content.unlimited")],
             ["5000", util.toLocaleFixed(5, 0) + " kWh"],
             ["10000", util.toLocaleFixed(10, 0) + " kWh"],
             ["15000", util.toLocaleFixed(15, 0) + " kWh"],
@@ -498,8 +498,8 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
             ["90000", util.toLocaleFixed(90, 0) + " kWh"],
             ["100000", util.toLocaleFixed(100, 0) + " kWh"]
         ]}
-        value={s.energy_limit_wh}
-        onValue={(v) => this.setState({energy_limit_wh: Number(v)})}/>
+        value={s.energy_wh}
+        onValue={(v) => this.setState({energy_wh: Number(v)})}/>
     </FormRow>;
 
         return <>
@@ -606,22 +606,22 @@ class EVSEV2Settings extends ConfigComponent<"charge_condition/config", {}, EVSE
                                 onClick={async () => this.setState({boost_mode: {enabled: !boost_mode.enabled}})}/>
                     </FormRow>
 
-                    <FormRow label={__("charge_condition.content.duration_limit")}>
+                    <FormRow label={__("charge_limits.content.duration")} label_muted={__("charge_limits.content.duration_muted")}>
                         <InputSelect items={[
-                            ["0", __("charge_condition.content.unlimited")],
-                            ["1", __("charge_condition.content.min15")],
-                            ["2", __("charge_condition.content.min30")],
-                            ["3", __("charge_condition.content.min45")],
-                            ["4", __("charge_condition.content.h1")],
-                            ["5", __("charge_condition.content.h2")],
-                            ["6", __("charge_condition.content.h3")],
-                            ["7", __("charge_condition.content.h4")],
-                            ["8", __("charge_condition.content.h6")],
-                            ["9", __("charge_condition.content.h8")],
-                            ["10", __("charge_condition.content.h12")]
+                            ["0", __("charge_limits.content.unlimited")],
+                            ["1", __("charge_limits.content.min15")],
+                            ["2", __("charge_limits.content.min30")],
+                            ["3", __("charge_limits.content.min45")],
+                            ["4", __("charge_limits.content.h1")],
+                            ["5", __("charge_limits.content.h2")],
+                            ["6", __("charge_limits.content.h3")],
+                            ["7", __("charge_limits.content.h4")],
+                            ["8", __("charge_limits.content.h6")],
+                            ["9", __("charge_limits.content.h8")],
+                            ["10", __("charge_limits.content.h12")]
                         ]}
-                        value={s.duration_limit}
-                        onValue={(v) => this.setState({duration_limit: Number(v)})}/>
+                        value={s.duration}
+                        onValue={(v) => this.setState({duration: Number(v)})}/>
                     </FormRow>
                     {has_meter ? energy_settings : <></>}
                 </ConfigForm>

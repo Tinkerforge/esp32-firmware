@@ -506,9 +506,9 @@ void EVSE::set_modbus_enabled(bool enabled)
 }
 
 
-void EVSE::set_charge_condition_slot(uint16_t current, bool enabled)
+void EVSE::set_charge_limits_slot(uint16_t current, bool enabled)
 {
-    is_in_bootloader(tf_evse_set_charging_slot(&device, CHARGING_SLOT_CHARGING_CONDITION, current, enabled, true));
+    is_in_bootloader(tf_evse_set_charging_slot(&device, CHARGING_SLOT_CHARGE_LIMITS, current, enabled, true));
 }
 /*
 void EVSE::set_charge_time_restriction_slot(uint16_t current, bool enabled)

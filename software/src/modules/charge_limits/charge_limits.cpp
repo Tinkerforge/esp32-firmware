@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "charge_condition.h"
+#include "charge_limits.h"
 
 #include <Arduino.h>
 
@@ -27,11 +27,11 @@
 
 #include "modules.h"
 
-void ChargeCondition::pre_setup()
+void ChargeLimits::pre_setup()
 {
     config = ConfigRoot{Config::Object({
-        {"duration_limit", Config::Uint(0, 0, 10)},
-        {"energy_limit_wh", Config::Uint32(0)},
+        {"duration", Config::Uint(0, 0, 10)},
+        {"energy_wh", Config::Uint32(0)},
     })};
 
     state = ConfigRoot{Config::Object({
@@ -50,9 +50,9 @@ void ChargeCondition::pre_setup()
     })};
 }
 
-void ChargeCondition::setup()
+void ChargeLimits::setup()
 {
-    api.restorePersistentConfig("charge_condition/config", &config);
+    api.restorePersistentConfig("charge_limits/default_limits", &config);
     config_in_use = config;
     initialized = true;
 }
@@ -86,30 +86,30 @@ static uint32_t map_duration(uint32_t val)
     }
 }
 
-void ChargeCondition::register_urls()
+void ChargeLimits::register_urls()
 {
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
-    api.addPersistentConfig("charge_condition/config", &config, {}, 1000);
-    api.addState("charge_condition/state", &state, {}, 1000);
-    api.addState("charge_condition/live_config", &config_in_use, {}, 1000);
+    api.addPersistentConfig("charge_limits/default_limits", &config, {}, 1000);
+    api.addState("charge_limits/state", &state, {}, 1000);
+    api.addState("charge_limits/active_limits", &config_in_use, {}, 1000);
 
-    api.addCommand("charge_condition/override_duration", &override_duration, {}, [this]() {
-        config_in_use.get("duration_limit")->updateUint(override_duration.get("duration")->asUint());
+    api.addCommand("charge_limits/override_duration", &override_duration, {}, [this]() {
+        config_in_use.get("duration")->updateUint(override_duration.get("duration")->asUint());
         state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint() + map_duration(override_duration.get("duration")->asUint()));
     }, true);
 
-    api.addCommand("charge_condition/override_energy", &override_energy, {}, [this]() {
-        config_in_use.get("energy_limit_wh")->updateUint(override_energy.get("energy_wh")->asUint());
+    api.addCommand("charge_limits/override_energy", &override_energy, {}, [this]() {
+        config_in_use.get("energy_wh")->updateUint(override_energy.get("energy_wh")->asUint());
         state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + override_energy.get("energy_wh")->asUint() / 1000.0);
     }, true);
 
     //if we dont set the target timestamp right away we will have 0 seconds left displayed in the webinterface until we start and end a charge.
-    state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration_limit")->asUint()));
+    state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration")->asUint()));
 
  #if MODULE_EVSE_V2_AVAILABLE()
-    evse_v2.set_charge_condition_slot(32000, true);
+    evse_v2.set_charge_limits_slot(32000, true);
  #elif MODULE_EVSE_AVAILABLE()
-    evse.set_charge_condition_slot(32000, true);
+    evse.set_charge_limits_slot(32000, true);
  #endif
 
 
@@ -122,20 +122,20 @@ void ChargeCondition::register_urls()
             {
                 was_charging = false;
 
-                if (!api.restorePersistentConfig("charge_condition/config", &config_in_use))
+                if (!api.restorePersistentConfig("charge_limits/default_limits", &config_in_use))
                 {
-                    config_in_use.get("duration_limit")->updateUint(config.get("duration_limit")->asUint());
-                    config_in_use.get("energy_limit_wh")->updateUint(config.get("energy_limit_wh")->asUint());
+                    config_in_use.get("duration")->updateUint(config.get("duration")->asUint());
+                    config_in_use.get("energy_wh")->updateUint(config.get("energy_wh")->asUint());
                 }
 
 #if MODULE_EVSE_V2_AVAILABLE()
-                evse_v2.set_charge_condition_slot(32000, true);
+                evse_v2.set_charge_limits_slot(32000, true);
 #elif MODULE_EVSE_AVAILABLE()
-                evse.set_charge_condition_slot(32000, true);
+                evse.set_charge_limits_slot(32000, true);
 #endif
                 state.get("start_timestamp_ms")->updateUint(0);
                 state.get("start_energy_kwh")->updateFloat(NAN);
-                state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration_limit")->asUint()));
+                state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration")->asUint()));
                 state.get("target_energy_kwh")->updateFloat(NAN);
             }
             return;
@@ -155,21 +155,21 @@ void ChargeCondition::register_urls()
 
         uint16_t target_current = 32000;
 
-        if (config_in_use.get("duration_limit")->asUint() > 0)
+        if (config_in_use.get("duration")->asUint() > 0)
         {
             if (!was_charging)
                 state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint()
-                                                                + map_duration(config_in_use.get("duration_limit")->asUint()));
+                                                                + map_duration(config_in_use.get("duration")->asUint()));
 
             if (a_after_b(uptime, state.get("target_timestamp_ms")->asUint()))
                 target_current = 0;
         }
 
-        if (api.hasFeature("meter") && config_in_use.get("energy_limit_wh")->asUint() > 0)
+        if (api.hasFeature("meter") && config_in_use.get("energy_wh")->asUint() > 0)
         {
             auto start = state.get("start_energy_kwh")->asFloat();
             if (!was_charging && !isnan(start))
-                state.get("target_energy_kwh")->updateFloat(start + config_in_use.get("energy_limit_wh")->asUint() / 1000.0);
+                state.get("target_energy_kwh")->updateFloat(start + config_in_use.get("energy_wh")->asUint() / 1000.0);
 
             auto target = state.get("target_energy_kwh")->asFloat();
             auto now = meter.values.get("energy_abs")->asFloat();
@@ -179,9 +179,9 @@ void ChargeCondition::register_urls()
         }
 
 #if MODULE_EVSE_V2_AVAILABLE()
-        evse_v2.set_charge_condition_slot(target_current, true);
+        evse_v2.set_charge_limits_slot(target_current, true);
 #elif MODULE_EVSE_AVAILABLE()
-        evse.set_charge_condition_slot(target_current, true);
+        evse.set_charge_limits_slot(target_current, true);
 #endif
 
         was_charging = true;
@@ -190,7 +190,7 @@ void ChargeCondition::register_urls()
 #endif
 }
 
-void ChargeCondition::loop()
+void ChargeLimits::loop()
 {
 
 }

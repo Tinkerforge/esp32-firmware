@@ -1,5 +1,5 @@
 {
-    "charge_condition": {
+    "charge_limits": {
         "content": {
             "reset": "Reset",
             "overridden": "(aktiv)",
@@ -7,8 +7,10 @@
             "left": " verbleibend",
             "override_energy": "Energielimit",
             "override_duration": "Zeitlimit",
-            "duration_limit": "Zeitlimit",
-            "energy_limit": "Energielimit",
+            "duration": "Zeitlimit",
+            "duration_muted": "Kann auf der Statusseite für einen Ladevorgang überschrieben werden.",
+            "energy": "Energielimit",
+            "energy_muted": "Kann auf der Statusseite für einen Ladevorgang überschrieben werden.",
             "time_left": "Ladezeit übrig",
             "energy_left": "Energie übrig",
             "unlimited": "Unbegrenzt",

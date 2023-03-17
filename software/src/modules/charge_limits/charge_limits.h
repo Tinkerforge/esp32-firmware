@@ -21,12 +21,12 @@
 
 #include "config.h"
 
-class ChargeCondition
+class ChargeLimits
 {
 private:
 
 public:
-    ChargeCondition(){}
+    ChargeLimits(){}
     void pre_setup();
     void setup();
     void register_urls();
