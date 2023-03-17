@@ -30,14 +30,14 @@
             "auto_discovery_mode": "Auto discovery mode",
             "auto_discovery_mode_muted": "Support auto discovery by home automation.",
             "auto_discovery_mode_disabled": "disabled",
-            "auto_discovery_mode_generic": "generic/universal",
+            "auto_discovery_mode_generic": "generic",
             "auto_discovery_mode_homeassistant": "Home Assistant",
             "auto_discovery_prefix": "Auto discovery topic prefix",
-            "auto_discovery_prefix_invalid": "The topic prefix can not start with $ or contain a # or + or be empty.",
+            "auto_discovery_prefix_invalid": "The topic prefix can not start with $, contain a # or +, or be empty.",
             "enable_meter": "MQTT meter",
             "enable_meter_desc": "Simulate a meter and keep it updated with values received from the topic below.",
             "meter_topic": "Meter topic",
-            "meter_topic_invalid": "The topic cannot start with $ or contain a # or + or be empty."
+            "meter_topic_invalid": "The topic cannot start with $, contain a # or +, or be empty."
         },
         "script": {
             "save_failed": "Failed to save the MQTT configuration.",
