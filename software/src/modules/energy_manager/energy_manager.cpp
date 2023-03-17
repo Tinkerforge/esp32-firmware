@@ -18,18 +18,17 @@
  */
 
 #include "energy_manager.h"
+#include "musl_libc_timegm.h"
 
 #include "bindings/errors.h"
 
 #include "api.h"
+#include "build.h"
 #include "event_log.h"
 #include "modules.h"
 #include "task_scheduler.h"
 #include "tools.h"
 #include "web_server.h"
-#include "build.h"
-
-#include "musl_libc_timegm.h"
 
 void EnergyManager::pre_setup()
 {
@@ -991,23 +990,24 @@ void EnergyManager::set_rgb_led(uint8_t pattern, uint16_t hue)
 
 void EnergyManager::set_time(const tm &date_time)
 {
-    int ret = tf_warp_energy_manager_set_date_time(&device,
-                                                    date_time.tm_sec,
-                                                    date_time.tm_min,
-                                                    date_time.tm_hour,
-                                                    date_time.tm_mday - 1,
-                                                    date_time.tm_wday,
-                                                    date_time.tm_mon,
-                                                    date_time.tm_year - 100);
+    int rc = tf_warp_energy_manager_set_date_time(&device,
+                                                  date_time.tm_sec,
+                                                  date_time.tm_min,
+                                                  date_time.tm_hour,
+                                                  date_time.tm_mday - 1,
+                                                  date_time.tm_wday,
+                                                  date_time.tm_mon,
+                                                  date_time.tm_year - 100);
 
-    if (ret)
-        logger.printfln("Setting datetime on energy-manager-bricklet failed with code %i", ret);
+    if (rc != TF_E_OK)
+        logger.printfln("energy_manager: Failed to set datetime: error %i", rc);
 }
 
 struct timeval EnergyManager::get_time()
 {
     struct tm date_time;
     struct timeval time;
+    time.tv_usec = 0;
 
     uint8_t tm_sec;
     uint8_t tm_min;
@@ -1017,41 +1017,28 @@ struct timeval EnergyManager::get_time()
     uint8_t tm_mon;
     uint16_t tm_year;
 
-    int ret = tf_warp_energy_manager_get_date_time(&device,
-                                                    &tm_sec,
-                                                    &tm_min,
-                                                    &tm_hour,
-                                                    &tm_mday,
-                                                    &tm_wday,
-                                                    &tm_mon,
-                                                    &tm_year);
+    int rc = tf_warp_energy_manager_get_date_time(&device, &tm_sec, &tm_min, &tm_hour, &tm_mday, &tm_wday, &tm_mon, &tm_year);
 
-    if (ret)
-    {
-        logger.printfln("getting datetime on energy-manager-bricklet failed with code %i", ret);
+    check_bricklet_reachable(rc, "get_time");
+
+    if (rc != TF_E_OK) {
+        logger.printfln("energy_manager: Failed to get datetime: error %i", rc);
         time.tv_sec = 0;
-        time.tv_usec = 0;
         return time;
     }
 
-    date_time.tm_sec = tm_sec;
-    date_time.tm_min = tm_min;
+    date_time.tm_sec  = tm_sec;
+    date_time.tm_min  = tm_min;
     date_time.tm_hour = tm_hour;
     date_time.tm_mday = tm_mday + 1;
     date_time.tm_wday = tm_wday;
-    date_time.tm_mon = tm_mon;
+    date_time.tm_mon  = tm_mon;
     date_time.tm_year = tm_year + 100;
 
     time.tv_sec = timegm(&date_time);
-    time.tv_usec = 0;
 
-    if (time.tv_sec < build_timestamp())
-    {
-        struct timeval tmp;
-        tmp.tv_sec = 0;
-        tmp.tv_usec = 0;
-        return tmp;
-    }
+    if (time.tv_sec < build_timestamp() - 24 * 3600)
+        time.tv_sec = 0;
 
     return time;
 }
