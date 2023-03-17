@@ -35,8 +35,6 @@ import { ConfigForm } from "src/ts/components/config_form";
 type RTCTime = API.getType['rtc/time'];
 type RTCConfig = API.getType['rtc/config'];
 
-type TimeUpdate = RTCTime & {centisecond: number};
-
 interface RtcPageState {
     state: RTCTime
 }
@@ -78,14 +76,13 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
     set_current_time()
     {
         let date = new Date();
-        let time: TimeUpdate = {
+        let time: RTCTime = {
             year: date.getUTCFullYear(),
             month: date.getUTCMonth() + 1,
             day: date.getUTCDate(),
             hour: date.getUTCHours(),
             minute: date.getUTCMinutes(),
             second: date.getUTCSeconds(),
-            centisecond: Math.round(date.getUTCMilliseconds() / 10),
             weekday: date.getUTCDay()
         };
 

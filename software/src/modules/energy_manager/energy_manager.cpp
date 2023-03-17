@@ -334,17 +334,6 @@ void EnergyManager::setup()
             logger.printfln("energy_manager: Excess charging enabled but no meter configured.");
         }
     }, 0);
-
-    struct timeval time = get_time();
-    if (time.tv_sec != 0) {
-        settimeofday(&time, nullptr);
-
-        auto now = millis();
-        auto secs = now / 1000;
-        auto ms = now % 1000;
-        logger.printfln("Set system time from Energy Manager Bricklet at %lu,%03lu", secs, ms);
-    } else
-        logger.printfln("Energy Manager Bricklet has no time set!");
 }
 
 void EnergyManager::register_urls()
@@ -354,24 +343,6 @@ void EnergyManager::register_urls()
 
     if (!device_found)
         return;
-
-    server.on("/em/set", HTTP_GET, [this](WebServerRequest request) {
-        timeval tv;
-        gettimeofday(&tv, NULL);
-
-        set_time(tv);
-        return request.send(200, "ok");
-    });
-
-    server.on("/em/get", HTTP_GET, [this](WebServerRequest request) {
-        timeval tv = get_time();
-        timeval tv2;
-        gettimeofday(&tv2, NULL);
-
-        logger.printfln("%li", tv.tv_sec);
-        logger.printfln("%li", tv2.tv_sec);
-        return request.send(200, "ok");
-    });
 
 #if MODULE_WS_AVAILABLE()
     server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
@@ -428,11 +399,6 @@ void EnergyManager::register_urls()
     api.addResponse("energy_manager/history_energy_manager_daily", &history_energy_manager_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_daily_response(response, ownership, owner_id);});
 
     this->DeviceModule::register_urls();
-
-    //update system time every 10 minutes from energy manager bricklet
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        update_system_time();
-    }, 1000 * 60 * 10, 1000 * 60 * 10);
 }
 
 void EnergyManager::loop()
@@ -1023,22 +989,16 @@ void EnergyManager::set_rgb_led(uint8_t pattern, uint16_t hue)
         logger.printfln("energy_manager: Failed to set LED state: error %i. Continuing anyway.", rc);
 }
 
-void EnergyManager::set_time(const timeval &tv)
+void EnergyManager::set_time(const tm &date_time)
 {
-    tm date_time;
-    gmtime_r(&tv.tv_sec, &date_time);
-
-    date_time.tm_year -= 100;
-    date_time.tm_mday -= 1;
-
     int ret = tf_warp_energy_manager_set_date_time(&device,
                                                     date_time.tm_sec,
                                                     date_time.tm_min,
                                                     date_time.tm_hour,
-                                                    date_time.tm_mday,
+                                                    date_time.tm_mday - 1,
                                                     date_time.tm_wday,
                                                     date_time.tm_mon,
-                                                    date_time.tm_year);
+                                                    date_time.tm_year - 100);
 
     if (ret)
         logger.printfln("Setting datetime on energy-manager-bricklet failed with code %i", ret);
@@ -1046,8 +1006,8 @@ void EnergyManager::set_time(const timeval &tv)
 
 struct timeval EnergyManager::get_time()
 {
-    tm date_time;
-    timeval time;
+    struct tm date_time;
+    struct timeval time;
 
     uint8_t tm_sec;
     uint8_t tm_min;
@@ -1094,32 +1054,4 @@ struct timeval EnergyManager::get_time()
     }
 
     return time;
-}
-
-void EnergyManager::update_system_time()
-{
-    // We have to make sure, we don't try to update the system clock
-    // while Energy Manager also sets the clock.
-    // To prevent this, we skip updating the system clock if NTP
-    // did update it while we were fetching the current time from the EM.
-
-    uint32_t count;
-    {
-        std::lock_guard<std::mutex> lock{ntp.mtx};
-        count = ntp.sync_counter;
-    }
-
-    struct timeval t = this->get_time();
-    if (t.tv_sec == 0 && t.tv_usec == 0)
-        return;
-
-    {
-        std::lock_guard<std::mutex> lock{ntp.mtx};
-        if (count != ntp.sync_counter)
-            // NTP has just updated the system time. We assume that this time is more accurate the the EMs.
-            return;
-
-        settimeofday(&t, nullptr);
-        ntp.set_synced();
-    }
 }

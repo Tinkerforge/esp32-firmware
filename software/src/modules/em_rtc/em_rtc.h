@@ -19,46 +19,23 @@
 
 #pragma once
 
-#include "config.h"
+#include "../rtc/rtc.h"
 
-class IRtcBackend
+class EmRtc: public IRtcBackend
 {
 public:
-    IRtcBackend() {}
-    virtual ~IRtcBackend() {}
-
-    virtual void set_time(const timeval &time) = 0;
-    virtual void set_time(const tm &time) = 0;
-    virtual struct timeval get_time() = 0;
-    virtual void update_system_time() = 0;
-    virtual void reset() = 0;
-};
-
-class Rtc
-{
-private:
-    ConfigRoot time;
-    ConfigRoot time_update;
-    ConfigRoot rtc_config;
-
-    IRtcBackend *backend = NULL;
-
-public:
-    Rtc() {}
+    EmRtc() {}
 
     void pre_setup();
     void setup();
     void register_urls();
     void loop();
 
-    void register_backend(IRtcBackend *_backend);
-
-    void reset();
-
-    void set_time(const timeval &_time);
-    timeval get_time();
-    void update_system_time();
-
+    void set_time(const tm &tm) override;
+    void set_time(const timeval &tv) override;
+    struct timeval get_time() override;
+    void update_system_time()override;
+    void reset() override {} ;
 
     bool initialized = false;
 };
