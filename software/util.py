@@ -47,7 +47,7 @@ def check_digest(src_paths, src_datas, dst_dir, var_name, env=None):
     except FileNotFoundError:
         old_digest2 = None
 
-    # caclulate new digest
+    # calculate new digest
     h = hashlib.sha256()
 
     with open(__file__, 'rb') as f:
