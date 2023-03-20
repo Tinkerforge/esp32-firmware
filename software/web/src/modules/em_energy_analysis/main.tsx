@@ -495,13 +495,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     uplot_wrapper_ref = createRef();
     status_ref: RefObject<EMEnergyAnalysisStatusChart> = null;
     uplot_update_timeout: number = null;
-    uplot_5min_cache: { [id: string]: UplotData } = {};
-    uplot_5min_status_cache: { [id: string]: UplotData } = {};
-    uplot_daily_cache: { [id: string]: UplotData } = {};
-    wallbox_5min_cache: { [id: number]: { [id: string]: Wallbox5minData } } = {};
-    wallbox_daily_cache: { [id: string]: { [id: string]: WallboxDailyData } } = {};
-    energy_manager_5min_cache: { [id: string]: EnergyManager5minData } = {};
-    energy_manager_daily_cache: { [id: string]: EnergyManagerDailyData } = {};
+    uplot_5min_cache: {[id: string]: UplotData} = {};
+    uplot_5min_status_cache: {[id: string]: UplotData} = {};
+    uplot_daily_cache: {[id: string]: UplotData} = {};
+    wallbox_5min_cache: {[id: number]: { [id: string]: Wallbox5minData}} = {};
+    wallbox_daily_cache: {[id: string]: { [id: string]: WallboxDailyData}} = {};
+    energy_manager_5min_cache: {[id: string]: EnergyManager5minData} = {};
+    energy_manager_daily_cache: {[id: string]: EnergyManagerDailyData} = {};
     cache_limit = 100;
     chargers: Charger[] = [];
 
