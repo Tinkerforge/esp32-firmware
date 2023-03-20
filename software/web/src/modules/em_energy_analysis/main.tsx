@@ -443,10 +443,26 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     }
 }
 
-export class EMEnergyAnalysisStatusChart extends Component<{}, {}> {
+export class EMEnergyAnalysisStatusChart extends Component<{}, {force_render: number}> {
     uplot_wrapper_ref = createRef();
 
+    constructor() {
+        super();
+
+        this.state = {
+            force_render: 0,
+        } as any;
+
+        util.eventTarget.addEventListener('info/modules', () => {
+            this.setState({force_render: Date.now()});
+        });
+    }
+
     render(props: {}, state: {}) {
+        if (!util.allow_render) {
+            return (<></>);
+        }
+
         return (
             <>
                 <UplotWrapper ref={this.uplot_wrapper_ref}
@@ -466,6 +482,7 @@ interface EMEnergyAnalysisProps {
 }
 
 interface EMEnergyAnalysisState {
+    force_render: number,
     current_5min_date: Date;
 }
 
@@ -500,8 +517,15 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         current_5min_date.setMilliseconds(0);
 
         this.state = {
-            current_5min_date: current_5min_date
+            force_render: 0,
+            current_5min_date: current_5min_date,
         } as any;
+
+        util.eventTarget.addEventListener('info/modules', () => {
+            this.update_current_5min_cache();
+
+            this.setState({force_render: Date.now()});
+        });
 
         util.eventTarget.addEventListener('charge_manager/state', () => {
             let state = API.get('charge_manager/state');
@@ -595,12 +619,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 this.schedule_uplot_update();
             }
         });
-    }
-
-    componentDidMount() {
-        this.update_current_5min_cache();
-
-        // FIXME: update all caches
     }
 
     date_to_5min_key(date: Date) {
@@ -1040,10 +1058,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     }
 
     render(props: {}, state: Readonly<EMEnergyAnalysisState>) {
-        //if (!util.allow_render) {
-        //    return (<></>);
-        //}
-        // TODO Add this back in. It's commented out because otherwise the stuff below won't render because this module doesn't have any event listeners to trigger rendering later.
+        if (!util.allow_render) {
+            return (<></>);
+        }
 
         return (
             <>
