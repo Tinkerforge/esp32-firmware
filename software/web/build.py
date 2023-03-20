@@ -102,12 +102,13 @@ def main():
 
     subprocess.check_call(args, shell=sys.platform == 'win32')
 
-    print('postcss...')
+    print('update-browserslist-db...')
     subprocess.check_call([
         'npx',
         'update-browserslist-db'
     ], shell=sys.platform == 'win32')
 
+    print('postcss...')
     subprocess.check_call([
         'npx',
         'postcss',
