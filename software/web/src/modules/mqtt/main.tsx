@@ -136,9 +136,9 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                         <FormRow label={__("mqtt.content.auto_discovery_mode")} label_muted={__("mqtt.content.auto_discovery_mode_muted")}>
                             <InputSelect
                                 items={[
-                                    ["-1", __("mqtt.content.auto_discovery_mode_disabled")],
-                                    ["0", __("mqtt.content.auto_discovery_mode_generic")],
-                                    ["1", __("mqtt.content.auto_discovery_mode_homeassistant")],
+                                    ["0", __("mqtt.content.auto_discovery_mode_disabled")],
+                                    ["1", __("mqtt.content.auto_discovery_mode_generic")],
+                                    ["2", __("mqtt.content.auto_discovery_mode_homeassistant")],
                                 ]}
                                 value={state.auto_discovery_config.auto_discovery_mode}
                                 onValue={(v) => {this.setState({auto_discovery_config: {...this.state.auto_discovery_config, auto_discovery_mode: parseInt(v)}})}}/>
