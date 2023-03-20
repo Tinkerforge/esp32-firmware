@@ -1241,16 +1241,19 @@ void EVSEV2::update_all_data()
     evse_auto_start_charging.get("auto_start_charging")->updateBool(
         !evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("clear_on_disconnect")->asBool());
 
-    // get_energy_meter_values
-    evse_energy_meter_values.get("power")->updateFloat(power);
-    evse_energy_meter_values.get("energy_rel")->updateFloat(energy_relative);
-    evse_energy_meter_values.get("energy_abs")->updateFloat(energy_absolute);
 
-    for (int i = 0; i < 3; ++i)
-        evse_energy_meter_values.get("phases_active")->get(i)->updateBool(phases_active[i]);
+    if (energy_meter_type != 0) {
+        // get_energy_meter_values
+        evse_energy_meter_values.get("power")->updateFloat(power);
+        evse_energy_meter_values.get("energy_rel")->updateFloat(energy_relative);
+        evse_energy_meter_values.get("energy_abs")->updateFloat(energy_absolute);
 
-    for (int i = 0; i < 3; ++i)
-        evse_energy_meter_values.get("phases_connected")->get(i)->updateBool(phases_connected[i]);
+        for (int i = 0; i < 3; ++i)
+            evse_energy_meter_values.get("phases_active")->get(i)->updateBool(phases_active[i]);
+
+        for (int i = 0; i < 3; ++i)
+            evse_energy_meter_values.get("phases_connected")->get(i)->updateBool(phases_connected[i]);
+    }
 
     // get_energy_meter_errors
     evse_energy_meter_errors.get("local_timeout")->updateUint(error_count[0]);
