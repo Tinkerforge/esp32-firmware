@@ -504,16 +504,6 @@ body {
     aspect-ratio: 1.5;
 }
 
-#status_meter_chart .u-value {
-    min-width: 5em;
-    text-align: left;
-}
-
-#meter_chart .u-value {
-    min-width: 5em;
-    text-align: left;
-}
-
 .em-energy-analysis-status-chart {
     position: relative;
     aspect-ratio: 1.33333;
@@ -529,14 +519,4 @@ body {
 .em-energy-analysis-chart {
     position: relative;
     aspect-ratio: 2;
-}
-
-#em_energy_analysis_status_chart .u-value {
-    min-width: 5em;
-    text-align: left;
-}
-
-#em_energy_analysis_chart .u-value {
-    min-width: 5em;
-    text-align: left;
 }
