@@ -35,6 +35,7 @@ interface CachedData {
 }
 
 interface UplotData extends CachedData {
+    keys: string[];
     names: string[];
     values: number[][];
     stacked: boolean[];
@@ -110,7 +111,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     series_count: number = 1;
     data: UplotData;
     pending_data: UplotData;
-    series_visibility: boolean[];
+    series_visibility: {[id: string]: boolean} = {};
     visible: boolean = false;
     div_ref = createRef();
     no_data_ref = createRef();
@@ -211,7 +212,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 {
                     hooks: {
                         setSeries: (self: uPlot, seriesIdx: number, opts: uPlot.Series) => {
-                            this.series_visibility[seriesIdx] = opts.show;
+                            this.series_visibility[this.data.keys[seriesIdx]] = opts.show;
                             this.update_internal_data();
                         },
                     },
@@ -277,7 +278,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         let name = this.data.names[i];
 
         return {
-            show: true,
+            show: this.series_visibility[this.data.keys[i]],
             pxAlign: 0,
             spanGaps: false,
             label: __("em_energy_analysis.script.power") + (name ? ' ' + name: ''),
@@ -362,8 +363,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         let uplot_values: number[][] = [];
         last_stacked_values = [];
 
-        for (let i = 0; i < this.data.values.length; ++i) {
-            if (!this.data.stacked[i] || !this.series_visibility[i]) {
+        for (let i = 0; i < this.data.keys.length; ++i) {
+            if (!this.data.stacked[i] || !this.series_visibility[this.data.keys[i]]) {
                 uplot_values.push(this.data.values[i]);
             }
             else {
@@ -389,8 +390,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
         let last_stacked_index: number = null;
 
-        for (let i = 1; i < this.data.values.length; ++i) {
-            if (this.data.stacked[i] && this.series_visibility[i]) {
+        for (let i = 1; i < this.data.keys.length; ++i) {
+            if (this.data.stacked[i] && this.series_visibility[this.data.keys[i]]) {
                 if (last_stacked_index === null) {
                     this.uplot.delSeries(i);
                     this.uplot.addSeries(this.get_series_opts(i), i);
@@ -416,7 +417,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         this.pending_data = undefined;
         this.loading_ref.current.style.visibility = 'hidden';
 
-        if (!this.data || this.data.names.length <= 1) {
+        if (!this.data || this.data.keys.length <= 1) {
             this.div_ref.current.style.visibility = 'hidden';
             this.no_data_ref.current.style.visibility = 'visible';
         }
@@ -430,11 +431,13 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 this.uplot.delSeries(this.series_count);
             }
 
-            this.series_visibility = [true];
+            while (this.series_count < this.data.keys.length) {
+                if (this.series_visibility[this.data.keys[this.series_count]] === undefined) {
+                    this.series_visibility[this.data.keys[this.series_count]] = true;
+                }
 
-            while (this.series_count < this.data.names.length) {
                 this.uplot.addSeries(this.get_series_opts(this.series_count));
-                this.series_visibility[this.series_count] = true;
+
                 ++this.series_count;
             }
 
@@ -694,11 +697,12 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             timestamps[slot] = base + slot * 300;
         }
 
-        uplot_data = {update_timestamp: now, use_timestamp: now, names: [null], values: [timestamps], stacked: [false]};
+        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [timestamps], stacked: [false]};
 
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
         if (energy_manager_data && !energy_manager_data.empty) {
+            uplot_data.keys.push('em');
             uplot_data.names.push(__("em_energy_analysis.script.grid_connection"));
             uplot_data.values.push(energy_manager_data.power_grid);
             uplot_data.stacked.push(false);
@@ -709,6 +713,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let wallbox_data = this.wallbox_5min_cache[charger.uid][key];
 
                 if (wallbox_data && !wallbox_data.empty) {
+                    uplot_data.keys.push('wb' + charger.uid);
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(wallbox_data.power);
                     uplot_data.stacked.push(true);
@@ -751,11 +756,12 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             timestamps[slot] = base + slot * 300;
         }
 
-        uplot_data = {update_timestamp: now, use_timestamp: now, names: [null], values: [timestamps], stacked: [false]};
+        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [timestamps], stacked: [false]};
 
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
         if (energy_manager_data && !energy_manager_data.power_grid_empty) {
+            uplot_data.keys.push('em');
             uplot_data.names.push(null);
             uplot_data.values.push(energy_manager_data.power_grid);
             uplot_data.stacked.push(false);
