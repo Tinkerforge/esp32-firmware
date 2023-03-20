@@ -354,7 +354,7 @@ void EnergyManager::register_urls()
         return request.send(200);
     });
 
-    server.on("/evse/continue_debug", HTTP_GET, [this](WebServerRequest request) {
+    server.on("/energy_manager/continue_debug", HTTP_GET, [this](WebServerRequest request) {
         last_debug_check = millis();
         return request.send(200);
     });

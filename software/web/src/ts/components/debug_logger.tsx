@@ -85,9 +85,9 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
     debugTimeout: number;
 
-    async resetDebugWd() {
+    async resetDebugWd(prefix: string) {
         try {
-            await util.download("/" + this.props.prefix + "/continue_debug");
+            await util.download("/" + prefix + "/continue_debug");
         }
         catch{
             this.setState({debug_running: false, debug_status: translate_unchecked(this.props.translationPrefix + ".script.starting_debug_failed")});
@@ -114,7 +114,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
             return;
         }
 
-        this.debugTimeout = setInterval(this.resetDebugWd, 15000);
+        this.debugTimeout = setInterval(this.resetDebugWd, 15000, this.props.prefix);
 
         this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.debug_running")});
     }
