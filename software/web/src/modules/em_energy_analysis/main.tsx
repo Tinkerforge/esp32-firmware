@@ -259,10 +259,10 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 <div ref={this.no_data_ref} style={`position: absolute; width: calc(100% - ${props.marker_width_reduction}px); height: 100%; visibility: hidden; display: flex;`}>
                     <span class="h3" style="margin: auto;">{__("em_energy_analysis.content.no_data")}</span>
                 </div>
-                <div ref={this.loading_ref} style={`position: absolute; width: calc(100% - ${props.marker_width_reduction}px); height: 100%; visibility: hidden; display: flex;`}>
+                <div ref={this.loading_ref} style={`position: absolute; width: calc(100% - ${props.marker_width_reduction}px); height: 100%; display: flex;`}>
                     <span class="h3" style="margin: auto;">{__("em_energy_analysis.content.loading")}</span>
                 </div>
-                <div ref={this.div_ref} id={props.id} class={props.class} />
+                <div ref={this.div_ref} id={props.id} class={props.class} style="visibility: hidden;" />
             </div>
         );
     }
