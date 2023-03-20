@@ -263,6 +263,10 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 resize();
             });
         }
+
+        if (this.pending_data !== undefined) {
+            this.set_data(this.pending_data);
+        }
     }
 
     render(props?: UplotWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
