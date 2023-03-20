@@ -71,8 +71,17 @@ class EnergyManagerTester:
         self.rgb_led.set_rgb_value(0, 0, 255)
         self.iqr.set_selected_value(0, 1)
 
-        with ChangedDirectory(os.path.join("..", "..", "firmwares")):
-            run(["git", "pull"])
+        github_reachable = True
+        try:
+            with urllib.request.urlopen('https://github.com/Tinkerforge/firmwares', timeout=5.0) as req:
+                req.recv()
+        except:
+            print("github.com not reachable: Will not pull firmwares git.")
+            github_reachable = False
+
+        if github_reachable:
+            with ChangedDirectory(os.path.join("..", "..", "firmwares")):
+                run(["git", "pull"])
 
         wem_bricklet_directory = os.path.join("..", "..", "firmwares", "bricklets", "warp_energy_manager")
         wem_bricklet_path = os.readlink(os.path.join(wem_bricklet_directory, "bricklet_warp_energy_manager_firmware_latest.zbin"))

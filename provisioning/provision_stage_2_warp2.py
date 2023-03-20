@@ -335,8 +335,17 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify):
 def main(stage3):
     result = {"start": now()}
 
-    with ChangedDirectory(os.path.join("..", "..", "firmwares")):
-        run(["git", "pull"])
+    github_reachable = True
+    try:
+        with urllib.request.urlopen('https://github.com/Tinkerforge/firmwares', timeout=5.0) as req:
+            req.recv()
+    except:
+        print("github.com not reachable: Will not pull firmwares git.")
+        github_reachable = False
+
+    if github_reachable:
+        with ChangedDirectory(os.path.join("..", "..", "firmwares")):
+            run(["git", "pull"])
 
     evse_directory = os.path.join("..", "..", "firmwares", "bricklets", "evse_v2")
     evse_path = os.readlink(os.path.join(evse_directory, "bricklet_evse_v2_firmware_latest.zbin"))
