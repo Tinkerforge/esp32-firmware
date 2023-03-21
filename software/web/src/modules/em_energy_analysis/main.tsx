@@ -284,7 +284,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             label: __("em_energy_analysis.script.power") + (name ? ' ' + name: ''),
             value: (self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => rawValue !== null ? this.data.values[seriesIdx][idx] + " W" : null,
             stroke: strokes[(i - 1) % strokes.length],
-            fill: fills[(i - 1) % fills.length],
+            fill: this.data.stacked[i] ? fills[(i - 1) % fills.length] : undefined,
             width: 2,
         };
     }
