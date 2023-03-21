@@ -263,7 +263,12 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         return;
     }
 
-    logger.printfln("MQTT: Received message on unknown topic '%.*s'. data_len=%i", topic_len, topic, data_len);
+    // Don't print error message if this packet was received because it was retained (as opposed to a newly published message)
+    // The spec says:
+    // It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client
+    // because it matches an established subscription regardless of how the flag was set in the message it received [MQTT-3.3.1-9].
+    if (!retain)
+        logger.printfln("MQTT: Received message on unknown topic '%.*s'. data_len=%i", topic_len, topic, data_len);
 }
 
 static char err_buf[64] = {0};
