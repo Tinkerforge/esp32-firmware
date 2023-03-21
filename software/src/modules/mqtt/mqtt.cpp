@@ -111,6 +111,7 @@ void Mqtt::publish_with_prefix(const String &path, const String &payload)
 {
     const String &prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
+    // Retain messages because we only send on change.
     publish(topic, payload, true);
 }
 
