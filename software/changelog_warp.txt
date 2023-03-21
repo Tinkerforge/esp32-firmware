@@ -347,7 +347,7 @@
 - Fix charged energy register in Modbus/TCP Keba emulation mode
 
 2023-03-16: 2.1.1 (854dbe3c)
-- Add MQTT auto discovery
+- Add MQTT auto discovery for Home Assistant and compatible systems
 - Add time and energy limits for charging
 - Add core dump to debug report
 - Scale meter graphs to always span at least 100 W

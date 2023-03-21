@@ -322,7 +322,7 @@
 - Fix last meter value always being reported as 0 (through EVSE 2.0 Bricklet firmware 2.1.10)
 
 2023-03-16: 2.1.1 (854dbe3c)
-- Add MQTT auto discovery
+- Add MQTT auto discovery for Home Assistant and compatible systems
 - Add time and energy limits for charging
 - Add core dump to debug report
 - Scale meter graphs to always span at least 100 W
