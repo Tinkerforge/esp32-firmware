@@ -98,8 +98,8 @@ void EventLog::printfln(const char *fmt, va_list args) {
 
     auto written = vsnprintf(buf, buf_size, fmt, args);
     if (written >= buf_size) {
-        write("Next log message was truncated. Bump EventLog::printfln buffer size!", 69);
-        written = buf_size;
+        write("Next log message was truncated. Bump EventLog::printfln buffer size!", 68); // Don't include termination in write request.
+        written = buf_size - 1; // Don't include termination, which vsnprintf always leaves in.
     }
 
     write(buf, written);
