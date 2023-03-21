@@ -51,8 +51,6 @@ static uint32_t max_avail_current = 0;
 
 #define TIMEOUT_MS 32000
 
-
-
 #define WATCHDOG_TIMEOUT_MS 30000
 
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
