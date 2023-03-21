@@ -51,8 +51,7 @@ static uint32_t max_avail_current = 0;
 
 #define TIMEOUT_MS 32000
 
-#define DISTRIBUTION_LOG_LEN 2048
-static char distribution_log[DISTRIBUTION_LOG_LEN] = {0};
+
 
 #define WATCHDOG_TIMEOUT_MS 30000
 
@@ -312,6 +311,9 @@ void ChargeManager::setup()
         task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1000, 1000);
     }
 
+    if (charge_manager_config_in_use.get("verbose")->asBool())
+        this->distribution_log = heap_alloc_array<char>(DISTRIBUTION_LOG_LEN);
+
     initialized = true;
 }
 
@@ -408,7 +410,7 @@ bool ChargeManager::is_control_pilot_disconnect_supported(uint32_t last_update_c
     return true;
 }
 
-#define LOCAL_LOG(fmt, ...) if(verbose) local_log += snprintf(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log), "    " fmt "%c", __VA_ARGS__, '\0');
+#define LOCAL_LOG(fmt, ...) if(verbose) local_log += snprintf(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
 
 void ChargeManager::distribute_current()
 {
@@ -418,9 +420,9 @@ void ChargeManager::distribute_current()
     static bool verbose = charge_manager_config_in_use.get("verbose")->asBool();
 
     bool print_local_log = false;
-    char *local_log = distribution_log;
+    char *local_log = distribution_log.get();
     if (verbose)
-        local_log += snprintf(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log), "Redistributing current%c", '\0');
+        local_log += snprintf(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log.get()), "Redistributing current%c", '\0');
 
     auto chargers = charge_manager_state.get("chargers");
     auto configs = charge_manager_config_in_use.get("chargers");
@@ -732,12 +734,12 @@ void ChargeManager::distribute_current()
     }
 
     if (print_local_log) {
-        local_log = distribution_log;
+        local_log = distribution_log.get();
         size_t len = strlen(local_log);
         while (len > 0) {
             logger.write(local_log, len);
             local_log += len + 1;
-            if ((local_log - distribution_log) >= DISTRIBUTION_LOG_LEN)
+            if ((local_log - distribution_log.get()) >= DISTRIBUTION_LOG_LEN)
                 break;
             len = strlen(local_log);
         }
