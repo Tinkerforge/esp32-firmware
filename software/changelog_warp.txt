@@ -346,7 +346,7 @@
 - Fix RTC time handling
 - Fix charged energy register in Modbus/TCP Keba emulation mode
 
-2023-03-16: 2.1.1 (f7d5e161)
+2023-03-16: 2.1.1 (854dbe3c)
 - Add MQTT auto discovery
 - Add time and energy limits for charging
 - Add core dump to debug report
