@@ -774,7 +774,7 @@ void Users::register_urls()
     server.on("/users/all_usernames", HTTP_GET, [this](WebServerRequest request) {
         //std::lock_guard<std::mutex> lock{records_mutex};
         size_t len = MAX_PASSIVE_USERS * USERNAME_ENTRY_LENGTH;
-        auto buf = std::unique_ptr<char[]>(new char[len]);
+        auto buf = heap_alloc_array<char>(len);
         if (buf == nullptr) {
             return request.send(507);
         }

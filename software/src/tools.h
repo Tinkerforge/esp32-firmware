@@ -154,3 +154,11 @@ private:
     Ownership *ownership;
     bool acquired;
 };
+
+#ifndef HEAP_ALLOC_ARRAY_DEFINED
+#define HEAP_ALLOC_ARRAY_DEFINED
+template <typename T>
+std::unique_ptr<T[]> heap_alloc_array(size_t n) {
+    return std::unique_ptr<T[]>{new T[n]()};
+}
+#endif

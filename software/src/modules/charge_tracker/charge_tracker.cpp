@@ -511,7 +511,7 @@ void ChargeTracker::register_urls()
     server.on("/charge_tracker/charge_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{records_mutex};
 
-        auto url_buf = std::unique_ptr<char[]>(new char[CHARGE_RECORD_MAX_FILE_SIZE]);
+        auto url_buf = heap_alloc_array<char>(CHARGE_RECORD_MAX_FILE_SIZE);
         if (url_buf == nullptr) {
             return request.send(507);
         }
@@ -574,12 +574,12 @@ void ChargeTracker::register_urls()
 
         bool english = false;
         #define LETTERHEAD_SIZE 512
-        auto letterhead = std::unique_ptr<char[]>(new char[LETTERHEAD_SIZE]());
+        auto letterhead = heap_alloc_array<char>(LETTERHEAD_SIZE);
         int letterhead_lines = 0;
 
         {
             StaticJsonDocument<192> doc;
-            auto buf = std::unique_ptr<char[]>(new char[1024]());
+            auto buf = heap_alloc_array<char>(1024);
             if (request.contentLength() > 1024)
                 return request.send(413);
             request.receive(buf.get(), 1024);

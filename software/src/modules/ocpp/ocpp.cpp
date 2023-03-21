@@ -164,11 +164,11 @@ void Ocpp::setup()
             return;
         }
 
-        auto pass_bytes = std::unique_ptr<uint8_t[]>(new uint8_t[20]());
+        uint8_t pass_bytes[20] = {};
         for(size_t i = 0; i < 20; ++i) {
             pass_bytes[i] = hex_digit_to_byte(pass[2*i]) << 4 | hex_digit_to_byte(pass[2*i + 1]);
         }
-        cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes.get(), 20);
+        cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes, 20);
     }, 5000);
 }
 
