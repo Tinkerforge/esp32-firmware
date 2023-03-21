@@ -507,7 +507,7 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
 
         logger->printfln("    Status is 5, retrying.");
 
-        if (!flash_plugin(bricklet, firmware, firmware_len, regular_plugin_upto, logger)) {
+        if (!flash_plugin(bricklet, firmware, firmware_len, firmware_len, logger)) {
             return false;
         }
 
