@@ -1042,13 +1042,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             this.uplot_wrapper_ref.current.set_loading();
         }
 
-        this.update_wallbox_5min_cache_all(this.state.current_5min_date)
+        this.update_energy_manager_5min_cache(this.state.current_5min_date)
             .then((success: boolean) => {
                 if (!success) {
                     return Promise.resolve(false);
                 }
 
-                return this.update_energy_manager_5min_cache(this.state.current_5min_date);
+                return this.update_wallbox_5min_cache_all(this.state.current_5min_date);
             })
             .then((success: boolean) => {
                 if (!success) {
