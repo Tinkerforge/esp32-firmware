@@ -136,15 +136,17 @@ void Ocpp::setup()
     if (!config.get("enable")->asBool() || config.get("url")->asString().length() == 0)
         return;
 
+    cp = std::unique_ptr<OcppChargePoint>(new OcppChargePoint());
+
     task_scheduler.scheduleOnce([this](){
-        // Make sure every code path calls cp.start!
+        // Make sure every code path calls cp->start!
 
         task_scheduler.scheduleWithFixedDelay([this](){
-            cp.tick();
+            cp->tick();
         }, 100, 100);
 
         if (!config_in_use.get("enable_auth")->asBool()) {
-            cp.start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), nullptr, 0);
+            cp->start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), nullptr, 0);
             return;
         }
 
@@ -160,7 +162,7 @@ void Ocpp::setup()
         }
 
         if (!pass_is_hex) {
-            cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), (const uint8_t *)pass.c_str(), pass.length());
+            cp->start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), (const uint8_t *)pass.c_str(), pass.length());
             return;
         }
 
@@ -168,7 +170,7 @@ void Ocpp::setup()
         for(size_t i = 0; i < 20; ++i) {
             pass_bytes[i] = hex_digit_to_byte(pass[2*i]) << 4 | hex_digit_to_byte(pass[2*i + 1]);
         }
-        cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes, 20);
+        cp->start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes, 20);
     }, 5000);
 }
 
@@ -186,7 +188,7 @@ void Ocpp::register_urls()
 #ifdef OCPP_DEBUG
     api.addFeature("ocpp_debug");
     api.addCommand("ocpp/change_configuration", &change_configuration, {}, [this](){
-        auto status = cp.changeConfig(change_configuration.get("key")->asEphemeralCStr(), change_configuration.get("value")->asEphemeralCStr());
+        auto status = cp->changeConfig(change_configuration.get("key")->asEphemeralCStr(), change_configuration.get("value")->asEphemeralCStr());
         logger.printfln("Change config %s status %s", change_configuration.get("key")->asEphemeralCStr(), ChangeConfigurationResponseStatusStrings[(size_t) status]);
     }, true);
 #endif
