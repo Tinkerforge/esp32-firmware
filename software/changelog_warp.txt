@@ -364,7 +364,7 @@
 - Make managed chargers on status page clickable links
 - Check if configured charger hosts have duplicates
 - Filter out mDNS responses not created by WARP Chargers
-- Resolve .local hostnames via
+- Resolve .local hostnames via mDNS scan
 - Remove stale RSSI and IP values if WiFi connection is lost
 - Fix charge log stopping after 60 seconds
 - Improve MQTT error messages
