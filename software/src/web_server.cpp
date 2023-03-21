@@ -117,7 +117,6 @@ WebServerHandler *WebServer::on(const char *uri, httpd_method_t method, wshCallb
 }
 
 static const size_t SCRATCH_BUFSIZE = 2048;
-static uint8_t scratch_buf[SCRATCH_BUFSIZE] = {0};
 
 static esp_err_t low_level_upload_handler(httpd_req_t *req)
 {
@@ -135,8 +134,10 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
     size_t remaining = req->content_len;
     size_t index = 0;
 
+    auto scratch_buf = heap_alloc_array<uint8_t>(SCRATCH_BUFSIZE);
+
     while (remaining > 0) {
-        int received = httpd_req_recv(req, (char *)scratch_buf, MIN(remaining, SCRATCH_BUFSIZE));
+        int received = httpd_req_recv(req, (char *)scratch_buf.get(), MIN(remaining, SCRATCH_BUFSIZE));
         // Retry if timeout occurred
         if (received == HTTPD_SOCK_ERR_TIMEOUT) {
             continue;
@@ -151,7 +152,7 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
         }
 
         remaining -= received;
-        if (!ctx->handler->uploadCallback(request, "not implemented", index, scratch_buf, received, remaining == 0)) {
+        if (!ctx->handler->uploadCallback(request, "not implemented", index, scratch_buf.get(), received, remaining == 0)) {
             return ESP_FAIL;
         }
 
