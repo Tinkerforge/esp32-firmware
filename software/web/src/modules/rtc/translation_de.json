@@ -1,18 +1,18 @@
 {
     "rtc": {
         "navbar": {
-            "rtc": "Real-Time Clock"
+            "rtc": "Echtzeituhr"
         },
         "content": {
-            "rtc": "Real-Time Clock Bricklet",
-            "live_date": "Zeit des Real-Time Clock Bricklets",
+            "rtc": "Echtzeituhr",
+            "live_date": "Aktuelle Zeit der Echtzeituhr",
             "set_time": "Zeit setzen",
             "enable_auto_sync": "Automatische Synchronisierung",
-            "auto_sync_desc": "Setzt die Zeit des Real-Time Clock Bricklets automatisch, wenn das Webinterface geöffnet wird und keine NTP-Synchronisierung besteht."
+            "auto_sync_desc": "Setzt die Zeit der Echtzeituhr automatisch, wenn das Webinterface geladen wird und keine NTP-Synchronisierung besteht."
         },
         "script": {
-            "save_failed": "Speichern der Real-Time Clock-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Real-Time Clock-Einstellungen"
+            "save_failed": "Speichern der Echtzeituhr-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "Echtzeituhr-Einstellungen"
         }
     }
 }
