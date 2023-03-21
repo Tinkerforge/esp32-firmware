@@ -27,33 +27,49 @@
 
 #include "esp_core_dump.h"
 
-#define TF_COREDUMP_DATA_BUFF_SIZE 555
+// Pre- and postfix take up 54 characters.
+COREDUMP_DRAM_ATTR char tf_coredump_info[256];
 
-//Buffer size of 555 Bytes so that we have a buffer size of 500 + 55 pre + postfix.
-COREDUMP_DRAM_ATTR char tf_coredump_data[TF_COREDUMP_DATA_BUFF_SIZE];
-
-Coredump::Coredump() {
-    String tf_coredump_prefix = "___tf_coredump_data_start___";
-    String tf_coredump_suffix = "___tf_coredump_data_end___";
-
+Coredump::Coredump()
+{
     StaticJsonDocument<500> tf_coredump_json;
     tf_coredump_json["firmware_version"] = build_version_full_str();
-    tf_coredump_json["firmware_file_name"] = build_filename_str();
     tf_coredump_json["firmware_commit_id"] = build_commit_id_str();
+    tf_coredump_json["firmware_file_name"] = build_filename_str();
+
+    if (build_coredump_info(tf_coredump_json)) {
+        setup_error = CoredumpSetupError::OK;
+        return;
+    }
+
+    tf_coredump_json.remove("firmware_file_name");
+
+    if (build_coredump_info(tf_coredump_json)) {
+        setup_error = CoredumpSetupError::Truncated;
+        return;
+    }
+
+    setup_error = CoredumpSetupError::BufferToSmall;
+}
+
+bool Coredump::build_coredump_info(JsonDocument &tf_coredump_json)
+{
+    String tf_coredump_prefix = "___tf_coredump_info_start___";
+    String tf_coredump_suffix = "___tf_coredump_info_end___";
 
     String tf_coredump_json_string;
     serializeJson(tf_coredump_json, tf_coredump_json_string);
 
     String tf_coredump_string = tf_coredump_prefix;
 
-    if (tf_coredump_prefix.length () + tf_coredump_json_string.length() + tf_coredump_suffix.length() >= TF_COREDUMP_DATA_BUFF_SIZE) {
-        logger.printfln("Coredump data is too big for buffer");
-    } else {
-        tf_coredump_string += tf_coredump_json_string;
-    }
-    tf_coredump_string += tf_coredump_suffix;
+    if (tf_coredump_prefix.length () + tf_coredump_json_string.length() + tf_coredump_suffix.length() >= sizeof(tf_coredump_info))
+        return false;
 
-    memcpy(tf_coredump_data, tf_coredump_string.c_str(), tf_coredump_string.length());
+    tf_coredump_string += tf_coredump_json_string + tf_coredump_suffix;
+
+    memcpy(tf_coredump_info, tf_coredump_string.c_str(), tf_coredump_string.length() + 1); // Include termination.
+
+    return true;
 }
 
 void Coredump::pre_setup()
@@ -61,6 +77,12 @@ void Coredump::pre_setup()
     coredump_state = Config::Object({
         {"coredump_available", Config::Bool(false)}
     });
+
+    if (setup_error == CoredumpSetupError::BufferToSmall) {
+        logger.printfln("Coredump: Buffer too small for any info data.");
+    } else if (setup_error == CoredumpSetupError::Truncated) {
+        logger.printfln("Coredump: Buffer too small for all data; info data truncated.");
+    }
 }
 
 void Coredump::setup()

@@ -21,6 +21,13 @@
 
 #include "config.h"
 
+enum class CoredumpSetupError
+{
+    OK = 0,
+    BufferToSmall,
+    Truncated,
+};
+
 class Coredump
 {
 public:
@@ -34,5 +41,8 @@ public:
     bool initialized = false;
 
 private:
+    bool build_coredump_info(JsonDocument &tf_coredump_json);
+
     ConfigRoot coredump_state;
+    CoredumpSetupError setup_error;
 };
