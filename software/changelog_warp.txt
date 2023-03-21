@@ -366,3 +366,5 @@
 - Filter out mDNS responses not created by WARP Chargers
 - Resolve .local hostnames via
 - Remove stale RSSI and IP values if WiFi connection is lost
+- Fix charge log stopping after 60 seconds
+- Improve MQTT error messages

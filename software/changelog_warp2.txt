@@ -342,3 +342,5 @@
 - Resolve .local hostnames via
 - Remove stale RSSI and IP values if WiFi connection is lost
 - Add current limit options to GPIO input (through EVSE 2.0 Bricklet firmware 2.1.11)
+- Fix charge log stopping after 60 seconds
+- Improve MQTT error messages
