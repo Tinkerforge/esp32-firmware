@@ -49,7 +49,7 @@ void Meter::pre_setup()
 
     all_values = Config::Array({},
         new Config{Config::Float(NAN)},
-        NAN, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
+        0, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
 
     last_reset = Config::Object({
         {"last_reset", Config::Uint32(0)}
