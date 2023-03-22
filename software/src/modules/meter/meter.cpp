@@ -33,9 +33,9 @@ void Meter::pre_setup()
     });
 
     values = Config::Object({
-        {"power", Config::Float(0.0)},
-        {"energy_rel", Config::Float(0.0)},
-        {"energy_abs", Config::Float(0.0)},
+        {"power", Config::Float(NAN)},
+        {"energy_rel", Config::Float(NAN)},
+        {"energy_abs", Config::Float(NAN)},
     });
 
     phases = Config::Object({
@@ -48,8 +48,8 @@ void Meter::pre_setup()
     });
 
     all_values = Config::Array({},
-        new Config{Config::Float(0)},
-        0, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
+        new Config{Config::Float(NAN)},
+        NAN, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
 
     last_reset = Config::Object({
         {"last_reset", Config::Uint32(0)}
