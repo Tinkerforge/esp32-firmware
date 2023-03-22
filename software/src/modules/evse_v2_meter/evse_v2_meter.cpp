@@ -74,9 +74,11 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
         }, 3000);
         return;
     }
+
+    meter.updateMeterState(2, meter_type);
     updateMeterValues();
     meter.updateMeterAllValues(result);
-    meter.updateMeterState(2, meter_type);
+
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->updateMeterValues();
