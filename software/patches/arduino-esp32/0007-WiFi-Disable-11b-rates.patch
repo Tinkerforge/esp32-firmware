@@ -1,0 +1,30 @@
+From 5a010d3a67ce5cbb67c058480e6bad13204ea2fc Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Wed, 22 Mar 2023 15:03:30 +0100
+Subject: [PATCH] WiFi: Disable 11b rates.
+
+802.11b is obsolete for about 20 years. Keeping compatibility around
+slows down devices not 20 years old.
+---
+ libraries/WiFi/src/WiFiGeneric.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/libraries/WiFi/src/WiFiGeneric.cpp b/libraries/WiFi/src/WiFiGeneric.cpp
+index a94b1419..cf35234c 100644
+--- a/libraries/WiFi/src/WiFiGeneric.cpp
++++ b/libraries/WiFi/src/WiFiGeneric.cpp
+@@ -1179,6 +1179,11 @@ bool WiFiGenericClass::mode(wifi_mode_t m)
+             }
+         }
+     }
++    // 11b is long obsolete. true = disable. Don't care if it can't be disabled.
++    // Unconditionally disable both because neither can be changed when trying to switch mode later.
++    esp_wifi_config_11b_rate(WIFI_IF_STA, true);
++    esp_wifi_config_11b_rate(WIFI_IF_AP , true);
++
+     if(!espWiFiStart()){
+         return false;
+     }
+-- 
+2.30.2
+
