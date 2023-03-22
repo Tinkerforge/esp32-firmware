@@ -68,7 +68,7 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
     // and if so, read the meter values.
 
     float result[METER_ALL_VALUES_COUNT] = {0};
-    if (evse_v2.get_all_energy_meter_values(result) == 0) {
+    if (evse_v2.get_all_energy_meter_values(result) != METER_ALL_VALUES_COUNT) {
         task_scheduler.scheduleOnce([this](){
             this->setupEVSE(true);
         }, 3000);
@@ -86,7 +86,7 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
 
     task_scheduler.scheduleWithFixedDelay([this](){
         float inner_result[METER_ALL_VALUES_COUNT] = {0};
-        if (evse_v2.get_all_energy_meter_values(inner_result) == 0)
+        if (evse_v2.get_all_energy_meter_values(inner_result) != METER_ALL_VALUES_COUNT)
             return;
 
         meter.updateMeterAllValues(inner_result);
