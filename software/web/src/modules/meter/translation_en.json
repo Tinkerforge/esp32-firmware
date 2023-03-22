@@ -80,16 +80,16 @@
             "detailed_frequency_of_supply_voltages_desc": "",
 
             "detailed_total_import_kwh": "Active energy (import)",
-            "detailed_total_import_kwh_desc": "transferred to vehicle",
+            "detailed_total_import_kwh_desc": "drawn from grid",
 
             "detailed_total_export_kwh": "Active energy (export)",
-            "detailed_total_export_kwh_desc": "transferred from vehicle",
+            "detailed_total_export_kwh_desc": "fed to grid",
 
             "detailed_total_import_kvarh": "Reactive energy (import)",
-            "detailed_total_import_kvarh_desc": "transferred to vehicle",
+            "detailed_total_import_kvarh_desc": "drawn from grid",
 
             "detailed_total_export_kvarh": "Reactive energy (export)",
-            "detailed_total_export_kvarh_desc": "transferred from vehicle",
+            "detailed_total_export_kvarh_desc": "fed to grid",
 
             "detailed_total_vah": "Total apparent power",
             "detailed_total_vah_desc": "",
@@ -98,13 +98,13 @@
             "detailed_ah_desc": "",
 
             "detailed_total_system_power_demand": "Active power demand",
-            "detailed_total_system_power_demand_desc": "import - export",
+            "detailed_total_system_power_demand_desc": "difference of import to export",
 
             "detailed_maximum_total_system_power_demand": "Maximum active power demand",
             "detailed_maximum_total_system_power_demand_desc": "highest value measured",
 
             "detailed_total_system_va_demand": "Apparent power demand",
-            "detailed_total_system_va_demand_desc": "import - export",
+            "detailed_total_system_va_demand_desc": "difference of import to export",
 
             "detailed_maximum_total_system_va_demand": "Maximum apparent power demand",
             "detailed_maximum_total_system_va_demand_desc": "highest value measured",
@@ -161,10 +161,10 @@
             "detailed_average_line_to_line_volts_thd_desc": "",
 
             "detailed_total_kwh_sum": "Sum of total active energies",
-            "detailed_total_kwh_sum_desc": "import + export of all phases",
+            "detailed_total_kwh_sum_desc": "sum of import and export of all phases",
 
             "detailed_total_kvarh_sum": "Sum of total reactive energies",
-            "detailed_total_kvarh_sum_desc": "import + export of all phases",
+            "detailed_total_kvarh_sum_desc": "sum of import and export of all phases",
 
             "detailed_import_kwh": "Active energies (import)",
             "detailed_import_kwh_desc": "L1, L2, L3; transferred to vehicle",
@@ -173,7 +173,7 @@
             "detailed_export_kwh_desc": "L1, L2, L3; transferred from vehicle",
 
             "detailed_total_kwh": "Total active energies",
-            "detailed_total_kwh_desc": "L1, L2, L3; import + export",
+            "detailed_total_kwh_desc": "L1, L2, L3; sum of import and export",
 
             "detailed_import_kvarh": "Reactive energies (import)",
             "detailed_import_kvarh_desc": "L1, L2, L3; transferred to vehicle",
@@ -182,7 +182,7 @@
             "detailed_export_kvarh_desc": "L1, L2, L3; transferred from vehicle",
 
             "detailed_total_kvarh": "Total reactive energies",
-            "detailed_total_kvarh_desc": "L1, L2, L3; import + export"
+            "detailed_total_kvarh_desc": "L1, L2, L3; sum of import and export"
         },
         "script": {
             "time": "Time of day",

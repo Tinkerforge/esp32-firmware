@@ -80,16 +80,16 @@
             "detailed_frequency_of_supply_voltages_desc": "",
 
             "detailed_total_import_kwh": "Wirkenergie (Import)",
-            "detailed_total_import_kwh_desc": "vom Fahrzeug aufgenommen",
+            "detailed_total_import_kwh_desc": "vom Netz bezogen",
 
             "detailed_total_export_kwh": "Wirkenergie (Export)",
-            "detailed_total_export_kwh_desc": "vom Fahrzeug abgegeben",
+            "detailed_total_export_kwh_desc": "ins Netz eingespeist",
 
             "detailed_total_import_kvarh": "Blindenergie (Import)",
-            "detailed_total_import_kvarh_desc": "vom Fahrzeug aufgenommen",
+            "detailed_total_import_kvarh_desc": "vom Netz bezogen",
 
             "detailed_total_export_kvarh": "Blindenergie (Export)",
-            "detailed_total_export_kvarh_desc": "vom Fahrzeug abgegeben",
+            "detailed_total_export_kvarh_desc": "ins Netz eingespeist",
 
             "detailed_total_vah": "Gesamtscheinenergie",
             "detailed_total_vah_desc": "",
@@ -98,13 +98,13 @@
             "detailed_ah_desc": "",
 
             "detailed_total_system_power_demand": "Bezogene Wirkleistung",
-            "detailed_total_system_power_demand_desc": "entspricht Import - Export",
+            "detailed_total_system_power_demand_desc": "Differenz von Import zu Export",
 
             "detailed_maximum_total_system_power_demand": "Max. bezogene Wirkleistung",
             "detailed_maximum_total_system_power_demand_desc": "höchster gemessener Wert",
 
             "detailed_total_system_va_demand": "Bezogene Scheinleistung",
-            "detailed_total_system_va_demand_desc": "entspricht Import - Export",
+            "detailed_total_system_va_demand_desc": "Differenz von Import zu Export",
 
             "detailed_maximum_total_system_va_demand": "Max. bezogene Scheinleistung",
             "detailed_maximum_total_system_va_demand_desc": "höchster gemessener Wert",
@@ -161,28 +161,28 @@
             "detailed_average_line_to_line_volts_thd_desc": "",
 
             "detailed_total_kwh_sum": "Summe der Gesamtwirkenergien",
-            "detailed_total_kwh_sum_desc": "Import + Export aller Phasen",
+            "detailed_total_kwh_sum_desc": "Summe aus Import und Export aller Phasen",
 
             "detailed_total_kvarh_sum": "Summe der Gesamtblindenergien",
-            "detailed_total_kvarh_sum_desc": "Import + Export aller Phasen",
+            "detailed_total_kvarh_sum_desc": "Summe aus Import und Export aller Phasen",
 
             "detailed_import_kwh": "Wirkenergie (Import)",
-            "detailed_import_kwh_desc": "L1, L2, L3; vom Fahrzeug aufgenommen",
+            "detailed_import_kwh_desc": "L1, L2, L3; vom Netz bezogen",
 
             "detailed_export_kwh": "Wirkenergie (Export)",
-            "detailed_export_kwh_desc": "L1, L2, L3; vom Fahrzeug abgegeben",
+            "detailed_export_kwh_desc": "L1, L2, L3; ins Netz eingespeist",
 
             "detailed_total_kwh": "Gesamtwirkenergie",
-            "detailed_total_kwh_desc": "L1, L2, L3; Import + Export",
+            "detailed_total_kwh_desc": "L1, L2, L3; Summe aus Import und Export",
 
             "detailed_import_kvarh": "Blindenergie (Import)",
-            "detailed_import_kvarh_desc": "L1, L2, L3; vom Fahrzeug aufgenommen",
+            "detailed_import_kvarh_desc": "L1, L2, L3; vom Netz bezogen",
 
             "detailed_export_kvarh": "Blindenergie (Export)",
-            "detailed_export_kvarh_desc": "L1, L2, L3; vom Fahrzeug abgegeben",
+            "detailed_export_kvarh_desc": "L1, L2, L3; ins Netz eingespeist",
 
             "detailed_total_kvarh": "Gesamtblindenergie",
-            "detailed_total_kvarh_desc": "L1, L2, L3; Import + Export"
+            "detailed_total_kvarh_desc": "L1, L2, L3; Summe aus Import und Export"
         },
         "script": {
             "time": "Uhrzeit",
