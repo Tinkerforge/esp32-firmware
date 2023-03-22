@@ -42,9 +42,7 @@ void EMMeter::pre_setup()
 
 void EMMeter::updateMeterValues()
 {
-    meter.updateMeterValues(energy_manager.all_data.power,
-                            0,
-                            0);
+    meter.updateMeterValues(energy_manager.all_data.power, 0, 0);
 
     errors.get("local_timeout")->updateUint(energy_manager.all_data.error_count[0]);
     errors.get("global_timeout")->updateUint(energy_manager.all_data.error_count[1]);
@@ -59,7 +57,6 @@ void EMMeter::setupEM(bool update_module_initialized)
     energy_manager.update_all_data();
 
     uint8_t meter_type = energy_manager.all_data.energy_meter_type;
-
     if (meter_type == 0) {
         task_scheduler.scheduleOnce([this](){
             this->setupEM(true);
