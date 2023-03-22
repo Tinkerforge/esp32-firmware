@@ -118,7 +118,8 @@ void Meter::updateMeterAllValues(float values[METER_ALL_VALUES_COUNT])
         return;
 
     for (int i = 0; i < METER_ALL_VALUES_COUNT; ++i)
-        all_values.get(i)->updateFloat(values[i]);
+        if (!isnan(values[i]))
+            all_values.get(i)->updateFloat(values[i]);
 }
 
 void Meter::registerResetCallback(std::function<void(void)> cb)
