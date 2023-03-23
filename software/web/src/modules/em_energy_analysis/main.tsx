@@ -167,7 +167,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             series: [
                 {
                     label: __("em_energy_analysis.script.time"),
-                    value: __("em_energy_analysis.script.time_legend_format"),
+                    value: (self: uPlot, rawValue: number) => rawValue !== null ? util.timestamp_min_to_date((rawValue / 60), '???') : null,
                 },
             ],
             axes: [
@@ -184,17 +184,27 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         3600 * 12,
                         3600 * 24,
                     ],
-                    // [0]:   minimum num secs in found axis split (tick incr)
-                    // [1]:   default tick format
-                    // [2-7]: rollover tick formats
-                    // [8]:   mode: 0: replace [1] -> [2-7], 1: concat [1] + [2-7]
-                    values: [
-                        // tick incr  default      year  month  day   hour  min   sec   mode
-                        [60,          "{HH}:{mm}", null, null,  null, null, null, null, 1],
-                    ],
+                    values: (self: uPlot, splits: number[]) => {
+                        let values: string[] = new Array(splits.length);
+
+                        for (let i = 0; i < splits.length; ++i) {
+                            values[i] = (new Date(splits[i] * 1000)).toLocaleString([], {hour: '2-digit', minute: '2-digit'});
+                        }
+
+                        return values;
+                    },
                 },
                 {
                     size: 55,
+                    values: (self: uPlot, splits: number[]) => {
+                        let values: string[] = new Array(splits.length);
+
+                        for (let i = 0; i < splits.length; ++i) {
+                            values[i] = util.toLocaleFixed(splits[i]); // FIXME: assuming that no fractional part is necessary
+                        }
+
+                        return values;
+                    },
                 }
             ],
             scales: {
@@ -283,7 +293,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             pxAlign: 0,
             spanGaps: false,
             label: __("em_energy_analysis.script.power") + (name ? ' ' + name: ''),
-            value: (self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => rawValue !== null ? this.data.values[seriesIdx][idx] + " W" : null,
+            value: (self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => rawValue !== null ? util.toLocaleFixed(this.data.values[seriesIdx][idx]) + " W" : null, // FIXME: assuming that no fractional part is necessary
             stroke: strokes[(i - 1) % strokes.length],
             fill: this.data.stacked[i] || this.props.default_fill ? fills[(i - 1) % fills.length] : undefined,
             width: 2,

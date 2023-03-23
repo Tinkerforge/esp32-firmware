@@ -423,15 +423,11 @@ export function getShowRebootModalFn(changed_value_name: string) {
     }
 }
 
-export function timestamp_min_to_date(timestamp_minutes: number, unsynced_string: string) {
-    if (timestamp_minutes == 0) {
-        return unsynced_string;
-    }
-    let date_fmt: any = { year: 'numeric', month: '2-digit', day: '2-digit'};
-    let time_fmt: any = {hour: '2-digit', minute:'2-digit' };
+function timestamp_to_date(timestamp: number, time_fmt: any) {
+    let date_fmt: any = {year: 'numeric', month: '2-digit', day: '2-digit'};
     let fmt = Object.assign({}, date_fmt, time_fmt);
 
-    let date = new Date(timestamp_minutes * 60000);
+    let date = new Date(timestamp);
     let result = date.toLocaleString([], fmt);
 
     let date_result = date.toLocaleDateString([], date_fmt);
@@ -449,6 +445,18 @@ export function timestamp_min_to_date(timestamp_minutes: number, unsynced_string
     }
 
     return result;
+}
+
+export function timestamp_min_to_date(timestamp_minutes: number, unsynced_string: string) {
+    if (timestamp_minutes == 0) {
+        return unsynced_string;
+    }
+
+    return timestamp_to_date(timestamp_minutes * 60000, {hour: '2-digit', minute: '2-digit'});
+}
+
+export function timestamp_sec_to_date(timestamp_seconds: number) {
+    return timestamp_to_date(timestamp_seconds * 1000, {hour: '2-digit', minute: '2-digit', second: '2-digit'});
 }
 
 export function upload(data: Blob, url: string, progress: (i: number) => void = i => {}, contentType?: string, timeout_ms: number = 5000) {

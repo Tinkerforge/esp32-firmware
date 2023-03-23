@@ -172,14 +172,14 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             series: [
                 {
                     label: __("meter.script.time"),
-                    value: __("meter.script.time_legend_format"),
+                    value: (self: uPlot, rawValue: number) => rawValue !== null ? util.timestamp_sec_to_date(rawValue) : null,
                 },
                 {
                     show: true,
                     pxAlign: 0,
                     spanGaps: false,
                     label: __("meter.script.power"),
-                    value: (self: uPlot, rawValue: number) => rawValue !== null ? rawValue + " W" : null,
+                    value: (self: uPlot, rawValue: number) => rawValue !== null ? util.toLocaleFixed(rawValue) + " W" : null,
                     stroke: "rgb(0, 123, 255)",
                     fill: "rgb(0, 123, 255, 0.1)",
                     width: 2,
@@ -210,6 +210,15 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 },
                 {
                     size: 55,
+                    values: (self: uPlot, splits: number[], axisIdx: number, foundSpace: number, foundIncr: number) => {
+                        let values: string[] = new Array(splits.length);
+
+                        for (let i = 0; i < splits.length; ++i) {
+                            values[i] = util.toLocaleFixed(splits[i]); // FIXME: assuming that no fractional part is necessary
+                        }
+
+                        return values;
+                    },
                 }
             ],
             scales: {
