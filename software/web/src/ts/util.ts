@@ -126,7 +126,11 @@ export function format_timespan(secs: number) {
     return dayString + hourString + minString + secString;
 }
 
-export function toLocaleFixed(i: number, fractionDigits: number) {
+export function toLocaleFixed(i: number, fractionDigits?: number) {
+    if (fractionDigits === undefined) {
+        fractionDigits = 0;
+    }
+
     return i.toLocaleString(undefined, {
         minimumFractionDigits: fractionDigits,
         maximumFractionDigits: fractionDigits
