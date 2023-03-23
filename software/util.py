@@ -6,6 +6,8 @@ import hashlib
 from zipfile import ZipFile
 import json
 import re
+import binascii
+import struct
 
 def get_digest_paths(dst_dir, var_name, env=None):
     if env is not None:
@@ -155,6 +157,15 @@ def embed_data_with_digest(data, dst_dir, var_name, var_type, data_filter=lambda
         embed_data_internal(data_filter(data), cpp_path, h_path, var_name, var_type)
         store_digest(new_digest, dst_dir, var_name)
 
+def patch_beta_firmware(data, beta_version):
+    data = bytearray(data)
+    data[-10] = 200 + beta_version
+
+    new_checksum = struct.pack('<I', binascii.crc32(data[:-4]) & 0xFFFFFFFF)
+    print(new_checksum.hex())
+    data = data[:-4] + new_checksum
+    return data
+
 def embed_bricklet_firmware_bin(env=None):
     firmwares = [x for x in os.listdir('.') if x.endswith('.zbin') and x.startswith('bricklet_')]
 
@@ -167,7 +178,7 @@ def embed_bricklet_firmware_bin(env=None):
         sys.exit(-1)
 
     firmware = firmwares[0]
-    m = re.fullmatch('bricklet_(.*)_firmware_\d+_\d+_\d+.zbin', firmware)
+    m = re.fullmatch('bricklet_(.*)_firmware_\d+_\d+_\d+(?:_beta(\d+))?.zbin', firmware)
 
     if m == None:
         print('Firmware {} did not match naming schema'.format(firmware))
@@ -177,7 +188,13 @@ def embed_bricklet_firmware_bin(env=None):
 
     with ZipFile(firmware) as zf:
         with zf.open('{}-bricklet-firmware.bin'.format(firmware_name.replace('_', '-')), 'r') as f:
-            embed_data_with_digest(f.read(), '.', firmware_name + '_bricklet_firmware_bin', 'uint8_t', env=env)
+            fw = f.read()
+
+    beta_version = m.group(2)
+    if beta_version is not None:
+        fw = patch_beta_firmware(fw, int(beta_version))
+
+    embed_data_with_digest(fw, '.', firmware_name + '_bricklet_firmware_bin', 'uint8_t', env=env)
 
 def merge(left, right, path=[]):
     for key in right:
