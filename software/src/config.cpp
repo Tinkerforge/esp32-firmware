@@ -1156,22 +1156,22 @@ const char *Config::asUnsafeCStr() const
     return this->get<ConfString>()->getVal()->c_str();
 }
 
-const float &Config::asFloat() const
+float Config::asFloat() const
 {
     return *this->get<ConfFloat>()->getVal();
 }
 
-const uint32_t &Config::asUint() const
+uint32_t Config::asUint() const
 {
     return *this->get<ConfUint>()->getVal();
 }
 
-const int32_t &Config::asInt() const
+int32_t Config::asInt() const
 {
     return *this->get<ConfInt>()->getVal();
 }
 
-const bool &Config::asBool() const
+bool Config::asBool() const
 {
     return *this->get<ConfBool>()->getVal();
 }

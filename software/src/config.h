@@ -685,26 +685,26 @@ struct Config {
     const char *asEphemeralCStr() const;
     const char *asUnsafeCStr() const;
 
-    const float &asFloat() const;
+    float asFloat() const;
 
-    const uint32_t &asUint() const;
+    uint32_t asUint() const;
 
-    const int32_t &asInt() const;
+    int32_t asInt() const;
 
     template<typename T>
-    const T& asEnum() const {
+    T asEnum() const {
         if (this->is<ConfUint>()) {
-            return (const T&) this->asUint();
+            return (T) this->asUint();
         } else if (this->is<ConfInt>()) {
-            return (const T&) this->asInt();
+            return (T) this->asInt();
         } else {
             logger.printfln("asEnum: Config has wrong type. This is %s, (not a ConfInt or ConfUint)", this->to_string().c_str());
             delay(100);
-            return (const T&) this->asUint();
+            return (T) this->asUint();
         }
     }
 
-    const bool &asBool() const;
+    bool asBool() const;
 
 private:
     // This is a gigantic footgun: The reference is invalidated after the module setup,
