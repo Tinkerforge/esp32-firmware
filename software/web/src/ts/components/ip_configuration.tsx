@@ -98,7 +98,6 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                         onValue={(v) => this.onUpdate("subnet", v)}
                         placeholder={__("component.ip_configuration.subnet_placeholder")}
                         items={[
-                            ["255.255.255.255", "255.255.255.255 (/32)"],
                             ["255.255.255.254", "255.255.255.254 (/31)"],
                             ["255.255.255.252", "255.255.255.252 (/30)"],
                             ["255.255.255.248", "255.255.255.248 (/29)"],
@@ -126,13 +125,6 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                             ["255.128.0.0", "255.128.0.0 (/9)"],
 
                             ["255.0.0.0", "255.0.0.0 (/8)"],
-                            ["254.0.0.0", "254.0.0.0 (/7)"],
-                            ["252.0.0.0", "252.0.0.0 (/6)"],
-                            ["248.0.0.0", "248.0.0.0 (/5)"],
-                            ["240.0.0.0", "240.0.0.0 (/4)"],
-                            ["224.0.0.0", "224.0.0.0 (/3)"],
-                            ["192.0.0.0", "192.0.0.0 (/2)"],
-                            ["128.0.0.0", "128.0.0.0 (/1)"]
                         ]}
                     />
                 <div class="invalid-feedback" dangerouslySetInnerHTML={{__html:__("component.ip_configuration.subnet_captures_localhost")}}></div>
