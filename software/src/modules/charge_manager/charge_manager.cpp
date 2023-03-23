@@ -408,18 +408,16 @@ bool ChargeManager::is_control_pilot_disconnect_supported(uint32_t last_update_c
     return true;
 }
 
-#define LOCAL_LOG(fmt, ...) if(verbose) local_log += snprintf(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
+#define LOCAL_LOG(fmt, ...) if(local_log) local_log += snprintf(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
 
 void ChargeManager::distribute_current()
 {
     uint32_t available_current_init = charge_manager_available_current.get("current")->asUint();
     uint32_t available_current = available_current_init;
 
-    static bool verbose = charge_manager_config_in_use.get("verbose")->asBool();
-
     bool print_local_log = false;
     char *local_log = distribution_log.get();
-    if (verbose)
+    if (local_log)
         local_log += snprintf(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log.get()), "Redistributing current%c", '\0');
 
     auto chargers = charge_manager_state.get("chargers");
@@ -733,13 +731,15 @@ void ChargeManager::distribute_current()
 
     if (print_local_log) {
         local_log = distribution_log.get();
-        size_t len = strlen(local_log);
-        while (len > 0) {
-            logger.write(local_log, len);
-            local_log += len + 1;
-            if ((local_log - distribution_log.get()) >= DISTRIBUTION_LOG_LEN)
-                break;
-            len = strlen(local_log);
+        if (local_log) {
+            size_t len = strlen(local_log);
+            while (len > 0) {
+                logger.write(local_log, len);
+                local_log += len + 1;
+                if ((local_log - distribution_log.get()) >= DISTRIBUTION_LOG_LEN)
+                    break;
+                len = strlen(local_log);
+            }
         }
     }
 
