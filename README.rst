@@ -1,8 +1,10 @@
 ESP32 Firmware
 ==============
 
-This repository contains the firmware source code and the source code of the
-web site, all released firmwares and more.
+This repository contains the firmware source code for all Tinkerforge
+products that are based on the ESP32 Brick or ESP32 Ethernet Brick.
+This includes WARP/WARP2 Charger and the WARP Energy Manager.
+
 
 Repository Content
 ------------------
