@@ -265,12 +265,12 @@ bool Wifi::apply_sta_config_and_connect()
     WiFi.setAutoReconnect(false);
     WiFi.disconnect(false, true);
 
-    const String &ssid = wifi_sta_config_in_use.get("ssid")->asString();
+    const char *ssid = wifi_sta_config_in_use.get("ssid")->asEphemeralCStr();
 
     uint8_t bssid[6];
     wifi_sta_config_in_use.get("bssid")->fillArray<uint8_t, Config::ConfUint>(bssid, 6 * sizeof(bssid));
 
-    const String &passphrase = wifi_sta_config_in_use.get("passphrase")->asString();
+    const char *passphrase = wifi_sta_config_in_use.get("passphrase")->asEphemeralCStr();
     bool bssid_lock = wifi_sta_config_in_use.get("bssid_lock")->asBool();
 
     IPAddress ip, subnet, gateway, dns, dns2;
@@ -287,9 +287,9 @@ bool Wifi::apply_sta_config_and_connect()
         WiFi.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
     }
 
-    logger.printfln("Wifi connecting to %s", ssid.c_str());
+    logger.printfln("Wifi connecting to %s", ssid);
 
-    WiFi.begin(ssid.c_str(), passphrase.c_str(), 0, bssid_lock ? bssid : nullptr, true);
+    WiFi.begin(ssid, passphrase, 0, bssid_lock ? bssid : nullptr, true);
     WiFi.setSleep(false);
     return true;
 }
