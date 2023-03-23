@@ -72,10 +72,11 @@ interface UplotWrapperProps {
     id: string;
     class: string;
     sidebar_id: string;
+    marker_width_reduction: number;
     y_min?: number;
     y_max?: number;
     y_step?: number;
-    marker_width_reduction: number;
+    default_fill?: boolean;
 }
 
 // https://seaborn.pydata.org/tutorial/color_palettes.html#qualitative-color-palettes
@@ -284,7 +285,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             label: __("em_energy_analysis.script.power") + (name ? ' ' + name: ''),
             value: (self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => rawValue !== null ? this.data.values[seriesIdx][idx] + " W" : null,
             stroke: strokes[(i - 1) % strokes.length],
-            fill: this.data.stacked[i] ? fills[(i - 1) % fills.length] : undefined,
+            fill: this.data.stacked[i] || this.props.default_fill ? fills[(i - 1) % fills.length] : undefined,
             width: 2,
         };
     }
@@ -472,9 +473,10 @@ export class EMEnergyAnalysisStatusChart extends Component<{}, {force_render: nu
                               id="em_energy_analysis_status_chart"
                               class="em-energy-analysis-status-chart"
                               sidebar_id="status"
+                              marker_width_reduction={8}
                               y_min={0}
                               y_max={1500}
-                              marker_width_reduction={8} />
+                              default_fill={true} />
             </>
         )
     }
@@ -1115,10 +1117,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                       id="em_energy_analysis_chart"
                                       class="em-energy-analysis-chart"
                                       sidebar_id="em-energy-analysis"
+                                      marker_width_reduction={30}
                                       y_min={0}
                                       y_max={100}
-                                      y_step={10}
-                                      marker_width_reduction={30} />
+                                      y_step={10} />
                     </div>
                 </div>
                 <FormRow label={__("em_energy_analysis.content.date")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
