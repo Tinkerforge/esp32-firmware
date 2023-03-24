@@ -21,7 +21,7 @@
 
 #include "config.h"
 
-#include "meter.h"
+#include "module.h"
 
 class MqttMeter final : public IModule
 {
