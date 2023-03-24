@@ -18,10 +18,10 @@
  */
 
 #include "rtc.h"
+
 #include "modules.h"
 #include "build.h"
 #include "time.h"
-
 
 void Rtc::pre_setup()
 {
@@ -54,12 +54,6 @@ void Rtc::setup()
 {
     api.restorePersistentConfig("rtc/config", &rtc_config);
 }
-
-void Rtc::register_urls()
-{
-}
-
-void Rtc::loop() {}
 
 void Rtc::register_backend(IRtcBackend *_backend)
 {

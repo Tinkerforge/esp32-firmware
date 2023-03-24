@@ -186,8 +186,3 @@ void Wireguard::register_urls()
 
     api.addState("wireguard/state", &state, {}, 1000);
 }
-
-void Wireguard::loop()
-{
-
-}

@@ -21,21 +21,16 @@
 
 #include "config.h"
 
-class EVSEV2Meter
+#include "module.h"
+
+class EVSEV2Meter final : public IModule
 {
 public:
     EVSEV2Meter(){}
-    void pre_setup();
     void setup();
     void setupEVSE(bool update_module_initialized);
     void register_urls();
-    void loop();
     void updateMeterValues();
 
-    bool initialized = false;
-    bool hardware_available = false;
-
     ConfigRoot all_values;
-
-    char uid[7] = {0};
 };

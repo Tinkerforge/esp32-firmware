@@ -21,6 +21,8 @@
 
 #include "config.h"
 
+#include "module.h"
+
 enum class EthernetState {
     NOT_CONFIGURED = 0,
     NOT_CONNECTED = 1,
@@ -28,16 +30,13 @@ enum class EthernetState {
     CONNECTED = 3
 };
 
-class Ethernet
+class Ethernet final : public IModule
 {
 public:
     Ethernet(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-
-    bool initialized = false;
 
     bool was_connected = false;
 

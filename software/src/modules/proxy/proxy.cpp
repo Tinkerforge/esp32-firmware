@@ -154,7 +154,3 @@ void Proxy::register_urls()
         }
     }, 5000, 5000);
 }
-
-void Proxy::loop()
-{
-}

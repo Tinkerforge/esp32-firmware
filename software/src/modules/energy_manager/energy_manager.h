@@ -19,9 +19,10 @@
 
 #pragma once
 
+#include "config.h"
+
 #include "bindings/bricklet_warp_energy_manager.h"
 
-#include "config.h"
 #include "device_module.h"
 #include "em_rgb_led.h"
 #include "input_pin.h"

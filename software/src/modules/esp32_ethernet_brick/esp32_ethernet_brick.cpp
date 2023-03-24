@@ -120,10 +120,6 @@ static void check_for_factory_reset() {
     digitalWrite(blue_led_pin, blue_led_off);
 }
 
-void ESP32EthernetBrick::pre_setup()
-{
-}
-
 void ESP32EthernetBrick::setup()
 {
     read_efuses(&local_uid_num, local_uid_str, passphrase);
@@ -162,17 +158,4 @@ void ESP32EthernetBrick::setup()
     }, 0, 100);
 
     initialized = true;
-}
-
-void ESP32EthernetBrick::register_urls()
-{
-}
-
-/*
-The ESP Ethernet Brick can not trigger a factory reset itself,
-as the ethernet phy clock disturbs any IO0 button reading.
-*/
-void ESP32EthernetBrick::loop()
-{
-
 }

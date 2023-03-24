@@ -83,11 +83,6 @@ void MqttAutoDiscovery::register_urls()
     api.addPersistentConfig("mqtt/auto_discovery_config", &config, {}, 1000);
 }
 
-void MqttAutoDiscovery::loop()
-{
-
-}
-
 void MqttAutoDiscovery::onMqttConnect()
 {
     // Always subscribe to own discovery topics. Clears all topics when auto discovery is not enabled.

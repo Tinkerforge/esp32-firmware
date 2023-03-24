@@ -183,10 +183,6 @@ void Ethernet::register_urls()
     }, true);
 }
 
-void Ethernet::loop()
-{
-}
-
 EthernetState Ethernet::get_connection_state() const
 {
     if (!initialized)

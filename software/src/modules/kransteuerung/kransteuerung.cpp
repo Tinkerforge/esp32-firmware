@@ -28,11 +28,6 @@
 
 extern TF_HAL hal;
 
-void Kransteuerung::pre_setup()
-{
-
-}
-
 void Kransteuerung::button_pressed_handler(bool left, uint8_t button_l, uint8_t button_r, uint8_t led_l, uint8_t led_r)
 {
     bool value[4] = {false};
@@ -100,15 +95,4 @@ void Kransteuerung::setup()
     }, 100, 100);
 
     initialized = true;
-}
-
-void Kransteuerung::register_urls()
-{
-
-}
-
-
-void Kransteuerung::loop()
-{
-
 }

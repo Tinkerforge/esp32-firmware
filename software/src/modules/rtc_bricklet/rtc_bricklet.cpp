@@ -17,17 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rtc.h"
+#include "rtc_bricklet.h"
+
 #include "build.h"
 #include "esp_sntp.h"
 #include "api.h"
 #include "modules.h"
 #include "task_scheduler.h"
 #include <ctime>
-
-void RtcBricklet::pre_setup()
-{
-}
 
 void RtcBricklet::update_system_time()
 {
@@ -129,18 +126,6 @@ struct timeval RtcBricklet::get_time()
         return tmp;
     }
     return time;
-}
-
-void RtcBricklet::register_urls()
-{
-    if (!device_found)
-        return;
-
-    DeviceModule::register_urls();
-}
-
-void RtcBricklet::loop()
-{
 }
 
 void RtcBricklet::setup_rtc()

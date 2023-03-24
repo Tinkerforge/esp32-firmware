@@ -21,16 +21,15 @@
 
 #include "config.h"
 
-class ChargeLimits
-{
-private:
+#include "module.h"
 
+class ChargeLimits final : public IModule
+{
 public:
     ChargeLimits(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
 
     ConfigRoot config;
     ConfigRoot config_in_use;
@@ -41,5 +40,4 @@ public:
 
     uint32_t duration_left;
     uint32_t energy_left;
-    bool initialized = false;
 };

@@ -28,10 +28,6 @@
 #include "web_server.h"
 #include "modules.h"
 
-void EVSEV2Meter::pre_setup()
-{
-}
-
 void EVSEV2Meter::updateMeterValues()
 {
     meter.updateMeterValues(evse_v2.evse_energy_meter_values.get("power")->asFloat(),
@@ -97,9 +93,6 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
 
 void EVSEV2Meter::setup()
 {
-    initialized = false;
-    hardware_available = false;
-
     if (!evse_v2.initialized) {
         // If the EVSE is not initialized, we will never be able to reach the energy meter.
         return;
@@ -119,8 +112,4 @@ void EVSEV2Meter::register_urls()
 
         evse_v2.reset_energy_meter_relative_energy();
     });
-}
-
-void EVSEV2Meter::loop()
-{
 }

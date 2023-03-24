@@ -21,6 +21,8 @@
 
 #include "config.h"
 
+#include "module.h"
+
 #define IND_ACK 1001
 #define IND_NACK 1002
 #define IND_NAG 1003
@@ -30,14 +32,13 @@
 #define USERNAME_ENTRY_LENGTH (USERNAME_LENGTH + DISPLAY_NAME_LENGTH)
 #define MAX_PASSIVE_USERS 256
 
-class Users
+class Users final : public IModule
 {
 public:
     Users(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
 
     uint8_t next_user_id();
     void rename_user(uint8_t user_id, const String &username, const String &display_name);
@@ -51,8 +52,6 @@ public:
     bool trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info, int action = TRIGGER_CHARGE_ANY);
 
     void remove_username_file();
-
-    bool initialized = false;
 
     ConfigRoot user_config;
     ConfigRoot add;

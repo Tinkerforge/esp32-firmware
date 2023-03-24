@@ -20,26 +20,11 @@
 #include "em_rtc.h"
 #include "modules.h"
 
-void EmRtc::pre_setup()
-{
-
-}
-
 void EmRtc::setup()
 {
     rtc.register_backend(this);
 
     initialized = true;
-}
-
-void EmRtc::register_urls()
-{
-
-}
-
-void EmRtc::loop()
-{
-
 }
 
 void EmRtc::set_time(const tm &tm)

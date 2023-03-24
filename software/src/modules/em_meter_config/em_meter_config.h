@@ -20,18 +20,16 @@
 #pragma once
 
 #include "config.h"
-#include "device_module.h"
 
-class EMMeterConfig
+#include "module.h"
+
+class EMMeterConfig final : public IModule
 {
 public:
     EMMeterConfig(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-
-    bool initialized = false;
 
     ConfigRoot config;
     ConfigRoot config_in_use;

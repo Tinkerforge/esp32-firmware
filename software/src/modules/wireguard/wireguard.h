@@ -23,17 +23,16 @@
 
 #include <WireGuard-ESP32.h>
 
-class Wireguard
+#include "module.h"
+
+class Wireguard final : public IModule
 {
 public:
     Wireguard(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
     void start_wireguard();
-
-    bool initialized = false;
 
 private:
     ConfigRoot config;

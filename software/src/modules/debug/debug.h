@@ -21,16 +21,15 @@
 
 #include "config.h"
 
-class Debug
+#include "module.h"
+
+class Debug final : public IModule
 {
 public:
     Debug(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-
-    bool initialized = false;
 
 private:
     ConfigRoot debug_state;

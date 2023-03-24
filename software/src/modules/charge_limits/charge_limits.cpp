@@ -189,8 +189,3 @@ void ChargeLimits::register_urls()
     }, 0, 1000);
 #endif
 }
-
-void ChargeLimits::loop()
-{
-
-}

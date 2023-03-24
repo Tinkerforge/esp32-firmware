@@ -41,10 +41,6 @@ extern TF_HAL hal;
 TF_RotaryPotiV2 poti;
 TF_RGBLEDV2 led;
 
-void PowerCycleTester::pre_setup()
-{
-}
-
 void PowerCycleTester::setup()
 {
     logger.printfln("Waiting for 2 seconds...");
@@ -66,14 +62,6 @@ void PowerCycleTester::setup()
     tf_rgb_led_v2_set_status_led_config(&led, 0);
 
     initialized = true;
-}
-
-void PowerCycleTester::register_urls()
-{
-}
-
-void PowerCycleTester::loop()
-{
 }
 
 void PowerCycleTester::led_green()

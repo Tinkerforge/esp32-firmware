@@ -24,17 +24,15 @@
 
 #include "config.h"
 
-class Kransteuerung {
+#include "module.h"
+
+class Kransteuerung final : public IModule
+{
 public:
     Kransteuerung(){}
-    void pre_setup();
     void setup();
-    void register_urls();
-    void loop();
 
     void button_pressed_handler(bool left, uint8_t button_l, uint8_t button_r, uint8_t led_l, uint8_t led_r);
-
-    bool initialized = false;
 
 private:
     TF_DualButtonV2 left, right; //ports: left - D, right - C

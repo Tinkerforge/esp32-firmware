@@ -88,10 +88,6 @@ void factory_reset()
     ESP.restart();
 }
 
-void FirmwareUpdate::pre_setup()
-{
-}
-
 void FirmwareUpdate::setup()
 {
     initialized = true;

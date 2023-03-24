@@ -25,14 +25,13 @@
 #include "api.h"
 #include "web_sockets.h"
 
-class WS : public IAPIBackend
+class WS final : public IAPIBackend
 {
 public:
     WS() : web_sockets() {}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
     void addOnConnectCallback(std::function<void(WebSocketsClient)> callback);
 
     // IAPIBackend implementation
@@ -43,8 +42,6 @@ public:
     bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
     void pushRawStateUpdate(const String &payload, const String &path) override;
     void wifiAvailable() override;
-
-    bool initialized = false;
 
     WebSockets web_sockets;
     std::vector<std::function<void(WebSocketsClient)>> on_connect_callbacks;

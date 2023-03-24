@@ -21,16 +21,14 @@
 
 #include "config.h"
 
-class Watchdog
+#include "module.h"
+
+class Watchdog final : public IModule
 {
 public:
     Watchdog(){}
     void pre_setup();
     void setup();
-    void register_urls();
-    void loop();
-
-    bool initialized = false;
 
     int add(const char *name, const char *message, uint32_t timeout_ms = 5 * 60 * 1000, uint32_t initial_deadline_ms = 30 * 60 * 1000);
     void reset(int handle);

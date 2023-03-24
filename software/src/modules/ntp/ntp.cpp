@@ -166,7 +166,3 @@ void NTP::register_urls()
             ntp.state.get("synced")->updateBool(false);
     }, 0, 30 * 1000);
 }
-
-void NTP::loop()
-{
-}

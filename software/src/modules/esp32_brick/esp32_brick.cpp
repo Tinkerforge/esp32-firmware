@@ -56,10 +56,6 @@ static TF_Local local;
 
 #endif
 
-void ESP32Brick::pre_setup()
-{
-}
-
 void ESP32Brick::setup()
 {
     read_efuses(&local_uid_num, local_uid_str, passphrase);
@@ -94,10 +90,6 @@ void ESP32Brick::setup()
     }, 0, 100);
 
     initialized = true;
-}
-
-void ESP32Brick::register_urls()
-{
 }
 
 void ESP32Brick::loop()

@@ -140,5 +140,3 @@ void Coredump::register_urls()
         return request.endChunkedResponse();
     });
 }
-
-void Coredump::loop() {}

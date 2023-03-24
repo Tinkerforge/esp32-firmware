@@ -100,16 +100,6 @@ void Watchdog::setup()
     initialized = true;
 }
 
-void Watchdog::register_urls()
-{
-
-}
-
-void Watchdog::loop()
-{
-
-}
-
 int Watchdog::add(const char *name, const char *message, uint32_t timeout_ms, uint32_t initial_deadline_ms)
 {
     // This makes sure that we don't reboot too often, giving the user a chance to connect

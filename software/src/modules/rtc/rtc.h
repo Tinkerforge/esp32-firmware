@@ -21,6 +21,8 @@
 
 #include "config.h"
 
+#include "module.h"
+
 class IRtcBackend
 {
 public:
@@ -34,7 +36,7 @@ public:
     virtual void reset() = 0;
 };
 
-class Rtc
+class Rtc final : public IModule
 {
 private:
     ConfigRoot time;
@@ -48,8 +50,6 @@ public:
 
     void pre_setup();
     void setup();
-    void register_urls();
-    void loop();
 
     void register_backend(IRtcBackend *_backend);
 
@@ -58,7 +58,4 @@ public:
     void set_time(const timeval &_time);
     timeval get_time();
     void update_system_time();
-
-
-    bool initialized = false;
 };

@@ -83,7 +83,3 @@ void Authentication::register_urls()
 {
     api.addPersistentConfig("authentication/config", &authentication_config, {"digest_hash"}, 1000);
 }
-
-void Authentication::loop()
-{
-}

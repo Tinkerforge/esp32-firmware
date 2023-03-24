@@ -100,7 +100,3 @@ void DeviceName::register_urls()
     api.addState("info/name", &name, {}, 1000);
     api.addPersistentConfig("info/display_name", &display_name, {}, 1000);
 }
-
-void DeviceName::loop()
-{
-}

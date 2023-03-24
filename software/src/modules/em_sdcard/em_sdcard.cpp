@@ -80,9 +80,6 @@ void EMSDcard::register_urls()
         return "";
     }, true);
 }
-void EMSDcard::loop()
-{
-}
 
 void EMSDcard::update_sdcard_info()
 {

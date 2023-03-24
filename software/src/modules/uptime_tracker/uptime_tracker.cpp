@@ -23,6 +23,8 @@
 #include "event_log.h"
 #include "task_scheduler.h"
 
+#define MAX_UPTIMES 10
+
 RTC_NOINIT_ATTR uptime_data_t data;
 
 static bool verify_data(uint8_t *data, uint16_t checksum)
@@ -60,9 +62,7 @@ void UptimeTracker::setup()
 
     api.restorePersistentConfig("info/last_boots", &uptimes);
 
-
     initialized = true;
-
 
     task_scheduler.scheduleOnce([this]() {
         struct timeval timestamp;
@@ -99,10 +99,6 @@ void UptimeTracker::setup()
             if (tmp > data.uptime)
                 data.overflow_count++;
         }, 0, 10000);
-}
-
-void UptimeTracker::loop()
-{
 }
 
 void UptimeTracker::register_urls()

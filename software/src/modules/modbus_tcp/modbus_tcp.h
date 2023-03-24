@@ -19,25 +19,20 @@
 
 #pragma once
 
-template<typename T>
-    void calloc_struct(T **out)
-    {
-        *out = (T *)calloc(1, sizeof(T));
-    }
+#include "config.h"
 
-class ModbusTcp
+#include "module.h"
+
+class ModbusTcp final : public IModule
 {
 public:
     ModbusTcp();
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
     void update_regs();
     void update_bender_regs();
     void update_keba_regs();
-
-    bool initialized = false;
 
 private:
     ConfigRoot config;

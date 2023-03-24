@@ -316,7 +316,6 @@ void EVSE::set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret
     tf_evse_set_indicator_led(&device, indication, duration, ret_status);
 }
 
-
 void EVSE::setup()
 {
     setup_evse();

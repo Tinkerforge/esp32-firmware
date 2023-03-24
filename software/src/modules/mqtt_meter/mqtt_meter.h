@@ -21,16 +21,15 @@
 
 #include "config.h"
 
-class MqttMeter
+#include "meter.h"
+
+class MqttMeter final : public IModule
 {
 public:
     MqttMeter(){}
-
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-    bool initialized = false;
 
     void onMqttConnect();
     bool onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain);

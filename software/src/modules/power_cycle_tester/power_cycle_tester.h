@@ -23,6 +23,8 @@
 
 #include "config.h"
 
+#include "module.h"
+
 enum class POTI_POS {
     MINUS_150,
     MINUS_90,
@@ -33,20 +35,15 @@ enum class POTI_POS {
     PLUS_150
 };
 
-class PowerCycleTester
+class PowerCycleTester final : public IModule
 {
 public:
     PowerCycleTester(){}
-    void pre_setup();
     void setup();
-    void register_urls();
-    void loop();
 
     void led_green();
     void led_yellow();
     void led_red();
 
     void trigger_on_poti_pos(POTI_POS poti_pos, uint32_t delay);
-
-    bool initialized = false;
 };

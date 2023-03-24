@@ -194,11 +194,6 @@ void Ocpp::register_urls()
 #endif
 }
 
-void Ocpp::loop()
-{
-
-}
-
 static void remove_separator(const char * const in, char *out) {
     int written = 0;
     size_t s = strlen(in);

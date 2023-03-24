@@ -19,13 +19,15 @@
 
 #pragma once
 
+#include "config.h"
+
 #include <Arduino.h>
 
 #include <functional>
 #include <initializer_list>
 #include <vector>
 
-#include "config.h"
+#include "module.h"
 #include "web_server.h"
 #include "chunked_response.h"
 #include "tools.h"
@@ -59,7 +61,7 @@ struct ResponseRegistration {
     std::vector<String> keys_to_censor_in_debug_report;
 };
 
-class IAPIBackend
+class IAPIBackend : public IModule
 {
 public:
     virtual void addCommand(size_t commandIdx, const CommandRegistration &reg) = 0;

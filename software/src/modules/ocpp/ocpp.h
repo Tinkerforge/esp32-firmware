@@ -20,19 +20,19 @@
 #pragma once
 
 #include "config.h"
+
+#include "module.h"
 #include "ocpp/ChargePoint.h"
 
-class Ocpp {
+class Ocpp final : public IModule
+{
 public:
     Ocpp(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
 
     void on_tag_seen(const char *tag_id);
-
-    bool initialized = false;
 
     std::unique_ptr<OcppChargePoint> cp;
 

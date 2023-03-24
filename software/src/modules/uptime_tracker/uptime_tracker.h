@@ -21,7 +21,7 @@
 
 #include "config.h"
 
-#define MAX_UPTIMES 10
+#include "module.h"
 
 typedef struct uptime_data_s {
     uint16_t overflow_count;
@@ -32,18 +32,16 @@ typedef struct uptime_data_s {
 
 static_assert(sizeof(uptime_data_s) == 12, "Unexpected size of uptime_data_s");
 
-class UptimeTracker
+class UptimeTracker final : public IModule
 {
-    public:
-        UptimeTracker() {}
-        void pre_setup();
-        void setup();
-        void register_urls();
-        void loop();
+public:
+    UptimeTracker() {}
+    void pre_setup();
+    void setup();
+    void register_urls();
 
-        bool initialized = false;
-        bool verified = false;
-        uptime_data_t old_uptime{};
+    bool verified = false;
+    uptime_data_t old_uptime{};
 
-        ConfigRoot uptimes;
+    ConfigRoot uptimes;
 };

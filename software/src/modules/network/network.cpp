@@ -62,7 +62,3 @@ void Network::register_urls()
     MDNS.addService("http", "tcp", 80);
     NBNS.begin(config.get("hostname")->asEphemeralCStr());
 }
-
-void Network::loop()
-{
-}

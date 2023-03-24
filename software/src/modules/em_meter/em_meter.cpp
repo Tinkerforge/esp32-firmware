@@ -102,9 +102,6 @@ void EMMeter::setupEM(bool update_module_initialized)
 
 void EMMeter::setup()
 {
-    initialized = false;
-    hardware_available = false;
-
     if (!energy_manager.initialized) {
         // If the Energy Manager is not initialized, we will never be able to reach the energy meter.
         return;
@@ -116,8 +113,4 @@ void EMMeter::setup()
 void EMMeter::register_urls()
 {
     api.addState("meter/error_counters", &errors, {}, 1000);
-}
-
-void EMMeter::loop()
-{
 }

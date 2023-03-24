@@ -35,6 +35,8 @@
 
 #include <algorithm>
 
+#define DISTRIBUTION_LOG_LEN 2048
+
 // Keep in sync with cm_networing.h
 #define MAX_CLIENTS 10
 
@@ -765,8 +767,4 @@ void ChargeManager::register_urls()
     }, false);
     //api.addState("charge_manager/control_pilot_disconnect", &charge_manager_control_pilot_disconnect, {}, 1000);
     //api.addCommand("charge_manager/control_pilot_disconnect_update", &charge_manager_control_pilot_disconnect, {}, [](){}, false);
-}
-
-void ChargeManager::loop()
-{
 }

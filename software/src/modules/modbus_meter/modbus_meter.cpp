@@ -305,6 +305,7 @@ const RegRead *ModbusMeter::getNextRead(bool *trigger_fast_read_done, bool *trig
 void ModbusMeter::loop()
 {
     this->DeviceModule::loop();
+
     if (!initialized || meter_in_use == nullptr)
         return;
 

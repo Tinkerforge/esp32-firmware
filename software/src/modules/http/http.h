@@ -19,19 +19,21 @@
 
 #pragma once
 
+#include "config.h"
+
+#include "module.h"
 #include "api.h"
 #include "tools.h"
 
 bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len);
 
-class Http : public IAPIBackend
+class Http final : public IAPIBackend
 {
 public:
     Http(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
@@ -44,6 +46,5 @@ public:
     WebServerRequestReturnProtect api_handler_get(WebServerRequest req);
     WebServerRequestReturnProtect api_handler_put(WebServerRequest req);
 
-    bool initialized = false;
     Ownership response_ownership;
 };

@@ -35,6 +35,12 @@ extern uint32_t local_uid_num;
 
 #define MODBUS_TABLE_VERSION 1
 
+template<typename T>
+static void calloc_struct(T **out)
+{
+    *out = (T *)calloc(1, sizeof(T));
+}
+
 // We can't implicit convert from an uint32_t to this, as the conversion is done by a constructor.
 // If we add a constructor, this is not a POD type anymore so we can't use it in packed structs.
 struct uint32swapped_t {
@@ -959,5 +965,3 @@ void ModbusTcp::register_urls()
         }
     }
 }
-
-void ModbusTcp::loop() {}

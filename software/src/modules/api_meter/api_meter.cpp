@@ -86,7 +86,3 @@ void APIMeter::register_urls()
             meter.updateMeterAllValues(i, all_values_update.get(i)->asFloat());
     }, false);
 }
-
-void APIMeter::loop()
-{
-}

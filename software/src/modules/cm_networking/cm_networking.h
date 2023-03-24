@@ -21,11 +21,12 @@
 
 #include "config.h"
 
-#include "lwip/err.h"
-#include "lwip/sockets.h"
-#include "lwip/sys.h"
+#include <lwip/err.h>
+#include <lwip/sockets.h>
+#include <lwip/sys.h>
 #include <lwip/netdb.h>
 
+#include "module.h"
 #include "mdns.h"
 #include "TFJson.h"
 
@@ -190,16 +191,12 @@ struct cm_state_packet {
 #define CM_STATE_PACKET_LENGTH (sizeof(cm_state_packet))
 static_assert(CM_STATE_PACKET_LENGTH == 80);
 
-class CMNetworking
+class CMNetworking final : public IModule
 {
 public:
     CMNetworking(){}
-    void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-
-    bool initialized = false;
 
     int create_socket(uint16_t port);
 

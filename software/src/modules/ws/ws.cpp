@@ -59,10 +59,6 @@ void WS::register_urls()
     }, 1000, 1000);
 }
 
-void WS::loop()
-{
-}
-
 void WS::addOnConnectCallback(std::function<void(WebSocketsClient)> callback)
 {
     on_connect_callbacks.push_back(callback);

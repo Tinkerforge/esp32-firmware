@@ -19,14 +19,15 @@
 
 #pragma once
 
-class ScreenshotDataFaker
+#include "config.h"
+
+#include "module.h"
+
+class ScreenshotDataFaker final : public IModule
 {
 public:
     ScreenshotDataFaker(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-
-    bool initialized;
 };

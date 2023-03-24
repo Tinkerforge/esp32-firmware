@@ -21,6 +21,8 @@
 
 #include "config.h"
 
+#include "module.h"
+
 enum class CoredumpSetupError
 {
     OK = 0,
@@ -28,17 +30,13 @@ enum class CoredumpSetupError
     Truncated,
 };
 
-class Coredump
+class Coredump final : public IModule
 {
 public:
     Coredump();
-
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-
-    bool initialized = false;
 
 private:
     bool build_coredump_info(JsonDocument &tf_coredump_json);

@@ -20,19 +20,18 @@
 #pragma once
 
 #include "config.h"
+
+#include "module.h"
 #include "mqtt_discovery_topics.h"
 #include "tools.h"
 
-class MqttAutoDiscovery
+class MqttAutoDiscovery final : public IModule
 {
 public:
     MqttAutoDiscovery(){}
-
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-    bool initialized = false;
 
     void onMqttConnect();
     bool onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain);

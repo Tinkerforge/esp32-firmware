@@ -49,7 +49,3 @@ void EMMeterConfig::register_urls()
 {
     api.addPersistentConfig("energy_manager/meter_config", &config, {}, 1000);
 }
-
-void EMMeterConfig::loop()
-{
-}

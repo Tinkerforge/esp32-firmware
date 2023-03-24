@@ -137,7 +137,3 @@ void Ping::register_urls()
 {
     api.addPersistentConfig("ping/config", &config, {}, 1000);
 }
-
-void Ping::loop()
-{
-}

@@ -21,6 +21,7 @@
 
 #include "config.h"
 
+#include "module.h"
 #include "value_history.h"
 
 #define METER_ALL_VALUES_COUNT 85
@@ -133,14 +134,13 @@
 #define METER_ALL_VALUES_TOTAL_KVARH_L2 83
 #define METER_ALL_VALUES_TOTAL_KVARH_L3 84
 
-class Meter
+class Meter final : public IModule
 {
 public:
     Meter(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
 
     void updateMeterState(uint8_t new_state, uint8_t new_type);
     void updateMeterState(uint8_t new_state);
@@ -154,7 +154,6 @@ public:
 
     void setupMeter(uint8_t meter_type);
 
-    bool initialized = false;
     bool meter_setup_done = false;
 
     ConfigRoot state;

@@ -36,10 +36,6 @@
 
 #include "TFJson.h"
 
-void CMNetworking::pre_setup()
-{
-}
-
 void CMNetworking::setup()
 {
     mdns_init();
@@ -86,10 +82,6 @@ void CMNetworking::register_urls()
         MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", management_enabled ? "true" : "false");
     }, 0, 10000);
 #endif
-}
-
-void CMNetworking::loop()
-{
 }
 
 int CMNetworking::create_socket(uint16_t port)

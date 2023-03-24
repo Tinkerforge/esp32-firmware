@@ -25,29 +25,22 @@
 #include "real_time_clock_v2_bricklet_firmware_bin.embedded.h"
 #include "../rtc/rtc.h"
 
-
-class RtcBricklet: public DeviceModule<TF_RealTimeClockV2,
-                            real_time_clock_v2_bricklet_firmware_bin_data,
-                            real_time_clock_v2_bricklet_firmware_bin_length,
-                            tf_real_time_clock_v2_create,
-                            tf_real_time_clock_v2_get_bootloader_mode,
-                            tf_real_time_clock_v2_reset,
-                            tf_real_time_clock_v2_destroy>, public IRtcBackend
+class RtcBricklet : public DeviceModule<TF_RealTimeClockV2,
+                                        real_time_clock_v2_bricklet_firmware_bin_data,
+                                        real_time_clock_v2_bricklet_firmware_bin_length,
+                                        tf_real_time_clock_v2_create,
+                                        tf_real_time_clock_v2_get_bootloader_mode,
+                                        tf_real_time_clock_v2_reset,
+                                        tf_real_time_clock_v2_destroy>, public IRtcBackend
 {
-    public:
+public:
+    RtcBricklet(): DeviceModule("rtc", "Real Time Clock 2.0", "Real Time Clock 2.0", std::bind(&RtcBricklet::setup_rtc, this)) {};
+    void setup();
 
-        bool initialized = false;
-
-        RtcBricklet(): DeviceModule("rtc", "Real Time Clock 2.0", "Real Time Clock 2.0", std::bind(&RtcBricklet::setup_rtc, this)) {};
-        void pre_setup();
-        void setup();
-        void loop();
-        void register_urls();
-
-        void setup_rtc();
-        void set_time(const timeval &time);
-        void set_time(const tm &time);
-        void update_system_time();
-        void reset();
-        struct timeval get_time();
+    void setup_rtc();
+    void set_time(const timeval &time);
+    void set_time(const tm &time);
+    void update_system_time();
+    void reset();
+    struct timeval get_time();
 };

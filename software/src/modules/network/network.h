@@ -21,18 +21,15 @@
 
 #include "config.h"
 
-class Network
+#include "module.h"
+
+class Network final : public IModule
 {
 public:
     Network(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-
-    bool initialized;
 
     ConfigRoot config;
-
-private:
 };

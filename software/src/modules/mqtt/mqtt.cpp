@@ -394,8 +394,6 @@ void Mqtt::setup()
     esp_log_level_set("TRANSPORT", ESP_LOG_NONE);
     esp_log_level_set("OUTBOX", ESP_LOG_NONE);
 
-
-
     esp_mqtt_client_config_t mqtt_cfg = {};
 
     mqtt_cfg.host = mqtt_config_in_use.get("broker_host")->asEphemeralCStr();
@@ -409,7 +407,6 @@ void Mqtt::setup()
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
 
-
     initialized = true;
 }
 
@@ -417,8 +414,4 @@ void Mqtt::register_urls()
 {
     api.addPersistentConfig("mqtt/config", &mqtt_config, {"broker_password"}, 1000);
     api.addState("mqtt/state", &mqtt_state, {}, 1000);
-}
-
-void Mqtt::loop()
-{
 }

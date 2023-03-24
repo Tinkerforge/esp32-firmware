@@ -21,7 +21,9 @@
 
 #include "config.h"
 
-class Ping
+#include "module.h"
+
+class Ping final : public IModule
 {
 public:
     Ping(){}
@@ -29,8 +31,6 @@ public:
     void setup();
     void register_urls();
     void loop();
-
-    bool initialized = false;
 
 private:
     ConfigRoot config;

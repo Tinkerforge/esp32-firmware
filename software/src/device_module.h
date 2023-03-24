@@ -25,6 +25,7 @@
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
 
+#include "module.h"
 #include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
@@ -43,7 +44,7 @@ template <typename DeviceT,
           int (*get_bootloader_mode_function)(DeviceT *, uint8_t *),
           int (*reset_function)(DeviceT *),
           int (*destroy_function)(DeviceT *)>
-class DeviceModule
+class DeviceModule : public IModule
 {
 public:
     DeviceModule(const char *url_prefix,
@@ -133,7 +134,8 @@ public:
         }
     }
 
-    void reset() {
+    void reset()
+    {
         reset_function(&device);
     }
 
@@ -158,7 +160,6 @@ public:
     }
 
     bool device_found = false;
-    bool initialized = false;
 
     String url_prefix;
     const char *device_name;

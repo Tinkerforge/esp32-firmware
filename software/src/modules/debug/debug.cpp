@@ -156,7 +156,3 @@ void Debug::register_urls()
     });
 #endif
 }
-
-void Debug::loop()
-{
-}

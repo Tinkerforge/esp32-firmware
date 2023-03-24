@@ -21,16 +21,15 @@
 
 #include "config.h"
 
-class APIMeter
+#include "module.h"
+
+class APIMeter final : public IModule
 {
 public:
     APIMeter(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-
-    bool initialized = false;
 
     ConfigRoot state_update;
     ConfigRoot values_update;

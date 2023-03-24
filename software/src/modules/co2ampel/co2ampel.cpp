@@ -59,7 +59,6 @@ uint16_t yellow_limit = 1000;
 
 bool last_blink = false;
 
-bool initialized = false;
 bool have_button = true;
 
 bool blink_allowed = true;
@@ -202,10 +201,4 @@ void Co2Ampel::register_urls()
     api.addCommand("co2/stop_blink", &stop_blink, {}, [](){
         blink_allowed = false;
     }, true);
-}
-
-
-void Co2Ampel::loop()
-{
-
 }

@@ -21,19 +21,15 @@
 
 #include "config.h"
 
-#define DISTRIBUTION_LOG_LEN 2048
+#include "module.h"
 
-class ChargeManager
+class ChargeManager final : public IModule
 {
 public:
     ChargeManager(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void post_setup();
-    void loop();
-
-    bool initialized = false;
 
     void start_evse_state_update();
     void send_current();

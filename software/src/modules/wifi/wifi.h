@@ -21,6 +21,8 @@
 
 #include "config.h"
 
+#include "module.h"
+
 enum class WifiState {
     NOT_CONFIGURED,
     NOT_CONNECTED,
@@ -28,7 +30,7 @@ enum class WifiState {
     CONNECTED
 };
 
-class Wifi
+class Wifi final : public IModule
 {
 public:
     Wifi(){}
@@ -36,8 +38,6 @@ public:
     void setup();
     void register_urls();
     void loop();
-
-    bool initialized = false;
 
     bool was_connected = false;
 

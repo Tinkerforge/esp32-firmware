@@ -54,10 +54,6 @@ void MqttMeter::register_urls()
     api.addPersistentConfig("mqtt/meter_config", &config, {}, 1000);
 }
 
-void MqttMeter::loop()
-{
-}
-
 void MqttMeter::onMqttConnect()
 {
     if (!enabled)

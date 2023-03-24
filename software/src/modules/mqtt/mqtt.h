@@ -42,14 +42,13 @@ struct MqttState {
     uint32_t last_send_ms;
 };
 
-class Mqtt : public IAPIBackend
+class Mqtt final : public IAPIBackend
 {
 public:
     Mqtt(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
     void connect();
 
     void publish_with_prefix(const String &path, const String &payload);
@@ -65,8 +64,6 @@ public:
     bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
     void pushRawStateUpdate(const String &payload, const String &path) override;
     void wifiAvailable() override;
-
-    bool initialized = false;
 
     void onMqttConnect();
     void onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain);

@@ -23,21 +23,20 @@
 
 #include "config.h"
 
+#include "module.h"
+
 #define CHARGE_TRACKER_AUTH_TYPE_NONE 0
 #define CHARGE_TRACKER_AUTH_TYPE_LOST 1
 #define CHARGE_TRACKER_AUTH_TYPE_NFC 2
 #define CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION 3
 
-class ChargeTracker
+class ChargeTracker final : public IModule
 {
 public:
     ChargeTracker(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-
-    bool initialized = false;
 
     uint32_t first_charge_record;
     uint32_t last_charge_record;

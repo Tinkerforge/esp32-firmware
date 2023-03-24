@@ -295,10 +295,6 @@ void Http::register_urls()
     server.on("/*", HTTP_POST, [this](WebServerRequest request){return api_handler_put(request);});
 }
 
-void Http::loop()
-{
-}
-
 void Http::addCommand(size_t commandIdx, const CommandRegistration &reg)
 {
 }

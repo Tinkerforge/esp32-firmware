@@ -19,12 +19,12 @@
 
 #pragma once
 
+#include "config.h"
+
 #include "bindings/bricklet_rs485.h"
 
-#include "config.h"
 #include "device_module.h"
 #include "rs485_bricklet_firmware_bin.embedded.h"
-
 #include "meter_defs.h"
 
 class ModbusMeter : public DeviceModule<TF_RS485,

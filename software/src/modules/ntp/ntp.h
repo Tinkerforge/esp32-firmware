@@ -20,9 +20,12 @@
 #pragma once
 
 #include "config.h"
+
 #include <mutex>
 
-class NTP
+#include "module.h"
+
+class NTP final : public IModule
 {
 private:
     struct timeval last_sync{};
@@ -35,10 +38,7 @@ public:
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
     void set_synced();
-
-    bool initialized = false;
 
     std::mutex mtx;
     uint32_t sync_counter = 0;

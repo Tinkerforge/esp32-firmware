@@ -135,7 +135,3 @@ void ScreenshotDataFaker::register_urls()
         meter.power_hist.history.push(meter_history[i]);
 #endif
 }
-
-void ScreenshotDataFaker::loop()
-{
-}

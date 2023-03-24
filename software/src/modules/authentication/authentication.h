@@ -21,16 +21,15 @@
 
 #include "config.h"
 
-class Authentication
+#include "module.h"
+
+class Authentication final : public IModule
 {
 public:
     Authentication(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-
-    bool initialized = false;
 
 private:
     ConfigRoot authentication_config;

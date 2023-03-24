@@ -814,10 +814,6 @@ void Users::set_blink_state(int16_t state)
     blink_state = state;
 }
 
-void Users::loop()
-{
-}
-
 uint8_t Users::next_user_id()
 {
     return this->user_config.get("next_user_id")->asUint();

@@ -182,7 +182,3 @@ void Meter::register_urls()
 
     power_hist.register_urls("meter/");
 }
-
-void Meter::loop()
-{
-}

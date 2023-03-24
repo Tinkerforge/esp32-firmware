@@ -19,20 +19,19 @@
 
 #pragma once
 
-#include <stdint.h>
-
 #include "config.h"
 
-class EMSDcard
+#include <stdint.h>
+
+#include "module.h"
+
+class EMSDcard final : public IModule
 {
 public:
     EMSDcard(){}
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
-
-    bool initialized = false;
 
 private:
     void update_sdcard_info();
