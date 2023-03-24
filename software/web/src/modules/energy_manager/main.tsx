@@ -73,11 +73,14 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
 
         if (!API.get("info/modules").energy_manager) {
             return <>
-                <IndicatorGroup
-                    value={0}
-                    items={[
-                        ["danger", __("energy_manager.status.no_bricklet")],
-                    ]} />
+                <FormRow label={__("energy_manager.status.status")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                    <IndicatorGroup
+                        value={0}
+                        items={[
+                            ["danger", __("energy_manager.status.no_bricklet")],
+                        ]}
+                    />
+                </FormRow>
             </>;
         }
 
