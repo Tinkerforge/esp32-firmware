@@ -28,7 +28,7 @@ void QueuedChunkedResponse::begin(bool success)
     call([this, success]{internal->begin(success); return true;});
 }
 
-bool QueuedChunkedResponse::write(const char *buf, size_t buf_size)
+bool QueuedChunkedResponse::write_impl(const char *buf, size_t buf_size)
 {
     return call([this, buf, buf_size]{return internal->write(buf, buf_size);});
 }
@@ -106,7 +106,7 @@ void BufferedChunkedResponse::begin(bool success)
     internal->begin(success);
 }
 
-bool BufferedChunkedResponse::write(const char *buf, size_t buf_size)
+bool BufferedChunkedResponse::write_impl(const char *buf, size_t buf_size)
 {
     if (buf_size <= pending_free()) {
         // buffer can be stored fully

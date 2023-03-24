@@ -478,7 +478,7 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
         response->begin(true);
 
         if (write_success) {
-            write_success = response->writen("[");
+            write_success = response->write("[");
         }
     }
 
@@ -486,7 +486,7 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
         logger.printfln("energy_manager: Failed to get wallbox 5min data point: stream out of sync (%u != %u)", metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
-            write_success = response->writen("]");
+            write_success = response->write("]");
         }
 
         write_success &= response->flush();
@@ -505,7 +505,7 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
     }
 
     if (metadata->write_comma && write_success) {
-        write_success = response->writen(",");
+        write_success = response->write(",");
     }
 
     for (i = 0; i < actual_length && write_success; i += sizeof(Wallbox5minData)) {
@@ -525,7 +525,7 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
             }
 
             if (write_success && i < actual_length - sizeof(Wallbox5minData)) {
-                write_success = response->writen(",");
+                write_success = response->write(",");
             }
         }
     }
@@ -578,7 +578,7 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
         }
         else {
             if (write_success) {
-                write_success = response->writen("]");
+                write_success = response->write("]");
             }
 
             write_success &= response->flush();
@@ -735,7 +735,7 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
         response->begin(true);
 
         if (write_success) {
-            write_success = response->writen("[");
+            write_success = response->write("[");
         }
     }
 
@@ -744,7 +744,7 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
                         metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
-            write_success = response->writen("]");
+            write_success = response->write("]");
         }
 
         write_success &= response->flush();
@@ -762,18 +762,18 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
     }
 
     if (metadata->write_comma && write_success) {
-        write_success = response->writen(",");
+        write_success = response->write(",");
     }
 
     for (i = 0; i < actual_length && write_success; ++i) {
         if (data_chunk_data[i] != UINT32_MAX) {
             write_success = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // dWh -> kWh
         } else {
-            write_success = response->writen("null");
+            write_success = response->write("null");
         }
 
         if (write_success && i < actual_length - 1) {
-            write_success = response->writen(",");
+            write_success = response->write(",");
         }
     }
 
@@ -782,7 +782,7 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
 
     if (metadata->next_offset >= data_length) {
         if (write_success) {
-            write_success = response->writen("]");
+            write_success = response->write("]");
         }
 
         write_success &= response->flush();
@@ -879,7 +879,7 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
         response->begin(true);
 
         if (write_success) {
-            write_success = response->writen("[");
+            write_success = response->write("[");
         }
     }
 
@@ -888,7 +888,7 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
                         metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
-            write_success = response->writen("]");
+            write_success = response->write("]");
         }
 
         write_success &= response->flush();
@@ -939,7 +939,7 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
             }
 
             if (write_success && i < actual_length - sizeof(EnergyManager5MinData)) {
-                write_success = response->writen(",");
+                write_success = response->write(",");
             }
         }
     }
@@ -991,7 +991,7 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
         }
         else {
             if (write_success) {
-                write_success = response->writen("]");
+                write_success = response->write("]");
             }
 
             write_success &= response->flush();
@@ -1145,7 +1145,7 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
         response->begin(true);
 
         if (write_success) {
-            write_success = response->writen("[");
+            write_success = response->write("[");
         }
     }
 
@@ -1154,7 +1154,7 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
                         metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
-            write_success = response->writen("]");
+            write_success = response->write("]");
         }
 
         write_success &= response->flush();
@@ -1172,18 +1172,18 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
     }
 
     if (metadata->write_comma && write_success) {
-        write_success = response->writen(",");
+        write_success = response->write(",");
     }
 
     for (i = 0; i < actual_length && write_success; ++i) {
         if (data_chunk_data[i] != UINT32_MAX) {
             write_success = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // dWh -> kWh
         } else {
-            write_success = response->writen("null");
+            write_success = response->write("null");
         }
 
         if (write_success && i < actual_length - 1) {
-            write_success = response->writen(",");
+            write_success = response->write(",");
         }
     }
 
@@ -1192,7 +1192,7 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
 
     if (metadata->next_offset >= data_length) {
         if (write_success) {
-            write_success = response->writen("]");
+            write_success = response->write("]");
         }
 
         write_success &= response->flush();

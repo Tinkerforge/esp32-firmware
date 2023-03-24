@@ -40,7 +40,15 @@ public:
         request->beginChunkedResponse(success ? 200 : 400, "text/plain");
     }
 
-    bool write(const char *buf, size_t buf_size)
+    void end(String error)
+    {
+        if (error == "") {
+            request->endChunkedResponse();
+        }
+    }
+
+protected:
+    bool write_impl(const char *buf, size_t buf_size)
     {
         int result = request->sendChunk(buf, buf_size);
 
@@ -51,13 +59,6 @@ public:
         }
 
         return true;
-    }
-
-    void end(String error)
-    {
-        if (error == "") {
-            request->endChunkedResponse();
-        }
     }
 
 private:
