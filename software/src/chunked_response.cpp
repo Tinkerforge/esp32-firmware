@@ -28,6 +28,11 @@ void QueuedChunkedResponse::begin(bool success)
     call([this, success]{internal->begin(success); return true;});
 }
 
+void QueuedChunkedResponse::alive()
+{
+    call([this]{internal->alive(); return true;});
+}
+
 bool QueuedChunkedResponse::write_impl(const char *buf, size_t buf_size)
 {
     return call([this, buf, buf_size]{return internal->write(buf, buf_size);});
@@ -104,6 +109,11 @@ bool QueuedChunkedResponse::call(std::function<bool(void)> local_function)
 void BufferedChunkedResponse::begin(bool success)
 {
     internal->begin(success);
+}
+
+void BufferedChunkedResponse::alive()
+{
+    internal->alive();
 }
 
 bool BufferedChunkedResponse::write_impl(const char *buf, size_t buf_size)

@@ -40,6 +40,11 @@ public:
         request->beginChunkedResponse(success ? 200 : 400, "text/plain");
     }
 
+    void alive()
+    {
+
+    }
+
     void end(String error)
     {
         if (error == "") {

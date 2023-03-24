@@ -30,6 +30,7 @@ class IBaseChunkedResponse
 public:
     virtual void begin(bool success) = 0;
     virtual void end(String error) = 0;
+    virtual void alive() = 0;
 
     bool write(const char *buf, size_t buf_size = std::numeric_limits<size_t>::max()) {
         if (buf_size == std::numeric_limits<size_t>::max())
@@ -49,6 +50,7 @@ public:
 
     void begin(bool success);
     void end(String error);
+    void alive();
 
     String wait();
 
@@ -92,6 +94,7 @@ public:
     bool writef(const char *fmt, ...);
     bool flush();
     void end(String error);
+    void alive();
 
 protected:
     bool write_impl(const char *buf, size_t buf_size);
