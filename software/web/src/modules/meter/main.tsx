@@ -198,19 +198,40 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         3600 * 12,
                         3600 * 24,
                     ],
-                    // [0]:   minimum num secs in found axis split (tick incr)
-                    // [1]:   default tick format
-                    // [2-7]: rollover tick formats
-                    // [8]:   mode: 0: replace [1] -> [2-7], 1: concat [1] + [2-7]
-                    values: [
-                        // tick incr  default      year                                             month  day                                               hour  min   sec   mode
-                        [3600,        "{HH}:{mm}", "\n" + __("meter.script.time_long_date_format"), null,  "\n" + __("meter.script.time_short_date_format"), null, null, null, 1],
-                        [60,          "{HH}:{mm}", null,                                            null,  null,                                             null, null, null, 1],
-                    ],
+                    values: (self: uPlot, splits: number[], axisIdx: number, foundSpace: number, foundIncr: number) => {
+                        let values: string[] = new Array(splits.length);
+                        let last_year: string = null;
+                        let last_month_and_day: string = null;
+
+                        for (let i = 0; i < splits.length; ++i) {
+                            let date = new Date(splits[i] * 1000);
+                            let value = date.toLocaleString([], {hour: '2-digit', minute: '2-digit'});
+
+                            if (foundIncr >= 3600) {
+                                let year = date.toLocaleString([], {year: 'numeric'});
+                                let month_and_day = date.toLocaleString([], {month: '2-digit', day: '2-digit'});
+
+                                if (year != last_year) {
+                                    value += '\n' + date.toLocaleString([], {year: 'numeric', month: '2-digit', day: '2-digit'});
+                                    last_year = year;
+                                    last_month_and_day = month_and_day;
+                                }
+
+                                if (month_and_day != last_month_and_day) {
+                                    value += '\n' + date.toLocaleString([], {month: '2-digit', day: '2-digit'});
+                                    last_month_and_day = month_and_day;
+                                }
+                            }
+
+                            values[i] = value;
+                        }
+
+                        return values;
+                    },
                 },
                 {
                     size: 55,
-                    values: (self: uPlot, splits: number[], axisIdx: number, foundSpace: number, foundIncr: number) => {
+                    values: (self: uPlot, splits: number[]) => {
                         let values: string[] = new Array(splits.length);
 
                         for (let i = 0; i < splits.length; ++i) {
