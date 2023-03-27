@@ -1,5 +1,5 @@
 /*
-2022g;2022-12-16T07:59:51.411966
+2023b;2023-03-27T10:23:59.744707
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -93,7 +93,7 @@ static const TableValue Africa_vals[] = {
     {true, {"CAT-2"}},
     {true, {"WAT-1"}},
     {true, {"CAT-2"}},
-    {true, {"EET-2"}},
+    {true, {"EET-2EEST,M4.5.5/0,M10.5.4/24"}},
     {true, {"<+01>-1"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
     {true, {"GMT0"}},
@@ -422,7 +422,7 @@ static const TableValue America_vals[] = {
     {true, {"EST5EDT,M3.2.0,M11.1.0"}},
     {true, {"<-03>3"}},
     {true, {"AST4ADT,M3.2.0,M11.1.0"}},
-    {true, {"<-02>2"}},
+    {true, {"<-02>2<-01>,M3.5.0/-1,M10.5.0/0"}},
     {true, {"AST4ADT,M3.2.0,M11.1.0"}},
     {true, {"EST5EDT,M3.2.0,M11.1.0"}},
     {true, {"AST4"}},
@@ -472,7 +472,7 @@ static const TableValue America_vals[] = {
     {true, {"AKST9AKDT,M3.2.0,M11.1.0"}},
     {true, {"<-02>2"}},
     {false, {.sub_table=&North_Dakota}},
-    {true, {"<-02>2"}},
+    {true, {"<-02>2<-01>,M3.5.0/-1,M10.5.0/0"}},
     {true, {"CST6CDT,M3.2.0,M11.1.0"}},
     {true, {"EST5"}},
     {true, {"EST5EDT,M3.2.0,M11.1.0"}},
@@ -1025,7 +1025,7 @@ static const TableValue Europe_vals[] = {
     {true, {"GMT0BST,M3.5.0/1,M10.5.0"}},
     {true, {"EET-2"}},
     {true, {"EET-2EEST,M3.5.0/3,M10.5.0/4"}},
-    {true, {"<+03>-3"}},
+    {true, {"MSK-3"}},
     {true, {"EET-2EEST,M3.5.0/3,M10.5.0/4"}},
     {true, {"WET0WEST,M3.5.0/1,M10.5.0"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
@@ -1061,7 +1061,7 @@ static const TableValue Europe_vals[] = {
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
     {true, {"EET-2EEST,M3.5.0/3,M10.5.0/4"}},
-    {true, {"<+03>-3"}},
+    {true, {"MSK-3"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
     {true, {"EET-2EEST,M3.5.0/3,M10.5.0/4"}},
