@@ -1,6 +1,8 @@
 export interface low_level_state {
     power_at_meter: number,
+    power_at_meter_filtered: number,
     power_available: number,
+    power_available_filtered: number,
     overall_min_power: number,
     threshold_3to1: number,
     threshold_1to3: number,
@@ -48,6 +50,7 @@ export interface config {
     excess_charging_enable: boolean,
     target_power_from_grid: number,
     guaranteed_power: number,
+    cloud_filter_mode: number,
     contactor_installed: boolean,
     phase_switching_mode: number,
     relay_config: number,

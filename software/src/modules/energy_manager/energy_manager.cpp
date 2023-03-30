@@ -43,7 +43,9 @@ void EnergyManager::pre_setup()
 
     low_level_state = Config::Object({
         {"power_at_meter", Config::Int32(0)},
+        {"power_at_meter_filtered", Config::Int32(0)},
         {"power_available", Config::Int32(0)},
+        {"power_available_filtered", Config::Int32(0)},
         {"overall_min_power", Config::Int32(0)},
         {"threshold_3to1", Config::Int32(0)},
         {"threshold_1to3", Config::Int32(0)},
@@ -86,6 +88,7 @@ void EnergyManager::pre_setup()
         {"excess_charging_enable", Config::Bool(false)},
         {"target_power_from_grid", Config::Int32(0)}, // in watt
         {"guaranteed_power", Config::Uint(1380, 0, 22080)}, // in watt
+        {"cloud_filter_mode", Config::Uint(CLOUD_FILTER_MEDIUM, CLOUD_FILTER_OFF, CLOUD_FILTER_STRONG)},
         {"contactor_installed", Config::Bool(false)},
         {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
         {"relay_config", Config::Uint8(0)},
@@ -280,6 +283,9 @@ void EnergyManager::setup()
     low_level_state.get("threshold_3to1")->updateInt(threshold_3to1_w);
     low_level_state.get("threshold_1to3")->updateInt(threshold_1to3_w);
 
+    cloud_filter_coefficient = calculate_cloud_filter_coefficient(config_in_use.get("cloud_filter_mode")->asUint());
+    logger.printfln("energy_manager: Using cloud filter coefficient %f", cloud_filter_coefficient);
+
     api.addFeature("energy_manager");
 
     // Initialize contactor check state so that the check doesn't trip immediately if the first response from the bricklet is invalid.
@@ -287,11 +293,11 @@ void EnergyManager::setup()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_all_data();
-    }, 0, 250);
+    }, 0, EM_TASK_DELAY_MS);
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_io();
-    }, 250, 250);
+    }, EM_TASK_DELAY_MS, EM_TASK_DELAY_MS);
 
     start_network_check_task();
 
@@ -317,7 +323,7 @@ void EnergyManager::setup()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_energy();
-    }, 250, 250);
+    }, EM_TASK_DELAY_MS, EM_TASK_DELAY_MS);
 
     task_scheduler.scheduleOnce([this](){
         uptime_past_hysteresis = true;
@@ -441,8 +447,17 @@ void EnergyManager::update_all_data()
     low_level_state.get("is_3phase")->updateBool(is_3phase);
     state.get("phases_switched")->updateUint(have_phases);
 
-    power_at_meter_w = all_data.energy_meter_type ? all_data.power : meter.values.get("power")->asFloat(); // watt
+    // TODO FIXME handle power being NAN
+    float meter_float_w = all_data.energy_meter_type ? all_data.power : meter.values.get("power")->asFloat(); // watt
+    if (isnanf(meter_float_w)) {
+        meter_float_w = 0;
+        //logger.printfln("energy_manager: FIXME: Consumed NAN power value.");
+    }
+    power_at_meter_w = meter_float_w;
     low_level_state.get("power_at_meter")->updateInt(power_at_meter_w);
+    // Filtered value must not be modified anywhere else.
+    power_at_meter_filtered_w = power_at_meter_filtered_w + cloud_filter_coefficient * (meter_float_w - power_at_meter_filtered_w);
+    low_level_state.get("power_at_meter_filtered")->updateInt(power_at_meter_filtered_w);
 
     if (contactor_installed) {
         if ((all_data.contactor_check_state & 1) == 0) {
@@ -690,11 +705,13 @@ void EnergyManager::update_energy()
         // TODO Evil: Allow runtime changes, overrides input pins!
         target_power_from_grid_w    = config.get("target_power_from_grid")->asInt(); // watt
 
-        int32_t p_error_w;
+        int32_t p_error_w, p_error_filtered_w;
         if (!excess_charging_enable) {
-            p_error_w = 0;
+            p_error_w          = 0;
+            p_error_filtered_w = 0;
         } else {
-            p_error_w = target_power_from_grid_w - power_at_meter_w;
+            p_error_w          = target_power_from_grid_w - power_at_meter_w;
+            p_error_filtered_w = target_power_from_grid_w - static_cast<int32_t>(power_at_meter_filtered_w);
 
             if (p_error_w > 200)
                 rgb_led.update_grid_balance(EmRgbLed::GridBalance::Export);
@@ -706,43 +723,53 @@ void EnergyManager::update_energy()
 
         switch (mode) {
             case MODE_FAST:
-                power_available_w = 230 * 3 * max_current_limited_ma / 1000;
+                power_available_w          = 230 * 3 * max_current_limited_ma / 1000;
+                power_available_filtered_w = power_available_w;
                 break;
             case MODE_OFF:
             default:
-                power_available_w = 0;
+                power_available_w          = 0;
+                power_available_filtered_w = 0;
                 break;
             case MODE_PV:
             case MODE_MIN_PV:
                 // Excess charging enabled; use a simple P controller to adjust available power.
                 int32_t p_adjust_w;
+                int32_t p_adjust_filtered_w;
                 if (!is_on) {
                     // When the power is not on, use p=1 so that the switch-on threshold can be reached properly.
-                    p_adjust_w = p_error_w;
+                    p_adjust_w          = p_error_w;
+                    p_adjust_filtered_w = p_error_filtered_w;
                 } else {
                     // Some EVs may only be able to adjust their charge power in steps of 1500W,
                     // so smaller factors are required for smaller errors.
                     int32_t p_error_abs_w = abs(p_error_w);
                     if (p_error_abs_w < 1000) {
                         // Use p=0.5 for small differences so that the controller can converge without oscillating too much.
-                        p_adjust_w = p_error_w / 2;
+                        p_adjust_w          = p_error_w          / 2;
+                        p_adjust_filtered_w = p_error_filtered_w / 2;
                     } else if (p_error_abs_w < 1500) {
                         // Use p=0.75 for medium differences so that the controller can converge reasonably fast while still avoiding too many oscillations.
-                        p_adjust_w = p_error_w * 3 / 4;
+                        p_adjust_w          = p_error_w          * 3 / 4;
+                        p_adjust_filtered_w = p_error_filtered_w * 3 / 4;
                     } else {
                         // Use p=0.875 for large differences so that the controller can converge faster.
-                        p_adjust_w = p_error_w * 7 / 8;
+                        p_adjust_w          = p_error_w          * 7 / 8;
+                        p_adjust_filtered_w = p_error_filtered_w * 7 / 8;
                     }
                 }
 
-                power_available_w = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_w;
+                power_available_w          = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_w;
+                power_available_filtered_w = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_filtered_w;
 
                 if (mode != MODE_MIN_PV)
                     break;
 
                 // Check against guaranteed power only in MIN_PV mode.
-                if (power_available_w < static_cast<int32_t>(guaranteed_power_w))
-                    power_available_w = static_cast<int32_t>(guaranteed_power_w);
+                if (power_available_w          < static_cast<int32_t>(guaranteed_power_w))
+                    power_available_w          = static_cast<int32_t>(guaranteed_power_w);
+                if (power_available_filtered_w < static_cast<int32_t>(guaranteed_power_w))
+                    power_available_filtered_w = static_cast<int32_t>(guaranteed_power_w);
 
                 break;
         }
@@ -769,9 +796,9 @@ void EnergyManager::update_energy()
             wants_3phase = true;
         } else { // automatic
             if (is_3phase) {
-                wants_3phase = power_available_w >= threshold_3to1_w;
+                wants_3phase = power_available_filtered_w >= threshold_3to1_w;
             } else { // is 1phase
-                wants_3phase = power_available_w > threshold_1to3_w;
+                wants_3phase = power_available_filtered_w > threshold_1to3_w;
             }
         }
 
@@ -779,6 +806,7 @@ void EnergyManager::update_energy()
         uint32_t time_now = millis();
 
         low_level_state.get("power_available")->updateInt(power_available_w);
+        low_level_state.get("power_available_filtered")->updateInt(power_available_filtered_w);
         low_level_state.get("wants_3phase")->updateBool(wants_3phase);
         low_level_state.get("wants_3phase_last")->updateBool(wants_3phase_last);
         low_level_state.get("is_on_last")->updateBool(is_on_last);
@@ -807,20 +835,20 @@ void EnergyManager::update_energy()
                 logger.printfln("energy_manager: Phase switch wanted but not supported by all chargers.");
             } else if (!uptime_past_hysteresis) {
                 // (Re)booted recently. Allow immediate switching.
-                logger.printfln("energy_manager: Free phase switch to %s during start-up period. available=%i", wants_3phase ? "3 phases" : "1 phase", power_available_w);
+                logger.printfln("energy_manager: Free phase switch to %s during start-up period. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
                 switch_phases = true;
             } else if (just_switched_mode) {
                 // Just switched modes. Allow immediate switching.
-                logger.printfln("energy_manager: Free phase switch to %s after changing modes. available=%i", wants_3phase ? "3 phases" : "1 phase", power_available_w);
+                logger.printfln("energy_manager: Free phase switch to %s after changing modes. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
                 switch_phases = true;
             } else if (!is_on && !on_state_change_is_blocked && a_after_b(time_now, phase_state_change_blocked_until - switching_hysteresis_ms/2)) {
                 // On/off deadline passed and at least half of the phase switching deadline passed.
-                logger.printfln("energy_manager: Free phase switch to %s while power is off. available=%i", wants_3phase ? "3 phases" : "1 phase", power_available_w);
+                logger.printfln("energy_manager: Free phase switch to %s while power is off. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
                 switch_phases = true;
             } else if (phase_state_change_is_blocked) {
                 //logger.printfln("energy_manager: Phase switch wanted but decision changed too recently. Have to wait another %ums.", phase_state_change_blocked_until - time_now);
             } else {
-                logger.printfln("energy_manager wants phase change to %s: available=%i", wants_3phase ? "3 phases" : "1 phase", power_available_w);
+                logger.printfln("energy_manager wants phase change to %s: available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
                 switch_phases = true;
             }
         }
@@ -832,7 +860,7 @@ void EnergyManager::update_energy()
             switching_start = time_now;
         } else {
             // Check against overall minimum power, to avoid wanting to switch off when available power is below 3-phase minimum but switch to 1-phase is possible.
-            bool wants_on = power_available_w >= overall_min_power_w;
+            bool wants_on = power_available_filtered_w >= overall_min_power_w;
 
             // Remember last decision change to start hysteresis time.
             if (wants_on != wants_on_last) {
@@ -915,6 +943,30 @@ void EnergyManager::update_energy()
         just_switched_phases = true;
     }
 #endif
+}
+
+float EnergyManager::calculate_cloud_filter_coefficient(uint32_t mode)
+{
+    // Filter's step response reaches 0.998 at t = time_constant.
+    double time_constant = 0;
+    switch (mode) {
+        case CLOUD_FILTER_OFF:    time_constant =   0; break;
+        case CLOUD_FILTER_LIGHT:  time_constant = 120; break;
+        case CLOUD_FILTER_MEDIUM: time_constant = 240; break;
+        case CLOUD_FILTER_STRONG: time_constant = 480; break;
+    }
+
+    // Avoid division by 0. The limit of the coefficient A, as time_constant approaches 0, is 1.
+    if (time_constant <= 0)
+        return 1;
+
+    double sampling_freq = 1000.0 / EM_TASK_DELAY_MS;
+    double cutoff_freq = 1 / time_constant;
+    double RC = 1 / (2 * M_PI * cutoff_freq);
+    double Ts = 1 / sampling_freq;
+    double A  = Ts / (Ts + RC);
+
+    return (float)A;
 }
 
 bool EnergyManager::get_sdcard_info(struct sdcard_info *data)

@@ -89,8 +89,14 @@ export class EMDebug extends Component<{}, EMDebugState> {
                 <FormRow label="power at meter">
                     <OutputFloat value={s.low_level_state.power_at_meter} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
+                <FormRow label="power at meter filtered">
+                    <OutputFloat value={s.low_level_state.power_at_meter_filtered} digits={3} scale={3} unit={'kW'} />
+                </FormRow>
                 <FormRow label="power available">
                     <OutputFloat value={s.low_level_state.power_available} digits={3} scale={3} unit={'kW'} />
+                </FormRow>
+                <FormRow label="power available filtered">
+                    <OutputFloat value={s.low_level_state.power_available_filtered} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
                 <FormRow label="overall min power">
                     <OutputFloat value={s.low_level_state.overall_min_power} digits={3} scale={3} unit={'kW'} />

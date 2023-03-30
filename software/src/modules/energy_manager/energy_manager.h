@@ -29,11 +29,18 @@
 #include "output_relay.h"
 #include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
+#define EM_TASK_DELAY_MS                250
+
 #define MODE_FAST                       0
 #define MODE_OFF                        1
 #define MODE_PV                         2
 #define MODE_MIN_PV                     3
 #define MODE_DO_NOTHING                 255
+
+#define CLOUD_FILTER_OFF                0
+#define CLOUD_FILTER_LIGHT              1
+#define CLOUD_FILTER_MEDIUM             2
+#define CLOUD_FILTER_STRONG             3
 
 #define PHASE_SWITCHING_AUTOMATIC       0
 #define PHASE_SWITCHING_ALWAYS_1PHASE   1
@@ -69,7 +76,7 @@
 #define INPUT_CONFIG_WHEN_HIGH          0
 #define INPUT_CONFIG_WHEN_LOW           1
 
-#define HYSTERESIS_MIN_TIME_MINUTES     10
+#define HYSTERESIS_MIN_TIME_MINUTES     5
 
 #define ERROR_FLAGS_BAD_CONFIG_BIT_POS      31
 #define ERROR_FLAGS_BAD_CONFIG_MASK         (1 << ERROR_FLAGS_BAD_CONFIG_BIT_POS)
@@ -157,6 +164,8 @@ public:
 
     void apply_defaults();
 
+    float calculate_cloud_filter_coefficient(uint32_t mode);
+
     bool get_sdcard_info(struct sdcard_info *data);
     bool format_sdcard();
     uint16_t get_energy_meter_detailed_values(float *ret_values);
@@ -234,6 +243,8 @@ private:
     uint32_t charge_manager_allocated_current_ma = 0;
     uint32_t max_current_limited_ma              = 0;
     int32_t  power_available_w                   = 0;
+    int32_t  power_available_filtered_w          = 0;
+    float    power_at_meter_filtered_w           = 0;
 
     // Config cache
     uint32_t default_mode             = 0;
@@ -253,6 +264,9 @@ private:
     int32_t  overall_min_power_w = 0;
     int32_t  threshold_3to1_w    = 0;
     int32_t  threshold_1to3_w    = 0;
+
+    // Pre-calculated data
+    float    cloud_filter_coefficient = 0;
 
     void collect_data_points();
     void history_wallbox_5min_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
