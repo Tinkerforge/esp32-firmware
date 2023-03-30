@@ -400,6 +400,14 @@ void CMNetworking::register_client(std::function<void(uint16_t, bool)> client_ca
 
         last_seen_seq_num = command_pkt.header.seq_num;
 
+        if (manager_addr_valid && memcmp(&manager_addr, &temp_addr, manager_addr.s2_len) != 0) {
+            char manager_str[16];
+            char temp_str[16];
+            inet_ntoa_r(((struct sockaddr_in*)&manager_addr)->sin_addr, manager_str, sizeof(manager_str));
+            inet_ntoa_r(((struct sockaddr_in*)&temp_addr   )->sin_addr, temp_str,    sizeof(temp_str   ));
+            logger.printfln("cm_networking: Warning: Manager address changed from %s to %s.", manager_str, temp_str);
+        }
+
         last_successful_recv = millis();
         manager_addr = temp_addr;
         manager_addr_valid = true;
