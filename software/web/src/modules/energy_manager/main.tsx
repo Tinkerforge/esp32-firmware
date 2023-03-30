@@ -203,8 +203,8 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         let mode_list: StringStringTuple[] = [];
 
         mode_list.push(["1", __("energy_manager.status.mode_off")]);
-        mode_list.push([s.excess_charging_enable ? "2" : "disabled", __("energy_manager.status.mode_pv")]);
-        mode_list.push([s.excess_charging_enable ? "3" : "disabled", __("energy_manager.status.mode_min_pv")]);
+        mode_list.push([s.excess_charging_enable ? "2" : "2-disabled", __("energy_manager.status.mode_pv")]);
+        mode_list.push([s.excess_charging_enable ? "3" : "3-disabled", __("energy_manager.status.mode_min_pv")]);
         mode_list.push(["0", __("energy_manager.status.mode_fast")]);
 
         let mode_list_for_inputs: StringStringTuple[] = [];
