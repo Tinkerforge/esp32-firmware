@@ -262,6 +262,7 @@ export function pauseWebSockets() {
 
 export function resumeWebSockets() {
     wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
+    wsReconnectCallback();
 }
 
 export function postReboot(alert_title: string, alert_text: string) {
