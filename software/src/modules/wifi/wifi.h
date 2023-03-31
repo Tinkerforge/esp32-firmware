@@ -37,7 +37,6 @@ public:
     void pre_setup();
     void setup();
     void register_urls();
-    void loop();
 
     bool was_connected = false;
 
@@ -47,6 +46,7 @@ public:
 private:
     void apply_soft_ap_config_and_start();
     bool apply_sta_config_and_connect();
+    bool apply_sta_config_and_connect(WifiState current_state);
 
     int get_ap_state();
 

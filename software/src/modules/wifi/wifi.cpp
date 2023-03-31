@@ -130,7 +130,7 @@ void Wifi::pre_setup()
     });
 
     wifi_state = Config::Object({
-        {"connection_state", Config::Int(0)},
+        {"connection_state", Config::Int((int32_t)WifiState::NOT_CONFIGURED)},
         {"ap_state", Config::Int(0)},
         {"ap_bssid", Config::Str("", 0, 20)},
         {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
@@ -160,7 +160,7 @@ void Wifi::apply_soft_ap_config_and_start()
     static int channel_to_use = wifi_ap_config_in_use.get("channel")->asUint();
 
     // We don't want apply_soft_ap_config_and_start
-    // to be called over and over in the loop
+    // to be called over and over from the fallback AP task
     // if we are still scanning for a channel.
     soft_ap_running = true;
 
@@ -257,7 +257,12 @@ void Wifi::apply_soft_ap_config_and_start()
 
 bool Wifi::apply_sta_config_and_connect()
 {
-    if (get_connection_state() == WifiState::CONNECTED) {
+    return apply_sta_config_and_connect(get_connection_state());
+}
+
+bool Wifi::apply_sta_config_and_connect(WifiState current_state)
+{
+    if (current_state == WifiState::CONNECTED) {
         return false;
     }
 
@@ -513,19 +518,47 @@ void Wifi::setup()
         WiFi.softAPdisconnect(true);
     }
 
+    if (enable_ap) {
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            wifi_state.get("ap_state")->updateInt(get_ap_state());
+        }, 5000, 5000);
+    }
+
     if (enable_sta) {
-        task_scheduler.scheduleWithFixedDelay([this](){
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            WifiState connection_state = get_connection_state();
+            wifi_state.get("connection_state")->updateInt((int)connection_state);
+            wifi_state.get("sta_rssi")->updateInt(WiFi.RSSI());
+
             static int tries = 0;
-            if (tries < 10 || (tries - 10) % 6 == 0)
-                if (!apply_sta_config_and_connect())
+            if (tries < 10 || (tries - 10) % 8 == 0)
+                if (!apply_sta_config_and_connect(connection_state))
                     tries = 0;
             tries++;
         }, 0, 5000);
     }
 
-    task_scheduler.scheduleWithFixedDelay([this](){
-        wifi_state.get("sta_rssi")->updateInt(WiFi.RSSI());
-    }, 5000, 5000);
+    if (ap_fallback_only) {
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            bool connected = false;
+
+#if MODULE_ETHERNET_AVAILABLE()
+            connected = ethernet.get_connection_state() == EthernetState::CONNECTED;
+#endif
+            if (!connected)
+                connected = (WifiState)wifi_state.get("connection_state")->asInt() == WifiState::CONNECTED;
+
+            if (connected == soft_ap_running) {
+                if (connected) {
+                    logger.printfln("Network connected. Stopping soft AP");
+                    WiFi.softAPdisconnect(true);
+                    soft_ap_running = false;
+                } else {
+                    apply_soft_ap_config_and_start();
+                }
+            }
+        }, 30 * 1000, 30 * 1000);
+    }
 
     initialized = true;
 }
@@ -655,30 +688,6 @@ void Wifi::register_urls()
     api.addPersistentConfig("wifi/ap_config", &wifi_ap_config, {"passphrase"}, 1000);
 }
 
-void Wifi::loop()
-{
-    auto connection_state = get_connection_state();
-    wifi_state.get("connection_state")->updateInt((int)connection_state);
-    wifi_state.get("ap_state")->updateInt(get_ap_state());
-
-    bool ap_fallback_only = wifi_ap_config_in_use.get("enable_ap")->asBool() && wifi_ap_config_in_use.get("ap_fallback_only")->asBool();
-    bool ethernet_connected = false;
-#if MODULE_ETHERNET_AVAILABLE()
-    ethernet_connected = ethernet.get_connection_state() == EthernetState::CONNECTED;
-#endif
-    bool connected = (connection_state == WifiState::CONNECTED) || ethernet_connected;
-
-    if (!connected && ap_fallback_only && !soft_ap_running) {
-        apply_soft_ap_config_and_start();
-    }
-
-    if (connected && ap_fallback_only && soft_ap_running) {
-        logger.printfln("Network connected. Stopping soft AP");
-        WiFi.softAPdisconnect(true);
-        soft_ap_running = false;
-    }
-}
-
 WifiState Wifi::get_connection_state() const
 {
     if (!wifi_sta_config_in_use.get("enable_sta")->asBool())
@@ -710,11 +719,13 @@ bool Wifi::is_sta_enabled() const
 int Wifi::get_ap_state()
 {
     bool enable_ap = wifi_ap_config_in_use.get("enable_ap")->asBool();
-    bool ap_fallback = wifi_ap_config_in_use.get("ap_fallback_only")->asBool();
     if (!enable_ap)
         return 0;
+
+    bool ap_fallback = wifi_ap_config_in_use.get("ap_fallback_only")->asBool();
     if (!ap_fallback)
         return 1;
+
     if (!soft_ap_running)
         return 2;
 
