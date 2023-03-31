@@ -710,6 +710,10 @@ let meter_show_status = true;
 function update_meter_values() {
     let values = API.get('meter/values');
 
+    // power can be null because the backend is initialized with a NAN value
+    if (!values.power)
+        return;
+
     $('#status_meter_power').val(util.toLocaleFixed(values.power, 0) + " W");
 }
 
