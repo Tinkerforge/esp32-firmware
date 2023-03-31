@@ -571,38 +571,44 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         util.eventTarget.addEventListener('energy_manager/history_wallbox_5min_changed', () => {
             let changed = API.get('energy_manager/history_wallbox_5min_changed');
             let subcache = this.wallbox_5min_cache[changed.uid];
+            let reload_subcache: boolean = false;
 
             if (!subcache) {
                 // got changed event without having this UID cached before
-                this.update_wallbox_5min_cache(changed.uid, new Date(changed.year, changed.month - 1, changed.day))
-                    .then((success: boolean) => {
-                        if (success) {
-                            this.schedule_uplot_update();
-                        }
-                    });
+                reload_subcache = true;
             } else {
                 let key = `${changed.year}-${changed.month}-${changed.day}`;
                 let data = subcache[key];
 
                 if (!data) {
                     // got changed event without having this day cached before
-                    this.update_wallbox_5min_cache(changed.uid, new Date(changed.year, changed.month - 1, changed.day))
-                        .then((success: boolean) => {
-                            if (success) {
-                                this.schedule_uplot_update();
-                            }
-                        });
+                    reload_subcache = true;
                 }
                 else {
                     let slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
 
-                    data.update_timestamp = Date.now();
-                    data.empty = false;
-                    data.flags[slot] = changed.flags;
-                    data.power[slot] = changed.power;
-                }
+                    if (slot > 0 && (data.flags[slot - 1] & 0x80 /* no data */) != 0) {
+                        // previous slot has no data. was a previous update event missed?
+                        reload_subcache = true;
+                    }
+                    else {
+                        data.update_timestamp = Date.now();
+                        data.empty = false;
+                        data.flags[slot] = changed.flags;
+                        data.power[slot] = changed.power;
 
-                this.schedule_uplot_update();
+                        this.schedule_uplot_update();
+                    }
+                }
+            }
+
+            if (reload_subcache) {
+                this.update_wallbox_5min_cache(changed.uid, new Date(changed.year, changed.month - 1, changed.day))
+                    .then((success: boolean) => {
+                        if (success) {
+                            this.schedule_uplot_update();
+                        }
+                    });
             }
         });
 
@@ -610,29 +616,40 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let changed = API.get('energy_manager/history_energy_manager_5min_changed');
             let key = `${changed.year}-${changed.month}-${changed.day}`;
             let data = this.energy_manager_5min_cache[key];
+            let reload_cache: boolean = false;
 
             if (!data) {
                 // got changed event without having this day cached before
+                reload_cache = true;
+            } else {
+                let slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
+
+                if (slot > 0 && (data.flags[slot - 1] & 0x80 /* no data */) != 0) {
+                    // previous slot has no data. was a previous update event missed?
+                    reload_cache = true;
+                }
+                else {
+                    data.update_timestamp = Date.now();
+                    data.empty = false;
+                    data.flags[slot] = changed.flags;
+                    data.power_grid[slot] = changed.power_grid;
+                    data.power_general[slot] = changed.power_general;
+
+                    if (data.power_grid[slot] !== null) {
+                        data.power_grid_empty = false;
+                    }
+
+                    this.schedule_uplot_update();
+                }
+            }
+
+            if (reload_cache) {
                 this.update_energy_manager_5min_cache(new Date(changed.year, changed.month - 1, changed.day))
                     .then((success: boolean) => {
                         if (success) {
                             this.schedule_uplot_update();
                         }
                     });
-            } else {
-                let slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
-
-                data.update_timestamp = Date.now();
-                data.empty = false;
-                data.flags[slot] = changed.flags;
-                data.power_grid[slot] = changed.power_grid;
-                data.power_general[slot] = changed.power_general;
-
-                if (data.power_grid[slot] !== null) {
-                    data.power_grid_empty = false;
-                }
-
-                this.schedule_uplot_update();
             }
         });
     }
