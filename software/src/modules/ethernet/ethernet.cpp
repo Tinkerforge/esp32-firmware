@@ -108,6 +108,20 @@ void Ethernet::setup()
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             logger.printfln("Ethernet connected");
             ethernet_state.get("connection_state")->updateUint((uint)EthernetState::CONNECTING);
+
+            IPAddress ip, subnet, gateway, dns, dns2;
+
+            ip.fromString(ethernet_config_in_use.get("ip")->asEphemeralCStr());
+            subnet.fromString(ethernet_config_in_use.get("subnet")->asEphemeralCStr());
+            gateway.fromString(ethernet_config_in_use.get("gateway")->asEphemeralCStr());
+            dns.fromString(ethernet_config_in_use.get("dns")->asEphemeralCStr());
+            dns2.fromString(ethernet_config_in_use.get("dns2")->asEphemeralCStr());
+
+            if (ip != 0) {
+                ETH.config(ip, gateway, subnet, dns, dns2);
+            } else {
+                ETH.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
+            }
         },
         ARDUINO_EVENT_ETH_CONNECTED);
 
@@ -152,21 +166,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_STOP);
 
-    IPAddress ip, subnet, gateway, dns, dns2;
-
-    ip.fromString(ethernet_config_in_use.get("ip")->asEphemeralCStr());
-    subnet.fromString(ethernet_config_in_use.get("subnet")->asEphemeralCStr());
-    gateway.fromString(ethernet_config_in_use.get("gateway")->asEphemeralCStr());
-    dns.fromString(ethernet_config_in_use.get("dns")->asEphemeralCStr());
-    dns2.fromString(ethernet_config_in_use.get("dns2")->asEphemeralCStr());
-
     ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_PHY_MDC, ETH_PHY_MDIO, ETH_TYPE);
-
-    if (ip != 0) {
-        ETH.config(ip, gateway, subnet, dns, dns2);
-    } else {
-        ETH.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
-    }
 }
 
 void Ethernet::register_urls()
