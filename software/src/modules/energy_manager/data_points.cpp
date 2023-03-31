@@ -617,10 +617,12 @@ void EnergyManager::history_wallbox_5min_response(IChunkedResponse *response, Ow
     local_start.tm_year = local_year + 100;
     local_start.tm_mon = local_month - 1;
     local_start.tm_mday = local_day;
+    local_start.tm_isdst = -1;
 
     local_end.tm_year = local_year + 100;
     local_end.tm_mon = local_month - 1;
     local_end.tm_mday = local_day + 1;
+    local_end.tm_isdst = -1;
 
     time_t time_start = mktime(&local_start);
     time_t time_end = mktime(&local_end);
@@ -1030,10 +1032,12 @@ void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *respo
     local_start.tm_year = local_year + 100;
     local_start.tm_mon = local_month - 1;
     local_start.tm_mday = local_day;
+    local_start.tm_isdst = -1;
 
     local_end.tm_year = local_year + 100;
     local_end.tm_mon = local_month - 1;
     local_end.tm_mday = local_day + 1;
+    local_end.tm_isdst = -1;
 
     time_t time_start = mktime(&local_start);
     time_t time_end = mktime(&local_end);

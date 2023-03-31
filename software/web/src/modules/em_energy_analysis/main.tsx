@@ -701,19 +701,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return;
         }
 
-        let slot_count = 288;
-        let timestamps: number[] = new Array(slot_count);
-        let base = date.getTime() / 1000;
+        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false]};
 
-        for (let slot = 0; slot < slot_count; ++slot) {
-            timestamps[slot] = base + slot * 300;
-        }
-
-        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [timestamps], stacked: [false]};
-
+        let slot_count: number = 0;
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
         if (energy_manager_data && !energy_manager_data.empty) {
+            slot_count = Math.max(slot_count, energy_manager_data.power_grid.length)
+
             uplot_data.keys.push('em');
             uplot_data.names.push(__("em_energy_analysis.script.grid_connection"));
             uplot_data.values.push(energy_manager_data.power_grid);
@@ -725,6 +720,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let wallbox_data = this.wallbox_5min_cache[charger.uid][key];
 
                 if (wallbox_data && !wallbox_data.empty) {
+                    slot_count = Math.max(slot_count, wallbox_data.power.length);
+
                     uplot_data.keys.push('wb' + charger.uid);
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(wallbox_data.power);
@@ -732,6 +729,15 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 }
             }
         }
+
+        let timestamps: number[] = new Array(slot_count);
+        let base = date.getTime() / 1000;
+
+        for (let slot = 0; slot < slot_count; ++slot) {
+            timestamps[slot] = base + slot * 300;
+        }
+
+        uplot_data.values[0] = timestamps;
 
         this.uplot_5min_cache[key] = uplot_data;
         this.expire_cache(this.uplot_5min_cache);
@@ -760,7 +766,20 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return;
         }
 
-        let slot_count = 288;
+        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false]};
+
+        let slot_count: number = 0;
+        let energy_manager_data = this.energy_manager_5min_cache[key];
+
+        if (energy_manager_data && !energy_manager_data.power_grid_empty) {
+            slot_count = Math.max(slot_count, energy_manager_data.power_grid.length)
+
+            uplot_data.keys.push('em');
+            uplot_data.names.push(null);
+            uplot_data.values.push(energy_manager_data.power_grid);
+            uplot_data.stacked.push(false);
+        }
+
         let timestamps: number[] = new Array(slot_count);
         let base = date.getTime() / 1000;
 
@@ -768,16 +787,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             timestamps[slot] = base + slot * 300;
         }
 
-        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [timestamps], stacked: [false]};
-
-        let energy_manager_data = this.energy_manager_5min_cache[key];
-
-        if (energy_manager_data && !energy_manager_data.power_grid_empty) {
-            uplot_data.keys.push('em');
-            uplot_data.names.push(null);
-            uplot_data.values.push(energy_manager_data.power_grid);
-            uplot_data.stacked.push(false);
-        }
+        uplot_data.values[0] = timestamps;
 
         this.uplot_5min_status_cache[key] = uplot_data;
         this.expire_cache(this.uplot_5min_status_cache);
@@ -827,7 +837,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         }
 
         let payload = JSON.parse(response);
-        let slot_count = 288;
+        let slot_count = payload.length / 2;
         let now = Date.now();
         let data: Wallbox5minData = {
             update_timestamp: now,
@@ -882,7 +892,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         }
 
         let payload = JSON.parse(response);
-        let slot_count = 288;
+        let slot_count = payload.length / 8;
         let now = Date.now();
         let data: EnergyManager5minData = {
             update_timestamp: now,
@@ -894,7 +904,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             power_general: new Array(slot_count)
         };
 
-        for (let slot = 0; slot < 288; ++slot) {
+        for (let slot = 0; slot < slot_count; ++slot) {
             data.flags[slot] = payload[slot * 8];
             data.power_grid[slot] = payload[slot * 8 + 1];
             data.power_general[slot] = [
