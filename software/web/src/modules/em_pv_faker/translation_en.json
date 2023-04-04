@@ -1,0 +1,26 @@
+{
+    "em_pv_faker": {
+        "status": {
+            "illuminance": "Illuminance",
+            "fake_power": "Fake power"
+        },
+        "navbar": {
+            "em_pv_faker": "PV Faker"
+        },
+        "content": {
+            "page_header": "PV Faker",
+
+            "auto_fake": "Fake power based on illuminance",
+            "illuminance_topic": "Illuminance MQTT topic",
+            "illuminance_topic_invalid": "The topic cannot start with $, contain a # or +, or be empty.",
+            "peak_power": "PV peak power",
+            "zero_at_lux": "Zero power illuminance",
+            "peak_at_lux": "Peak power illuminance",
+
+            "manual_power": "Manual grid draw override"
+        },
+        "script": {
+            "save_failed": "Failed to save energy manager configuration."
+        }
+    }
+}

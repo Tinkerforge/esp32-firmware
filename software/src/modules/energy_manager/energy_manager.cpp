@@ -702,8 +702,9 @@ void EnergyManager::update_energy()
             return;
         }
 
-        // TODO Evil: Allow runtime changes, overrides input pins!
-        target_power_from_grid_w    = config.get("target_power_from_grid")->asInt(); // watt
+#if MODULE_EM_PV_FAKER_AVAILABLE()
+        target_power_from_grid_w = em_pv_faker.state.get("fake_power")->asInt(); // watt
+#endif
 
         int32_t p_error_w, p_error_filtered_w;
         if (!excess_charging_enable) {
