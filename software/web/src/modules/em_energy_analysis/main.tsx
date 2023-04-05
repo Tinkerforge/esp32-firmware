@@ -589,6 +589,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                     if (slot > 0 && (data.flags[slot - 1] & 0x80 /* no data */) != 0) {
                         // previous slot has no data. was a previous update event missed?
+                        delete subcache[key];
                         reload_subcache = true;
                     }
                     else {
@@ -626,6 +627,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                 if (slot > 0 && (data.flags[slot - 1] & 0x80 /* no data */) != 0) {
                     // previous slot has no data. was a previous update event missed?
+                    delete this.energy_manager_5min_cache[key];
                     reload_cache = true;
                 }
                 else {
