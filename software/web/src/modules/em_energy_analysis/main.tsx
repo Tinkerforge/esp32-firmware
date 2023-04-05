@@ -831,7 +831,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     }
 
     async update_wallbox_5min_cache(uid: number, date: Date) {
-        if (date.getTime() > Date.now()) {
+        let now = Date.now();
+
+        if (date.getTime() > now) {
             return true;
         }
 
@@ -839,7 +841,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         if (this.wallbox_5min_cache[uid] && this.wallbox_5min_cache[uid][key]) {
             // cache is valid
-            this.wallbox_5min_cache[uid][key].use_timestamp = Date.now();
+            this.wallbox_5min_cache[uid][key].use_timestamp = now;
             return true;
         }
 
@@ -855,9 +857,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return false;
         }
 
+        // reload now timestamp, because of the await call before, the previous value is
+        // old and might result in wrong cache ordering because an uplot cache update could
+        // have occurred during the await call
+        now = Date.now();
+
         let payload = JSON.parse(response);
         let slot_count = payload.length / 2;
-        let now = Date.now();
         let data: Wallbox5minData = {
             update_timestamp: now,
             use_timestamp: now,
@@ -886,7 +892,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     }
 
     async update_energy_manager_5min_cache(date: Date) {
-        if (date.getTime() > Date.now()) {
+        let now = Date.now();
+
+        if (date.getTime() > now) {
             return true;
         }
 
@@ -894,7 +902,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         if (this.energy_manager_5min_cache[key]) {
             // cache is valid
-            this.energy_manager_5min_cache[key].use_timestamp = Date.now();
+            this.energy_manager_5min_cache[key].use_timestamp = now;
             return true;
         }
 
@@ -910,9 +918,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return false;
         }
 
+        // reload now timestamp, because of the await call before, the previous value is
+        // old and might result in wrong cache ordering because an uplot cache update could
+        // have occurred during the await call
+        now = Date.now();
+
         let payload = JSON.parse(response);
         let slot_count = payload.length / 8;
-        let now = Date.now();
         let data: EnergyManager5minData = {
             update_timestamp: now,
             use_timestamp: now,
