@@ -1225,9 +1225,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             if (data.energy[slot] != null) {
                 data.empty = false;
             }
-            else {
-                data.complete = false;
-            }
         }
 
         if (!this.wallbox_daily_cache[uid]) {
@@ -1293,17 +1290,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             if (data.energy_grid_in[slot] != null) {
                 data.empty = false;
             }
-            else {
-                data.complete = false;
-            }
-
             data.energy_grid_out[slot] = payload[slot * 14 + 1];
 
             if (data.energy_grid_out[slot] != null) {
                 data.empty = false;
-            }
-            else {
-                data.complete = false;
             }
 
             data.energy_general_in[slot] = new Array(6);
@@ -1315,17 +1305,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 if (data.energy_general_in[slot][i] != null) {
                     data.empty = false;
                 }
-                else {
-                    data.complete = false;
-                }
 
                 data.energy_general_out[slot][i] = payload[slot * 14 + 8 + i];
 
                 if (data.energy_general_out[slot][i] != null) {
                     data.empty = false;
-                }
-                else {
-                    data.complete = false;
                 }
             }
         }
