@@ -134,7 +134,8 @@ void ChargeManager::pre_setup()
 
                 {"charger_state", Config::Uint8(0)},
                 {"meter_supported", Config::Bool(false)},
-                {"power_total", Config::Float(0)},
+                {"power_total_sum", Config::Float(0)},
+                {"power_total_count", Config::Uint32(0)},
                 {"energy_abs", Config::Float(0)},
             })},
             0, MAX_CLIENTS, Config::type_id<Config::ConfObject>()
@@ -228,7 +229,8 @@ void ChargeManager::start_manager_task()
             target->get("last_update")->updateUint(millis());
             target->get("charger_state")->updateUint(state->charger_state);
             target->get("meter_supported")->updateBool(CM_FEATURE_FLAGS_METER_IS_SET(state->feature_flags));
-            target->get("power_total")->updateFloat(state->power_total);
+            target->get("power_total_sum")->updateFloat(target->get("power_total_sum")->asFloat() + state->power_total);
+            target->get("power_total_count")->updateUint(target->get("power_total_count")->asUint() + 1);
             target->get("energy_abs")->updateFloat(state->energy_abs);
 
             if (state->error_state != 0) {

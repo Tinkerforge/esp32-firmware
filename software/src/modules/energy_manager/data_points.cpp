@@ -28,6 +28,7 @@
 #define MAX_DATA_AGE 30000 // milliseconds
 #define DATA_INTERVAL_5MIN 5 // minutes
 
+// FIXME: record data averaged and integrate power over time to record energy for meters that only report power
 void EnergyManager::collect_data_points()
 {
     struct timeval tv;
@@ -45,7 +46,7 @@ void EnergyManager::collect_data_points()
     int current_5min_slot = utc.tm_min / 5;
 
     if (current_5min_slot != last_history_5min_slot) {
-        for (const auto &charger : charge_manager.charge_manager_state.get("chargers")) {
+        for (auto &charger : charge_manager.charge_manager_state.get("chargers")) {
             uint32_t last_update = charger.get("last_update")->asUint();
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
@@ -56,9 +57,17 @@ void EnergyManager::collect_data_points()
                 uint16_t power = UINT16_MAX;
 
                 if (charger.get("meter_supported")->asBool()) {
-                    power = clamp<uint64_t>(0,
-                                            roundf(charger.get("power_total")->asFloat()),
-                                            UINT16_MAX - 1); // W
+                    float power_total_sum = charger.get("power_total_sum")->asFloat();
+                    uint32_t power_total_count = charger.get("power_total_count")->asUint();
+
+                    charger.get("power_total_sum")->updateFloat(0);
+                    charger.get("power_total_count")->updateUint(0);
+
+                    if (power_total_count > 0) {
+                        power = clamp<uint64_t>(0,
+                                                roundf(power_total_sum / power_total_count),
+                                                UINT16_MAX - 1); // W
+                    }
                 }
 
                 set_wallbox_5min_data_point(&utc, &local, uid, flags, power);
