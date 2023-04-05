@@ -285,7 +285,8 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                 </div>
                 <Card.Body>
                     {state.users.length >= MAX_ACTIVE_USERS
-                        ? <span>{__("users.script.add_user_disabled_prefix") + MAX_ACTIVE_USERS + __("users.script.add_user_disabled_suffix")}</span>
+                        // One user slot is always taken by the unknown user, so display MAX_ACTIVE_USERS - 1 as the maximum number of users that can be added.
+                        ? <span>{__("users.script.add_user_disabled_prefix") + (MAX_ACTIVE_USERS - 1) + __("users.script.add_user_disabled_suffix")}</span>
                         : <Button variant="light" size="lg" block style="height: 100%;" onClick={() => this.setState({showModal: true})}>{__("users.script.add_user")}</Button>}
                 </Card.Body>
             </Card>
