@@ -15,7 +15,9 @@
         "script": {
             "time": "Time of day",
             "power": "Power",
-            "grid_connection": "Grid connection"
+            "grid_connection": "Grid connection",
+            "grid_in": "Grid draw",
+            "grid_out": "Grid feed"
         }
     }
 }

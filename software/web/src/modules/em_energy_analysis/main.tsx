@@ -498,7 +498,9 @@ interface EMEnergyAnalysisProps {
 
 interface EMEnergyAnalysisState {
     force_render: number,
+    data_type: '5min'|'daily';
     current_5min_date: Date;
+    current_daily_date: Date;
 }
 
 interface Charger {
@@ -532,13 +534,28 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         current_5min_date.setSeconds(0);
         current_5min_date.setMilliseconds(0);
 
+        let current_daily_date: Date = new Date();
+
+        current_daily_date.setDate(1);
+        current_daily_date.setHours(0);
+        current_daily_date.setMinutes(0);
+        current_daily_date.setSeconds(0);
+        current_daily_date.setMilliseconds(0);
+
         this.state = {
             force_render: 0,
+            data_type: '5min',
             current_5min_date: current_5min_date,
+            current_daily_date: current_daily_date,
         } as any;
 
         util.eventTarget.addEventListener('info/modules', () => {
-            this.update_current_5min_cache();
+            if (this.state.data_type == '5min') {
+                this.update_current_5min_cache();
+            }
+            else {
+                this.update_current_daily_cache();
+            }
 
             this.setState({force_render: Date.now()});
         });
@@ -654,6 +671,85 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     });
             }
         });
+
+        util.eventTarget.addEventListener('energy_manager/history_wallbox_daily_changed', () => {
+            let changed = API.get('energy_manager/history_wallbox_daily_changed');
+            let subcache = this.wallbox_daily_cache[changed.uid];
+            let reload_subcache: boolean = false;
+
+            if (!subcache) {
+                // got changed event without having this UID cached before
+                reload_subcache = true;
+            } else {
+                let key = `${changed.year}-${changed.month}`;
+                let data = subcache[key];
+
+                if (!data) {
+                    // got changed event without having this month cached before
+                    reload_subcache = true;
+                }
+                else {
+                    let slot = changed.day - 1;
+
+                    if (slot > 0 && data.energy[slot - 1] == null) {
+                        // previous slot has no data. was a previous update event missed?
+                        delete subcache[key];
+                        reload_subcache = true;
+                    }
+                    else {
+                        data.update_timestamp = Date.now();
+                        data.empty = false;
+                        data.energy[slot] = changed.energy;
+                    }
+
+                    this.schedule_uplot_update();
+                }
+            }
+
+            if (reload_subcache) {
+                this.update_wallbox_daily_cache(changed.uid, new Date(changed.year, changed.month - 1))
+                    .then((success: boolean) => {
+                        if (success) {
+                            this.schedule_uplot_update();
+                        }
+                    });
+            }
+        });
+
+        util.eventTarget.addEventListener('energy_manager/history_energy_manager_daily_changed', () => {
+            let changed = API.get('energy_manager/history_energy_manager_daily_changed');
+            let key = `${changed.year}-${changed.month}`;
+            let data = this.energy_manager_daily_cache[key];
+            let reload_cache: boolean = false;
+
+            if (!data) {
+                // got changed event without having this day cached before
+                reload_cache = true;
+            } else {
+                let slot = changed.day - 1;
+
+                data.update_timestamp = Date.now();
+                data.empty = false;
+                data.energy_grid_in[slot] = changed.energy_grid_in;
+                data.energy_grid_out[slot] = changed.energy_grid_out;
+
+                for (let i = 0; i < 6; ++i) {
+                    data.energy_general_in[i][slot] = changed.energy_general_in[i];
+                    data.energy_general_out[i][slot] = changed.energy_general_out[i];
+                }
+
+                this.schedule_uplot_update();
+            }
+
+            if (reload_cache) {
+                this.update_energy_manager_daily_cache(new Date(changed.year, changed.month - 1))
+                    .then((success: boolean) => {
+                        if (success) {
+                            this.schedule_uplot_update();
+                        }
+                    });
+            }
+        });
     }
 
     date_to_5min_key(date: Date) {
@@ -661,7 +757,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         let month: number = date.getMonth() + 1;
         let day: number = date.getDate();
 
-        return`${year}-${month}-${day}`;
+        return `${year}-${month}-${day}`;
+    }
+
+    date_to_daily_key(date: Date) {
+        let year: number = date.getFullYear();
+        let month: number = date.getMonth() + 1;
+
+        return`${year}-${month}`;
     }
 
     expire_cache(cache: {[id: string]: CachedData}) {
@@ -726,7 +829,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
         if (energy_manager_data && !energy_manager_data.empty) {
-            slot_count = Math.max(slot_count, energy_manager_data.power_grid.length)
+            slot_count = Math.max(slot_count, energy_manager_data.power_grid.length);
 
             uplot_data.keys.push('em');
             uplot_data.names.push(__("em_energy_analysis.script.grid_connection"));
@@ -812,6 +915,90 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         this.expire_cache(this.uplot_5min_status_cache);
     }
 
+    update_uplot_daily_cache(date: Date) {
+        let key = this.date_to_daily_key(date);
+        let uplot_data = this.uplot_daily_cache[key];
+        let needs_update = false;
+        let now = Date.now();
+
+        if (!uplot_data) {
+            needs_update = true;
+        }
+        else {
+            let energy_manager_data = this.energy_manager_daily_cache[key];
+
+            if (energy_manager_data && uplot_data.update_timestamp < energy_manager_data.update_timestamp) {
+                needs_update = true;
+            }
+
+            if (!needs_update) {
+                for (let charger of this.chargers) {
+                    if (this.wallbox_daily_cache[charger.uid]) {
+                        let wallbox_data = this.wallbox_daily_cache[charger.uid][key];
+
+                        if (wallbox_data && uplot_data.update_timestamp < wallbox_data.update_timestamp) {
+                            needs_update = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!needs_update) {
+            // cache is valid
+            uplot_data.use_timestamp = now;
+            return;
+        }
+
+        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false]};
+
+        let slot_count: number = 0;
+        let energy_manager_data = this.energy_manager_daily_cache[key];
+
+        if (energy_manager_data && !energy_manager_data.empty) {
+            // energy_grid_in and energy_grid_out have the same length
+            slot_count = Math.max(slot_count, energy_manager_data.energy_grid_in.length);
+
+            uplot_data.keys.push('em_grid_in');
+            uplot_data.names.push(__("em_energy_analysis.script.grid_in"));
+            uplot_data.values.push(energy_manager_data.energy_grid_in);
+            uplot_data.stacked.push(false);
+
+            uplot_data.keys.push('em_grid_out');
+            uplot_data.names.push(__("em_energy_analysis.script.grid_out"));
+            uplot_data.values.push(energy_manager_data.energy_grid_out);
+            uplot_data.stacked.push(false);
+        }
+
+        for (let charger of this.chargers) {
+            if (this.wallbox_daily_cache[charger.uid]) {
+                let wallbox_data = this.wallbox_daily_cache[charger.uid][key];
+
+                if (wallbox_data && !wallbox_data.empty) {
+                    slot_count = Math.max(slot_count, wallbox_data.energy.length);
+
+                    uplot_data.keys.push('wb' + charger.uid);
+                    uplot_data.names.push(charger.name);
+                    uplot_data.values.push(wallbox_data.energy);
+                    uplot_data.stacked.push(true);
+                }
+            }
+        }
+
+        let timestamps: number[] = new Array(slot_count);
+        let base = date.getTime() / 1000;
+
+        for (let slot = 0; slot < slot_count; ++slot) {
+            timestamps[slot] = base + slot * 300;
+        }
+
+        uplot_data.values[0] = timestamps;
+
+        this.uplot_daily_cache[key] = uplot_data;
+        this.expire_cache(this.uplot_daily_cache);
+    }
+
     async update_wallbox_5min_cache_all(date: Date) {
         let all: Promise<boolean>[] = [];
 
@@ -843,6 +1030,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             // cache is valid
             this.wallbox_5min_cache[uid][key].use_timestamp = now;
             return true;
+        }
+
+        if (this.uplot_wrapper_ref.current) {
+            this.uplot_wrapper_ref.current.set_loading();
         }
 
         let year: number = date.getFullYear();
@@ -906,6 +1097,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return true;
         }
 
+        if (this.uplot_wrapper_ref.current) {
+            this.uplot_wrapper_ref.current.set_loading();
+        }
+
         let year: number = date.getFullYear();
         let month: number = date.getMonth() + 1;
         let day: number = date.getDate();
@@ -962,104 +1157,184 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         return true;
     }
 
-    /*async update_wallbox_daily_cache() {
+    async update_wallbox_daily_cache_all(date: Date) {
+        let all: Promise<boolean>[] = [];
+
         for (let charger of this.chargers) {
-            let year: number = 2023;
-            let month: number = 2;
-            let id = `${charger.uid}-${year}-${month}`;
-            let response: string = '';
+            all.push(this.update_wallbox_daily_cache(charger.uid, date));
+        }
 
-            try {
-                response = await (await util.put('energy_manager/history_wallbox_daily', {uid: charger.uid, year: year, month: month})).text();
-            } catch (e) {
-                console.log('Could not get wallbox daily data: ' + e);
-            }
+        let result = await Promise<boolean[]>.all(all);
 
-            if (response) {
-                let payload = JSON.parse(response);
-                let length = payload.length;
-                let data: WallboxDailyData = {
-                    energy: new Array(length),
-                };
-
-                for (let i = 0; i < length; ++i) {
-                    data.energy[i] = payload[i];
-                }
-
-                console.log('energy ' + id + ' ' +  data.energy);
-
-                this.wallbox_daily_cache[id] = data;
+        for (let success of result) {
+            if (!success) {
+                return false;
             }
         }
+
+        return true;
     }
 
-    async update_energy_manager_daily_cache() {
+    async update_wallbox_daily_cache(uid: number, date: Date) {
+        let now = Date.now();
+
+        if (date.getTime() > now) {
+            return true;
+        }
+
+        let key = this.date_to_daily_key(date);
+
+        if (this.wallbox_daily_cache[uid] && this.wallbox_daily_cache[uid][key]) {
+            // cache is valid
+            this.wallbox_daily_cache[uid][key].use_timestamp = now;
+            return true;
+        }
+
+        if (this.uplot_wrapper_ref.current) {
+            this.uplot_wrapper_ref.current.set_loading();
+        }
+
+        let year: number = date.getFullYear();
+        let month: number = date.getMonth() + 1;
         let response: string = '';
-        let year: number = 2023;
-        let month: number = 2;
-        let id = `${year}-${month}`;
 
         try {
-            response = await (await util.put('energy_manager/analysis_energy_manager_daily', {year: year, month: month})).text();
+            response = await (await util.put('energy_manager/history_wallbox_daily', {uid: uid, year: year, month: month})).text();
+        } catch (e) {
+            console.log('Could not get wallbox daily data: ' + e);
+            return false;
+        }
+
+        // reload now timestamp, because of the await call before, the previous value is
+        // old and might result in wrong cache ordering because an uplot cache update could
+        // have orccured during the await call
+        now = Date.now();
+
+        let payload = JSON.parse(response);
+        let slot_count = payload.length;
+        let data: WallboxDailyData = {
+            update_timestamp: now,
+            use_timestamp: now,
+            empty: true,
+            energy: new Array(slot_count),
+        };
+
+        for (let slot = 0; slot < slot_count; ++slot) {
+            data.energy[slot] = payload[slot];
+
+            if (data.energy[slot] != null) {
+                data.empty = false;
+            }
+            else {
+                data.complete = false;
+            }
+        }
+
+        if (!this.wallbox_daily_cache[uid]) {
+            this.wallbox_daily_cache[uid] = {};
+        }
+
+        this.wallbox_daily_cache[uid][key] = data;
+        this.expire_cache(this.wallbox_daily_cache[uid]);
+
+        return true;
+    }
+
+    async update_energy_manager_daily_cache(date: Date) {
+        let now = Date.now();
+
+        if (date.getTime() > now) {
+            return true;
+        }
+
+        let key = this.date_to_daily_key(date);
+
+        if (this.energy_manager_daily_cache[key]) {
+            // cache is valid
+            this.energy_manager_daily_cache[key].use_timestamp = now;
+            return true;
+        }
+
+        if (this.uplot_wrapper_ref.current) {
+            this.uplot_wrapper_ref.current.set_loading();
+        }
+
+        let year: number = date.getFullYear();
+        let month: number = date.getMonth() + 1;
+        let response: string = '';
+
+        try {
+            response = await (await util.put('energy_manager/history_energy_manager_daily', {year: year, month: month})).text();
         } catch (e) {
             console.log('Could not get energy manager daily data: ' + e);
+            return false;
         }
 
-        if (response) {
-            let payload = JSON.parse(response);
-            let length = Math.floor(payload.length / 14);
-            let data: EnergyManagerDailyData = {
-                energy_grid_in: new Array(length),
-                energy_grid_out: new Array(length),
-                energy_meter_in_0: new Array(length),
-                energy_meter_in_1: new Array(length),
-                energy_meter_in_2: new Array(length),
-                energy_meter_in_3: new Array(length),
-                energy_meter_in_4: new Array(length),
-                energy_meter_in_5: new Array(length),
-                energy_meter_out_0: new Array(length),
-                energy_meter_out_1: new Array(length),
-                energy_meter_out_2: new Array(length),
-                energy_meter_out_3: new Array(length),
-                energy_meter_out_4: new Array(length),
-                energy_meter_out_5: new Array(length),
-            };
+        // reload now timestamp, because of the await call before, the previous value is
+        // old and might result in wrong cache ordering because an uplot cache update could
+        // have orccured during the await call
+        now = Date.now();
 
-            for (let i = 0; i < length; ++i) {
-                data.energy_grid_in[i] = payload[i * 14];
-                data.energy_grid_out[i] = payload[i * 14 + 1];
-                data.energy_meter_in_0[i] = payload[i * 14 + 2];
-                data.energy_meter_in_1[i] = payload[i * 14 + 3];
-                data.energy_meter_in_2[i] = payload[i * 14 + 4];
-                data.energy_meter_in_3[i] = payload[i * 14 + 5];
-                data.energy_meter_in_4[i] = payload[i * 14 + 6];
-                data.energy_meter_in_5[i] = payload[i * 14 + 7];
-                data.energy_meter_out_0[i] = payload[i * 14 + 8];
-                data.energy_meter_out_1[i] = payload[i * 14 + 9];
-                data.energy_meter_out_2[i] = payload[i * 14 + 10];
-                data.energy_meter_out_3[i] = payload[i * 14 + 11];
-                data.energy_meter_out_4[i] = payload[i * 14 + 12];
-                data.energy_meter_out_5[i] = payload[i * 14 + 13];
+        let payload = JSON.parse(response);
+        let slot_count = payload.lenght / 14;
+        let data: EnergyManagerDailyData = {
+            update_timestamp: now,
+            use_timestamp: now,
+            empty: true,
+            energy_grid_in: new Array(slot_count),
+            energy_grid_out: new Array(slot_count),
+            energy_general_in: new Array(slot_count),
+            energy_general_out: new Array(slot_count),
+        };
+
+        for (let slot = 0; slot < slot_count; ++slot) {
+            data.energy_grid_in[slot] = payload[slot * 14];
+
+            if (data.energy_grid_in[slot] != null) {
+                data.empty = false;
+            }
+            else {
+                data.complete = false;
             }
 
-            console.log('energy_grid_in ' + id + ' ' + data.energy_grid_in);
-            console.log('energy_grid_out ' + id + ' ' + data.energy_grid_out);
-            console.log('energy_meter_in_0 ' + id + ' ' + data.energy_meter_in_0);
-            console.log('energy_meter_in_1 ' + id + ' ' + data.energy_meter_in_1);
-            console.log('energy_meter_in_2 ' + id + ' ' + data.energy_meter_in_2);
-            console.log('energy_meter_in_3 ' + id + ' ' + data.energy_meter_in_3);
-            console.log('energy_meter_in_4 ' + id + ' ' + data.energy_meter_in_4);
-            console.log('energy_meter_in_5 ' + id + ' ' + data.energy_meter_in_5);
-            console.log('energy_meter_out_0 ' + id + ' ' + data.energy_meter_out_0);
-            console.log('energy_meter_out_1 ' + id + ' ' + data.energy_meter_out_1);
-            console.log('energy_meter_out_2 ' + id + ' ' + data.energy_meter_out_2);
-            console.log('energy_meter_out_3 ' + id + ' ' + data.energy_meter_out_3);
-            console.log('energy_meter_out_4 ' + id + ' ' + data.energy_meter_out_4);
-            console.log('energy_meter_out_5 ' + id + ' ' + data.energy_meter_out_5);
+            data.energy_grid_out[slot] = payload[slot * 14 + 1];
 
-            this.energy_manager_daily_cache[id] = data;
+            if (data.energy_grid_out[slot] != null) {
+                data.empty = false;
+            }
+            else {
+                data.complete = false;
+            }
+
+            data.energy_general_in[slot] = new Array(6);
+            data.energy_general_out[slot] = new Array(6);
+
+            for (let i = 0; i < 6; ++i) {
+                data.energy_general_in[slot][i] = payload[slot * 14 + 2 + i];
+
+                if (data.energy_general_in[slot][i] != null) {
+                    data.empty = false;
+                }
+                else {
+                    data.complete = false;
+                }
+
+                data.energy_general_out[slot][i] = payload[slot * 14 + 8 + i];
+
+                if (data.energy_general_out[slot][i] != null) {
+                    data.empty = false;
+                }
+                else {
+                    data.complete = false;
+                }
+            }
         }
-    }*/
+
+        this.energy_manager_daily_cache[key] = data;
+        this.expire_cache(this.energy_manager_daily_cache);
+
+        return true;
+    }
 
     set_current_5min_date(date: Date) {
         this.setState({current_5min_date: date}, () => {
@@ -1067,14 +1342,24 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         });
     }
 
-    reload_wallbox_cache() {
-        if (this.uplot_wrapper_ref.current) {
-            this.uplot_wrapper_ref.current.set_loading();
-        }
+    set_current_daily_date(date: Date) {
+        this.setState({current_daily_date: date}, () => {
+            this.update_current_daily_cache();
+        });
+    }
 
+    reload_wallbox_cache() {
         this.wallbox_5min_cache = {};
+        this.wallbox_daily_cache = {};
 
         this.update_wallbox_5min_cache_all(this.state.current_5min_date)
+            .then((success: boolean) => {
+                if (!success) {
+                    return Promise.resolve(false);
+                }
+
+                return this.update_wallbox_daily_cache_all(this.state.current_5min_date);
+            })
             .then((success: boolean) => {
                 if (!success) {
                     window.setTimeout(() => {
@@ -1086,15 +1371,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                 this.update_uplot();
             });
-
-        // FIXME: reload daily cache as well
     }
 
     update_current_5min_cache() {
-        if (this.uplot_wrapper_ref.current) {
-            this.uplot_wrapper_ref.current.set_loading();
-        }
-
         this.update_energy_manager_5min_cache(this.state.current_5min_date)
             .then((success: boolean) => {
                 if (!success) {
@@ -1107,6 +1386,32 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 if (!success) {
                     window.setTimeout(() => {
                         this.update_current_5min_cache();
+                    }, 100);
+
+                    return;
+                }
+
+                this.update_uplot();
+            });
+    }
+
+    update_current_daily_cache() {
+        if (this.uplot_wrapper_ref.current) {
+            this.uplot_wrapper_ref.current.set_loading();
+        }
+
+        this.update_energy_manager_daily_cache(this.state.current_daily_date)
+            .then((success: boolean) => {
+                if (!success) {
+                    return Promise.resolve(false);
+                }
+
+                return this.update_wallbox_daily_cache_all(this.state.current_daily_date);
+            })
+            .then((success: boolean) => {
+                if (!success) {
+                    window.setTimeout(() => {
+                        this.update_current_daily_cache();
                     }, 100);
 
                     return;
@@ -1129,12 +1434,22 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
     update_uplot() {
         if (this.uplot_wrapper_ref.current) {
-            this.update_uplot_5min_cache(this.state.current_5min_date);
+            if (this.state.data_type == '5min') {
+                this.update_uplot_5min_cache(this.state.current_5min_date);
 
-            let key = this.date_to_5min_key(this.state.current_5min_date);
-            let data = this.uplot_5min_cache[key];
+                let key = this.date_to_5min_key(this.state.current_5min_date);
+                let data = this.uplot_5min_cache[key];
 
-            this.uplot_wrapper_ref.current.set_data(data);
+                this.uplot_wrapper_ref.current.set_data(data);
+            }
+            else {
+                this.update_uplot_daily_cache(this.state.current_daily_date);
+
+                let key = this.date_to_daily_key(this.state.current_daily_date);
+                let data = this.uplot_daily_cache[key];
+
+                this.uplot_wrapper_ref.current.set_data(data);
+            }
         }
 
         if (this.status_ref.current && this.status_ref.current.uplot_wrapper_ref.current) {
@@ -1175,7 +1490,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     </div>
                 </div>
                 <FormRow label={__("em_energy_analysis.content.date")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
-                    <InputDate date={state.current_5min_date} onDate={this.set_current_5min_date.bind(this)} buttons="day"/>
+                    {state.data_type == '5min'
+                     ? <InputDate date={state.current_5min_date} onDate={this.set_current_5min_date.bind(this)} buttons="day"/>
+                     : <InputDate date={state.current_daily_date} onDate={this.set_current_daily_date.bind(this)} buttons="month"/>}
                 </FormRow>
             </>
         )

@@ -15,7 +15,9 @@
         "script": {
             "time": "Uhrzeit",
             "power": "Leistung",
-            "grid_connection": "Netzanschluss"
+            "grid_connection": "Netzanschluss",
+            "grid_in": "Netzbezug",
+            "grid_out": "Netzeinspeisung"
         }
     }
 }
