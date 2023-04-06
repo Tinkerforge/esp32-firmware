@@ -62,7 +62,7 @@ export class EmPvFakerStatus extends Component<{}, FakeData> {
         return <>
             {d.config.auto_fake ?
                 <FormRow label={__("em_pv_faker.status.illuminance")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
-                    <OutputFloat value={d.state.illuminance} digits={2} scale={2} unit={'lx'} />
+                    <OutputFloat value={d.state.illuminance} digits={0} scale={0} unit={'lx'} />
                 </FormRow>
             : null
             }
@@ -140,9 +140,9 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
                             unit="lx"
                             value={s.zero_at_lux}
                             onValue={this.set("zero_at_lux")}
-                            digits={2}
-                            min={100}
-                            max={8000000}
+                            digits={0}
+                            min={1}
+                            max={200000}
                         />
                     </FormRow>
 
@@ -151,9 +151,9 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
                             unit="lx"
                             value={s.peak_at_lux}
                             onValue={this.set("peak_at_lux")}
-                            digits={2}
-                            min={100}
-                            max={8000000}
+                            digits={0}
+                            min={2}
+                            max={200000}
                         />
                     </FormRow>
                 </> : <>
