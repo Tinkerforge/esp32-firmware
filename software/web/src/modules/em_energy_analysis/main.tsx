@@ -43,17 +43,20 @@ interface UplotData extends CachedData {
 
 interface Wallbox5minData extends CachedData {
     empty: boolean;
+    complete: boolean;
     flags: number[]; // bit 0-2 = charger state, bit 7 = no data
     power: number[];
 };
 
 interface WallboxDailyData extends CachedData {
     empty: boolean;
+    complete: boolean;
     energy: number[]; // kWh
 };
 
 interface EnergyManager5minData extends CachedData {
     empty: boolean;
+    complete: boolean;
     flags: number[]; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = output, bit 7 = no data
     power_grid: number[]; // W
     power_grid_empty: boolean;
@@ -62,6 +65,7 @@ interface EnergyManager5minData extends CachedData {
 
 interface EnergyManagerDailyData extends CachedData {
     empty: boolean;
+    complete: boolean;
     energy_grid_in: number[]; // kWh
     energy_grid_out: number[]; // kWh
     energy_general_in: number[][]; // kWh
@@ -612,6 +616,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     else {
                         data.update_timestamp = Date.now();
                         data.empty = false;
+                        data.complete = slot == 287; // update for last 5min slot of the day
                         data.flags[slot] = changed.flags;
                         data.power[slot] = changed.power;
 
@@ -650,6 +655,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 else {
                     data.update_timestamp = Date.now();
                     data.empty = false;
+                    data.complete = slot == 287; // update for last 5min slot of the day
                     data.flags[slot] = changed.flags;
                     data.power_grid[slot] = changed.power_grid;
                     data.power_general[slot] = changed.power_general;
@@ -699,6 +705,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     else {
                         data.update_timestamp = Date.now();
                         data.empty = false;
+                        // FIXME: how to set complete = true here?
                         data.energy[slot] = changed.energy;
                     }
 
@@ -730,6 +737,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                 data.update_timestamp = Date.now();
                 data.empty = false;
+                // FIXME: how to set complete = true here?
                 data.energy_grid_in[slot] = changed.energy_grid_in;
                 data.energy_grid_out[slot] = changed.energy_grid_out;
 
@@ -1017,6 +1025,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         return true;
     }
 
+    timestamp_to_5min_slot(timestamp: number) {
+        return Math.floor(timestamp / (5 * 60 * 1000));
+    }
+
     async update_wallbox_5min_cache(uid: number, date: Date) {
         let now = Date.now();
 
@@ -1026,7 +1038,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         let key = this.date_to_5min_key(date);
 
-        if (this.wallbox_5min_cache[uid] && this.wallbox_5min_cache[uid][key]) {
+        if (this.wallbox_5min_cache[uid]
+            && this.wallbox_5min_cache[uid][key]
+            && (this.wallbox_5min_cache[uid][key].complete
+                || this.timestamp_to_5min_slot(this.wallbox_5min_cache[uid][key].update_timestamp) >= this.timestamp_to_5min_slot(now))) {
             // cache is valid
             this.wallbox_5min_cache[uid][key].use_timestamp = now;
             return true;
@@ -1059,6 +1074,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             update_timestamp: now,
             use_timestamp: now,
             empty: true,
+            complete: key < this.date_to_5min_key(new Date(now)),
             flags: new Array(slot_count),
             power: new Array(slot_count),
         };
@@ -1091,7 +1107,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         let key = this.date_to_5min_key(date);
 
-        if (this.energy_manager_5min_cache[key]) {
+        if (this.energy_manager_5min_cache[key]
+            && (this.energy_manager_5min_cache[key].complete
+                || this.timestamp_to_5min_slot(this.energy_manager_5min_cache[key].update_timestamp) >= this.timestamp_to_5min_slot(now))) {
             // cache is valid
             this.energy_manager_5min_cache[key].use_timestamp = now;
             return true;
@@ -1124,6 +1142,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             update_timestamp: now,
             use_timestamp: now,
             empty: true,
+            complete: key < this.date_to_5min_key(new Date(now)),
             flags: new Array(slot_count),
             power_grid: new Array(slot_count),
             power_grid_empty: true,
@@ -1175,6 +1194,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         return true;
     }
 
+    timestamp_to_daily_slot(timestamp: number) {
+        return Math.floor(timestamp / (24 * 60 * 60 * 1000));
+    }
+
     async update_wallbox_daily_cache(uid: number, date: Date) {
         let now = Date.now();
 
@@ -1184,7 +1207,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         let key = this.date_to_daily_key(date);
 
-        if (this.wallbox_daily_cache[uid] && this.wallbox_daily_cache[uid][key]) {
+        if (this.wallbox_daily_cache[uid]
+            && this.wallbox_daily_cache[uid][key]
+            && (this.wallbox_daily_cache[uid][key].complete
+                || this.timestamp_to_daily_slot(this.wallbox_daily_cache[uid][key].update_timestamp) >= this.timestamp_to_daily_slot(now))) {
             // cache is valid
             this.wallbox_daily_cache[uid][key].use_timestamp = now;
             return true;
@@ -1216,6 +1242,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             update_timestamp: now,
             use_timestamp: now,
             empty: true,
+            complete: key < this.date_to_daily_key(new Date(now)),
             energy: new Array(slot_count),
         };
 
@@ -1246,7 +1273,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         let key = this.date_to_daily_key(date);
 
-        if (this.energy_manager_daily_cache[key]) {
+        if (this.energy_manager_daily_cache[key]
+            && (this.energy_manager_daily_cache[key].complete
+                || this.timestamp_to_daily_slot(this.energy_manager_daily_cache[key].update_timestamp) >= this.timestamp_to_daily_slot(now))) {
             // cache is valid
             this.energy_manager_daily_cache[key].use_timestamp = now;
             return true;
@@ -1278,6 +1307,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             update_timestamp: now,
             use_timestamp: now,
             empty: true,
+            complete: key < this.date_to_daily_key(new Date(now)),
             energy_grid_in: new Array(slot_count),
             energy_grid_out: new Array(slot_count),
             energy_general_in: new Array(slot_count),
@@ -1290,6 +1320,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             if (data.energy_grid_in[slot] != null) {
                 data.empty = false;
             }
+
             data.energy_grid_out[slot] = payload[slot * 14 + 1];
 
             if (data.energy_grid_out[slot] != null) {
