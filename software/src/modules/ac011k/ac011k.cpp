@@ -1226,6 +1226,8 @@ void AC011K::loop()
                     evse.initialized = (
                             (evse.evse_hardware_configuration.get("Hardware")->asString().compareTo("AC011K-AU-25") == 0) 
                             || (evse.evse_hardware_configuration.get("Hardware")->asString().compareTo("AC011K-AE-25") == 0)
+                            || (evse.evse_hardware_configuration.get("Hardware")->asString().compareTo("AC011K-AU-25-STL") == 0)
+                            || (evse.evse_hardware_configuration.get("Hardware")->asString().compareTo("AC011K-AE-25-STL") == 0)
                         )
                         && (   
                             (   
