@@ -177,6 +177,7 @@ void setup(void) {
     task_scheduler.register_urls();
 
     {{{module_register_urls}}}
+    {{{module_register_events}}}
 }
 
 void loop(void) {

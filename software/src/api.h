@@ -104,7 +104,7 @@ public:
 
     void registerDebugUrl(WebServer *server);
 
-    void registerBackend(IAPIBackend *backend);
+    size_t registerBackend(IAPIBackend *backend);
 
     void wifiAvailable();
 

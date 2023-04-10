@@ -22,13 +22,47 @@
 #include <Arduino.h>
 #include <sys/time.h>
 #include <time.h>
+
 #include "event_log.h"
 #include "modules.h"
 
 #define MAX_DATA_AGE 30000 // milliseconds
 #define DATA_INTERVAL_5MIN 5 // minutes
 
-// FIXME: record data averaged and integrate power over time to record energy for meters that only report power
+void EnergyManager::register_events()
+{
+    event.addStateUpdate("meter/state", {"state"}, [this](Config *config){
+        history_meter_available = config->asUint() == 2;
+    });
+
+    event.addStateUpdate("meter/values", {"power"}, [this](Config *config){
+        update_history_meter_power_average(config->asFloat()); // FIXME: could this be NaN?
+    });
+}
+
+void EnergyManager::update_history_meter_power_average(float power)
+{
+    uint32_t now = millis();
+
+    if (!isnan(history_meter_power_value)) {
+        uint32_t duration;
+
+        if (now >= history_meter_power_timestamp) {
+            duration = now - history_meter_power_timestamp;
+        } else {
+            duration = UINT32_MAX - history_meter_power_timestamp + now;
+            logger.printfln("duration B %u", duration);
+        }
+
+        history_meter_power_sum += (double)history_meter_power_value * duration;
+        history_meter_power_sum_duration += duration;
+    }
+
+    history_meter_power_value = power;
+    history_meter_power_timestamp = now;
+}
+
+// FIXME: integrate power over time to record energy for meters that only report power
 void EnergyManager::collect_data_points()
 {
     struct timeval tv;
@@ -76,7 +110,6 @@ void EnergyManager::collect_data_points()
 
         if (all_data.is_valid && !deadline_elapsed(all_data.last_update + MAX_DATA_AGE)) {
             uint8_t flags = 0; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = output, bit 7 = no data (read only)
-            int32_t power_grid = INT32_MAX; // W
             int32_t power_general[6] = {INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX}; // W
 
             flags |= is_3phase         ? 0b0001 : 0;
@@ -85,15 +118,22 @@ void EnergyManager::collect_data_points()
             flags |= all_data.output   ? 0b1000 : 0;
 
             // FIXME: how to tell if meter data is stale?
-            if (meter.state.get("state")->asUint() == 2) {
-                power_grid = clamp<int64_t>(INT32_MIN,
-                                            roundf(meter.values.get("power")->asFloat()),
-                                            INT32_MAX - 1); // W
+            if (history_meter_available) {
+                update_history_meter_power_average(history_meter_power_value);
+
+                if (history_meter_power_sum_duration > 0) {
+                    history_power_grid = clamp<int64_t>(INT32_MIN,
+                                                        roundf(history_meter_power_sum / history_meter_power_sum_duration),
+                                                        INT32_MAX - 1); // W
+
+                    history_meter_power_sum = 0;
+                    history_meter_power_sum_duration = 0;
+                }
             }
 
             // FIXME: fill power_general
 
-            set_energy_manager_5min_data_point(&utc, &local, flags, power_grid, power_general);
+            set_energy_manager_5min_data_point(&utc, &local, flags, history_power_grid, power_general);
         }
 
         last_history_5min_slot = current_5min_slot;

@@ -340,9 +340,13 @@ void API::registerDebugUrl(WebServer *server)
     this->addState("info/version", &version, {}, 1000);
 }
 
-void API::registerBackend(IAPIBackend *backend)
+size_t API::registerBackend(IAPIBackend *backend)
 {
+    size_t backendIdx = backends.size();
+
     backends.push_back(backend);
+
+    return backendIdx;
 }
 
 void API::loop()

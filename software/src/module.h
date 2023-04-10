@@ -25,6 +25,7 @@ public:
     virtual void pre_setup() {}
     virtual void setup() {}
     virtual void register_urls() {}
+    virtual void register_events() {}
     virtual void loop() {}
 
     bool initialized = false;

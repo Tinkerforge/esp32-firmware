@@ -150,6 +150,7 @@ public:
     void pre_setup();
     void setup();
     void register_urls();
+    void register_events();
     void loop();
 
     // Called in energy_manager_meter setup
@@ -268,6 +269,7 @@ private:
     // Pre-calculated data
     float    cloud_filter_coefficient = 0;
 
+    void update_history_meter_power_average(float power);
     void collect_data_points();
     void history_wallbox_5min_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
     void history_wallbox_daily_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
@@ -286,4 +288,10 @@ private:
     ConfigRoot history_wallbox_daily;
     ConfigRoot history_energy_manager_5min;
     ConfigRoot history_energy_manager_daily;
+    bool history_meter_available = false;
+    float history_meter_power_value = NAN; // W
+    uint32_t history_meter_power_timestamp;
+    double history_meter_power_sum = 0;
+    uint32_t history_meter_power_sum_duration = 0;
+    int32_t history_power_grid = INT32_MAX; // W
 };
