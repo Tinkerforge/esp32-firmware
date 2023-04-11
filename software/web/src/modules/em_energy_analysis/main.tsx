@@ -1303,7 +1303,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         now = Date.now();
 
         let payload = JSON.parse(response);
-        let slot_count = payload.lenght / 14;
+        let slot_count = payload.length / 14;
         let data: EnergyManagerDailyData = {
             update_timestamp: now,
             use_timestamp: now,
