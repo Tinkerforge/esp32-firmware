@@ -851,6 +851,23 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
     }
 }
 
+static int days_per_month(int year, int month)
+{
+    if (month == 2) {
+        if ((year % 400) == 0 || ((year % 100) != 0 && (year % 4) == 0)) {
+            return 29;
+        }
+
+        return 28;
+    }
+
+    if (month == 4 || month == 6 || month == 9 || month == 11) {
+        return 30;
+    }
+
+    return 31;
+}
+
 void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
                                                    Ownership *response_ownership,
                                                    uint32_t response_owner_id)
@@ -862,7 +879,7 @@ void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
     uint8_t month = history_wallbox_daily.get("month")->asUint();
 
     uint8_t status;
-    int rc = tf_warp_energy_manager_get_sd_wallbox_daily_data_points(&device, uid, year, month, 1, 31, &status);
+    int rc = tf_warp_energy_manager_get_sd_wallbox_daily_data_points(&device, uid, year, month, 1, days_per_month(2000 + year, month), &status);
 
     //logger.printfln("history_wallbox_daily_response: u%u %d-%02d",
     //                uid, 2000 + year, month);
@@ -1272,7 +1289,7 @@ void EnergyManager::history_energy_manager_daily_response(IChunkedResponse *resp
     uint8_t month = history_energy_manager_daily.get("month")->asUint();
 
     uint8_t status;
-    int rc = tf_warp_energy_manager_get_sd_energy_manager_daily_data_points(&device, year, month, 1, 31, &status);
+    int rc = tf_warp_energy_manager_get_sd_energy_manager_daily_data_points(&device, year, month, 1, days_per_month(2000 + year, month), &status);
 
     //logger.printfln("history_energy_manager_daily_response: %d-%02d",
     //                2000 + year, month);
