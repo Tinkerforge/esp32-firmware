@@ -66,6 +66,33 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
         API.save('energy_manager/charge_mode', {"mode": mode}, __("energy_manager.script.mode_change_failed"));
     }
 
+    generate_config_error_label(generate: number, label: string) {
+        if (generate == 0)
+            return <></>
+
+        return <FormRow label="" labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+            <IndicatorGroup
+                value={0}
+                items={[
+                    ["danger", label],
+                ]}
+            />
+        </FormRow>
+    }
+
+    generate_config_error_labels(config_error_flags: number) {
+        if (config_error_flags == 0)
+            return <></>
+
+        return <>
+            {this.generate_config_error_label(config_error_flags &  1, __("energy_manager.status.config_error_phase_switching"))}
+            {this.generate_config_error_label(config_error_flags &  2, __("energy_manager.status.config_error_no_max_current"))}
+            {this.generate_config_error_label(config_error_flags &  4, __("energy_manager.status.config_error_no_chargers"))}
+            {this.generate_config_error_label(config_error_flags &  8, __("energy_manager.status.config_error_excess_no_meter"))}
+            {this.generate_config_error_label(config_error_flags & 16, __("energy_manager.status.config_error_no_cm"))}
+        </>
+    }
+
     render(props: {}, d: Readonly<EnergyManagerAllData>) {
         if (!util.allow_render) {
             return <></>;
@@ -159,6 +186,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                     </Button>
                 </ButtonGroup>
             </FormRow>
+            {this.generate_config_error_labels(d.status.config_error_flags)}
         </>
     }
 }

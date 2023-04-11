@@ -38,6 +38,7 @@ export interface meter_state {
 export interface state {
     phases_switched: number,
     error_flags: number,
+    config_error_flags: number,
     input3_state: boolean,
     input4_state: boolean,
     relay_state: boolean,
