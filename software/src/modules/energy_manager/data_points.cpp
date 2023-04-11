@@ -51,7 +51,6 @@ void EnergyManager::update_history_meter_power_average(float power)
             duration = now - history_meter_power_timestamp;
         } else {
             duration = UINT32_MAX - history_meter_power_timestamp + now;
-            logger.printfln("duration B %u", duration);
         }
 
         history_meter_power_sum += (double)history_meter_power_value * duration;
