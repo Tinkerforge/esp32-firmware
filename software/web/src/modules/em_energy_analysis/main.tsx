@@ -26,6 +26,7 @@ import { h, render, createRef, Fragment, Component, ComponentChild, RefObject } 
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 import { InputDate } from "../../ts/components/input_date";
+import { InputMonth } from "../../ts/components/input_month";
 import { FormRow } from "../../ts/components/form_row";
 import uPlot from 'uplot';
 
@@ -1507,7 +1508,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 <FormRow label={__("em_energy_analysis.content.date")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
                     {state.data_type == '5min'
                      ? <InputDate date={state.current_5min_date} onDate={this.set_current_5min_date.bind(this)} buttons="day"/>
-                     : <InputDate date={state.current_daily_date} onDate={this.set_current_daily_date.bind(this)} buttons="month"/>}
+                     : <InputMonth date={state.current_daily_date} onDate={this.set_current_daily_date.bind(this)} buttons="month"/>}
                 </FormRow>
             </>
         )
