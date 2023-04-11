@@ -10,7 +10,7 @@
         "content": {
             "page_header": "PV-Faker",
 
-            "auto_fake": "Ändere Leistung nach Lichtentensität",
+            "auto_fake": "Ändere Leistung nach Lichtintensität",
             "illuminance_topic": "Lichtintensitäts-MQTT-Topic",
             "illuminance_topic_invalid": "Das Topic darf nicht mit $ beginnen, ein # oder + enthalten oder leer sein.",
             "peak_power": "PV-Spitzenleistung",
