@@ -1,0 +1,48 @@
+From b98f2f92763e480d440c9db3090c3c8c2e8e3d3b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Tue, 11 Apr 2023 14:19:16 +0200
+Subject: [PATCH] ETH: Do not enable DHCP by default.
+
+Leaving DHCP enabled by default leads to race conditions during
+address configuration. Disable it by default because it can be
+turned on if actually required.
+
+As this fixes the race condition, the 50ms delay to work around it
+isn't required anymore.
+
+Also disable extraneous ARP spam while we're at it.
+---
+ libraries/Ethernet/src/ETH.cpp | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/libraries/Ethernet/src/ETH.cpp b/libraries/Ethernet/src/ETH.cpp
+index 166f212f..592afbe9 100644
+--- a/libraries/Ethernet/src/ETH.cpp
++++ b/libraries/Ethernet/src/ETH.cpp
+@@ -243,6 +243,13 @@ bool ETHClass::begin(uint8_t phy_addr, int power, int mdc, int mdio, eth_phy_typ
+     tcpip_adapter_set_default_eth_handlers();
+     
+     esp_netif_config_t cfg = ESP_NETIF_DEFAULT_ETH();
++
++    // Do not enable DHCP by default.
++    // Also disable "GAP" while we're at it. It's not Gratuitous ARP but instead polls the device's own IP every minute.
++    auto base_cfg = *cfg.base;
++    base_cfg.flags = (esp_netif_flags_t)(base_cfg.flags - ESP_NETIF_DHCP_CLIENT - ESP_NETIF_FLAG_GARP);
++    cfg.base = &base_cfg;
++
+     esp_netif_t *eth_netif = esp_netif_new(&cfg);
+ 
+     esp_eth_mac_t *eth_mac = NULL;
+@@ -396,9 +403,6 @@ bool ETHClass::begin(uint8_t phy_addr, int power, int mdc, int mdio, eth_phy_typ
+         log_e("esp_eth_init error: %d", err);
+     }
+ #endif
+-    // holds a few milliseconds to let DHCP start and enter into a good state
+-    // FIX ME -- adresses issue https://github.com/espressif/arduino-esp32/issues/5733
+-    delay(50);
+ 
+     return true;
+ }
+-- 
+2.30.2
+
