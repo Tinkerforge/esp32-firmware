@@ -6,16 +6,18 @@ import json
 import argparse
 import os, sys
 import tempfile
+from shutil import which
 
-has_esp_coredump = False
-has_xtensa_gdb = False
+def find_gdb():
+    path = which("xtensa-esp32-elf-gdb")
+    if path is not None:
+        return path
 
-try:
-    from esp_coredump import CoreDump
-    has_esp_coredump = True
-except:
-    from shutil import which
-    has_xtensa_gdb = which("xtensa-esp32-elf-gdb") is not None
+    path = which("pio")
+    if path is not None:
+        return path + " pkg exec xtensa-esp32-elf-gdb --"
+
+    return None
 
 PREFIX = b"___tf_coredump_info_start___"
 SUFFIX = b"___tf_coredump_info_end___"
@@ -41,10 +43,10 @@ def get_tf_coredump_data(coredump_path: str):
 core_dump_path = os.path.join(tempfile.gettempdir(), "tf_coredump.elf")
 
 if __name__ == '__main__':
-    if not (has_esp_coredump or has_xtensa_gdb):
-        print("Failed to import esp_coredump and can't find xtensa-esp32-elf-gdb.")
-        print("Install ESP-IDF and (on POSIX) run source /path/to/esp-idf/export.sh")
-        print("or put 'xtensa-esp32-elf-gdb' in your PATH.")
+    gdb = find_gdb()
+    if gdb is None:
+        print("Can't find xtensa-esp32-elf-gdb or pio.")
+        print("Make sure that one of them is available in your $PATH.")
         sys.exit(-1)
 
     parser = argparse.ArgumentParser()
@@ -67,6 +69,10 @@ if __name__ == '__main__':
 
         try:
             tf_coredump_json = get_tf_coredump_data(core_dump_path)
+            if not tf_coredump_json:
+                print("Core dump in debug log has no TF coredump info.")
+                sys.exit (-1)
+
             tf_coredump_data = json.loads(tf_coredump_json)
 
             elf_name = tf_coredump_data['firmware_file_name'] + ".elf"
@@ -77,11 +83,7 @@ if __name__ == '__main__':
                 firmware_path = os.path.join(script_path, "..", "..", "warp-charger", "firmwares", elf_name)
 
             if os.path.exists(firmware_path):
-                if has_esp_coredump:
-                    coredump = CoreDump(chip='esp32', core=core_dump_path, core_format='elf', prog=firmware_path)
-                    coredump.dbg_corefile()
-                if has_xtensa_gdb:
-                    os.system("xtensa-esp32-elf-gdb -q --batch -ex 'set style enabled on' -ex 'bt full' {} {}".format(firmware_path, core_dump_path))
+                os.system("{} -q --batch -ex 'set style enabled on' -ex 'bt full' {} {}".format(gdb, firmware_path, core_dump_path))
             else:
                 print("Firmware {} not found".format(elf_name))
         finally:
