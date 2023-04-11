@@ -915,7 +915,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         let base = date.getTime() / 1000;
 
         for (let slot = 0; slot < slot_count; ++slot) {
-            timestamps[slot] = base + slot * 300;
+            timestamps[slot] = base + slot * 5 * 60;
         }
 
         uplot_data.values[0] = timestamps;
@@ -999,7 +999,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         let base = date.getTime() / 1000;
 
         for (let slot = 0; slot < slot_count; ++slot) {
-            timestamps[slot] = base + slot * 300;
+            timestamps[slot] = base + slot * 24 * 60 * 60;
         }
 
         uplot_data.values[0] = timestamps;
