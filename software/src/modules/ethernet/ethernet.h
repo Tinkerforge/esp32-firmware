@@ -39,9 +39,12 @@ public:
     void register_urls();
 
     bool was_connected = false;
+    uint32_t last_connected = 0;
 
     EthernetState get_connection_state() const;
     bool is_enabled() const;
+
+    void print_con_duration();
 
 private:
     ConfigRoot ethernet_config;
