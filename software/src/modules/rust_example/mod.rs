@@ -30,12 +30,33 @@ mod rust_example {
 
     // funtions need to be prefixed with extern "C" and the "no_mangle attribute"
     #[no_mangle]
-    extern "C" fn rust_println() {
+    extern "C" fn rust_println() -> () {
         println!("This function prints with a newline.");
     }
 
     #[no_mangle]
-    extern "C" fn included_in_header() {
+    extern "C" fn included_in_header() -> () {
         println!("This functions got included in a header");
+    }
+
+    #[no_mangle]
+    extern "C" fn takes_int(i: i32) -> () {
+        println!("got the number {}", i);
+    }
+
+    #[no_mangle]
+    extern "C" fn returns_cstring() -> &'static str {
+        "This is returned by a rust function\0"
+    }
+
+    extern "C" {
+        fn c_function() -> ();
+    }
+
+    #[no_mangle]
+    extern "C" fn call_c_func() -> () {
+        unsafe {
+            c_function();
+        }
     }
 }

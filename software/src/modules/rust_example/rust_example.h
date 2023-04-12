@@ -20,8 +20,13 @@
 #pragma once
 
 #include "module.h"
+#include <Arduino.h>
 
 extern "C" void included_in_header();
+extern "C" void takes_int(int32_t i);
+extern "C" char *returns_cstring();
+extern "C" void call_c_func();
+
 
 class RustExample final : public IModule {
 public:

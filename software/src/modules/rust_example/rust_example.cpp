@@ -18,7 +18,12 @@
  */
 
 #include "rust_example.h"
+#include "modules.h"
 
+/**
+ * Functions from the rust library can be prototyped via the
+ * extern "C" prefix.
+*/
 extern "C" void rust_println();
 
 void RustExample::pre_setup() {}
@@ -26,9 +31,20 @@ void RustExample::pre_setup() {}
 void RustExample::setup() {
     rust_println();
     included_in_header();
+    takes_int(5);
+    logger.printfln("%s", returns_cstring());
+    call_c_func();
     initialized = true;
 }
 
 void RustExample::register_urls() {}
 
 void RustExample::loop() {}
+
+extern "C" void c_function() {
+    logger.printfln("This function was called from rust");
+}
+
+extern "C" void rust_logger(const char *str) {
+    logger.printfln(str);
+}
