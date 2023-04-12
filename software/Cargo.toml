@@ -1,0 +1,18 @@
+[package]
+name = "software"
+edition = "2021"
+version = "0.1.0"
+
+[lib]
+path = "src/lib.rs"
+name = "rs_test"
+edition = "2021"
+crate-type = ["staticlib"]
+required-features = []
+
+[dependencies]
+esp-println = { version = "0.3.1", features = ["esp32"] }
+cxx = "1.0"
+
+[build-dependencies]
+cxx-build = "1.0"
