@@ -41,4 +41,6 @@ private:
 
     String private_key;
     String remote_host;
+
+    uint32_t last_connected_ms = 0;
 };

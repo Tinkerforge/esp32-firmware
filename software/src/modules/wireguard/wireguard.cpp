@@ -103,6 +103,8 @@ void Wireguard::pre_setup()
     }};
 
     state = Config::Object({
+        {"connection_start", Config::Uint(0)},
+        {"connection_end", Config::Uint(0)},
         {"state", Config::Uint(0)} // 0 not configured, 1 waiting for time sync 2 not connected 3 connected
     });
 }
@@ -152,7 +154,22 @@ void Wireguard::start_wireguard()
         bool up = wg.is_peer_up(nullptr, nullptr);
 
         if(state.get("state")->updateUint(up ? 3 : 2))
-            logger.printfln("WireGuard connection %s", up ? "established" : "lost");
+        {
+            if (up) {
+                logger.printfln("Wireguard connection established");
+                last_connected_ms = millis();
+                state.get("connection_start")->updateUint(last_connected_ms);
+            } else {
+                uint32_t now = millis();
+                uint32_t connected_for = millis() - this->last_connected_ms;
+                state.get("connection_end")->updateUint(now);
+                if (connected_for < 0x7FFFFFFF) {
+                    logger.printfln("Wireguard connection lost. Was connected for %u seconds.", connected_for / 1000);
+                } else {
+                    logger.printfln("Wireguard connection lost. Was connected for a long time.");
+                }
+            }
+        }
     }, 1000, 1000);
 
     state.get("state")->updateUint(2);
