@@ -63,6 +63,8 @@ void Mqtt::pre_setup()
 
     mqtt_state = Config::Object({
         {"connection_state", Config::Int(0)},
+        {"connection_start", Config::Uint(0)},
+        {"connection_end", Config::Uint32(0)},
         {"last_error", Config::Int(0)}
     });
 }
@@ -148,6 +150,7 @@ void Mqtt::wifiAvailable()
 void Mqtt::onMqttConnect()
 {
     last_connected_ms = millis();
+    mqtt_state.get("connection_start")->updateUint(last_connected_ms);
     was_connected = true;
     logger.printfln("MQTT: Connected to broker.");
     this->mqtt_state.get("connection_state")->updateInt((int)MqttConnectionState::CONNECTED);
@@ -187,7 +190,9 @@ void Mqtt::onMqttDisconnect()
     logger.printfln("MQTT: Disconnected from broker.");
     if (was_connected) {
         was_connected = false;
-        uint32_t connected_for = millis() - last_connected_ms;
+        uint32_t now = millis();
+        uint32_t connected_for = now - last_connected_ms;
+        mqtt_state.get("connection_end")->updateUint(now);
         if (connected_for < 0x7FFFFFFF) {
             logger.printfln("MQTT: Was connected for %u seconds.", connected_for / 1000);
         } else {
