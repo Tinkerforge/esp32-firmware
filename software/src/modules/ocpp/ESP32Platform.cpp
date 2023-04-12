@@ -25,15 +25,18 @@ static bool feature_meter_phases = false;
 void(*recv_cb)(char *, size_t, void *) = nullptr;
 void *recv_cb_userdata = nullptr;
 
+static bool connected_by_event = false;
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
     esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
     switch (event_id) {
     case WEBSOCKET_EVENT_CONNECTED:
         logger.printfln("OCPP WEBSOCKET CONNECTED");
+        connected_by_event = true;
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
         logger.printfln("OCPP WEBSOCKET DISCONNECTED");
+        connected_by_event = false;
         break;
     case WEBSOCKET_EVENT_DATA:
         if (data->payload_len == 0)
@@ -130,7 +133,19 @@ void platform_destroy(void *ctx) {
 
 bool platform_ws_connected(void *ctx)
 {
-    return esp_websocket_client_is_connected(client);
+    bool is_connected = esp_websocket_client_is_connected(client);
+
+    if (connected_by_event && !is_connected) {
+        logger.printfln("OCPP was disconnected immediately after connection was established! Reconnecting in 10 seconds.");
+
+        connected_by_event = false;
+
+        platform_disconnect(ctx);
+        task_scheduler.scheduleOnce([ctx](){esp_websocket_client_start(client);}, 10000);
+        return false;
+    }
+
+    return is_connected;
 }
 
 void platform_ws_send(void *ctx, const char *buf, size_t buf_len)
