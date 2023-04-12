@@ -76,6 +76,8 @@ void Ethernet::pre_setup()
 
     ethernet_state = Config::Object({
         {"connection_state", Config::Uint((uint)EthernetState::NOT_CONFIGURED)},
+        {"connection_start", Config::Uint(0)},
+        {"connection_end", Config::Uint(0)},
         {"ip", Config::Str("0.0.0.0", 7, 15)},
         {"full_duplex", Config::Bool(false)},
         {"link_speed", Config::Uint8(0)}
@@ -85,7 +87,9 @@ void Ethernet::pre_setup()
 void Ethernet::print_con_duration() {
     if (was_connected) {
         was_connected = false;
-        uint32_t connected_for = millis() - last_connected;
+        uint32_t now = millis();
+        uint32_t connected_for = now - last_connected;
+        ethernet_state.get("connection_end")->updateUint(now);
         if (connected_for < 0x7FFFFFFF) {
             logger.printfln("Ethernet was connected for %u seconds.", connected_for / 1000);
         } else {
@@ -150,6 +154,7 @@ void Ethernet::setup()
             api.wifiAvailable();
             was_connected = true;
             last_connected = millis();
+            ethernet_state.get("connection_start")->updateUint(last_connected);
         },
         ARDUINO_EVENT_ETH_GOT_IP);
 
