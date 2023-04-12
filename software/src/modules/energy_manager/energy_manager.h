@@ -317,6 +317,6 @@ private:
     float history_meter_power_value = NAN; // W
     uint32_t history_meter_power_timestamp;
     double history_meter_power_sum = 0;
-    uint32_t history_meter_power_sum_duration = 0;
+    uint32_t history_meter_power_duration = 0;
     int32_t history_power_grid = INT32_MAX; // W
 };

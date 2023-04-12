@@ -54,7 +54,7 @@ void EnergyManager::update_history_meter_power_average(float power)
         }
 
         history_meter_power_sum += (double)history_meter_power_value * duration;
-        history_meter_power_sum_duration += duration;
+        history_meter_power_duration += duration;
     }
 
     history_meter_power_value = power;
@@ -120,13 +120,13 @@ void EnergyManager::collect_data_points()
             if (history_meter_available) {
                 update_history_meter_power_average(history_meter_power_value);
 
-                if (history_meter_power_sum_duration > 0) {
+                if (history_meter_power_duration > 0) {
                     history_power_grid = clamp<int64_t>(INT32_MIN,
-                                                        roundf(history_meter_power_sum / history_meter_power_sum_duration),
+                                                        roundf(history_meter_power_sum / history_meter_power_duration),
                                                         INT32_MAX - 1); // W
 
                     history_meter_power_sum = 0;
-                    history_meter_power_sum_duration = 0;
+                    history_meter_power_duration = 0;
                 }
             }
 
