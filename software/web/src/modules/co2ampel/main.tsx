@@ -45,7 +45,7 @@ export class Co2 extends ConfigComponent<'co2/config'> {
 
         return (
             <>
-                <ConfigForm id="co2_config_form" title={__("co2.content.co2")} onSave={() => this.save()} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="co2_config_form" title={__("co2.content.co2")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("co2.content.temperature_offset")} label_muted={__("co2.content.temperature_offset_muted")}>
                         <InputFloat
                             unit="°C"

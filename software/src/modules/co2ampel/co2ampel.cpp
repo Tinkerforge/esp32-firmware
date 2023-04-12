@@ -46,8 +46,6 @@ void Co2Ampel::pre_setup()
         {"air_pressure", Config::Uint16(0)},
         {"led", Config::Uint8(0)}
     });
-
-    stop_blink = Config::Null();
 }
 
 #define DEFAULT_RED_LIMIT 1500
@@ -198,7 +196,7 @@ void Co2Ampel::register_urls()
 {
     api.addPersistentConfig("co2/config", &config, {}, 1000);
     api.addState("co2/state", &state, {}, 1000);
-    api.addCommand("co2/stop_blink", &stop_blink, {}, [](){
+    api.addCommand("co2/stop_blink", Config::Null(), {}, [](){
         blink_allowed = false;
     }, true);
 }

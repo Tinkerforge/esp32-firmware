@@ -40,7 +40,6 @@ public:
 
     ConfigRoot state;
     ConfigRoot config;
-    ConfigRoot stop_blink;
 
 private:
     TF_CO2V2 co2;
