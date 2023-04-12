@@ -727,6 +727,9 @@ void ModbusTcp::update_regs()
     }
 #endif
 
+    // Clear the trigger_reset register to make sure the meter is reset only once.
+    meter_holding_regs_copy->trigger_reset = fromUint(0);
+
     portENTER_CRITICAL(&mtx);
         *input_regs = *input_regs_copy;
         *evse_input_regs = *evse_input_regs_copy;
@@ -734,6 +737,7 @@ void ModbusTcp::update_regs()
         *meter_all_values_input_regs = *meter_all_values_input_regs_copy;
         *discrete_inputs = *discrete_inputs_copy;
         *meter_discrete_inputs = *meter_discrete_inputs_copy;
+        *meter_holding_regs = *meter_holding_regs_copy;
     portEXIT_CRITICAL(&mtx);
 }
 
