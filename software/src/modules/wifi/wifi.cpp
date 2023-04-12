@@ -131,6 +131,8 @@ void Wifi::pre_setup()
 
     wifi_state = Config::Object({
         {"connection_state", Config::Int((int32_t)WifiState::NOT_CONFIGURED)},
+        {"connection_start", Config::Uint32(0)},
+        {"connection_end", Config::Uint32(0)},
         {"ap_state", Config::Int(0)},
         {"ap_bssid", Config::Str("", 0, 20)},
         {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
@@ -407,6 +409,7 @@ void Wifi::setup()
             } else {
                 uint32_t now = millis();
                 uint32_t connected_for = now - last_connected_ms;
+                wifi_state.get("connection_end")->updateUint(now);
 
                 // FIXME: Use a better way of time keeping here.
                 if (connected_for < 0x7FFFFFFF)
@@ -427,6 +430,7 @@ void Wifi::setup()
 
             logger.printfln("Wifi connected to %s", WiFi.SSID().c_str());
             last_connected_ms = millis();
+            wifi_state.get("connection_start")->updateUint(last_connected_ms);
         },
         ARDUINO_EVENT_WIFI_STA_CONNECTED);
 
