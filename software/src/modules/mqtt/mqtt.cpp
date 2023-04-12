@@ -147,6 +147,8 @@ void Mqtt::wifiAvailable()
 
 void Mqtt::onMqttConnect()
 {
+    last_connected_ms = millis();
+    was_connected = true;
     logger.printfln("MQTT: Connected to broker.");
     this->mqtt_state.get("connection_state")->updateInt((int)MqttConnectionState::CONNECTED);
 
@@ -183,6 +185,15 @@ void Mqtt::onMqttDisconnect()
 {
     this->mqtt_state.get("connection_state")->updateInt((int)MqttConnectionState::NOT_CONNECTED);
     logger.printfln("MQTT: Disconnected from broker.");
+    if (was_connected) {
+        was_connected = false;
+        uint32_t connected_for = millis() - last_connected_ms;
+        if (connected_for < 0x7FFFFFFF) {
+            logger.printfln("MQTT: Was connected for %u seconds.", connected_for / 1000);
+        } else {
+            logger.printfln("MQTT: Was connected for a long time.");
+        }
+    }
 }
 
 void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)

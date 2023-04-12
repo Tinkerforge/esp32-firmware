@@ -77,4 +77,7 @@ public:
     std::vector<MqttCommand> commands;
     std::vector<MqttState> states;
     esp_mqtt_client_handle_t client;
+
+    uint32_t last_connected_ms = 0;
+    bool was_connected = false;
 };
