@@ -97,9 +97,9 @@ export function reset<T extends keyof ConfigMap>(topic: T, error_string: string,
     return call(<any>(topic + "_reset"), null, error_string, reboot_string);
 }
 
-export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
+export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string, timeout_ms: number = 5000) {
     try {
-        let blob = await util.put('/' + topic, payload);
+        let blob = await util.put('/' + topic, payload, timeout_ms);
         if (reboot_string)
             util.getShowRebootModalFn(reboot_string)();
         return blob;
