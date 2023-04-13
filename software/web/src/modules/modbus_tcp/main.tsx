@@ -130,12 +130,12 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                         <th colSpan={5}>{__("modbus_tcp.docu.discrete_input")}</th>
                     </tr>
                 </thead>
+                <tbody>
                     {util.range(holding_count, discrete_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.name${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.type${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.feat${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
-                <tbody>
                 </tbody>
             </table>
             </div>
