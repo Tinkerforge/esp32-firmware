@@ -29,11 +29,12 @@
             "holding_register": "Holding Registers",
             "input_register": "Input Registers",
             "discrete_input": "Discrete Inputs",
+            "coil": "Coils",
             "feature": "Benötigtes Feature",
             "register0": "0",
             "name0": "Version der Registertabelle",
             "type0": "uint32",
-            "expl0": "Aktuelle Version: 1",
+            "expl0": "Aktuelle Version: 2",
             "feat0": "---",
             "register1": "2",
             "name1": "Firmware-Version Major",
@@ -143,7 +144,7 @@
             "register22": "1000",
             "name22": "Ladefreigabe",
             "type22": "uint32",
-            "expl22": "0 zum Blockieren des Ladevorgangs; ein Wert != 0 zum Freigeben",
+            "expl22": "Veraltet. Stattdessen Coil 1000 verwenden! 0 zum Blockieren des Ladevorgangs; ein Wert != 0 zum Freigeben",
             "feat22": "evse",
             "register23": "1002",
             "name23": "Erlaubter Ladestrom (mA)",
@@ -214,8 +215,18 @@
             "name36": "Phase L3 aktiv",
             "type36": "bool",
             "expl36": "",
-            "feat36": "phases"
+            "feat36": "phases",
 
+            "register37": "1000",
+            "name37": "Ladefreigabe",
+            "type37": "bool",
+            "expl37": "false bzw. 0 zum Blockieren des Ladevorgangs. true bzw. 1 zum Freigeben. (Identisch zu Holding Register 1000)",
+            "feat37": "evse",
+            "register38": "1001",
+            "name38": "Manuelle Ladefreigabe",
+            "type38": "bool",
+            "expl38": "false bzw. 0 zum Blockieren des Ladevorgangs. true bzw. 1 zum Freigeben. Setzt die Ladefreigabe, die auch (je nach Konfiguration) vom Taster, den Start/Stop-Buttons auf der Webinterface-Statusseite und der evse/[start/stop]_charging-API verwendet wird.",
+            "feat38": "evse"
         }
     }
 }

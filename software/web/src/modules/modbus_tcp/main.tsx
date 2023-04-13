@@ -42,7 +42,7 @@ interface config {
 const input_count = 21;
 const holding_count = 5 + input_count;
 const discrete_count = 11 + holding_count;
-
+const coil_count = 2 + discrete_count;
 
 export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> {
     constructor() {
@@ -132,6 +132,18 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                 </thead>
                 <tbody>
                     {util.range(holding_count, discrete_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
+                                                                                    translate_unchecked(`modbus_tcp.docu.name${i}`),
+                                                                                    translate_unchecked(`modbus_tcp.docu.type${i}`),
+                                                                                    translate_unchecked(`modbus_tcp.docu.feat${i}`),
+                                                                                    translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
+                </tbody>
+                <thead>
+                    <tr>
+                        <th colSpan={5}>{__("modbus_tcp.docu.coil")}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {util.range(discrete_count, coil_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.name${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.type${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.feat${i}`),

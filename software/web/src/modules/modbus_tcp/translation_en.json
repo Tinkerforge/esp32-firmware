@@ -30,10 +30,11 @@
             "input_register": "Input Registers",
             "feature": "Required feature",
             "discrete_input": "Discrete Input Registers",
+            "coil": "Coils",
             "register0": "0",
             "name0": "Modbus table version",
             "type0": "uint32",
-            "expl0": "Current version: 1",
+            "expl0": "Current version: 2",
             "feat0": "---",
             "register1": "2",
             "name1": "Firmware Version Major",
@@ -143,7 +144,7 @@
             "register22": "1000",
             "name22": "Charge release",
             "type22": "uint32",
-            "expl22": "0 to block charging; a value != 0 to allow charging",
+            "expl22": "Deprecated. Use coil 1000 instead! 0 to block charging; a value != 0 to allow charging",
             "feat22": "evse",
             "register23": "1002",
             "name23": "Allowed current (mA)",
@@ -214,7 +215,19 @@
             "name36": " Phase L3 active",
             "type36": "bool",
             "expl36": "",
-            "feat36": "phases"
+            "feat36": "phases",
+
+
+            "register37": "1000",
+            "name37": "Charge release",
+            "type37": "bool",
+            "expl37": "false or 0 to block charging. true or 1 to allow charging. (Identical to holding register 1000)",
+            "feat37": "evse",
+            "register38": "1001",
+            "name38": "Manual charge release",
+            "type38": "bool",
+            "expl38": "false or 0 to block charging. true or 1 to allow charging. Sets the same charge release that is used via the web interface, the API or (depending on the button config­uration) the button.",
+            "feat38": "evse"
 
         }
     }
