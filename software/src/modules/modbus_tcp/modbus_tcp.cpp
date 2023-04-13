@@ -606,17 +606,18 @@ void ModbusTcp::update_bender_regs()
 
 void ModbusTcp::update_regs()
 {
+    bool reset_meter = false;
     // We want to keep the critical sections as small as possible
     // -> Do all work in a copy of the registers.
     // However if we read _and_ write a register, we have to write back the new value immediately.
     // Otherwise we would overwrite and ignore a value that was written between the critical sections.
     portENTER_CRITICAL(&mtx);
+        reset_meter = meter_holding_regs->trigger_reset == meter_holding_regs->TRIGGER_RESET_PASSWORD;
+        // Clear the trigger_reset register to make sure the meter is reset only once.
+        meter_holding_regs->trigger_reset = fromUint(0);
         *holding_regs_copy = *holding_regs;
         *evse_holding_regs_copy = *evse_holding_regs;
         *meter_holding_regs_copy = *meter_holding_regs;
-
-        // Clear the trigger_reset register to make sure the meter is reset only once.
-        meter_holding_regs->trigger_reset = fromUint(0);
     portEXIT_CRITICAL(&mtx);
 
     bool write_allowed = false;
@@ -704,7 +705,7 @@ void ModbusTcp::update_regs()
             meter_input_regs_copy->energy_this_charge = fromFloat(meter_input_regs_copy->energy_absolute - meter_start);
 #endif
 
-        if (meter_holding_regs_copy->trigger_reset == meter_holding_regs_copy->TRIGGER_RESET_PASSWORD && write_allowed)
+        if (reset_meter && write_allowed)
             api.callCommand("meter/reset", {});
     }
 
