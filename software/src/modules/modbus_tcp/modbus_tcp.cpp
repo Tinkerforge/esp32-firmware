@@ -625,10 +625,10 @@ void ModbusTcp::update_regs()
 {
     bool call_start_charging = false;
     bool call_stop_charging = false;
-    bool enable_charging = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000;
+    bool enable_charging = !api.hasFeature("evse") ? false : api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000;
     bool reset_meter = false;
 
-    bool autostart_slot = api.getState("evse/slots")->get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->asUint() == 32000;
+    bool autostart_slot = !api.hasFeature("evse") ? false : api.getState("evse/slots")->get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->asUint() == 32000;
 
     // We want to keep the critical sections as small as possible
     // -> Do all work in a copy of the registers.
