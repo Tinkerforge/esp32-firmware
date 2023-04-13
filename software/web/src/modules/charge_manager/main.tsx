@@ -578,9 +578,9 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                 c_info = translate_unchecked(`charge_manager.script.charge_error_${c.error}`);
             }
 
-            // FIXME This is broken if the user deletes a charger and saves but doesn't restart. state.state will have more chargers than state.config and indices may be wrong.
+
             let charger_config = state.config.chargers[i];
-            const name_link = !charger_config || charger_config.host == "127.0.0.1" ? c.name : <a target="_blank" rel="noopener noreferrer" href={"http://" + charger_config.host}>{c.name}</a>
+            const name_link = (API.get("charge_manager/config_modified").modified & 0x01) || !charger_config || charger_config.host == "127.0.0.1" ? c.name : <a target="_blank" rel="noopener noreferrer" href={"http://" + charger_config.host}>{c.name}</a>
 
             return  <div class="card">
                         <h5 class="card-header">
