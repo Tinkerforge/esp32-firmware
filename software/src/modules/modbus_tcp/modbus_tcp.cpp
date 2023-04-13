@@ -608,10 +608,15 @@ void ModbusTcp::update_regs()
 {
     // We want to keep the critical sections as small as possible
     // -> Do all work in a copy of the registers.
+    // However if we read _and_ write a register, we have to write back the new value immediately.
+    // Otherwise we would overwrite and ignore a value that was written between the critical sections.
     portENTER_CRITICAL(&mtx);
         *holding_regs_copy = *holding_regs;
         *evse_holding_regs_copy = *evse_holding_regs;
         *meter_holding_regs_copy = *meter_holding_regs;
+
+        // Clear the trigger_reset register to make sure the meter is reset only once.
+        meter_holding_regs->trigger_reset = fromUint(0);
     portEXIT_CRITICAL(&mtx);
 
     bool write_allowed = false;
@@ -727,9 +732,11 @@ void ModbusTcp::update_regs()
     }
 #endif
 
-    // Clear the trigger_reset register to make sure the meter is reset only once.
-    meter_holding_regs_copy->trigger_reset = fromUint(0);
-
+    // DO NOT write back into holding registers and coils here.
+    // Write ONLY input registers and discrete inputs.
+    // If we want to read and write the same register, writing into it
+    // has to be done in the first critical section, not this one.
+    // Otherwise we would overwrite and ignore a value that was written between the critical sections.
     portENTER_CRITICAL(&mtx);
         *input_regs = *input_regs_copy;
         *evse_input_regs = *evse_input_regs_copy;
@@ -737,7 +744,6 @@ void ModbusTcp::update_regs()
         *meter_all_values_input_regs = *meter_all_values_input_regs_copy;
         *discrete_inputs = *discrete_inputs_copy;
         *meter_discrete_inputs = *meter_discrete_inputs_copy;
-        *meter_holding_regs = *meter_holding_regs_copy;
     portEXIT_CRITICAL(&mtx);
 }
 
