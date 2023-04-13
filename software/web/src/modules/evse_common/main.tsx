@@ -128,13 +128,13 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
                         <div class="input-group">
                         <Button
                             className="form-control mr-2 rounded-right"
-                            disabled={state.state.iec61851_state != 1 || state.slots[4].max_current != 0}
+                            disabled={!(state.state.iec61851_state == 1 && state.slots[4].max_current == 0)}
                             onClick={() =>  API.call('evse/start_charging', {}, __("evse.script.start_charging_failed"))}>
                             {__("evse.status.start_charging")}
                         </Button>
                         <Button
                             className="form-control rounded-left"
-                            disabled={state.state.charger_state != 2 && state.state.charger_state != 3}
+                            disabled={!(state.state.charger_state == 2 || state.state.charger_state == 3 || (state.state.iec61851_state == 1 && state.slots[4].max_current != 0))}
                             onClick={() => API.call('evse/stop_charging', {}, __("evse.script.stop_charging_failed"))}>
                             {__("evse.status.stop_charging")}
                         </Button>
