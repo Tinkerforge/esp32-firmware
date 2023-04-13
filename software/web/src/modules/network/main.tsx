@@ -30,6 +30,7 @@ import { ConfigComponent } from "src/ts/components/config_component";
 import { ConfigForm } from "src/ts/components/config_form";
 import { FormRow } from "src/ts/components/form_row";
 import { InputText } from "src/ts/components/input_text";
+import { InputNumber } from "src/ts/components/input_number";
 
 type NetworkConfig = API.getType['network/config'];
 
@@ -66,6 +67,14 @@ export class Network extends ConfigComponent<'network/config'> {
                         <Switch desc={__("network.content.enable_mdns_desc")}
                                 checked={state.enable_mdns}
                                 onClick={this.toggle('enable_mdns')}/>
+                    </FormRow>
+
+                    <FormRow label={__("network.content.web_server_port")}>
+                        <InputNumber required
+                                     min={1}
+                                     max={65535}
+                                     value={state.web_server_port}
+                                     onValue={this.set("web_server_port")}/>
                     </FormRow>
                 </ConfigForm>
             </>

@@ -51,6 +51,9 @@ void WebServer::start()
 
     config.enable_so_linger = true;
     config.linger_timeout = 0;
+#if MODULE_NETWORK_AVAILABLE()
+    config.server_port = network.config.get("web_server_port")->asUint();
+#endif
 
 #if MODULE_HTTP_AVAILABLE()
     config.uri_match_fn = custom_uri_match;

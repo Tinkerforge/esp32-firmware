@@ -32,7 +32,8 @@ void Network::pre_setup()
 {
     config = Config::Object({
         {"hostname", Config::Str("replaceme", 0, 32)},
-        {"enable_mdns", Config::Bool(true)}
+        {"enable_mdns", Config::Bool(true)},
+        {"web_server_port", Config::Uint16(80)}
     });
 }
 
