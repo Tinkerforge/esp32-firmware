@@ -35,6 +35,8 @@ export interface ap_config {
 
 export interface state {
     connection_state: number,
+    connection_start: number,
+    connection_end: number,
     ap_state: number,
     ap_bssid: string,
     sta_ip: string,

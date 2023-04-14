@@ -84,7 +84,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
 render(<Ethernet/>, $('#ethernet')[0])
 
 function update_ethernet_state() {
-    let state = API.default_updater('ethernet/state', ['ip', 'full_duplex', 'link_speed'], false);
+    let state = API.default_updater('ethernet/state', ['ip', 'full_duplex', 'link_speed', 'connection_start', 'connection_end'], false);
 
     if (state.ip != "0.0.0.0") {
         $('#ethernet_state_ip').html(state.ip);

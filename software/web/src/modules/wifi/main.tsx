@@ -42,7 +42,7 @@ function wifi_symbol(rssi: number) {
 }
 
 function update_wifi_state() {
-    let state = API.default_updater('wifi/state', ['sta_ip', 'sta_rssi', 'sta_bssid', 'ap_bssid'], false);
+    let state = API.default_updater('wifi/state', ['sta_ip', 'sta_rssi', 'sta_bssid', 'ap_bssid', 'connection_start', 'connection_end'], false);
 
     if (state.sta_ip != "0.0.0.0") {
         $('#wifi_state_sta_ip').html(state.sta_ip);
