@@ -24,7 +24,6 @@
 #include "task_scheduler.h"
 
 #include <ESPmDNS.h>
-#include "NetBIOS.h"
 
 extern char local_uid_str[32];
 
@@ -61,5 +60,4 @@ void Network::register_urls()
         logger.printfln("mDNS responder started");
     }
     MDNS.addService("http", "tcp", 80);
-    NBNS.begin(config.get("hostname")->asEphemeralCStr());
 }
