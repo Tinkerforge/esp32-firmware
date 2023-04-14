@@ -25,22 +25,18 @@ import { JSXInternal } from "preact/src/jsx";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
 
-interface InputFloatProps {
-    idContext?: Context<string>
-    value: number
-    onValue: (value: number) => void
-    digits: number
-    unit: string
-    min: number
-    max: number
-    showMinMax?: boolean
-}
-
 interface InputFloatReadonlyProps {
     idContext?: Context<string>
     value: number
     digits: number
     unit: string
+}
+
+interface InputFloatProps extends InputFloatReadonlyProps {
+    onValue: (value: number) => void
+    min: number
+    max: number
+    showMinMax?: boolean
 }
 
 export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
