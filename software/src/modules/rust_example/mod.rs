@@ -53,10 +53,15 @@ mod rust_example {
         fn c_function() -> ();
     }
 
-    #[no_mangle]
-    extern "C" fn call_c_func() -> () {
+    // its best practice to wrap unsafe c functions into a safe rs interface
+    fn safe_c_function() -> () {
         unsafe {
             c_function();
         }
+    }
+
+    #[no_mangle]
+    extern "C" fn call_c_func() -> () {
+        safe_c_function();
     }
 }
