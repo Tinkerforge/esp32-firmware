@@ -26,7 +26,7 @@
             "h12": "12 Hours"
         },
         "script": {
-            "override_failed": "Override fehlgeschlagen"
+            "override_failed": "Override failed"
         }
     }
 }
