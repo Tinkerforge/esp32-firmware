@@ -104,7 +104,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
             }
 
             let icon = <svg class="feather feather-wallet mr-1" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>
-            let price_div = <div>{icon}<span style="vertical-align: middle;">{util.toLocaleFixed(price / 100 * c.energy_charged / 100, 2)} €</span></div>
+            let have_charge_cost = price > 0 && c.energy_charged != null;
+            let price_div = have_charge_cost ? <div>{icon}<span style="vertical-align: middle;">{util.toLocaleFixed(price / 100 * c.energy_charged / 100, 2)} €</span></div> : <></>
 
             return <ListGroupItem>
                 <div class="row">
@@ -114,8 +115,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                     </div>
                     <div class="col-auto">
                         <div class="mb-2"><BatteryCharging/><span class="ml-1" style="vertical-align: middle;">{c.energy_charged === null ? "N/A" : util.toLocaleFixed(c.energy_charged, 3)} kWh</span></div>
-                        <div class="mb-2"><Clock/><span class="ml-1" style="vertical-align: middle;">{util.format_timespan(c.charge_duration)}</span></div>
-                        {price > 0 && c.energy_charged != null ? price_div : <></>}
+                        <div class={have_charge_cost ? "mb-2" : ""}><Clock/><span class="ml-1" style="vertical-align: middle;">{util.format_timespan(c.charge_duration)}</span></div>
+                        {price_div}
                     </div>
                 </div>
             </ListGroupItem>}).reverse();
@@ -342,6 +343,8 @@ function update_last_charges() {
                 display_name = filtered[0].display_name
         }
 
+        let charge_cost = show_charge_cost(user.energy_charged);
+
         return `<div class="list-group-item">
         <div class="row">
             <div class="col">
@@ -350,8 +353,8 @@ function update_last_charges() {
             </div>
             <div class="col-auto">
                 <div class="mb-2"><span class="mr-1" data-feather="battery-charging"></span><span style="vertical-align: middle;">${user.energy_charged === null ? "N/A" : util.toLocaleFixed(user.energy_charged, 3)} kWh</span></div>
-                <div class="mb-2"><span class="mr-1" data-feather="clock"></span><span style="vertical-align: middle;">${util.format_timespan(user.charge_duration)}</span></div>
-                ${show_charge_cost(user.energy_charged)}
+                <div class=${charge_cost == "" ? "" : "mb-2"}><span class="mr-1" data-feather="clock"></span><span style="vertical-align: middle;">${util.format_timespan(user.charge_duration)}</span></div>
+                ${charge_cost}
             </div>
         </div>
         </div>`
