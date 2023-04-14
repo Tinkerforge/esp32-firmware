@@ -456,7 +456,17 @@ de_hyph = [
     "Un-voll-ständige",
     "kon-ser-va-tiv",
     "Fahr-zeug-lade-vor-gänge",
-    "Netz-an-schluss"
+    "Netz-an-schluss",
+    "Echt-zeit-uhr",
+    "Energie-limit",
+    "Statt-dessen",
+    "Status-seite",
+    "Un-be-grenzt",
+    "Un-be-kannte",
+    "ein-ge-speist",
+    "ver-blei-bend",
+    "Über-schreiben",
+    "über-schrieben"
 ]
 
 en_hyph = [
@@ -585,7 +595,12 @@ en_hyph = [
     "ag-gres-sive",
     "con-ser-va-tive",
     "re-com-mend-ed",
-    "dis-tor-tion"
+    "dis-tor-tion",
+    "De-pre-ca-ted",
+    "diff-er-ence",
+    "Elec-tricity",
+    "elec-tricity",
+    "over-written"
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
