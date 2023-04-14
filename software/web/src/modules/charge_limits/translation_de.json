@@ -26,7 +26,7 @@
             "h12": "12 Stunden"
         },
         "script": {
-            "override_failed": "Überscheiben fehlgeschlagen"
+            "override_failed": "Überschreiben fehlgeschlagen"
         }
     }
 }
