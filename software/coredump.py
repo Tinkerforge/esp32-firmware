@@ -103,6 +103,5 @@ if __name__ == '__main__':
         else:
             print("Firmware {} not found".format(elf_name))
     finally:
-        pass
         if os.path.exists(core_dump_path):
             os.remove(core_dump_path)
