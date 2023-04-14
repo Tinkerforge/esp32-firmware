@@ -30,6 +30,7 @@ interface InputFloatReadonlyProps {
     value: number
     digits: number
     unit: string
+    class?: string
 }
 
 interface InputFloatProps extends InputFloatReadonlyProps {
@@ -84,7 +85,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
     let floatMax = 'max' in props ? props.max / pow10 : 0;
 
     return (
-        <div class="input-group">
+        <div class={"input-group " + (props.class ? props.class : "")}>
             <input class="form-control no-spin"
                        id={id}
                        type="number"
