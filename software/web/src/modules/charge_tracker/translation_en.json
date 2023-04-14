@@ -38,6 +38,7 @@
             "abort_remove": "Abort",
             "confirm_remove": "Delete",
             "price": "Price",
+            "price_invalid": "The electricity price must be set in cent per kWh, not euro per kWh.",
 
             "file_type": "File format",
             "file_type_muted": "",

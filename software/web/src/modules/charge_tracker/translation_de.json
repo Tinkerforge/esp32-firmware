@@ -38,6 +38,7 @@
             "abort_remove": "Abbrechen",
             "confirm_remove": "Löschen",
             "price": "Strompreis",
+            "price_invalid": "Der Strompreis muss in Cent pro kWh, nicht in Euro pro kWh angegeben werden.",
 
             "file_type": "Dateiformat",
             "file_type_muted": "",
