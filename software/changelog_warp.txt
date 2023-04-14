@@ -369,7 +369,7 @@
 - Fix charge log stopping after 60 seconds
 - Improve MQTT error messages
 
-2023-04-14: 2.1.2 (<unknown>)
+2023-04-14: 2.1.2 (388902cd)
 - Add unique object_id to MQTT auto discovery entries
 - Add EVSE coils to Modbus TCP
 - Add fill to meter plot
