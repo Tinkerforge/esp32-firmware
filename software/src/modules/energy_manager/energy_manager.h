@@ -294,8 +294,10 @@ private:
     // Pre-calculated data
     float    cloud_filter_coefficient = 0;
 
-    void update_history_meter_power_average(float power);
+    void update_history_meter_power(float power);
     void collect_data_points();
+    bool load_persistent_data();
+    void save_persistent_data();
     void history_wallbox_5min_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
     void history_wallbox_daily_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
     void history_energy_manager_5min_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
@@ -306,9 +308,9 @@ private:
     void set_energy_manager_daily_data_point(struct tm *local, uint32_t energy_grid_in /* dWh */, uint32_t energy_grid_out /* dWh */,
                                              uint32_t energy_general_in[6] /* dWh */, uint32_t energy_general_out[6] /* dWh */);
 
-    // FIXME: initalize from SD card to avoid overwriting previous data
-    int last_history_5min_slot = -1;
-    int last_history_daily_slot = -1;
+    bool persistent_data_loaded = false;
+    uint32_t last_history_5min_slot = 0;
+    uint32_t last_history_daily_slot = 0;
     ConfigRoot history_wallbox_5min;
     ConfigRoot history_wallbox_daily;
     ConfigRoot history_energy_manager_5min;
@@ -316,7 +318,9 @@ private:
     bool history_meter_available = false;
     float history_meter_power_value = NAN; // W
     uint32_t history_meter_power_timestamp;
-    double history_meter_power_sum = 0;
-    uint32_t history_meter_power_duration = 0;
+    double history_meter_power_sum = 0; // watt seconds
+    double history_meter_power_duration = 0; // seconds
+    double history_meter_energy_import = 0; // dWh
+    double history_meter_energy_export = 0; // dWh
     int32_t history_power_grid = INT32_MAX; // W
 };
