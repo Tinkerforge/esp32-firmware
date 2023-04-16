@@ -29,6 +29,8 @@
 #define MAX_DATA_AGE 30000 // milliseconds
 #define DATA_INTERVAL_5MIN 5 // minutes
 
+//#define EM_DP_LOG_DETAILS
+
 void EnergyManager::register_events()
 {
     event.addStateUpdate("meter/state", {"state"}, [this](Config *config){
@@ -214,8 +216,10 @@ void EnergyManager::set_wallbox_5min_data_point(struct tm *utc, struct tm *local
 
     check_bricklet_reachable(rc, "set_wallbox_5min_data_point");
 
-    //logger.printfln("set_wallbox_5min_data_point: u%u %d-%02d-%02d %02d:%02d f%u p%u",
-    //                uid, 2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power);
+#ifdef EM_DP_LOG_DETAILS
+    logger.printfln("set_wallbox_5min_data_point: u%u %d-%02d-%02d %02d:%02d f%u p%u",
+                    uid, 2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power);
+#endif
 
     if (rc != TF_E_OK) {
         logger.printfln("energy_manager: Failed to set wallbox 5min data point: error %d", rc);
@@ -272,8 +276,10 @@ void EnergyManager::set_wallbox_daily_data_point(struct tm *local, uint32_t uid,
 
     check_bricklet_reachable(rc, "set_wallbox_daily_data_point");
 
-    //logger.printfln("set_wallbox_daily_data_point: u%u %d-%02d-%02d e%u",
-    //                uid, 2000 + year, month, day, energy);
+#ifdef EM_DP_LOG_DETAILS
+    logger.printfln("set_wallbox_daily_data_point: u%u %d-%02d-%02d e%u",
+                    uid, 2000 + year, month, day, energy);
+#endif
 
     if (rc != TF_E_OK) {
         logger.printfln("energy_manager: Failed to set wallbox daily data point: error %d", rc);
@@ -334,8 +340,10 @@ void EnergyManager::set_energy_manager_5min_data_point(struct tm *utc,
 
     check_bricklet_reachable(rc, "set_energy_manager_5min_data_point");
 
-    //logger.printfln("set_energy_manager_5min_data_point: %d-%02d-%02d %02d:%02d f%u gr%d ge%d,%d,%d,%d,%d,%d",
-    //                2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power_grid, power_general[0], power_general[1], power_general[2], power_general[3], power_general[4], power_general[5]);
+#ifdef EM_DP_LOG_DETAILS
+    logger.printfln("set_energy_manager_5min_data_point: %d-%02d-%02d %02d:%02d f%u gr%d ge%d,%d,%d,%d,%d,%d",
+                    2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power_grid, power_general[0], power_general[1], power_general[2], power_general[3], power_general[4], power_general[5]);
+#endif
 
     if (rc != TF_E_OK) {
         logger.printfln("energy_manager: Failed to set energy manager 5min data point: error %d", rc);
@@ -416,11 +424,13 @@ void EnergyManager::set_energy_manager_daily_data_point(struct tm *local,
 
     check_bricklet_reachable(rc, "set_energy_manager_daily_data_point");
 
-    //logger.printfln("set_energy_manager_daily_data_point: %d-%02d-%02d gri%u gro%u gei%u,%u,%u,%u,%u,%u geo%u,%u,%u,%u,%u,%u",
-    //                2000 + year, month, day,
-    //                energy_grid_in, energy_grid_out,
-    //                energy_general_in[0], energy_general_in[1], energy_general_in[2], energy_general_in[3], energy_general_in[4], energy_general_in[5],
-    //                energy_general_out[0], energy_general_out[1], energy_general_out[2], energy_general_out[3], energy_general_out[4], energy_general_out[5]);
+#ifdef EM_DP_LOG_DETAILS
+    logger.printfln("set_energy_manager_daily_data_point: %d-%02d-%02d gri%u gro%u gei%u,%u,%u,%u,%u,%u geo%u,%u,%u,%u,%u,%u",
+                    2000 + year, month, day,
+                    energy_grid_in, energy_grid_out,
+                    energy_general_in[0], energy_general_in[1], energy_general_in[2], energy_general_in[3], energy_general_in[4], energy_general_in[5],
+                    energy_general_out[0], energy_general_out[1], energy_general_out[2], energy_general_out[3], energy_general_out[4], energy_general_out[5]);
+#endif
 
     if (rc != TF_E_OK) {
         logger.printfln("energy_manager: Failed to set energy manager daily data point: error %i", rc);
