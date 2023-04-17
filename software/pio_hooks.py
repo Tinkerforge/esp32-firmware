@@ -464,11 +464,7 @@ def main():
     specialize_template("main.cpp.template", os.path.join("src", "main.cpp"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
         '{{{module_decls}}}': '\n'.join(['{} {};'.format(x.camel, x.under) for x in backend_modules]),
-        '{{{module_pre_setup}}}': '\n    '.join(['{}.pre_setup();'.format(x.under) for x in backend_modules]),
-        '{{{module_setup}}}': '\n    '.join(['{}.setup();'.format(x.under) for x in backend_modules]),
-        '{{{module_register_urls}}}': '\n    '.join(['{}.register_urls();'.format(x.under) for x in backend_modules]),
-        '{{{module_register_events}}}': '\n    '.join(['{}.register_events();'.format(x.under) for x in backend_modules]),
-        '{{{module_loop}}}': '\n    '.join(['{}.loop();'.format(x.under) for x in backend_modules]),
+        '{{{imodule_vector}}}': '\n    '.join(['imodules.push_back(&{});'.format(x.under) for x in backend_modules]),
         '{{{display_name}}}': display_name,
         '{{{display_name_upper}}}': display_name.upper(),
         '{{{module_init_config}}}': ',\n        '.join('{{"{0}", Config::Bool({0}.initialized)}}'.format(x.under) for x in backend_modules if not x.under.startswith("hidden_")),

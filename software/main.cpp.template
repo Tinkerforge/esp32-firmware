@@ -45,6 +45,33 @@ const char* DISPLAY_NAME = "{{{display_name}}}";
 
 {{{module_decls}}}
 
+struct loop_chain {
+    struct loop_chain *next;
+    IModule *imodule;
+};
+
+static struct loop_chain *loop_chain = nullptr;
+
+static bool is_module_loop_overridden(const IModule *imodule) {
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wpmf-conversions"
+    // GCC pointer to member function magic
+    // http://www.cs.fsu.edu/~baker/ada/gnat/html/gcc_6.html#SEC151
+    // https://stackoverflow.com/questions/3068144/print-address-of-virtual-member-function
+    void (IModule::*loop_ptr)() = &IModule::loop;
+    if ((void*)(imodule->*loop_ptr) != (void*)(&IModule::loop)) { // Get pointer to member function and compare with pointer to base class function.
+        return true;
+    } else {
+        return false;
+    }
+    #pragma GCC diagnostic pop
+#else
+    (void*)imodule;
+    return true;
+#endif
+}
+
 // declared and initialized by board module
 extern TF_HAL hal;
 // initialized by board module
@@ -151,16 +178,29 @@ void setup(void) {
 
     config_constructors_allowed = true;
 
+    // Enforce that all back-end modules implement the IModule interface.
+    // If you receive an error like "no matching function for call to 'std::vector<IModule*>::push_back(MyModule*)'",
+    // you have to add the IModule interface to your back-end module's class declaration:
+    // class MyModule final : public IModule {
+    //     // content here
+    // }
+    std::vector<IModule*> imodules;
+    {{{imodule_vector}}}
+
     task_scheduler.pre_setup();
     api.pre_setup();
 
-    {{{module_pre_setup}}}
+    for (IModule *imodule : imodules) {
+        imodule->pre_setup();
+    }
 
     // Setup task scheduler before API: The API setup can run migrations that want to start tasks.
     task_scheduler.setup();
     api.setup();
 
-    {{{module_setup}}}
+    for (IModule *imodule : imodules) {
+        imodule->setup();
+    }
 
     modules = Config::Object({
         // Fake that the event_log is a module for now.
@@ -176,27 +216,33 @@ void setup(void) {
     logger.register_urls();
     task_scheduler.register_urls();
 
-    {{{module_register_urls}}}
-    {{{module_register_events}}}
+    for (IModule *imodule : imodules) {
+        imodule->register_urls();
+    }
+    for (IModule *imodule : imodules) {
+        imodule->register_events();
+    }
+
+    // Ignore non-overridden empty loop functions.
+    // Add all overridden loop functions to a circular list for round-robin execution.
+    struct loop_chain **next_chain_ptr = &loop_chain;
+    for (IModule *imodule : imodules) {
+        if (is_module_loop_overridden(imodule)) {
+            *next_chain_ptr = (struct loop_chain*)malloc(sizeof(struct loop_chain));
+            (*next_chain_ptr)->imodule = imodule;
+            next_chain_ptr = &(*next_chain_ptr)->next;
+        }
+    }
+    *next_chain_ptr = loop_chain; // Close loop. Overwrites loop_chain with itself if the loop is empty.
 }
 
 void loop(void) {
-    // Prioritize proxy performance over web interface and WiFi responsitivity
     tf_hal_tick(&hal, 0);
-    tf_hal_tick(&hal, 0);
-    tf_hal_tick(&hal, 0);
-
     task_scheduler.loop();
 
-    tf_hal_tick(&hal, 0);
-    tf_hal_tick(&hal, 0);
-    tf_hal_tick(&hal, 0);
-
-    api.loop();
-
-    tf_hal_tick(&hal, 0);
-    tf_hal_tick(&hal, 0);
-    tf_hal_tick(&hal, 0);
-
-    {{{module_loop}}}
+    // Round-robin for modules' loop functions, to prioritize HAL ticks and scheduler.
+    if (loop_chain != nullptr) {
+        loop_chain->imodule->loop();
+        loop_chain = loop_chain->next;
+    }
 }
