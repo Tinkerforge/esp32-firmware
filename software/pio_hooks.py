@@ -451,8 +451,9 @@ def main():
             environ['PLATFORMIO_PROJECT_DIR'] = env.subst('$PROJECT_DIR')
             environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
 
+            abs_branding_module = os.path.abspath(branding_module)
             with ChangedDirectory(mod_path):
-                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", os.path.abspath(branding_module)], env=environ)
+                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_module], env=environ)
 
     if build_src_filter != None:
         for excluded_backend_module in excluded_backend_modules:
