@@ -253,6 +253,34 @@ def repair_rtc_dir():
     except:
         pass
 
+def find_branding_module(frontend_modules):
+    branding_module = None
+
+    for frontend_module in frontend_modules:
+        mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
+
+        potential_branding_path = os.path.join(mod_path, 'branding.ts')
+
+        if os.path.exists(potential_branding_path):
+            if branding_module != None:
+                print('Error: Branding module collision ' + mod_path + ' vs ' + branding_module)
+                sys.exit(1)
+
+            branding_module = mod_path
+
+    if branding_module is None:
+        print('Error: No branding module selected')
+        sys.exit(1)
+
+    req_for_branding = ['branding.ts', 'logo.png', 'favicon.png']
+
+    for f in req_for_branding:
+        if not os.path.exists(os.path.join(branding_module, f)):
+            print('Error: Branding module does not contain {}'.format(f))
+            sys.exit(1)
+
+    return branding_module
+
 def main():
     if env.IsCleanTarget():
         return
@@ -402,6 +430,9 @@ def main():
     with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
         f.write(firmware_basename)
 
+    frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("custom_frontend_modules").splitlines()]
+    branding_module = find_branding_module(frontend_modules)
+
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
     backend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("custom_backend_modules").splitlines()]
@@ -421,7 +452,7 @@ def main():
             environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
 
             with ChangedDirectory(mod_path):
-                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
+                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", os.path.abspath(branding_module)], env=environ)
 
     if build_src_filter != None:
         for excluded_backend_module in excluded_backend_modules:
@@ -466,7 +497,6 @@ def main():
     main_ts_entries = []
     pre_scss_paths = []
     post_scss_paths = []
-    frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("custom_frontend_modules").splitlines()]
     translation = collect_translation('web')
 
     # API
@@ -478,19 +508,8 @@ def main():
     exported_type_pattern = re.compile("export type ([A-Za-z0-9$_]+)")
     api_path_pattern = re.compile("//APIPath:([^\n]*)\n")
 
-    branding_module = None
-
     for frontend_module in frontend_modules:
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
-
-        potential_branding_path = os.path.join(mod_path, 'branding.ts')
-
-        if os.path.exists(potential_branding_path):
-            if branding_module != None:
-                print('Error: Branding module collision ' + mod_path + ' vs ' + branding_module)
-                sys.exit(1)
-
-            branding_module = mod_path
 
         if os.path.exists(os.path.join(mod_path, 'navbar.html')):
             with open(os.path.join(mod_path, 'navbar.html'), 'r', encoding='utf-8') as f:
@@ -563,17 +582,6 @@ def main():
         data = data.replace('{{{firmware_url}}}', firmware_url)
 
         f.write(data)
-
-    if branding_module is None:
-        print('Error: No branding module selected')
-        sys.exit(1)
-
-    req_for_branding = ['branding.ts', 'logo.png', 'favicon.png']
-
-    for f in req_for_branding:
-        if not os.path.exists(os.path.join(branding_module, f)):
-            print('Error: Branding module does not contain {}'.format(f))
-            sys.exit(1)
 
     with open(os.path.join(branding_module, 'favicon.png'), 'rb') as f:
         favicon = b64encode(f.read()).decode('ascii')
