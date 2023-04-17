@@ -1382,7 +1382,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     return Promise.resolve(false);
                 }
 
-                return this.update_wallbox_daily_cache_all(this.state.current_5min_date);
+                return this.update_wallbox_daily_cache_all(this.state.current_daily_date);
             })
             .then((success: boolean) => {
                 if (!success) {
