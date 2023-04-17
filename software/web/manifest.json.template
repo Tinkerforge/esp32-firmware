@@ -1,0 +1,22 @@
+{
+    "theme_color": "{{{theme_color}}}",
+    "background_color": "{{{theme_color}}}",
+    "display": "fullscreen",
+    "scope": "/",
+    "icons": [
+        {
+            "src": "{{{small_icon}}}",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "{{{big_icon}}}",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable any"
+        }],
+    "prefer_related_applications": true,
+    "start_url": "/#status",
+    "name": "Warp Charger"
+}
