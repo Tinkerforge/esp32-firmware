@@ -30,7 +30,6 @@ import { InputMonth } from "../../ts/components/input_month";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import uPlot from 'uplot';
-//import { timelinePlugin } from "../../ts/uplot-plugins";
 
 interface CachedData {
     update_timestamp: number;
@@ -971,6 +970,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
     update_uplot_daily_cache(date: Date) {
         let key = this.date_to_daily_key(date);
+        let previous_key = this.date_to_daily_key(new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1));
         let uplot_data = this.uplot_daily_cache[key];
         let needs_update = false;
         let now = Date.now();
@@ -986,13 +986,28 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
 
             if (!needs_update) {
-                for (let charger of this.chargers) {
-                    if (this.wallbox_daily_cache[charger.uid]) {
-                        let wallbox_data = this.wallbox_daily_cache[charger.uid][key];
+                let energy_manager_previous_data = this.energy_manager_daily_cache[previous_key];
 
-                        if (wallbox_data && uplot_data.update_timestamp < wallbox_data.update_timestamp) {
-                            needs_update = true;
-                            break;
+                if (energy_manager_previous_data && uplot_data.update_timestamp < energy_manager_previous_data.update_timestamp) {
+                    needs_update = true;
+                }
+
+                if (!needs_update) {
+                    for (let charger of this.chargers) {
+                        if (this.wallbox_daily_cache[charger.uid]) {
+                            let wallbox_data = this.wallbox_daily_cache[charger.uid][key];
+
+                            if (wallbox_data && uplot_data.update_timestamp < wallbox_data.update_timestamp) {
+                                needs_update = true;
+                                break;
+                            }
+
+                            let wallbox_previous_data = this.wallbox_daily_cache[charger.uid][previous_key];
+
+                            if (wallbox_previous_data && uplot_data.update_timestamp < wallbox_previous_data.update_timestamp) {
+                                needs_update = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -1009,32 +1024,88 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         let slot_count: number = 0;
         let energy_manager_data = this.energy_manager_daily_cache[key];
+        let energy_manager_previous_data = this.energy_manager_daily_cache[previous_key];
 
         if (energy_manager_data && !energy_manager_data.empty) {
             // energy_grid_in and energy_grid_out have the same length
             slot_count = Math.max(slot_count, energy_manager_data.energy_grid_in.length);
 
+            let energy_grid_in = new Array(energy_manager_data.energy_grid_in.length);
+            let last_energy_grid_in = null;
+
+            if (energy_manager_previous_data) {
+                last_energy_grid_in = energy_manager_previous_data.energy_grid_in[energy_manager_previous_data.energy_grid_in.length - 1];
+            }
+
+            for (let i = 0; i < energy_manager_data.energy_grid_in.length; ++i) {
+                if (energy_manager_data.energy_grid_in[i] !== null && last_energy_grid_in !== null) {
+                    energy_grid_in[i] = energy_manager_data.energy_grid_in[i] - last_energy_grid_in;
+                }
+                else {
+                    energy_grid_in[i] = null;
+                }
+
+                last_energy_grid_in = energy_manager_data.energy_grid_in[i];
+            }
+
             uplot_data.keys.push('em_grid_in');
             uplot_data.names.push(__("em_energy_analysis.script.grid_in"));
-            uplot_data.values.push(energy_manager_data.energy_grid_in);
+            uplot_data.values.push(energy_grid_in);
             uplot_data.stacked.push(false);
+
+            let energy_grid_out = new Array(energy_manager_data.energy_grid_out.length);
+            let last_energy_grid_out = null;
+
+            if (energy_manager_previous_data) {
+                last_energy_grid_out = energy_manager_previous_data.energy_grid_out[energy_manager_previous_data.energy_grid_out.length - 1];
+            }
+
+            for (let i = 0; i < energy_manager_data.energy_grid_out.length; ++i) {
+                if (energy_manager_data.energy_grid_out[i] !== null && last_energy_grid_out !== null) {
+                    energy_grid_out[i] = energy_manager_data.energy_grid_out[i] - last_energy_grid_out;
+                }
+                else {
+                    energy_grid_out[i] = null;
+                }
+
+                last_energy_grid_out = energy_manager_data.energy_grid_out[i];
+            }
 
             uplot_data.keys.push('em_grid_out');
             uplot_data.names.push(__("em_energy_analysis.script.grid_out"));
-            uplot_data.values.push(energy_manager_data.energy_grid_out);
+            uplot_data.values.push(energy_grid_out);
             uplot_data.stacked.push(false);
         }
 
         for (let charger of this.chargers) {
             if (this.wallbox_daily_cache[charger.uid]) {
                 let wallbox_data = this.wallbox_daily_cache[charger.uid][key];
+                let wallbox_previous_data = this.wallbox_daily_cache[charger.uid][previous_key];
 
                 if (wallbox_data && !wallbox_data.empty) {
                     slot_count = Math.max(slot_count, wallbox_data.energy.length);
 
+                    let energy = new Array(wallbox_data.energy.length);
+                    let last_energy = null;
+
+                    if (wallbox_previous_data) {
+                        last_energy = wallbox_previous_data.energy[wallbox_previous_data.energy.length - 1];
+                    }
+
+                    for (let i = 0; i < wallbox_data.energy.length; ++i) {
+                        if (wallbox_data.energy[i] !== null && last_energy !== null) {
+                            energy[i] = wallbox_data.energy[i] - last_energy;
+                        }
+                        else {
+                            energy[i] = null;
+                        }
+
+                        last_energy = wallbox_data.energy[i];
+                    }
+
                     uplot_data.keys.push('wb' + charger.uid);
                     uplot_data.names.push(charger.name);
-                    uplot_data.values.push(wallbox_data.energy);
+                    uplot_data.values.push(energy);
                     uplot_data.stacked.push(true);
                 }
             }
@@ -1244,7 +1315,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         return Math.floor(timestamp / (24 * 60 * 60 * 1000));
     }
 
-    async update_wallbox_daily_cache(uid: number, date: Date) {
+    async update_wallbox_daily_cache(uid: number, date: Date, update_previous?: boolean) {
+        if (update_previous !== false) {
+            let previous_date = new Date(date.getFullYear(), date.getMonth() - 1, date.getDate());
+
+            await this.update_wallbox_daily_cache(uid, previous_date, false);
+        }
+
         let now = Date.now();
 
         if (date.getTime() > now) {
@@ -1310,7 +1387,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         return true;
     }
 
-    async update_energy_manager_daily_cache(date: Date) {
+    async update_energy_manager_daily_cache(date: Date, update_previous?: boolean) {
+        if (update_previous !== false) {
+            let previous_date = new Date(date.getFullYear(), date.getMonth() - 1, date.getDate());
+
+            await this.update_energy_manager_daily_cache(previous_date, false);
+        }
+
         let now = Date.now();
 
         if (date.getTime() > now) {
