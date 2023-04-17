@@ -478,43 +478,19 @@ def main():
     exported_type_pattern = re.compile("export type ([A-Za-z0-9$_]+)")
     api_path_pattern = re.compile("//APIPath:([^\n]*)\n")
 
-    favicon_path = None
-    logo_path = None
-    branding_path = None
+    branding_module = None
 
     for frontend_module in frontend_modules:
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
 
-        if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
-            print("Error: Frontend module {} not found.".format(frontend_module.space, mod_path))
-            sys.exit(1)
-
-        potential_favicon_path = os.path.join(mod_path, 'favicon.png')
-
-        if os.path.exists(potential_favicon_path):
-            if favicon_path != None:
-                print('Error: Favicon path collision ' + potential_favicon_path + ' vs ' + favicon_path)
-                sys.exit(1)
-
-            favicon_path = potential_favicon_path
-
-        potential_logo_path = os.path.join(mod_path, 'logo.png')
-
-        if os.path.exists(potential_logo_path):
-            if logo_path != None:
-                print('Error: Logo path collision ' + potential_logo_path + ' vs ' + logo_path)
-                sys.exit(1)
-
-            logo_path = potential_logo_path
-
         potential_branding_path = os.path.join(mod_path, 'branding.ts')
 
         if os.path.exists(potential_branding_path):
-            if branding_path != None:
-                print('Error: Branding path collision ' + potential_branding_path + ' vs ' + branding_path)
+            if branding_module != None:
+                print('Error: Branding module collision ' + mod_path + ' vs ' + branding_module)
                 sys.exit(1)
 
-            branding_path = potential_branding_path
+            branding_module = mod_path
 
         if os.path.exists(os.path.join(mod_path, 'navbar.html')):
             with open(os.path.join(mod_path, 'navbar.html'), 'r', encoding='utf-8') as f:
@@ -588,25 +564,24 @@ def main():
 
         f.write(data)
 
-    if favicon_path == None:
-        print('Error: Favicon missing')
+    if branding_module is None:
+        print('Error: No branding module selected')
         sys.exit(1)
 
-    with open(favicon_path, 'rb') as f:
+    req_for_branding = ['branding.ts', 'logo.png', 'favicon.png']
+
+    for f in req_for_branding:
+        if not os.path.exists(os.path.join(branding_module, f)):
+            print('Error: Branding module does not contain {}'.format(f))
+            sys.exit(1)
+
+    with open(os.path.join(branding_module, 'favicon.png'), 'rb') as f:
         favicon = b64encode(f.read()).decode('ascii')
 
-    if logo_path == None:
-        print('Error: Logo missing')
-        sys.exit(1)
-
-    if branding_path == None:
-        print('Error: Branding missing')
-        sys.exit(1)
-
-    with open(logo_path, 'rb') as f:
+    with open(os.path.join(branding_module, 'logo.png'), 'rb') as f:
         logo_base64 = b64encode(f.read()).decode('ascii')
 
-    with open(branding_path, 'r', encoding='utf-8') as f:
+    with open(os.path.join(branding_module, 'branding.ts'), 'r', encoding='utf-8') as f:
         branding = f.read()
 
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
