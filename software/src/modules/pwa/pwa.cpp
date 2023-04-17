@@ -20,6 +20,7 @@
 #include "pwa.h"
 #include "web_server.h"
 #include "event_log.h"
+#include "modules.h"
 #include "manifest.embedded.h"
 
 void Pwa::pre_setup() {}
@@ -31,6 +32,11 @@ void Pwa::setup() {
 void Pwa::register_urls() {
     logger.printfln("Pwa register_urls");
     server.on("/manifest.json", HTTP_GET, [](WebServerRequest request) {
-        return request.send(200, "application/json", manifest_data);
+        String response = device_name.display_name.get("display_name")->asString();
+        response += "\"}";
+        request.beginChunkedResponse(200, "application/json");
+        request.sendChunk(manifest_data, manifest_length);
+        request.sendChunk(response.c_str(), response.length());
+        return request.endChunkedResponse();
     });
 }

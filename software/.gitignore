@@ -13,6 +13,7 @@ src/main.cpp
 src/modules.h
 src/build.h
 src/build.cpp
+src/modules/pwa/manifest.json
 web/**/*.digest
 web/node_modules/
 web/build/
