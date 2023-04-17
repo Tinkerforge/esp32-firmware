@@ -20,7 +20,6 @@ from software import util
 import base64
 
 dir = sys.argv[1]
-cur_path =  os.path.abspath(os.getcwd())
 
 with open(dir + '/favicon_192.png', 'rb') as file:
     icon_small = base64.b64encode(file.read()).decode('utf-8')
@@ -29,13 +28,21 @@ with open(dir + '/favicon_512.png', 'rb') as file:
 with open(dir + "/pre.scss") as file:
     color = file.read().split('\n')[1].split(' ')[1].removesuffix(';')
 
-template_path = dir[0:dir.find('src')]
 
-util.specialize_template(os.path.join(template_path, 'manifest.json.template'), os.path.join(cur_path, 'manifest.json'), {
+with open('manifest.json.template', 'r') as f:
+    content = f.read()
+
+content = content.replace(" ", "").replace("\n", "").replace("maskableany", "maskable any")
+
+with open('manifest.json', 'w') as f:
+    f.write(content)
+
+
+util.specialize_template('manifest.json', 'manifest.json', {
     '{{{theme_color}}}': color,
     '{{{small_icon}}}': 'data:image/png;base64, ' + icon_small,
     '{{{big_icon}}}': 'data:image/png;base64, ' +  icon_big
 })
 
-with open(os.path.join(cur_path, 'manifest.json')) as file:
-    util.embed_data_with_digest(file.read().encode('utf-8'), cur_path, 'manifest', 'char')
+with open('manifest.json') as file:
+    util.embed_data_with_digest(file.read().encode('utf-8'), '.', 'manifest', 'char')
