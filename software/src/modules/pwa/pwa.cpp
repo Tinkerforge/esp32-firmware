@@ -30,7 +30,6 @@ void Pwa::setup() {
 }
 
 void Pwa::register_urls() {
-    logger.printfln("Pwa register_urls");
     server.on("/manifest.json", HTTP_GET, [](WebServerRequest request) {
         String response = device_name.display_name.get("display_name")->asString();
         response += "\"}";
