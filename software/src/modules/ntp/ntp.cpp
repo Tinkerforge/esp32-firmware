@@ -25,7 +25,7 @@
 #include "modules.h"
 
 #include <time.h>
-#include <sntp.h>
+#include <esp_sntp.h>
 #include <lwip/inet.h>
 #include <esp_netif.h>
 

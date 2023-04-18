@@ -60,6 +60,8 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     }
 }
 
+extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
+
 esp_websocket_client_handle_t client;
 void* platform_init(const char *websocket_url, const char *basic_auth_user, const uint8_t *basic_auth_pass, size_t basic_auth_pass_length)
 {
