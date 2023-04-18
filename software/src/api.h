@@ -80,7 +80,6 @@ public:
 
     void pre_setup();
     void setup();
-    void loop();
 
     String callCommand(const String &path, const Config::ConfUpdate &payload);
 

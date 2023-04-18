@@ -349,10 +349,6 @@ size_t API::registerBackend(IAPIBackend *backend)
     return backendIdx;
 }
 
-void API::loop()
-{
-}
-
 String API::callCommand(const String &path, const Config::ConfUpdate &payload)
 {
     for (CommandRegistration &reg : commands) {
