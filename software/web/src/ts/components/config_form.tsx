@@ -50,7 +50,7 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
 
         this.setState({saveDisabled: true, wasValidated: false});
 
-        if (!(document.getElementById(this.props.id) as HTMLFormElement).checkValidity()) {
+        if (!(e.target as HTMLFormElement).checkValidity()) {
             this.setState({saveDisabled: false, wasValidated: true});
             return;
         }
