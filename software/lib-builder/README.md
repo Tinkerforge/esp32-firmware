@@ -71,9 +71,18 @@ Press S Enter to write sdkconfig (don't change the filename!), ~/esp32-firmware/
     git checkout -b warp-x.y.z (or warp2-x.y.z for ESP32 Ethernet Brick)
     rm platform.txt
     rm -r tools/sdk
-    cp ~/esp32-arduino-lib-builder/out/* ~/arduino-esp32/
+    cp ~/esp32-arduino-lib-builder/out/* .
+    git add .
     git commit -m "Add libs for warp-x.y.z."
 
 ### Apply patches to arduino-esp32
 
     ~/esp32-firmware/software/lib-builder/apply_patches.py ~/arduino-esp32 ../patches/arduino-esp32
+
+### Push arduino-esp32
+
+    git push -u origin warp-x.y.z
+
+### Update packages
+
+    python manage_packages.py
