@@ -57,8 +57,10 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         });
 
         util.addApiEventListener((t + "_modified") as Config, () => {
-            if (!this.ignore_updates)
-                this.setState(API.get(t) as Partial<API.getType[Config] & S>);
+            // Make sure that clicking the reset button
+            // (which changes _modified because it removes the config saved in the ESPs flash)
+            // re-renders the component to disable the reset button.
+            this.forceUpdate();
         })
     }
 
