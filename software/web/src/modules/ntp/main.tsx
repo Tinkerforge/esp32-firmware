@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render, Fragment } from "preact";
+import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 
 import { Switch } from "../../ts/components/switch";
@@ -34,6 +34,7 @@ import timezones from "./timezones";
 import { InputSelect } from "src/ts/components/input_select";
 import { Button } from "react-bootstrap";
 import { InputText } from "src/ts/components/input_text";
+import { IndicatorGroup } from "src/ts/components/indicator_group";
 
 type NTPConfig = API.getType['ntp/config'];
 
@@ -141,20 +142,54 @@ export class NTP extends ConfigComponent<'ntp/config'> {
 
 render(<NTP/>, $('#ntp')[0])
 
-function update_state() {
-    let state = API.get('ntp/state');
-    $('#ntp_state_time').html(util.timestamp_min_to_date(state.time, ""));
-    util.update_button_group('ntp_state_synced_group', !API.get('ntp/config').enable ? 0 : (state.synced ? 2 : 1))
+interface NTPStatusState {
+    state: API.getType['ntp/state']
+    config: API.getType['ntp/config'];
 }
+
+export class NTPStatus extends Component<{}, NTPStatusState>
+{
+    constructor()
+    {
+        super();
+
+        util.addApiEventListener('ntp/state', () => {
+            this.setState({state: API.get('ntp/state')})
+        });
+
+        util.addApiEventListener('ntp/config', () => {
+            this.setState({config: API.get('ntp/config')})
+        });
+    }
+
+    render(props: {}, state: NTPStatusState)
+    {
+        if (!util.allow_render || !state.config.enable)
+            return <></>;
+
+        return <>
+                <FormRow label={__("ntp.status.ntp")} label_muted={util.timestamp_min_to_date(state.state.time, "")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                    <IndicatorGroup
+                        style="width: 100%"
+                        class="flex-wrap"
+                        value={!state.config.enable ? 0 : (state.state.synced ? 2 : 1)}
+                        items={[
+                            ["primary", __("ntp.status.deactivated")],
+                            ["danger", __("ntp.status.not_synced")],
+                            ["success", __("ntp.status.synced")],
+                        ]}/>
+                </FormRow>
+            </>;
+    }
+}
+
+render(<NTPStatus/>, $('#status-ntp')[0]);
 
 export function init() {
 
 }
 
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('ntp/state', update_state);
-    source.addEventListener('ntp/config', () => $('#status-ntp').prop("hidden", !API.get("ntp/config").enable));
-}
+export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-ntp').prop('hidden', !module_init.ntp);
