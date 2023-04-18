@@ -166,6 +166,13 @@ bool CMNetworking::is_resolved(uint8_t charger_idx) {
     return resolve_state[charger_idx] == RESOLVE_STATE_RESOLVED;
 }
 
+void CMNetworking::clear_cached_hostname(uint8_t charger_idx) {
+    const char *hostname = hostnames[charger_idx].c_str();
+    auto err = dns_removehost(hostname, nullptr);
+    if (err != ESP_OK)
+        logger.printfln("cm_networking: Couldn't remove hostname from cache: error %i", err);
+}
+
 static const uint8_t cm_command_packet_length_versions[] = {
     sizeof(struct cm_packet_header),
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v1),

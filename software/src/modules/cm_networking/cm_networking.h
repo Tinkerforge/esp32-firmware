@@ -223,6 +223,7 @@ public:
 
     void resolve_hostname(uint8_t charger_idx);
     bool is_resolved(uint8_t charger_idx);
+    void clear_cached_hostname(uint8_t charger_idx);
 
     String validate_packet_header(const struct cm_packet_header *header, ssize_t recv_length, const uint8_t packet_length_versions[], const char *packet_type_name) const;
     String validate_command_packet_header(const struct cm_command_packet *pkt, ssize_t recv_length) const;

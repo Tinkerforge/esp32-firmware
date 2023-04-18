@@ -467,6 +467,8 @@ void ChargeManager::distribute_current()
 
                 if (charger->get("state")->updateUint(5) || charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
                     charger->get("error")->updateUint(CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE);
+                    cm_networking.clear_cached_hostname(i);
+
                     print_local_log = !last_print_local_log_was_error;
                     last_print_local_log_was_error = true;
                 }
