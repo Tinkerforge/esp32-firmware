@@ -41,6 +41,8 @@ export class DeviceName extends ConfigComponent<'info/display_name'> {
             return (<></>);
         }
 
+        document.title = API.get("info/display_name").display_name + " - " + __("main.title");
+
         return (
             <div class="col-12 col-xl-8">
                 <div class="row pt-3 border-bottom tab-header-shadow">
