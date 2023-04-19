@@ -22,13 +22,15 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
-import { h, render, Fragment } from "preact";
+import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputFloat } from "../../ts/components/input_float";
+import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { OutputFloat } from "src/ts/components/output_float";
 
 type Co2Config = API.getType['co2/config'];
 
@@ -64,14 +66,58 @@ export class Co2 extends ConfigComponent<'co2/config'> {
 
 render(<Co2/>, $('#co2ampel')[0])
 
-function update_co2_state() {
-    let state = API.default_updater('co2/state', ['temperature', 'humidity'], false);
-    util.setNumericInput('co2_state_temperature', state.temperature / 100, 2);
-    util.setNumericInput('co2_state_humidity', state.humidity / 100, 2);
+interface Co2StatusState {
+    state: API.getType['co2/state'];
 }
 
+export class Co2Status extends Component<{}, Co2StatusState>
+{
+    constructor()
+    {
+        super();
+
+        util.addApiEventListener('co2/state', () => {
+            this.setState({state: API.get('co2/state')})
+        });
+    }
+
+    render(props: {}, state: Co2StatusState)
+    {
+        if (!util.allow_render)
+            return <></>;
+
+        return <>
+                <FormRow label={__("co2.status.led_state")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                    <IndicatorGroup
+                        style="width: 100%"
+                        class="flex-wrap"
+                        value={state.state.led}
+                        items={[
+                            ["secondary", __("co2.status.led_off")],
+                            ["success", __("co2.status.led_green")],
+                            ["warning", __("co2.status.led_yellow")],
+                            ["danger", __("co2.status.led_red")],
+                        ]}/>
+                </FormRow>
+
+                <FormRow label={__("co2.status.co2")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                    <OutputFloat value={state.state.co2} digits={0} scale={0} unit="ppm"/>
+                </FormRow>
+
+                <FormRow label={__("co2.status.temperature")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                    <OutputFloat value={state.state.temperature} digits={2} scale={2} unit="°C"/>
+                </FormRow>
+
+                <FormRow label={__("co2.status.humidity")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                    <OutputFloat value={state.state.humidity} digits={2} scale={2} unit="% RH"/>
+                </FormRow>
+            </>;
+    }
+}
+
+render(<Co2Status/>, $('#status-co2')[0]);
+
 export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('co2/state', update_co2_state);
 }
 
 export function init() {
