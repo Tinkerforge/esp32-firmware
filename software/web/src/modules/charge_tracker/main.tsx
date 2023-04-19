@@ -22,8 +22,6 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import feather from "../../ts/feather";
-
 import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 
@@ -38,6 +36,7 @@ import { getAllUsernames } from "../users/main";
 import { ConfigComponent } from "src/ts/components/config_component";
 import { ConfigForm } from "src/ts/components/config_form";
 import { InputFloat } from "src/ts/components/input_float";
+import { useMemo } from "preact/hooks";
 
 type Charge = API.getType['charge_tracker/last_charges'][0];
 type ChargetrackerConfig = API.getType['charge_tracker/config'];
@@ -59,15 +58,21 @@ type ChargeTrackerState = S & API.getType['charge_tracker/state'];
 let wallet_icon = <svg class="feather feather-wallet mr-1" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>
 
 function TrackedCharge(props: {charge: Charge, users: API.getType['users/config']['users'], electricity_price: number}) {
-    let display_name = __("charge_tracker.script.unknown_user")
+    const display_name = useMemo(
+        () => {
+            let result = __("charge_tracker.script.unknown_user");
 
-    let filtered = props.users.filter(x => x.id == props.charge.user_id);
+            let filtered = props.users.filter(x => x.id == props.charge.user_id);
 
-    if (props.charge.user_id != 0 || filtered[0].display_name != "Anonymous") {
-        display_name = __("charge_tracker.script.deleted_user")
-        if (filtered.length == 1)
-            display_name = filtered[0].display_name
-    }
+            if (props.charge.user_id != 0 || filtered[0].display_name != "Anonymous") {
+                result = __("charge_tracker.script.deleted_user")
+                if (filtered.length == 1)
+                    result = filtered[0].display_name
+            }
+            return result;
+        },
+        [props.users, props.charge.user_id]
+    );
 
     let have_charge_cost = props.electricity_price > 0 && props.charge.energy_charged != null;
     let price_div = have_charge_cost ? <div>{wallet_icon}<span style="vertical-align: middle;">{util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span></div> : <></>
@@ -462,112 +467,100 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
 
 render(<ChargeTracker/>, $('#charge_tracker')[0]);
 
-function show_charge_cost(charged: number)
-{
-    let price = API.get("charge_tracker/config").electricity_price;
-    if (price > 0 && charged != null)
-    {
-        let icon = '<svg class="feather feather-wallet mr-1" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>'
-
-        return `<div>${icon}<span style="vertical-align: middle;">${util.toLocaleFixed(price / 100 * charged / 100, 2)} €</span></div>`;
-    }
-    return "";
-
-
+interface ChargeTrackerStatusState {
+    last_charges: Readonly<API.getType['charge_tracker/last_charges']>;
+    cc: API.getType['charge_tracker/current_charge'];
+    evse_uptime: API.getType['evse/low_level_state']['uptime'];
+    energy_abs: API.getType['meter/values']['energy_abs'];
+    users: API.getType['users/config']['users'];
+    electricity_price: API.getType['charge_tracker/config']['electricity_price'];
 }
 
-function update_last_charges() {
-    let charges = API.get('charge_tracker/last_charges');
-    let users_config = API.get('users/config')
+export class ChargeTrackerStatus extends Component<{}, ChargeTrackerStatusState> {
+    constructor()
+    {
+        super();
 
-    let last_charges_html = charges.slice(-3).map((user) => {
-        let display_name = __("charge_tracker.script.unknown_user")
+        util.addApiEventListener('charge_tracker/last_charges', () => {
+            this.setState({last_charges: API.get('charge_tracker/last_charges')})
+        });
 
-        let filtered = users_config.users.filter(x => x.id == user.user_id);
+        util.addApiEventListener('charge_tracker/current_charge', () => {
+            this.setState({cc: API.get('charge_tracker/current_charge')})
+        });
 
-        if (user.user_id != 0 || filtered[0].display_name != "Anonymous") {
-            display_name = __("charge_tracker.script.deleted_user")
-            if (filtered.length == 1)
-                display_name = filtered[0].display_name
+        util.addApiEventListener('evse/low_level_state', () => {
+            this.setState({evse_uptime: API.get('evse/low_level_state').uptime})
+        });
+
+        util.addApiEventListener('meter/values', () => {
+            this.setState({energy_abs: API.get('meter/values').energy_abs})
+        });
+
+        util.addApiEventListener('users/config', () => {
+            this.setState({users: API.get('users/config').users})
+        });
+
+        util.addApiEventListener('charge_tracker/config', () => {
+            this.setState({electricity_price: API.get('charge_tracker/config').electricity_price})
+        });
+    }
+
+    render(props: {}, state: ChargeTrackerStatusState)
+    {
+        if (!util.allow_render)
+            return <></>;
+
+        let current_charge = <></>;
+
+        if (state.cc.user_id != -1) {
+            let charge_duration = state.evse_uptime - state.cc.evse_uptime_start
+            if (state.evse_uptime < state.cc.evse_uptime_start)
+                charge_duration += 0xFFFFFFFF;
+
+            charge_duration = Math.floor(charge_duration / 1000);
+
+            let charge: Charge = {
+                charge_duration: charge_duration,
+                energy_charged: state.energy_abs - state.cc.meter_start,
+                timestamp_minutes: state.cc.timestamp_minutes,
+                user_id: state.cc.user_id
+            };
+
+            current_charge = <FormRow label={__("charge_tracker.status.current_charge")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <ListGroup>
+                    <TrackedCharge charge={charge}
+                                   users={state.users}
+                                   electricity_price={state.electricity_price}
+                                   />
+                </ListGroup>
+            </FormRow>;
         }
 
-        let charge_cost = show_charge_cost(user.energy_charged);
+        let last_charges = state.last_charges.length == 0 ? <></>
+            : <FormRow label={__("charge_tracker.status.last_charges")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <ListGroup>
+                    {state.last_charges.slice(-3).map(c =>
+                        <TrackedCharge charge={c}
+                                       users={state.users}
+                                       electricity_price={state.electricity_price}
+                                       />
+                    ).reverse()}
+                </ListGroup>
+            </FormRow>;
 
-        return `<div class="list-group-item">
-        <div class="row">
-            <div class="col">
-                <div class="mb-2"><span class="mr-1" data-feather="user"></span><span style="vertical-align: middle;">${display_name}</span></div>
-                <div><span class="mr-1" data-feather="calendar"></span><span style="vertical-align: middle;">${util.timestamp_min_to_date(user.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span></div>
-            </div>
-            <div class="col-auto">
-                <div class="mb-2"><span class="mr-1" data-feather="battery-charging"></span><span style="vertical-align: middle;">${user.energy_charged === null ? "N/A" : util.toLocaleFixed(user.energy_charged, 3)} kWh</span></div>
-                <div class=${charge_cost == "" ? "" : "mb-2"}><span class="mr-1" data-feather="clock"></span><span style="vertical-align: middle;">${util.format_timespan(user.charge_duration)}</span></div>
-                ${charge_cost}
-            </div>
-        </div>
-        </div>`
-    }).reverse();
-
-    $('#status-charge_tracker-last-charges').prop("hidden", charges.length == 0);
-    $('#charge_tracker_status_last_charges').html(last_charges_html.join(""));
-    feather.replace();
-}
-
-function update_current_charge() {
-    let cc = API.get('charge_tracker/current_charge');
-    let evse_ll = API.get('evse/low_level_state');
-    let mv = API.get('meter/values');
-    let uc = API.get('users/config');
-
-    $('#charge_tracker_current_charge').prop("hidden", cc.user_id == -1);
-
-    if (cc.user_id == -1) {
-        return;
+        return <>
+                    {current_charge}
+                    {last_charges}
+            </>;
     }
-
-    let filtered = uc.users.filter((x) => x.id == cc.user_id);
-    let user_display_name = __("charge_tracker.script.unknown_user");
-    if (filtered.length > 0 && (cc.user_id != 0 || filtered[0].display_name != "Anonymous"))
-        user_display_name = filtered[0].display_name;
-
-    let energy_charged = mv.energy_abs - cc.meter_start;
-    let time_charging = evse_ll.uptime - cc.evse_uptime_start
-    if (evse_ll.uptime < cc.evse_uptime_start)
-        time_charging += 0xFFFFFFFF;
-
-    time_charging = Math.floor(time_charging / 1000);
-
-    let price = API.get("charge_tracker/config").electricity_price;
-
-    if (filtered.length == 0)
-        $('#users_status_charging_user').html(__("charge_tracker.script.deleted_user"));
-    else if (filtered[0].display_name == "Anonymous" && cc.user_id == 0)
-        $('#users_status_charging_user').html(__("charge_tracker.script.unknown_user"));
-    else
-        $('#users_status_charging_user').html(user_display_name);
-    $('#users_status_charging_time').html(util.format_timespan(time_charging));
-    $('#users_status_charged_energy').html(cc.meter_start == null ? "N/A kWh" : util.toLocaleFixed(energy_charged, 3) + " kWh");
-    $('#users_status_charging_start').html(util.timestamp_min_to_date(cc.timestamp_minutes, __("charge_tracker.script.unknown_charge_start")));
-    if (price > 0 && cc.meter_start != null)
-    {
-        $('#current_charge_price').text(util.toLocaleFixed(price / 100 * energy_charged / 100, 2) + " €");
-        $('#current_charge_price_div').prop('hidden', false);
-    }
-    else
-        $('#current_charge_price_div').prop('hidden', true);
 }
 
-export function init() {
+render(<ChargeTrackerStatus/>, $('#status-charge_tracker')[0]);
 
-}
+export function init() {}
 
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('charge_tracker/last_charges', update_last_charges);
-    source.addEventListener('charge_tracker/current_charge', update_current_charge);
-    source.addEventListener('evse/low_level_state', update_current_charge);
-    source.addEventListener('meter/values', update_current_charge);
-    source.addEventListener('users/config', update_current_charge);
-}
+export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-charge_tracker').prop('hidden', !module_init.charge_tracker);
