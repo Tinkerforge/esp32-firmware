@@ -25,6 +25,7 @@
 #include "task_scheduler.h"
 #include "modules.h"
 
+
 void Meter::pre_setup()
 {
     state = Config::Object({
@@ -84,10 +85,26 @@ void Meter::updateMeterValues(float power, float energy_rel, float energy_abs)
 {
     if (!meter_setup_done)
         return;
+    bool changed = false;
+    float old_value;
 
-    values.get("power")->updateFloat(power);
-    values.get("energy_rel")->updateFloat(energy_rel);
-    values.get("energy_abs")->updateFloat(energy_abs);
+    if (!isnan(power)) {
+        old_value = values.get("power")->asFloat();
+        changed |= !isnanf(old_value) && values.get("power")->updateFloat(power);
+    }
+
+    if (!isnan(energy_rel)) {
+        old_value = values.get("energy_rel")->asFloat();
+        changed |= !isnanf(old_value) && values.get("energy_rel")->updateFloat(energy_rel);
+    }
+
+    if (!isnan(energy_abs)) {
+        old_value = values.get("energy_abs")->asFloat();
+        changed |= !isnanf(old_value) && values.get("energy_abs")->updateFloat(energy_abs);
+    }
+
+    if (changed)
+        last_value_change = esp_timer_get_time();
 
     power_hist.add_sample(power);
 }
@@ -117,9 +134,18 @@ void Meter::updateMeterAllValues(float values[METER_ALL_VALUES_COUNT])
     if (!meter_setup_done)
         return;
 
+    bool changed = false;
+
     for (int i = 0; i < METER_ALL_VALUES_COUNT; ++i)
-        if (!isnan(values[i]))
-            all_values.get(i)->updateFloat(values[i]);
+        if (!isnan(values[i])) {
+            auto wrap = all_values.get(i);
+            auto old_value = wrap->asFloat();
+            changed |= !isnanf(old_value) && wrap->updateFloat(values[i]);
+        }
+
+    if (changed) {
+        last_value_change = esp_timer_get_time();
+    }
 }
 
 void Meter::registerResetCallback(std::function<void(void)> cb)
@@ -158,6 +184,22 @@ void Meter::setup()
     power_hist.setup();
 }
 
+inline void block_meter_slot(bool blocking) {
+#if MODULE_EVSE_V2_AVAILABLE()
+    evse_v2.set_meter_required_blocking(blocking);
+#elif MODULE_EVSE_AVAILABLE()
+    evse.set_meter_required_blocking(blocking);
+#endif
+}
+
+inline bool meter_is_required() {
+#if MODULE_EVSE_V2_AVAILABLE()
+    return evse_v2.get_meter_required_enabled();
+#elif MODULE_EVSE_AVAILABLE()
+    return evse.get_meter_required_enabled();
+#endif
+}
+
 void Meter::register_urls()
 {
     api.addState("meter/state", &state, {}, 1000);
@@ -179,6 +221,19 @@ void Meter::register_urls()
         }
         api.writeConfig("meter/last_reset", &last_reset);
     }, true);
+
+    if (meter_is_required()) {
+        last_value_change = -METER_TIMEOUT_US - 1;
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            int64_t now = esp_timer_get_time();
+            if (state.get("state")->asUint() != 2 || now - last_value_change > METER_TIMEOUT_US) {
+                block_meter_slot(true);
+                users.stop_charging(0, true, 0);
+            }
+            else
+                block_meter_slot(false);
+        }, 0, 1000);
+    }
 
     power_hist.register_urls("meter/");
 }

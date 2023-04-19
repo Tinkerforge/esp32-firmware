@@ -244,7 +244,8 @@ void Users::pre_setup()
             Config::type_id<Config::ConfObject>()
         )},
         {"next_user_id", Config::Uint8(0)},
-        {"http_auth_enabled", Config::Bool(false)}
+        {"http_auth_enabled", Config::Bool(false)},
+        {"meter_required", Config::Bool(false)}
     });
 
     add = ConfigRoot(Config::Object({
@@ -517,6 +518,14 @@ int Users::get_display_name(uint8_t user_id, char *ret_buf)
     return strnlen(ret_buf, 32);
 }
 
+bool Users::charging_is_allowed() {
+#if MODULE_EVSE_V2_AVAILABLE()
+    return evse_v2.meter_allows_charging();
+#elif MODULE_EVSE_AVAILABLE()
+    return evse.meter_allows_charging();
+#endif
+}
+
 void Users::register_urls()
 {
     // No users (except anonymous) configured: Make sure the EVSE's user slot is disabled.
@@ -533,7 +542,6 @@ void Users::register_urls()
         user_slot = evse_v2.evse_slots.get(CHARGING_SLOT_USER)->get("active")->asBool();
 
 #endif
-
 
     if (user_config.get("users")->count() <= 1 && user_slot) {
         logger.printfln("User slot enabled, but no users configured. Disabling user slot.");
@@ -880,7 +888,7 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
                     this->stop_charging(user_id, false);
                 return false;
             }
-            if (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_START)
+            if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_START) && charging_is_allowed())
                 return this->start_charging(user_id, current_limit, auth_type, auth_info);
             return false;
         case IEC_STATE_C: // State C: The user wants to stop charging.

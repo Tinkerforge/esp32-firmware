@@ -56,6 +56,7 @@ interface EVSESSettingsState {
     ev_wakeup: API.getType['evse/ev_wakeup'];
     boost_mode: API.getType['evse/boost_mode'];
     auto_start_charging: API.getType['evse/auto_start_charging'];
+    meter_required: API.getType['evse/meter_required'];
     meter_abs: number
     evse_uptime: number
 }
@@ -442,6 +443,10 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
         util.addApiEventListener("evse/low_level_state", () => {
             this.setState({evse_uptime: API.get("evse/low_level_state").uptime});
         })
+
+        util.addApiEventListener("evse/meter_required", () => {
+            this.setState({meter_required: API.get("evse/meter_required")});
+        })
     }
 
     override async sendSave(t: "charge_limits/default_limits", cfg: EVSESSettingsState & ChargeLimitsConfig): Promise<void> {
@@ -451,6 +456,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
         await API.save('evse/gpio_configuration', this.state.gpio_cfg, __("evse.script.gpio_configuration_failed"));
         await API.save('evse/ev_wakeup', {"enabled": this.state.ev_wakeup.enabled}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, __("evse.script.save_failed"));
+        await API.save('evse/meter_required', {"required": this.state.meter_required.required}, __("evse.script.save_failed"));
         super.sendSave(t, cfg);
     }
 
@@ -463,6 +469,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
         await API.save('evse/gpio_configuration', {"input": 0, "output": 1, "shutdown_input": 0}, __("evse.script.gpio_configuration_failed"));
         await API.save('evse/ev_wakeup', {"enabled": true}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": false}, __("evse.script.save_failed"));
+        await API.save('evse/meter_required', {"required": false}, __("evse.script.save_failed"));
         super.sendReset(t);
     }
 
@@ -477,7 +484,8 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
             gpio_cfg,
             ev_wakeup,
             boost_mode,
-            auto_start_charging} = s;
+            auto_start_charging,
+            meter_required} = s;
 
         const has_meter = API.hasFeature("meter");
 
@@ -604,6 +612,12 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
                         <Switch desc={__("evse.content.boost_mode")}
                                 checked={boost_mode.enabled}
                                 onClick={async () => this.setState({boost_mode: {enabled: !boost_mode.enabled}})}/>
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.meter_monitoring")}>
+                        <Switch desc={__("evse.content.meter_monitoring_desc")}
+                            checked={meter_required.required}
+                            onClick={async () => this.setState({meter_required: {required: !meter_required.required}})}/>
                     </FormRow>
 
                     <FormRow label={__("charge_limits.content.duration")} label_muted={__("charge_limits.content.duration_muted")}>

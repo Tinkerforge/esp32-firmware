@@ -64,6 +64,8 @@ public:
     int16_t get_blink_state();
     void set_blink_state(int16_t state);
 
+    bool charging_is_allowed();
+
 private:
     int16_t blink_state = -1;
 };

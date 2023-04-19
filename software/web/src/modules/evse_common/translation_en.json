@@ -100,6 +100,9 @@
             "reflash_evse": "Reflash",
             "charging_time": "Charging for",
 
+            "meter_monitoring": "Meter mointoring",
+            "meter_monitoring_desc": "Monitors the meters functionality and deactivates charging if a malfunction is detected.",
+
             "slot_0": "Supply cable",
             "slot_1": "Type 2 charging cable",
             "slot_2": "Shutdown input",
@@ -112,7 +115,8 @@
             "slot_9": "Modbus TCP current",
             "slot_10": "Modbus TCP clearance",
             "slot_11": "OCPP",
-            "slot_12": "Energy/Time limit"
+            "slot_12": "Energy/Time limit",
+            "slot_13": "Meter monitoring"
         },
         "script": {
             "error_code": "Error code",
@@ -154,6 +158,8 @@
             "slot_10": "Modbus TCP clearance",
             "slot_11": "OCPP",
             "slot_12": "Energy/Time limit",
+            "slot_13": "Meter monitoring",
+            
             "reboot_content_changed": "Charge Settings"
         }
     }

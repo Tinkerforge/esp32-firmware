@@ -100,6 +100,9 @@
             "reflash_evse": "Neu flashen",
             "charging_time": "Lädt seit",
 
+            "meter_monitoring": "Zähler überwachung",
+            "meter_monitoring_desc": "Überwacht Funktionalität des Zählers und deaktiviert das Laden im Falle eines defekts.",
+
             "slot_0": "Zuleitung",
             "slot_1": "Typ-2-Ladekabel",
             "slot_2": "Abschalteingang",
@@ -112,7 +115,8 @@
             "slot_9": "Modbus TCP-Strom",
             "slot_10": "Modbus TCP-Freigabe",
             "slot_11": "OCPP",
-            "slot_12": "Energie-/Zeitlimit"
+            "slot_12": "Energie-/Zeitlimit",
+            "slot_13": "Zählerüberwachung"
         },
         "script": {
             "error_code": "Fehlercode",
@@ -154,6 +158,7 @@
             "slot_10": "Modbus TCP-Freigabe",
             "slot_11": "OCPP",
             "slot_12": "Energie-/Zeitlimit",
+            "slot_13": "Zählerüberwachung",
 
             "reboot_content_changed": "Ladeeinstellungen"
         }

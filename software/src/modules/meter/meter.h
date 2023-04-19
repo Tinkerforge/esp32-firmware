@@ -48,6 +48,8 @@
 // Supported by modbus_meter module
 #define METER_TYPE_AUTO_DETECT 255
 
+#define METER_TIMEOUT_US 1000 * 1000 * 10
+
 #define METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1 0
 #define METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L2 1
 #define METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L3 2
@@ -154,6 +156,8 @@ public:
 
     void setupMeter(uint8_t meter_type);
 
+    bool all_values_changed();
+
     bool meter_setup_done = false;
 
     ConfigRoot state;
@@ -163,6 +167,8 @@ public:
     ConfigRoot last_reset;
 
     ValueHistory power_hist;
+
+    int64_t last_value_change = 0;
 
     std::vector<std::function<void(void)>> reset_callbacks;
 };
