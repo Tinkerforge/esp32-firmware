@@ -26,6 +26,9 @@ export interface FormRowProps {
     labelColClasses?: string
     contentColClasses?: string
     hidden?: boolean
+    label_prefix ?: VNode
+    label_infix ?: VNode
+    label_suffix ?: VNode
 }
 
 let id_counter = 0;
@@ -52,8 +55,11 @@ export class FormRow extends Component<FormRowProps, any> {
         return (
             <div class="form-group row" hidden={props.hidden == undefined ? false : props.hidden}>
                 <label for={this.id} class={"col-form-label " + (props.labelColClasses === undefined ? "col-lg-3 col-xl-2" : props.labelColClasses)}>
+                    {props.label_prefix ? props.label_prefix : <></>}
                     {props.label ? <span class={"form-label" + (props.label_muted ? " pr-2" : "")} dangerouslySetInnerHTML={{__html: props.label}}></span> : ""}
+                    {props.label_infix ? props.label_infix : <></>}
                     {props.label_muted ? <span class="text-muted" dangerouslySetInnerHTML={{__html: props.label_muted}}></span> : ""}
+                    {props.label_suffix ? props.label_suffix : <></>}
                 </label>
                 {inner}
             </div>
