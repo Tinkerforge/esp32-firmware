@@ -251,11 +251,11 @@ void EVSEV2::pre_setup()
 
     evse_control_pilot_disconnect_update = evse_control_pilot_disconnect;
 
-    evse_meter_required = Config::Object({
-        {"required", Config::Bool(false)}
+    evse_require_meter_enabled = Config::Object({
+        {"enabled", Config::Bool(false)}
     });
 
-    evse_meter_required_update = evse_meter_required;
+    evse_require_meter_enabled_update = evse_require_meter_enabled;
 }
 
 bool EVSEV2::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
@@ -386,18 +386,12 @@ void EVSEV2::set_indicator_led(int16_t indication, uint16_t duration, uint8_t *r
     tf_evse_v2_set_indicator_led(&device, indication, duration, ret_status);
 }
 
-void EVSEV2::set_meter_required_blocking(bool blocking) {
+void EVSEV2::set_require_meter_blocking(bool blocking) {
     is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_REQUIRE_METER, blocking ? 0 : 32000));
 }
 
-void EVSEV2::set_meter_required_enabled(bool enabled) {
-    is_in_bootloader(tf_evse_v2_set_charging_slot_active(&device, CHARGING_SLOT_REQUIRE_METER, enabled));
-}
-
-bool EVSEV2::get_meter_required_enabled() {
-    bool active;
-    is_in_bootloader(tf_evse_v2_get_charging_slot(&device, CHARGING_SLOT_REQUIRE_METER, NULL, &active, NULL));
-    return active;
+bool EVSEV2::get_require_meter_enabled() {
+    return evse_require_meter_enabled.get("enabled")->asBool();
 }
 
 bool EVSEV2::meter_allows_charging() {
@@ -1024,11 +1018,20 @@ void EVSEV2::register_urls()
         }
     }, false);
 
-    api.addState("evse/meter_required", &evse_meter_required, {}, 1000);
-    api.addCommand("evse/meter_required_update", &evse_meter_required_update, {}, [this]() {
-        bool enabled = evse_meter_required_update.get("required")->asBool();
-        is_in_bootloader(tf_evse_v2_set_charging_slot_active(&device, CHARGING_SLOT_REQUIRE_METER, enabled));
-        is_in_bootloader(tf_evse_v2_set_charging_slot_default(&device, CHARGING_SLOT_REQUIRE_METER, 0, enabled, false));
+    api.addState("evse/require_meter_enabled", &evse_require_meter_enabled, {}, 1000);
+    api.addCommand("evse/require_meter_enabled_update", &evse_require_meter_enabled_update, {}, [this]() {
+        bool enabled = evse_require_meter_enabled_update.get("enabled")->asBool();
+        if (enabled == evse_require_meter_enabled.get("enabled")->asBool())
+            return;
+
+        if (enabled) {
+            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_REQUIRE_METER, 0, true, false);
+            this->apply_slot_default(CHARGING_SLOT_REQUIRE_METER, 0, true, false);
+        }
+        else {
+            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_OCPP, 32000, false, false);
+            this->apply_slot_default(CHARGING_SLOT_OCPP, 32000, false, false);
+        }
     }, true);
 
 
@@ -1343,7 +1346,7 @@ void EVSEV2::update_all_data()
     evse_external_defaults.get("current")->updateUint(external_default_current);
     evse_external_defaults.get("clear_on_disconnect")->updateBool(external_default_clear_on_disconnect);
 
-    evse_meter_required.get("required")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_REQUIRE_METER]));
+    evse_require_meter_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_REQUIRE_METER]));
 
 #if MODULE_WATCHDOG_AVAILABLE()
     static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable");

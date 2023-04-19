@@ -83,9 +83,8 @@ public:
     void set_modbus_current(uint16_t current);
     void set_modbus_enabled(bool enabled);
 
-    void set_meter_required_enabled(bool enabled);
-    void set_meter_required_blocking(bool blocking);
-    bool get_meter_required_enabled();
+    void set_require_meter_blocking(bool blocking);
+    bool get_require_meter_enabled();
     bool meter_allows_charging();
 
     void set_charge_limits_slot(uint16_t current, bool enabled);
@@ -139,8 +138,8 @@ public:
     ConfigRoot evse_ocpp_enabled_update;
     ConfigRoot evse_boost_mode;
     ConfigRoot evse_boost_mode_update;
-    ConfigRoot evse_meter_required;
-    ConfigRoot evse_meter_required_update;
+    ConfigRoot evse_require_meter_enabled;
+    ConfigRoot evse_require_meter_enabled_update;
 
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;

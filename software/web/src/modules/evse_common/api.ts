@@ -104,6 +104,6 @@ export interface boost_mode {
     enabled: boolean
 }
 
-export interface meter_required {
-    required: boolean
+export interface require_meter_enabled {
+    enabled: boolean
 }

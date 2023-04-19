@@ -55,7 +55,7 @@ interface EVSESettingsState {
     slots: Readonly<API.getType['evse/slots']>;
     boost_mode: API.getType['evse/boost_mode'];
     auto_start_charging: API.getType['evse/auto_start_charging'];
-    meter_required: API.getType['evse/meter_required'];
+    require_meter: API.getType['evse/require_meter_enabled'];
     meter_abs: number;
     evse_uptime: number;
 }
@@ -448,8 +448,8 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
             this.setState({evse_uptime: API.get("evse/low_level_state").uptime});
         })
 
-        util.addApiEventListener("evse/meter_required", () => {
-            this.setState({meter_required: API.get("evse/meter_required")});
+        util.addApiEventListener("evse/require_meter_enabled", () => {
+            this.setState({require_meter: API.get("evse/require_meter_enabled")});
         })
     }
 
@@ -457,7 +457,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
         await API.save('evse/auto_start_charging', {"auto_start_charging": this.state.auto_start_charging.auto_start_charging}, __("evse.script.save_failed"));
         await API.save('evse/external_enabled', {"enabled": this.state.slots[EVSE_SLOT_EXTERNAL].active}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, __("evse.script.save_failed"));
-        await API.save('evse/meter_required', {"required": this.state.meter_required.required}, __("evse.script.save_failed"));
+        await API.save('evse/require_meter_enabled', {"enabled": this.state.require_meter.required}, __("evse.script.save_failed"));
         super.sendSave(t, cfg);
     }
 
@@ -465,7 +465,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
         await API.save('evse/auto_start_charging', {"auto_start_charging": true}, __("evse.script.save_failed"));
         await API.save('evse/external_enabled', {"enabled": false}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": false}, __("evse.script.save_failed"));
-        await API.save('evse/meter_required', {"required": false}, __("evse.script.save_failed"));
+        await API.save('evse/require_meter_enabled', {"enabled": false}, __("evse.script.save_failed"));
         super.sendReset(t);
     }
 
@@ -479,7 +479,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
             slots,
             boost_mode,
             auto_start_charging,
-            meter_required} = s;
+            require_meter} = s;
 
         const has_meter = API.hasFeature("meter");
 
@@ -520,8 +520,8 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
 
                 <FormRow label={__("evse.content.meter_monitoring")}>
                         <Switch desc={__("evse.content.meter_monitoring_desc")}
-                        checked={meter_required.required}
-                        onClick={async () => this.setState({meter_required: {required: !meter_required.required}})}/>
+                        checked={require_meter.required}
+                        onClick={async () => this.setState({require_meter: {required: !require_meter.required}})}/>
                 </FormRow>
 
                 <FormRow label={__("charge_limits.content.duration")} label_muted={__("charge_limits.content.duration_muted")}>

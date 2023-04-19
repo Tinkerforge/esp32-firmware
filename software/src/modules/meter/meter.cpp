@@ -184,22 +184,6 @@ void Meter::setup()
     power_hist.setup();
 }
 
-inline void block_meter_slot(bool blocking) {
-#if MODULE_EVSE_V2_AVAILABLE()
-    evse_v2.set_meter_required_blocking(blocking);
-#elif MODULE_EVSE_AVAILABLE()
-    evse.set_meter_required_blocking(blocking);
-#endif
-}
-
-inline bool meter_is_required() {
-#if MODULE_EVSE_V2_AVAILABLE()
-    return evse_v2.get_meter_required_enabled();
-#elif MODULE_EVSE_AVAILABLE()
-    return evse.get_meter_required_enabled();
-#endif
-}
-
 void Meter::register_urls()
 {
     api.addState("meter/state", &state, {}, 1000);
@@ -222,18 +206,30 @@ void Meter::register_urls()
         api.writeConfig("meter/last_reset", &last_reset);
     }, true);
 
-    if (meter_is_required()) {
-        last_value_change = -METER_TIMEOUT_US - 1;
-        task_scheduler.scheduleWithFixedDelay([this]() {
-            int64_t now = esp_timer_get_time();
-            if (state.get("state")->asUint() != 2 || now - last_value_change > METER_TIMEOUT_US) {
-                block_meter_slot(true);
-                users.stop_charging(0, true, 0);
-            }
-            else
-                block_meter_slot(false);
-        }, 0, 1000);
+#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
+    #if MODULE_EVSE_V2_AVAILABLE()
+        if (evse_v2.get_require_meter_enabled()) {
+    #elif MODULE_EVSE_AVAILABLE()
+        if (evse.get_require_meter_enabled()) {
+    #endif
+            last_value_change = -METER_TIMEOUT_US - 1;
+            task_scheduler.scheduleWithFixedDelay([this]() {
+                int64_t now = esp_timer_get_time();
+
+                bool meter_timeout = state.get("state")->asUint() != 2 || now - last_value_change > METER_TIMEOUT_US;
+
+                #if MODULE_EVSE_V2_AVAILABLE()
+                    evse_v2.set_require_meter_blocking(meter_timeout);
+                #elif MODULE_EVSE_AVAILABLE()
+                    evse.set_require_meter_blocking(meter_timeout);
+                #endif
+
+                if (meter_timeout)
+                    users.stop_charging(0, true, 0);
+
+            }, 0, 1000);
     }
+#endif
 
     power_hist.register_urls("meter/");
 }
