@@ -89,7 +89,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
         } as any
     }
 
-    get_last_charges(charges: typeof this.state.last_charges, price: number) {
+    get_last_charges(charges: Readonly<Charge[]>, price: number) {
         let users_config = API.get('users/config');
 
         return charges.map(c => {
