@@ -244,8 +244,7 @@ void Users::pre_setup()
             Config::type_id<Config::ConfObject>()
         )},
         {"next_user_id", Config::Uint8(0)},
-        {"http_auth_enabled", Config::Bool(false)},
-        {"meter_required", Config::Bool(false)}
+        {"http_auth_enabled", Config::Bool(false)}
     });
 
     add = ConfigRoot(Config::Object({
