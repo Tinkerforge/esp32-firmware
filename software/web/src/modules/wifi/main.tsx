@@ -19,49 +19,93 @@
 
 import $ from "../../ts/jq";
 
+import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render } from "preact";
+import { Component, h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 
 import { WifiAP } from "./wifi_ap";
-import { WifiSTA } from "./wifi_sta";
+import { WifiSTA, wifi_symbol } from "./wifi_sta";
+import { FormRow } from "src/ts/components/form_row";
+import { IndicatorGroup } from "src/ts/components/indicator_group";
 
 render(<WifiAP/>, $('#wifi-ap')[0])
 render(<WifiSTA/>, $('#wifi-sta')[0])
 
-function wifi_symbol(rssi: number) {
-    if(rssi >= -60)
-        return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-wifi"><title>RSSI: ${rssi}</title><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`;
-    if(rssi >= -70)
-        return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-wifi"><title>RSSI: ${rssi}</title><path stroke="#cccccc" d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`;
-    if(rssi >= -80)
-        return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-wifi"><title>RSSI: ${rssi}</title><path stroke="#cccccc" d="M1.42 9a16 16 0 0 1 21.16 0"></path><path stroke="#cccccc" d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`;
-
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-wifi"><title>RSSI: ${rssi}</title><path stroke="#cccccc" d="M1.42 9a16 16 0 0 1 21.16 0"></path><path stroke="#cccccc" d="M5 12.55a11 11 0 0 1 14.08 0"></path><path stroke="#cccccc" d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`;
+interface WifiStatusState {
+    state: API.getType['wifi/state']
+    ap_config: API.getType['wifi/ap_config'];
+    sta_config: API.getType['wifi/sta_config'];
 }
 
-function update_wifi_state() {
-    let state = API.default_updater('wifi/state', ['sta_ip', 'sta_rssi', 'sta_bssid', 'ap_bssid', 'connection_start', 'connection_end'], false);
+export class WifiStatus extends Component<{}, WifiStatusState>
+{
+    constructor()
+    {
+        super();
 
-    if (state.sta_ip != "0.0.0.0") {
-        $('#wifi_state_sta_ip').html(state.sta_ip);
-        $('#wifi_state_sta_rssi').html(wifi_symbol(state.sta_rssi));
-    } else {
-        $('#wifi_state_sta_ip').html("");
-        $('#wifi_state_sta_rssi').html("");
+        util.addApiEventListener('wifi/state', () => {
+            this.setState({state: API.get('wifi/state')})
+        });
+
+        util.addApiEventListener('wifi/ap_config', () => {
+            this.setState({ap_config: API.get('wifi/ap_config')})
+        });
+
+        util.addApiEventListener('wifi/sta_config', () => {
+            this.setState({sta_config: API.get('wifi/sta_config')})
+        });
+    }
+
+    render(props: {}, state: WifiStatusState)
+    {
+        if (!util.allow_render)
+            return <></>;
+
+        let sta_row = !state.sta_config.enable_sta ? <></>
+            : <FormRow label={__("wifi.status.wifi_connection")}
+                       label_infix={<span class="pr-2">{wifi_symbol(state.state.sta_rssi)}</span>}
+                       label_muted={state.state.sta_ip != "0.0.0.0" ? state.state.sta_ip : ""}
+                       labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <IndicatorGroup
+                    style="width: 100%"
+                    class="flex-wrap"
+                    value={state.state.connection_state}
+                    items={[
+                        ["primary", __("wifi.status.not_configured")],
+                        ["danger", __("wifi.status.not_connected")],
+                        ["warning", __("wifi.status.connecting")],
+                        ["success", __("wifi.status.connected")],
+                    ]}/>
+            </FormRow>;
+
+        let ap_row = !state.ap_config.enable_ap ? <></>
+            : <FormRow label={__("wifi.status.wifi_ap")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <IndicatorGroup
+                    style="width: 100%"
+                    class="flex-wrap"
+                    value={state.state.ap_state}
+                    items={[
+                        ["primary", __("wifi.status.deactivated")],
+                        ["success", __("wifi.status.activated")],
+                        ["success", __("wifi.status.fallback_inactive")],
+                        ["danger",  __("wifi.status.fallback_active")],
+                    ]}/>
+            </FormRow>;
+
+        return <>
+                {sta_row}
+                {ap_row}
+            </>;
     }
 }
 
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('wifi/state', update_wifi_state);
-    source.addEventListener('wifi/sta_config', () => $('#status-wifi-sta').prop("hidden", !API.get("wifi/sta_config").enable_sta));
-    source.addEventListener('wifi/ap_config', () => $('#status-wifi-ap').prop("hidden", !API.get("wifi/ap_config").enable_ap));
-}
+render(<WifiStatus/>, $('#status-wifi')[0]);
 
-export function init() {
+export function add_event_listeners(source: API.APIEventTarget) {}
 
-}
+export function init() {}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-wifi-sta').prop('hidden', !module_init.wifi);
