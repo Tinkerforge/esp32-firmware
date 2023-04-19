@@ -122,11 +122,14 @@ void Ethernet::setup()
         ARDUINO_EVENT_ETH_START);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Ethernet connected");
+            uint32_t link_speed = ETH.linkSpeed();
+            bool full_duplex    = ETH.fullDuplex();
+            logger.printfln("Ethernet connected: %u Mbps %s Duplex, MAC: %s", link_speed, full_duplex ? "Full" : "Half", ETH.macAddress().c_str());
             ethernet_state.get("connection_state")->updateUint((uint)EthernetState::CONNECTING);
+            ethernet_state.get("link_speed" )->updateUint(link_speed);
+            ethernet_state.get("full_duplex")->updateBool(full_duplex);
 
             IPAddress ip, subnet, gateway, dns, dns2;
-
             ip.fromString(ethernet_config_in_use.get("ip")->asEphemeralCStr());
             subnet.fromString(ethernet_config_in_use.get("subnet")->asEphemeralCStr());
             gateway.fromString(ethernet_config_in_use.get("gateway")->asEphemeralCStr());
@@ -142,13 +145,9 @@ void Ethernet::setup()
         ARDUINO_EVENT_ETH_CONNECTED);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Ethernet MAC: %s, IPv4: %s, %s Duplex, %u Mbps", ETH.macAddress().c_str(), ETH.localIP().toString().c_str(), ETH.fullDuplex() ? "Full" : "Half", ETH.linkSpeed());
-            ethernet_state.get("connection_state")->updateUint((uint)EthernetState::CONNECTED);
-            ethernet_state.get("full_duplex")->updateBool(ETH.fullDuplex());
-            ethernet_state.get("link_speed")->updateUint(ETH.linkSpeed());
-
             auto ip = ETH.localIP().toString();
             logger.printfln("Ethernet got IP address: %s", ip.c_str());
+            ethernet_state.get("connection_state")->updateUint((uint)EthernetState::CONNECTED);
             ethernet_state.get("ip")->updateString(ip);
 
             api.wifiAvailable();
