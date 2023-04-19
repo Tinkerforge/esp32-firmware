@@ -33,6 +33,7 @@ import { CollapsedSection } from "src/ts/components/collapsed_section";
 import { OutputFloat } from "src/ts/components/output_float";
 import { Zap, ZapOff } from "react-feather";
 import uPlot from 'uplot';
+import { InputText } from "src/ts/components/input_text";
 
 interface DetailedViewEntry {
     i: number,
@@ -657,12 +658,19 @@ export class Meter extends Component<{}, MeterState> {
 
 render(<Meter />, $('#meter')[0]);
 
-export class StatusMeterChart extends Component<{}, {}> {
+interface MeterStatusState {
+    show: boolean
+    power: number
+}
+
+export class MeterStatus extends Component<{}, MeterStatusState> {
     history_data: UplotData;
     uplot_wrapper_ref = createRef();
 
     constructor() {
         super();
+
+        this.state = {power: 0, show: false};
 
         util.addApiEventListener("meter/history", () => {
             let history = API.get("meter/history");
@@ -679,6 +687,17 @@ export class StatusMeterChart extends Component<{}, {}> {
 
             this.update_uplot();
         });
+
+        util.addApiEventListener('meter/values', () => {
+            let power = API.get('meter/values').power;
+            if (power == null)
+                return;
+            this.setState({power: power})
+        });
+
+        util.addApiEventListener('info/features', () => {
+            this.setState({show: API.hasFeature("meter") && !API.hasModule("energy_manager")})
+        });
     }
 
     update_uplot() {
@@ -689,52 +708,34 @@ export class StatusMeterChart extends Component<{}, {}> {
         this.uplot_wrapper_ref.current.set_data(this.history_data);
     }
 
-    render(props: {}, state: {}) {
+    render(props: {}, state: MeterStatusState) {
         return (
             <>
-                <UplotWrapper ref={this.uplot_wrapper_ref}
-                              id="status_meter_chart"
-                              class="status-meter-chart"
-                              sidebar_id="status"
-                              y_min={0}
-                              y_max={1500} />
+                <FormRow label={__("meter.status.charge_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!state.show}>
+                    <div class="card pl-1 pb-1">
+                        <UplotWrapper ref={this.uplot_wrapper_ref}
+                                    id="status_meter_chart"
+                                    class="status-meter-chart"
+                                    sidebar_id="status"
+                                    y_min={0}
+                                    y_max={1500} />
+                    </div>
+                </FormRow>
+                <FormRow label={__("meter.status.current_power")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!state.show}>
+                    <InputText value={util.toLocaleFixed(state.power, 0) + " W"}/>
+                </FormRow>
             </>
         )
     }
 }
 
-render(<StatusMeterChart />, $('#status_meter_chart_container')[0]);
-
-let meter_show_status = true;
-
-function update_meter_values() {
-    let values = API.get('meter/values');
-
-    // power can be null because the backend is initialized with a NAN value
-    if (values.power == null)
-        return;
-
-    $('#status_meter_power').val(util.toLocaleFixed(values.power, 0) + " W");
-}
+render(<MeterStatus />, $('#status-meter')[0]);
 
 export function init() {
 }
 
-function update_module_visibility() {
-    let have_meter = API.hasFeature('meter');
-
-    $('#sidebar-meter').prop('hidden', !have_meter);
-
-    // Don't use meter status if the Energy Manager module is loaded.
-    // The Energy Manager has its own status component
-    $('#status-meter').prop('hidden', !meter_show_status || !have_meter);
-}
-
 export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('meter/values', update_meter_values);
-    source.addEventListener('info/features', update_module_visibility);
+    source.addEventListener('info/features', () => $('#sidebar-meter').prop('hidden', !API.hasFeature('meter')));
 }
 
-export function update_sidebar_state(module_init: any) {
-    meter_show_status = !module_init.energy_manager;
-}
+export function update_sidebar_state(module_init: any) {}
