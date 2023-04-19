@@ -58,6 +58,11 @@ void ModbusMeter::pre_setup()
     user_data.expected_request_id = 0;
     user_data.value_to_write = nullptr;
     user_data.done = ModbusMeter::UserDataDone::DONE;
+
+    // We want to prefill all registers with NaN if two regs are interpreted as float.
+    // A NaN is encoded with the exponent filled with ones and the mantissa filled with a non-zero number.
+    // Just setting all bits to one works and we don't have to think about the register byte order.
+    memset(registers, 0xFF, sizeof(registers));
 }
 
 void read_meter_type_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length, void *user_data) {
