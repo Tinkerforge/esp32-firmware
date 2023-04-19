@@ -457,8 +457,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
 
 render(<ChargeTracker/>, $('#charge_tracker')[0]);
 
-let x = <svg class="feather feather-credit-card" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>
-
 function show_charge_cost(charged: number)
 {
     let price = API.get("charge_tracker/config").electricity_price;
