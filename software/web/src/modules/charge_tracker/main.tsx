@@ -56,6 +56,37 @@ interface S {
 
 type ChargeTrackerState = S & API.getType['charge_tracker/state'];
 
+let wallet_icon = <svg class="feather feather-wallet mr-1" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>
+
+function TrackedCharge(props: {charge: Charge, users: API.getType['users/config']['users'], electricity_price: number}) {
+    let display_name = __("charge_tracker.script.unknown_user")
+
+    let filtered = props.users.filter(x => x.id == props.charge.user_id);
+
+    if (props.charge.user_id != 0 || filtered[0].display_name != "Anonymous") {
+        display_name = __("charge_tracker.script.deleted_user")
+        if (filtered.length == 1)
+            display_name = filtered[0].display_name
+    }
+
+    let have_charge_cost = props.electricity_price > 0 && props.charge.energy_charged != null;
+    let price_div = have_charge_cost ? <div>{wallet_icon}<span style="vertical-align: middle;">{util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span></div> : <></>
+
+    return <ListGroupItem>
+        <div class="row">
+            <div class="col">
+                <div class="mb-2"><User/><span class="ml-1" style="vertical-align: middle;">{display_name}</span></div>
+                <div><Calendar/><span class="ml-1" style="vertical-align: middle;">{util.timestamp_min_to_date(props.charge.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span></div>
+            </div>
+            <div class="col-auto">
+                <div class="mb-2"><BatteryCharging/><span class="ml-1" style="vertical-align: middle;">{props.charge.energy_charged === null ? "N/A" : util.toLocaleFixed(props.charge.energy_charged, 3)} kWh</span></div>
+                <div class={have_charge_cost ? "mb-2" : ""}><Clock/><span class="ml-1" style="vertical-align: middle;">{util.format_timespan(props.charge.charge_duration)}</span></div>
+                {price_div}
+            </div>
+        </div>
+    </ListGroupItem>
+}
+
 export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, ChargeTrackerState & ChargetrackerConfig> {
     constructor() {
         super('charge_tracker/config',
@@ -92,34 +123,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
     get_last_charges(charges: Readonly<Charge[]>, price: number) {
         let users_config = API.get('users/config');
 
-        return charges.map(c => {
-            let display_name = __("charge_tracker.script.unknown_user")
-
-            let filtered = users_config.users.filter(x => x.id == c.user_id);
-
-            if (c.user_id != 0 || filtered[0].display_name != "Anonymous") {
-                display_name = __("charge_tracker.script.deleted_user")
-                if (filtered.length == 1)
-                    display_name = filtered[0].display_name
-            }
-
-            let icon = <svg class="feather feather-wallet mr-1" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>
-            let have_charge_cost = price > 0 && c.energy_charged != null;
-            let price_div = have_charge_cost ? <div>{icon}<span style="vertical-align: middle;">{util.toLocaleFixed(price / 100 * c.energy_charged / 100, 2)} €</span></div> : <></>
-
-            return <ListGroupItem>
-                <div class="row">
-                    <div class="col">
-                        <div class="mb-2"><User/><span class="ml-1" style="vertical-align: middle;">{display_name}</span></div>
-                        <div><Calendar/><span class="ml-1" style="vertical-align: middle;">{util.timestamp_min_to_date(c.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span></div>
-                    </div>
-                    <div class="col-auto">
-                        <div class="mb-2"><BatteryCharging/><span class="ml-1" style="vertical-align: middle;">{c.energy_charged === null ? "N/A" : util.toLocaleFixed(c.energy_charged, 3)} kWh</span></div>
-                        <div class={have_charge_cost ? "mb-2" : ""}><Clock/><span class="ml-1" style="vertical-align: middle;">{util.format_timespan(c.charge_duration)}</span></div>
-                        {price_div}
-                    </div>
-                </div>
-            </ListGroupItem>}).reverse();
+        return charges.map(c => <TrackedCharge charge={c} users={users_config.users} electricity_price={price}/>)
+                      .reverse();
     }
 
     to_csv_line(vals: string[], flavor: 'excel' | 'rfc4180') {
