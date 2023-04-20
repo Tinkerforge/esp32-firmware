@@ -21,7 +21,6 @@ import * as util from "../../ts/util";
 
 import { h, Component, VNode, Fragment, JSX } from "preact";
 import { __ } from "../translation";
-import { is_modified } from "../api";
 
 interface ConfigFormState {
     saveDisabled: boolean
