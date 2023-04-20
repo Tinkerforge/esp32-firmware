@@ -517,14 +517,6 @@ int Users::get_display_name(uint8_t user_id, char *ret_buf)
     return strnlen(ret_buf, 32);
 }
 
-bool Users::charging_is_allowed() {
-#if MODULE_EVSE_V2_AVAILABLE()
-    return evse_v2.meter_allows_charging();
-#elif MODULE_EVSE_AVAILABLE()
-    return evse.meter_allows_charging();
-#endif
-}
-
 void Users::register_urls()
 {
     // No users (except anonymous) configured: Make sure the EVSE's user slot is disabled.
@@ -887,7 +879,7 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
                     this->stop_charging(user_id, false);
                 return false;
             }
-            if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_START) && charging_is_allowed())
+            if (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_START)
                 return this->start_charging(user_id, current_limit, auth_type, auth_info);
             return false;
         case IEC_STATE_C: // State C: The user wants to stop charging.
@@ -916,9 +908,9 @@ bool Users::start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth
     float meter_start = get_energy();
     uint32_t timestamp = timestamp_minutes();
 
+    if (!charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime, auth_type, auth_info))
+        return false;
     write_user_slot_info(user_id, evse_uptime, timestamp, meter_start);
-    charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime, auth_type, auth_info);
-
     set_user_current(current_limit);
 
     return true;

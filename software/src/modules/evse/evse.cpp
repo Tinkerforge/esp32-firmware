@@ -539,16 +539,6 @@ bool EVSE::get_require_meter_enabled() {
     return evse_require_meter_enabled.get("enabled")->asBool();
 }
 
-bool EVSE::meter_allows_charging() {
-    bool active;
-    uint16_t max_current;
-    is_in_bootloader(tf_evse_get_charging_slot(&device, CHARGING_SLOT_REQUIRE_METER, &max_current, &active, NULL));
-    if (active && max_current == 0)
-        return false;
-    else
-        return true;
-}
-
 void EVSE::check_debug()
 {
     task_scheduler.scheduleOnce([this](){

@@ -91,8 +91,7 @@ public:
 
     void set_require_meter_blocking(bool blocking);
     bool get_require_meter_enabled();
-    bool meter_allows_charging();
-
+    
     void set_charge_limits_slot(uint16_t current, bool enabled);
     //void set_charge_time_restriction_slot(uint16_t current, bool enabled);
 
