@@ -19,6 +19,7 @@
 
 #include "web_sockets.h"
 
+#include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
 #include "web_server.h"
