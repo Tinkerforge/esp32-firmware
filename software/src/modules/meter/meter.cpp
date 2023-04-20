@@ -90,17 +90,17 @@ void Meter::updateMeterValues(float power, float energy_rel, float energy_abs)
 
     if (!isnan(power)) {
         old_value = values.get("power")->asFloat();
-        changed |= !isnanf(old_value) && values.get("power")->updateFloat(power);
+        changed |= values.get("power")->updateFloat(power) && !isnanf(old_value);
     }
 
     if (!isnan(energy_rel)) {
         old_value = values.get("energy_rel")->asFloat();
-        changed |= !isnanf(old_value) && values.get("energy_rel")->updateFloat(energy_rel);
+        changed |= values.get("energy_rel")->updateFloat(energy_rel) && !isnanf(old_value);
     }
 
     if (!isnan(energy_abs)) {
         old_value = values.get("energy_abs")->asFloat();
-        changed |= !isnanf(old_value) && values.get("energy_abs")->updateFloat(energy_abs);
+        changed |= values.get("energy_abs")->updateFloat(energy_abs) && !isnanf(old_value);
     }
 
     if (changed)
@@ -140,7 +140,7 @@ void Meter::updateMeterAllValues(float values[METER_ALL_VALUES_COUNT])
         if (!isnan(values[i])) {
             auto wrap = all_values.get(i);
             auto old_value = wrap->asFloat();
-            changed |= !isnanf(old_value) && wrap->updateFloat(values[i]);
+            changed |= wrap->updateFloat(values[i]) && !isnanf(old_value);
         }
 
     if (changed) {
