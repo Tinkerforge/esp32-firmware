@@ -278,7 +278,7 @@ export function postReboot(alert_title: string, alert_text: string) {
                 // so this will even work if downgrading to an version older than
                 // 1.1.0
                 console.log("setting up...");
-                eventSource.addEventListener('info/version', function (e) {
+                eventSource.addEventListener_unchecked('info/version', function (e) {
                     console.log("reloading");
                     window.location.reload();
                 }, false);})
