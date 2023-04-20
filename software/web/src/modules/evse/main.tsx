@@ -55,7 +55,7 @@ interface EVSESettingsState {
     slots: Readonly<API.getType['evse/slots']>;
     boost_mode: API.getType['evse/boost_mode'];
     auto_start_charging: API.getType['evse/auto_start_charging'];
-    require_meter: API.getType['evse/require_meter_enabled'];
+    require_meter_enabled: API.getType['evse/require_meter_enabled'];
     meter_abs: number;
     evse_uptime: number;
 }
@@ -449,7 +449,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
         })
 
         util.addApiEventListener("evse/require_meter_enabled", () => {
-            this.setState({require_meter: API.get("evse/require_meter_enabled")});
+            this.setState({require_meter_enabled: API.get("evse/require_meter_enabled")});
         })
     }
 
@@ -457,7 +457,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
         await API.save('evse/auto_start_charging', {"auto_start_charging": this.state.auto_start_charging.auto_start_charging}, __("evse.script.save_failed"));
         await API.save('evse/external_enabled', {"enabled": this.state.slots[EVSE_SLOT_EXTERNAL].active}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, __("evse.script.save_failed"));
-        await API.save('evse/require_meter_enabled', {"enabled": this.state.require_meter.required}, __("evse.script.save_failed"));
+        await API.save('evse/require_meter_enabled', {"enabled": this.state.require_meter_enabled.enabled}, __("evse.script.save_failed"));
         super.sendSave(t, cfg);
     }
 
@@ -479,7 +479,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
             slots,
             boost_mode,
             auto_start_charging,
-            require_meter} = s;
+            require_meter_enabled} = s;
 
         const has_meter = API.hasFeature("meter");
 
@@ -520,8 +520,8 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
 
                 <FormRow label={__("evse.content.meter_monitoring")}>
                         <Switch desc={__("evse.content.meter_monitoring_desc")}
-                        checked={require_meter.required}
-                        onClick={async () => this.setState({require_meter: {required: !require_meter.required}})}/>
+                        checked={require_meter_enabled.enabled}
+                        onClick={async () => this.setState({require_meter_enabled: {enabled: !require_meter_enabled.enabled}})}/>
                 </FormRow>
 
                 <FormRow label={__("charge_limits.content.duration")} label_muted={__("charge_limits.content.duration_muted")}>

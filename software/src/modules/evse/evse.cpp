@@ -536,7 +536,7 @@ void EVSE::set_require_meter_blocking(bool blocking) {
 }
 
 bool EVSE::get_require_meter_enabled() {
-    return evse_require_meter_enabled.get("enabled");
+    return evse_require_meter_enabled.get("enabled")->asBool();
 }
 
 bool EVSE::meter_allows_charging() {
