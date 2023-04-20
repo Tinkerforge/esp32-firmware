@@ -670,6 +670,7 @@ export class MeterStatus extends Component<{}, MeterStatusState> {
     constructor() {
         super();
 
+        // Initialize state to make sure our non-standard way to render this component works.
         this.state = {power: 0, show: false};
 
         util.addApiEventListener("meter/history", () => {
@@ -709,6 +710,11 @@ export class MeterStatus extends Component<{}, MeterStatusState> {
     }
 
     render(props: {}, state: MeterStatusState) {
+        // Don't check util.allow_render here.
+        // We can receive graph data points with the first web socket packet and
+        // want to push them into the uplot graph immediately.
+        // This only works if the wrapper component is already created.
+        // Hide the form rows to fix any visual bugs instead.
         return (
             <>
                 <FormRow label={__("meter.status.charge_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!state.show}>
