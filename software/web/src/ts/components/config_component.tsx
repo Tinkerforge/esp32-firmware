@@ -115,12 +115,13 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         await API.save(t, cfg, this.error_string, this.reboot_string);
     }
 
+    // Also override this if you override sendSave
+    getIsModified(t: Config): boolean {
+        return API.is_modified(t);
+    }
+
     // Override this to implement custom reset logic
     async sendReset(t: Config) {
         await API.reset(t, this.error_string, this.reboot_string);
-    }
-
-    getIsModified(t: Config): boolean {
-        return API.is_modified(t);
     }
 }
