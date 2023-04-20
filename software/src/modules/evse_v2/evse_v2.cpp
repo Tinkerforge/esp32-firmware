@@ -1029,8 +1029,8 @@ void EVSEV2::register_urls()
             this->apply_slot_default(CHARGING_SLOT_REQUIRE_METER, 0, true, false);
         }
         else {
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_OCPP, 32000, false, false);
-            this->apply_slot_default(CHARGING_SLOT_OCPP, 32000, false, false);
+            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_REQUIRE_METER, 32000, false, false);
+            this->apply_slot_default(CHARGING_SLOT_REQUIRE_METER, 32000, false, false);
         }
     }, true);
 
