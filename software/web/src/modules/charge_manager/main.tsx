@@ -578,9 +578,8 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                 c_info = translate_unchecked(`charge_manager.script.charge_error_${c.error}`);
             }
 
-
             let charger_config = state.config.chargers[i];
-            const name_link = (API.get("charge_manager/config_modified").modified & 0x01) || !charger_config || charger_config.host == "127.0.0.1" ? c.name : <a target="_blank" rel="noopener noreferrer" href={"http://" + charger_config.host}>{c.name}</a>
+            const name_link = API.is_dirty("charge_manager/config") || !charger_config || charger_config.host == "127.0.0.1" ? c.name : <a target="_blank" rel="noopener noreferrer" href={"http://" + charger_config.host}>{c.name}</a>
 
             return  <div class="card">
                         <h5 class="card-header">

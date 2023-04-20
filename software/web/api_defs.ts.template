@@ -22,14 +22,21 @@ export interface ConfigMap {
     'reboot': null
 };
 
+export type ConfigModifiedKey = `${keyof ConfigMap}_modified`;
+
 // It is save to use null here:
 // All api cache accesses only happen after the websocket connection is established.
 // The first message contains a complete dump of the ESP's state.
 // All cache values are then initialized.
-export let api_cache: {[key in keyof ConfigMap]: ConfigMap[key]} = {
+export let api_cache: {[key in (keyof ConfigMap | ConfigModifiedKey)]: key extends keyof ConfigMap ? ConfigMap[key] : ConfigModified} = {
     {{{api_cache_entries}}}
     'info/modules': null as any,
     'info/features': null as any,
     'info/keep_alive': null as any,
-    'reboot': null as any
+    'reboot': null as any,
+
+    'info/modules_modified': null as any,
+    'info/features_modified': null as any,
+    'info/keep_alive_modified': null as any,
+    'reboot_modified': null as any
 };

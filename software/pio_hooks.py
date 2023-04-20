@@ -541,7 +541,6 @@ def main():
                 api_imports.append("import * as {} from '../modules/{}/api';".format(api_module, frontend_module.under))
 
                 api_config_map_entries += ["'{}{}': {}.{},".format(api_path, x, api_module, x) for x in api_exports]
-                api_config_map_entries += ["'{}{}_modified': ConfigModified,".format(api_path, x, api_module, x) for x in api_exports]
                 api_cache_entries += ["'{}{}': null as any,".format(api_path, x) for x in api_exports]
                 api_cache_entries += ["'{}{}_modified': null as any,".format(api_path, x) for x in api_exports]
 

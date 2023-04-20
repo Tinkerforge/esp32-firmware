@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import {ConfigMap, api_cache, Modules, ConfigModified} from './api_defs';
+import {ConfigMap, api_cache, Modules, ConfigModified, ConfigModifiedKey} from './api_defs';
 
 import * as util from './util';
 import $ from "./jq";
@@ -29,7 +29,7 @@ export type EventMap = {
 }
 
 export function update<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T]) {
-    api_cache[topic] = payload;
+    (api_cache[topic] as ConfigMap[T]) = payload;
 }
 
 export function get<T extends keyof ConfigMap>(topic: T): Readonly<ConfigMap[T]> {
@@ -37,10 +37,17 @@ export function get<T extends keyof ConfigMap>(topic: T): Readonly<ConfigMap[T]>
 }
 
 export function is_modified<T extends keyof ConfigMap>(topic: T): boolean {
-    let modified = api_cache[(topic + "_modified") as T] as ConfigModified;
+    let modified = api_cache[(topic + "_modified") as ConfigModifiedKey] as ConfigModified;
     if (modified == null)
         return false;
     return modified.modified > 1;
+}
+
+export function is_dirty<T extends keyof ConfigMap>(topic: T): boolean {
+    let modified = api_cache[(topic + "_modified") as ConfigModifiedKey] as ConfigModified;
+    if (modified == null)
+        return false;
+    return (modified.modified & 1) == 1;
 }
 
 export function get_maybe<T extends string>(topic: T): (T extends keyof ConfigMap ? Readonly<ConfigMap[T]> : any) {
