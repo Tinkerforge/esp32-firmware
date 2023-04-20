@@ -475,7 +475,11 @@ void Wifi::setup()
 
     // For some reason WiFi.setHostname only writes a temporary buffer that is passed to the IDF when calling WiFi.mode.
     // As we have the same hostname for STA and AP, it is sufficient to set the hostname here once and never call WiFi.softAPsetHostname.
+#if MODULE_NETWORK_AVAILABLE()
     WiFi.setHostname(network.config.get("hostname")->asEphemeralCStr());
+#else
+    WiFi.setHostname((String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str)).c_str());
+#endif
 
     if (enable_sta && enable_ap) {
         WiFi.mode(WIFI_AP_STA);

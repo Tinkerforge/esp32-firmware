@@ -116,7 +116,11 @@ void Ethernet::setup()
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             logger.printfln("Ethernet started");
+#if MODULE_NETWORK_AVAILABLE()
             ETH.setHostname(network.config.get("hostname")->asEphemeralCStr());
+#else
+            ETH.setHostname((String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str)).c_str());
+#endif
             ethernet_state.get("connection_state")->updateUint((uint)EthernetState::NOT_CONNECTED);
         },
         ARDUINO_EVENT_ETH_START);

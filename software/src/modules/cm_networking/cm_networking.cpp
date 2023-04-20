@@ -59,7 +59,7 @@ void CMNetworking::register_urls()
 
 // If we don't have the evse or evse_v2 module, but have cm_networking, this is probably an energy manager.
 // We only want to announce manageable chargers, not managers.
-#if MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE()
+#if MODULE_NETWORK_AVAILABLE() && (MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE())
     if (!network.config.get("enable_mdns")->asBool())
         return;
 
