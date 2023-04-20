@@ -450,7 +450,7 @@ void EnergyManager::update_all_data()
 
     // TODO FIXME handle power being NAN
     float meter_float_w = all_data.energy_meter_type ? all_data.power : meter.values.get("power")->asFloat(); // watt
-    if (isnanf(meter_float_w)) {
+    if (isnan(meter_float_w)) {
         meter_float_w = 0;
         //logger.printfln("energy_manager: FIXME: Consumed NAN power value.");
     }

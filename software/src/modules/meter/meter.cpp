@@ -88,19 +88,19 @@ void Meter::updateMeterValues(float power, float energy_rel, float energy_abs)
     bool changed = false;
     float old_value;
 
-    if (!isnanf(power)) {
+    if (!isnan(power)) {
         old_value = values.get("power")->asFloat();
-        changed |= values.get("power")->updateFloat(power) && !isnanf(old_value);
+        changed |= values.get("power")->updateFloat(power) && !isnan(old_value);
     }
 
-    if (!isnanf(energy_rel)) {
+    if (!isnan(energy_rel)) {
         old_value = values.get("energy_rel")->asFloat();
-        changed |= values.get("energy_rel")->updateFloat(energy_rel) && !isnanf(old_value);
+        changed |= values.get("energy_rel")->updateFloat(energy_rel) && !isnan(old_value);
     }
 
-    if (!isnanf(energy_abs)) {
+    if (!isnan(energy_abs)) {
         old_value = values.get("energy_abs")->asFloat();
-        changed |= values.get("energy_abs")->updateFloat(energy_abs) && !isnanf(old_value);
+        changed |= values.get("energy_abs")->updateFloat(energy_abs) && !isnan(old_value);
     }
 
     if (changed)
@@ -137,10 +137,10 @@ void Meter::updateMeterAllValues(float values[METER_ALL_VALUES_COUNT])
     bool changed = false;
 
     for (int i = 0; i < METER_ALL_VALUES_COUNT; ++i)
-        if (!isnanf(values[i])) {
+        if (!isnan(values[i])) {
             auto wrap = all_values.get(i);
             auto old_value = wrap->asFloat();
-            changed |= wrap->updateFloat(values[i]) && !isnanf(old_value);
+            changed |= wrap->updateFloat(values[i]) && !isnan(old_value);
         }
 
     if (changed) {

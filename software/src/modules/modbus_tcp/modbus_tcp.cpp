@@ -596,7 +596,7 @@ void ModbusTcp::update_bender_regs()
             bender_charge_cpy->wh_charged = fromUint(0);
             bender_charge_cpy->charged_energy = fromUint(0);
         }
-        else if (isnanf(meter_start))
+        else if (isnan(meter_start))
         {
             bender_charge_cpy->wh_charged = 0;
             bender_charge_cpy->charged_energy = fromUint(0);
@@ -758,7 +758,7 @@ void ModbusTcp::update_regs()
         auto meter_start = api.getState("charge_tracker/current_charge")->get("meter_start")->asFloat();
         if (!charging)
             meter_input_regs_copy->energy_this_charge = fromFloat(0);
-        else if (isnanf(meter_start))
+        else if (isnan(meter_start))
             meter_input_regs_copy->energy_this_charge = fromFloat(NAN);
         else
             meter_input_regs_copy->energy_this_charge = fromFloat(meter_input_regs_copy->energy_absolute - meter_start);
@@ -932,7 +932,7 @@ void ModbusTcp::update_keba_regs()
 
         if (!charging)
             keba_read_charge->charged_energy = fromUint(0);
-        else if (isnanf(meter_start))
+        else if (isnan(meter_start))
             keba_read_charge->charged_energy = fromUint(0);
         else
             keba_read_charge->charged_energy = fromUint((uint32_t)((meter_absolute - meter_start) * 1000));
