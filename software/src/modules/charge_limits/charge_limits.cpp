@@ -143,7 +143,7 @@ void ChargeLimits::register_urls()
 #endif
         if (charging && !was_charging) {
             state.get("start_timestamp_ms")->updateUint(charge_tracker.current_charge.get("evse_uptime_start")->asUint());
-            if (api.hasFeature("meter") && !isnan(charge_tracker.current_charge.get("meter_start")->asFloat()))
+            if (api.hasFeature("meter") && !isnanf(charge_tracker.current_charge.get("meter_start")->asFloat()))
                 state.get("start_energy_kwh")->updateFloat(charge_tracker.current_charge.get("meter_start")->asFloat());
         }
 
@@ -162,13 +162,13 @@ void ChargeLimits::register_urls()
         if (charging && api.hasFeature("meter") && config_in_use.get("energy_wh")->asUint() > 0)
         {
             auto start = state.get("start_energy_kwh")->asFloat();
-            if (!was_charging && !isnan(start))
+            if (!was_charging && !isnanf(start))
                 state.get("target_energy_kwh")->updateFloat(start + config_in_use.get("energy_wh")->asUint() / 1000.0);
 
             auto target = state.get("target_energy_kwh")->asFloat();
             auto now = meter.values.get("energy_abs")->asFloat();
 
-            if (!isnan(target) && !isnan(now) && target <= now)
+            if (!isnanf(target) && !ISNANf(now) && target <= now)
                 target_current = 0;
         }
 

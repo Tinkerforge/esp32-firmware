@@ -44,7 +44,7 @@ void EnergyManager::update_history_meter_power_average(float power)
 {
     uint32_t now = millis();
 
-    if (!isnan(history_meter_power_value)) {
+    if (!isnanf(history_meter_power_value)) {
         uint32_t duration;
 
         if (now >= history_meter_power_timestamp) {

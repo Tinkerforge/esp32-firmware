@@ -364,7 +364,7 @@ void Users::setup()
 
         // This can be 0 if the EVSE 2.0 already reports the meter as available,
         // but has not read any value from it.
-        if (std::isnan(override_value) || override_value == 0.0f)
+        if (std::isnanf(override_value) || override_value == 0.0f)
         {
             auto start = millis();
 #if MODULE_EVSE_AVAILABLE() && MODULE_MODBUS_METER_AVAILABLE()

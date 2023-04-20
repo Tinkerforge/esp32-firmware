@@ -337,7 +337,7 @@ bool ChargeTracker::currentlyCharging()
 }
 
 bool charged_invalid(ChargeStart cs, ChargeEnd ce) {
-    return isnan(cs.meter_start) || isnan(ce.meter_end) || ce.meter_end < cs.meter_start;
+    return isnanf(cs.meter_start) || isnanf(ce.meter_end) || ce.meter_end < cs.meter_start;
 }
 
 void ChargeTracker::readNRecords(File *f, size_t records_to_read)
@@ -473,7 +473,7 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
 
     buf += 1 + sprintf(buf, "%i:%2.2i:%2.2i", hours, minutes, seconds);
 
-    if (isnan(cs.meter_start)) {
+    if (isnanf(cs.meter_start)) {
         memcpy(buf, "N/A", ARRAY_SIZE("N/A"));
         buf += ARRAY_SIZE("N/A");
     } else {
