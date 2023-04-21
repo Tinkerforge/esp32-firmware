@@ -212,13 +212,13 @@ void Meter::register_urls()
     #elif MODULE_EVSE_AVAILABLE()
         if (evse.get_require_meter_enabled()) {
     #endif
-            last_value_change = -METER_TIMEOUT_US - 1;
+            last_value_change = 0;
             task_scheduler.scheduleWithFixedDelay([this]() {
                 int64_t now = esp_timer_get_time();
 
-                bool meter_timeout = now - 1000 * 1000 * 60 > 0 && isnan(values.get("energy_abs")->asFloat());
+                bool meter_timeout = (now - METER_BOOTUP_ENERGY_TIMEOUT_US) > 0 && isnan(values.get("energy_abs")->asFloat());
 
-                meter_timeout |= state.get("state")->asUint() != 2 || now - last_value_change > METER_TIMEOUT_US;
+                meter_timeout |= (state.get("state")->asUint() != 2) || (now - last_value_change > METER_TIMEOUT_US);
 
                 #if MODULE_EVSE_V2_AVAILABLE()
                     evse_v2.set_require_meter_blocking(meter_timeout);
