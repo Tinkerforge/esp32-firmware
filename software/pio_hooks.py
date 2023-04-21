@@ -588,12 +588,16 @@ def main():
     with open(os.path.join(branding_module, 'branding.ts'), 'r', encoding='utf-8') as f:
         branding = f.read()
 
+    with open(os.path.join(branding_module, 'pre.scss'), 'r', encoding='utf-8') as f:
+        color = f.read().split('\n')[1].split(' ')[1].removesuffix(';')
+
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
         '{{{logo_base64}}}': logo_base64,
         '{{{navbar}}}': '\n                        '.join(navbar_entries),
         '{{{content}}}': '\n                    '.join(content_entries),
-        '{{{status}}}': '\n                            '.join(status_entries)
+        '{{{status}}}': '\n                            '.join(status_entries),
+        '{{{theme_color}}}': color
     })
 
     specialize_template(os.path.join("web", "main.ts.template"), os.path.join("web", "src", "main.ts"), {
