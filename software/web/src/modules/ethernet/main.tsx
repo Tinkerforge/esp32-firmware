@@ -84,37 +84,21 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
 
 render(<Ethernet/>, $('#ethernet')[0])
 
-interface EthernetStatusState {
-    state: API.getType['ethernet/state']
-    config: API.getType['ethernet/config'];
-}
-
-export class EthernetStatus extends Component<{}, EthernetStatusState>
+export class EthernetStatus extends Component<{}, {}>
 {
-    constructor()
+    render(props: {}, s: {})
     {
-        super();
-
-        util.addApiEventListener('ethernet/state', () => {
-            this.setState({state: API.get('ethernet/state')})
-        });
-
-        util.addApiEventListener('ethernet/config', () => {
-            this.setState({config: API.get('ethernet/config')})
-        });
-    }
-
-    render(props: {}, state: EthernetStatusState)
-    {
-        if (!util.allow_render || !state.config.enable_ethernet)
+        if (!util.render_allowed() || !API.get('ethernet/config').enable_ethernet)
             return <></>;
 
+        let state = API.get('ethernet/state');
+
         return <>
-                <FormRow label={__("ethernet.status.ethernet_connection")} label_muted={state.state.ip != "0.0.0.0" ? state.state.ip : ""} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("ethernet.status.ethernet_connection")} label_muted={state.ip != "0.0.0.0" ? state.ip : ""} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <IndicatorGroup
                         style="width: 100%"
                         class="flex-wrap"
-                        value={state.state.connection_state}
+                        value={state.connection_state}
                         items={[
                             ["primary", __("ethernet.status.not_configured")],
                             ["danger", __("ethernet.status.not_connected")],
