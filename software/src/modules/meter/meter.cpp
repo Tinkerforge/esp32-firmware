@@ -175,6 +175,10 @@ void Meter::setupMeter(uint8_t meter_type)
     }
 
     meter_setup_done = true;
+
+#if MODULE_REQUIRE_METER_AVAILABLE()
+    require_meter.meter_found();
+#endif
 }
 
 void Meter::setup()
@@ -205,33 +209,6 @@ void Meter::register_urls()
         }
         api.writeConfig("meter/last_reset", &last_reset);
     }, true);
-
-#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
-    #if MODULE_EVSE_V2_AVAILABLE()
-        if (evse_v2.get_require_meter_enabled()) {
-    #elif MODULE_EVSE_AVAILABLE()
-        if (evse.get_require_meter_enabled()) {
-    #endif
-            last_value_change = 0;
-            task_scheduler.scheduleWithFixedDelay([this]() {
-                int64_t now = esp_timer_get_time();
-
-                bool meter_timeout = (now - METER_BOOTUP_ENERGY_TIMEOUT_US) > 0 && isnan(values.get("energy_abs")->asFloat());
-
-                meter_timeout |= (state.get("state")->asUint() != 2) || (now - last_value_change > METER_TIMEOUT_US);
-
-                #if MODULE_EVSE_V2_AVAILABLE()
-                    evse_v2.set_require_meter_blocking(meter_timeout);
-                #elif MODULE_EVSE_AVAILABLE()
-                    evse.set_require_meter_blocking(meter_timeout);
-                #endif
-
-                if (meter_timeout)
-                    users.stop_charging(0, true, 0);
-
-            }, 0, 1000);
-    }
-#endif
 
     power_hist.register_urls("meter/");
 }

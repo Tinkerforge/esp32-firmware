@@ -55,7 +55,7 @@ interface EVSESettingsState {
     slots: Readonly<API.getType['evse/slots']>;
     boost_mode: API.getType['evse/boost_mode'];
     auto_start_charging: API.getType['evse/auto_start_charging'];
-    require_meter_enabled: API.getType['evse/require_meter_enabled'];
+    require_meter_enabled: API.getType['require_meter/config'];
     meter_abs: number;
     evse_uptime: number;
 }
@@ -448,8 +448,8 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
             this.setState({evse_uptime: API.get("evse/low_level_state").uptime});
         })
 
-        util.addApiEventListener("evse/require_meter_enabled", () => {
-            this.setState({require_meter_enabled: API.get("evse/require_meter_enabled")});
+        util.addApiEventListener("require_meter/config", () => {
+            this.setState({require_meter_enabled: API.get("require_meter/config")});
         })
     }
 
@@ -457,7 +457,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
         await API.save('evse/auto_start_charging', {"auto_start_charging": this.state.auto_start_charging.auto_start_charging}, __("evse.script.save_failed"));
         await API.save('evse/external_enabled', {"enabled": this.state.slots[EVSE_SLOT_EXTERNAL].active}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, __("evse.script.save_failed"));
-        await API.save('evse/require_meter_enabled', {"enabled": this.state.require_meter_enabled.enabled}, __("evse.script.save_failed"));
+        await API.save('require_meter/config', {"config": this.state.require_meter_enabled.config}, __("evse.script.save_failed"));
         super.sendSave(t, cfg);
     }
 
@@ -465,7 +465,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
         await API.save('evse/auto_start_charging', {"auto_start_charging": true}, __("evse.script.save_failed"));
         await API.save('evse/external_enabled', {"enabled": false}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": false}, __("evse.script.save_failed"));
-        await API.save('evse/require_meter_enabled', {"enabled": false}, __("evse.script.save_failed"));
+        await API.reset('require_meter/config',__("evse.script.save_failed"));
         super.sendReset(t);
     }
 
@@ -488,6 +488,15 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
                             onValue={(v) => this.setState({energy_wh: v})}
                             digits={3} min={0} max={100000} unit={"kwh"}/>
             </FormRow>;
+
+        const require_meter = <FormRow label={__("evse.content.meter_monitoring")}>
+                                <Switch desc={__("evse.content.meter_monitoring_desc")}
+                                    checked={require_meter_enabled.config == 2}
+                                    onClick={async () => {
+                                        this.setState({require_meter_enabled: {config: require_meter_enabled.config == 2 ? 1 : 2}});
+                                    }}/>
+                            </FormRow>;
+
 
         return <>
 
@@ -518,11 +527,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
                             onClick={async () => this.setState({boost_mode: {enabled: !boost_mode.enabled}})}/>
                 </FormRow>
 
-                <FormRow label={__("evse.content.meter_monitoring")}>
-                        <Switch desc={__("evse.content.meter_monitoring_desc")}
-                        checked={require_meter_enabled.enabled}
-                        onClick={async () => this.setState({require_meter_enabled: {enabled: !require_meter_enabled.enabled}})}/>
-                </FormRow>
+                {require_meter_enabled.config != 0 ? require_meter : <></>}
 
                 <FormRow label={__("charge_limits.content.duration")} label_muted={__("charge_limits.content.duration_muted")}>
                     <InputSelect items={[

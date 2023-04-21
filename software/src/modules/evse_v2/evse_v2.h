@@ -90,6 +90,7 @@ public:
     void set_modbus_enabled(bool enabled);
 
     void set_require_meter_blocking(bool blocking);
+    void set_require_meter_enabled(bool enabled);
     bool get_require_meter_blocking();
     bool get_require_meter_enabled();
 

@@ -103,7 +103,3 @@ export interface reset {
 export interface boost_mode {
     enabled: boolean
 }
-
-export interface require_meter_enabled {
-    enabled: boolean
-}

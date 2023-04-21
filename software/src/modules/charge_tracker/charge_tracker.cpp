@@ -87,35 +87,14 @@ String ChargeTracker::chargeRecordFilename(uint32_t i)
     return String(CHARGE_RECORD_FOLDER) + "/charge-record-" + i + ".bin";
 }
 
-static inline bool is_meter_slot_enabled() {
-#if MODULE_EVSE_AVAILABLE()
-    return evse.get_require_meter_enabled();
-#elif MODULE_EVSE_V2_AVAILABLE()
-    return evse_v2.get_require_meter_enabled();
-#endif
-}
-
-static inline void set_meter_slot_blocking(bool blocking) {
-#if MODULE_EVSE_AVAILABLE()
-    evse.set_require_meter_blocking(blocking);
-#elif MODULE_EVSE_V2_AVAILABLE()
-    evse_v2.set_require_meter_blocking(blocking);
-#endif
-}
-
-static inline bool get_meter_slot_blocking() {
-#if MODULE_EVSE_AVAILABLE()
-    return evse.get_require_meter_blocking();
-#elif MODULE_EVSE_V2_AVAILABLE()
-    return evse_v2.get_require_meter_blocking();
-#endif
-}
-
 bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, uint8_t auth_type, Config::ConfVariant auth_info) {
-    if (is_meter_slot_enabled() && (isnan(meter_start) || get_meter_slot_blocking())) {
-        set_meter_slot_blocking(true);
+#if MODULE_REQUIRE_METER_AVAILABLE()
+    if (require_meter.get_require_meter_enabled() && (isnan(meter_start) || require_meter.get_require_meter_blocking())) {
+        require_meter.set_require_meter_blocking(true);
         return false;
     }
+#endif
+
     std::lock_guard<std::mutex> lock{records_mutex};
     ChargeStart cs;
     File file = LittleFS.open(chargeRecordFilename(this->last_charge_record), "a", true);

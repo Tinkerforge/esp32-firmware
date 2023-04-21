@@ -535,6 +535,11 @@ void EVSE::set_require_meter_blocking(bool blocking) {
     is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_REQUIRE_METER, blocking ? 0 : 32000));
 }
 
+void EVSE::set_require_meter_enabled(bool enabled) {
+    is_in_bootloader(tf_evse_set_charging_slot_default(&device, CHARGING_SLOT_REQUIRE_METER, 32000, enabled, false));
+    is_in_bootloader(tf_evse_set_charging_slot_active(&device, CHARGING_SLOT_REQUIRE_METER, enabled));
+}
+
 bool EVSE::get_require_meter_blocking() {
     uint16_t current = 0;
     bool enabled = get_require_meter_enabled();
@@ -839,22 +844,6 @@ void EVSE::register_urls()
             evse_user_calibration.get("resistance_2700")->asInt(),
             resistance_880
             ));
-    }, true);
-
-    api.addState("evse/require_meter_enabled", &evse_require_meter_enabled, {}, 1000);
-    api.addCommand("evse/require_meter_enabled_update", &evse_require_meter_enabled_update, {}, [this]() {
-        bool enabled = evse_require_meter_enabled_update.get("enabled")->asBool();
-        if (enabled == evse_require_meter_enabled.get("enabled")->asBool())
-            return;
-
-        if (enabled) {
-            tf_evse_set_charging_slot(&device, CHARGING_SLOT_REQUIRE_METER, 0, true, false);
-            this->apply_slot_default(CHARGING_SLOT_REQUIRE_METER, 0, true, false);
-        }
-        else {
-            tf_evse_set_charging_slot(&device, CHARGING_SLOT_REQUIRE_METER, 32000, false, false);
-            this->apply_slot_default(CHARGING_SLOT_REQUIRE_METER, 32000, false, false);
-        }
     }, true);
 
     this->DeviceModule::register_urls();

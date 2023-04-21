@@ -390,6 +390,11 @@ void EVSEV2::set_require_meter_blocking(bool blocking) {
     is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_REQUIRE_METER, blocking ? 0 : 32000));
 }
 
+void EVSEV2::set_require_meter_enabled(bool enabled) {
+    is_in_bootloader(tf_evse_v2_set_charging_slot_default(&device, CHARGING_SLOT_REQUIRE_METER, 32000, enabled, false));
+    is_in_bootloader(tf_evse_v2_set_charging_slot_active(&device, CHARGING_SLOT_REQUIRE_METER, enabled));
+}
+
 bool EVSEV2::get_require_meter_blocking() {
     uint16_t current = 0;
     bool enabled = get_require_meter_enabled();
