@@ -163,9 +163,9 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
             return "{\"error\":\"firmware_update.script.info_page_corrupted\"}";
         }
 
-        if (strcmp(DISPLAY_NAME, info.firmware_name) != 0) {
+        if (strncmp(DISPLAY_NAME, info.firmware_name, ARRAY_SIZE(info.firmware_name)) != 0) {
             if (log) {
-                logger.printfln("Failed to update: Firmware is for a %s but this is a %s!", info.firmware_name, DISPLAY_NAME);
+                logger.printfln("Failed to update: Firmware is for a %.*s but this is a %s!", ARRAY_SIZE(info.firmware_name), info.firmware_name, DISPLAY_NAME);
             }
             return "{\"error\":\"firmware_update.script.wrong_firmware_type\"}";
         }
