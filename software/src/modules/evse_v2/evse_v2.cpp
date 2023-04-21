@@ -1023,23 +1023,6 @@ void EVSEV2::register_urls()
         }
     }, false);
 
-    api.addState("evse/require_meter_enabled", &evse_require_meter_enabled, {}, 1000);
-    api.addCommand("evse/require_meter_enabled_update", &evse_require_meter_enabled_update, {}, [this]() {
-        bool enabled = evse_require_meter_enabled_update.get("enabled")->asBool();
-        if (enabled == evse_require_meter_enabled.get("enabled")->asBool())
-            return;
-
-        if (enabled) {
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_REQUIRE_METER, 0, true, false);
-            this->apply_slot_default(CHARGING_SLOT_REQUIRE_METER, 0, true, false);
-        }
-        else {
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_REQUIRE_METER, 32000, false, false);
-            this->apply_slot_default(CHARGING_SLOT_REQUIRE_METER, 32000, false, false);
-        }
-    }, true);
-
-
     this->DeviceModule::register_urls();
 }
 
