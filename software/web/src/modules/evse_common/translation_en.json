@@ -100,8 +100,8 @@
             "reflash_evse": "Reflash",
             "charging_time": "Charging for",
 
-            "meter_monitoring": "Meter mointoring",
-            "meter_monitoring_desc": "Monitors the meters functionality and deactivates charging if a malfunction is detected.",
+            "meter_monitoring": "Meter monitoring",
+            "meter_monitoring_desc": "Monitors the energy meter and blocks charging if a malfunction is detected.",
 
             "slot_0": "Supply cable",
             "slot_1": "Type 2 charging cable",
@@ -159,7 +159,7 @@
             "slot_11": "OCPP",
             "slot_12": "Energy/Time limit",
             "slot_13": "Meter monitoring",
-            
+
             "reboot_content_changed": "Charge Settings"
         }
     }

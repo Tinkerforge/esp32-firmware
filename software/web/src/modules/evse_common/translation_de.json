@@ -100,8 +100,8 @@
             "reflash_evse": "Neu flashen",
             "charging_time": "Lädt seit",
 
-            "meter_monitoring": "Zähler überwachung",
-            "meter_monitoring_desc": "Überwacht Funktionalität des Zählers und deaktiviert das Laden im Falle eines defekts.",
+            "meter_monitoring": "Zählerüberwachung",
+            "meter_monitoring_desc": "Überwacht den Stromzähler und blockiert Ladevorgänge im Falle eines Defekts.",
 
             "slot_0": "Zuleitung",
             "slot_1": "Typ-2-Ladekabel",
