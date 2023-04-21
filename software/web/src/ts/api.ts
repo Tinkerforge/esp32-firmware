@@ -100,7 +100,7 @@ export function save_maybe<T extends string>(topic: T, payload: (T extends keyof
     return Promise.resolve();
 }
 
-export function reset<T extends keyof ConfigMap>(topic: T, error_string: string, reboot_string: string) {
+export function reset<T extends keyof ConfigMap>(topic: T, error_string: string, reboot_string?: string) {
     return call(<any>(topic + "_reset"), null, error_string, reboot_string);
 }
 
