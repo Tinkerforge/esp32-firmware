@@ -91,7 +91,7 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
 
 
     render(props: {}, state: RTCConfig & RtcPageState) {
-        if (!util.render_allowed())
+        if (!util.render_allowed() || !API.get("info/modules").rtc)
             return <></>
 
         return <>
