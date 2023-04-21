@@ -44,6 +44,7 @@ public:
 
     bool get_require_meter_enabled();
     bool get_require_meter_blocking();
+    bool allow_charging(float meter_value);
 
     bool initialized = false;
 };

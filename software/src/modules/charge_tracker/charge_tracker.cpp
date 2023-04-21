@@ -89,10 +89,8 @@ String ChargeTracker::chargeRecordFilename(uint32_t i)
 
 bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, uint8_t auth_type, Config::ConfVariant auth_info) {
 #if MODULE_REQUIRE_METER_AVAILABLE()
-    if (require_meter.get_require_meter_enabled() && (isnan(meter_start) || require_meter.get_require_meter_blocking())) {
-        require_meter.set_require_meter_blocking(true);
+    if (!require_meter.allow_charging(meter_start))
         return false;
-    }
 #endif
 
     std::lock_guard<std::mutex> lock{records_mutex};

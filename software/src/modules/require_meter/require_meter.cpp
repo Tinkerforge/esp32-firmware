@@ -86,6 +86,14 @@ bool RequireMeter::get_require_meter_enabled() {
     #endif
 }
 
+bool RequireMeter::allow_charging(float meter_value) {
+    if (get_require_meter_enabled() && (isnan(meter_value) || get_require_meter_blocking())) {
+        set_require_meter_blocking(true);
+        return false;
+    }
+    return true;
+}
+
 void RequireMeter::meter_found() {
     if (config.get("config")->asUint() == 0) {
         config.get("config")->updateUint(2);
@@ -96,7 +104,9 @@ void RequireMeter::meter_found() {
 }
 
 void RequireMeter::setup() {
-    if (api.restorePersistentConfig("require_meter/config", &config) && config.get("config")->asUint() == 2) {
+    api.restorePersistentConfig("require_meter/config", &config);
+
+    if (config.get("config")->asUint() == 2) {
         set_require_meter_enabled(true);
         start_task();
     } else
