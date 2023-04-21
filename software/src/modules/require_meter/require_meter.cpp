@@ -48,9 +48,8 @@ void RequireMeter::start_task() {
 }
 
 void RequireMeter::pre_setup() {
-    // Warp smart = 0, warp pro rm disabled = 1, warp pro rm enabled = 2
     config = Config::Object({
-        {"config", Config::Uint8(0)}
+        {"config", Config::Uint8(WARP_SMART)}
     });
 }
 
@@ -95,8 +94,8 @@ bool RequireMeter::allow_charging(float meter_value) {
 }
 
 void RequireMeter::meter_found() {
-    if (config.get("config")->asUint() == 0) {
-        config.get("config")->updateUint(2);
+    if (config.get("config")->asUint() == WARP_SMART) {
+        config.get("config")->updateUint(WARP_PRO_ENABLED);
         api.writeConfig("require_meter/config", &config);
         set_require_meter_enabled(true);
         start_task();
@@ -106,7 +105,7 @@ void RequireMeter::meter_found() {
 void RequireMeter::setup() {
     api.restorePersistentConfig("require_meter/config", &config);
 
-    if (config.get("config")->asUint() == 2) {
+    if (config.get("config")->asUint() == WARP_PRO_ENABLED) {
         set_require_meter_enabled(true);
         start_task();
     } else
