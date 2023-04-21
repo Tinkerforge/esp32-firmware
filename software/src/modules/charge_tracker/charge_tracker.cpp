@@ -103,8 +103,16 @@ static inline void set_meter_slot_blocking(bool blocking) {
 #endif
 }
 
+static inline bool get_meter_slot_blocking() {
+#if MODULE_EVSE_AVAILABLE()
+    return evse.get_require_meter_blocking();
+#elif MODULE_EVSE_V2_AVAILABLE()
+    return evse_v2.get_require_meter_blocking();
+#endif
+}
+
 bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, uint8_t auth_type, Config::ConfVariant auth_info) {
-    if (is_meter_slot_enabled() && isnan(meter_start)) {
+    if (is_meter_slot_enabled() && (isnan(meter_start) || get_meter_slot_blocking())) {
         set_meter_slot_blocking(true);
         return false;
     }
