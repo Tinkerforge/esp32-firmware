@@ -74,8 +74,9 @@ void read_meter_type_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t 
         return;
     }
 
-    if (exception_code != 0 && exception_code != -1) {
-        logger.printfln("Request %u: Exception code %d", request_id, exception_code);
+    if (exception_code != 0) {
+        if (exception_code != -1)
+            logger.printfln("Request %u: Exception code %d", request_id, exception_code);
         ud->done = ModbusMeter::UserDataDone::ERROR;
         return;
     }
