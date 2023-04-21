@@ -91,7 +91,7 @@ export class EVSE extends Component<{}, EVSEState> {
     }
 
     render(props: {}, s: Readonly<EVSEState>) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return (<></>);
 
         let {state,
@@ -472,7 +472,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
 
     render(props: {}, s: EVSESettingsState & ChargeLimitsConfig)
     {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return (<></>);
 
         let {

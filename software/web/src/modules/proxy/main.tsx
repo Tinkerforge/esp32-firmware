@@ -59,7 +59,7 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
     }
 
     render(props: {}, state: Readonly<API.getType['proxy/config'] & ProxyState>) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>
 
         return (

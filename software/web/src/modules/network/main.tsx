@@ -42,7 +42,7 @@ export class Network extends ConfigComponent<'network/config'> {
     }
 
     render(props: {}, state: Readonly<NetworkConfig>) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>
 
         return (

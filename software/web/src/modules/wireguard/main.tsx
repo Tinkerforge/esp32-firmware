@@ -49,7 +49,7 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
     }
 
     render(props: {}, state: Readonly<WireGuardConfig>) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>
 
         return (
@@ -160,7 +160,7 @@ export class WireGuardStatus extends Component<{}, WireGuardStatusState>
 
     render(props: {}, state: WireGuardStatusState)
     {
-        if (!util.allow_render || !state.config.enable)
+        if (!util.render_allowed() || !state.config.enable)
             return <></>;
 
         return <>

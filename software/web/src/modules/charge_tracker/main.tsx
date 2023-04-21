@@ -277,7 +277,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
     }
 
     render(props: {}, state: Readonly<ChargeTrackerState> & ChargetrackerConfig) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>
 
         return (
@@ -508,7 +508,7 @@ export class ChargeTrackerStatus extends Component<{}, ChargeTrackerStatusState>
 
     render(props: {}, state: ChargeTrackerStatusState)
     {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>;
 
         let current_charge = <></>;

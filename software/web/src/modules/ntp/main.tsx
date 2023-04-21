@@ -61,7 +61,7 @@ export class NTP extends ConfigComponent<'ntp/config'> {
     }
 
     render(props: {}, state: Readonly<NTPConfig>) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>
 
         let splt = state.timezone.split("/");
@@ -164,7 +164,7 @@ export class NTPStatus extends Component<{}, NTPStatusState>
 
     render(props: {}, state: NTPStatusState)
     {
-        if (!util.allow_render || !state.config.enable)
+        if (!util.render_allowed() || !state.config.enable)
             return <></>;
 
         return <>

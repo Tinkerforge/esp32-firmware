@@ -41,7 +41,7 @@ export class Debug extends Component<{}, API.getType['debug/state']> {
     }
 
     render(props: {}, state: Readonly<API.getType['debug/state']>) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return (<></>);
 
         return (

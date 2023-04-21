@@ -149,7 +149,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
     render(props: DebugLoggerProps, s: DebugLoggerState)
     {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>;
 
         let {

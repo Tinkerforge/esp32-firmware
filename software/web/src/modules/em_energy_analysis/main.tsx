@@ -478,7 +478,7 @@ export class EMEnergyAnalysisStatusChart extends Component<{}, {force_render: nu
     }
 
     render(props: {}, state: {}) {
-        if (!util.allow_render) {
+        if (!util.render_allowed()) {
             return (<></>);
         }
 
@@ -1486,7 +1486,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     }
 
     render(props: {}, state: Readonly<EMEnergyAnalysisState>) {
-        if (!util.allow_render) {
+        if (!util.render_allowed()) {
             return (<></>);
         }
 

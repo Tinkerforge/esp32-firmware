@@ -28,11 +28,40 @@ export type EventMap = {
     [key in keyof ConfigMap]: MessageEvent<Readonly<ConfigMap[key]>>;
 }
 
-export function update<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T]) {
-    (api_cache[topic] as ConfigMap[T]) = payload;
+function update_cache_item(left: any, right: any) {
+    for (var key in left) {
+        if (!right.hasOwnProperty(key)) {
+            delete left[key];
+            continue;
+        }
+
+        if (left[key] == null || right[key] == null || typeof(left[key]) !== typeof(right[key])) {
+            left[key] = right[key];
+            continue;
+        }
+
+        if (typeof(left[key]) === "object") {
+            update_cache_item(left[key], right[key]);
+            continue;
+        }
+
+        left[key] = right[key];
+    }
+
+    for (var key in right)
+        if (!left.hasOwnProperty(key)) {
+            left[key] = right[key];
+        }
 }
 
-export function get<T extends keyof ConfigMap>(topic: T): Readonly<ConfigMap[T]> {
+export function update<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T]) {
+    if (api_cache[topic] === null || api_cache[topic] === undefined)
+        (api_cache[topic] as any) = payload;
+    else
+        update_cache_item(api_cache[topic], payload);
+}
+
+export function get<T extends keyof ConfigMap>(topic: T) {
     return api_cache[topic];
 }
 

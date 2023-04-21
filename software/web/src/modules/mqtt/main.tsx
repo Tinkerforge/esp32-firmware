@@ -66,7 +66,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
     }
 
     render(props: {}, state: Readonly<MqttConfig & MqttState>) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>
 
         return (
@@ -202,7 +202,7 @@ export class MqttStatus extends Component<{}, MqttStatusState>
 
     render(props: {}, state: MqttStatusState)
     {
-        if (!util.allow_render || !state.config.enable_mqtt)
+        if (!util.render_allowed() || !state.config.enable_mqtt)
             return <></>;
 
         return <>

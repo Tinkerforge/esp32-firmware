@@ -37,7 +37,7 @@ export class DeviceName extends ConfigComponent<'info/display_name'> {
     }
 
     render(props: {}, state: Readonly<API.getType['info/display_name']>) {
-        if (!util.allow_render) {
+        if (!util.render_allowed()) {
             return (<></>);
         }
 

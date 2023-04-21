@@ -56,7 +56,7 @@ export class EmPvFakerStatus extends Component<{}, FakeData> {
     }
 
     render(props: {}, d: Readonly<FakeData>) {
-        if (!util.allow_render || !API.get("info/modules").em_pv_faker)
+        if (!util.render_allowed() || !API.get("info/modules").em_pv_faker)
             return <></>
 
         return <>
@@ -100,7 +100,7 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
     }
 
     render(props: {}, s: Readonly<API.getType['em_pv_faker/config'] & API.getType['em_pv_faker/runtime_config']>) {
-        if (!util.allow_render || !API.get("info/modules").em_pv_faker)
+        if (!util.render_allowed() || !API.get("info/modules").em_pv_faker)
             return <></>
 
         return <>

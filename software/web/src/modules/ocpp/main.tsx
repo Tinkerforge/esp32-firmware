@@ -77,7 +77,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
     }
 
     render(props: {}, state: OcppConfig & OcppState) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>
 
         let ocpp_debug = API.hasFeature("ocpp_debug");
@@ -300,7 +300,7 @@ export class OcppStatus extends Component<{}, OcppStatusState>
 
     render(props: {}, state: OcppStatusState)
     {
-        if (!util.allow_render || !state.config.enable)
+        if (!util.render_allowed() || !state.config.enable)
             return <></>;
 
         return <>

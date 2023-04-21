@@ -60,7 +60,7 @@ export class WifiStatus extends Component<{}, WifiStatusState>
 
     render(props: {}, state: WifiStatusState)
     {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>;
 
         let sta_row = !state.sta_config.enable_sta ? <></>

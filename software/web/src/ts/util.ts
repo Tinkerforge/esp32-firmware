@@ -25,6 +25,7 @@ import { __ } from "./translation";
 
 import { AsyncModal } from "./components/async_modal";
 import { api_cache } from "./api_defs";
+import { batch, signal, Signal } from "@preact/signals-core";
 
 export function reboot() {
     API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
@@ -201,7 +202,11 @@ export function addApiEventListener_unchecked(type: string, callback: EventListe
 
 export let eventTarget: API.APIEventTarget = new API.APIEventTarget();
 
-export let allow_render: boolean = false;
+let allow_render: Signal<boolean> = signal(false);
+
+export function render_allowed() {
+    return allow_render.value;
+}
 
 export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.APIEventTarget) => void) {
     if (!first) {
@@ -229,25 +234,27 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
         }
         wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
 
-        let topics = [];
-        for (let item of e.data.split("\n")) {
-            if (item == "")
-                continue;
-            let obj = JSON.parse(item);
-            if (!("topic" in obj) || !("payload" in obj)) {
-                console.log("Received malformed event", obj);
-                return;
-            }
+        let topics: any[] = [];
+        batch(() => {
+            for (let item of e.data.split("\n")) {
+                if (item == "")
+                    continue;
+                let obj = JSON.parse(item);
+                if (!("topic" in obj) || !("payload" in obj)) {
+                    console.log("Received malformed event", obj);
+                    return;
+                }
 
-            topics.push(obj["topic"]);
-            API.update(obj["topic"], obj["payload"]);
-        }
+                topics.push(obj["topic"]);
+                API.update(obj["topic"], obj["payload"]);
+            }
+        });
 
         for (let topic of topics) {
             API.trigger(topic, eventTarget);
         }
 
-        allow_render = true;
+        allow_render.value = true;
     }
 
     continuation(ws, eventTarget);

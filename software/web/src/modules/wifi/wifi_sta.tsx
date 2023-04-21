@@ -198,7 +198,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
     string_to_bssid = (s: string) => s.split(':').map(x => parseInt(x, 16));
 
     render(props: {}, state: Readonly<STAConfig & WifiSTAState>) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>
 
         return (

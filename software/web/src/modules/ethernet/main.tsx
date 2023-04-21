@@ -51,7 +51,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
     }
 
     render(props: {}, state: Readonly<EthernetConfig>) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>
 
         return (

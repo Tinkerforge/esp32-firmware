@@ -533,7 +533,7 @@ export class Meter extends Component<{}, MeterState> {
     }
 
     render(props: {}, state: Readonly<MeterState>) {
-        if (!util.allow_render) {
+        if (!util.render_allowed()) {
             return (<></>);
         }
 

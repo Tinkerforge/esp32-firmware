@@ -42,7 +42,7 @@ export class Co2 extends ConfigComponent<'co2/config'> {
     }
 
     render(props: {}, state: Readonly<Co2Config>) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>
 
         return (
@@ -83,7 +83,7 @@ export class Co2Status extends Component<{}, Co2StatusState>
 
     render(props: {}, state: Co2StatusState)
     {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return <></>;
 
         return <>

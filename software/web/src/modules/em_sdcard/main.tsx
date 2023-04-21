@@ -42,7 +42,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
     }
 
     render(props: {}, state: Readonly<EMSDcardState>) {
-        if (!util.allow_render)
+        if (!util.render_allowed())
             return (<></>);
 
         if (state.sd_status == 51) { // No card
