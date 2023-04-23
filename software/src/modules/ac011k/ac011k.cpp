@@ -295,6 +295,16 @@ byte cantestsetAck[]            = {0xAA, 0x18, 0x2A, 0x00, 0x00}; // cmdAACtrlca
 byte GetRtc[]                   = {0xAA, 0x10, 0x02, 0x00, 0x00};
 byte TimeAck[]                  = {'c', 'a', 'y', 'm', 'd', 'h', 'm', 's', 0, 0, 0, 0};
 
+//D (2023-04-06 09:19:22) [EN_WSS, 708]: recv[0:83] [2,"11312954-a1d1-4023-923e-bf996401b021","ClearChargingProfile",{"connectorId":0}]
+//W (2023-04-06 09:19:23) [PRIV_COMM, 1875]: Tx(cmd_AA len:19) :  FA 03 00 00 AA seq len len 18 24 05 00 FF FF FF FF 55 crc crc
+//W (2023-04-06 09:19:23) [PRIV_COMM, 2033]: Rx(cmd_0A len:18) :  FA 03 00 00 0A seq len len 14 24 04 00 FF FF FF FF crc crc
+byte ClearChargingProfile[]     = {0xAA, 0x18, 0x24, 0x05, 0, 0xFF, 0xFF, 0xFF, 0xFF, 0x55}; // connectorId: 0
+
+//W (2023-04-06 09:19:23) [PRIV_COMM, 1875]: Tx(cmd_AA len:14) :  FA 03 00 00 AA seq len len 10 0B 00 00 crc crc
+//W (2023-04-06 09:19:23) [PRIV_COMM, 2033]: Rx(cmd_0A len:18) :  FA 03 00 00 0A seq len len 10 0B 04 00 A0 00 00 00 crc crc
+//I (2023-04-06 09:19:23) [PRIV_COMM, 318]: ctrl_cmd get max curr limit done -> 160
+byte GetMaxCurrLimit[]          = {0xAA, 0x10, 0x0B, 0x00, 0x00};
+
 // ctrl_cmd set start power mode done
 byte Init15[] = {0xAA, 0x18, 0x09, 0x01, 0x00, 0x00};
 //W (2021-04-11 18:36:27) [PRIV_COMM, 1764]: Tx(cmd_AA len:15) :  FA 03 00 00 AA 40 05 00 18 09 01 00 00 F9 36
@@ -1036,6 +1046,9 @@ void AC011K::setup() {
     // cmdAACtrlcantestsetAck test cancom...111
     sendCommand(SetGunTime, sizeof(SetGunTime), sendSequenceNumber++, false);
 
+    sendCommand(ClearChargingProfile, sizeof(ClearChargingProfile), sendSequenceNumber++, false);
+    sendCommand(GetMaxCurrLimit, sizeof(GetMaxCurrLimit), sendSequenceNumber++, false);
+
 /*
     do { // wait for the first PRIVCOMM signal to decide if we have a GD chip to talk to
         logger.printfln("wait for PrivComm");
@@ -1570,11 +1583,22 @@ void AC011K::loop()
 //I (2021-04-11 18:36:31) [PRIV_COMM, 279]: ctrl_cmd set start power mode done -> minpower: 15.306.752
                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - ctrl_cmd set start power mode done", cmd, seq, len, crc);
                         break;
+                    case 0x0B: // GetMaxCurrLimit
+                        logger.printfln("GetMaxCurrLimit ack (%d)", getPrivCommRxBufferUint16(12));
+//W (2023-04-06 09:19:23) [PRIV_COMM, 2033]: Rx(cmd_0A len:18) :  FA 03 00 00 0A seq len len 10 0B 04 00 A0 00 00 00 crc crc
+//I (2023-04-06 09:19:23) [PRIV_COMM, 318]: ctrl_cmd get max curr limit done -> 160
+                        //log_hex_privcomm_line(PrivCommRxBuffer);
+                        break;
                     case 0x12: // ctrl_cmd set ack done, type:0
 //W (1970-01-01 00:08:53) [PRIV_COMM, 1764]: Tx(cmd_AA len:15) :  FA 03 00 00 AA 08 05 00 18 12 01 00 03 BA 45
 //W (2021-04-11 18:36:27) [PRIV_COMM, 1919]: Rx(cmd_0A len:15) :  FA 03 00 00 0A 08 05 00 14 12 01 00 00 12 42
 //I (2021-04-11 18:36:27) [PRIV_COMM, 51]: ctrl_cmd set ack done, type:0
                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - ctrl_cmd set ack done, type:0", cmd, seq, len, crc);
+                        break;
+                    case 0x24: // ClearChargingProfile
+                        logger.printfln("ClearChargingProfile ack");
+//W (2023-04-06 09:19:23) [PRIV_COMM, 2033]: Rx(cmd_0A len:18) :  FA 03 00 00 0A seq len len 14 24 04 00 FF FF FF FF crc crc
+                        //log_hex_privcomm_line(PrivCommRxBuffer);
                         break;
                     case 0x25: // SetClrSmartparam
                         logger.printfln("SetClrSmartparam");
