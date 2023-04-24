@@ -658,20 +658,12 @@ export class Meter extends Component<{}, MeterState> {
 
 render(<Meter />, $('#meter')[0]);
 
-interface MeterStatusState {
-    show: boolean
-    power: number
-}
-
-export class MeterStatus extends Component<{}, MeterStatusState> {
+export class MeterStatus extends Component<{}, {}> {
     history_data: UplotData;
     uplot_wrapper_ref = createRef();
 
     constructor() {
         super();
-
-        // Initialize state to make sure our non-standard way to render this component works.
-        this.state = {power: 0, show: false};
 
         util.addApiEventListener("meter/history", () => {
             let history = API.get("meter/history");
@@ -688,17 +680,6 @@ export class MeterStatus extends Component<{}, MeterStatusState> {
 
             this.update_uplot();
         });
-
-        util.addApiEventListener('meter/values', () => {
-            let power = API.get('meter/values').power;
-            if (power == null)
-                return;
-            this.setState({power: power})
-        });
-
-        util.addApiEventListener('info/features', () => {
-            this.setState({show: API.hasFeature("meter") && !API.hasModule("energy_manager")})
-        });
     }
 
     update_uplot() {
@@ -709,15 +690,21 @@ export class MeterStatus extends Component<{}, MeterStatusState> {
         this.uplot_wrapper_ref.current.set_data(this.history_data);
     }
 
-    render(props: {}, state: MeterStatusState) {
-        // Don't check util.allow_render here.
+    render(props: {}, state: {}) {
+        // Don't check util.render_allowed() here.
         // We can receive graph data points with the first web socket packet and
         // want to push them into the uplot graph immediately.
         // This only works if the wrapper component is already created.
         // Hide the form rows to fix any visual bugs instead.
+
+        let show = API.hasFeature('meter') && !API.hasModule("energy_manager");
+        // As we don't check util.render_allowed(),
+        // we have to handle rendering before the web socket connection is established.
+        let power = API.get_maybe('meter/values')?.power ?? 0;
+
         return (
             <>
-                <FormRow label={__("meter.status.charge_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!state.show}>
+                <FormRow label={__("meter.status.charge_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <div class="card pl-1 pb-1">
                         <UplotWrapper ref={this.uplot_wrapper_ref}
                                     id="status_meter_chart"
@@ -727,8 +714,8 @@ export class MeterStatus extends Component<{}, MeterStatusState> {
                                     y_max={1500} />
                     </div>
                 </FormRow>
-                <FormRow label={__("meter.status.current_power")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!state.show}>
-                    <InputText value={util.toLocaleFixed(state.power, 0) + " W"}/>
+                <FormRow label={__("meter.status.current_power")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                    <InputText value={util.toLocaleFixed(power, 0) + " W"}/>
                 </FormRow>
             </>
         )
