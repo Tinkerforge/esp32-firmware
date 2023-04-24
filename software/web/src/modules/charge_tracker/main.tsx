@@ -467,93 +467,59 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
 
 render(<ChargeTracker/>, $('#charge_tracker')[0]);
 
-interface ChargeTrackerStatusState {
-    last_charges: Readonly<API.getType['charge_tracker/last_charges']>;
-    cc: API.getType['charge_tracker/current_charge'];
-    evse_uptime: API.getType['evse/low_level_state']['uptime'];
-    energy_abs: API.getType['meter/values']['energy_abs'];
-    users: API.getType['users/config']['users'];
-    electricity_price: API.getType['charge_tracker/config']['electricity_price'];
-}
+function ChargeTrackerStatus() {
+    if (!util.render_allowed())
+        return <></>;
 
-export class ChargeTrackerStatus extends Component<{}, ChargeTrackerStatusState> {
-    constructor()
-    {
-        super();
+    let last_charges = API.get('charge_tracker/last_charges');
+    let cc = API.get('charge_tracker/current_charge');
+    let evse_uptime = API.get('evse/low_level_state').uptime;
+    let energy_abs = API.get('meter/values').energy_abs;
+    let users = API.get('users/config').users;
+    let electricity_price = API.get('charge_tracker/config').electricity_price;
 
-        util.addApiEventListener('charge_tracker/last_charges', () => {
-            this.setState({last_charges: API.get('charge_tracker/last_charges')})
-        });
+    let current_charge = <></>;
 
-        util.addApiEventListener('charge_tracker/current_charge', () => {
-            this.setState({cc: API.get('charge_tracker/current_charge')})
-        });
+    if (cc.user_id != -1) {
+        let charge_duration = evse_uptime - cc.evse_uptime_start
+        if (evse_uptime < cc.evse_uptime_start)
+            charge_duration += 0xFFFFFFFF;
 
-        util.addApiEventListener('evse/low_level_state', () => {
-            this.setState({evse_uptime: API.get('evse/low_level_state').uptime})
-        });
+        charge_duration = Math.floor(charge_duration / 1000);
 
-        util.addApiEventListener('meter/values', () => {
-            this.setState({energy_abs: API.get('meter/values').energy_abs})
-        });
+        let charge: Charge = {
+            charge_duration: charge_duration,
+            energy_charged: energy_abs - cc.meter_start,
+            timestamp_minutes: cc.timestamp_minutes,
+            user_id: cc.user_id
+        };
 
-        util.addApiEventListener('users/config', () => {
-            this.setState({users: API.get('users/config').users})
-        });
-
-        util.addApiEventListener('charge_tracker/config', () => {
-            this.setState({electricity_price: API.get('charge_tracker/config').electricity_price})
-        });
+        current_charge = <FormRow label={__("charge_tracker.status.current_charge")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+            <ListGroup>
+                <TrackedCharge charge={charge}
+                                users={users}
+                                electricity_price={electricity_price}
+                                />
+            </ListGroup>
+        </FormRow>;
     }
 
-    render(props: {}, state: ChargeTrackerStatusState)
-    {
-        if (!util.render_allowed())
-            return <></>;
+    let last_charges_list = last_charges.length == 0 ? <></>
+        : <FormRow label={__("charge_tracker.status.last_charges")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+            <ListGroup>
+                {last_charges.slice(-3).map(c =>
+                    <TrackedCharge charge={c}
+                                    users={users}
+                                    electricity_price={electricity_price}
+                                    />
+                ).reverse()}
+            </ListGroup>
+        </FormRow>;
 
-        let current_charge = <></>;
-
-        if (state.cc.user_id != -1) {
-            let charge_duration = state.evse_uptime - state.cc.evse_uptime_start
-            if (state.evse_uptime < state.cc.evse_uptime_start)
-                charge_duration += 0xFFFFFFFF;
-
-            charge_duration = Math.floor(charge_duration / 1000);
-
-            let charge: Charge = {
-                charge_duration: charge_duration,
-                energy_charged: state.energy_abs - state.cc.meter_start,
-                timestamp_minutes: state.cc.timestamp_minutes,
-                user_id: state.cc.user_id
-            };
-
-            current_charge = <FormRow label={__("charge_tracker.status.current_charge")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
-                <ListGroup>
-                    <TrackedCharge charge={charge}
-                                   users={state.users}
-                                   electricity_price={state.electricity_price}
-                                   />
-                </ListGroup>
-            </FormRow>;
-        }
-
-        let last_charges = state.last_charges.length == 0 ? <></>
-            : <FormRow label={__("charge_tracker.status.last_charges")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
-                <ListGroup>
-                    {state.last_charges.slice(-3).map(c =>
-                        <TrackedCharge charge={c}
-                                       users={state.users}
-                                       electricity_price={state.electricity_price}
-                                       />
-                    ).reverse()}
-                </ListGroup>
-            </FormRow>;
-
-        return <>
-                    {current_charge}
-                    {last_charges}
-            </>;
-    }
+    return <>
+                {current_charge}
+                {last_charges_list}
+        </>;
 }
 
 render(<ChargeTrackerStatus/>, $('#status-charge_tracker')[0]);
