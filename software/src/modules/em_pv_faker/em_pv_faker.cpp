@@ -68,7 +68,13 @@ void EmPvFaker::setup()
 {
     api.restorePersistentConfig("em_pv_faker/config", &config);
 
-    int32_t target_power = energy_manager.config_in_use.get("target_power_from_grid")->asInt();
+    Config *conf = (Config*)energy_manager.config_in_use.get("target_power_from_grid");
+    if (!conf) {
+        logger.printfln("em_pv_faker: energy_manager config target_power_from_grid not available. Disabling em_pv_faker.");
+        return;
+    }
+
+    int32_t target_power = conf->asInt();
     state.get("fake_power")->updateInt(target_power);
     runtime_config.get("manual_power")->updateInt(target_power);
 
@@ -93,8 +99,8 @@ void EmPvFaker::register_urls()
 
 void EmPvFaker::onMqttConnect()
 {
-    //if (!config.get("auto_fake")->asBool())
-    //    return;
+    // Always subscribe to illuminance topic even when auto_fake is not on
+    // because it can be turned on at runtime.
 
     const String &topic = config.get("topic")->asString();
 
