@@ -145,9 +145,16 @@ export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigM
 }
 
 export function hasFeature(feature: string) {
-    return get('info/features').indexOf(feature) >= 0;
+    let features = get('info/features');
+    if (features === null)
+        return false;
+
+    return features.indexOf(feature) >= 0;
 }
 
 export function hasModule(module: string) {
-    return get('info/modules')?.hasOwnProperty(module) && (get('info/modules') as any)[module];
+    let modules = get('info/modules');
+    if (modules === null)
+        return false;
+    return modules?.hasOwnProperty(module) && (modules as any)[module];
 }
