@@ -20,7 +20,6 @@
 import {ConfigMap, api_cache, Modules, ConfigModified, ConfigModifiedKey} from './api_defs';
 
 import * as util from './util';
-import $ from "./jq";
 
 export {type ConfigMap as getType, type Modules};
 
