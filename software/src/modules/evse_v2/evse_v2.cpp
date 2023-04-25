@@ -739,8 +739,6 @@ void EVSEV2::check_debug()
 
 void EVSEV2::register_urls()
 {
-    if (!device_found)
-        return;
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
     cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested) {

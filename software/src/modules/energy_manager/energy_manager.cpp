@@ -347,9 +347,6 @@ void EnergyManager::register_urls()
     // Always export state so that the status page can show an error when no bricklet was found.
     api.addState("energy_manager/state", &state, {}, 1000);
 
-    if (!device_found)
-        return;
-
 #if MODULE_WS_AVAILABLE()
     server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){

@@ -342,9 +342,6 @@ void NFC::setup()
 
 void NFC::register_urls()
 {
-    if (!device_found)
-        return;
-
     api.addState("nfc/seen_tags", &seen_tags, {}, 1000);
     api.addPersistentConfig("nfc/config", &config, {}, 1000);
     api.addCommand("nfc/inject_tag", &inject_tag, {}, [this](){

@@ -569,9 +569,6 @@ void EVSE::check_debug()
 
 void EVSE::register_urls()
 {
-    if (!device_found)
-        return;
-
 #if MODULE_CM_NETWORKING_AVAILABLE()
     cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested) {
         set_managed_current(current);
