@@ -82,7 +82,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
     }
 
     render(props: {}, state: NfcConfig & NfcState) {
-        if (!util.render_allowed() || !API.get("info/modules").nfc)
+        if (!util.render_allowed() || !API.hasFeature("nfc"))
             return <></>
 
         type NFCSeenTag = API.getType['nfc/seen_tags'][0];

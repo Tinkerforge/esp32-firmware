@@ -98,7 +98,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
             return <></>;
         }
 
-        if (!API.get("info/modules").energy_manager) {
+        if (!API.hasFeature("energy_manager")) {
             return <>
                 <FormRow label={__("energy_manager.status.status")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <IndicatorGroup
@@ -193,21 +193,13 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
 
 render(<EnergyManagerStatus/>, $('#status-energy_manager')[0])
 
-interface DebugMode {
-    debug_mode: boolean
-}
-
-export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, DebugMode & API.getType['energy_manager/debug_config']> {
+export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, API.getType['energy_manager/debug_config']> {
     old_input4_rule_then = -1;
 
     constructor() {
         super('energy_manager/config',
             __("energy_manager.script.save_failed"),
             __("energy_manager.script.reboot_content_changed"));
-
-        util.addApiEventListener('info/modules', () => {
-            this.setState({debug_mode: !!((API.get('info/modules') as any).debug)})
-        });
 
 
         util.addApiEventListener('energy_manager/debug_config', () => {
@@ -216,7 +208,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
     }
 
     override async sendSave(t: "energy_manager/config", cfg: API.getType['energy_manager/config']) {
-        if (this.state.debug_mode) {
+        if (API.hasModule("debug")) {
             await API.save('energy_manager/debug_config', {
                     hysteresis_time: this.state.hysteresis_time,
                 }, __("energy_manager.script.save_failed"));
@@ -224,8 +216,8 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         await super.sendSave(t, cfg);
     }
 
-    render(props: {}, s: Readonly<API.getType['energy_manager/config'] & DebugMode & API.getType['energy_manager/debug_config']>) {
-        if (!util.render_allowed() || !API.get("info/modules").energy_manager)
+    render(props: {}, s: Readonly<API.getType['energy_manager/config'] & API.getType['energy_manager/debug_config']>) {
+        if (!util.render_allowed() || !API.hasFeature("energy_manager"))
             return <></>
 
         let mode_list: StringStringTuple[] = [];
@@ -244,6 +236,8 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         // Remember previous input4_rule_then setting so that it can be restored after toggling the contactor installed setting multiple times.
         if (this.old_input4_rule_then < 0)
             this.old_input4_rule_then = this.state.input4_rule_then == 1 ? 0 : this.state.input4_rule_then;
+
+        let debug_mode = API.hasModule("debug");
 
         return (
             <>
@@ -294,7 +288,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                 />
                             </FormRow>
 
-                            {s.debug_mode ?
+                            {debug_mode ?
                                 <FormRow label={__("energy_manager.content.target_power_from_grid")} label_muted={__("energy_manager.content.target_power_from_grid_muted")}>
                                     <InputFloat
                                         unit="kW"
@@ -582,7 +576,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                         </div>
                     </Collapse>
 
-                    {s.debug_mode ? <>
+                    {debug_mode ? <>
                         <FormSeparator heading={__("energy_manager.content.header_expert_settings")} />
                         <FormRow label={__("energy_manager.content.hysteresis_time")} label_muted={__("energy_manager.content.hysteresis_time_muted")}>
                             <InputNumber

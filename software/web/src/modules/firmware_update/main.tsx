@@ -96,7 +96,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
 
         // TODO: why not use the charge tracker module here?
         let show_config_reset = false;
-        if (API.get('info/modules')?.hasOwnProperty("users") && (API.get('info/modules') as any).users)
+        if (API.hasModule("users"))
             show_config_reset = true;
 
         return (

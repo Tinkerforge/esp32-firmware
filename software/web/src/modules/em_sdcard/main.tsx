@@ -42,7 +42,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
     }
 
     render(props: {}, state: Readonly<EMSDcardState>) {
-        if (!util.render_allowed())
+        if (!util.render_allowed() || !API.hasFeature("energy_manager"))
             return (<></>);
 
         if (state.sd_status == 51) { // No card

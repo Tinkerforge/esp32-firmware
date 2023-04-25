@@ -88,10 +88,6 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         util.addApiEventListener('charge_manager/scan_result', () => {
             this.addScanResults( API.get('charge_manager/scan_result') as ScanCharger[]);
         });
-
-        util.addApiEventListener('info/modules', () => {
-            this.setState({energyManagerMode: !!((API.get('info/modules') as any).energy_manager) && !((API.get('info/modules') as any).evse_v2) && !((API.get('info/modules') as any).evse)})
-        });
     }
 
     addScanResults(result: ScanCharger[]) {
@@ -256,6 +252,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         if (!util.render_allowed())
             return <></>
 
+        let energyManagerMode = API.hasModule("energy_manager") && !(API.hasModule("evse_v2") || API.hasModule("evse"))
+
         let addChargerCard = <div class="col mb-4">
                 <Card className="h-100" key={999}>
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -376,7 +374,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                         <div class="card-header d-flex justify-content-between align-items-center">
                             {charger_symbol}
                             <Button variant="outline-dark" size="sm"
-                                    style={!state.energyManagerMode && c.host == "127.0.0.1" ? "visibility: hidden;" : ""}
+                                    style={!energyManagerMode && c.host == "127.0.0.1" ? "visibility: hidden;" : ""}
                                     onClick={() => {
                                         this.setState({chargers: state.chargers.filter((v, idx) => idx != i)});
                                         this.hackToAllowSave();} }>
@@ -462,11 +460,11 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         return (
             <>
                 <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
-                    {state.energyManagerMode ? null:
+                    {energyManagerMode ? null:
                         charge_manager_mode
                     }
 
-                    {state.energyManagerMode ?
+                    {energyManagerMode ?
                         <>
                             {maximum_available_current}
                             {minimum_current}
@@ -514,7 +512,6 @@ interface ChargeManagerStatusState {
     state: API.getType['charge_manager/state']
     available_current: API.getType['charge_manager/available_current']
     config: API.getType['charge_manager/config']
-    energyManagerMode: boolean
     uptime: number
 }
 
@@ -532,10 +529,6 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 
         util.addApiEventListener('charge_manager/config', () => {
             this.setState({config: API.get_maybe('charge_manager/config')})
-        });
-
-        util.addApiEventListener('info/modules', () => {
-            this.setState({energyManagerMode: !!((API.get('info/modules') as any).energy_manager)})
         });
 
         util.addApiEventListener('info/keep_alive', () => {
@@ -609,7 +602,8 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                     ]}/>
             </FormRow>
 
-            {state.energyManagerMode ? null:
+            {// The energy manager controls the available current.
+                API.hasModule("energy_manager") ? null:
                 <FormRow label={__("charge_manager.status.available_current")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <InputFloat min={0} max={state.config.maximum_available_current} digits={3} unit="A"
                         value={state.available_current.current}

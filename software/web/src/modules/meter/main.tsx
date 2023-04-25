@@ -533,7 +533,7 @@ export class Meter extends Component<{}, MeterState> {
     }
 
     render(props: {}, state: Readonly<MeterState>) {
-        if (!util.render_allowed()) {
+        if (!util.render_allowed() || !API.hasFeature("meter")) {
             return (<></>);
         }
 
@@ -697,7 +697,7 @@ export class MeterStatus extends Component<{}, {}> {
         // This only works if the wrapper component is already created.
         // Hide the form rows to fix any visual bugs instead.
 
-        let show = API.hasFeature('meter') && !API.hasModule("energy_manager");
+        let show = API.hasFeature('meter') && !API.hasFeature("energy_manager");
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
         let power = API.get_maybe('meter/values')?.power ?? 0;
