@@ -79,6 +79,15 @@ extern "C" {
 #define TF_LOCAL_ENABLE 0
 #endif
 
+// Set TF_IGNORE_DEVICE_IDS to a comma-separated list of device IDs
+// (see https://www.tinkerforge.com/en/doc/Software/Device_Identifier.html )
+// to ignore those devices when enumerating.
+// For example
+// #define TF_IGNORE_DEVICE_IDS 251,283
+// to ignore all Analog In 2.0 and Humidity 2.0 bricklets.
+// If TF_IGNORE_DEVICE_IDS is not defined at all, the check is not compiled in,
+// reducing the program size a bit.
+
 #ifdef __cplusplus
 }
 #endif

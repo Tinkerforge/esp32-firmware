@@ -67,6 +67,10 @@ int tf_hal_common_prepare(TF_HAL *hal, uint8_t port_count, uint32_t port_discove
     return TF_E_OK;
 }
 
+#ifdef TF_IGNORE_DEVICE_IDS
+static uint16_t ignored_device_ids[] = {TF_IGNORE_DEVICE_IDS};
+#endif
+
 void tf_hal_enumerate_handler(TF_HAL *hal, uint8_t port_id, TF_PacketBuffer *payload) {
     TF_HALCommon *hal_common = tf_hal_get_common(hal);
     char uid_str[8]; tf_packet_buffer_pop_n(payload, (uint8_t *)uid_str, 8);
@@ -89,6 +93,15 @@ void tf_hal_enumerate_handler(TF_HAL *hal, uint8_t port_id, TF_PacketBuffer *pay
     if (tf_hal_get_tfp(hal, &uid_num, NULL, NULL, false) != NULL) {
         return; // Device already known
     }
+
+#ifdef TF_IGNORE_DEVICE_IDS
+    for(size_t i = 0; i < sizeof(ignored_device_ids)/sizeof(ignored_device_ids[0]); ++i) {
+        if (device_id == ignored_device_ids[i]) {
+            tf_hal_log_info("Ignoring device %s of type %d at port %c\n", uid_str, device_id, tf_hal_get_port_name(hal, port_id));
+            return;
+        }
+    }
+#endif
 
     tf_hal_log_info("Found device %s of type %d at port %c\n", uid_str, device_id, tf_hal_get_port_name(hal, port_id));
 
