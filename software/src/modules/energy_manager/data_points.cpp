@@ -65,7 +65,7 @@ void EnergyManager::update_history_meter_power(float power /* W */)
             persistent_data_loaded = load_persistent_data();
         }
 
-        if (persistent_data_loaded && energy_ws > 0) {
+        if (persistent_data_loaded && energy_ws != 0) {
             double energy_dwh = energy_ws / 36000.0;
 
             if (energy_dwh >= 0) {
