@@ -239,7 +239,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
             String error = queued_response.wait();
 
             if (error != "") {
-                logger.printfln("Response processing failed: %s", error.c_str());
+                logger.printfln("Response processing failed after receive: %s (%s %s)", error.c_str(), req.methodString(), req.uriCStr());
             }
 
             response_ownership.next();
@@ -259,7 +259,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
             String error = queued_response.wait();
 
             if (error != "") {
-                logger.printfln("Response processing failed: %s", error.c_str());
+                logger.printfln("Response processing failed after update: %s (%s %s)", error.c_str(), req.methodString(), req.uriCStr());
             }
 
             response_ownership.next();
