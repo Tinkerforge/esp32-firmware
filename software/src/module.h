@@ -23,7 +23,7 @@ class IModule
 {
 public:
     virtual void pre_setup() {}
-    virtual void setup() {}
+    virtual void setup() { initialized = true; }
     virtual void register_urls() {}
     virtual void register_events() {}
     virtual void loop() {}

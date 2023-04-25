@@ -47,6 +47,8 @@ void EMSDcard::setup()
     task_scheduler.scheduleWithFixedDelay([this](){
         update_sdcard_info();
     }, 10 * 1000, 10 * 1000); // 10s
+
+    initialized = true;
 }
 
 void EMSDcard::register_urls()

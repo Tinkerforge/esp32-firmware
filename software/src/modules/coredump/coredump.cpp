@@ -89,6 +89,8 @@ void Coredump::setup()
 {
     if (esp_core_dump_image_check() == ESP_OK)
         coredump_state.get("coredump_available")->updateBool(true);
+
+    initialized = true;
 }
 
 void Coredump::register_urls()
