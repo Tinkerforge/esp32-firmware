@@ -88,7 +88,6 @@ static uint32_t map_duration(uint32_t val)
 
 void ChargeLimits::register_urls()
 {
-#if MODULE_CHARGE_TRACKER_AVAILABLE()
     api.addPersistentConfig("charge_limits/default_limits", &config, {}, 1000);
     api.addState("charge_limits/state", &state, {}, 1000);
     api.addState("charge_limits/active_limits", &config_in_use, {}, 1000);
@@ -181,5 +180,4 @@ void ChargeLimits::register_urls()
         was_charging = charging;
 
     }, 0, 1000);
-#endif
 }
