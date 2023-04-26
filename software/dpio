@@ -1,0 +1,7 @@
+#!/bin/bash
+docker run \
+       --rm \
+       -v $(realpath ../..):/home/pio/tf \
+       -u $(id -u):$(id -g) \
+       build_environment_esp32 \
+       /bin/bash -c "cd /home/pio/tf/esp32-firmware/software && pio $*"
