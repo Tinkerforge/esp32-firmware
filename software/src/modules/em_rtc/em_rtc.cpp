@@ -20,8 +20,15 @@
 #include "em_rtc.h"
 #include "modules.h"
 
+#if !MODULE_ENERGY_MANAGER_AVAILABLE()
+#error Back-end module Energy Manager required
+#endif
+
 void EmRtc::setup()
 {
+    if (!energy_manager.initialized)
+        return;
+
     rtc.register_backend(this);
 
     initialized = true;
