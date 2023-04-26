@@ -555,6 +555,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         } as any;
 
         util.eventTarget.addEventListener('info/modules', () => {
+            if (!API.hasFeature('energy_manager')) {
+                console.log("Energy Analysis: energy_manager feature not available");
+                return;
+            }
+
             if (this.state.data_type == '5min') {
                 this.update_current_5min_cache();
             }
@@ -566,6 +571,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         });
 
         util.eventTarget.addEventListener('charge_manager/state', () => {
+            if (!API.hasFeature('energy_manager'))
+                return;
+
             let state = API.get('charge_manager/state');
             let chargers: Charger[] = [];
 
