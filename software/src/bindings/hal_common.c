@@ -103,6 +103,7 @@ void tf_hal_enumerate_handler(TF_HAL *hal, uint8_t port_id, TF_PacketBuffer *pay
     }
 #endif
 
+
     tf_hal_log_info("Found device %s of type %d at port %c\n", uid_str, device_id, tf_hal_get_port_name(hal, port_id));
 
     TF_PortCommon *port_common = tf_hal_get_port_common(hal, port_id);

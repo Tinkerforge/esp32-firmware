@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-03-08.      *
+ * This file was automatically generated on 2023-04-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -214,6 +214,16 @@ typedef struct TF_WARPEnergyManager {
  * \ingroup TF_WARPEnergyManager
  */
 #define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_LED_STATE 32
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_DATA_STORAGE 33
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_FUNCTION_SET_DATA_STORAGE 34
 
 /**
  * \ingroup TF_WARPEnergyManager
@@ -852,6 +862,20 @@ int tf_warp_energy_manager_set_led_state(TF_WARPEnergyManager *warp_energy_manag
  *
  */
 int tf_warp_energy_manager_get_led_state(TF_WARPEnergyManager *warp_energy_manager, uint8_t *ret_pattern, uint16_t *ret_hue);
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ *
+ * TODO
+ */
+int tf_warp_energy_manager_get_data_storage(TF_WARPEnergyManager *warp_energy_manager, uint8_t page, uint8_t ret_data[63]);
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ *
+ * TODO
+ */
+int tf_warp_energy_manager_set_data_storage(TF_WARPEnergyManager *warp_energy_manager, uint8_t page, const uint8_t data[63]);
 
 /**
  * \ingroup TF_WARPEnergyManager

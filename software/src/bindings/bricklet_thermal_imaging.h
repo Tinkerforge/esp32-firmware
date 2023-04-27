@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-25.      *
+ * This file was automatically generated on 2023-04-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -127,6 +127,21 @@ typedef struct TF_ThermalImaging {
 /**
  * \ingroup TF_ThermalImaging
  */
+#define TF_THERMAL_IMAGING_FUNCTION_SET_FFC_SHUTTER_MODE 16
+
+/**
+ * \ingroup TF_ThermalImaging
+ */
+#define TF_THERMAL_IMAGING_FUNCTION_GET_FFC_SHUTTER_MODE 17
+
+/**
+ * \ingroup TF_ThermalImaging
+ */
+#define TF_THERMAL_IMAGING_FUNCTION_RUN_FFC_NORMALIZATION 18
+
+/**
+ * \ingroup TF_ThermalImaging
+ */
 #define TF_THERMAL_IMAGING_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
@@ -247,6 +262,36 @@ typedef struct TF_ThermalImaging {
  * \ingroup TF_ThermalImaging
  */
 #define TF_THERMAL_IMAGING_IMAGE_TRANSFER_CALLBACK_TEMPERATURE_IMAGE 3
+
+/**
+ * \ingroup TF_ThermalImaging
+ */
+#define TF_THERMAL_IMAGING_SHUTTER_MODE_MANUAL 0
+
+/**
+ * \ingroup TF_ThermalImaging
+ */
+#define TF_THERMAL_IMAGING_SHUTTER_MODE_AUTO 1
+
+/**
+ * \ingroup TF_ThermalImaging
+ */
+#define TF_THERMAL_IMAGING_SHUTTER_MODE_EXTERNAL 2
+
+/**
+ * \ingroup TF_ThermalImaging
+ */
+#define TF_THERMAL_IMAGING_SHUTTER_LOCKOUT_INACTIVE 0
+
+/**
+ * \ingroup TF_ThermalImaging
+ */
+#define TF_THERMAL_IMAGING_SHUTTER_LOCKOUT_HIGH 1
+
+/**
+ * \ingroup TF_ThermalImaging
+ */
+#define TF_THERMAL_IMAGING_SHUTTER_LOCKOUT_LOW 2
 
 /**
  * \ingroup TF_ThermalImaging
@@ -705,6 +750,39 @@ int tf_thermal_imaging_set_flux_linear_parameters(TF_ThermalImaging *thermal_ima
  * .. versionadded:: 2.0.5$nbsp;(Plugin)
  */
 int tf_thermal_imaging_get_flux_linear_parameters(TF_ThermalImaging *thermal_imaging, uint16_t *ret_scene_emissivity, uint16_t *ret_temperature_background, uint16_t *ret_tau_window, uint16_t *ret_temperatur_window, uint16_t *ret_tau_atmosphere, uint16_t *ret_temperature_atmosphere, uint16_t *ret_reflection_window, uint16_t *ret_temperature_reflection);
+
+/**
+ * \ingroup TF_ThermalImaging
+ *
+ * Sets the FFC shutter mode parameters.
+ *
+ * See FLIR document 110-0144-03 4.5.15 for more details.
+ *
+ * .. versionadded:: 2.0.6$nbsp;(Plugin)
+ */
+int tf_thermal_imaging_set_ffc_shutter_mode(TF_ThermalImaging *thermal_imaging, uint8_t shutter_mode, uint8_t temp_lockout_state, bool video_freeze_during_ffc, bool ffc_desired, uint32_t elapsed_time_since_last_ffc, uint32_t desired_ffc_period, bool explicit_cmd_to_open, uint16_t desired_ffc_temp_delta, uint16_t imminent_delay);
+
+/**
+ * \ingroup TF_ThermalImaging
+ *
+ * Sets the FFC shutter mode parameters.
+ *
+ * See FLIR document 110-0144-03 4.5.15 for more details.
+ *
+ * .. versionadded:: 2.0.6$nbsp;(Plugin)
+ */
+int tf_thermal_imaging_get_ffc_shutter_mode(TF_ThermalImaging *thermal_imaging, uint8_t *ret_shutter_mode, uint8_t *ret_temp_lockout_state, bool *ret_video_freeze_during_ffc, bool *ret_ffc_desired, uint32_t *ret_elapsed_time_since_last_ffc, uint32_t *ret_desired_ffc_period, bool *ret_explicit_cmd_to_open, uint16_t *ret_desired_ffc_temp_delta, uint16_t *ret_imminent_delay);
+
+/**
+ * \ingroup TF_ThermalImaging
+ *
+ * Starts the Flat-Field Correction (FFC) normalization.
+ *
+ * See FLIR document 110-0144-03 4.5.16 for more details.
+ *
+ * .. versionadded:: 2.0.6$nbsp;(Plugin)
+ */
+int tf_thermal_imaging_run_ffc_normalization(TF_ThermalImaging *thermal_imaging);
 
 /**
  * \ingroup TF_ThermalImaging
