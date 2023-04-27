@@ -56,7 +56,7 @@
             "jumper_config": "switch configured",
             "jumper_config_software": "Software",
             "jumper_config_unconfigured": "Unconfigured",
-            "evse_version": "Charge controller version",
+            "evse_version": "Charge controller hardware version",
             "charging_current": "Charging current limits",
             "charging_current_muted": "minimum of the charging current limits",
             "reset_slot": "Release",
