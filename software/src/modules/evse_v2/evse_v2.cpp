@@ -431,6 +431,28 @@ void EVSEV2::setup()
     task_scheduler.scheduleWithFixedDelay([this](){
         update_all_data();
     }, 0, 250);
+
+    // The EVSE tests the DC fault protector
+    // - on boot-up
+    // - whenever a car is disconnected
+    // - once every 24 hours
+    // As the EVSE does not know the current time, we attempt to trigger a test
+    // somewhere between 3 am and 4 am. DST shifts typically happen earlier.
+    // Manually triggering a test resets the 24 hour counter, so that the
+    // EVSE is now roughly synchronized and tests should typically not be
+    // observable by the user.
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        struct timeval tv;
+        if (!clock_synced(&tv))
+            return;
+
+        struct tm timeinfo;
+        localtime_r(&tv.tv_sec, &timeinfo);
+
+        if (timeinfo.tm_hour == 3) {
+            tf_evse_v2_trigger_dc_fault_test(&device, 0xDCFAE550, nullptr);
+        }
+    }, 60 * 1000 /* wait for ntp sync */, 60 * 60 * 1000);
 }
 
 String EVSEV2::get_evse_debug_header()
@@ -808,6 +830,18 @@ void EVSEV2::register_urls()
     api.addCommand("evse/start_charging", Config::Null(), {}, [this](){
         if (evse_state.get("iec61851_state")->asUint() != IEC_STATE_A)
             is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 32000));
+    }, true);
+
+    api.addCommand("evse/trigger_dc_fault_test", Config::Null(), {}, [this](){
+        if (evse_state.get("iec61851_state")->asUint() != IEC_STATE_A) {
+            logger.printfln("Can't trigger DC fault test: IEC state is not A.");
+            return;
+        }
+        bool success = false;
+        int rc = tf_evse_v2_trigger_dc_fault_test(&device, 0xDCFAE550, &success);
+        if (!success) {
+            logger.printfln("Failed to start DC fault test. rc %d", rc);
+        }
     }, true);
 
 #if MODULE_WS_AVAILABLE()
