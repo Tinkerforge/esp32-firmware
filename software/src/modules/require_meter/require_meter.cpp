@@ -59,11 +59,10 @@ void RequireMeter::start_task() {
 
     meter.last_value_change = 0;
     task_scheduler.scheduleWithFixedDelay([this]() {
-        // Don't unblock if we were already blocked for another reason.
-        bool meter_timeout = get_require_meter_blocking();
+        bool meter_timeout = false;
 
-        // Block if we have not seen any energy_abs value after METER_BOOTUP_ENERGY_TIMEOUT.
-        meter_timeout |= isnan(meter.values.get("energy_abs")->asFloat()) && deadline_elapsed(METER_BOOTUP_ENERGY_TIMEOUT);
+        // Block if we have not seen any energy_abs value after METER_BOOTUP_ENERGY_TIMEOUT or if we are already blocked.
+        meter_timeout |= isnan(meter.values.get("energy_abs")->asFloat()) && (deadline_elapsed(METER_BOOTUP_ENERGY_TIMEOUT) || get_require_meter_blocking());
 
         // Block if all seen meter values are stuck for METER_TIMEOUT.
         meter_timeout |= deadline_elapsed(meter.last_value_change + METER_TIMEOUT);
