@@ -29,54 +29,57 @@
 #include "output_relay.h"
 #include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
-#define EM_TASK_DELAY_MS                250
+#define EM_TASK_DELAY_MS                    250
 
-#define MODE_FAST                       0
-#define MODE_OFF                        1
-#define MODE_PV                         2
-#define MODE_MIN_PV                     3
-#define MODE_DO_NOTHING                 255
+#define MODE_FAST                           0
+#define MODE_OFF                            1
+#define MODE_PV                             2
+#define MODE_MIN_PV                         3
+#define MODE_DO_NOTHING                     255
 
-#define CLOUD_FILTER_OFF                0
-#define CLOUD_FILTER_LIGHT              1
-#define CLOUD_FILTER_MEDIUM             2
-#define CLOUD_FILTER_STRONG             3
+#define CLOUD_FILTER_OFF                    0
+#define CLOUD_FILTER_LIGHT                  1
+#define CLOUD_FILTER_MEDIUM                 2
+#define CLOUD_FILTER_STRONG                 3
 
-#define PHASE_SWITCHING_AUTOMATIC       0
-#define PHASE_SWITCHING_ALWAYS_1PHASE   1
-#define PHASE_SWITCHING_ALWAYS_3PHASE   2
+#define PHASE_SWITCHING_MIN                 0
+#define PHASE_SWITCHING_AUTOMATIC           0
+#define PHASE_SWITCHING_ALWAYS_1PHASE       1
+#define PHASE_SWITCHING_ALWAYS_3PHASE       2
+#define PHASE_SWITCHING_EXTERNAL_CONTROL    3
+#define PHASE_SWITCHING_MAX                 3
 
-#define RELAY_CONFIG_MANUAL             0
-#define RELAY_CONFIG_RULE_BASED         1
+#define RELAY_CONFIG_MANUAL                 0
+#define RELAY_CONFIG_RULE_BASED             1
 
-#define RELAY_CONFIG_WHEN_INPUT3          0
-#define RELAY_CONFIG_WHEN_INPUT4          1
-#define RELAY_CONFIG_WHEN_PHASE_SWITCHING 2
-#define RELAY_CONFIG_WHEN_CONTACTOR_CHECK 3
-#define RELAY_CONFIG_WHEN_POWER_AVAILABLE 4
-#define RELAY_CONFIG_WHEN_GRID_DRAW       5
+#define RELAY_CONFIG_WHEN_INPUT3            0
+#define RELAY_CONFIG_WHEN_INPUT4            1
+#define RELAY_CONFIG_WHEN_PHASE_SWITCHING   2
+#define RELAY_CONFIG_WHEN_CONTACTOR_CHECK   3
+#define RELAY_CONFIG_WHEN_POWER_AVAILABLE   4
+#define RELAY_CONFIG_WHEN_GRID_DRAW         5
 
-#define RELAY_RULE_IS_HIGH            0
-#define RELAY_RULE_IS_LOW             1
-#define RELAY_RULE_IS_1PHASE          2
-#define RELAY_RULE_IS_3PHASE          3
-#define RELAY_RULE_IS_CONTACTOR_FAIL  4
-#define RELAY_RULE_IS_CONTACTOR_OK    5
-#define RELAY_RULE_IS_POWER_SUFFIC    6
-#define RELAY_RULE_IS_POWER_INSUFFIC  7
-#define RELAY_RULE_IS_GT0             8
-#define RELAY_RULE_IS_LE0             9
+#define RELAY_RULE_IS_HIGH                  0
+#define RELAY_RULE_IS_LOW                   1
+#define RELAY_RULE_IS_1PHASE                2
+#define RELAY_RULE_IS_3PHASE                3
+#define RELAY_RULE_IS_CONTACTOR_FAIL        4
+#define RELAY_RULE_IS_CONTACTOR_OK          5
+#define RELAY_RULE_IS_POWER_SUFFIC          6
+#define RELAY_RULE_IS_POWER_INSUFFIC        7
+#define RELAY_RULE_IS_GT0                   8
+#define RELAY_RULE_IS_LE0                   9
 
-#define INPUT_CONFIG_DISABLED           0
-#define INPUT_CONFIG_CONTACTOR_CHECK    1
-#define INPUT_CONFIG_BLOCK_CHARGING     2
-#define INPUT_CONFIG_LIMIT_MAX_CURRENT  3
-#define INPUT_CONFIG_SWITCH_MODE        4
+#define INPUT_CONFIG_DISABLED               0
+#define INPUT_CONFIG_CONTACTOR_CHECK        1
+#define INPUT_CONFIG_BLOCK_CHARGING         2
+#define INPUT_CONFIG_LIMIT_MAX_CURRENT      3
+#define INPUT_CONFIG_SWITCH_MODE            4
 
-#define INPUT_CONFIG_WHEN_HIGH          0
-#define INPUT_CONFIG_WHEN_LOW           1
+#define INPUT_CONFIG_WHEN_HIGH              0
+#define INPUT_CONFIG_WHEN_LOW               1
 
-#define HYSTERESIS_MIN_TIME_MINUTES     5
+#define HYSTERESIS_MIN_TIME_MINUTES         5
 
 #define ERROR_FLAGS_BAD_CONFIG_BIT_POS      31
 #define ERROR_FLAGS_BAD_CONFIG_MASK         (1 << ERROR_FLAGS_BAD_CONFIG_BIT_POS)
@@ -103,6 +106,11 @@
 #define CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK      (1 << CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_BIT_POS)
 #define CONFIG_ERROR_FLAGS_PHASE_SWITCHING_BIT_POS  0
 #define CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK     (1 << CONFIG_ERROR_FLAGS_PHASE_SWITCHING_BIT_POS)
+
+#define EXTERNAL_CONTROL_STATE_AVAILABLE    0
+#define EXTERNAL_CONTROL_STATE_DISABLED     1
+#define EXTERNAL_CONTROL_STATE_UNAVAILABLE  2
+#define EXTERNAL_CONTROL_STATE_SWITCHING    3
 
 typedef struct {
     uint32_t last_update;
@@ -198,6 +206,8 @@ public:
     ConfigRoot debug_config_in_use;
     ConfigRoot charge_mode;
     ConfigRoot charge_mode_update;
+    ConfigRoot external_control;
+    ConfigRoot external_control_update;
 
     EnergyManagerAllData all_data;
 

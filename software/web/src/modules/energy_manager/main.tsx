@@ -258,7 +258,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                 ["0", __("energy_manager.content.automatic")],
                                 ["1", __("energy_manager.content.always_one_phase")],
                                 ["2", __("energy_manager.content.always_three_phases")],
-                                ["3-disabled", __("energy_manager.content.external_control")],
+                                ["3", __("energy_manager.content.external_control")],
                             ] : [
                                 ["1", __("energy_manager.content.fixed_one_phase")],
                                 ["2", __("energy_manager.content.fixed_three_phases")],

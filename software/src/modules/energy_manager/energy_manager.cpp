@@ -40,6 +40,7 @@ void EnergyManager::pre_setup()
         {"relay_state", Config::Bool(false)},
         {"error_flags", Config::Uint32(0)},
         {"config_error_flags", Config::Uint32(0)},
+        {"external_control", Config::Uint32(EXTERNAL_CONTROL_STATE_DISABLED)},
     });
 
     low_level_state = Config::Object({
@@ -83,15 +84,15 @@ void EnergyManager::pre_setup()
 
     // Config
     config = ConfigRoot(Config::Object({
+        {"contactor_installed", Config::Bool(false)},
+        {"phase_switching_mode", Config::Uint(PHASE_SWITCHING_AUTOMATIC, PHASE_SWITCHING_MIN, PHASE_SWITCHING_MAX)},
+        {"excess_charging_enable", Config::Bool(false)},
         {"default_mode", Config::Uint(0, 0, 3)},
         {"auto_reset_mode", Config::Bool(false)},
         {"auto_reset_time", Config::Uint(0, 0, 1439)},
-        {"excess_charging_enable", Config::Bool(false)},
         {"target_power_from_grid", Config::Int32(0)}, // in watt
         {"guaranteed_power", Config::Uint(1380, 0, 22080)}, // in watt
         {"cloud_filter_mode", Config::Uint(CLOUD_FILTER_MEDIUM, CLOUD_FILTER_OFF, CLOUD_FILTER_STRONG)},
-        {"contactor_installed", Config::Bool(false)},
-        {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
         {"relay_config", Config::Uint8(0)},
         {"relay_rule_when", Config::Uint8(0)},
         {"relay_rule_is", Config::Uint8(0)},
@@ -117,6 +118,21 @@ void EnergyManager::pre_setup()
             return "Input 4 current limit exceeds maximum total current of all chargers.";
         }
 
+        if (cfg.get("phase_switching_mode")->asUint() == 3) { // external control
+            if (cfg.get("contactor_installed")->asBool() != true)
+                return "Can't enable external control with no contactor installed.";
+            if (cfg.get("excess_charging_enable")->asBool() != false)
+                return "Can't enable external control unless excess charging is disabled.";
+            if (cfg.get("default_mode")->asUint() != MODE_FAST)
+                return "Can't enable external control with any charging mode besides 'Fast'.";
+            if (cfg.get("auto_reset_mode")->asBool() != false)
+                return "Can't enable external control unless auto reset mode is disabled.";
+            if (cfg.get("input3_rule_then")->asUint() == INPUT_CONFIG_SWITCH_MODE)
+                return "Can't enable external control when input 3 is configured to change charging mode.";
+            if (cfg.get("input4_rule_then")->asUint() == INPUT_CONFIG_SWITCH_MODE)
+                return "Can't enable external control when input 4 is configured to change charging mode.";
+        }
+
         return "";
     });
 
@@ -129,6 +145,11 @@ void EnergyManager::pre_setup()
         {"mode", Config::Uint(0, 0, 3)},
     });
     charge_mode_update = charge_mode;
+
+    external_control = Config::Object({
+        {"phases_wanted", Config::Uint32(0)},
+    });
+    external_control_update = external_control;
 
     // history
     history_wallbox_5min = Config::Object({
@@ -252,6 +273,9 @@ void EnergyManager::setup()
     mode = default_mode;
     charge_mode.get("mode")->updateUint(mode);
 
+    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+        state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+
     // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
     uint32_t hysteresis_min_ms = 10 * 1000;  // milliseconds
     if (switching_hysteresis_ms < hysteresis_min_ms)
@@ -263,7 +287,7 @@ void EnergyManager::setup()
         min_phases = 1;
     } else if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE) {
         min_phases = 3;
-    } else { // automatic
+    } else { // automatic or external
         min_phases = 1;
     }
     overall_min_power_w = 230 * min_phases * min_current_ma / 1000;
@@ -395,6 +419,39 @@ void EnergyManager::register_urls()
 
         logger.printfln("energy_manager: Switched mode %i->%i", old_mode, mode);
     }, false);
+
+    api.addState("energy_manager/external_control", &external_control, {}, 1000);
+    api.addCommand("energy_manager/external_control_update", &external_control_update, {}, [this](){
+        uint32_t external_control_state = state.get("external_control")->asUint();
+        switch (external_control_state) {
+            case EXTERNAL_CONTROL_STATE_DISABLED:
+                logger.printfln("energy_manager: Ignoring external control phase change request: External control is not enabled.");
+                return;
+            case EXTERNAL_CONTROL_STATE_UNAVAILABLE:
+                logger.printfln("energy_manager: Ignoring external control phase change request: Phase switching is currently unavailable.");
+                return;
+            case EXTERNAL_CONTROL_STATE_SWITCHING:
+                logger.printfln("energy_manager: Ignoring external control phase change request: Phase switching in progress.");
+                return;
+        }
+
+        auto phases_wanted = external_control.get("phases_wanted");
+        uint32_t old_phases = phases_wanted->asUint();
+        uint32_t new_phases = external_control_update.get("phases_wanted")->asUint();
+
+        if (new_phases == old_phases) {
+            logger.printfln("energy_manager: Ignoring external control phase change request: Value is already %u.", new_phases);
+            return;
+        }
+
+        if (new_phases == 2 || new_phases > 3) {
+            logger.printfln("energy_manager: Ignoring external control phase change request: Value %u is invalid.", new_phases);
+            return;
+        }
+
+        logger.printfln("energy_manager: External control phase change request: switching from %i to %i", old_phases, new_phases);
+        phases_wanted->updateUint(new_phases);
+    }, true);
 
     api.addResponse("energy_manager/history_wallbox_5min", &history_wallbox_5min, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_5min_response(response, ownership, owner_id);});
     api.addResponse("energy_manager/history_wallbox_daily", &history_wallbox_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_daily_response(response, ownership, owner_id);});
@@ -674,6 +731,10 @@ void EnergyManager::update_energy()
 
     if (!bricklet_reachable) {
         set_available_current(0);
+
+        if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+            state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+
         return;
     }
 
@@ -689,6 +750,10 @@ void EnergyManager::update_energy()
                 switching_state = SwitchingState::Stopping;
                 switching_start = millis();
             }
+
+            if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+
             return;
         }
 
@@ -705,6 +770,10 @@ void EnergyManager::update_energy()
             }
             set_available_current(0);
             just_switched_phases = false;
+
+            if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+
             return;
         }
 
@@ -781,6 +850,11 @@ void EnergyManager::update_energy()
                 break;
         }
 
+        if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && external_control.get("phases_wanted")->asUint() == 0) {
+            power_available_w          = 0;
+            power_available_filtered_w = 0;
+        }
+
         // CP disconnect support unknown if some chargers haven't replied yet.
         if (!charge_manager.seen_all_chargers()) {
             // Don't constantly complain if we don't have any chargers configured.
@@ -790,6 +864,10 @@ void EnergyManager::update_energy()
                     printed_not_seen_all_chargers = true;
                 }
             }
+
+            if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+
             return;
         } else if (!printed_seen_all_chargers) {
             logger.printfln("energy_manager: Seen all chargers.");
@@ -801,6 +879,8 @@ void EnergyManager::update_energy()
             wants_3phase = false;
         } else if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE) {
             wants_3phase = true;
+        } else if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+            wants_3phase = external_control.get("phases_wanted")->asUint() == 3;
         } else { // automatic
             if (is_3phase) {
                 wants_3phase = power_available_filtered_w >= threshold_3to1_w;
@@ -840,6 +920,9 @@ void EnergyManager::update_energy()
                 logger.printfln("energy_manager: Phase switch wanted but no contactor installed. Check configuration.");
             } else if (!charge_manager.is_control_pilot_disconnect_supported(time_now - 5000)) {
                 logger.printfln("energy_manager: Phase switch wanted but not supported by all chargers.");
+            } else if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+                // Switching phases is always allowed when under external control.
+                switch_phases = true;
             } else if (!uptime_past_hysteresis) {
                 // (Re)booted recently. Allow immediate switching.
                 logger.printfln("energy_manager: Free phase switch to %s during start-up period. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
@@ -857,6 +940,14 @@ void EnergyManager::update_energy()
             } else {
                 logger.printfln("energy_manager wants phase change to %s: available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
                 switch_phases = true;
+            }
+        }
+
+        if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+            if (charge_manager.is_control_pilot_disconnect_supported(time_now - 5000)) {
+                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_AVAILABLE);
+            } else {
+                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
             }
         }
 
@@ -884,7 +975,9 @@ void EnergyManager::update_energy()
 
             // Check if switching on/off is allowed right now.
             if (wants_on != is_on) {
-                if (!on_state_change_is_blocked) {
+                if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+                    // Switching on/off is always allowed when under external control.
+                } else if (!on_state_change_is_blocked) {
                     // Start/stop allowed
                     logger.printfln("energy_manager: Switch %s", wants_on ? "on" : "off");
                 } else if (!uptime_past_hysteresis) {
@@ -949,6 +1042,9 @@ void EnergyManager::update_energy()
 
         just_switched_phases = true;
     }
+
+    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && switching_state != SwitchingState::Monitoring)
+        state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_SWITCHING);
 #endif
 }
 
