@@ -57,7 +57,8 @@
             "reset_dc_fault_title": "Zurücksetzen des DC-Fehlerstromschutzmoduls",
             "reset_dc_fault_content": "Durch das Zurücksetzen des Moduls kann wieder geladen werden. <b>Es muss sichergestellt sein, dass der Grund für das Auslösen des Moduls behoben wurde!</b> <a href=\"{{{manual_url}}}\">Siehe Betriebsanleitung für Details.</a> Soll das DC-Fehlerstromschutzmodul wirklich zurückgesetzt werden?",
             "abort": "Abbrechen",
-            "reset": "Zurücksetzen"
+            "reset": "Zurücksetzen",
+            "trigger_dc_fault_test": "DC-Fehlerschutz testen"
         },
         "script": {
             "control_pilot_configuration_failed": "Speichern der Control-Pilot-Konfiguration fehlgeschlagen",

@@ -396,6 +396,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                             <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => API.call('evse/reset', {}, "")}>{__("evse.content.reset_evse")}</Button>
                             <Button variant="primary" className="form-control rounded-left" onClick={() => API.call('evse/reflash', {}, "")}>{__("evse.content.reflash_evse")}</Button>
                         </div>
+                        <Button variant="primary" className="form-control" onClick={() => API.call('evse/trigger_dc_fault_test', {}, "")}>{__("evse.content.trigger_dc_fault_test")}</Button>
                         </FormRow>
                     </CollapsedSection>
             </>

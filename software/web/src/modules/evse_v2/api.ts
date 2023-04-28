@@ -39,3 +39,5 @@ export interface control_pilot_disconnect {
 export interface reset_dc_fault_current_state {
     password: number
 }
+
+export interface trigger_dc_fault_test {}
