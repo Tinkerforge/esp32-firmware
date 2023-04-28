@@ -21,10 +21,10 @@
 #include "modules.h"
 #include "tools.h"
 
-#define METER_TIMEOUT micros{24ll * 60 * 60 * 1000 * 1000}
-//#define METER_TIMEOUT_US micros{10 * 1000 * 1000}
+#define METER_TIMEOUT micros_t{24ll * 60 * 60 * 1000 * 1000}
+//#define METER_TIMEOUT_US micros_t{10 * 1000 * 1000}
 
-#define METER_BOOTUP_ENERGY_TIMEOUT micros{90ll * 1000 * 1000}
+#define METER_BOOTUP_ENERGY_TIMEOUT micros_t{90ll * 1000 * 1000}
 
 #define WARP_SMART 0
 #define WARP_PRO_DISABLED 1

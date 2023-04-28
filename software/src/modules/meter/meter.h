@@ -23,6 +23,7 @@
 
 #include "module.h"
 #include "value_history.h"
+#include "tools.h"
 
 #define METER_ALL_VALUES_COUNT 85
 
@@ -166,7 +167,7 @@ public:
 
     ValueHistory power_hist;
 
-    int64_t last_value_change = 0;
+    micros_t last_value_change = 0_usec;
 
     std::vector<std::function<void(void)>> reset_callbacks;
 };

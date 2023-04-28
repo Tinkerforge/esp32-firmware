@@ -104,7 +104,7 @@ void Meter::updateMeterValues(float power, float energy_rel, float energy_abs)
     }
 
     if (changed)
-        last_value_change = esp_timer_get_time();
+        last_value_change = now_us();
 
     power_hist.add_sample(power);
 }
@@ -144,7 +144,7 @@ void Meter::updateMeterAllValues(float values[METER_ALL_VALUES_COUNT])
         }
 
     if (changed) {
-        last_value_change = esp_timer_get_time();
+        last_value_change = now_us();
     }
 }
 
