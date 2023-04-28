@@ -19,6 +19,16 @@
 
 #include "require_meter.h"
 #include "modules.h"
+#include "tools.h"
+
+#define METER_TIMEOUT micros{24ll * 60 * 60 * 1000 * 1000}
+//#define METER_TIMEOUT_US micros{10 * 1000 * 1000}
+
+#define METER_BOOTUP_ENERGY_TIMEOUT micros{90ll * 1000 * 1000}
+
+#define WARP_SMART 0
+#define WARP_PRO_DISABLED 1
+#define WARP_PRO_ENABLED 2
 
 void RequireMeter::start_task() {
     static bool is_running = false;
@@ -26,13 +36,15 @@ void RequireMeter::start_task() {
         return;
 
     meter.last_value_change = 0;
-    task_scheduler.scheduleWithFixedDelay([]() {
-        int64_t now = esp_timer_get_time();
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        // Don't unblock if we were already blocked for another reason.
+        bool meter_timeout = get_require_meter_blocking();
 
+        // Block if we have not seen any energy_abs value after METER_BOOTUP_ENERGY_TIMEOUT.
+        meter_timeout |= isnan(meter.values.get("energy_abs")->asFloat()) && deadline_elapsed(METER_BOOTUP_ENERGY_TIMEOUT);
 
-        bool meter_timeout = (now > METER_BOOTUP_ENERGY_TIMEOUT_US) && isnan(meter.values.get("energy_abs")->asFloat());
-
-        meter_timeout |= (now - meter.last_value_change > METER_TIMEOUT_US);
+        // Block if all seen meter values are stuck for METER_TIMEOUT.
+        meter_timeout |= deadline_elapsed(meter.last_value_change + METER_TIMEOUT);
 
         #if MODULE_EVSE_V2_AVAILABLE()
             evse_v2.set_require_meter_blocking(meter_timeout);

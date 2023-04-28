@@ -22,16 +22,6 @@
 #include "module.h"
 #include "config.h"
 
-#define METER_TIMEOUT_US 24ll * 60 * 60 * 1000 * 1000
-//#define METER_TIMEOUT_US  10 * 1000 * 1000
-
-#define METER_BOOTUP_ENERGY_TIMEOUT_US 90ll * 1000 * 1000
-
-#define WARP_SMART 0
-#define WARP_PRO_DISABLED 1
-#define WARP_PRO_ENABLED 2
-
-
 class RequireMeter final : public IModule {
 private:
     ConfigRoot config;
