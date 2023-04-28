@@ -113,7 +113,7 @@ bool EvseLed::set(Blink state, uint16_t duration_ms, bool via_api)
 
     uint8_t success = 1;
 #if MODULE_EVSE_AVAILABLE()
-    evse.set_indicator_led(state, duration_ms, success);
+    evse.set_indicator_led(state, duration_ms, &success);
 #endif
 #if MODULE_EVSE_V2_AVAILABLE()
     evse_v2.set_indicator_led(state, duration_ms, &success);
