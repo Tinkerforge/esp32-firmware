@@ -10,11 +10,16 @@
             "em_energy_analysis": "Energiebilanz",
             "no_data": "Keine Daten vorhanden!",
             "loading": "Lade Daten...",
+            "data_type": "Auflösung",
+            "data_type_5min": "1 Tag in 5 Minuten",
+            "data_type_daily": "1 Monat in Tagen",
             "date": "Datum"
         },
         "script": {
-            "time": "Uhrzeit",
+            "time_5min": "Uhrzeit",
+            "time_daily": "Datum",
             "power": "Leistung",
+            "energy": "Energie",
             "grid_connection": "Netzanschluss",
             "grid_in": "Netzbezug",
             "grid_out": "Netzeinspeisung"
