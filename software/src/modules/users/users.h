@@ -61,8 +61,6 @@ public:
 
     bool start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth_type, Config::ConfVariant auth_info);
     bool stop_charging(uint8_t user_id, bool force, float meter_abs = 0);
-    int16_t get_blink_state();
-    void set_blink_state(int16_t state);
 
 private:
     int16_t blink_state = -1;

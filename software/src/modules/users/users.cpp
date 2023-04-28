@@ -517,6 +517,22 @@ int Users::get_display_name(uint8_t user_id, char *ret_buf)
     return strnlen(ret_buf, 32);
 }
 
+static void check_waiting_for_start(Config *ignored) {
+    (void) ignored;
+
+    static Config *iec_state = (Config *) api.getState("evse/state", false)->get("iec61851_state");
+    static Config *user_slot_current = (Config *) api.getState("evse/slots", false)->get(CHARGING_SLOT_USER)->get("max_current");
+
+    if (iec_state == nullptr || user_slot_current == nullptr)
+        return;
+
+    bool waiting_for_start = (iec_state->asUint() == 1)
+                          && (user_slot_current->asUint() == 0);
+
+    if (waiting_for_start)
+        evse_led.set_module(EvseLed::Blink::Nag, 2000);
+}
+
 void Users::register_urls()
 {
     // No users (except anonymous) configured: Make sure the EVSE's user slot is disabled.
@@ -784,33 +800,9 @@ void Users::register_urls()
         return request.send(200, "application/octet-stream", buf.get(), read);
     });
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
-            static Config *evse_state = api.getState("evse/state", false);
-            static Config *evse_slots = api.getState("evse/slots", false);
-
-            if (evse_state == nullptr || evse_slots == nullptr)
-                return;
-
-            bool waiting_for_start = (evse_state->get("iec61851_state")->asUint() == 1)
-                                && (evse_slots->get(CHARGING_SLOT_USER)->get("active")->asBool())
-                                && (evse_slots->get(CHARGING_SLOT_USER)->get("max_current")->asUint() == 0);
-
-            if (blink_state != -1) {
-                set_led(blink_state);
-                blink_state = -1;
-            } else
-                set_led(waiting_for_start ? IND_NAG : -1);
-    }, 10, 10);
-}
-
-int16_t Users::get_blink_state()
-{
-    return blink_state;
-}
-
-void Users::set_blink_state(int16_t state)
-{
-    blink_state = state;
+#if MODULE_EVSE_LED_AVAILABLE()
+    task_scheduler.scheduleWithFixedDelay([](){check_waiting_for_start(nullptr);}, 1000, 1000);
+#endif
 }
 
 uint8_t Users::next_user_id()
@@ -950,41 +942,4 @@ bool Users::stop_charging(uint8_t user_id, bool force, float meter_abs)
     set_user_current(0);
 
     return true;
-}
-
-void set_led(int16_t mode)
-{
-    static int16_t last_mode = -1;
-    static uint32_t last_set = 0;
-
-    if (last_mode == mode && !deadline_elapsed(last_set + 2500))
-        return;
-
-    // sorted by priority
-    switch (mode) {
-        case IND_ACK:
-            break;
-        case IND_NACK:
-            if (last_mode == IND_ACK && !deadline_elapsed(last_set + 2340))
-                return;
-            break;
-        case IND_NAG:
-        case -1:
-            if ((last_mode == IND_ACK && !deadline_elapsed(last_set + 2340))
-                || (last_mode == IND_NACK && !deadline_elapsed(last_set + 3536)))
-                return;
-            break;
-        default:
-            break;
-    }
-
-#if MODULE_EVSE_AVAILABLE()
-    evse.set_indicator_led(mode, mode != IND_NACK ? 2620 : 3930, nullptr);
-#endif
-#if MODULE_EVSE_V2_AVAILABLE()
-    evse_v2.set_indicator_led(mode, mode != IND_NACK ? 2620 : 3930, nullptr);
-#endif
-
-    last_mode = mode;
-    last_set = millis();
 }

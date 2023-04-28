@@ -27,13 +27,6 @@
 #include "task_scheduler.h"
 #include "modules.h"
 
-#if MODULE_EVSE_AVAILABLE()
-#include "bindings/bricklet_evse.h"
-#endif
-#if MODULE_EVSE_V2_AVAILABLE()
-#include "bindings/bricklet_evse_v2.h"
-#endif
-
 #if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
 #define AUTHORIZED_TAG_LIST_LENGTH 16
 #else
@@ -179,7 +172,9 @@ void NFC::handle_event(tag_info_t *tag, bool found, bool injected)
             // Found a new authorized tag. Create/overwrite auth token. Overwrite blink state even if we previously saw a not authorized tag.
             auth_token = idx;
             auth_token_seen = millis();
-            users.set_blink_state(IND_ACK);
+#if MODULE_EVSE_LED_AVAILABLE()
+            evse_led.set_module(EvseLed::Blink::Ack, 2000);
+#endif
             users.trigger_charge_action(user_id, injected ? CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION : CHARGE_TRACKER_AUTH_TYPE_NFC, Config::Object({
                     {"tag_type", Config::Uint8(tag->tag_type)},
                     {"tag_id", Config::Str(tag->tag_id)}}).value,
@@ -195,10 +190,9 @@ void NFC::handle_event(tag_info_t *tag, bool found, bool injected)
 #if MODULE_OCPP_AVAILABLE()
         ocpp.on_tag_seen(tag->tag_id);
 #endif
-        // Found a not authorized tag. Blink NACK but only if we did not see an authorized token
-        if (users.get_blink_state() == -1) {
-            users.set_blink_state(IND_NACK);
-        }
+#if MODULE_EVSE_LED_AVAILABLE()
+        evse_led.set_module(EvseLed::Blink::Nack, 2000);
+#endif
     }
 }
 
