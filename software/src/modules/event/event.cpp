@@ -29,7 +29,7 @@ void Event::setup()
     initialized = true;
 }
 
-void Event::addStateUpdate(const String &path, const std::vector<const char *> values, std::function<void(Config *)> callback)
+void Event::addStateUpdate(const String &path, const std::vector<ConfPath> values, std::function<void(Config *)> callback)
 {
     for (size_t i = 0; i < api.states.size(); i++) {
         if (api.states[i].path != path) {
@@ -39,10 +39,17 @@ void Event::addStateUpdate(const String &path, const std::vector<const char *> v
         Config *config = api.states[i].config;
 
         for (auto value : values) {
-            config = (Config *)config->get(value);
+            bool is_obj = strict_variant::get<const char *>(&value) != nullptr;
+            if (is_obj)
+                config = (Config *)config->get(*strict_variant::get<const char *>(&value));
+            else
+                config = (Config *)config->get(*strict_variant::get<uint16_t>(&value));
 
             if (config == nullptr) {
-                logger.printfln("Value %s in state %s not found", value, path.c_str());
+                if (is_obj)
+                    logger.printfln("Value %s in state %s not found", *strict_variant::get<const char *>(&value), path.c_str());
+                else
+                    logger.printfln("Index %u in state %s not found", *strict_variant::get<uint16_t>(&value), path.c_str());
                 return;
             }
         }

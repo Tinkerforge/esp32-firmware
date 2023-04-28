@@ -36,7 +36,12 @@ public:
     void pre_setup();
     void setup();
 
-    void addStateUpdate(const String &path, const std::vector<const char *> values, std::function<void(Config *)> callback);
+    typedef strict_variant::variant<
+        const char *,
+        uint16_t
+    > ConfPath;
+
+    void addStateUpdate(const String &path, const std::vector<ConfPath> values, std::function<void(Config *)> callback);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
