@@ -30,6 +30,28 @@
 #define WARP_PRO_DISABLED 1
 #define WARP_PRO_ENABLED 2
 
+void RequireMeter::pre_setup() {
+    config = Config::Object({
+        {"config", Config::Uint8(WARP_SMART)}
+    });
+}
+
+void RequireMeter::setup() {
+    api.restorePersistentConfig("require_meter/config", &config);
+
+    if (config.get("config")->asUint() == WARP_PRO_ENABLED) {
+        set_require_meter_enabled(true);
+        start_task();
+    } else
+        set_require_meter_enabled(false);
+    initialized = true;
+}
+
+void RequireMeter::register_urls() {
+    api.addPersistentConfig("require_meter/config", &config, {}, 1000);
+}
+
+
 void RequireMeter::start_task() {
     static bool is_running = false;
     if (is_running)
@@ -57,12 +79,6 @@ void RequireMeter::start_task() {
 
     }, 0, 1000);
     is_running = true;
-}
-
-void RequireMeter::pre_setup() {
-    config = Config::Object({
-        {"config", Config::Uint8(WARP_SMART)}
-    });
 }
 
 void RequireMeter::set_require_meter_enabled(bool enabled) {
@@ -112,19 +128,4 @@ void RequireMeter::meter_found() {
         set_require_meter_enabled(true);
         start_task();
     }
-}
-
-void RequireMeter::setup() {
-    api.restorePersistentConfig("require_meter/config", &config);
-
-    if (config.get("config")->asUint() == WARP_PRO_ENABLED) {
-        set_require_meter_enabled(true);
-        start_task();
-    } else
-        set_require_meter_enabled(false);
-    initialized = true;
-}
-
-void RequireMeter::register_urls() {
-    api.addPersistentConfig("require_meter/config", &config, {}, 1000);
 }
