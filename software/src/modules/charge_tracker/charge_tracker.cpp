@@ -595,7 +595,7 @@ void ChargeTracker::register_urls()
                 String errorString = String("Failed to deserialize string: ") + error.c_str();
                 return request.send(400, "text/plain", errorString.c_str());
             }
-            if (!doc["api_not_final_acked"])
+            if (!bool(doc["api_not_final_acked"]))
                 return request.send(400, "text/plain", "Please acknowledge that this API is subject to change!");
 
             user_filter = doc["user_filter"] | USER_FILTER_ALL_USERS;

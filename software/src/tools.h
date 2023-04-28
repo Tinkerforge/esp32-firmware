@@ -29,6 +29,8 @@
 
 #include "esp_log.h"
 
+#include "strong_typedef.h"
+
 #define MACRO_NAME_TO_STRING(x) #x
 
 // Indirection expands macro. See https://gcc.gnu.org/onlinedocs/gcc-3.4.3/cpp/Stringification.html
@@ -38,6 +40,13 @@ const char *tf_reset_reason();
 
 bool a_after_b(uint32_t a, uint32_t b);
 bool deadline_elapsed(uint32_t deadline_ms);
+
+STRONG_INTEGER_TYPEDEF(int64_t, micros_t)
+
+micros_t operator""_usec(unsigned long long int i);
+
+micros_t now_us();
+bool deadline_elapsed(micros_t deadline_us);
 
 void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase);
 

@@ -28,6 +28,7 @@
 #include "LittleFS.h"
 #include "esp_littlefs.h"
 #include "esp_system.h"
+#include "esp_timer.h"
 
 #include <soc/efuse_reg.h>
 #include "bindings/base58.h"
@@ -89,6 +90,18 @@ bool a_after_b(uint32_t a, uint32_t b)
 bool deadline_elapsed(uint32_t deadline_ms)
 {
     return a_after_b(millis(), deadline_ms);
+}
+
+micros_t operator""_usec(unsigned long long int i) {
+    return micros_t{(int64_t)i};
+}
+
+micros_t now_us() {
+    return micros_t{esp_timer_get_time()};
+}
+
+bool deadline_elapsed(micros_t deadline_us) {
+    return deadline_us == 0_usec || deadline_us < now_us();
 }
 
 void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
