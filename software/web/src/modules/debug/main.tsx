@@ -24,15 +24,14 @@ import * as util from "../../ts/util";
 import { __ }    from "../../ts/translation";
 
 import { h, render, Fragment, Component} from "preact";
-import { Button } from "react-bootstrap";
-
-import { FormRow }    from "../../ts/components/form_row";
-import { InputText }  from "../../ts/components/input_text";
+import { Button     } from "react-bootstrap";
+import { FormRow    } from "../../ts/components/form_row";
+import { InputText  } from "../../ts/components/input_text";
 import { PageHeader } from "../../ts/components/page_header";
 
-export class Debug extends Component<{}, {}>
+export class Debug extends Component
 {
-    render(props: {}, s: {}) {
+    render() {
         if (!util.render_allowed())
             return <></>
 
@@ -73,10 +72,9 @@ export class Debug extends Component<{}, {}>
     }
 }
 
-render(<Debug />, $('#debug')[0]);
+render(<Debug/>, $('#debug')[0]);
 
 export function init() {}
-
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {

@@ -32,8 +32,8 @@ import { InputText       } from "../../ts/components/input_text";
 import { OutputFloat     } from "../../ts/components/output_float";
 import { Switch          } from "../../ts/components/switch";
 
-export class EmPvFakerStatus extends Component<{}, {}> {
-    render(props: {}, s: {}) {
+export class EmPvFakerStatus extends Component {
+    render() {
         if (!util.render_allowed())
             return <></>
 
@@ -55,7 +55,7 @@ export class EmPvFakerStatus extends Component<{}, {}> {
     }
 }
 
-render(<EmPvFakerStatus />, $('#status-em_pv_faker')[0])
+render(<EmPvFakerStatus/>, $('#status-em_pv_faker')[0])
 
 
 export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.getType['em_pv_faker/runtime_config']> {
@@ -157,10 +157,11 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
     }
 }
 
-render(<EmPvFaker />, $('#em_pv_faker')[0])
+render(<EmPvFaker/>, $('#em_pv_faker')[0])
 
 export function init() {}
 export function add_event_listeners(source: API.APIEventTarget) {}
+
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-em_pv_faker').prop('hidden', !module_init.em_pv_faker);
 }

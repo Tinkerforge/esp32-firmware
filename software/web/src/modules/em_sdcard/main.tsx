@@ -24,15 +24,14 @@ import * as util from "../../ts/util";
 import { __ }    from "../../ts/translation";
 
 import { h, render, Fragment, Component } from "preact";
-import { Button } from "react-bootstrap";
-
+import { Button         } from "react-bootstrap";
 import { FormRow        } from "../../ts/components/form_row";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputText      } from "../../ts/components/input_text";
 import { PageHeader     } from "../../ts/components/page_header";
 
-export class EMSDcard extends Component<{}, {}> {
-    render(props: {}, s: {}) {
+export class EMSDcard extends Component {
+    render() {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
             return <></>
 

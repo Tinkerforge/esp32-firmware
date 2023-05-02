@@ -19,17 +19,17 @@
 
 import $ from "../../ts/jq";
 
-import * as API from "../../ts/api";
+import * as API  from "../../ts/api";
 import * as util from "../../ts/util";
+import { __ }    from "../../ts/translation";
 
 import { h, render, Fragment, Component } from "preact";
-import { __ } from "../../ts/translation";
-import { Switch } from "../../ts/components/switch";
-import { ConfigComponent } from "src/ts/components/config_component";
-import { ConfigForm } from "src/ts/components/config_form";
-import { FormRow } from "src/ts/components/form_row";
-import { IPConfiguration } from "src/ts/components/ip_configuration";
-import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { ConfigComponent } from "../../ts/components/config_component";
+import { ConfigForm      } from "../../ts/components/config_form";
+import { FormRow         } from "../../ts/components/form_row";
+import { IndicatorGroup  } from "../../ts/components/indicator_group";
+import { IPConfiguration } from "../../ts/components/ip_configuration";
+import { Switch          } from "../../ts/components/switch";
 
 type EthernetConfig = API.getType['ethernet/config'];
 
@@ -84,12 +84,11 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
 
 render(<Ethernet/>, $('#ethernet')[0])
 
-export class EthernetStatus extends Component<{}, {}>
+export class EthernetStatus extends Component
 {
-    render(props: {}, s: {})
-    {
+    render() {
         if (!util.render_allowed() || !API.get('ethernet/config').enable_ethernet)
-            return <></>;
+            return <></>
 
         let state = API.get('ethernet/state');
 
@@ -106,15 +105,14 @@ export class EthernetStatus extends Component<{}, {}>
                             ["success", __("ethernet.status.connected")],
                         ]}/>
                 </FormRow>
-            </>;
+            </>
     }
 }
 
 render(<EthernetStatus/>, $('#status-ethernet')[0]);
 
-export function add_event_listeners(source: API.APIEventTarget) {}
-
 export function init() {}
+export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-ethernet').prop('hidden', !module_init.ethernet);

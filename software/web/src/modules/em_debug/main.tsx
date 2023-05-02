@@ -24,7 +24,6 @@ import * as util from "../../ts/util";
 import { __ }    from "../../ts/translation";
 
 import { h, render, Fragment, Component } from "preact";
-
 import { DebugLogger    } from "../../ts/components/debug_logger";
 import { FormRow        } from "../../ts/components/form_row";
 import { FormSeparator  } from "../../ts/components/form_separator";
@@ -33,7 +32,7 @@ import { InputText      } from "../../ts/components/input_text";
 import { OutputFloat    } from "../../ts/components/output_float";
 import { PageHeader     } from "../../ts/components/page_header";
 
-export class EMDebug extends Component<{}, {}> {
+export class EMDebug extends Component {
     ms2time(ms: number) {
         let s = ms / 1000;
         let m = Math.trunc(s / 60);
@@ -42,7 +41,7 @@ export class EMDebug extends Component<{}, {}> {
         return m.toString() + "m " + s.toString() + "s";
     }
 
-    render(props: {}, s: {}) {
+    render() {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
             return <></>
 
@@ -214,7 +213,7 @@ export class EMDebug extends Component<{}, {}> {
     }
 }
 
-render(<EMDebug />, $('#em_debug')[0]);
+render(<EMDebug/>, $('#em_debug')[0]);
 
 export function init() {}
 export function add_event_listeners(source: API.APIEventTarget) {}
