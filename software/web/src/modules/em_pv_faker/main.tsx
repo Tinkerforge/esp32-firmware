@@ -29,51 +29,33 @@ import { ConfigForm      } from "../../ts/components/config_form";
 import { FormRow         } from "../../ts/components/form_row";
 import { InputFloat      } from "../../ts/components/input_float";
 import { InputText       } from "../../ts/components/input_text";
-import { Switch          } from "../../ts/components/switch";
 import { OutputFloat     } from "../../ts/components/output_float";
+import { Switch          } from "../../ts/components/switch";
 
-interface FakeData {
-    state:          API.getType['em_pv_faker/state']
-    config:         API.getType['em_pv_faker/config']
-    runtime_config: API.getType['em_pv_faker/runtime_config']
-}
-
-export class EmPvFakerStatus extends Component<{}, FakeData> {
-    constructor() {
-        super();
-
-        util.addApiEventListener('em_pv_faker/state', () => {
-            this.setState({state: API.get('em_pv_faker/state')});
-        });
-
-        util.addApiEventListener('em_pv_faker/config', () => {
-            this.setState({config: API.get('em_pv_faker/config')});
-        });
-
-        util.addApiEventListener('em_pv_faker/runtime_config', () => {
-            this.setState({runtime_config: API.get('em_pv_faker/runtime_config')});
-        });
-    }
-
-    render(props: {}, d: Readonly<FakeData>) {
+export class EmPvFakerStatus extends Component<{}, {}> {
+    render(props: {}, s: {}) {
         if (!util.render_allowed())
             return <></>
 
+        let state  = API.get('em_pv_faker/state');
+        let config = API.get('em_pv_faker/config');
+
         return <>
-            {d.config.auto_fake ?
+            {config.auto_fake ?
                 <FormRow label={__("em_pv_faker.status.illuminance")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
-                    <OutputFloat value={d.state.illuminance} digits={0} scale={0} unit={'lx'} />
+                    <OutputFloat value={state.illuminance} digits={0} scale={0} unit={'lx'} />
                 </FormRow>
-            : null
+            :
+                null
             }
             <FormRow label={__("em_pv_faker.status.fake_power")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
-                <OutputFloat value={d.state.fake_power} digits={3} scale={3} unit={'kW'} />
+                <OutputFloat value={state.fake_power} digits={3} scale={3} unit={'kW'} />
             </FormRow>
         </>
     }
 }
 
-render(<EmPvFakerStatus/>, $('#status-em_pv_faker')[0])
+render(<EmPvFakerStatus />, $('#status-em_pv_faker')[0])
 
 
 export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.getType['em_pv_faker/runtime_config']> {
@@ -175,7 +157,7 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
     }
 }
 
-render(<EmPvFaker/>, $('#em_pv_faker')[0])
+render(<EmPvFaker />, $('#em_pv_faker')[0])
 
 export function init() {}
 export function add_event_listeners(source: API.APIEventTarget) {}
