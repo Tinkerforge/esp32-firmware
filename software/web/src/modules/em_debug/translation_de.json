@@ -15,7 +15,7 @@
 
             "internal_state": "Interner Zustand",
 
-            "low_level_state": "Low-Level-Zustand",
+            "hardware_state": "Hardwarezustände",
             "contactor_control": "Schützsteuerung",
             "contactor_off": "Schütz offen (eine Phase aktiv)",
             "contactor_on": "Schütz geschlossen (drei Phasen aktiv)",
