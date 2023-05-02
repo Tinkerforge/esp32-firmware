@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <math.h>
+
 #include "config.h"
 
 #include "bindings/bricklet_warp_energy_manager.h"
@@ -221,7 +223,7 @@ public:
     bool     contactor_check_tripped = false;
     bool     is_3phase               = false;
     bool     wants_on_last           = false;
-    int32_t  power_at_meter_w        = 0;
+    float    power_at_meter_w        = NAN;
 
 private:
     void update_status_led();
@@ -268,7 +270,7 @@ private:
     uint32_t max_current_limited_ma              = 0;
     int32_t  power_available_w                   = 0;
     int32_t  power_available_filtered_w          = 0;
-    float    power_at_meter_filtered_w           = 0;
+    float    power_at_meter_filtered_w           = NAN;
 
     // Config cache
     uint32_t default_mode             = 0;
