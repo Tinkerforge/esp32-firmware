@@ -19,31 +19,24 @@
 
 import $ from "../../ts/jq";
 
-import * as API from "../../ts/api";
+import * as API  from "../../ts/api";
 import * as util from "../../ts/util";
-import { __ } from "../../ts/translation";
+import { __ }    from "../../ts/translation";
 
 import { h, render, Fragment, Component } from "preact";
-import { Button         } from "react-bootstrap";
+import { Button } from "react-bootstrap";
+
 import { FormRow        } from "../../ts/components/form_row";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputText      } from "../../ts/components/input_text";
 import { PageHeader     } from "../../ts/components/page_header";
 
-type EMSDcardState = API.getType['energy_manager/sdcard_state'];
-
-export class EMSDcard extends Component<{}, EMSDcardState> {
-    constructor() {
-        super();
-
-        util.addApiEventListener('energy_manager/sdcard_state', () => {
-            this.setState(API.get('energy_manager/sdcard_state'));
-        });
-    }
-
-    render(props: {}, state: Readonly<EMSDcardState>) {
+export class EMSDcard extends Component<{}, {}> {
+    render(props: {}, s: {}) {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
-            return (<></>);
+            return <></>
+
+        let state = API.get('energy_manager/sdcard_state');
 
         if (state.sd_status == 51) { // No card
             return (
@@ -75,7 +68,7 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
             case 0x76: manufacturer = "Patriot"; break;
             case 0x82: manufacturer = "Sony"; break;
             case 0x9c: manufacturer = "Angelbird"; break;
-            default:   manufacturer = "Unknown (" + state.manufacturer_id.toString(16) + ")";
+            default:   manufacturer = "Unknown (0x" + state.manufacturer_id.toString(16) + ")";
         }
 
         let card_type;
@@ -177,7 +170,6 @@ export class EMSDcard extends Component<{}, EMSDcardState> {
 render(<EMSDcard/>, $('#em_sdcard')[0])
 
 export function init() {}
-
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
