@@ -44,8 +44,8 @@ void EnergyManager::pre_setup()
     });
 
     low_level_state = Config::Object({
-        {"power_at_meter", Config::Int32(0)},
-        {"power_at_meter_filtered", Config::Int32(0)},
+        {"power_at_meter", Config::Float(0)},
+        {"power_at_meter_filtered", Config::Float(0)},
         {"power_available", Config::Int32(0)},
         {"power_available_filtered", Config::Int32(0)},
         {"overall_min_power", Config::Int32(0)},
@@ -309,7 +309,7 @@ void EnergyManager::setup()
     low_level_state.get("threshold_1to3")->updateInt(threshold_1to3_w);
 
     cloud_filter_coefficient = calculate_cloud_filter_coefficient(config_in_use.get("cloud_filter_mode")->asUint());
-    logger.printfln("energy_manager: Using cloud filter coefficient %f", cloud_filter_coefficient);
+    logger.printfln("energy_manager: Using cloud filter coefficient %f.", cloud_filter_coefficient);
 
     api.addFeature("energy_manager");
 
@@ -502,17 +502,16 @@ void EnergyManager::update_all_data()
     low_level_state.get("is_3phase")->updateBool(is_3phase);
     state.get("phases_switched")->updateUint(have_phases);
 
-    // TODO FIXME handle power being NAN
-    float meter_float_w = all_data.energy_meter_type ? all_data.power : meter.values.get("power")->asFloat(); // watt
-    if (isnan(meter_float_w)) {
-        meter_float_w = 0;
-        //logger.printfln("energy_manager: FIXME: Consumed NAN power value.");
-    }
-    power_at_meter_w = meter_float_w;
-    low_level_state.get("power_at_meter")->updateInt(power_at_meter_w);
+    power_at_meter_w = all_data.energy_meter_type ? all_data.power : meter.values.get("power")->asFloat(); // watt
+    low_level_state.get("power_at_meter")->updateFloat(power_at_meter_w);
+
     // Filtered value must not be modified anywhere else.
-    power_at_meter_filtered_w = power_at_meter_filtered_w + cloud_filter_coefficient * (meter_float_w - power_at_meter_filtered_w);
-    low_level_state.get("power_at_meter_filtered")->updateInt(power_at_meter_filtered_w);
+    if (isnan(power_at_meter_filtered_w)) {
+        power_at_meter_filtered_w = power_at_meter_w;
+    } else {
+        power_at_meter_filtered_w = power_at_meter_filtered_w + cloud_filter_coefficient * (power_at_meter_w - power_at_meter_filtered_w);
+    }
+    low_level_state.get("power_at_meter_filtered")->updateFloat(power_at_meter_filtered_w);
 
     if (contactor_installed) {
         if ((all_data.contactor_check_state & 1) == 0) {
@@ -786,7 +785,11 @@ void EnergyManager::update_energy()
             p_error_w          = 0;
             p_error_filtered_w = 0;
         } else {
-            p_error_w          = target_power_from_grid_w - power_at_meter_w;
+            if (isnan(power_at_meter_w)) {
+                logger.printfln("energy_manager: Skipping energy update because meter value is NAN.");
+                return;
+            }
+            p_error_w          = target_power_from_grid_w - static_cast<int32_t>(power_at_meter_w);
             p_error_filtered_w = target_power_from_grid_w - static_cast<int32_t>(power_at_meter_filtered_w);
 
             if (p_error_w > 200)
