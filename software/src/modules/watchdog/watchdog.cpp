@@ -83,7 +83,7 @@ void Watchdog::pre_setup()
     // even if (for some reason) allocations fail.
     // Pin the task to core 1:
     // We dont want to disturb the built-in tasks on core 0 (i.e. WiFi, Bluetooth, TCP/IP, etc)
-    // It is then save to give the task max priority
+    // It is then safe to give the task max priority
     xTask = xTaskCreateStaticPinnedToCore(
         watchdog_task,
         "watchdog_task",

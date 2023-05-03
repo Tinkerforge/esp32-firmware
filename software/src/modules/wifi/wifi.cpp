@@ -640,7 +640,7 @@ void Wifi::check_for_scan_completion()
 
 void Wifi::start_scan()
 {
-    // Abort if a scan is running. This is save, because
+    // Abort if a scan is running. This is safe, because
     // the state will change to SCAN_FAILED if it timed out.
     if (WiFi.scanComplete() == WIFI_SCAN_RUNNING)
         return;

@@ -26,7 +26,7 @@ export interface ConfigMap {
 
 export type ConfigModifiedKey = `${keyof ConfigMap}_modified`;
 
-// It is save to use null here:
+// It is safe to use null here:
 // All api cache accesses only happen after the websocket connection is established.
 // The first message contains a complete dump of the ESP's state.
 // All cache values are then initialized.

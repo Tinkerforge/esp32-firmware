@@ -597,7 +597,7 @@ bool CMNetworking::mdns_result_is_charger(mdns_result_t *entry, const char ** re
 
     int found = 0;
     for(size_t i = 0; i < entry->txt_count; ++i) {
-        // strcmp is save here: Keys are always null terminated.
+        // strcmp is safe here: Keys are always null terminated.
         // https://github.com/espressif/esp-idf/blob/7eba5f80027e1648775b46f889cb4d9519afc965/components/mdns/mdns.c#L3000-L3011
         if (strcmp(entry->txt[i].key, "enabled") == 0 && entry->txt_value_len[i] > 0) {
             if (ret_enabled != nullptr)
@@ -653,7 +653,7 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
 
     uint8_t error = SCAN_RESULT_ERROR_OK;
 
-    // strcmp is save here: txt values such as enabled are null terminated:
+    // strcmp is safe here: txt values such as enabled are null terminated:
     // https://github.com/espressif/esp-idf/blob/7eba5f80027e1648775b46f889cb4d9519afc965/components/mdns/mdns.c#L3017-L3023
     if (strcmp(enabled, "true") != 0) {
         error = SCAN_RESULT_ERROR_MANAGEMENT_DISABLED;
