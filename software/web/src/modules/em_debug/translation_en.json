@@ -17,7 +17,7 @@
 
             "hardware_state": "Hardware state",
             "contactor_control": "Contactor control",
-            "contactor_off": "Contactor open (one phase active)",
+            "contactor_off": "Contactor open (single phase active)",
             "contactor_on": "Contactor closed (three phases active)",
             "contactor_check": "Contactor monitoring",
             "contactor_check_ok": "No fault detected",

@@ -158,7 +158,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                 <IndicatorGroup
                     value={d.status.phases_switched == 1 ? 0 : d.status.phases_switched == 3 ? 1 : 42}
                     items={[
-                        ["primary", __("energy_manager.status.one_phase")],
+                        ["primary", __("energy_manager.status.single_phase")],
                         ["primary", __("energy_manager.status.three_phase")],
                     ]} />
             </FormRow>
@@ -256,11 +256,11 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                             required
                             items={s.contactor_installed ? [
                                 ["0", __("energy_manager.content.automatic")],
-                                ["1", __("energy_manager.content.always_one_phase")],
+                                ["1", __("energy_manager.content.always_single_phase")],
                                 ["2", __("energy_manager.content.always_three_phases")],
                                 ["3", __("energy_manager.content.external_control")],
                             ] : [
-                                ["1", __("energy_manager.content.fixed_one_phase")],
+                                ["1", __("energy_manager.content.fixed_single_phase")],
                                 ["2", __("energy_manager.content.fixed_three_phases")],
                             ]}
                             value={s.phase_switching_mode}
@@ -436,7 +436,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                                 ["1", __("energy_manager.content.low")],
                                             ],
                                             2: [
-                                                ["2", __("energy_manager.content.one_phase")],
+                                                ["2", __("energy_manager.content.single_phase")],
                                                 ["3", __("energy_manager.content.three_phase")],
                                             ],
                                             3: [
