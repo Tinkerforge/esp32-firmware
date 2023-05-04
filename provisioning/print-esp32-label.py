@@ -8,9 +8,6 @@ import socket
 
 BASE58 = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
 
-PRINTER_HOST = '192.168.178.242'
-PRINTER_PORT = 9100
-
 QR_CODE_FORMAT = 'W288,29,5,2,M,8,4,{0},0\r'
 QR_CODE_LENGTH = 49
 
@@ -20,7 +17,40 @@ PASSPHRASE_PLACEHOLDER = b'ZZZZ-ZZZZ-ZZZZ-ZZZZ'
 
 COPIES_FORMAT = '^C{0}\r'
 
-def print_esp32_label(ssid, passphrase, printer_host, copies, stdout):
+
+def get_tf_printer_host(task):
+    import re
+    import os
+    import sys
+
+    x = re.compile(r'^\s*([A-Za-z0-9_-]+)\s+([0-9\.]+)\s*$')
+
+    try:
+        with open(os.path.expanduser('~/tf_printer_host.txt'), 'r', encoding='utf-8') as f:
+            for line in f.readlines():
+                m = x.match(line)
+
+                if m == None:
+                    print('WARNING: Invalid line in ~/tf_printer_host.txt: {0}'.format(repr(line)))
+
+                    continue
+
+                other_task = m.group(1)
+                other_host = m.group(2)
+
+                if other_task != task:
+                    continue
+
+                return other_host
+    except FileNotFoundError:
+        pass
+
+    print('ERROR: Printer host for task {0} not found in ~/tf_printer_host.txt')
+
+    sys.exit(1)
+
+
+def print_esp32_label(ssid, passphrase, copies, stdout):
     # check SSID
     if re.match('^(esp32|warp|warp2|wem)-[{0}]{{3,6}}$'.format(BASE58), ssid) == None:
         raise Exception('Invalid SSID: {0}'.format(ssid))
@@ -73,21 +103,22 @@ def print_esp32_label(ssid, passphrase, printer_host, copies, stdout):
         sys.stdout.buffer.write(data)
         sys.stdout.buffer.flush()
     else:
-        with socket.create_connection((printer_host, PRINTER_PORT)) as s:
+        with socket.create_connection((get_tf_printer_host('esp32'), 9100)) as s:
             s.send(data)
+
 
 def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('ssid')
     parser.add_argument('passphrase')
-    parser.add_argument('-p', '--printer-host', type=str, default=PRINTER_HOST)
     parser.add_argument('-c', '--copies', type=int, default=1)
     parser.add_argument('-s', '--stdout', action='store_true')
 
     args = parser.parse_args()
 
-    print_esp32_label(args.ssid, args.passphrase, args.printer_host, args.copies, args.stdout)
+    print_esp32_label(args.ssid, args.passphrase, args.copies, args.stdout)
+
 
 if __name__ == '__main__':
     main()

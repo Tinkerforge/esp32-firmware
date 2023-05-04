@@ -5,6 +5,7 @@ import subprocess
 
 BASE58 = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
 
+
 def main():
     while True:
         qr_code = input('Scan ESP32 label: ').strip()
@@ -28,6 +29,7 @@ def main():
         subprocess.check_call(['./print-esp32-label.py', ssid, passphrase])
 
         break
+
 
 if __name__ == '__main__':
     main()

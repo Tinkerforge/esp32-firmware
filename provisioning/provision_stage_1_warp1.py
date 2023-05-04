@@ -26,9 +26,6 @@ rnd = secrets.SystemRandom()
 
 PORT = '/dev/ttyUSB0'
 
-PRINTER_HOST = '192.168.178.242'
-PRINTER_PORT = 9100
-
 @contextmanager
 def temp_file():
     fd, name = tempfile.mkstemp()
@@ -377,13 +374,6 @@ def main():
         raise Exception("exit 1")
 
     result = {"start": now()}
-
-    try:
-        with socket.create_connection((PRINTER_HOST, PRINTER_PORT)):
-            print("Label printer is online")
-    except Exception as e:
-        if input("Failed to reach label printer. Continue anyway? [y/N] ") != "y":
-            sys.exit(0)
 
     print("Checking ESP state")
     mac_address = check_if_esp_is_sane_and_get_mac()

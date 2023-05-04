@@ -25,9 +25,6 @@ rnd = secrets.SystemRandom()
 
 PORT = '/dev/ttyUSB0'
 
-PRINTER_HOST = 'BP730i'
-PRINTER_PORT = 9100
-
 @contextmanager
 def temp_file():
     fd, name = tempfile.mkstemp()

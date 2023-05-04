@@ -483,9 +483,6 @@ rnd = secrets.SystemRandom()
 
 PORT = '/dev/ttyUSB0'
 
-PRINTER_HOST = 'BP730i'
-PRINTER_PORT = 9100
-
 # use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
 class ChangedDirectory:
     def __init__(self, path):
