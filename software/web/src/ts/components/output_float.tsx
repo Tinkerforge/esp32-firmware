@@ -30,27 +30,16 @@ interface OutputFloatProps {
     unit: string
 }
 
-function flt2Input(x: number, digits: number) {
-    // Firefox does not localize numbers with a fractional part correctly.
-    // OTOH Webkit based browsers (correctly) expect setting the value to a non-localized number.
-    // Unfortunately, setting the value to a localized number (i.e. with , instead of . for German)
-    // does not raise an exception, instead only a warning on the console is shown.
-    // So to make everyone happy, we use user agent detection.
-    return navigator.userAgent.indexOf("Gecko/") >= 0
-                ? util.toLocaleFixed(x, digits)
-                : (x).toFixed(digits);
-}
-
 export function OutputFloat(props: OutputFloatProps) {
     let pow10 = Math.pow(10, props.scale);
 
-    let val = flt2Input(props.value / pow10, props.digits);
+    let val = util.toLocaleFixed(props.value / pow10, props.digits);
 
     let pad_right = "padding-right: min(" +
         "calc(100% - 2px " + // border
                   "- .75rem " + // left padding
                   "- 4rem " + // unit
-                  `- ${flt2Input(props.value / pow10, 0).length}ch` + // digits before decimal separator
+                  `- ${util.toLocaleFixed(props.value / pow10, 0).length}ch` + // digits before decimal separator
         `), calc(${props.digits == 0 ? 4 : (3-props.digits)}ch + .75rem));`;
 
     return (
