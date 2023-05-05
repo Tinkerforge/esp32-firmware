@@ -22,16 +22,26 @@ def get_tf_printer_host(task):
     import re
     import os
     import sys
+    import tkinter.messagebox
 
-    x = re.compile(r'^\s*([A-Za-z0-9_-]+)\s+([0-9\.]+)\s*$')
+    path = '~/tf_printer_host.txt'
+    x = re.compile(r'^([A-Za-z0-9_-]+)\s+([0-9\.]+)$')
 
     try:
-        with open(os.path.expanduser('~/tf_printer_host.txt'), 'r', encoding='utf-8') as f:
+        with open(os.path.expanduser(path), 'r', encoding='utf-8') as f:
             for line in f.readlines():
+                line = line.strip()
+
+                if len(line) == 0 or line.startswith('#'):
+                    continue
+
                 m = x.match(line)
 
                 if m == None:
-                    print('WARNING: Invalid line in ~/tf_printer_host.txt: {0}'.format(repr(line)))
+                    message = 'WARNING: Invalid line in {0}: {1}'.format(path, repr(line))
+
+                    print(message)
+                    tkinter.messagebox.showerror(title=path, message=message)
 
                     continue
 
@@ -45,7 +55,10 @@ def get_tf_printer_host(task):
     except FileNotFoundError:
         pass
 
-    print('ERROR: Printer host for task {0} not found in ~/tf_printer_host.txt')
+    message = 'ERROR: Printer host for task {0} not found in {1}'.format(task, path)
+
+    print(message)
+    tkinter.messagebox.showerror(title=path, message=message)
 
     sys.exit(1)
 
