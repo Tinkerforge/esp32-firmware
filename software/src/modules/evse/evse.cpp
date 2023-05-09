@@ -536,6 +536,9 @@ void EVSE::set_require_meter_blocking(bool blocking) {
 }
 
 void EVSE::set_require_meter_enabled(bool enabled) {
+    if (!initialized)
+        return;
+
     apply_slot_default(CHARGING_SLOT_REQUIRE_METER, 0, enabled, false);
     is_in_bootloader(tf_evse_set_charging_slot_active(&device, CHARGING_SLOT_REQUIRE_METER, enabled));
 }
