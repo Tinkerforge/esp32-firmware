@@ -129,36 +129,48 @@ static const ConfigMigration migrations[] = {
             String default_hostname = String(BUILD_HOST_PREFIX) + '-';
             String ethernet_hostname = default_hostname;
             if (read_config_file("ethernet/config", json)) {
-                ip_to_string(json["ip"]);
-                ip_to_string(json["gateway"]);
-                ip_to_string(json["subnet"]);
-                ip_to_string(json["dns"]);
-                ip_to_string(json["dns2"]);
-                ethernet_hostname = json["hostname"].as<String>();
-                json.remove("hostname");
-                write_config_file("ethernet/config", json);
+                if (json.containsKey("hostname")) {
+                    ip_to_string(json["ip"]);
+                    ip_to_string(json["gateway"]);
+                    ip_to_string(json["subnet"]);
+                    ip_to_string(json["dns"]);
+                    ip_to_string(json["dns2"]);
+                    ethernet_hostname = json["hostname"].as<String>();
+                    json.remove("hostname");
+                    write_config_file("ethernet/config", json);
+                } else {
+                    logger.printfln("Looks like ethernet/config has already been migrated.");
+                }
             }
 
             String sta_hostname = default_hostname;
             if (read_config_file("wifi/sta_config", json)) {
-                ip_to_string(json["ip"]);
-                ip_to_string(json["gateway"]);
-                ip_to_string(json["subnet"]);
-                ip_to_string(json["dns"]);
-                ip_to_string(json["dns2"]);
-                sta_hostname = json["hostname"].as<String>();
-                json.remove("hostname");
-                write_config_file("wifi/sta_config", json);
+                if (json.containsKey("hostname")) {
+                    ip_to_string(json["ip"]);
+                    ip_to_string(json["gateway"]);
+                    ip_to_string(json["subnet"]);
+                    ip_to_string(json["dns"]);
+                    ip_to_string(json["dns2"]);
+                    sta_hostname = json["hostname"].as<String>();
+                    json.remove("hostname");
+                    write_config_file("wifi/sta_config", json);
+                } else {
+                    logger.printfln("Looks like wifi/sta_config has already been migrated.");
+                }
             }
 
             String ap_hostname = default_hostname;
             if (read_config_file("wifi/ap_config", json)) {
-                ip_to_string(json["ip"]);
-                ip_to_string(json["gateway"]);
-                ip_to_string(json["subnet"]);
-                ap_hostname = json["hostname"].as<String>();
-                json.remove("hostname");
-                write_config_file("wifi/ap_config", json);
+                if (json.containsKey("hostname")) {
+                    ip_to_string(json["ip"]);
+                    ip_to_string(json["gateway"]);
+                    ip_to_string(json["subnet"]);
+                    ap_hostname = json["hostname"].as<String>();
+                    json.remove("hostname");
+                    write_config_file("wifi/ap_config", json);
+                } else {
+                    logger.printfln("Looks like wifi/ap_config has already been migrated.");
+                }
             }
 
             // If one or more hostnames where changed, use the changed hostname.
