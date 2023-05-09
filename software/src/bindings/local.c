@@ -16,6 +16,7 @@
 #include "hal_common.h"
 #include "errors.h"
 #include "base58.h"
+#include "endian_convert.h"
 
 int tf_local_create(TF_Local *local, const char *uid_str, char position, uint8_t hw_version[3], uint8_t fw_version[3], uint16_t device_id, void *hal) {
     memset(local, 0, sizeof(TF_Local));
@@ -51,7 +52,7 @@ void tf_local_inject_packet(TF_Local *local, TF_TFPHeader *header, uint8_t *pack
     memcpy(local->send_buf, packet, header->length);
 }
 
-int tf_local_transceive_packet(TF_Local *local) {
+void tf_local_transceive_packet(TF_Local *local) {
     TF_TFPHeader header;
 
     tf_tfp_header_peek_plain(&header, local->send_buf);
@@ -70,13 +71,16 @@ int tf_local_transceive_packet(TF_Local *local) {
         local->recv_buf[8 + 20] = local->fw_version[0];
         local->recv_buf[8 + 21] = local->fw_version[1];
         local->recv_buf[8 + 22] = local->fw_version[2];
-        memcpy(local->recv_buf + 8 + 23, &local->device_id, 2); // FIXME: tf_leconvert_uint16_to
 
-        return TF_E_OK;
+        uint16_t device_id = tf_leconvert_uint16_to(local->device_id);
+
+        memcpy(local->recv_buf + 8 + 23, &device_id, 2);
+    } else {
+        // FIXME: handle other functions
+        header.length = 8;
+        header.error_code = 2; // not supported
+        tf_tfp_header_write(&header, local->recv_buf);
     }
-
-    // FIXME: handle other functions
-    return TF_E_NOT_SUPPORTED;
 }
 
 bool tf_local_callback_tick(TF_Local *local) {
@@ -106,7 +110,10 @@ bool tf_local_callback_tick(TF_Local *local) {
         local->recv_buf[8 + 20] = local->fw_version[0];
         local->recv_buf[8 + 21] = local->fw_version[1];
         local->recv_buf[8 + 22] = local->fw_version[2];
-        memcpy(local->recv_buf + 8 + 23, &local->device_id, 2); // FIXME: tf_leconvert_uint16_to
+
+        uint16_t device_id = tf_leconvert_uint16_to(local->device_id);
+
+        memcpy(local->recv_buf + 8 + 23, &device_id, 2);
         local->recv_buf[8 + 25] = 0; // FIXME: IPCON_ENUMERATION_TYPE_AVAILABLE = 0
 
         return true;

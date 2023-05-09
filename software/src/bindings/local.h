@@ -47,7 +47,7 @@ typedef struct _TF_Local {
 int tf_local_create(TF_Local *local, const char *uid_str, char position, uint8_t hw_version[3], uint8_t fw_version[3], uint16_t device_id, void *hal) TF_ATTRIBUTE_NONNULL_ALL;
 uint8_t *tf_local_get_send_buffer(TF_Local *local) TF_ATTRIBUTE_NONNULL_ALL;
 uint8_t *tf_local_get_recv_buffer(TF_Local *local) TF_ATTRIBUTE_NONNULL_ALL;
-int tf_local_transceive_packet(TF_Local *local) TF_ATTRIBUTE_NONNULL_ALL;
+void tf_local_transceive_packet(TF_Local *local) TF_ATTRIBUTE_NONNULL_ALL;
 bool tf_local_callback_tick(TF_Local *local) TF_ATTRIBUTE_NONNULL_ALL;
 void tf_local_inject_packet(TF_Local *local, TF_TFPHeader *header, uint8_t *packet) TF_ATTRIBUTE_NONNULL_ALL;
 
