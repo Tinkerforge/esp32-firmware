@@ -140,6 +140,9 @@ void Ethernet::setup()
             dns.fromString(ethernet_config_in_use.get("dns")->asEphemeralCStr());
             dns2.fromString(ethernet_config_in_use.get("dns2")->asEphemeralCStr());
 
+            if (link_speed < 100)
+                delay(40); // 10MBit usually needs at least 19ms extra. Give it 40ms to be safe.
+
             if (ip != 0) {
                 ETH.config(ip, gateway, subnet, dns, dns2);
             } else {
