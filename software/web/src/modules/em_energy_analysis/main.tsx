@@ -41,6 +41,7 @@ interface UplotData extends CachedData {
     names: string[];
     values: number[][];
     stacked: boolean[];
+    bars: boolean[];
 }
 
 interface Wallbox5minData extends CachedData {
@@ -334,6 +335,10 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             stroke: strokes[(i - 1) % strokes.length],
             fill: this.data.stacked[i] || this.props.default_fill ? fills[(i - 1) % fills.length] : undefined,
             width: 2,
+            paths: this.data.bars[i] ? uPlot.paths.bars({size: [0.6, 100]}) : undefined,
+            points: {
+                show: false,
+            },
         };
     }
 
@@ -876,7 +881,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return;
         }
 
-        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false]};
+        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false], bars: [false]};
 
         let slot_count: number = 0;
         let energy_manager_data = this.energy_manager_5min_cache[key];
@@ -888,6 +893,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.names.push(__("em_energy_analysis.script.grid_connection"));
             uplot_data.values.push(energy_manager_data.power_grid);
             uplot_data.stacked.push(false);
+            uplot_data.bars.push(false);
         }
 
         for (let charger of this.chargers) {
@@ -901,6 +907,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(wallbox_data.power);
                     uplot_data.stacked.push(true);
+                    uplot_data.bars.push(false);
                 }
             }
         }
@@ -941,7 +948,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return;
         }
 
-        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false]};
+        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false], bars: [false]};
 
         let slot_count: number = 0;
         let energy_manager_data = this.energy_manager_5min_cache[key];
@@ -953,6 +960,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.names.push(null);
             uplot_data.values.push(energy_manager_data.power_grid);
             uplot_data.stacked.push(false);
+            uplot_data.bars.push(false);
         }
 
         let timestamps: number[] = new Array(slot_count);
@@ -1020,7 +1028,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return;
         }
 
-        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false]};
+        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false], bars: [false]};
 
         let slot_count: number = 0;
         let energy_manager_data = this.energy_manager_daily_cache[key];
@@ -1052,6 +1060,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.names.push(__("em_energy_analysis.script.grid_in"));
             uplot_data.values.push(energy_grid_in);
             uplot_data.stacked.push(false);
+            uplot_data.bars.push(true);
 
             let energy_grid_out = new Array(energy_manager_data.energy_grid_out.length);
             let last_energy_grid_out = null;
@@ -1062,7 +1071,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
             for (let i = 0; i < energy_manager_data.energy_grid_out.length; ++i) {
                 if (energy_manager_data.energy_grid_out[i] !== null && last_energy_grid_out !== null) {
-                    energy_grid_out[i] = energy_manager_data.energy_grid_out[i] - last_energy_grid_out;
+                    energy_grid_out[i] = -(energy_manager_data.energy_grid_out[i] - last_energy_grid_out);
                 }
                 else {
                     energy_grid_out[i] = null;
@@ -1075,6 +1084,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.names.push(__("em_energy_analysis.script.grid_out"));
             uplot_data.values.push(energy_grid_out);
             uplot_data.stacked.push(false);
+            uplot_data.bars.push(true);
         }
 
         for (let charger of this.chargers) {
@@ -1107,6 +1117,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(energy);
                     uplot_data.stacked.push(true);
+                    uplot_data.bars.push(true);
                 }
             }
         }
@@ -1651,7 +1662,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                           y_max={100}
                                           y_step={10}
                                           y_unit={"kWh"}
-                                          y_digits={2} />
+                                          y_digits={2}
+                                          default_fill={true} />
                         </div>
                     </div>
                 </div>
