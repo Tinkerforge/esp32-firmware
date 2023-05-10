@@ -56,7 +56,7 @@ export class FormRow extends Component<FormRowProps, any> {
             <div class="form-group row" hidden={props.hidden == undefined ? false : props.hidden}>
                 <label for={this.id} class={"col-form-label " + (props.labelColClasses === undefined ? "col-lg-3 col-xl-2" : props.labelColClasses)}>
                     {props.label_prefix ? props.label_prefix : <></>}
-                    {props.label ? <span class={"form-label" + (props.label_muted ? " pr-2" : "")} dangerouslySetInnerHTML={{__html: props.label}}></span> : ""}
+                    {props.label ? <span class={"form-label" + (props.label_muted && !props.label_infix ? " pr-2" : "")} dangerouslySetInnerHTML={{__html: props.label}}></span> : ""}
                     {props.label_infix ? props.label_infix : <></>}
                     {props.label_muted ? <span class="text-muted" dangerouslySetInnerHTML={{__html: props.label_muted}}></span> : ""}
                     {props.label_suffix ? props.label_suffix : <></>}
