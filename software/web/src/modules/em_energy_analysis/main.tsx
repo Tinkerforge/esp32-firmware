@@ -884,7 +884,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         if (energy_manager_data && !energy_manager_data.empty) {
             slot_count = Math.max(slot_count, energy_manager_data.power_grid.length);
 
-            uplot_data.keys.push('em');
+            uplot_data.keys.push('em_flags');
             uplot_data.names.push(__("em_energy_analysis.script.grid_connection"));
             uplot_data.values.push(energy_manager_data.power_grid);
             uplot_data.stacked.push(false);
@@ -949,7 +949,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         if (energy_manager_data && !energy_manager_data.power_grid_empty) {
             slot_count = Math.max(slot_count, energy_manager_data.power_grid.length)
 
-            uplot_data.keys.push('em');
+            uplot_data.keys.push('em_power');
             uplot_data.names.push(null);
             uplot_data.values.push(energy_manager_data.power_grid);
             uplot_data.stacked.push(false);
@@ -1048,7 +1048,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 last_energy_grid_in = energy_manager_data.energy_grid_in[i];
             }
 
-            uplot_data.keys.push('em_grid_in');
+            uplot_data.keys.push('em_energy_in');
             uplot_data.names.push(__("em_energy_analysis.script.grid_in"));
             uplot_data.values.push(energy_grid_in);
             uplot_data.stacked.push(false);
@@ -1071,7 +1071,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 last_energy_grid_out = energy_manager_data.energy_grid_out[i];
             }
 
-            uplot_data.keys.push('em_grid_out');
+            uplot_data.keys.push('em_energy_out');
             uplot_data.names.push(__("em_energy_analysis.script.grid_out"));
             uplot_data.values.push(energy_grid_out);
             uplot_data.stacked.push(false);
@@ -1103,7 +1103,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         last_energy = wallbox_data.energy[i];
                     }
 
-                    uplot_data.keys.push('wb' + charger.uid);
+                    uplot_data.keys.push('wb_energy_' + charger.uid);
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(energy);
                     uplot_data.stacked.push(true);
