@@ -682,11 +682,12 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
     for (i = 0; i < actual_length && write_success; i += sizeof(Wallbox5minData)) {
         p = (Wallbox5minData *)&data_chunk_data[i];
 
-        if ((p->flags & 0x80 /* no data */) != 0) {
+        if ((p->flags & 0x80 /* no data */) == 0) {
+            write_success = response->writef("%u", p->flags);
+        } else {
             p->power = UINT16_MAX;
+            write_success = response->writef("null");
         }
-
-        write_success = response->writef("%u", p->flags);
 
         if (write_success) {
             if (p->power != UINT16_MAX) {
@@ -1103,15 +1104,16 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
     for (i = 0; i < actual_length && write_success; i += sizeof(EnergyManager5MinData)) {
         p = (EnergyManager5MinData *)&data_chunk_data[i];
 
-        if ((p->flags & 0x80 /* no data */) != 0) {
+        if ((p->flags & 0x80 /* no data */) == 0) {
+            write_success = response->writef("%u", p->flags);
+        } else {
+            write_success = response->writef("null");
             p->power_grid = INT32_MAX;
 
             for (int k = 0; k < 6; ++k) {
                 p->power_general[k] = INT32_MAX;
             }
         }
-
-        write_success = response->writef("%u", p->flags);
 
         if (write_success) {
             if (p->power_grid != INT32_MAX) {

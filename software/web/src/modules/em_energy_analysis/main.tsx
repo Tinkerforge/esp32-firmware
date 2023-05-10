@@ -653,7 +653,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 else {
                     let slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
 
-                    if (slot > 0 && (data.flags[slot - 1] & 0x80 /* no data */) != 0) {
+                    if (slot > 0 && data.flags[slot - 1] === null) {
                         // previous slot has no data. was a previous update event missed?
                         delete subcache[key];
                         reload_subcache = true;
@@ -692,7 +692,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             } else {
                 let slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
 
-                if (slot > 0 && (data.flags[slot - 1] & 0x80 /* no data */) != 0) {
+                if (slot > 0 && data.flags[slot - 1] === null) {
                     // previous slot has no data. was a previous update event missed?
                     delete this.energy_manager_5min_cache[key];
                     reload_cache = true;
@@ -1200,7 +1200,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             data.flags[slot] = payload[slot * 2];
             data.power[slot] = payload[slot * 2 + 1];
 
-            if ((data.flags[slot] & 0x80 /* no data */) == 0) {
+            if (data.flags[slot] !== null) {
                 data.empty = false;
             }
         }
@@ -1278,7 +1278,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 payload[slot * 8 + 7],
             ];
 
-            if ((data.flags[slot] & 0x80 /* no data */) == 0) {
+            if (data.flags[slot] !== null) {
                 data.empty = false;
             }
 
