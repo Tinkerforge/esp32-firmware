@@ -510,6 +510,11 @@ export class EMEnergyAnalysisStatusChart extends Component<{}, {force_render: nu
         } as any;
 
         util.eventTarget.addEventListener('info/modules', () => {
+            if (!API.hasFeature('energy_manager')) {
+                console.log("Energy Analysis: energy_manager feature not available");
+                return;
+            }
+
             this.setState({force_render: Date.now()});
         });
     }
