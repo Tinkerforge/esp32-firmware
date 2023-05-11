@@ -1071,7 +1071,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
             for (let i = 0; i < energy_manager_data.energy_grid_out.length; ++i) {
                 if (energy_manager_data.energy_grid_out[i] !== null && last_energy_grid_out !== null) {
-                    energy_grid_out[i] = -(energy_manager_data.energy_grid_out[i] - last_energy_grid_out);
+                    energy_grid_out[i] = energy_manager_data.energy_grid_out[i] - last_energy_grid_out;
+
+                    if (energy_grid_out[i] > 0) {
+                        energy_grid_out[i] = -energy_grid_out[i];
+                    }
                 }
                 else {
                     energy_grid_out[i] = null;
