@@ -604,7 +604,7 @@ class Stage3:
                 if not self.try_action(servo, lambda device: device.get_enabled(channel)):
                     self.try_action(servo, lambda device: device.set_enable(channel, True))
 
-                self.set_servo_position(servo, channel, 2100)
+                self.set_servo_position(servo, channel, 2500)
                 time.sleep(0.5) # wait for Color Bricklet 2.0 integration time
             else:
                 print(green('Waiting for front panel button press'))
