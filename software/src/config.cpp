@@ -702,13 +702,10 @@ Config::ConfString::ConfString(const String &val, uint16_t minChars, uint16_t ma
 
 Config::ConfString::ConfString(const ConfString &cpy)
 {
-    // nextSlot invalidates all ConfString references if it has to resize the slot array.
-    // Use the cpy's slot index directly as those are the same in the new slot array.
-    auto src_idx = cpy.idx;
     idx = nextSlot<Config::ConfString>(string_buf, string_buf_size);
 
     // If cpy->inUse is false, it is okay that we don't mark this slot as inUse.
-    *this->getSlot() = string_buf[src_idx];
+    *this->getSlot() = *cpy.getSlot();
 }
 
 Config::ConfString::~ConfString()
@@ -753,11 +750,8 @@ Config::ConfFloat::ConfFloat(float val, float min, float max)
 
 Config::ConfFloat::ConfFloat(const ConfFloat &cpy)
 {
-    // nextSlot invalidates all ConfFloat references if it has to resize the slot array.
-    // Use the cpy's slot index directly as those are the same in the new slot array.
-    auto src_idx = cpy.idx;
     idx = nextSlot<Config::ConfFloat>(float_buf, float_buf_size);
-    *this->getSlot() = float_buf[src_idx];
+    *this->getSlot() = *cpy.getSlot();
 }
 
 Config::ConfFloat::~ConfFloat()
@@ -798,11 +792,8 @@ Config::ConfInt::ConfInt(int32_t val, int32_t min, int32_t max)
 
 Config::ConfInt::ConfInt(const ConfInt &cpy)
 {
-    // nextSlot invalidates all ConfInt references if it has to resize the slot array.
-    // Use the cpy's slot index directly as those are the same in the new slot array.
-    auto src_idx = cpy.idx;
     idx = nextSlot<Config::ConfInt>(int_buf, int_buf_size);
-    *this->getSlot() = int_buf[src_idx];
+    *this->getSlot() = *cpy.getSlot();
 }
 
 Config::ConfInt::~ConfInt()
@@ -843,11 +834,8 @@ Config::ConfUint::ConfUint(uint32_t val, uint32_t min, uint32_t max)
 
 Config::ConfUint::ConfUint(const ConfUint &cpy)
 {
-    // nextSlot invalidates all ConfUint references if it has to resize the slot array.
-    // Use the cpy's slot index directly as those are the same in the new slot array.
-    auto src_idx = cpy.idx;
     idx = nextSlot<Config::ConfUint>(uint_buf, uint_buf_size);
-    *this->getSlot() = uint_buf[src_idx];
+    *this->getSlot() = *cpy.getSlot();
 }
 
 Config::ConfUint::~ConfUint()
@@ -909,9 +897,6 @@ Config::ConfArray::ConfArray(std::vector<Config> val, Config *prototype, uint16_
 
 Config::ConfArray::ConfArray(const ConfArray &cpy)
 {
-    // nextSlot invalidates all ConfArray references if it has to resize the slot array.
-    // Use the cpy's slot index directly as those are the same in the new slot array.
-    auto src_idx = cpy.idx;
     idx = nextSlot<Config::ConfArray>(array_buf, array_buf_size);
     // We have to mark this slot as in use here:
     // This array could contain a nested array that will be copied over
@@ -919,7 +904,7 @@ Config::ConfArray::ConfArray(const ConfArray &cpy)
     // ours if we don't mark it as inUse first.
     this->getSlot()->inUse = true;
 
-    *this->getSlot() = array_buf[src_idx];
+    *this->getSlot() = *cpy.getSlot();
 }
 
 Config::ConfArray::~ConfArray()
@@ -986,9 +971,6 @@ Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> val)
 
 Config::ConfObject::ConfObject(const ConfObject &cpy)
 {
-    // nextSlot invalidates all ConfObject references if it has to resize the slot array.
-    // Use the cpy's slot index directly as those are the same in the new slot array.
-    auto src_idx = cpy.idx;
     idx = nextSlot<Config::ConfObject>(object_buf, object_buf_size);
     // We have to mark this slot as in use here:
     // This object could contain a nested object that will be copied over
@@ -996,7 +978,7 @@ Config::ConfObject::ConfObject(const ConfObject &cpy)
     // ours if we don't mark it as inUse first.
     this->getSlot()->inUse = true;
 
-    *this->getSlot() = object_buf[src_idx];
+    *this->getSlot() = *cpy.getSlot();
 }
 
 Config::ConfObject::~ConfObject()
