@@ -311,7 +311,6 @@ private:
 
     bool persistent_data_loaded = false;
     uint32_t last_history_5min_slot = 0;
-    uint32_t last_history_daily_slot = 0;
     ConfigRoot history_wallbox_5min;
     ConfigRoot history_wallbox_daily;
     ConfigRoot history_energy_manager_5min;

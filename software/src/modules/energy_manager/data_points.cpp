@@ -88,7 +88,6 @@ void EnergyManager::collect_data_points()
     struct timeval tv;
     struct tm utc;
     struct tm local;
-    bool persistent_data_changed = false;
 
     if (!clock_synced(&tv)) {
         return;
@@ -105,10 +104,10 @@ void EnergyManager::collect_data_points()
     gmtime_r(&tv.tv_sec, &utc);
     localtime_r(&tv.tv_sec, &local);
 
-    // 5min data
     uint32_t current_5min_slot = ((utc.tm_year * 366 + utc.tm_yday) * 24 + utc.tm_hour) * 12 + utc.tm_min / 5;
 
     if (current_5min_slot != last_history_5min_slot) {
+        // 5min data
         for (auto &charger : charge_manager.charge_manager_state.get("chargers")) {
             uint32_t last_update = charger.get("last_update")->asUint();
 
@@ -165,14 +164,7 @@ void EnergyManager::collect_data_points()
             set_energy_manager_5min_data_point(&utc, &local, flags, history_power_grid, power_general);
         }
 
-        last_history_5min_slot = current_5min_slot;
-        persistent_data_changed = true;
-    }
-
-    // daily data
-    uint32_t current_daily_slot = local.tm_year * 366 + local.tm_yday;
-
-    if (current_daily_slot != last_history_daily_slot && local.tm_hour == 23 && local.tm_min >= 55) {
+        // daily data
         for (const auto &charger : charge_manager.charge_manager_state.get("chargers")) {
             uint32_t last_update = charger.get("last_update")->asUint();
 
@@ -227,11 +219,8 @@ void EnergyManager::collect_data_points()
             }
         }
 
-        last_history_daily_slot = current_daily_slot;
-        persistent_data_changed = true;
-    }
+        last_history_5min_slot = current_5min_slot;
 
-    if (persistent_data_changed) {
         save_persistent_data();
     }
 }
@@ -240,7 +229,7 @@ struct PersistentData {
     uint8_t version;
     uint8_t padding0[3];
     uint32_t last_history_5min_slot;
-    uint32_t last_history_daily_slot;
+    uint32_t last_history_daily_slot; // unused
     double history_meter_energy_import;
     double history_meter_energy_export;
     uint16_t padding1;
@@ -268,14 +257,12 @@ bool EnergyManager::load_persistent_data()
     }
 
     last_history_5min_slot = data.last_history_5min_slot;
-    last_history_daily_slot = data.last_history_daily_slot;
     history_meter_energy_import = data.history_meter_energy_import;
     history_meter_energy_export = data.history_meter_energy_export;
 
 #ifdef EM_DP_LOG_DETAILS
-    logger.printfln("load_persistent_data: slots %u %u, energy %f %f",
+    logger.printfln("load_persistent_data: slot %u %u, energy %f %f",
                     last_history_5min_slot,
-                    last_history_daily_slot,
                     history_meter_energy_import,
                     history_meter_energy_export);
 #endif
@@ -289,16 +276,15 @@ void EnergyManager::save_persistent_data()
     memset(&data, 0, sizeof(data));
 
 #ifdef EM_DP_LOG_DETAILS
-    logger.printfln("save_persistent_data: slots %u %u, energy %f %f",
+    logger.printfln("save_persistent_data: slot %u, energy %f %f",
                     last_history_5min_slot,
-                    last_history_daily_slot,
                     history_meter_energy_import,
                     history_meter_energy_export);
 #endif
 
     data.version = 1;
     data.last_history_5min_slot = last_history_5min_slot;
-    data.last_history_daily_slot = last_history_daily_slot;
+    data.last_history_daily_slot = 0; // unused
     data.history_meter_energy_import = history_meter_energy_import;
     data.history_meter_energy_export = history_meter_energy_export;
     data.checksum = internet_checksum((uint8_t *)&data, sizeof(data));
