@@ -403,9 +403,9 @@ def main(stage3):
             match = re.match(pattern, qr_code)
 
         qr_stand = match.group(1) if match.group(1) != None else '0'
-        qr_stand_wiring = match.group(1) if match.group(1) != None else '0'
-        qr_supply_cable = float(match.group(2))
-        qr_cee = bool(int(match.group(3)))
+        qr_stand_wiring = match.group(2) if match.group(2) != None else '0'
+        qr_supply_cable = float(match.group(3))
+        qr_cee = bool(int(match.group(4)))
 
         print("Accessories QR code data:")
         print("    Stand: {}".format(qr_stand))
