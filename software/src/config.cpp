@@ -705,7 +705,13 @@ Config::ConfString::ConfString(const ConfString &cpy)
     idx = nextSlot<Config::ConfString>(string_buf, string_buf_size);
 
     // If cpy->inUse is false, it is okay that we don't mark this slot as inUse.
-    *this->getSlot() = *cpy.getSlot();
+
+    // this->getSlot() is evaluated before the RHS of the assignment is copied over.
+    // This results in the LHS pointing to a deallocated array if copying the RHS
+    // resizes the slot array. Copying into a temp value (which resizes the array if necessary)
+    // and moving this value in the slot works.
+    auto tmp = *cpy.getSlot();
+    *this->getSlot() = std::move(tmp);
 }
 
 Config::ConfString::~ConfString()
@@ -751,7 +757,8 @@ Config::ConfFloat::ConfFloat(float val, float min, float max)
 Config::ConfFloat::ConfFloat(const ConfFloat &cpy)
 {
     idx = nextSlot<Config::ConfFloat>(float_buf, float_buf_size);
-    *this->getSlot() = *cpy.getSlot();
+    auto tmp = *cpy.getSlot();
+    *this->getSlot() = std::move(tmp);
 }
 
 Config::ConfFloat::~ConfFloat()
@@ -793,7 +800,8 @@ Config::ConfInt::ConfInt(int32_t val, int32_t min, int32_t max)
 Config::ConfInt::ConfInt(const ConfInt &cpy)
 {
     idx = nextSlot<Config::ConfInt>(int_buf, int_buf_size);
-    *this->getSlot() = *cpy.getSlot();
+    auto tmp = *cpy.getSlot();
+    *this->getSlot() = std::move(tmp);
 }
 
 Config::ConfInt::~ConfInt()
@@ -835,7 +843,8 @@ Config::ConfUint::ConfUint(uint32_t val, uint32_t min, uint32_t max)
 Config::ConfUint::ConfUint(const ConfUint &cpy)
 {
     idx = nextSlot<Config::ConfUint>(uint_buf, uint_buf_size);
-    *this->getSlot() = *cpy.getSlot();
+    auto tmp = *cpy.getSlot();
+    *this->getSlot() = std::move(tmp);
 }
 
 Config::ConfUint::~ConfUint()
@@ -904,7 +913,8 @@ Config::ConfArray::ConfArray(const ConfArray &cpy)
     // ours if we don't mark it as inUse first.
     this->getSlot()->inUse = true;
 
-    *this->getSlot() = *cpy.getSlot();
+    auto tmp = *cpy.getSlot();
+    *this->getSlot() = std::move(tmp);
 }
 
 Config::ConfArray::~ConfArray()
@@ -978,7 +988,8 @@ Config::ConfObject::ConfObject(const ConfObject &cpy)
     // ours if we don't mark it as inUse first.
     this->getSlot()->inUse = true;
 
-    *this->getSlot() = *cpy.getSlot();
+    auto tmp = *cpy.getSlot();
+    *this->getSlot() = std::move(tmp);
 }
 
 Config::ConfObject::~ConfObject()
