@@ -46,7 +46,10 @@ export interface config {
     verbose: boolean,
     default_available_current: number,
     maximum_available_current: number,
+    minimum_current_auto: boolean,
     minimum_current: number,
+    minimum_current_1p: number,
+    minimum_current_vehicle_type: number,
     chargers: ChargerConfig[]
 }
 

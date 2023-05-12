@@ -71,7 +71,10 @@ void ChargeManager::pre_setup()
         {"enable_watchdog", Config::Bool(false)},
         {"default_available_current", Config::Uint32(0)},
         {"maximum_available_current", Config::Uint32(0xFFFFFFFF)},
+        {"minimum_current_auto", Config::Bool(true)},
         {"minimum_current", Config::Uint(6000, 6000, 32000)},
+        {"minimum_current_1p", Config::Uint(6000, 6000, 32000)},
+        {"minimum_current_vehicle_type", Config::Uint32(0)},
         {"verbose", Config::Bool(false)},
         {"chargers", Config::Array({},
             new Config{Config::Object({
@@ -94,6 +97,23 @@ void ChargeManager::pre_setup()
         if (default_available_current > maximum_available_current)
             return "default_available_current can not be greater than maximum_available_current";
 #endif
+
+        if (conf.get("minimum_current_auto")->asBool()) {
+            auto minimum_current_vehicle_type = conf.get("minimum_current_vehicle_type")->asUint();
+            uint32_t min_1p;
+            uint32_t min_3p;
+
+            if (minimum_current_vehicle_type > 0) {
+                min_1p = 6000;
+                min_3p = 9200;
+            } else {
+                min_1p = 6000;
+                min_3p = 6000;
+            }
+
+            conf.get("minimum_current_1p")->updateUint(min_1p);
+            conf.get("minimum_current")->updateUint(min_3p);
+        }
 
         auto chargers = conf.get("chargers");
 

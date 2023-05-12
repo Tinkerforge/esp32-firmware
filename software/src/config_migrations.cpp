@@ -38,8 +38,7 @@ struct ConfigMigration {
     void (*const fn)(void);
 };
 
-#if defined(BUILD_NAME_WARP) || defined(BUILD_NAME_WARP2)
-
+ATTRIBUTE_UNUSED
 static bool read_config_file(const char *config, JsonDocument &json)
 {
     String s = String(config);
@@ -65,6 +64,7 @@ static bool read_config_file(const char *config, JsonDocument &json)
     return true;
 }
 
+ATTRIBUTE_UNUSED
 static void write_config_file(const char *config, JsonDocument &json)
 {
     String s = String(config);
@@ -76,6 +76,7 @@ static void write_config_file(const char *config, JsonDocument &json)
     file.close();
 }
 
+ATTRIBUTE_UNUSED
 static void delete_config_file(const char *config)
 {
     String s = String(config);
@@ -85,7 +86,25 @@ static void delete_config_file(const char *config)
     LittleFS.remove(filename);
 }
 
-#endif
+ATTRIBUTE_UNUSED
+static void migrate_charge_manager_minimum_current()
+{
+    DynamicJsonDocument json{16384};
+
+    if (read_config_file("charge_manager/config", json)) {
+        if (!json.containsKey("minimum_current_auto")) {
+            uint32_t minimum_current_old = json["minimum_current"].as<uint32_t>();
+            if (minimum_current_old > 6000) {
+                json["minimum_current_auto"        ] = false;
+                json["minimum_current_1p"          ] = minimum_current_old;
+                json["minimum_current_vehicle_type"] = 0;
+                write_config_file("charge_manager/config", json);
+            }
+        } else {
+            logger.printfln("Looks like charge_manager/config has already been migrated.");
+        }
+    }
+}
 
 static const ConfigMigration migrations[] = {
 #if defined(BUILD_NAME_WARP)
@@ -297,9 +316,27 @@ static const ConfigMigration migrations[] = {
                 write_config_file("users/config", users_json);
             }
         }
-    }
+    },
+    {
+        2, 1, 3,
+        // 2.1.3 changes
+        // - Disable new automatic minimum current setting in charge manager if uset has a non-default minimum current set.
+        [](){
+            migrate_charge_manager_minimum_current();
+        }
+    },
 #endif
 
+#if defined(BUILD_NAME_ENERGY_MANAGER)
+    {
+        1, 0, 2,
+        // 1.0.2 changes
+        // - Disable new automatic minimum current setting in charge manager if uset has a non-default minimum current set.
+        [](){
+            migrate_charge_manager_minimum_current();
+        }
+    },
+#endif
 };
 
 bool prepare_migrations()

@@ -19,8 +19,6 @@
 
 import $ from "../../ts/jq";
 
-import feather from "../../ts/feather";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
@@ -57,7 +55,6 @@ interface ChargeManagerState {
     managementEnabled: boolean
     showExpert: boolean
     scanResult: Readonly<ScanCharger[]>
-    energyManagerMode: boolean
 }
 
 
@@ -252,7 +249,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         if (!util.render_allowed())
             return <></>
 
-        let energyManagerMode = API.hasModule("energy_manager") && !(API.hasModule("evse_v2") || API.hasModule("evse"))
+        let energyManagerMode = API.hasModule("energy_manager") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
+        let warpUltimateMode  = API.hasModule("energy_manager") &&  (API.hasModule("evse_v2") || API.hasModule("evse"));
 
         let addChargerCard = <div class="col mb-4">
                 <Card className="h-100" key={999}>
@@ -328,19 +326,58 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                     />
             </FormRow>;
 
-        let minimum_current = <FormRow label={__("charge_manager.content.minimum_current")} label_muted={__("charge_manager.content.minimum_current_muted")}>
-                <InputFloat
-                    unit="A"
-                    value={state.minimum_current}
-                    onValue={(v) => this.setState({
-                        minimum_current: v,
-                        maximum_available_current: Math.max(v, state.maximum_available_current)
-                    })}
-                    digits={3}
-                    min={6000}
-                    max={32000}
-                    />
-            </FormRow>;
+        let minimum_current = <>
+            <FormRow label={__("charge_manager.content.minimum_current_auto")}>
+                <Switch desc={__("charge_manager.content.minimum_current_auto_desc")}
+                    checked={state.minimum_current_auto}
+                    onClick={this.toggle('minimum_current_auto')}
+                />
+            </FormRow>
+
+            <Collapse in={state.minimum_current_auto}>
+                <div>
+                    <FormRow label={__("charge_manager.content.minimum_current_vehicle_type")}>
+                        <Switch desc={__("charge_manager.content.minimum_current_vehicle_type_desc")}
+                            checked={state.minimum_current_vehicle_type != 0}
+                            onClick={() => this.setState({minimum_current_vehicle_type: state.minimum_current_vehicle_type ? 0 : 1})}
+                        />
+                    </FormRow>
+                </div>
+            </Collapse>
+
+            <Collapse in={!state.minimum_current_auto}>
+                <div>
+                    <FormRow label={__("charge_manager.content.minimum_current")} label_muted={__("charge_manager.content.minimum_current_muted")}>
+                        <InputFloat
+                            unit="A"
+                            value={state.minimum_current}
+                            onValue={(v) => this.setState({
+                                minimum_current: v,
+                                maximum_available_current: Math.max(v, state.maximum_available_current) // TODO Is this a good idea? Should warn instead?
+                            })}
+                            digits={3}
+                            min={6000}
+                            max={32000}
+                        />
+                    </FormRow>
+
+                    {energyManagerMode || warpUltimateMode ?
+                        <FormRow label={__("charge_manager.content.minimum_current_1p")} label_muted={__("charge_manager.content.minimum_current_1p_muted")}>
+                            <InputFloat
+                                unit="A"
+                                value={state.minimum_current_1p}
+                                onValue={(v) => this.setState({minimum_current_1p: v})}
+                                digits={3}
+                                min={6000}
+                                max={32000}
+                            />
+                        </FormRow>
+                    :
+                        null
+                    }
+                </div>
+            </Collapse>
+        </>
 
         let available_current = <FormRow label={__("charge_manager.content.maximum_available_current")}>
                 <InputFloat
@@ -460,8 +497,10 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         return (
             <>
                 <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
-                    {energyManagerMode ? null:
+                    {!energyManagerMode || warpUltimateMode ?
                         charge_manager_mode
+                    :
+                        null
                     }
 
                     {energyManagerMode ?
@@ -485,7 +524,6 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                     {watchdog}
                                     {maximum_available_current}
                                     {default_available_current}
-                                    {minimum_current}
                                 </div>
                             </Collapse>
 
@@ -495,6 +533,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                 </div>
                             </Collapse>
 
+                            {minimum_current}
                             {chargers}
                         </div>
                     </Collapse>
