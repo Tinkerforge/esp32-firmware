@@ -284,7 +284,8 @@ private:
     uint32_t switching_hysteresis_ms  = 0;
     bool     hysteresis_wear_ok       = false;
     uint32_t max_current_unlimited_ma = 0;
-    uint32_t min_current_ma           = 0;
+    uint32_t min_current_1p_ma        = 0;
+    uint32_t min_current_3p_ma        = 0;
 
     // Pre-calculated limits
     int32_t  overall_min_power_w = 0;

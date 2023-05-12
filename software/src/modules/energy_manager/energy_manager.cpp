@@ -266,7 +266,8 @@ void EnergyManager::setup()
     phase_switching_mode        = config_in_use.get("phase_switching_mode")->asUint();
     switching_hysteresis_ms     = debug_config_in_use.get("hysteresis_time")->asUint() * 60 * 1000;    // milliseconds (from minutes)
     max_current_unlimited_ma    = charge_manager.charge_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
-    min_current_ma              = charge_manager.charge_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
+    min_current_1p_ma           = charge_manager.charge_manager_config_in_use.get("minimum_current_1p")->asUint();             // milliampere
+    min_current_3p_ma           = charge_manager.charge_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
 
     uint32_t auto_reset_time    = config_in_use.get("auto_reset_time")->asUint();
     auto_reset_hour   = auto_reset_time / 60;
@@ -292,10 +293,14 @@ void EnergyManager::setup()
     } else { // automatic or external
         min_phases = 1;
     }
-    overall_min_power_w = 230 * min_phases * min_current_ma / 1000;
+    if (min_phases < 3) {
+        overall_min_power_w = 230 * 1 * min_current_1p_ma / 1000;
+    } else {
+        overall_min_power_w = 230 * 3 * min_current_3p_ma / 1000;
+    }
 
     const int32_t max_1phase_w = 230 * 1 * max_current_unlimited_ma / 1000;
-    const int32_t min_3phase_w = 230 * 3 * min_current_ma / 1000;
+    const int32_t min_3phase_w = 230 * 3 * min_current_3p_ma / 1000;
 
     if (min_3phase_w > max_1phase_w) { // have dead current range
         int32_t range_width = min_3phase_w - max_1phase_w;
@@ -970,6 +975,8 @@ void EnergyManager::update_energy()
                 wants_on_last = wants_on;
             }
 
+            uint32_t min_current_now_ma = is_3phase ? min_current_3p_ma : min_current_1p_ma;
+
             uint32_t current_available_ma;
             if (power_available_w <= 0)
                 current_available_ma = 0;
@@ -997,7 +1004,7 @@ void EnergyManager::update_energy()
                 } else { // Switched too recently
                     //logger.printfln("energy_manager: Start/stop wanted but decision changed too recently. Have to wait another %ums.", off_state_change_blocked_until - time_now);
                     if (is_on) { // Is on, needs to stay on at minimum current.
-                        current_available_ma = min_current_ma;
+                        current_available_ma = min_current_now_ma;
                     } else { // Is off, needs to stay off.
                         current_available_ma = 0;
                     }
@@ -1005,9 +1012,9 @@ void EnergyManager::update_energy()
             }
 
             // Apply minimum/maximum current limits.
-            if (current_available_ma < min_current_ma) {
+            if (current_available_ma < min_current_now_ma) {
                 if (current_available_ma != 0)
-                    current_available_ma = min_current_ma;
+                    current_available_ma = min_current_now_ma;
             } else if (current_available_ma > max_current_limited_ma) {
                 current_available_ma = max_current_limited_ma;
             }
