@@ -983,7 +983,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
     update_uplot_daily_cache(date: Date) {
         let key = this.date_to_daily_key(date);
-        let previous_key = this.date_to_daily_key(new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1));
+        let previous_key = this.date_to_daily_key(new Date(date.getFullYear(), date.getMonth() - 1));
         let uplot_data = this.uplot_daily_cache[key];
         let needs_update = false;
         let now = Date.now();
