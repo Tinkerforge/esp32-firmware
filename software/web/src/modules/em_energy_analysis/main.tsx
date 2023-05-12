@@ -1650,7 +1650,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                           marker_width_reduction={30}
                                           legend_time_label={__("em_energy_analysis.script.time_5min")}
                                           legend_time_with_minutes={true}
-                                          legend_value_prefix={__("em_energy_analysis.script.power")}
+                                          legend_value_prefix=""
                                           x_format={{hour: '2-digit', minute: '2-digit'}}
                                           y_min={0}
                                           y_max={100}
@@ -1665,7 +1665,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                           marker_width_reduction={30}
                                           legend_time_label={__("em_energy_analysis.script.time_daily")}
                                           legend_time_with_minutes={false}
-                                          legend_value_prefix={__("em_energy_analysis.script.energy")}
+                                          legend_value_prefix=""
                                           x_format={{month: '2-digit', day: '2-digit'}}
                                           y_min={0}
                                           y_max={100}
