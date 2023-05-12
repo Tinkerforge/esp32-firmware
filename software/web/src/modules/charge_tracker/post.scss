@@ -19,6 +19,22 @@
     .charge-tracker-input-group-prepend {
         margin-right: 0px;
     }
+
+    .input-group-prepend:not(.charge-tracker-input-group-append) .input-group-text {
+        border-bottom-left-radius: 0;
+    }
+
+    .input-group-prepend.charge-tracker-input-group-append .input-group-text {
+        border-top-left-radius: 0;
+    }
+
+    .input-group-prepend:not(.charge-tracker-input-group-append) + input {
+        border-bottom-right-radius: 0;
+    }
+
+    .input-group-prepend.charge-tracker-input-group-append + input {
+        border-top-right-radius: 0;
+    }
 }
 
 @media (min-width: 768px) {
