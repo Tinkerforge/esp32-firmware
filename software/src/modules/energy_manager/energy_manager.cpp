@@ -222,6 +222,8 @@ void EnergyManager::setup()
         return;
     }
 
+    api.addFeature("energy_manager");
+
     update_status_led();
 
     // Forgets all settings when new setting is introduced: "Failed to restore persistent config config: JSON object is missing key 'input3_rule_then_limit'\nJSON object is missing key 'input4_rule_then_limit'"
@@ -310,8 +312,6 @@ void EnergyManager::setup()
 
     cloud_filter_coefficient = calculate_cloud_filter_coefficient(config_in_use.get("cloud_filter_mode")->asUint());
     logger.printfln("energy_manager: Using cloud filter coefficient %f.", cloud_filter_coefficient);
-
-    api.addFeature("energy_manager");
 
     // Initialize contactor check state so that the check doesn't trip immediately if the first response from the bricklet is invalid.
     all_data.contactor_check_state = 1;
