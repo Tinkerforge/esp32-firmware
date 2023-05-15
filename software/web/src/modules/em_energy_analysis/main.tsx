@@ -561,9 +561,9 @@ interface EMEnergyAnalysisState {
     data_type: '5min'|'daily';
     current_5min_date: Date;
     current_daily_date: Date;
-    wallbox_5min_cache_energy_total: {[id: number]: {[id: string]: {[id: number]: number}}};
+    wallbox_5min_cache_energy_total: {[id: number]: {[id: string]: number[]}};
     wallbox_daily_cache_energy_total: {[id: number]: {[id: string]: number}};
-    energy_manager_5min_cache_energy_total: {[id: string]: {grid_in: {[id: number]: number}, grid_out: {[id: number]: number}}};
+    energy_manager_5min_cache_energy_total: {[id: string]: {grid_in: number[], grid_out: number[]}};
     energy_manager_daily_cache_energy_total: {[id: string]: {grid_in: number, grid_out: number}};
 }
 
@@ -1059,7 +1059,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
             let energy_grid_in = new Array(energy_manager_data.energy_grid_in.length);
             let last_energy_grid_in = null;
-            let energy_grid_in_5min_total: {[id: number]: number} = {};
+            let energy_grid_in_5min_total = new Array(energy_manager_data.energy_grid_in.length);
             let energy_grid_in_daily_total: number = 0;
 
             if (energy_manager_previous_data) {
@@ -1087,7 +1087,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
             let energy_grid_out = new Array(energy_manager_data.energy_grid_out.length);
             let last_energy_grid_out = null;
-            let energy_grid_out_5min_total: {[id: number]: number} = {};
+            let energy_grid_out_5min_total = new Array(energy_manager_data.energy_grid_out.length);
             let energy_grid_out_daily_total: number = 0;
 
             if (energy_manager_previous_data) {
@@ -1146,7 +1146,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                     let energy = new Array(wallbox_data.energy.length);
                     let last_energy = null;
-                    let energy_5min_total: {[id: number]: number} = {};
+                    let energy_5min_total = new Array(wallbox_data.energy.length);
                     let energy_daily_total: number = 0;
 
                     if (wallbox_previous_data) {
@@ -1845,7 +1845,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         {
                             this.chargers.map(charger => {
                                 let key = this.date_to_daily_key(state.current_5min_date);
-                                let energy_total = ((state.wallbox_5min_cache_energy_total[charger.uid] || {})[key] || {})[state.current_5min_date.getDate() - 1];
+                                let energy_total = ((state.wallbox_5min_cache_energy_total[charger.uid] || {})[key] || [])[state.current_5min_date.getDate() - 1];
 
                                 return hasValue(energy_total) ?
                                     <FormRow label={charger.name} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
