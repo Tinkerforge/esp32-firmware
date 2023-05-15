@@ -520,3 +520,7 @@ body {
     position: relative;
     aspect-ratio: 2;
 }
+
+.d-flex-ni {
+    display: flex;
+}
