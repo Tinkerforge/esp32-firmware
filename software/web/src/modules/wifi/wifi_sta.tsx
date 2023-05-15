@@ -176,7 +176,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                 ssid: ap.ssid,
                                 bssid: this.string_to_bssid(ap.bssid),
                                 passphrase_required: passphrase_required,
-                                passphrase_placeholder: passphrase_required ? __("wifi.content.required") : __("wifi.content.unchanged"),
+                                passphrase_placeholder: passphrase_required ? __("component.input_password.required") : __("component.input_password.unchanged"),
                                 enable_sta: true,
                                 bssid_lock: enable_bssid_lock
                             });
