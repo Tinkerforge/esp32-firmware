@@ -1727,43 +1727,95 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return (<></>);
         }
 
-        let grid_total_5min = () => {
+        let total_5min = () => {
             let key = this.date_to_daily_key(state.current_5min_date);
             let energy_total = state.energy_manager_5min_cache_energy_total[key];
             let slot = state.current_5min_date.getDate() - 1;
+            let rows = [];
+            let has_grid_in = hasValue(energy_total) && hasValue(energy_total.grid_in) && hasValue(energy_total.grid_in[slot]);
+            let has_grid_out = hasValue(energy_total) && hasValue(energy_total.grid_out) && hasValue(energy_total.grid_out[slot]);
 
-            return (
-                <>
-                    {hasValue(energy_total) && hasValue(energy_total.grid_in) && hasValue(energy_total.grid_in[slot]) ?
-                        <FormRow label={__("em_energy_analysis.script.grid_in")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
-                            <OutputFloat value={energy_total.grid_in[slot]} digits={2} scale={0} unit="kWh"/>
+            if (has_grid_in || has_grid_out) {
+                rows.push(
+                    <FormRow label={__("em_energy_analysis.script.grid_in") + ' / ' + __("em_energy_analysis.script.grid_out")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {has_grid_in ?
+                                    <OutputFloat value={energy_total.grid_in[slot]} digits={2} scale={0} unit="kWh"/>
+                                    : undefined
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                {has_grid_out ?
+                                    <OutputFloat value={energy_total.grid_out[slot]} digits={2} scale={0} unit="kWh"/>
+                                    : undefined
+                                }
+                            </div>
+                        </div>
+                    </FormRow>
+                );
+            }
+
+            for (let charger of this.chargers) {
+                let energy_total = ((state.wallbox_5min_cache_energy_total[charger.uid] || {})[key] || [])[state.current_5min_date.getDate() - 1];
+
+                if (hasValue(energy_total)) {
+                    rows.push(
+                        <FormRow label={charger.name} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <OutputFloat value={energy_total} digits={2} scale={0} unit="kWh"/>
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                            </div>
                         </FormRow>
-                        : undefined
-                    }
-                    {hasValue(energy_total) && hasValue(energy_total.grid_out) && hasValue(energy_total.grid_out[slot]) ?
-                        <FormRow label={__("em_energy_analysis.script.grid_out")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
-                            <OutputFloat value={energy_total.grid_out[slot]} digits={2} scale={0} unit="kWh"/>
-                        </FormRow>
-                        : undefined
-                    }
-                </>
-            );
+                    );
+                }
+            }
+
+            return rows;
         };
 
-        let grid_total_daily = () => {
+        let total_daily = () => {
             let key = this.date_to_daily_key(state.current_daily_date);
             let energy_total = state.energy_manager_daily_cache_energy_total[key];
+            let rows = [];
 
-            return hasValue(energy_total) ?
-                <>
-                    <FormRow label={__("em_energy_analysis.script.grid_in")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
-                        <OutputFloat value={energy_total.grid_in} digits={2} scale={0} unit="kWh"/>
+            if (hasValue(energy_total)) {
+                rows.push(
+                    <FormRow label={__("em_energy_analysis.script.grid_in") + ' / ' + __("em_energy_analysis.script.grid_out")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <OutputFloat value={energy_total.grid_in} digits={2} scale={0} unit="kWh"/>
+                            </div>
+                            <div class="col-md-6">
+                                <OutputFloat value={energy_total.grid_out} digits={2} scale={0} unit="kWh"/>
+                            </div>
+                        </div>
                     </FormRow>
-                    <FormRow label={__("em_energy_analysis.script.grid_out")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
-                        <OutputFloat value={energy_total.grid_out} digits={2} scale={0} unit="kWh"/>
-                    </FormRow>
-                </>
-                : undefined;
+                );
+            }
+
+            for (let charger of this.chargers) {
+                let energy_total = (state.wallbox_daily_cache_energy_total[charger.uid] || {})[key];
+
+                if (hasValue(energy_total)) {
+                    rows.push(
+                        <FormRow label={charger.name} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <OutputFloat value={energy_total} digits={2} scale={0} unit="kWh"/>
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                            </div>
+                        </FormRow>
+                    );
+                }
+            }
+
+            return rows;
         };
 
         return (
@@ -1840,38 +1892,12 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 {state.data_type == '5min' ?
                     <>
                         {
-                            grid_total_5min()
-                        }
-                        {
-                            this.chargers.map(charger => {
-                                let key = this.date_to_daily_key(state.current_5min_date);
-                                let energy_total = ((state.wallbox_5min_cache_energy_total[charger.uid] || {})[key] || [])[state.current_5min_date.getDate() - 1];
-
-                                return hasValue(energy_total) ?
-                                    <FormRow label={charger.name} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
-                                        <OutputFloat value={energy_total} digits={2} scale={0} unit="kWh"/>
-                                    </FormRow>
-                                    : undefined;
-                                }
-                            )
+                            total_5min()
                         }
                     </> :
                     <>
                         {
-                            grid_total_daily()
-                        }
-                        {
-                            this.chargers.map(charger => {
-                                let key = this.date_to_daily_key(state.current_daily_date);
-                                let energy_total = (state.wallbox_daily_cache_energy_total[charger.uid] || {})[key];
-
-                                return hasValue(energy_total) ?
-                                    <FormRow label={charger.name} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
-                                        <OutputFloat value={energy_total} digits={2} scale={0} unit="kWh"/>
-                                    </FormRow>
-                                    : undefined;
-                                }
-                            )
+                            total_daily()
                         }
                     </>
                 }
