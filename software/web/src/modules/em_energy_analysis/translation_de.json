@@ -10,10 +10,9 @@
             "em_energy_analysis": "Energiebilanz",
             "no_data": "Keine Daten vorhanden!",
             "loading": "Lade Daten...",
-            "data_type": "Auflösung",
+            "data_type": "Auswahl",
             "data_type_5min": "1 Tag in 5 Minuten",
-            "data_type_daily": "1 Monat in Tagen",
-            "date": "Datum"
+            "data_type_daily": "1 Monat in Tagen"
         },
         "script": {
             "time_5min": "Uhrzeit",

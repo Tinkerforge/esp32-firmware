@@ -10,10 +10,9 @@
             "em_energy_analysis": "Energy Analysis",
             "no_data": "No data available!",
             "loading": "Loading data...",
-            "data_type": "Resolution",
+            "data_type": "Selection",
             "data_type_5min": "1 day in 5 minutes",
-            "data_type_daily": "1 month in days",
-            "date": "Date"
+            "data_type_daily": "1 month in days"
         },
         "script": {
             "time_5min": "Time of day",

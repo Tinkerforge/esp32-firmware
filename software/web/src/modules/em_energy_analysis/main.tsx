@@ -29,7 +29,13 @@ import { InputDate } from "../../ts/components/input_date";
 import { InputMonth } from "../../ts/components/input_month";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
+import { OutputFloat } from "src/ts/components/output_float";
 import uPlot from 'uplot';
+
+function hasValue(a: any): boolean
+{
+    return a !== null && a !== undefined;
+}
 
 interface CachedData {
     update_timestamp: number;
@@ -555,6 +561,10 @@ interface EMEnergyAnalysisState {
     data_type: '5min'|'daily';
     current_5min_date: Date;
     current_daily_date: Date;
+    wallbox_5min_cache_energy_total: {[id: number]: {[id: string]: {[id: number]: number}}};
+    wallbox_daily_cache_energy_total: {[id: number]: {[id: string]: number}};
+    energy_manager_5min_cache_energy_total: {[id: string]: {grid_in: {[id: number]: number}, grid_out: {[id: number]: number}}};
+    energy_manager_daily_cache_energy_total: {[id: string]: {grid_in: number, grid_out: number}};
 }
 
 interface Charger {
@@ -602,6 +612,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             data_type: '5min',
             current_5min_date: current_5min_date,
             current_daily_date: current_daily_date,
+            wallbox_5min_cache_energy_total: {},
+            wallbox_daily_cache_energy_total: {},
+            energy_manager_5min_cache_energy_total: {},
+            energy_manager_daily_cache_energy_total: {}
         } as any;
 
         util.eventTarget.addEventListener('info/modules', () => {
@@ -1045,6 +1059,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
             let energy_grid_in = new Array(energy_manager_data.energy_grid_in.length);
             let last_energy_grid_in = null;
+            let energy_grid_in_5min_total: {[id: number]: number} = {};
+            let energy_grid_in_daily_total: number = 0;
 
             if (energy_manager_previous_data) {
                 last_energy_grid_in = energy_manager_previous_data.energy_grid_in[energy_manager_previous_data.energy_grid_in.length - 1];
@@ -1053,11 +1069,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             for (let i = 0; i < energy_manager_data.energy_grid_in.length; ++i) {
                 if (energy_manager_data.energy_grid_in[i] !== null && last_energy_grid_in !== null) {
                     energy_grid_in[i] = energy_manager_data.energy_grid_in[i] - last_energy_grid_in;
+                    energy_grid_in_daily_total += energy_grid_in[i];
                 }
                 else {
                     energy_grid_in[i] = null;
                 }
 
+                energy_grid_in_5min_total[i] = energy_grid_in[i];
                 last_energy_grid_in = energy_manager_data.energy_grid_in[i];
             }
 
@@ -1069,6 +1087,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
             let energy_grid_out = new Array(energy_manager_data.energy_grid_out.length);
             let last_energy_grid_out = null;
+            let energy_grid_out_5min_total: {[id: number]: number} = {};
+            let energy_grid_out_daily_total: number = 0;
 
             if (energy_manager_previous_data) {
                 last_energy_grid_out = energy_manager_previous_data.energy_grid_out[energy_manager_previous_data.energy_grid_out.length - 1];
@@ -1081,11 +1101,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     if (energy_grid_out[i] > 0) {
                         energy_grid_out[i] = -energy_grid_out[i];
                     }
+
+                    energy_grid_out_daily_total += energy_grid_out[i];
                 }
                 else {
                     energy_grid_out[i] = null;
                 }
 
+                energy_grid_out_5min_total[i] = energy_grid_out[i];
                 last_energy_grid_out = energy_manager_data.energy_grid_out[i];
             }
 
@@ -1094,6 +1117,23 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.values.push(energy_grid_out);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(true);
+
+            this.setState((prevState) => ({
+                energy_manager_5min_cache_energy_total: {
+                    ...prevState.energy_manager_5min_cache_energy_total,
+                    [key]: {
+                        grid_in: energy_grid_in_5min_total,
+                        grid_out: energy_grid_out_5min_total
+                    }
+                },
+                energy_manager_daily_cache_energy_total: {
+                    ...prevState.energy_manager_daily_cache_energy_total,
+                    [key]: {
+                        grid_in: energy_grid_in_daily_total,
+                        grid_out: energy_grid_out_daily_total
+                    }
+                }
+            }));
         }
 
         for (let charger of this.chargers) {
@@ -1106,6 +1146,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                     let energy = new Array(wallbox_data.energy.length);
                     let last_energy = null;
+                    let energy_5min_total: {[id: number]: number} = {};
+                    let energy_daily_total: number = 0;
 
                     if (wallbox_previous_data) {
                         last_energy = wallbox_previous_data.energy[wallbox_previous_data.energy.length - 1];
@@ -1114,11 +1156,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     for (let i = 0; i < wallbox_data.energy.length; ++i) {
                         if (wallbox_data.energy[i] !== null && last_energy !== null) {
                             energy[i] = wallbox_data.energy[i] - last_energy;
+                            energy_daily_total += energy[i];
                         }
                         else {
                             energy[i] = null;
                         }
 
+                        energy_5min_total[i] = energy[i];
                         last_energy = wallbox_data.energy[i];
                     }
 
@@ -1127,6 +1171,21 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.values.push(energy);
                     uplot_data.stacked.push(true);
                     uplot_data.bars.push(true);
+
+                    this.setState((prevState) => ({
+                        wallbox_5min_cache_energy_total: {
+                            ...prevState.wallbox_5min_cache_energy_total,
+                            [charger.uid]: {
+                                ...(prevState.wallbox_5min_cache_energy_total[charger.uid] || {}), [key]: energy_5min_total
+                            }
+                        },
+                        wallbox_daily_cache_energy_total: {
+                            ...prevState.wallbox_daily_cache_energy_total,
+                            [charger.uid]: {
+                                ...(prevState.wallbox_daily_cache_energy_total[charger.uid] || {}), [key]: energy_daily_total
+                            }
+                        }
+                    }));
                 }
             }
         }
@@ -1538,6 +1597,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     }
 
     update_current_5min_cache() {
+        let current_daily_date: Date = new Date(this.state.current_5min_date);
+
+        current_daily_date.setDate(1);
+        current_daily_date.setHours(0);
+        current_daily_date.setMinutes(0);
+        current_daily_date.setSeconds(0);
+        current_daily_date.setMilliseconds(0);
+
         this.update_energy_manager_5min_cache(this.state.current_5min_date)
             .then((success: boolean) => {
                 if (!success) {
@@ -1545,6 +1612,20 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 }
 
                 return this.update_wallbox_5min_cache_all(this.state.current_5min_date);
+            })
+            .then((success: boolean) => {
+                if (!success) {
+                    return Promise.resolve(false);
+                }
+
+                return this.update_energy_manager_daily_cache(current_daily_date);
+            })
+            .then((success: boolean) => {
+                if (!success) {
+                    return Promise.resolve(false);
+                }
+
+                return this.update_wallbox_daily_cache_all(current_daily_date);
             })
             .then((success: boolean) => {
                 if (!success) {
@@ -1597,6 +1678,16 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             if (this.uplot_wrapper_5min_ref.current) {
                 this.update_uplot_5min_cache(this.state.current_5min_date);
 
+                let current_daily_date: Date = new Date(this.state.current_5min_date);
+
+                current_daily_date.setDate(1);
+                current_daily_date.setHours(0);
+                current_daily_date.setMinutes(0);
+                current_daily_date.setSeconds(0);
+                current_daily_date.setMilliseconds(0);
+
+                this.update_uplot_daily_cache(current_daily_date);
+
                 let key = this.date_to_5min_key(this.state.current_5min_date);
                 let data = this.uplot_5min_cache[key];
 
@@ -1635,6 +1726,45 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         if (!util.render_allowed()) {
             return (<></>);
         }
+
+        let grid_total_5min = () => {
+            let key = this.date_to_daily_key(state.current_5min_date);
+            let energy_total = state.energy_manager_5min_cache_energy_total[key];
+            let slot = state.current_5min_date.getDate() - 1;
+
+            return (
+                <>
+                    {hasValue(energy_total) && hasValue(energy_total.grid_in) && hasValue(energy_total.grid_in[slot]) ?
+                        <FormRow label={__("em_energy_analysis.script.grid_in")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
+                            <OutputFloat value={energy_total.grid_in[slot]} digits={2} scale={0} unit="kWh"/>
+                        </FormRow>
+                        : undefined
+                    }
+                    {hasValue(energy_total) && hasValue(energy_total.grid_out) && hasValue(energy_total.grid_out[slot]) ?
+                        <FormRow label={__("em_energy_analysis.script.grid_out")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
+                            <OutputFloat value={energy_total.grid_out[slot]} digits={2} scale={0} unit="kWh"/>
+                        </FormRow>
+                        : undefined
+                    }
+                </>
+            );
+        };
+
+        let grid_total_daily = () => {
+            let key = this.date_to_daily_key(state.current_daily_date);
+            let energy_total = state.energy_manager_daily_cache_energy_total[key];
+
+            return hasValue(energy_total) ?
+                <>
+                    <FormRow label={__("em_energy_analysis.script.grid_in")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
+                        <OutputFloat value={energy_total.grid_in} digits={2} scale={0} unit="kWh"/>
+                    </FormRow>
+                    <FormRow label={__("em_energy_analysis.script.grid_out")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
+                        <OutputFloat value={energy_total.grid_out} digits={2} scale={0} unit="kWh"/>
+                    </FormRow>
+                </>
+                : undefined;
+        };
 
         return (
             <>
@@ -1677,32 +1807,74 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     </div>
                 </div>
                 <FormRow label={__("em_energy_analysis.content.data_type")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
-                    <InputSelect value={state.data_type} onValue={(v) => {
-                            let data_type: '5min'|'daily' = v as any;
+                    <div class="row">
+                        <div class="col-md-6">
+                            <InputSelect value={state.data_type} onValue={(v) => {
+                                    let data_type: '5min'|'daily' = v as any;
 
-                            this.setState({data_type: data_type}, () => {
-                                if (data_type == '5min') {
-                                    this.uplot_wrapper_5min_ref.current.set_show(true);
-                                    this.uplot_wrapper_daily_ref.current.set_show(false);
-                                }
-                                else {
-                                    this.uplot_wrapper_daily_ref.current.set_show(true);
-                                    this.uplot_wrapper_5min_ref.current.set_show(false);
-                                }
+                                    this.setState({data_type: data_type}, () => {
+                                        if (data_type == '5min') {
+                                            this.uplot_wrapper_5min_ref.current.set_show(true);
+                                            this.uplot_wrapper_daily_ref.current.set_show(false);
+                                        }
+                                        else {
+                                            this.uplot_wrapper_daily_ref.current.set_show(true);
+                                            this.uplot_wrapper_5min_ref.current.set_show(false);
+                                        }
 
-                                this.update_uplot();
-                            });
-                        }}
-                        items={[
-                            ["5min", __("em_energy_analysis.content.data_type_5min")],
-                            ["daily", __("em_energy_analysis.content.data_type_daily")],
-                        ]}/>
+                                        this.update_uplot();
+                                    });
+                                }}
+                                items={[
+                                    ["5min", __("em_energy_analysis.content.data_type_5min")],
+                                    ["daily", __("em_energy_analysis.content.data_type_daily")],
+                                ]}/>
+                        </div>
+                        <div class="col-md-6">
+                            {state.data_type == '5min'
+                            ? <InputDate date={state.current_5min_date} onDate={this.set_current_5min_date.bind(this)} buttons="day"/>
+                            : <InputMonth date={state.current_daily_date} onDate={this.set_current_daily_date.bind(this)} buttons="month"/>}
+                        </div>
+                    </div>
                 </FormRow>
-                <FormRow label={__("em_energy_analysis.content.date")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
-                    {state.data_type == '5min'
-                     ? <InputDate date={state.current_5min_date} onDate={this.set_current_5min_date.bind(this)} buttons="day"/>
-                     : <InputMonth date={state.current_daily_date} onDate={this.set_current_daily_date.bind(this)} buttons="month"/>}
-                </FormRow>
+                {state.data_type == '5min' ?
+                    <>
+                        {
+                            grid_total_5min()
+                        }
+                        {
+                            this.chargers.map(charger => {
+                                let key = this.date_to_daily_key(state.current_5min_date);
+                                let energy_total = ((state.wallbox_5min_cache_energy_total[charger.uid] || {})[key] || {})[state.current_5min_date.getDate() - 1];
+
+                                return hasValue(energy_total) ?
+                                    <FormRow label={charger.name} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
+                                        <OutputFloat value={energy_total} digits={2} scale={0} unit="kWh"/>
+                                    </FormRow>
+                                    : undefined;
+                                }
+                            )
+                        }
+                    </> :
+                    <>
+                        {
+                            grid_total_daily()
+                        }
+                        {
+                            this.chargers.map(charger => {
+                                let key = this.date_to_daily_key(state.current_daily_date);
+                                let energy_total = (state.wallbox_daily_cache_energy_total[charger.uid] || {})[key];
+
+                                return hasValue(energy_total) ?
+                                    <FormRow label={charger.name} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
+                                        <OutputFloat value={energy_total} digits={2} scale={0} unit="kWh"/>
+                                    </FormRow>
+                                    : undefined;
+                                }
+                            )
+                        }
+                    </>
+                }
             </>
         )
     }
