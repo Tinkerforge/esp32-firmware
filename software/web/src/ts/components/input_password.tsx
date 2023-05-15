@@ -65,6 +65,8 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
         let invalidFeedback = undefined;
         if ("invalidFeedback" in props)
             invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
+        else if ("required" in props && !props.value)
+            invalidFeedback = <div class="invalid-feedback">{__("component.input_text.required")}</div>;
         else if ("minLength" in props && !("maxLength" in props))
             invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_only_prefix") + props.minLength.toString() + __("component.input_text.min_only_suffix")}</div>;
         else if (!("minLength" in props) && "maxLength" in props)
