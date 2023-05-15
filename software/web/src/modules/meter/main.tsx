@@ -184,6 +184,9 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     stroke: "rgb(0, 123, 255)",
                     fill: "rgb(0, 123, 255, 0.1)",
                     width: 2,
+                    points: {
+                        show: false,
+                    },
                 },
             ],
             axes: [
