@@ -166,7 +166,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
             return {
                 width: div.clientWidth,
-                height: Math.floor(div.clientWidth / aspect_ratio),
+                height: Math.floor((div.clientWidth + (window.innerWidth - document.documentElement.clientWidth)) / aspect_ratio),
             }
         }
 
