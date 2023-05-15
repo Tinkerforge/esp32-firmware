@@ -9,10 +9,16 @@
         "content": {
             "authentication": "Credentials",
             "enable_authentication": "Authentication enabled",
-            "enable_authentication_desc": "The configured credentials must be entered to open the web interface or use the HTTP API",
+            "enable_authentication_desc": "The configured credentials must be entered to open the web interface or use the HTTP API.",
             "enable_authentication_invalid": "To enable the login a configured password is required.",
             "username": "Username",
-            "password": "Password"
+            "password": "Password",
+
+            "disable_auth": "Delete credentials and disable authentication",
+            "disable_auth_title": "Disable authentication",
+            "disable_auth_body": "Really delete credentials and disable authentication? Then no credentials are necessary to open the web interface or use the HTTP API.",
+            "disable_auth_abort": "Abort",
+            "disable_auth_confirm": "Disable"
         },
         "script": {
             "save_failed": "Failed to save the credentials.",

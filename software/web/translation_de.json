@@ -20,7 +20,9 @@
         },
         "input_password": {
             "to_be_cleared": "Wird beim Speichern geleert",
-            "unchanged": "Unverändert"
+            "unchanged": "Unverändert",
+            "required": "Notwendig",
+            "not_set": "Nicht gesetzt"
         },
         "ip_configuration": {
             "ip_configuration": "IP-Konfiguration",

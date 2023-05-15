@@ -31,9 +31,9 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
-import { Switch } from "src/ts/components/switch";
 import { InputPassword } from "src/ts/components/input_password";
-import { Slash } from "react-feather";
+import { Button } from "react-bootstrap";
+import { Switch } from "src/ts/components/switch";
 
 type AuthenticationState = API.getType['authentication/config'] & {password: string};
 
@@ -44,49 +44,65 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
               __("authentication.script.reboot_content_changed"));
     }
 
-    http_auth_allowed() {
-        return (this.state.digest_hash == null && (this.state.password !== "")) ||
-               (this.state.digest_hash == "" && this.state.password !== undefined && this.state.password !== null && this.state.password !== "");
-    };
+    hash(username: string, password?: string) {
+        if (password === "")
+            return "";
 
-    override async transformSave(cfg: AuthenticationState) {
-        cfg.digest_hash = (this.state.password != null && this.state.password != "") ? YaMD5.YaMD5.hashStr(cfg.username + ":esp32-lib:" + this.state.password) : this.state.password;
-        return cfg;
+        return YaMD5.YaMD5.hashStr(username + ":esp32-lib:" + password);
     }
 
     override render(props: {}, state: AuthenticationState) {
         if (!util.render_allowed())
             return <></>
 
-        let auth_allowed = this.http_auth_allowed();
+        let user_required = state.enable_auth || state.digest_hash != "";
+        let pass_required = (state.enable_auth && !API.get("authentication/config").enable_auth) || (state.username != API.get("authentication/config").username);
 
         return (
             <>
                 <ConfigForm id="auth_config_form" title={__("authentication.content.authentication")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("authentication.content.enable_authentication")}>
                         <Switch desc={__("authentication.content.enable_authentication_desc")}
-                                checked={auth_allowed && state.enable_auth}
+                                checked={state.enable_auth}
                                 onClick={this.toggle("enable_auth")}
-                                disabled={!auth_allowed}
-                                className={!auth_allowed && state.enable_auth ? "is-invalid" : ""}
                         />
-                        <div class="invalid-feedback">{__("authentication.content.enable_authentication_invalid")}</div>
                     </FormRow>
 
                     <FormRow label={__("authentication.content.username")}>
                         <InputText value={state.username}
-                                    onValue={this.set("username")}
-                                    minLength={1} maxLength={32}
-                                    required/>
+                                   onValue={this.set("username")}
+                                   maxLength={32}
+                                   required={user_required}
+                                   placeholder={user_required ? __('component.input_password.required') : __('component.input_password.not_set')} />
                     </FormRow>
+
                     <FormRow label={__("authentication.content.password")}>
-                        <InputPassword
-                            maxLength={64}
-                            value={state.password === undefined ? state.digest_hash : state.password}
-                            onValue={this.set("password")}
-                            clearPlaceholder={__("authentication.script.login_disabled")}
-                            clearSymbol={<Slash/>}
-                            allowAPIClear/>
+                        <InputPassword maxLength={64}
+                                       value={state.password}
+                                       onValue={(v) => {this.setState({password: v, digest_hash: this.hash(state.username, v)})}}
+                                       required={pass_required}
+                                       placeholder={pass_required ? __('component.input_password.required') : (API.get("authentication/config").digest_hash == "" ? __('component.input_password.not_set') : __('component.input_password.unchanged'))}
+                                       hideClear />
+                    </FormRow>
+
+                    <FormRow label="">
+                        <Button variant="danger" className="form-control" disabled={state.digest_hash == ""} onClick={async () => {
+                            const modal = util.async_modal_ref.current;
+                            if(!await modal.show({
+                                    title: __("authentication.content.disable_auth_title"),
+                                    body: __("authentication.content.disable_auth_body"),
+                                    no_text: __("authentication.content.disable_auth_abort"),
+                                    yes_text: __("authentication.content.disable_auth_confirm"),
+                                    no_variant: "secondary",
+                                    yes_variant: "danger"
+                                }))
+                                return;
+                            this.setState({
+                                enable_auth: false,
+                                username: "",
+                                password: "",
+                                digest_hash: ""}, this.save);
+                        }}>{__("authentication.content.disable_auth")}</Button>
                     </FormRow>
                 </ConfigForm>
             </>

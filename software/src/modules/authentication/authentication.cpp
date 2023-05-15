@@ -33,15 +33,16 @@ void Authentication::pre_setup()
         {"enable_auth", Config::Bool(false)},
         {"username", Config::Str("", 0, 32)},
         {"digest_hash", Config::Str("", 0, 32)},
-    }), [](Config &update) {
+    }), [this](Config &update) {
         if (update.get("enable_auth")->asBool() && update.get("digest_hash")->asString() == "")
             return String("Authentication can not be enabled if no password/digest hash is set.");
 
+        // Theoretically authentication works without a username; not in Firefox with xhr.open(..., username, password);
         if (update.get("enable_auth")->asBool() && update.get("username")->asString() == "")
             return String("Authentication can not be enabled if no username is set.");
 
-        if (!update.get("enable_auth")->asBool() && update.get("digest_hash")->asString() != "")
-            update.get("digest_hash")->updateString("");
+        if (update.get("username")->asString() != this->authentication_config.get("username")->asString() && update.get("digest_hash")->asString() == this->authentication_config.get("digest_hash")->asString())
+            return String("To change the username the digest hash also has to be updated.");
 
         return String("");
     }};
