@@ -127,6 +127,23 @@ const fills = [
     'rgb( 23, 190, 207, 0.1)',
 ];
 
+let color_cache: {[id: string]: {stroke: string, fill: string}} = {};
+let color_cache_next: number = 0;
+
+function get_color(key: string)
+{
+    if (!color_cache[key]) {
+        color_cache[key] = {
+            stroke: strokes[color_cache_next % strokes.length],
+            fill: fills[color_cache_next % fills.length],
+        }
+
+        color_cache_next++;
+    }
+
+    return color_cache[key];
+}
+
 class UplotWrapper extends Component<UplotWrapperProps, {}> {
     uplot: uPlot;
     series_count: number = 1;
@@ -325,6 +342,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
     get_series_opts(i: number): uPlot.Series {
         let name = this.data.names[i];
+        let color = get_color(name);
 
         return {
             show: this.series_visibility[this.data.keys[i]],
@@ -338,8 +356,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
                 return null;
             },
-            stroke: strokes[(i - 1) % strokes.length],
-            fill: this.data.stacked[i] || this.props.default_fill ? fills[(i - 1) % fills.length] : undefined,
+            stroke: color.stroke,
+            fill: this.data.stacked[i] || this.props.default_fill ? color.fill : undefined,
             width: 2,
             paths: this.data.bars[i] ? uPlot.paths.bars({size: [0.6, 100]}) : undefined,
             points: {
@@ -457,7 +475,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 } else {
                     this.uplot.addBand({
                         series: [i, last_stacked_index],
-                        fill: fills[(i - 1) % fills.length],
+                        fill: get_color(this.data.names[i]).fill,
                     });
                 }
 
