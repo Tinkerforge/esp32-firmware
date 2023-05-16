@@ -24,6 +24,8 @@
 #include "bindings/base58.h"
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
+#include "bindings/bricklet_unknown.h"
+#include "tools.h"
 
 #include "module.h"
 #include "api.h"
@@ -102,6 +104,16 @@ public:
             return false;
         }
 
+        identity = Config::Object({
+            {"uid", Config::Str("")},
+            {"connected_uid", Config::Str("")},
+            {"position", Config::Str("")},
+            {"hw_version", Config::Str("")},
+            {"fw_version", Config::Str("")},
+            {"device_identifier", Config::Uint16(0)}
+        });
+
+        update_identity(tfp);
         return true;
     }
 
@@ -121,6 +133,8 @@ public:
 
             initialized = false;
         }, true);
+
+        api.addState(url_prefix + "/identity", &identity, {}, 1000);
     }
 
     void loop()
@@ -176,4 +190,48 @@ public:
     // This simplifies reimplementing modules for other hardware.
 protected:
     DeviceT device;
+    ConfigRoot identity;
+
+private:
+    void update_identity(TF_TFP *tfp) {
+        char uid[8];
+        char connected_uid[8];
+        char position;
+        uint8_t hw_version[3];
+        uint8_t fw_version[3];
+        uint16_t device_identifier;
+
+        TFPSwap swap(tfp);
+        TF_Unknown unknown;
+
+        int rc = tf_unknown_create(&unknown, tfp);
+        defer {tf_unknown_destroy(&unknown);};
+
+        if (rc != TF_E_OK) {
+            logger.printfln("Creation of unknown device failed with rc %i", rc);
+            return;
+        }
+
+        rc = tf_unknown_get_identity(&unknown, uid, connected_uid, &position, hw_version, fw_version, &device_identifier);
+        if (rc != TF_E_OK) {
+            logger.printfln("Getting identity of unknown device failed with rc %i", rc);
+        }
+
+        String value(uid);
+        identity.get("uid")->updateString(value);
+
+        value = String(connected_uid);
+        identity.get("connected_uid")->updateString(value);
+
+        value = String(position);
+        identity.get("position")->updateString(value);
+
+        value = String(hw_version[0] + String(".") + hw_version[1] + "." + hw_version[2]);
+        identity.get("hw_version")->updateString(value);
+
+        value = String(fw_version[0] + String(".") + fw_version[1] + "." + fw_version[2]);
+        identity.get("fw_version")->updateString(value);
+
+        identity.get("device_identifier")->updateUint(device_identifier);
+    }
 };
