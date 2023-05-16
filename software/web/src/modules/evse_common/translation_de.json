@@ -57,6 +57,7 @@
             "jumper_config_software": "Software",
             "jumper_config_unconfigured": "Unkonfiguriert",
             "evse_version": "Hardware-Version des Ladecontrollers",
+            "evse_fw_version": "Firmware-Version des Ladecontrollers",
             "charging_current": "Ladestromgrenzen",
             "charging_current_muted": "Minimum der Ladestromgrenzen",
             "reset_slot": "Freigeben",

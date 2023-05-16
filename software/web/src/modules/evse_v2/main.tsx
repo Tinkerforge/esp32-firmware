@@ -314,6 +314,10 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                         <InputText value={(hardware_cfg.evse_version / 10).toFixed(1)}/>
                     </FormRow>
 
+                    <FormRow label={__("evse.content.evse_fw_version")}>
+                        <InputText value={API.get("evse/identity").fw_version}/>
+                    </FormRow>
+
                     <FormRow label={__("evse.content.energy_meter_type")}>
                         <InputText value={translate_unchecked(`evse.script.meter_type_${hardware_cfg.energy_meter_type}`)}/>
                     </FormRow>

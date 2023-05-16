@@ -273,6 +273,10 @@ export class EVSE extends Component<{}, EVSEState> {
                         <InputText value={(hardware_cfg.evse_version / 10).toFixed(1)}/>
                     </FormRow>
 
+                    <FormRow label={__("evse.content.evse_fw_version")}>
+                        <InputText value={API.get("evse/identity").fw_version}/>
+                    </FormRow>
+
                     <FormSeparator heading={__("evse.content.debug")}/>
 
                     <DebugLogger prefix="evse" debug="evse/debug" debugHeader="evse/debug_header" translationPrefix="evse"/>
