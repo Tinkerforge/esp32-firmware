@@ -300,6 +300,15 @@ void EVSE::apply_defaults()
         tf_evse_set_charging_slot(&device, CHARGING_SLOT_CHARGE_MANAGER, 0, cm_enabled, true);
 
     // Slot 8 (external) is controlled via API, no need to change anything here
+
+    // Disabling all unused charging slots.
+    for (int i = CHARGING_SLOT_COUNT; i < CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE; i++) {
+        bool active;
+        is_in_bootloader(tf_evse_get_charging_slot_default(&device, i, NULL, &active, NULL));
+        if (active)
+            is_in_bootloader(tf_evse_set_charging_slot_default(&device, i, 32000, false, false));
+        is_in_bootloader(tf_evse_set_charging_slot_active(&device, i, false));
+    }
 }
 
 void EVSE::factory_reset()
