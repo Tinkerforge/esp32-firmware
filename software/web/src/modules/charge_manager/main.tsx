@@ -173,8 +173,6 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         this.setState({chargers: c})
     }
 
-
-    scan_timeout: number = null;
     async scan_services()
     {
         try {
@@ -182,21 +180,6 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         } catch {
             return;
         }
-
-        if (this.scan_timeout != null)
-            window.clearTimeout(this.scan_timeout);
-
-        this.scan_timeout = window.setTimeout(async function () {
-            this.scan_timeout = null;
-
-            let result = "";
-            try {
-                result = await util.download("/charge_manager/scan_result").then(blob => blob.text());
-                let parsed = JSON.parse(result);
-                this.addScanResults(parsed);
-            } catch {
-            }
-        }, 3000);
     }
 
     intToIP(int: number) {
