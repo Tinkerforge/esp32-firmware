@@ -1013,7 +1013,7 @@ Config Config::Str(const String &s, uint16_t minChars, uint16_t maxChars)
     if (!config_constructors_allowed)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
-    return Config{ConfString{s, minChars, maxChars == 0 ? (uint16_t)s.length() : maxChars}};
+    return Config{ConfString{s, minChars, maxChars}};
 }
 
 Config Config::Float(float d, float min, float max)

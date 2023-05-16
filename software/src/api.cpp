@@ -37,12 +37,12 @@ void API::pre_setup()
 {
     features = Config::Array(
         {},
-        new Config{Config::Str("")},
+        new Config{Config::Str("", 0, 32)},
         0, 20, Config::type_id<Config::ConfString>()
     );
 
     version = Config::Object({
-        {"firmware", Config::Str(build_version_full_str())},
+        {"firmware", Config::Str(build_version_full_str(), 0, strlen(build_version_full_str()))},
         {"config", Config::Str("", 0, 12)},
     });
 }

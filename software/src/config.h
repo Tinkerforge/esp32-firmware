@@ -468,8 +468,8 @@ struct Config {
     }
 
     static Config Str(const String &s,
-                      uint16_t minChars = 0,
-                      uint16_t maxChars = 0);
+                      uint16_t minChars,
+                      uint16_t maxChars);
 
     static Config Float(float d,
                         float min = std::numeric_limits<float>::lowest(),

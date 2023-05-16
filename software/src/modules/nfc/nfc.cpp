@@ -177,7 +177,7 @@ void NFC::handle_event(tag_info_t *tag, bool found, bool injected)
 #endif
             users.trigger_charge_action(user_id, injected ? CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION : CHARGE_TRACKER_AUTH_TYPE_NFC, Config::Object({
                     {"tag_type", Config::Uint8(tag->tag_type)},
-                    {"tag_id", Config::Str(tag->tag_id)}}).value,
+                    {"tag_id", Config::Str(tag->tag_id, 0, 30)}}).value,
                     injected ? tag_injection_action : TRIGGER_CHARGE_ANY);
 #if MODULE_OCPP_AVAILABLE()
             ocpp.on_tag_seen(tag->tag_id);
