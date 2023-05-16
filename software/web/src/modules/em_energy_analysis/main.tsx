@@ -85,6 +85,7 @@ interface UplotWrapperProps {
     id: string;
     class: string;
     sidebar_id: string;
+    color_cache_group: string;
     show: boolean;
     marker_width_reduction: number;
     legend_time_label: string;
@@ -128,17 +129,23 @@ const fills = [
 ];
 
 let color_cache: {[id: string]: {stroke: string, fill: string}} = {};
-let color_cache_next: number = 0;
+let color_cache_next: {[id: string]: number} = {};
 
-function get_color(key: string)
+function get_color(group: string, name: string)
 {
+    let key = group + '-' + name;
+
     if (!color_cache[key]) {
-        color_cache[key] = {
-            stroke: strokes[color_cache_next % strokes.length],
-            fill: fills[color_cache_next % fills.length],
+        if (!hasValue(color_cache_next[group])) {
+            color_cache_next[group] = 0;
         }
 
-        color_cache_next++;
+        color_cache[key] = {
+            stroke: strokes[color_cache_next[group] % strokes.length],
+            fill: fills[color_cache_next[group] % fills.length],
+        };
+
+        color_cache_next[group]++;
     }
 
     return color_cache[key];
@@ -342,7 +349,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
     get_series_opts(i: number): uPlot.Series {
         let name = this.data.names[i];
-        let color = get_color(name);
+        let color = get_color(this.props.color_cache_group, name);
 
         return {
             show: this.series_visibility[this.data.keys[i]],
@@ -475,7 +482,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 } else {
                     this.uplot.addBand({
                         series: [i, last_stacked_index],
-                        fill: get_color(this.data.names[i]).fill,
+                        fill: get_color(this.props.color_cache_group, this.data.names[i]).fill,
                     });
                 }
 
@@ -554,6 +561,7 @@ export class EMEnergyAnalysisStatusChart extends Component<{}, {force_render: nu
                               id="em_energy_analysis_status_chart"
                               class="em-energy-analysis-status-chart"
                               sidebar_id="status"
+                              color_cache_group="status"
                               show={true}
                               marker_width_reduction={8}
                               legend_time_label={__("em_energy_analysis.script.time_5min")}
@@ -1846,6 +1854,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                           id="em_energy_analysis_5min_chart"
                                           class="em-energy-analysis-chart"
                                           sidebar_id="em-energy-analysis"
+                                          color_cache_group="analsyis"
                                           show={true}
                                           marker_width_reduction={30}
                                           legend_time_label={__("em_energy_analysis.script.time_5min")}
@@ -1861,6 +1870,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                           id="em_energy_analysis_daily_chart"
                                           class="em-energy-analysis-chart"
                                           sidebar_id="em-energy-analysis"
+                                          color_cache_group="analsyis"
                                           show={false}
                                           marker_width_reduction={30}
                                           legend_time_label={__("em_energy_analysis.script.time_daily")}
