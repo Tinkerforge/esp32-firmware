@@ -105,12 +105,12 @@ public:
         }
 
         identity = Config::Object({
-            {"uid", Config::Str("")},
-            {"connected_uid", Config::Str("")},
-            {"position", Config::Str("")},
-            {"hw_version", Config::Str("")},
-            {"fw_version", Config::Str("")},
-            {"device_identifier", Config::Uint16(0)}
+            {"uid", Config::Str("", 0, 8)},
+            {"connected_uid", Config::Str("", 0, 8)},
+            {"position", Config::Str("", 0, 1)},
+            {"hw_version", Config::Str("", 0, 12)},
+            {"fw_version", Config::Str("", 0, 12)},
+            {"device_identifier", Config::Uint16(123)}
         });
 
         update_identity(tfp);
