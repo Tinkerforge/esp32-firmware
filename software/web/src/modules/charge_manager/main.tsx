@@ -88,22 +88,31 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
     }
 
     addScanResults(result: ScanCharger[]) {
-        let copy = [...this.state.scanResult];
-        outer_loop:
-        for (let newC of result) {
-            for (let oldIdx in copy) {
-                let oldC = copy[oldIdx];
-                if (newC.hostname != oldC.hostname)
-                    continue;
+        // Copy to remove signals.
+        let newResult: ScanCharger[] = result.filter(c => c).map(c => ({
+            display_name: c.display_name,
+            error: c.error,
+            hostname: c.hostname,
+            ip: c.ip,
+        }));
 
-                if (oldC.ip == "[no_address]")
-                    copy[oldIdx].ip = newC.ip;
-
-                continue outer_loop;
-            }
-            copy.push(newC);
+        for (let oldC of this.state.scanResult) {
+            let i = newResult.findIndex(c => c.hostname == oldC.hostname);
+            if (i == -1)
+                newResult.push(oldC);
+            else if (newResult[i].ip == "[no_address]")
+                newResult[i].ip = oldC.ip;
         }
-        this.setState({scanResult: copy});
+
+        newResult.sort((a, b) => {
+            if (a.error == 0 && b.error != 0)
+                return -1;
+            if (a.error != 0 && b.error == 0)
+                return 1;
+            return a.display_name.localeCompare(b.display_name);
+        });
+
+        this.setState({scanResult: newResult});
     }
 
     setCharger (i: number, val: Partial<ChargerConfig>){
