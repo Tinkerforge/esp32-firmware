@@ -59,8 +59,6 @@ render(<EmPvFakerStatus/>, $('#status-em_pv_faker')[0])
 
 
 export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.getType['em_pv_faker/runtime_config']> {
-    old_input4_rule_then = -1;
-
     constructor() {
         super('em_pv_faker/config',
             __("energy_manager.script.save_failed"));
@@ -86,7 +84,7 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
             return <></>
 
         return <>
-            <ConfigForm id="em_pv_faker_config_form" title={__("em_pv_faker.content.page_header")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+            <ConfigForm id="em_pv_faker_config_form" title={__("em_pv_faker.content.page_header")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
 
                 <FormRow label={__("em_pv_faker.content.auto_fake")}>
                     <Switch desc=""
@@ -119,10 +117,10 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
 
                     <FormRow label={__("em_pv_faker.content.zero_at_lux")}>
                         <InputFloat
-                            unit="lx"
+                            unit="klx"
                             value={s.zero_at_lux}
                             onValue={this.set("zero_at_lux")}
-                            digits={0}
+                            digits={3}
                             min={1}
                             max={200000}
                         />
@@ -130,10 +128,10 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
 
                     <FormRow label={__("em_pv_faker.content.peak_at_lux")}>
                         <InputFloat
-                            unit="lx"
+                            unit="klx"
                             value={s.peak_at_lux}
                             onValue={this.set("peak_at_lux")}
-                            digits={0}
+                            digits={3}
                             min={2}
                             max={200000}
                         />
