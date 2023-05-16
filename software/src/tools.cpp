@@ -551,30 +551,6 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
 #define FIRMWARE_MINOR_OFFSET 11
 #define FIRMWARE_PATCH_OFFSET 12
 
-class TFPSwap
-{
-public:
-    TFPSwap(TF_TFP *tfp) :
-        tfp(tfp),
-        device(tfp->device),
-        cb_handler(tfp->cb_handler)
-    {
-        tfp->device = nullptr;
-        tfp->cb_handler = nullptr;
-    }
-
-    ~TFPSwap()
-    {
-        tfp->device = device;
-        tfp->cb_handler = cb_handler;
-    }
-
-private:
-    TF_TFP *tfp;
-    void *device;
-    TF_TFP_CallbackHandler cb_handler;
-};
-
 int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force)
 {
     TFPSwap tfp_swap(tfp);
