@@ -935,6 +935,9 @@ void EnergyManager::update_energy()
                 // (Re)booted recently. Allow immediate switching.
                 logger.printfln("energy_manager: Free phase switch to %s during start-up period. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
                 switch_phases = true;
+                // Only one immediate switch on/off allowed; mark as used.
+                uptime_past_hysteresis = true;
+                low_level_state.get("uptime_past_hysteresis")->updateBool(uptime_past_hysteresis);
             } else if (just_switched_mode) {
                 // Just switched modes. Allow immediate switching.
                 logger.printfln("energy_manager: Free phase switch to %s after changing modes. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
@@ -972,6 +975,7 @@ void EnergyManager::update_energy()
             if (wants_on != wants_on_last) {
                 logger.printfln("energy_manager: wants_on decision changed to %i", wants_on);
                 on_state_change_blocked_until = time_now + switching_hysteresis_ms;
+                on_state_change_is_blocked = true; // Set manually because the usual update already ran before the phase switching code.
                 wants_on_last = wants_on;
             }
 
