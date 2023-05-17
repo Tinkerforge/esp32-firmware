@@ -329,10 +329,13 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
             <Collapse in={state.minimum_current_auto}>
                 <div>
                     <FormRow label={__("charge_manager.content.minimum_current_vehicle_type")}>
-                        <Switch desc={__("charge_manager.content.minimum_current_vehicle_type_desc")}
-                            checked={state.minimum_current_vehicle_type != 0}
-                            onClick={() => this.setState({minimum_current_vehicle_type: state.minimum_current_vehicle_type ? 0 : 1})}
-                        />
+                        <InputSelect items={[
+                                ["0", __("charge_manager.content.minimum_current_vehicle_type_other")],
+                                ["1", __("charge_manager.content.minimum_current_vehicle_type_zoe")],
+                            ]}
+                            value={state.minimum_current_vehicle_type}
+                            onValue={(v) => this.setState({minimum_current_vehicle_type: parseInt(v)})}
+                            />
                     </FormRow>
                 </div>
             </Collapse>

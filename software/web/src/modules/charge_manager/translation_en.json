@@ -27,8 +27,10 @@
             "maximum_available_current_muted": "Maximum allowed current of all chargers in total. This is usually the rated current of the common supply line.",
             "minimum_current_auto": "Automatic minimum current",
             "minimum_current_auto_desc": "Automatically set minimum charge current based on selected vehicle model",
-            "minimum_current_vehicle_type": "Vehicle model selection",
-            "minimum_current_vehicle_type_desc": "Enable if you want to charge a Renault ZOE R110 or R135 or a Renault Twingo Z.E. Disable otherwise.",
+            "minimum_current_vehicle_type": "Vehicle model",
+            "minimum_current_vehicle_type_other": "Other",
+            "minimum_current_vehicle_type_zoe": "Renault Twingo Z.E., Renault ZOE R110 or R135",
+
             "minimum_current": "Minimum three-phase charge current",
             "minimum_current_muted": "lowest charge current supported by your vehicle when charging in three-phase mode",
             "minimum_current_1p": "Minimum single-phase charge current",
