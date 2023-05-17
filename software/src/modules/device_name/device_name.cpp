@@ -64,6 +64,11 @@ String getWarpDisplayName()
 }
 #endif
 
+static bool isVowel(char c)
+{
+    return (0x208222 >> (c & 0x1f)) & 1;
+}
+
 void DeviceName::updateDisplayType()
 {
     String display_type = BUILD_DISPLAY_NAME;
@@ -71,8 +76,10 @@ void DeviceName::updateDisplayType()
     display_type += getWarpDisplayName(); // FIXME: Also add more details for WARP Energy Manager, similar to WARP[2] here?
 #endif
 
+    const char *indef_article = isVowel(display_type[0]) ? "an" : "a";
+
     if (name.get("display_type")->updateString(display_type)) {
-        logger.printfln("This is %s (%s), a %s", display_name.get("display_name")->asEphemeralCStr(), name.get("name")->asEphemeralCStr(), name.get("display_type")->asEphemeralCStr());
+        logger.printfln("This is %s (%s), %s %s", display_name.get("display_name")->asEphemeralCStr(), name.get("name")->asEphemeralCStr(), indef_article, display_type.c_str());
     }
 }
 
