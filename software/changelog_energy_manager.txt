@@ -25,7 +25,7 @@
 - Fix deletion of WiFI station passphrase
 - Fix missing meter values on UI
 
-2023-05-16: 1.0.2 (<unknown>)
+2023-05-16: 1.0.2 (48162334)
 - Add fill to meter plot
 - Add cloud filter
 - Add PWA-style bookmark support
