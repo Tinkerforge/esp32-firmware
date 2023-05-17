@@ -134,6 +134,8 @@ struct evse_holding_regs_t {
     static const uint16_t OFFSET = 1000;
     uint32swapped_t enable_charging;
     uint32swapped_t allowed_current;
+    uint32swapped_t led_blink_state;
+    uint32swapped_t led_blink_duration;
 };
 
 struct meter_holding_regs_t {
@@ -657,6 +659,7 @@ void ModbusTcp::update_regs()
     bool call_stop_charging = false;
     bool enable_charging = !api.hasFeature("evse") ? false : api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000;
     bool reset_meter = false;
+    bool set_evse_led = false;
 
     bool autostart_slot = !api.hasFeature("evse") ? false : api.getState("evse/slots")->get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->asUint() == 32000;
 
@@ -702,6 +705,12 @@ void ModbusTcp::update_regs()
         *evse_holding_regs_copy = *evse_holding_regs;
         *meter_holding_regs_copy = *meter_holding_regs;
         *evse_coils_copy = *evse_coils;
+
+        if (evse_holding_regs->led_blink_duration != 0 && evse_holding_regs->led_blink_state != 0) {
+            set_evse_led = true;
+            evse_holding_regs->led_blink_duration = fromUint(0);
+            evse_holding_regs->led_blink_state = fromUint(0);
+        }
     portEXIT_CRITICAL(&mtx);
 
     bool write_allowed = false;
@@ -741,6 +750,9 @@ void ModbusTcp::update_regs()
         discrete_inputs_copy->evse = true;
         evse_input_regs_copy->iec_state = fromUint(api.getState("evse/state")->get("iec61851_state")->asUint());
         evse_input_regs_copy->charger_state = fromUint(api.getState("evse/state")->get("charger_state")->asUint());
+
+        if (set_evse_led)
+            evse_led.set_api(EvseLed::Blink((uint32_t)evse_holding_regs_copy->led_blink_state), evse_holding_regs_copy->led_blink_duration);
 
 #if MODULE_EVSE_V2_AVAILABLE()
         evse_v2.set_modbus_current(evse_holding_regs_copy->allowed_current);
