@@ -17,11 +17,11 @@
         "script": {
             "time_5min": "Time of day",
             "time_daily": "Date",
-            "power": "Power at",
-            "energy": "Energy at",
-            "grid_connection": "grid connection",
-            "grid_in": "grid draw",
-            "grid_out": "grid feed"
+            "power": "Power",
+            "energy": "Energy",
+            "grid_connection": "Grid connection",
+            "grid_in": "Grid draw",
+            "grid_out": "Grid feed"
         }
     }
 }
