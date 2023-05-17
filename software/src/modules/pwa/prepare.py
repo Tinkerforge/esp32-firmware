@@ -26,8 +26,9 @@ with open(dir + '/favicon_192.png', 'rb') as file:
 with open(dir + '/favicon_512.png', 'rb') as file:
     icon_big = base64.b64encode(file.read()).decode('utf-8')
 with open(dir + "/pre.scss") as file:
-    color = file.read().split('\n')[1].split(' ')[1].removesuffix(';')
-
+    color = file.read().split('\n')[1].split(' ')[1]
+    if color.endswith(';'):
+        color = color[:-1]
 
 with open('manifest.json.template', 'r') as f:
     content = f.read()

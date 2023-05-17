@@ -589,7 +589,9 @@ def main():
         branding = f.read()
 
     with open(os.path.join(branding_module, 'pre.scss'), 'r', encoding='utf-8') as f:
-        color = f.read().split('\n')[1].split(' ')[1].removesuffix(';')
+        color = f.read().split('\n')[1].split(' ')[1]
+        if color.endswith(';'):
+            color = color[:-1]
 
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
