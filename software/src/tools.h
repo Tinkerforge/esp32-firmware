@@ -202,3 +202,6 @@ private:
     void *device;
     TF_TFP_CallbackHandler cb_handler;
 };
+
+// Remove seperator for nfc tags
+void remove_separator(const char * const in, char *out);
