@@ -1252,6 +1252,8 @@ void Config::save_to_file(File &file)
     }
     Config::apply_visitor(to_json{var, {}}, value);
 
+    if (doc.overflowed())
+        logger.printfln("JSON doc overflow while writing %s!", file.name());
     serializeJson(doc, file);
 }
 
@@ -1268,6 +1270,9 @@ void Config::write_to_stream(Print &output)
         var = doc.as<JsonVariant>();
     }
     Config::apply_visitor(to_json{var, {}}, value);
+
+    if (doc.overflowed())
+        logger.printfln("JSON doc overflow!");
     serializeJson(doc, output);
 }
 
@@ -1290,6 +1295,10 @@ String Config::to_string_except(const std::initializer_list<String> &keys_to_cen
     }
     Config::apply_visitor(to_json{var, keys_to_censor}, value);
 
+
+    if (doc.overflowed())
+        logger.printfln("JSON doc overflow!");
+
     String result;
     serializeJson(doc, result);
     return result;
@@ -1308,6 +1317,9 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) const
         var = doc.as<JsonVariant>();
     }
     Config::apply_visitor(to_json{var, keys_to_censor}, value);
+
+    if (doc.overflowed())
+        logger.printfln("JSON doc overflow!");
 
     String result;
     serializeJson(doc, result);
@@ -1328,6 +1340,8 @@ void Config::write_to_stream_except(Print &output, const std::initializer_list<S
     }
     Config::apply_visitor(to_json{var, keys_to_censor}, value);
 
+    if (doc.overflowed())
+        logger.printfln("JSON doc overflow!");
     serializeJson(doc, output);
 }
 
@@ -1345,6 +1359,8 @@ void Config::write_to_stream_except(Print &output, const std::vector<String> &ke
     }
     Config::apply_visitor(to_json{var, keys_to_censor}, value);
 
+    if (doc.overflowed())
+        logger.printfln("JSON doc overflow!");
     serializeJson(doc, output);
 }
 
