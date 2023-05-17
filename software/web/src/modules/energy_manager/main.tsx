@@ -285,7 +285,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                     <Collapse in={s.phase_switching_mode == 3}>
                         <div>
                             <FormRow label="">
-                                <div class="pt-3 pb-4" style="color:red">
+                                <div style="color:red">
                                     {__("energy_manager.content.external_control_notification")}
                                 </div>
                             </FormRow>
