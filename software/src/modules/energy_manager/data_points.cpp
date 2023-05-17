@@ -243,8 +243,13 @@ bool EnergyManager::load_persistent_data()
         return false;
     }
 
+    uint8_t zero[63] = {0};
+    if (memcmp(buf, zero, sizeof(buf)) == 0) {
+        return true; // all zero, first start
+    }
+
     if (internet_checksum(buf, sizeof(PersistentData)) != 0) {
-        logger.printfln("Checksum mismatch while reading persistent energy manager data. Assuming first start.");
+        logger.printfln("Checksum mismatch while reading persistent energy manager data.");
         return true;
     }
 
