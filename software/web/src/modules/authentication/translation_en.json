@@ -10,7 +10,7 @@
             "authentication": "Credentials",
             "enable_authentication": "Authentication enabled",
             "enable_authentication_desc": "The configured credentials must be entered to open the web interface or use the HTTP API.",
-            "enable_authentication_invalid": "To enable the login a configured password is required.",
+
             "username": "Username",
             "password": "Password",
 
@@ -22,8 +22,7 @@
         },
         "script": {
             "save_failed": "Failed to save the credentials.",
-            "reboot_content_changed": "credentials",
-            "login_disabled": "Login disabled"
+            "reboot_content_changed": "credentials"
         }
     }
 }

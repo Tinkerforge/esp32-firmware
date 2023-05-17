@@ -39,7 +39,7 @@
             "always_single_phase": "Immer einphasig",
             "always_three_phases": "Immer dreiphasig",
             "external_control": "Externe Steuerung (EVCC)",
-            "external_control_notification": "Externe Steuerung für die Phasenumschaltung ist aktiv. Dadurch werden alle Einstellungen im Zusammenhang mit Überschussladen deaktiviert.",
+            "external_control_notification": "Externe Steuerung für die Phasenumschaltung ist aktiv. Dadurch werden alle Einstellungen im Zusammenhang mit PV-Überschussladen deaktiviert.",
 
             "header_load_management": "Dynamisches Lastmanagement",
             "load_management_explainer": "Der Energiemanager regelt die verwalteten Wallboxen so, dass der maximal zulässige Strom des Gebäudeanschlusses auf keiner Phase überschritten wird. (Bald verfügbar: Diese Funktion befindet sich aktuell noch in der Entwicklung.)",

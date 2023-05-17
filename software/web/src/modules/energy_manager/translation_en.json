@@ -39,7 +39,7 @@
             "always_single_phase": "Always single-phase",
             "always_three_phases": "Always three-phase",
             "external_control": "External control (EVCC)",
-            "external_control_notification": "External control for phase switching is active. This will disable all settings related to excess charging.",
+            "external_control_notification": "External control for phase switching is active. This will disable all settings related to PV excess charging.",
 
             "header_load_management": "Dynamic load management",
             "load_management_explainer": "The energy manager adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)",
