@@ -112,3 +112,7 @@ export interface identity {
     fw_version: string,
     device_identifier: number
 }
+
+export interface led_config {
+    enable_api: boolean
+}

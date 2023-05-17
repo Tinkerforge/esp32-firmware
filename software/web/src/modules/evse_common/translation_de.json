@@ -104,6 +104,9 @@
             "meter_monitoring": "Zählerüberwachung",
             "meter_monitoring_desc": "Überwacht den Stromzähler und blockiert Ladevorgänge im Falle eines Defekts.",
 
+            "enable_led_api": "Led Steuerungüber api freigegeben",
+            "enable_led_api_desc": "Led Steuerungüber api freigegeben",
+
             "slot_0": "Zuleitung",
             "slot_1": "Typ-2-Ladekabel",
             "slot_2": "Abschalteingang",

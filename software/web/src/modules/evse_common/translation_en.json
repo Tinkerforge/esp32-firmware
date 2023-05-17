@@ -104,6 +104,9 @@
             "meter_monitoring": "Meter monitoring",
             "meter_monitoring_desc": "Monitors the energy meter and blocks charging if a malfunction is detected.",
 
+            "enable_led_api": "Enable led-control for api",
+            "enable_led_api_desc": "Enable led-control for api",
+
             "slot_0": "Supply cable",
             "slot_1": "Type 2 charging cable",
             "slot_2": "Shutdown input",

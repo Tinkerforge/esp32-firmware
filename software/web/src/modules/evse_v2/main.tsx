@@ -57,6 +57,7 @@ interface EVSESSettingsState {
     boost_mode: API.getType['evse/boost_mode'];
     auto_start_charging: API.getType['evse/auto_start_charging'];
     require_meter_enabled: API.getType['require_meter/config'];
+    led_config: API.getType['evse/led_config'];
     meter_abs: number
     evse_uptime: number
 }
@@ -452,6 +453,10 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
         util.addApiEventListener("require_meter/config", () => {
             this.setState({require_meter_enabled: API.get("require_meter/config")});
         })
+
+        util.addApiEventListener("evse/led_config", () => {
+            this.setState({led_config: API.get("evse/led_config")});
+        })
     }
 
     override async sendSave(t: "charge_limits/default_limits", cfg: EVSESSettingsState & ChargeLimitsConfig): Promise<void> {
@@ -462,6 +467,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
         await API.save('evse/ev_wakeup', {"enabled": this.state.ev_wakeup.enabled}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, __("evse.script.save_failed"));
         await API.save('require_meter/config', {"config": this.state.require_meter_enabled.config}, __("evse.script.save_failed"));
+        await API.save('evse/led_config', this.state.led_config, __("evse.script.save_failed"));
         super.sendSave(t, cfg);
     }
 
@@ -475,6 +481,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
         await API.save('evse/ev_wakeup', {"enabled": true}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": false}, __("evse.script.save_failed"));
         await API.reset('require_meter/config', __("evse.script.save_failed"));
+        await API.reset('evse/led_config', __("evse.script.save_failed"));
         super.sendReset(t);
     }
 
@@ -490,7 +497,8 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
             ev_wakeup,
             boost_mode,
             auto_start_charging,
-            require_meter_enabled} = s;
+            require_meter_enabled,
+            led_config} = s;
 
         const has_meter = API.hasFeature("meter");
 
@@ -647,6 +655,11 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
                         onValue={(v) => this.setState({duration: Number(v)})}/>
                     </FormRow>
                     {has_meter ? energy_settings : <></>}
+                    <FormRow label={__("evse.content.enable_led_api")}>
+                        <Switch onClick={async () => this.setState({led_config: {enable_api: !led_config.enable_api}})}
+                                checked={led_config.enable_api}
+                                desc={__("evse.content.enable_led_api_desc")}/>
+                    </FormRow>
                 </ConfigForm>
         </>;
     }
