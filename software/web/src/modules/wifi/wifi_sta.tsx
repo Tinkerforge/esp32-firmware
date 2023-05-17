@@ -259,6 +259,19 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         onValue={(v) => this.setState(v)}
                         value={state}
                         setValid={(v) => this.ipconfig_valid = v}
+                        forbidNetwork={[
+                                {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
+                            ].concat(
+                                [{ip: util.parseIP(API.get("wifi/ap_config").ip),
+                                subnet: util.parseIP(API.get("wifi/ap_config").subnet),
+                                name: __("component.ip_configuration.wifi_ap")}]
+                            ).concat(
+                                !API.hasModule("wireguard") || API.get_maybe("wireguard/config").internal_ip == "0.0.0.0" ? [] :
+                                [{ip: util.parseIP(API.get_maybe("wireguard/config").internal_ip),
+                                subnet: util.parseIP(API.get_maybe("wireguard/config").internal_subnet),
+                                name: __("component.ip_configuration.wireguard")}]
+                            )
+                        }
                         />
 
                 </ConfigForm>

@@ -136,6 +136,25 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                         onValue={(v) => this.setState(v)}
                         value={state}
                         setValid={(v) => this.ipconfig_valid = v}
+                        forbidNetwork={[
+                                {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
+                            ].concat(
+                                !API.hasModule("ethernet") || API.get_maybe("ethernet/config").ip == "0.0.0.0" ? [] :
+                                [{ip: util.parseIP(API.get_maybe("ethernet/config").ip),
+                                subnet: util.parseIP(API.get_maybe("ethernet/config").subnet),
+                                name: __("component.ip_configuration.ethernet")}]
+                            ).concat(
+                                API.get("wifi/sta_config").ip == "0.0.0.0" ? [] :
+                                [{ip: util.parseIP(API.get("wifi/sta_config").ip),
+                                subnet: util.parseIP(API.get("wifi/sta_config").subnet),
+                                name: __("component.ip_configuration.wifi_sta")}]
+                            ).concat(
+                                !API.hasModule("wireguard") || API.get_maybe("wireguard/config").internal_ip == "0.0.0.0" ? [] :
+                                [{ip: util.parseIP(API.get_maybe("wireguard/config").internal_ip),
+                                subnet: util.parseIP(API.get_maybe("wireguard/config").internal_subnet),
+                                name: __("component.ip_configuration.wireguard")}]
+                            )
+                        }
                         />
 
                 </ConfigForm>

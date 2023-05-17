@@ -41,7 +41,12 @@
             "dns_invalid": "Die IP des DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1.",
             "dns2_invalid": "Die IP des alternativen DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1.",
             "gateway_out_of_subnet": "Gateway-Adresse liegt außerhalb des konfigurierten Subnetzes!",
-            "subnet_captures_localhost": "Kombination aus IP-Adresse und Subnetzmaske nicht erlaubt, da sie localhost (127.0.0.1) übernehmen würde."
+            "subnet_captures_prefix": "Kombination aus IP-Adresse und Subnetzmaske nicht erlaubt, da sie ",
+            "subnet_captures_suffix": " übernehmen würde.",
+            "wifi_ap": "den WLAN-Access-Point",
+            "wifi_sta": "die WLAN-Verbindung",
+            "ethernet": "die LAN-Verbindung",
+            "wireguard": "die WireGuard-Verbindung"
         },
         "collapsed_section": {
             "show": "Anzeigen",

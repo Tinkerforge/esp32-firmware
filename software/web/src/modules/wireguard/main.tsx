@@ -75,6 +75,25 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
                         ip_label={__("wireguard.content.internal_ip")}
                         subnet_label={__("wireguard.content.internal_subnet")}
                         gateway_label={__("wireguard.content.internal_gateway")}
+                        forbidNetwork={[
+                            {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
+                        ].concat(
+                            !API.hasModule("ethernet") || API.get_maybe("ethernet/config").ip == "0.0.0.0" ? [] :
+                            [{ip: util.parseIP(API.get_maybe("ethernet/config").ip),
+                            subnet: util.parseIP(API.get_maybe("ethernet/config").subnet),
+                            name: __("component.ip_configuration.ethernet")}]
+                        ).concat(
+                            !API.hasModule("wifi") || API.get_maybe("wifi/sta_config").ip == "0.0.0.0" ? [] :
+                            [{ip: util.parseIP(API.get_maybe("wifi/sta_config").ip),
+                            subnet: util.parseIP(API.get_maybe("wifi/sta_config").subnet),
+                            name: __("component.ip_configuration.wifi_sta")}]
+                        ).concat(
+                            !API.hasModule("wifi") ? [] :
+                            [{ip: util.parseIP(API.get_maybe("wifi/ap_config").ip),
+                            subnet: util.parseIP(API.get_maybe("wifi/ap_config").subnet),
+                            name: __("component.ip_configuration.wifi_ap")}]
+                        )
+                    }
                         />
 
                     <FormRow label={__("wireguard.content.remote_host")}>

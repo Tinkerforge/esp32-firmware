@@ -41,7 +41,12 @@
             "dns_invalid": "The DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
             "dns2_invalid": "The alternative DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
             "gateway_out_of_subnet": "Gateway address not in the configured subnet",
-            "subnet_captures_localhost": "Specified IP address and subnet mask not allowed: Would capture localhost (127.0.0.1)."
+            "subnet_captures_prefix": "Specified IP address and subnet mask not allowed: Would capture ",
+            "subnet_captures_suffix": ".",
+            "wifi_ap": "the WiFi access point",
+            "wifi_sta": "the WiFi connection",
+            "ethernet": "the Ethernet connection",
+            "wireguard": "the WireGuard connection"
         },
         "collapsed_section": {
             "show": "Show",
