@@ -28,8 +28,8 @@
             "minimum_current_auto": "Automatic minimum current",
             "minimum_current_auto_desc": "Automatically set minimum charge current based on selected vehicle model",
             "minimum_current_vehicle_type": "Vehicle model",
-            "minimum_current_vehicle_type_other": "Other",
-            "minimum_current_vehicle_type_zoe": "Renault Twingo Z.E., Renault ZOE R110 or R135",
+            "minimum_current_vehicle_type_other": "Default",
+            "minimum_current_vehicle_type_zoe": "Renault ZOE R135, ZOE R110 or Twingo Z.E.",
 
             "minimum_current": "Minimum three-phase charge current",
             "minimum_current_muted": "lowest charge current supported by your vehicle when charging in three-phase mode",
