@@ -470,6 +470,8 @@ void ModbusTcp::setup()
             REGISTER_DESCRIPTOR(evse_coils);
             REGISTER_DESCRIPTOR(nfc_discrete_inputs);
             REGISTER_DESCRIPTOR(nfc_input_regs);
+
+            evse_holding_regs->led_blink_state = fromUint(-2);
         }
         else if (config.get("table")->asUint() == 1)
         {
@@ -706,10 +708,10 @@ void ModbusTcp::update_regs()
         *meter_holding_regs_copy = *meter_holding_regs;
         *evse_coils_copy = *evse_coils;
 
-        if (evse_holding_regs->led_blink_duration != 0 && evse_holding_regs->led_blink_state != 0) {
+        if (evse_holding_regs->led_blink_duration != 0 && evse_holding_regs->led_blink_state != -2) {
             set_evse_led = true;
             evse_holding_regs->led_blink_duration = fromUint(0);
-            evse_holding_regs->led_blink_state = fromUint(0);
+            evse_holding_regs->led_blink_state = fromUint(-2);
         }
     portEXIT_CRITICAL(&mtx);
 
