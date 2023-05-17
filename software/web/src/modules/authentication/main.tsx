@@ -73,7 +73,7 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
                                    onValue={this.set("username")}
                                    maxLength={32}
                                    required={user_required}
-                                   placeholder={user_required ? __('component.input_password.required') : __('component.input_password.not_set')} />
+                                   placeholder={user_required ? __("component.input_password.required") : __("component.input_password.not_set")} />
                     </FormRow>
 
                     <FormRow label={__("authentication.content.password")}>
@@ -81,7 +81,7 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
                                        value={state.password}
                                        onValue={(v) => {this.setState({password: v, digest_hash: this.hash(state.username, v)})}}
                                        required={pass_required}
-                                       placeholder={pass_required ? __('component.input_password.required') : (API.get("authentication/config").digest_hash == "" ? __('component.input_password.not_set') : __('component.input_password.unchanged'))}
+                                       placeholder={pass_required ? __("component.input_password.required") : (API.get("authentication/config").digest_hash == "" ? __("component.input_password.not_set") : __("component.input_password.unchanged"))}
                                        hideClear />
                     </FormRow>
 
