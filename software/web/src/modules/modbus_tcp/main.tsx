@@ -39,9 +39,9 @@ interface config {
     evse_enable: boolean
 }
 
-const input_count = 21;
-const holding_count = 5 + input_count;
-const discrete_count = 11 + holding_count;
+const input_count = 23;
+const holding_count = 7 + input_count;
+const discrete_count = 12 + holding_count;
 const coil_count = 2 + discrete_count;
 
 export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> {
