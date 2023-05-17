@@ -112,6 +112,13 @@ struct meter_all_values_input_regs_t {
     floatswapped_t meter_values[85];
 };
 
+struct nfc_input_regs_t {
+    static const mb_param_type_t TYPE = MB_PARAM_INPUT;
+    static const uint16_t OFFSET = 4000;
+    uint32swapped_t tag_id[5];
+    uint32swapped_t tag_id_age;
+};
+
 //-------------------
 // Holding Registers
 //-------------------
@@ -297,6 +304,12 @@ struct meter_discrete_inputs_t {
     bool phase_three_active:1;
 };
 
+struct nfc_discrete_inputs_t {
+    static const mb_param_type_t TYPE = MB_PARAM_DISCRETE;
+    static const uint16_t OFFSET = 4000;
+    bool nfc:1;
+};
+
 //-------------------
 // Coils
 //-------------------
@@ -311,6 +324,7 @@ static input_regs_t *input_regs, *input_regs_copy;
 static evse_input_regs_t *evse_input_regs, *evse_input_regs_copy;
 static meter_input_regs_t *meter_input_regs, *meter_input_regs_copy;
 static meter_all_values_input_regs_t *meter_all_values_input_regs, *meter_all_values_input_regs_copy;
+static nfc_input_regs_t *nfc_input_regs, *nfc_input_regs_copy;
 
 static holding_regs_t *holding_regs, *holding_regs_copy;
 static evse_holding_regs_t *evse_holding_regs, *evse_holding_regs_copy;
@@ -318,6 +332,7 @@ static meter_holding_regs_t *meter_holding_regs, *meter_holding_regs_copy;
 
 static discrete_inputs_t *discrete_inputs, *discrete_inputs_copy;
 static meter_discrete_inputs_t *meter_discrete_inputs, *meter_discrete_inputs_copy;
+static nfc_discrete_inputs_t *nfc_discrete_inputs, *nfc_discrete_inputs_copy;
 
 static evse_coils_t *evse_coils, *evse_coils_copy;
 
@@ -358,6 +373,8 @@ static void allocate_table()
     calloc_struct(&meter_input_regs_copy);
     calloc_struct(&meter_all_values_input_regs);
     calloc_struct(&meter_all_values_input_regs_copy);
+    calloc_struct(&nfc_input_regs);
+    calloc_struct(&nfc_input_regs_copy);
     calloc_struct(&holding_regs);
     calloc_struct(&holding_regs_copy);
     calloc_struct(&evse_holding_regs);
@@ -368,6 +385,8 @@ static void allocate_table()
     calloc_struct(&discrete_inputs_copy);
     calloc_struct(&meter_discrete_inputs);
     calloc_struct(&meter_discrete_inputs_copy);
+    calloc_struct(&nfc_discrete_inputs);
+    calloc_struct(&nfc_discrete_inputs_copy);
     calloc_struct(&evse_coils);
     calloc_struct(&evse_coils_copy);
 }
@@ -447,6 +466,8 @@ void ModbusTcp::setup()
             REGISTER_DESCRIPTOR(discrete_inputs);
             REGISTER_DESCRIPTOR(meter_discrete_inputs);
             REGISTER_DESCRIPTOR(evse_coils);
+            REGISTER_DESCRIPTOR(nfc_discrete_inputs);
+            REGISTER_DESCRIPTOR(nfc_input_regs);
         }
         else if (config.get("table")->asUint() == 1)
         {
@@ -621,6 +642,15 @@ void ModbusTcp::update_bender_regs()
     portEXIT_CRITICAL(&mtx);
 }
 
+static inline void swap_bytes(char *str, size_t len) {
+    char tmp;
+    for (int i = 0; i < len; i += 2) {
+        tmp = str[i];
+        str[i] = str[i + 1];
+        str[i + 1] = tmp;
+    }
+}
+
 void ModbusTcp::update_regs()
 {
     bool call_start_charging = false;
@@ -689,6 +719,21 @@ void ModbusTcp::update_regs()
     input_regs_copy->firmware_patch = fromUint(BUILD_VERSION_PATCH);
     input_regs_copy->firmware_build_ts = fromUint(build_timestamp());
     input_regs_copy->uptime = fromUint((uint32_t)(esp_timer_get_time() / 1000000));
+
+#if MODULE_NFC_AVAILABLE()
+    if (api.hasFeature("nfc")) {
+        nfc_discrete_inputs_copy->nfc = true;
+        auto tag = nfc.old_tags[0];
+        auto injected_tag = nfc.old_tags[TAG_LIST_LENGTH - 1];
+        char buf[NFC_TAG_ID_STRING_LENGTH + 1] = {0};
+        if (tag.last_seen > injected_tag.last_seen && injected_tag.last_seen > 0)
+            tag = injected_tag;
+        remove_separator(tag.tag_id, buf);
+        swap_bytes(buf, 20);
+        memcpy(&nfc_input_regs_copy->tag_id, buf, 20);
+        nfc_input_regs_copy->tag_id_age = fromUint(tag.last_seen);
+    }
+#endif
 
 #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
     if (api.hasFeature("evse"))
@@ -804,6 +849,8 @@ void ModbusTcp::update_regs()
         *meter_all_values_input_regs = *meter_all_values_input_regs_copy;
         *discrete_inputs = *discrete_inputs_copy;
         *meter_discrete_inputs = *meter_discrete_inputs_copy;
+        *nfc_input_regs = *nfc_input_regs_copy;
+        *nfc_discrete_inputs = *nfc_discrete_inputs_copy;
     portEXIT_CRITICAL(&mtx);
 }
 
