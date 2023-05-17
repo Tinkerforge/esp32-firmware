@@ -466,7 +466,19 @@ de_hyph = [
     "ein-ge-speist",
     "ver-blei-bend",
     "Über-schreiben",
-    "über-schrieben"
+    "über-schrieben",
+    "Andern-falls",
+    "Auto-ma-tisch-er",
+    "Fahr-zeug-modell",
+    "Hard-ware-zu-stände",
+    "Um-schal-tungs-modus",
+    "Wolken-filter",
+    "Zu-sammen-hang",
+    "drei-phasiger",
+    "drei-phasiges",
+    "ein-ge-richtet",
+    "ein-phasiger",
+    "ein-phasiges"
 ]
 
 en_hyph = [
