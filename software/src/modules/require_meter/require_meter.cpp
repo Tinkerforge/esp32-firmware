@@ -50,14 +50,18 @@ void RequireMeter::setup() {
 void RequireMeter::register_urls() {
     api.addPersistentConfig("require_meter/config", &config, {}, 1000);
 
-    event.addStateUpdate("info/features", {}, [this](Config *_ignored){
-        if (config.get("config")->asUint() == WARP_SMART && api.hasFeature("meter")) {
-            config.get("config")->updateUint(WARP_PRO_ENABLED);
-            api.writeConfig("require_meter/config", &config);
-            set_require_meter_enabled(true);
-            start_task();
-        }
-    });
+    if (config.get("config")->asUint() == WARP_SMART) {
+        // We've never seen an energy meter.
+        // Listen to info/features in case a meter shows up.
+        event.addStateUpdate("info/features", {}, [this](Config *_ignored){
+            if (api.hasFeature("meter")) {
+                config.get("config")->updateUint(WARP_PRO_ENABLED);
+                api.writeConfig("require_meter/config", &config);
+                set_require_meter_enabled(true);
+                start_task();
+            }
+        });
+    }
 }
 
 
