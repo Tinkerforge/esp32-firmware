@@ -549,6 +549,12 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
                                 }}/>
                     </FormRow>
 
+                    <FormRow label={__("evse.content.enable_led_api")}>
+                        <Switch onClick={async () => this.setState({led_config: {enable_api: !led_config.enable_api}})}
+                                checked={led_config.enable_api}
+                                desc={__("evse.content.enable_led_api_desc")}/>
+                    </FormRow>
+
                     <FormRow label={__("evse.content.button_configuration")} label_muted={__("evse.content.button_configuration_muted")}>
                         <InputSelect items={[
                                         ["0",__("evse.content.button_configuration_deactivated")],
@@ -655,11 +661,6 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
                         onValue={(v) => this.setState({duration: Number(v)})}/>
                     </FormRow>
                     {has_meter ? energy_settings : <></>}
-                    <FormRow label={__("evse.content.enable_led_api")}>
-                        <Switch onClick={async () => this.setState({led_config: {enable_api: !led_config.enable_api}})}
-                                checked={led_config.enable_api}
-                                desc={__("evse.content.enable_led_api_desc")}/>
-                    </FormRow>
                 </ConfigForm>
         </>;
     }

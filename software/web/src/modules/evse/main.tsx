@@ -532,6 +532,12 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
                                 this.setState({slots: tmp_slots});
                             }}/>
                 </FormRow>
+                
+                <FormRow label={__("evse.content.enable_led_api")}>
+                    <Switch onClick={async () => this.setState({led_config: {enable_api: !led_config.enable_api}})}
+                            checked={led_config.enable_api}
+                            desc={__("evse.content.enable_led_api_desc")}/>
+                </FormRow>
 
                 <FormRow label={__("evse.content.boost_mode_desc")} label_muted={__("evse.content.boost_mode_desc_muted")}>
                     <Switch desc={__("evse.content.boost_mode")}
@@ -559,11 +565,6 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
                     onValue={(v) => this.setState({duration: Number(v)})}/>
                 </FormRow>
                 {has_meter ? energy_settings : <></>}
-                <FormRow label={__("evse.content.enable_led_api")}>
-                    <Switch onClick={async () => this.setState({led_config: {enable_api: !led_config.enable_api}})}
-                            checked={led_config.enable_api}
-                            desc={__("evse.content.enable_led_api_desc")}/>
-                </FormRow>
             </ConfigForm>
             </>;
     }
