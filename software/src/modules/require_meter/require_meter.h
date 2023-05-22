@@ -32,7 +32,6 @@ public:
     void register_urls();
 
     void start_task();
-    void meter_found();
     void set_require_meter_enabled(bool enabled);
     void set_require_meter_blocking(bool block);
 

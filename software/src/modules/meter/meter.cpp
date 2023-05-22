@@ -175,10 +175,6 @@ void Meter::setupMeter(uint8_t meter_type)
     }
 
     meter_setup_done = true;
-
-#if MODULE_REQUIRE_METER_AVAILABLE()
-    require_meter.meter_found();
-#endif
 }
 
 void Meter::setup()

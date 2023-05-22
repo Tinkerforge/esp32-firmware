@@ -49,6 +49,15 @@ void RequireMeter::setup() {
 
 void RequireMeter::register_urls() {
     api.addPersistentConfig("require_meter/config", &config, {}, 1000);
+
+    event.addStateUpdate("info/features", {}, [this](Config *_ignored){
+        if (config.get("config")->asUint() == WARP_SMART && api.hasFeature("meter")) {
+            config.get("config")->updateUint(WARP_PRO_ENABLED);
+            api.writeConfig("require_meter/config", &config);
+            set_require_meter_enabled(true);
+            start_task();
+        }
+    });
 }
 
 
@@ -118,13 +127,4 @@ bool RequireMeter::allow_charging(float meter_value) {
         return false;
     }
     return true;
-}
-
-void RequireMeter::meter_found() {
-    if (config.get("config")->asUint() == WARP_SMART) {
-        config.get("config")->updateUint(WARP_PRO_ENABLED);
-        api.writeConfig("require_meter/config", &config);
-        set_require_meter_enabled(true);
-        start_task();
-    }
 }
