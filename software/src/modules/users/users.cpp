@@ -355,8 +355,10 @@ void Users::setup()
     if (user_config.get("next_user_id")->asUint() == 0)
         search_next_free_user();
 
+    Config* user_slot = get_user_slot();
     bool charge_start_tracked = charge_tracker.currentlyCharging();
-    bool charging = get_charger_state() == 2 || get_charger_state() == 3;
+    bool charging = get_charger_state() == 2 || get_charger_state() == 3
+                    || (user_slot->get("active")->asBool() && user_slot->get("max_current")->asUint() == 32000);
 
 
     if (charge_start_tracked && !charging) {
