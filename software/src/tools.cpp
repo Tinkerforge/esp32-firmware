@@ -381,21 +381,6 @@ bool mount_or_format_spiffs(void)
     return true;
 }
 
-String read_config_version()
-{
-    if (LittleFS.exists("/config/version")) {
-        StaticJsonDocument<JSON_OBJECT_SIZE(1) + 60> doc;
-        File file = LittleFS.open("/config/version", "r");
-
-        deserializeJson(doc, file);
-        file.close();
-
-        return doc["spiffs"].as<const char *>();
-    }
-    logger.printfln("Failed to read config version!");
-    return BUILD_VERSION_STRING;
-}
-
 static bool wait_for_bootloader_mode(TF_Unknown *bricklet, int target_mode)
 {
     uint8_t mode = 255;

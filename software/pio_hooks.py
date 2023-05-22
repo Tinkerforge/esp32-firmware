@@ -291,6 +291,7 @@ def main():
     # Add build flags
     timestamp = int(time.time())
     name = env.GetProjectOption("custom_name")
+    config_type = env.GetProjectOption("custom_config_type")
     host_prefix = env.GetProjectOption("custom_host_prefix")
     display_name = env.GetProjectOption("custom_display_name")
     manual_url = env.GetProjectOption("custom_manual_url")
@@ -401,6 +402,7 @@ def main():
         f.write('#define BUILD_VERSION_STRING "{}.{}.{}"\n'.format(*version))
         f.write('#define BUILD_HOST_PREFIX "{}"\n'.format(host_prefix))
         f.write('#define BUILD_NAME_{}\n'.format(name.upper()))
+        f.write('#define BUILD_CONFIG_TYPE "{}"\n'.format(config_type))
         f.write('#define BUILD_DISPLAY_NAME "{}"\n'.format(display_name))
         f.write('#define BUILD_REQUIRE_FIRMWARE_INFO {}\n'.format(require_firmware_info))
         f.write('uint32_t build_timestamp(void);\n')

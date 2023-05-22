@@ -141,7 +141,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                 </FormRow>
 
                 <FormRow label={__("firmware_update.content.current_spiffs")}>
-                    <InputText value={state.config}/>
+                    <InputText value={state.config + " (" + state.config_type + ")"}/>
                 </FormRow>
 
                 {show_config_reset ?

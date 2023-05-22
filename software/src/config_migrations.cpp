@@ -423,11 +423,18 @@ void migrate_config()
     bool write_version_file = false;
     bool migrations_executed = false;
 
+    String config_type;
     uint8_t major, minor, patch;
     if (LittleFS.exists("/config/version")) {
         StaticJsonDocument<256> doc;
         File f = LittleFS.open("/config/version");
         deserializeJson(doc, f);
+
+        if (doc.containsKey("config_type")) {
+            config_type = doc["config_type"].as<String>();
+        } else {
+            write_version_file = true;
+        }
 
         String v = doc["spiffs"];
         int dash = v.indexOf('-');
@@ -455,6 +462,11 @@ void migrate_config()
         patch = OLDEST_VERSION_PATCH;
 
         write_version_file = true;
+    }
+
+    if (!config_type.isEmpty() && !config_type.equals(BUILD_CONFIG_TYPE)) {
+        logger.printfln("Config type mismatch: firmware expects '%s' but '%s' found in flash. Expect config problems.", BUILD_CONFIG_TYPE, config_type.c_str());
+        return;
     }
 
     bool first = true;
@@ -491,7 +503,7 @@ void migrate_config()
 
     File file = LittleFS.open(migrations_executed ? "/migration/version" : "/config/version", "w");
 
-    file.printf("{\"spiffs\": \"%u.%u.%u\"}", major, minor, patch);
+    file.printf("{\"spiffs\": \"%u.%u.%u\", \"config_type\": \"%s\"}", major, minor, patch, BUILD_CONFIG_TYPE);
     file.close();
 
     if (!migrations_executed)

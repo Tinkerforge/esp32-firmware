@@ -44,6 +44,7 @@ void API::pre_setup()
     version = Config::Object({
         {"firmware", Config::Str(build_version_full_str(), 0, strlen(build_version_full_str()))},
         {"config", Config::Str("", 0, 12)},
+        {"config_type", Config::Str("", 0, 32)},
     });
 }
 
@@ -51,9 +52,25 @@ void API::setup()
 {
     migrate_config();
 
-    String config_version = read_config_version();
-    logger.printfln("%s config version: %s", BUILD_DISPLAY_NAME, config_version.c_str());
+    String config_version;
+    String config_type;
+    if (LittleFS.exists("/config/version")) {
+        StaticJsonDocument<JSON_OBJECT_SIZE(2) + 60> doc;
+        File file = LittleFS.open("/config/version", "r");
+
+        deserializeJson(doc, file);
+        file.close();
+
+        config_version = doc["spiffs"].as<String>();
+        config_type    = doc["config_type"].as<String>();
+    } else {
+        logger.printfln("Failed to read config version!");
+        config_version = BUILD_VERSION_STRING;
+        config_type    = BUILD_CONFIG_TYPE;
+    }
+    logger.printfln("%s config version: %s (%s)", BUILD_DISPLAY_NAME, config_version.c_str(), config_type.c_str());
     version.get("config")->updateString(config_version);
+    version.get("config_type")->updateString(config_type);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         for (size_t state_idx = 0; state_idx < states.size(); ++state_idx) {
