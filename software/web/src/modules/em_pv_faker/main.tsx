@@ -28,6 +28,7 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm      } from "../../ts/components/config_form";
 import { FormRow         } from "../../ts/components/form_row";
 import { InputFloat      } from "../../ts/components/input_float";
+import { InputNumber     } from "../../ts/components/input_number";
 import { InputText       } from "../../ts/components/input_text";
 import { OutputFloat     } from "../../ts/components/output_float";
 import { Switch          } from "../../ts/components/switch";
@@ -134,6 +135,16 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
                             digits={3}
                             min={2}
                             max={200000}
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("em_pv_faker.content.filter_time_constant")}>
+                        <InputNumber
+                            unit={"s"}
+                            value={s.filter_time_constant}
+                            onValue={this.set('filter_time_constant')}
+                            min={0}
+                            max={600}
                         />
                     </FormRow>
                 </> : <>

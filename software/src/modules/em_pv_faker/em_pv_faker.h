@@ -19,8 +19,12 @@
 
 #pragma once
 
+#include <math.h>
+
 #include "config.h"
 #include "module.h"
+
+#define PV_FILTER_PERIOD_MS 250
 
 class EmPvFaker final : public IModule
 {
@@ -39,4 +43,7 @@ public:
     ConfigRoot runtime_config_update;
 
 private:
+    float filter_coefficient = 0;
+    float fake_power_from_mqtt_w = NAN;
+    float fake_power_filtered_w = NAN;
 };

@@ -16,6 +16,7 @@
             "peak_power": "PV peak power",
             "zero_at_lux": "Zero power illuminance",
             "peak_at_lux": "Peak power illuminance",
+            "filter_time_constant": "Filter time constant",
 
             "manual_power": "Manual grid draw override"
         },
