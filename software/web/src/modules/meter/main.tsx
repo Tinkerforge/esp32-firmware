@@ -264,6 +264,37 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         setSeries: (self: uPlot, seriesIdx: number, opts: uPlot.Series) => {
                             this.update_internal_data();
                         },
+                        drawAxes: [
+                            (self: uPlot) => {
+                                let ctx = self.ctx;
+
+                                ctx.save();
+
+                                let s  = self.series[0];
+                                let xd = self.data[0];
+                                let [i0, i1] = s.idxs;
+                                let x0 = self.valToPos(xd[i0], 'x', true);
+                                let y0 = self.valToPos(0, 'y', true);
+                                let x1 = self.valToPos(xd[i1], 'x', true);
+                                let y1 = self.valToPos(0, 'y', true);
+
+                                const lineWidth = 2;
+                                const offset = (lineWidth % 2) / 2;
+
+                                ctx.translate(offset, offset);
+
+                                ctx.beginPath();
+                                ctx.lineWidth = lineWidth;
+                                ctx.strokeStyle = 'rgb(0,0,0,0.14)';
+                                ctx.moveTo(x0, y0);
+                                ctx.lineTo(x1, y1);
+                                ctx.stroke();
+
+                                ctx.translate(-offset, -offset);
+
+                                ctx.restore();
+                            }
+                        ],
                     },
                 },
             ],
