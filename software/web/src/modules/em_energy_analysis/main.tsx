@@ -1944,10 +1944,9 @@ function update_meter_values() {
     let values = API.get('meter/values');
 
     // power can be null because the backend is initialized with a NAN value
-    if (values.power == null)
-        return;
+    let power_str = values.power == null ? __("em_energy_analysis.content.no_data") : util.toLocaleFixed(values.power) + " W";
 
-    $('#status_em_energy_analysis_status_grid_connection_power').val(util.toLocaleFixed(values.power) + " W");
+    $('#status_em_energy_analysis_status_grid_connection_power').val(power_str);
 }
 
 export function init() {
