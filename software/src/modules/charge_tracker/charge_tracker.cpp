@@ -40,6 +40,11 @@ struct ChargeEnd {
     float meter_end = 0.0f;
 } __attribute__((packed));
 
+struct Charge {
+    ChargeStart cs;
+    ChargeEnd ce;
+} __attribute__((packed));
+
 static_assert(sizeof(ChargeEnd) == 7, "Unexpected size of ChargeEnd");
 
 #define CHARGE_RECORD_SIZE (sizeof(ChargeStart) + sizeof(ChargeEnd))
@@ -510,9 +515,97 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
     return buf;
 }
 
+static bool repair_logic(Charge *buf) {
+    bool repaired = false;
+    uint8_t state = 0;
+    const uint8_t a = 0;
+    state |= !isnan(buf[a - 1].ce.meter_end) << 3;
+    state |= !isnan(buf[a].cs.meter_start) << 2;
+    state |= !isnan(buf[a].ce.meter_end) << 1;
+    state |= !isnan(buf[a + 1].cs.meter_start);
+
+    // We have five cases that can be repaired/ have to be repaired. state is a bitmap.
+    switch (state)
+    {
+    // The end of a charge is missing but we got the beginning and the beginning of the next charge.
+    case 10:
+    case 11:
+        if (buf[a - 1].ce.meter_end <= buf[a].ce.meter_end
+                && buf[a].ce.meter_end - buf[a - 1].ce.meter_end < CHARGE_TRACKER_MAX_REPAIR) {
+            buf[a].cs.meter_start = buf[a - 1].ce.meter_end;
+            repaired = true;
+        }
+        break;
+
+    // The start of a charge is missing but we got the end of it and the end of the previous charge.
+    case 5:
+    case 13:
+        if (buf[a].cs.meter_start <= buf[a + 1].cs.meter_start
+                && buf[a + 1].cs.meter_start - buf[a].cs.meter_start < CHARGE_TRACKER_MAX_REPAIR) {
+            buf[a].ce.meter_end = buf[a + 1].cs.meter_start;
+            repaired = true;
+        }
+        break;
+
+    // We got no meter values of the charge but we got the end of the previous and the start of the next.
+    case 9:
+        if (buf[a - 1].ce.meter_end <= buf[a + 1].cs.meter_start
+                && buf[a + 1].cs.meter_start - buf[a - 1].ce.meter_end < CHARGE_TRACKER_MAX_REPAIR) {
+            buf[a].cs.meter_start = buf[a - 1].ce.meter_end;
+            buf[a].ce.meter_end = buf[a + 1].cs.meter_start;
+            repaired = true;
+        }
+        break;
+
+    default:
+        break;
+    }
+    return repaired;
+}
+
+void ChargeTracker::repair_charges() {
+    auto buf = heap_alloc_array<Charge>(258);
+    uint32_t num_repaired = 0;
+    Charge transfer;
+    transfer.ce.meter_end = NAN;
+
+    uint32_t start = millis();
+    for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
+        bool file_needs_repair = false;
+        memset(reinterpret_cast<uint8_t *>(&buf[1]), 0, sizeof(Charge) * 257);
+
+        File f = LittleFS.open(chargeRecordFilename(i));
+        if (i < this->last_charge_record) {
+            File next_f = LittleFS.open(chargeRecordFilename(i + 1));
+            int read = next_f.read(reinterpret_cast<uint8_t *>(&buf[257]), sizeof(Charge));
+            if (read != sizeof(Charge))
+                buf[257].cs.meter_start = NAN;
+        }
+        else
+            buf[257].cs.meter_start = NAN;
+
+        int read = f.read(reinterpret_cast<uint8_t *>(&buf[1]), sizeof(Charge) * 257);
+        for (int a = 1; a < 257; a++) {
+            bool ret = repair_logic(&buf[a]);
+            if (ret) {
+                file_needs_repair = true;
+                num_repaired++;
+            }
+        }
+        if (file_needs_repair) {
+            File write_f = LittleFS.open(chargeRecordFilename(i), "w");
+            write_f.write(reinterpret_cast<uint8_t *>(&buf[1]), read);
+        }
+        buf[0] = buf[256];
+    }
+    logger.printfln("!!!! Took %lums to check charges. Repaired %u entries.", millis() - start, num_repaired);
+}
+
 void ChargeTracker::register_urls()
 {
     api.addPersistentConfig("charge_tracker/config", &config, {}, 1000);
+
+    repair_charges();
 
     server.on("/charge_tracker/charge_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{records_mutex};
