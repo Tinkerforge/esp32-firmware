@@ -111,6 +111,8 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
             </>;
         }
 
+        let external_control = API.get('energy_manager/external_control');
+
         let error_flags_ok        = d.status.error_flags == 0;
         let error_flags_config    = d.status.error_flags & 0x80000000;
         let error_flags_internal  = d.status.error_flags & 0x7F000000;
@@ -154,6 +156,7 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                     </Button>
                 </ButtonGroup>
             </FormRow>
+
             <FormRow label={__("energy_manager.status.phase_switching")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                 <IndicatorGroup
                     value={d.status.phases_switched == 1 ? 0 : d.status.phases_switched == 3 ? 1 : 42}
@@ -162,6 +165,36 @@ export class EnergyManagerStatus extends Component<{}, EnergyManagerAllData> {
                         ["primary", __("energy_manager.status.three_phase")],
                     ]} />
             </FormRow>
+
+            {d.config.phase_switching_mode == 3 ?
+                <>
+                    <FormRow label={__("energy_manager.status.external_control_state")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                        <IndicatorGroup
+                            value={d.status.external_control}
+                            items={[
+                                ["success", __("energy_manager.status.external_control_state_available")],
+                                ["danger",  __("energy_manager.status.external_control_state_disabled")],
+                                ["warning", __("energy_manager.status.external_control_state_unavailable")],
+                                ["primary", __("energy_manager.status.external_control_state_switching")],
+                            ]}
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("energy_manager.status.external_control_request")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                        <IndicatorGroup
+                            value={external_control.phases_wanted > 1 ? external_control.phases_wanted - 1 : external_control.phases_wanted}
+                            items={[
+                                ["warning", __("energy_manager.status.external_control_request_none")],
+                                ["primary", __("energy_manager.status.single_phase")],
+                                ["primary", __("energy_manager.status.three_phase")],
+                            ]}
+                        />
+                    </FormRow>
+                </>
+            :
+                null
+            }
+
             <FormRow label={__("energy_manager.status.status")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                 <ButtonGroup className="flex-wrap w-100">
                     <Button disabled

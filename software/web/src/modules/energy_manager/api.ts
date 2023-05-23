@@ -42,6 +42,7 @@ export interface state {
     input3_state: boolean,
     input4_state: boolean,
     relay_state: boolean,
+    external_control: number;
 }
 
 export interface config {
@@ -75,6 +76,10 @@ export interface debug_config {
 
 export interface charge_mode {
     mode: number
+}
+
+export interface external_control {
+    phases_wanted: number;
 }
 
 export interface history_wallbox_5min_changed {
