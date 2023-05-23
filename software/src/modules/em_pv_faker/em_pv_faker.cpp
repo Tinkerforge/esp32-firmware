@@ -91,6 +91,9 @@ void EmPvFaker::setup()
     initialized = true;
 
     task_scheduler.scheduleWithFixedDelay([this]() {
+        if (isnan(fake_power_from_mqtt_w))
+            return;
+
         if (isnan(fake_power_filtered_w)) {
             fake_power_filtered_w = fake_power_from_mqtt_w;
         } else {
