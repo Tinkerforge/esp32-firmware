@@ -91,6 +91,7 @@ interface UplotWrapperProps {
     legend_time_with_minutes: boolean;
     legend_value_prefix: string;
     x_format: Intl.DateTimeFormatOptions;
+    x_padding_factor: number;
     y_min?: number;
     y_max?: number;
     y_step?: number;
@@ -307,6 +308,12 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 }
             ],
             scales: {
+                x: {
+                    range: (self: uPlot, from: number, to: number): uPlot.Range.MinMax => {
+                        let pad = (to - from) * this.props.x_padding_factor;
+                        return [from - pad, to + pad];
+                    },
+                },
                 y: {
                     range: {
                         min: {
@@ -334,9 +341,10 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                 let s  = self.series[0];
                                 let xd = self.data[0];
                                 let [i0, i1] = s.idxs;
-                                let x0 = self.valToPos(xd[i0], 'x', true) - self.axes[0].ticks.size;
+                                let xpad = (xd[i1] - xd[i0]) * this.props.x_padding_factor;
+                                let x0 = self.valToPos(xd[i0] - xpad, 'x', true) - self.axes[0].ticks.size;
                                 let y0 = self.valToPos(0, 'y', true);
-                                let x1 = self.valToPos(xd[i1], 'x', true);
+                                let x1 = self.valToPos(xd[i1] + xpad, 'x', true);
                                 let y1 = self.valToPos(0, 'y', true);
 
                                 const lineWidth = 2;
@@ -628,6 +636,7 @@ export class EMEnergyAnalysisStatusChart extends Component<{}, {force_render: nu
                                   legend_time_with_minutes={true}
                                   legend_value_prefix={__("em_energy_analysis.script.power")}
                                   x_format={{hour: '2-digit', minute: '2-digit'}}
+                                  x_padding_factor={0}
                                   y_min={0}
                                   y_max={1500}
                                   y_unit={"W"}
@@ -1941,6 +1950,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               legend_time_with_minutes={true}
                                               legend_value_prefix=""
                                               x_format={{hour: '2-digit', minute: '2-digit'}}
+                                              x_padding_factor={0}
                                               y_min={0}
                                               y_max={100}
                                               y_step={10}
@@ -1960,6 +1970,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               legend_time_with_minutes={false}
                                               legend_value_prefix=""
                                               x_format={{month: '2-digit', day: '2-digit'}}
+                                              x_padding_factor={0.015}
                                               y_min={0}
                                               y_max={100}
                                               y_step={10}
