@@ -993,18 +993,18 @@ void EnergyManager::update_energy()
                     // Switching on/off is always allowed when under external control.
                 } else if (!on_state_change_is_blocked) {
                     // Start/stop allowed
-                    logger.printfln("energy_manager: Switch %s", wants_on ? "on" : "off");
+                    logger.printfln("energy_manager: Switch %s, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
                 } else if (!uptime_past_hysteresis) {
                     // (Re)booted recently. Allow immediate switching.
-                    logger.printfln("energy_manager: Free switch-%s during start-up period.", wants_on ? "on" : "off");
+                    logger.printfln("energy_manager: Free switch-%s during start-up period, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
                     // Only one immediate switch on/off allowed; mark as used.
                     uptime_past_hysteresis = true;
                     low_level_state.get("uptime_past_hysteresis")->updateBool(uptime_past_hysteresis);
                 } else if (just_switched_mode) {
                     // Just switched modes. Allow immediate switching.
-                    logger.printfln("energy_manager: Free switch-%s after changing modes.", wants_on ? "on" : "off");
+                    logger.printfln("energy_manager: Free switch-%s after changing modes, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
                 } else if (just_switched_phases && a_after_b(time_now, on_state_change_blocked_until - switching_hysteresis_ms/2)) {
-                    logger.printfln("energy_manager: Opportunistic switch-%s", wants_on ? "on" : "off");
+                    logger.printfln("energy_manager: Opportunistic switch-%s, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
                 } else { // Switched too recently
                     //logger.printfln("energy_manager: Start/stop wanted but decision changed too recently. Have to wait another %ums.", off_state_change_blocked_until - time_now);
                     if (is_on) { // Is on, needs to stay on at minimum current.
