@@ -61,8 +61,6 @@ void RtcBricklet::setup()
     if (!device_found)
         return;
 
-    logger.printfln("RTC Bricklet found");
-
     rtc.register_backend(this);
 }
 
