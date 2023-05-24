@@ -354,7 +354,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
                                 ctx.beginPath();
                                 ctx.lineWidth = lineWidth;
-                                ctx.strokeStyle = 'rgb(0,0,0,0.14)';
+                                ctx.strokeStyle = 'rgb(0,0,0,0.2)';
                                 ctx.moveTo(x0, y0);
                                 ctx.lineTo(x1, y1);
                                 ctx.stroke();
