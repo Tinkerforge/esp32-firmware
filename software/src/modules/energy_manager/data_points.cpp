@@ -82,7 +82,6 @@ void EnergyManager::update_history_meter_power(float power /* W */)
     history_meter_power_timestamp = now;
 }
 
-// FIXME: integrate power over time to record energy for meters that only report power
 void EnergyManager::collect_data_points()
 {
     struct timeval tv;
