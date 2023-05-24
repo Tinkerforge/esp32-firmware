@@ -60,7 +60,7 @@ export function update<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T
         update_cache_item(api_cache[topic], payload);
 }
 
-export function get<T extends keyof ConfigMap>(topic: T) {
+export function get<T extends keyof ConfigMap>(topic: T) : Readonly<ConfigMap[T]> {
     return api_cache[topic];
 }
 
