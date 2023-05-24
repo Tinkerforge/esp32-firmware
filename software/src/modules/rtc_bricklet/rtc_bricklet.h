@@ -31,7 +31,8 @@ class RtcBricklet : public DeviceModule<TF_RealTimeClockV2,
                                         tf_real_time_clock_v2_create,
                                         tf_real_time_clock_v2_get_bootloader_mode,
                                         tf_real_time_clock_v2_reset,
-                                        tf_real_time_clock_v2_destroy>, public IRtcBackend
+                                        tf_real_time_clock_v2_destroy,
+                                        false>, public IRtcBackend
 {
 public:
     RtcBricklet(): DeviceModule("rtc", "Real Time Clock 2.0", "Real Time Clock 2.0", std::bind(&RtcBricklet::setup_rtc, this)) {};

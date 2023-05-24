@@ -33,7 +33,8 @@ class ModbusMeter : public DeviceModule<TF_RS485,
                                         tf_rs485_create,
                                         tf_rs485_get_bootloader_mode,
                                         tf_rs485_reset,
-                                        tf_rs485_destroy>
+                                        tf_rs485_destroy,
+                                        false>
 {
 public:
     ModbusMeter() : DeviceModule("rs485", "RS485", "Modbus Meter", std::bind(&ModbusMeter::setupRS485, this)) {}

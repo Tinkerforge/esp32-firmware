@@ -45,7 +45,8 @@ template <typename DeviceT,
           int (*init_function)(DeviceT *, const char *, TF_HAL *),
           int (*get_bootloader_mode_function)(DeviceT *, uint8_t *),
           int (*reset_function)(DeviceT *),
-          int (*destroy_function)(DeviceT *)>
+          int (*destroy_function)(DeviceT *),
+          bool mandatory = true>
 class DeviceModule : public IModule
 {
 public:
@@ -74,8 +75,11 @@ public:
         TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, false);
 
         if (tfp == nullptr) {
-            logger.printfln("No %s Bricklet found. Disabling %s support.", device_name, module_name);
+            if (mandatory)
+                logger.printfln("No %s Bricklet found. Disabling %s support.", device_name, module_name);
             return false;
+        } else if (!mandatory) {
+            logger.printfln("%s Bricklet found. Enabling %s support.", device_name, module_name);
         }
 
         device_found = true;
