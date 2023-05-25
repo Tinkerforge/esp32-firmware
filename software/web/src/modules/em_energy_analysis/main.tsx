@@ -430,7 +430,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             stroke: color.stroke,
             fill: this.data.stacked[i] || this.props.default_fill ? color.fill : undefined,
             width: 2,
-            paths: this.data.bars[i] ? uPlot.paths.bars({size: [0.6, 100]}) : undefined,
+            paths: this.data.bars[i] ? uPlot.paths.bars({size: [0.4, 100], align: this.data.stacked[i] ? 1 : -1}) : undefined,
             points: {
                 show: false,
             },
