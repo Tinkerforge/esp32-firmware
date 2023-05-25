@@ -616,3 +616,8 @@ export function leftPad(s: string | number, c: string | number, len: number) {
     }
     return s.slice(-len);
 }
+
+export function hasValue(a: any): boolean
+{
+    return a !== null && a !== undefined;
+}

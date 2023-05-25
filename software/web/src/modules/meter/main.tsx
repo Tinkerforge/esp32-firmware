@@ -26,7 +26,6 @@ import { h, render, createRef, Fragment, Component, ComponentChild } from "preac
 import { PageHeader } from "../../ts/components/page_header";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { FormRow } from "../../ts/components/form_row";
-import { FormSeparator } from "../../ts/components/form_separator";
 import { Button } from "react-bootstrap";
 import { InputSelect } from "src/ts/components/input_select";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
@@ -111,6 +110,10 @@ interface UplotWrapperProps {
     id: string;
     class: string;
     sidebar_id: string;
+    show: boolean;
+    legend_time_with_seconds: boolean;
+    x_height: number;
+    x_include_date: boolean;
     y_min?: number;
     y_max?: number;
     y_diff_min?: number;
@@ -173,14 +176,25 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             series: [
                 {
                     label: __("meter.script.time"),
-                    value: (self: uPlot, rawValue: number) => rawValue !== null ? util.timestamp_sec_to_date(rawValue) : null,
+                    value: (self: uPlot, rawValue: number) => {
+                        if (rawValue !== null) {
+                            if (this.props.legend_time_with_seconds) {
+                                return util.timestamp_sec_to_date(rawValue)
+                            }
+                            else {
+                                return util.timestamp_min_to_date((rawValue / 60), '???');
+                            }
+                        }
+
+                        return null;
+                    },
                 },
                 {
                     show: true,
                     pxAlign: 0,
                     spanGaps: false,
                     label: __("meter.script.power"),
-                    value: (self: uPlot, rawValue: number) => rawValue !== null ? util.toLocaleFixed(rawValue) + " W" : null,
+                    value: (self: uPlot, rawValue: number) => util.hasValue(rawValue) ? util.toLocaleFixed(rawValue) + " W" : null,
                     stroke: "rgb(0, 123, 255)",
                     fill: "rgb(0, 123, 255, 0.1)",
                     width: 2,
@@ -191,6 +205,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             ],
             axes: [
                 {
+                    size: this.props.x_height,
                     incrs: [
                         60,
                         60 * 2,
@@ -211,7 +226,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                             let date = new Date(splits[i] * 1000);
                             let value = date.toLocaleString([], {hour: '2-digit', minute: '2-digit'});
 
-                            if (foundIncr >= 3600) {
+                            if (this.props.x_include_date && foundIncr >= 3600) {
                                 let year = date.toLocaleString([], {year: 'numeric'});
                                 let month_and_day = date.toLocaleString([], {month: '2-digit', day: '2-digit'});
 
@@ -335,7 +350,11 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     }
 
     render(props?: UplotWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
-        return <div><div ref={this.div_ref} id={props.id} class={props.class} /></div>;
+        return <div><div ref={this.div_ref} id={props.id} class={props.class} style={`display: ${props.show ? 'block' : 'none'};`} /></div>;
+    }
+
+    set_show(show: boolean) {
+        this.div_ref.current.style.display = show ? 'block' : 'none';
     }
 
     update_internal_data() {
@@ -475,7 +494,8 @@ export class Meter extends Component<{}, MeterState> {
     live_data: UplotData;
     pending_live_data: UplotData = {timestamps: [], samples: []};
     history_data: UplotData;
-    uplot_wrapper_ref = createRef();
+    uplot_wrapper_live_ref = createRef();
+    uplot_wrapper_history_ref = createRef();
 
     constructor() {
         super();
@@ -509,7 +529,7 @@ export class Meter extends Component<{}, MeterState> {
             this.pending_live_data = {timestamps: [], samples: []};
 
             if (this.state.chart_selected == "live") {
-                this.update_uplot(this.live_data);
+                this.update_uplot();
             }
         });
 
@@ -528,7 +548,7 @@ export class Meter extends Component<{}, MeterState> {
                 this.pending_live_data.samples = [];
 
                 if (this.state.chart_selected == "live") {
-                    this.update_uplot(this.live_data);
+                    this.update_uplot();
                 }
             }
         });
@@ -539,7 +559,7 @@ export class Meter extends Component<{}, MeterState> {
             this.history_data = calculate_history_data(history.offset, history.samples);
 
             if (this.state.chart_selected == "history") {
-                this.update_uplot(this.history_data);
+                this.update_uplot();
             }
         });
 
@@ -549,7 +569,7 @@ export class Meter extends Component<{}, MeterState> {
             this.history_data = calculate_history_data(0, array_append(this.history_data.samples, history.samples, 720));
 
             if (this.state.chart_selected == "history") {
-                this.update_uplot(this.history_data);
+                this.update_uplot();
             }
         });
 
@@ -558,12 +578,17 @@ export class Meter extends Component<{}, MeterState> {
         } as any;
     }
 
-    update_uplot(data: UplotData) {
-        if (!this.uplot_wrapper_ref || !this.uplot_wrapper_ref.current) {
-            return;
+    update_uplot() {
+        if (this.state.chart_selected == 'live') {
+            if (this.uplot_wrapper_live_ref && this.uplot_wrapper_live_ref.current) {
+                this.uplot_wrapper_live_ref.current.set_data(this.live_data);
+            }
         }
-
-        this.uplot_wrapper_ref.current.set_data(data);
+        else {
+            if (this.uplot_wrapper_history_ref && this.uplot_wrapper_history_ref.current) {
+                this.uplot_wrapper_history_ref.current.set_data(this.history_data);
+            }
+        }
     }
 
     render(props: {}, state: Readonly<MeterState>) {
@@ -583,8 +608,18 @@ export class Meter extends Component<{}, MeterState> {
                                         <InputSelect value={this.state.chart_selected} onValue={(v) => {
                                             let chart_selected: "live"|"history" = v as any;
 
-                                            this.setState({chart_selected: chart_selected});
-                                            this.update_uplot(this[`${chart_selected}_data`]);
+                                            this.setState({chart_selected: chart_selected}, () => {
+                                                if (chart_selected == 'live') {
+                                                    this.uplot_wrapper_live_ref.current.set_show(true);
+                                                    this.uplot_wrapper_history_ref.current.set_show(false);
+                                                }
+                                                else {
+                                                    this.uplot_wrapper_history_ref.current.set_show(true);
+                                                    this.uplot_wrapper_live_ref.current.set_show(false);
+                                                }
+
+                                                this.update_uplot();
+                                            });
                                         }}
                                             items={[
                                                 ["history", __("meter.content.history")],
@@ -593,12 +628,26 @@ export class Meter extends Component<{}, MeterState> {
                                     </div>
                                 </div>
                             </div>
-                            <UplotWrapper ref={this.uplot_wrapper_ref}
-                                          id="meter_chart"
+                            <UplotWrapper ref={this.uplot_wrapper_live_ref}
+                                          id="meter_chart_live"
                                           class="meter-chart"
                                           sidebar_id="meter"
+                                          show={true}
+                                          legend_time_with_seconds={true}
+                                          x_height={30}
+                                          x_include_date={false}
                                           y_diff_min={100}
                                           y_step={10} />
+                            <UplotWrapper ref={this.uplot_wrapper_history_ref}
+                                          id="meter_chart_history"
+                                          class="meter-chart"
+                                          sidebar_id="meter"
+                                          show={false}
+                                          legend_time_with_seconds={false}
+                                          x_height={50}
+                                          x_include_date={true}
+                                          y_min={0}
+                                          y_max={1500} />
                         </div>
                         <div class="col-lg-6 col-xl-4">
                             <div class="row mb-3 pt-3">
@@ -730,8 +779,8 @@ export class MeterStatus extends Component<{}, {}> {
         // want to push them into the uplot graph immediately.
         // This only works if the wrapper component is already created.
         // Hide the form rows to fix any visual bugs instead.
-
         let show = API.hasFeature('meter') && !API.hasFeature("energy_manager");
+
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
         let power = API.get_maybe('meter/values')?.power ?? 0;
@@ -741,11 +790,15 @@ export class MeterStatus extends Component<{}, {}> {
                 <FormRow label={__("meter.status.charge_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <div class="card pl-1 pb-1">
                         <UplotWrapper ref={this.uplot_wrapper_ref}
-                                    id="status_meter_chart"
-                                    class="status-meter-chart"
-                                    sidebar_id="status"
-                                    y_min={0}
-                                    y_max={1500} />
+                                      id="status_meter_chart"
+                                      class="status-meter-chart"
+                                      sidebar_id="status"
+                                      show={true}
+                                      legend_time_with_seconds={false}
+                                      x_height={50}
+                                      x_include_date={true}
+                                      y_min={0}
+                                      y_max={1500} />
                     </div>
                 </FormRow>
                 <FormRow label={__("meter.status.current_power")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
