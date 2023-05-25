@@ -322,5 +322,4 @@ private:
     double history_meter_power_duration = 0; // seconds
     double history_meter_energy_import = 0; // dWh
     double history_meter_energy_export = 0; // dWh
-    int32_t history_power_grid = INT32_MAX; // W
 };

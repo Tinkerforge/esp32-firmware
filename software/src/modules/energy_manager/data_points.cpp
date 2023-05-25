@@ -137,6 +137,7 @@ void EnergyManager::collect_data_points()
 
         if (all_data.is_valid && !deadline_elapsed(all_data.last_update + MAX_DATA_AGE)) {
             uint8_t flags = 0; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = output, bit 7 = no data (read only)
+            int32_t power_grid = INT32_MAX; // W
             int32_t power_general[6] = {INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX}; // W
 
             flags |= is_3phase         ? 0b0001 : 0;
@@ -149,9 +150,9 @@ void EnergyManager::collect_data_points()
                 update_history_meter_power(history_meter_power_value);
 
                 if (history_meter_power_duration > 0) {
-                    history_power_grid = clamp<int64_t>(INT32_MIN,
-                                                        roundf(history_meter_power_sum / history_meter_power_duration),
-                                                        INT32_MAX - 1); // W
+                    power_grid = clamp<int64_t>(INT32_MIN,
+                                                roundf(history_meter_power_sum / history_meter_power_duration),
+                                                INT32_MAX - 1); // W
 
                     history_meter_power_sum = 0;
                     history_meter_power_duration = 0;
@@ -160,7 +161,7 @@ void EnergyManager::collect_data_points()
 
             // FIXME: fill power_general
 
-            set_energy_manager_5min_data_point(&utc, &local, flags, history_power_grid, power_general);
+            set_energy_manager_5min_data_point(&utc, &local, flags, power_grid, power_general);
         }
 
         // daily data
