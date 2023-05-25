@@ -604,7 +604,6 @@ void ChargeTracker::repair_charges() {
     Charge transfer;
     transfer.ce.meter_end = NAN;
 
-    uint32_t start = millis();
     for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
         bool file_needs_repair = false;
         memset(reinterpret_cast<uint8_t *>(&buf[1]), 0, sizeof(Charge) * 257);
