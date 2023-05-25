@@ -251,6 +251,7 @@ void EnergyManager::setup()
     update_all_data();
 
     task_scheduler.scheduleWithFixedDelay([this](){collect_data_points();}, 10000, 10000);
+    task_scheduler.scheduleWithFixedDelay([this](){set_pending_data_points();}, 10000, 100);
 
     // Set up output relay and input pins
     output = new OutputRelay(config_in_use);

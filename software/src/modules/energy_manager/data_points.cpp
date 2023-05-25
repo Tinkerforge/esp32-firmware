@@ -28,6 +28,7 @@
 
 #define MAX_DATA_AGE 30000 // milliseconds
 #define DATA_INTERVAL_5MIN 5 // minutes
+#define MAX_PENDING_DATA_POINTS 250
 
 //#define DEBUG_LOGGING
 
@@ -131,8 +132,21 @@ void EnergyManager::collect_data_points()
                     }
                 }
 
-                set_wallbox_5min_data_point(&utc, &local, uid, flags, power);
+                if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
+                    logger.printfln("energy_manager: Data point queue is full, dropping new data point");
+                }
+                else {
+                    pending_data_points.push_back([this, utc, local, uid, flags, power]{
+                        return set_wallbox_5min_data_point(&utc, &local, uid, flags, power);
+                    });
+                }
             }
+#ifdef DEBUG_LOGGING
+            else {
+                logger.printfln("collect_data_points: skipping 5min u%u, data too old %u",
+                                charger.get("uid")->asUint(), last_update);
+            }
+#endif
         }
 
         if (all_data.is_valid && !deadline_elapsed(all_data.last_update + MAX_DATA_AGE)) {
@@ -161,7 +175,14 @@ void EnergyManager::collect_data_points()
 
             // FIXME: fill power_general
 
-            set_energy_manager_5min_data_point(&utc, &local, flags, power_grid, power_general);
+            if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
+                logger.printfln("energy_manager: Data point queue is full, dropping new data point");
+            }
+            else {
+                pending_data_points.push_back([this, utc, local, flags, power_grid, power_general]{
+                    return set_energy_manager_5min_data_point(&utc, &local, flags, power_grid, power_general);
+                });
+            }
         }
 
         // daily data
@@ -181,9 +202,28 @@ void EnergyManager::collect_data_points()
                 }
 
                 if (have_data) {
-                    set_wallbox_daily_data_point(&local, uid, energy);
+                    if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
+                        logger.printfln("energy_manager: Data point queue is full, dropping new data point");
+                    }
+                    else {
+                        pending_data_points.push_back([this, local, uid, energy]{
+                            return set_wallbox_daily_data_point(&local, uid, energy);
+                        });
+                    }
                 }
+#ifdef DEBUG_LOGGING
+                else {
+                    logger.printfln("collect_data_points: skipping daily u%u, no data",
+                                    charger.get("uid")->asUint());
+                }
+#endif
             }
+#ifdef DEBUG_LOGGING
+            else {
+                logger.printfln("collect_data_points: skipping daily u%u, data too old %u",
+                                charger.get("uid")->asUint(), last_update);
+            }
+#endif
         }
 
         // FIXME: should we even look at all-data validity if we don't use any of it?
@@ -215,7 +255,14 @@ void EnergyManager::collect_data_points()
             // FIXME: fill energy_general_in and energy_general_out
 
             if (have_data) {
-                set_energy_manager_daily_data_point(&local, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out);
+                if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
+                    logger.printfln("energy_manager: Data point queue is full, dropping new data point");
+                }
+                else {
+                    pending_data_points.push_back([this, local, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out]{
+                        return set_energy_manager_daily_data_point(&local, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out);
+                    });
+                }
             }
         }
 
@@ -223,6 +270,19 @@ void EnergyManager::collect_data_points()
 
         save_persistent_data();
     }
+}
+
+void EnergyManager::set_pending_data_points()
+{
+    if (pending_data_points.empty()) {
+        return;
+    }
+
+    if (!pending_data_points.front()()) {
+        return;
+    }
+
+    pending_data_points.pop_front();
 }
 
 struct PersistentData {
@@ -249,7 +309,7 @@ bool EnergyManager::load_persistent_data()
     }
 
     if (internet_checksum(buf, sizeof(PersistentData)) != 0) {
-        logger.printfln("Checksum mismatch while reading persistent energy manager data.");
+        logger.printfln("energy_manager: Checksum mismatch while reading persistent data");
         return true;
     }
 
@@ -257,7 +317,7 @@ bool EnergyManager::load_persistent_data()
     memcpy(&data, buf, sizeof(data));
 
     if (data.version != 1) {
-        logger.printfln("Unexpected version %u while reading persistent energy manager data.", data.version);
+        logger.printfln("energy_manager: Unexpected version %u while reading persistent data", data.version);
         return true;
     }
 
@@ -299,7 +359,7 @@ void EnergyManager::save_persistent_data()
     tf_warp_energy_manager_set_data_storage(&device, 0, buf);
 }
 
-void EnergyManager::set_wallbox_5min_data_point(struct tm *utc, struct tm *local, uint32_t uid, uint8_t flags, uint16_t power /* W */)
+bool EnergyManager::set_wallbox_5min_data_point(const struct tm *utc, const struct tm *local, uint32_t uid, uint8_t flags, uint16_t power /* W */)
 {
     uint8_t status;
     uint8_t utc_year = utc->tm_year - 100;
@@ -326,10 +386,22 @@ void EnergyManager::set_wallbox_5min_data_point(struct tm *utc, struct tm *local
 #endif
 
     if (rc != TF_E_OK) {
-        logger.printfln("energy_manager: Failed to set wallbox 5min data point: error %d", rc);
+        if (rc == TF_E_TIMEOUT || is_in_bootloader(rc)) {
+            return false; // retry
+        }
+        else {
+            logger.printfln("energy_manager: Failed to set wallbox 5min data point: error %d", rc);
+            return true;
+        }
     }
     else if (status != 0) {
-        logger.printfln("energy_manager: Failed to set wallbox 5min data point: status %u", status);
+        if (status == TF_WARP_ENERGY_MANAGER_DATA_STATUS_QUEUE_FULL) {
+            return false; // retry
+        }
+        else {
+            logger.printfln("energy_manager: Failed to set wallbox 5min data point: status %u", status);
+            return true;
+        }
     }
     else {
         char power_str[6] = "null";
@@ -367,10 +439,12 @@ void EnergyManager::set_wallbox_5min_data_point(struct tm *utc, struct tm *local
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, buf_written);
         }
+
+        return true;
     }
 }
 
-void EnergyManager::set_wallbox_daily_data_point(struct tm *local, uint32_t uid, uint32_t energy /* dWh */)
+bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_t uid, uint32_t energy /* dWh */)
 {
     uint8_t status;
     uint8_t year = local->tm_year - 100;
@@ -386,10 +460,22 @@ void EnergyManager::set_wallbox_daily_data_point(struct tm *local, uint32_t uid,
 #endif
 
     if (rc != TF_E_OK) {
-        logger.printfln("energy_manager: Failed to set wallbox daily data point: error %d", rc);
+        if (rc == TF_E_TIMEOUT || is_in_bootloader(rc)) {
+            return false; // retry
+        }
+        else {
+            logger.printfln("energy_manager: Failed to set wallbox daily data point: error %d", rc);
+            return true;
+        }
     }
     else if (status != 0) {
-        logger.printfln("energy_manager: Failed to set wallbox daily data point: status %u", status);
+        if (status == TF_WARP_ENERGY_MANAGER_DATA_STATUS_QUEUE_FULL) {
+            return false; // retry
+        }
+        else {
+            logger.printfln("energy_manager: Failed to set wallbox daily data point: status %u", status);
+            return true;
+        }
     }
     else {
         char energy_str[12] = "null";
@@ -416,14 +502,16 @@ void EnergyManager::set_wallbox_daily_data_point(struct tm *local, uint32_t uid,
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, buf_written);
         }
+
+        return true;
     }
 }
 
-void EnergyManager::set_energy_manager_5min_data_point(struct tm *utc,
-                                                       struct tm *local,
+bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
+                                                       const struct tm *local,
                                                        uint8_t flags,
                                                        int32_t power_grid /* W */,
-                                                       int32_t power_general[6] /* W */)
+                                                       const int32_t power_general[6] /* W */)
 {
     uint8_t status;
     uint8_t utc_year = utc->tm_year - 100;
@@ -450,10 +538,22 @@ void EnergyManager::set_energy_manager_5min_data_point(struct tm *utc,
 #endif
 
     if (rc != TF_E_OK) {
-        logger.printfln("energy_manager: Failed to set energy manager 5min data point: error %d", rc);
+        if (rc == TF_E_TIMEOUT || is_in_bootloader(rc)) {
+            return false; // retry
+        }
+        else {
+            logger.printfln("energy_manager: Failed to set energy manager 5min data point: error %d", rc);
+            return true;
+        }
     }
     else if (status != 0) {
-        logger.printfln("energy_manager: Failed to set energy manager 5min data point: status %u", status);
+        if (status == TF_WARP_ENERGY_MANAGER_DATA_STATUS_QUEUE_FULL) {
+            return false; // retry
+        }
+        else {
+            logger.printfln("energy_manager: Failed to set energy manager 5min data point: status %u", status);
+            return true;
+        }
     }
     else {
         char power_grid_str[12] = "null";
@@ -503,14 +603,16 @@ void EnergyManager::set_energy_manager_5min_data_point(struct tm *utc,
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, buf_written);
         }
+
+        return true;
     }
 }
 
-void EnergyManager::set_energy_manager_daily_data_point(struct tm *local,
+bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
                                                         uint32_t energy_grid_in /* dWh */,
                                                         uint32_t energy_grid_out /* dWh */,
-                                                        uint32_t energy_general_in[6] /* dWh */,
-                                                        uint32_t energy_general_out[6] /* dWh */)
+                                                        const uint32_t energy_general_in[6] /* dWh */,
+                                                        const uint32_t energy_general_out[6] /* dWh */)
 {
     uint8_t status;
     uint8_t year = local->tm_year - 100;
@@ -537,10 +639,22 @@ void EnergyManager::set_energy_manager_daily_data_point(struct tm *local,
 #endif
 
     if (rc != TF_E_OK) {
-        logger.printfln("energy_manager: Failed to set energy manager daily data point: error %i", rc);
+        if (rc == TF_E_TIMEOUT || is_in_bootloader(rc)) {
+            return false; // retry
+        }
+        else {
+            logger.printfln("energy_manager: Failed to set energy manager daily data point: error %i", rc);
+            return true;
+        }
     }
     else if (status != 0) {
-        logger.printfln("energy_manager: Failed to set energy manager daily data point: status %u", status);
+        if (status == TF_WARP_ENERGY_MANAGER_DATA_STATUS_QUEUE_FULL) {
+            return false; // retry
+        }
+        else {
+            logger.printfln("energy_manager: Failed to set energy manager daily data point: status %u", status);
+            return true;
+        }
     }
     else {
         char energy_grid_in_str[13] = "null";
@@ -598,6 +712,8 @@ void EnergyManager::set_energy_manager_daily_data_point(struct tm *local,
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, buf_written);
         }
+
+        return true;
     }
 }
 
