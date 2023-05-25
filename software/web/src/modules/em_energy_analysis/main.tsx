@@ -595,7 +595,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     }
 }
 
-export class EMEnergyAnalysisStatusChart extends Component<{}, {force_render: number}> {
+export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}> {
     uplot_loader_ref = createRef();
     uplot_wrapper_ref = createRef();
 
@@ -617,39 +617,56 @@ export class EMEnergyAnalysisStatusChart extends Component<{}, {force_render: nu
     }
 
     render(props: {}, state: {}) {
-        if (!util.render_allowed()) {
-            return (<></>);
-        }
+        // Don't check util.render_allowed() here.
+        // We can receive graph data points with the first web socket packet and
+        // want to push them into the uplot graph immediately.
+        // This only works if the wrapper component is already created.
+        // Hide the form rows to fix any visual bugs instead.
+        let show = API.hasFeature('meter') && API.hasFeature("energy_manager");
+
+        // As we don't check util.render_allowed(),
+        // we have to handle rendering before the web socket connection is established.
+        let power = API.get_maybe('meter/values')?.power;
+
+        // power can be null because the backend is initialized with a NAN value
+        let power_str = power == null ? __("em_energy_analysis.content.no_data") : util.toLocaleFixed(power) + " W";
 
         return (
-            <div>
-                <UplotLoader ref={this.uplot_loader_ref}
-                             show={true}
-                             marker_width_reduction={8} >
-                    <UplotWrapper ref={this.uplot_wrapper_ref}
-                                  id="em_energy_analysis_status_chart"
-                                  class="em-energy-analysis-status-chart"
-                                  sidebar_id="status"
-                                  color_cache_group="status"
-                                  show={true}
-                                  legend_time_label={__("em_energy_analysis.script.time_5min")}
-                                  legend_time_with_minutes={true}
-                                  legend_value_prefix={__("em_energy_analysis.script.power")}
-                                  x_format={{hour: '2-digit', minute: '2-digit'}}
-                                  x_padding_factor={0}
-                                  y_min={0}
-                                  y_max={1500}
-                                  y_unit={"W"}
-                                  y_digits={0}
-                                  default_fill={true} />
-                </UplotLoader>
-            </div>
+            <>
+                <FormRow label={__("em_energy_analysis_status.status.history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                    <div class="card pl-1 pb-1">
+                        <UplotLoader ref={this.uplot_loader_ref}
+                                    show={true}
+                                    marker_width_reduction={8} >
+                            <UplotWrapper ref={this.uplot_wrapper_ref}
+                                        id="em_energy_analysis_status_chart"
+                                        class="em-energy-analysis-status-chart"
+                                        sidebar_id="status"
+                                        color_cache_group="status"
+                                        show={true}
+                                        legend_time_label={__("em_energy_analysis.script.time_5min")}
+                                        legend_time_with_minutes={true}
+                                        legend_value_prefix={__("em_energy_analysis.script.power")}
+                                        x_format={{hour: '2-digit', minute: '2-digit'}}
+                                        x_padding_factor={0}
+                                        y_min={0}
+                                        y_max={1500}
+                                        y_unit={"W"}
+                                        y_digits={0}
+                                        default_fill={true} />
+                        </UplotLoader>
+                    </div>
+                </FormRow>
+                <FormRow label={__("em_energy_analysis_status.status.grid_connection_power")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                    <InputText value={power_str}/>
+                </FormRow>
+            </>
         )
     }
 }
 
 interface EMEnergyAnalysisProps {
-    status_ref: RefObject<EMEnergyAnalysisStatusChart>;
+    status_ref: RefObject<EMEnergyAnalysisStatus>;
 }
 
 interface EMEnergyAnalysisState {
@@ -673,7 +690,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     uplot_wrapper_5min_ref = createRef();
     uplot_loader_daily_ref = createRef();
     uplot_wrapper_daily_ref = createRef();
-    status_ref: RefObject<EMEnergyAnalysisStatusChart> = null;
+    status_ref: RefObject<EMEnergyAnalysisStatus> = null;
     uplot_update_timeout: number = null;
     uplot_5min_cache: {[id: string]: UplotData} = {};
     uplot_5min_status_cache: {[id: string]: UplotData} = {};
@@ -2035,25 +2052,16 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
 let status_ref = createRef();
 
-render(<EMEnergyAnalysisStatusChart ref={status_ref} />, $('#status_em_energy_analysis_status_chart_container')[0]);
+render(<EMEnergyAnalysisStatus ref={status_ref} />, $('#status-em_energy_analysis_status')[0]);
 
 render(<EMEnergyAnalysis status_ref={status_ref} />, $('#em-energy-analysis')[0]);
-
-function update_meter_values() {
-    let values = API.get('meter/values');
-
-    // power can be null because the backend is initialized with a NAN value
-    let power_str = values.power == null ? __("em_energy_analysis.content.no_data") : util.toLocaleFixed(values.power) + " W";
-
-    $('#status_em_energy_analysis_status_grid_connection_power').val(power_str);
-}
 
 export function init() {
 
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('meter/values', update_meter_values);
+
 }
 
 export function update_sidebar_state(module_init: any) {
