@@ -633,7 +633,9 @@ void ChargeTracker::repair_charges() {
         }
         buf[0] = buf[256];
     }
-    logger.printfln("Repaired %u charge-entries.", num_repaired);
+    if (num_repaired != 0) {
+        logger.printfln("Repaired %u charge-entries.", num_repaired);
+    }
 }
 
 void ChargeTracker::register_urls()
