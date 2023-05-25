@@ -31,11 +31,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { OutputFloat } from "src/ts/components/output_float";
 import uPlot from 'uplot';
-
-function hasValue(a: any): boolean
-{
-    return a !== null && a !== undefined;
-}
+import { InputText } from "src/ts/components/input_text";
 
 interface CachedData {
     update_timestamp: number;
@@ -136,7 +132,7 @@ function get_color(group: string, name: string)
     let key = group + '-' + name;
 
     if (!color_cache[key]) {
-        if (!hasValue(color_cache_next[group])) {
+        if (!util.hasValue(color_cache_next[group])) {
             color_cache_next[group] = 0;
         }
 
@@ -271,7 +267,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             ],
             axes: [
                 {
-                    size: 35,
+                    size: 30,
                     incrs: [
                         60,
                         60 * 2,
@@ -1175,7 +1171,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let energy_grid_in = new Array(energy_manager_data.energy_grid_in.length);
             let last_energy_grid_in = null;
             let energy_grid_in_5min_total = new Array(energy_manager_data.energy_grid_in.length);
-            let energy_grid_in_daily_total: number = 0;
+            let energy_grid_in_daily_total: number = null;
 
             if (energy_manager_previous_data) {
                 last_energy_grid_in = energy_manager_previous_data.energy_grid_in[energy_manager_previous_data.energy_grid_in.length - 1];
@@ -1184,7 +1180,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             for (let i = 0; i < energy_manager_data.energy_grid_in.length; ++i) {
                 if (energy_manager_data.energy_grid_in[i] !== null && last_energy_grid_in !== null) {
                     energy_grid_in[i] = energy_manager_data.energy_grid_in[i] - last_energy_grid_in;
-                    energy_grid_in_daily_total += energy_grid_in[i];
+
+                    if (energy_grid_in_daily_total === null) {
+                        energy_grid_in_daily_total = energy_grid_in[i];
+                    }
+                    else {
+                        energy_grid_in_daily_total += energy_grid_in[i];
+                    }
                 }
                 else {
                     energy_grid_in[i] = null;
@@ -1203,7 +1205,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let energy_grid_out = new Array(energy_manager_data.energy_grid_out.length);
             let last_energy_grid_out = null;
             let energy_grid_out_5min_total = new Array(energy_manager_data.energy_grid_out.length);
-            let energy_grid_out_daily_total: number = 0;
+            let energy_grid_out_daily_total: number = null;
 
             if (energy_manager_previous_data) {
                 last_energy_grid_out = energy_manager_previous_data.energy_grid_out[energy_manager_previous_data.energy_grid_out.length - 1];
@@ -1217,7 +1219,12 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         energy_grid_out[i] = -energy_grid_out[i];
                     }
 
-                    energy_grid_out_daily_total += energy_grid_out[i];
+                    if (energy_grid_out_daily_total === null) {
+                        energy_grid_out_daily_total = energy_grid_out[i];
+                    }
+                    else {
+                        energy_grid_out_daily_total += energy_grid_out[i];
+                    }
                 }
                 else {
                     energy_grid_out[i] = null;
@@ -1262,7 +1269,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     let energy = new Array(wallbox_data.energy.length);
                     let last_energy = null;
                     let energy_5min_total = new Array(wallbox_data.energy.length);
-                    let energy_daily_total: number = 0;
+                    let energy_daily_total: number = null;
 
                     if (wallbox_previous_data) {
                         last_energy = wallbox_previous_data.energy[wallbox_previous_data.energy.length - 1];
@@ -1271,7 +1278,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     for (let i = 0; i < wallbox_data.energy.length; ++i) {
                         if (wallbox_data.energy[i] !== null && last_energy !== null) {
                             energy[i] = wallbox_data.energy[i] - last_energy;
-                            energy_daily_total += energy[i];
+
+                            if (energy_daily_total === null) {
+                                energy_daily_total = energy[i];
+                            }
+                            else {
+                                energy_daily_total += energy[i];
+                            }
                         }
                         else {
                             energy[i] = null;
@@ -1862,8 +1875,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let energy_total = state.energy_manager_5min_cache_energy_total[key];
             let slot = state.current_5min_date.getDate() - 1;
             let rows = [];
-            let has_grid_in = hasValue(energy_total) && hasValue(energy_total.grid_in) && hasValue(energy_total.grid_in[slot]);
-            let has_grid_out = hasValue(energy_total) && hasValue(energy_total.grid_out) && hasValue(energy_total.grid_out[slot]);
+            let has_grid_in = util.hasValue(energy_total) && util.hasValue(energy_total.grid_in) && util.hasValue(energy_total.grid_in[slot]);
+            let has_grid_out = util.hasValue(energy_total) && util.hasValue(energy_total.grid_out) && util.hasValue(energy_total.grid_out[slot]);
 
             if (has_grid_in || has_grid_out) {
                 rows.push(
@@ -1889,7 +1902,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             for (let charger of this.chargers) {
                 let energy_total = ((state.wallbox_5min_cache_energy_total[charger.uid] || {})[key] || [])[state.current_5min_date.getDate() - 1];
 
-                if (hasValue(energy_total)) {
+                if (util.hasValue(energy_total)) {
                     rows.push(
                         <FormRow label={charger.name} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
                             <div class="row">
@@ -1912,15 +1925,21 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let energy_total = state.energy_manager_daily_cache_energy_total[key];
             let rows = [];
 
-            if (hasValue(energy_total)) {
+            if (util.hasValue(energy_total) && (util.hasValue(energy_total.grid_in) || util.hasValue(energy_total.grid_out))) {
                 rows.push(
                     <FormRow label={__("em_energy_analysis.script.grid_in") + ' / ' + __("em_energy_analysis.script.grid_out")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
                         <div class="row">
                             <div class="col-md-6">
-                                <OutputFloat value={energy_total.grid_in} digits={2} scale={0} unit="kWh"/>
+                                {util.hasValue(energy_total.grid_in) ?
+                                    <OutputFloat value={energy_total.grid_in} digits={2} scale={0} unit="kWh"/>
+                                    : undefined
+                                }
                             </div>
                             <div class="col-md-6">
-                                <OutputFloat value={energy_total.grid_out} digits={2} scale={0} unit="kWh"/>
+                                {util.hasValue(energy_total.grid_out) ?
+                                    <OutputFloat value={energy_total.grid_out} digits={2} scale={0} unit="kWh"/>
+                                    : undefined
+                                }
                             </div>
                         </div>
                     </FormRow>
@@ -1930,7 +1949,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             for (let charger of this.chargers) {
                 let energy_total = (state.wallbox_daily_cache_energy_total[charger.uid] || {})[key];
 
-                if (hasValue(energy_total)) {
+                if (util.hasValue(energy_total)) {
                     rows.push(
                         <FormRow label={charger.name} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
                             <div class="row">
