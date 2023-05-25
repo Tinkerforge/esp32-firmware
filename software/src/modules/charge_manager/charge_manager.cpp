@@ -164,11 +164,21 @@ void ChargeManager::pre_setup()
 
     charge_manager_available_current = ConfigRoot{Config::Object({
         {"current", Config::Uint32(0)},
-    }), [](Config &conf) -> String {
+    }), [](const Config &conf) -> String {
         if (conf.get("current")->asUint() > max_avail_current)
             return String("Current too large: maximum available current is configured to ") + String(max_avail_current);
         return "";
     }};
+    charge_manager_available_current_update = charge_manager_available_current;
+
+    charge_manager_available_phases = ConfigRoot{Config::Object({
+        {"phases", Config::Uint(3, 1, 3)},
+    }), [](const Config &conf) -> String {
+        if (conf.get("phases")->asUint() == 2)
+            return "Two phases not supported.";
+        return "";
+    }};
+    charge_manager_available_phases_update = charge_manager_available_phases;
 
     charge_manager_control_pilot_disconnect = ConfigRoot{Config::Object({
         {"disconnect", Config::Bool(false)},
@@ -353,11 +363,6 @@ void ChargeManager::check_watchdog()
     last_available_current_update = millis();
 }
 
-void ChargeManager::set_available_current(uint32_t current)
-{
-    charge_manager_available_current.get("current")->updateUint(current);
-}
-
 bool ChargeManager::have_chargers() {
     return charge_manager_state.get("chargers")->count() > 0;
 }
@@ -438,6 +443,10 @@ void ChargeManager::distribute_current()
 {
     uint32_t available_current_init = charge_manager_available_current.get("current")->asUint();
     uint32_t available_current = available_current_init;
+
+    bool use_3phase_minimum_current = charge_manager_available_phases.get("phases")->asUint() >= 3;
+    uint32_t minimum_current = use_3phase_minimum_current ? charge_manager_config_in_use.get("minimum_current")->asUint() :
+                                                            charge_manager_config_in_use.get("minimum_current_1p")->asUint();
 
     bool print_local_log = false;
     char *local_log = distribution_log.get();
@@ -564,7 +573,7 @@ void ChargeManager::distribute_current()
         // that received the minimum.
         int chargers_allocated_current_to = 0;
 
-        uint16_t current_to_set = charge_manager_config_in_use.get("minimum_current")->asUint();
+        uint16_t current_to_set = minimum_current;
         for (int i = 0; i < chargers->count(); ++i) {
             auto charger = chargers->get(idx_array[i]);
 
@@ -641,7 +650,7 @@ void ChargeManager::distribute_current()
         if (available_current > 0) {
             LOCAL_LOG("stage 0: %u mA still available. Attempting to wake up chargers that already charged their vehicle once.", available_current);
 
-            uint16_t current_to_set = charge_manager_config_in_use.get("minimum_current")->asUint();
+            uint16_t current_to_set = minimum_current;
             for (int i = 0; i < chargers->count(); ++i) {
                 auto charger = chargers->get(idx_array[i]);
 
@@ -785,10 +794,21 @@ void ChargeManager::register_urls()
 {
     api.addPersistentConfig("charge_manager/config", &charge_manager_config, {}, 1000);
     api.addState("charge_manager/state", &charge_manager_state, {}, 1000);
+
     api.addState("charge_manager/available_current", &charge_manager_available_current, {}, 1000);
-    api.addCommand("charge_manager/available_current_update", &charge_manager_available_current, {}, [this](){
+    api.addCommand("charge_manager/available_current_update", &charge_manager_available_current_update, {}, [this](){
+        uint32_t current = this->charge_manager_available_current_update.get("current")->asUint();
+        this->charge_manager_available_current.get("current")->updateUint(current);
         this->last_available_current_update = millis();
     }, false);
+
+    api.addState("charge_manager/available_phases", &charge_manager_available_phases, {}, 1000);
+    api.addCommand("charge_manager/available_phases_update", &charge_manager_available_phases_update, {}, [this](){
+        uint32_t phases = this->charge_manager_available_phases_update.get("phases")->asUint();
+        this->charge_manager_available_phases.get("phases")->updateUint(phases);
+        logger.printfln("charge_manager: Available phases: %u", phases);
+    }, false);
+
     //api.addState("charge_manager/control_pilot_disconnect", &charge_manager_control_pilot_disconnect, {}, 1000);
     //api.addCommand("charge_manager/control_pilot_disconnect_update", &charge_manager_control_pilot_disconnect, {}, [](){}, false);
 }

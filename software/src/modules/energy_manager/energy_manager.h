@@ -241,6 +241,7 @@ private:
     void start_auto_reset_task();
     void schedule_auto_reset_task();
     void set_available_current(uint32_t current);
+    void set_available_phases(uint32_t phases);
 
     void check_debug();
     String prepare_fmtstr();

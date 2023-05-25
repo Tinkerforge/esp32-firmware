@@ -333,6 +333,12 @@ void EnergyManager::setup()
     start_network_check_task();
 
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
+    // Tell CM how many phases are available. is_3phase is updated in the previous call to update_all_data().
+    // set_available_phases() uses callCommand(), which is not available during setup phase, so schedule a task for it.
+    task_scheduler.scheduleOnce([this](){
+        set_available_phases(is_3phase ? 3 : 1);
+    }, 0);
+
     // Can't check for chargers in setup() because CM's setup() hasn't run yet to load the charger configuration.
     task_scheduler.scheduleOnce([this](){
         if (!charge_manager.have_chargers()) {
@@ -717,9 +723,23 @@ void EnergyManager::switch_mode(uint32_t new_mode)
 void EnergyManager::set_available_current(uint32_t current)
 {
     is_on_last = current > 0;
-#if MODULE_CHARGE_MANAGER_AVAILABLE()
-    charge_manager.set_available_current(current);
-#endif
+
+    String err = api.callCommand("charge_manager/available_current_update", Config::ConfUpdateObject{{
+        {"current", current},
+    }});
+
+    if (!err.isEmpty())
+        logger.printfln("energy_manager: set_available_current failed: %s", err.c_str());
+}
+
+void EnergyManager::set_available_phases(uint32_t phases)
+{
+    String err = api.callCommand("charge_manager/available_phases_update", Config::ConfUpdateObject{{
+        {"phases", phases},
+    }});
+
+    if (!err.isEmpty())
+        logger.printfln("energy_manager: set_available_phases failed: %s", err.c_str());
 }
 
 void EnergyManager::update_energy()
@@ -966,6 +986,7 @@ void EnergyManager::update_energy()
         // Switch phases or deal with what's available.
         if (switch_phases) {
             set_available_current(0);
+            set_available_phases(wants_3phase ? 3 : 1);
             switching_state = SwitchingState::Stopping;
             switching_start = time_now;
         } else {

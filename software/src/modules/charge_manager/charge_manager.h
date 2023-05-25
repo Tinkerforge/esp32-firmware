@@ -36,7 +36,6 @@ public:
     void distribute_current();
     void start_manager_task();
     void check_watchdog();
-    void set_available_current(uint32_t current);
     bool have_chargers();
     bool seen_all_chargers();
     bool is_charging_stopped(uint32_t last_update_cutoff);
@@ -51,6 +50,9 @@ public:
     ConfigRoot charge_manager_state;
 
     ConfigRoot charge_manager_available_current;
+    ConfigRoot charge_manager_available_current_update;
+    ConfigRoot charge_manager_available_phases;
+    ConfigRoot charge_manager_available_phases_update;
     ConfigRoot charge_manager_control_pilot_disconnect;
 
     uint32_t last_available_current_update = 0;
