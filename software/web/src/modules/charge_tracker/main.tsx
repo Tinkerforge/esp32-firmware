@@ -489,7 +489,7 @@ function ChargeTrackerStatus() {
 
         let charge: Charge = {
             charge_duration: charge_duration,
-            energy_charged: energy_abs - cc.meter_start,
+            energy_charged: (energy_abs === null || cc.meter_start === null) ? null : (energy_abs - cc.meter_start),
             timestamp_minutes: cc.timestamp_minutes,
             user_id: cc.user_id
         };
