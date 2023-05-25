@@ -29,7 +29,7 @@
 #define MAX_DATA_AGE 30000 // milliseconds
 #define DATA_INTERVAL_5MIN 5 // minutes
 
-//#define EM_DP_LOG_DETAILS
+//#define DEBUG_LOGGING
 
 void EnergyManager::register_events()
 {
@@ -264,8 +264,8 @@ bool EnergyManager::load_persistent_data()
     history_meter_energy_import = data.history_meter_energy_import;
     history_meter_energy_export = data.history_meter_energy_export;
 
-#ifdef EM_DP_LOG_DETAILS
-    logger.printfln("load_persistent_data: slot %u %u, energy %f %f",
+#ifdef DEBUG_LOGGING
+    logger.printfln("load_persistent_data: slot %u, energy %f %f",
                     last_history_5min_slot,
                     history_meter_energy_import,
                     history_meter_energy_export);
@@ -279,7 +279,7 @@ void EnergyManager::save_persistent_data()
     PersistentData data;
     memset(&data, 0, sizeof(data));
 
-#ifdef EM_DP_LOG_DETAILS
+#ifdef DEBUG_LOGGING
     logger.printfln("save_persistent_data: slot %u, energy %f %f",
                     last_history_5min_slot,
                     history_meter_energy_import,
@@ -319,7 +319,7 @@ void EnergyManager::set_wallbox_5min_data_point(struct tm *utc, struct tm *local
 
     check_bricklet_reachable(rc, "set_wallbox_5min_data_point");
 
-#ifdef EM_DP_LOG_DETAILS
+#ifdef DEBUG_LOGGING
     logger.printfln("set_wallbox_5min_data_point: u%u %d-%02d-%02d %02d:%02d f%u p%u",
                     uid, 2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power);
 #endif
@@ -379,7 +379,7 @@ void EnergyManager::set_wallbox_daily_data_point(struct tm *local, uint32_t uid,
 
     check_bricklet_reachable(rc, "set_wallbox_daily_data_point");
 
-#ifdef EM_DP_LOG_DETAILS
+#ifdef DEBUG_LOGGING
     logger.printfln("set_wallbox_daily_data_point: u%u %d-%02d-%02d e%u",
                     uid, 2000 + year, month, day, energy);
 #endif
@@ -443,7 +443,7 @@ void EnergyManager::set_energy_manager_5min_data_point(struct tm *utc,
 
     check_bricklet_reachable(rc, "set_energy_manager_5min_data_point");
 
-#ifdef EM_DP_LOG_DETAILS
+#ifdef DEBUG_LOGGING
     logger.printfln("set_energy_manager_5min_data_point: %d-%02d-%02d %02d:%02d f%u gr%d ge%d,%d,%d,%d,%d,%d",
                     2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power_grid, power_general[0], power_general[1], power_general[2], power_general[3], power_general[4], power_general[5]);
 #endif
@@ -527,7 +527,7 @@ void EnergyManager::set_energy_manager_daily_data_point(struct tm *local,
 
     check_bricklet_reachable(rc, "set_energy_manager_daily_data_point");
 
-#ifdef EM_DP_LOG_DETAILS
+#ifdef DEBUG_LOGGING
     logger.printfln("set_energy_manager_daily_data_point: %d-%02d-%02d gri%u gro%u gei%u,%u,%u,%u,%u,%u geo%u,%u,%u,%u,%u,%u",
                     2000 + year, month, day,
                     energy_grid_in, energy_grid_out,
