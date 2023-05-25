@@ -632,7 +632,7 @@ export class Meter extends Component<{}, MeterState> {
                                           id="meter_chart_live"
                                           class="meter-chart"
                                           sidebar_id="meter"
-                                          show={true}
+                                          show={false}
                                           legend_time_with_seconds={true}
                                           x_height={30}
                                           x_include_date={false}
@@ -642,7 +642,7 @@ export class Meter extends Component<{}, MeterState> {
                                           id="meter_chart_history"
                                           class="meter-chart"
                                           sidebar_id="meter"
-                                          show={false}
+                                          show={true}
                                           legend_time_with_seconds={false}
                                           x_height={50}
                                           x_include_date={true}
