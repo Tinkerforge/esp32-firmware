@@ -622,10 +622,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
-        let power = API.get_maybe('meter/values')?.power;
-
-        // power can be null because the backend is initialized with a NAN value
-        let power_str = power == null ? __("em_energy_analysis.content.no_data") : util.toLocaleFixed(power) + " W";
+        let power = API.get_maybe('meter/values')?.power ?? 0;
 
         return (
             <>
@@ -654,7 +651,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
                     </div>
                 </FormRow>
                 <FormRow label={__("em_energy_analysis_status.status.grid_connection_power")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
-                    <InputText value={power_str}/>
+                    <InputText value={util.toLocaleFixed(power, 0) + " W"}/>
                 </FormRow>
             </>
         )
