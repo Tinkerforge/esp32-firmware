@@ -41,7 +41,7 @@ public:
     void setup_rtc();
     void set_time(const timeval &time);
     void set_time(const tm &time);
-    void update_system_time();
+    bool update_system_time();
     void reset();
     struct timeval get_time();
 };

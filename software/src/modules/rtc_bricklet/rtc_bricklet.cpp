@@ -26,7 +26,7 @@
 #include "task_scheduler.h"
 #include <ctime>
 
-void RtcBricklet::update_system_time()
+bool RtcBricklet::update_system_time()
 {
     // We have to make sure, we don't try to update the system clock
     // while NTP also sets the clock.
@@ -41,17 +41,18 @@ void RtcBricklet::update_system_time()
 
     struct timeval t = this->get_time();
     if (t.tv_sec == 0 && t.tv_usec == 0)
-        return;
+        return false;
 
     {
         std::lock_guard<std::mutex> lock{ntp.mtx};
         if (count != ntp.sync_counter)
             // NTP has just updated the system time. We assume that this time is more accurate the the RTC's.
-            return;
+            return false;
 
         settimeofday(&t, nullptr);
         ntp.set_synced();
     }
+    return true;
 }
 
 void RtcBricklet::setup()

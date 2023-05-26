@@ -34,6 +34,6 @@ public:
     void set_time(const tm &tm) override;
     void set_time(const timeval &tv) override;
     struct timeval get_time() override;
-    void update_system_time()override;
+    bool update_system_time()override;
     void reset() override {} ;
 };

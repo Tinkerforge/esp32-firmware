@@ -32,7 +32,7 @@ public:
     virtual void set_time(const timeval &time) = 0;
     virtual void set_time(const tm &time) = 0;
     virtual struct timeval get_time() = 0;
-    virtual void update_system_time() = 0;
+    virtual bool update_system_time() = 0;
     virtual void reset() = 0;
 };
 
@@ -57,5 +57,5 @@ public:
 
     void set_time(const timeval &_time);
     timeval get_time();
-    void update_system_time();
+    bool update_system_time();
 };

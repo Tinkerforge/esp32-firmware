@@ -106,15 +106,7 @@ void Rtc::register_backend(IRtcBackend *_backend)
         update_system_time();
     }, 1000 * 60 * 10, 1000 * 60 * 10);
 
-
-    timeval tv;
-    if (clock_synced(&tv))
-        return;
-
-    struct timeval time = backend->get_time();
-    if (time.tv_sec != 0) {
-        settimeofday(&time, nullptr);
-
+    if (backend->update_system_time()) {
         auto now = millis();
         auto secs = now / 1000;
         auto ms = now % 1000;
@@ -145,9 +137,9 @@ timeval Rtc::get_time()
     return backend->get_time();
 }
 
-void Rtc::update_system_time()
+bool Rtc::update_system_time()
 {
     if (!backend)
-        return;
-    backend->update_system_time();
+        return false;
+    return backend->update_system_time();
 }

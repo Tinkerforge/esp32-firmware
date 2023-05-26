@@ -46,7 +46,7 @@ void EmRtc::set_time(const timeval &tv)
     energy_manager.set_time(tm);
 }
 
-void EmRtc::update_system_time()
+bool EmRtc::update_system_time()
 {
     // We have to make sure, we don't try to update the system clock
     // while Energy Manager also sets the clock.
@@ -61,17 +61,18 @@ void EmRtc::update_system_time()
 
     struct timeval t = this->get_time();
     if (t.tv_sec == 0 && t.tv_usec == 0)
-        return;
+        return false;
 
     {
         std::lock_guard<std::mutex> lock{ntp.mtx};
         if (count != ntp.sync_counter)
             // NTP has just updated the system time. We assume that this time is more accurate the the EMs.
-            return;
+            return false;
 
         settimeofday(&t, nullptr);
         ntp.set_synced();
     }
+    return true;
 }
 
 struct timeval EmRtc::get_time()
