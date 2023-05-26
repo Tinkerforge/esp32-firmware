@@ -621,6 +621,10 @@ void ChargeTracker::repair_charges() {
             buf[257].cs.meter_start = NAN;
 
         int read = f.read(reinterpret_cast<uint8_t *>(&buf[1]), sizeof(Charge) * 257);
+        if (read == -1 || read == 0) {
+            break;
+        }
+
         for (int a = 1; a < read / sizeof(Charge); a++) {
             if (repair_logic(&buf[a])) {
                 file_needs_repair = true;
