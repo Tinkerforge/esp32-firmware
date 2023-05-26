@@ -143,7 +143,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         }
 
         //Download log in any case: Even an incomplete log can be useful for debugging.
-        util.downloadToFile(this.debug_log, this.props.prefix + "-debug-log", "txt", "text/plain");
+        util.downloadToFile(this.debug_log, this.props.prefix + "-debug-protocol", "txt", "text/plain");
     }
 
 
