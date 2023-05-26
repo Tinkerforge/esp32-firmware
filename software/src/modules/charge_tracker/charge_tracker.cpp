@@ -559,11 +559,13 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
 static bool repair_logic(Charge *buf) {
     bool repaired = false;
     uint8_t state = 0;
-    const uint8_t a = 0;
-    state |= !isnan(buf[a - 1].ce.meter_end) << 3;
-    state |= !isnan(buf[a].cs.meter_start) << 2;
-    state |= !isnan(buf[a].ce.meter_end) << 1;
-    state |= !isnan(buf[a + 1].cs.meter_start);
+
+    // There are only known issues with broken charges with a meter end of 0.
+    // We can add the same logic for the start too if needed.
+    state |= !isnan(buf[-1].ce.meter_end) << 3;
+    state |= (!isnan(buf[0].cs.meter_start)) << 2;
+    state |= (!isnan(buf[0].ce.meter_end) && buf[0].ce.meter_end != 0) << 1;
+    state |= !isnan(buf[1].cs.meter_start);
 
     // We have five cases that can be repaired/ have to be repaired. state is a bitmap.
     switch (state)
@@ -571,9 +573,9 @@ static bool repair_logic(Charge *buf) {
     // The end of a charge is missing but we got the beginning and the beginning of the next charge.
     case 10:
     case 11:
-        if (buf[a - 1].ce.meter_end <= buf[a].ce.meter_end
-                && buf[a].ce.meter_end - buf[a - 1].ce.meter_end < CHARGE_TRACKER_MAX_REPAIR) {
-            buf[a].cs.meter_start = buf[a - 1].ce.meter_end;
+        if (buf[-1].ce.meter_end <= buf[0].ce.meter_end
+                && buf[0].ce.meter_end - buf[-1].ce.meter_end < CHARGE_TRACKER_MAX_REPAIR) {
+            buf[0].cs.meter_start = buf[-1].ce.meter_end;
             repaired = true;
         }
         break;
@@ -581,19 +583,23 @@ static bool repair_logic(Charge *buf) {
     // The start of a charge is missing but we got the end of it and the end of the previous charge.
     case 5:
     case 13:
-        if (buf[a].cs.meter_start <= buf[a + 1].cs.meter_start
-                && buf[a + 1].cs.meter_start - buf[a].cs.meter_start < CHARGE_TRACKER_MAX_REPAIR) {
-            buf[a].ce.meter_end = buf[a + 1].cs.meter_start;
+        if (buf[0].cs.meter_start <= buf[1].cs.meter_start
+                && buf[1].cs.meter_start - buf[0].cs.meter_start < CHARGE_TRACKER_MAX_REPAIR) {
+            // If the Meter is new and somehow meter start and meter end is 0 this is not a broken charge.
+            if (buf[0].ce.meter_end == 0 && buf[0].cs.meter_start == 0)
+                break;
+
+            buf[0].ce.meter_end = buf[1].cs.meter_start;
             repaired = true;
         }
         break;
 
     // We got no meter values of the charge but we got the end of the previous and the start of the next.
     case 9:
-        if (buf[a - 1].ce.meter_end <= buf[a + 1].cs.meter_start
-                && buf[a + 1].cs.meter_start - buf[a - 1].ce.meter_end < CHARGE_TRACKER_MAX_REPAIR) {
-            buf[a].cs.meter_start = buf[a - 1].ce.meter_end;
-            buf[a].ce.meter_end = buf[a + 1].cs.meter_start;
+        if (buf[-1].ce.meter_end <= buf[1].cs.meter_start
+                && buf[1].cs.meter_start - buf[-1].ce.meter_end < CHARGE_TRACKER_MAX_REPAIR) {
+            buf[0].cs.meter_start = buf[-1].ce.meter_end;
+            buf[0].ce.meter_end = buf[1].cs.meter_start;
             repaired = true;
         }
         break;
