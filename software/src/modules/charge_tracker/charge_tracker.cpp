@@ -563,7 +563,7 @@ static bool repair_logic(Charge *buf) {
     // There are only known issues with broken charges with a meter end of 0.
     // We can add the same logic for the start too if needed.
     state |= !isnan(buf[-1].ce.meter_end) << 3;
-    state |= (!isnan(buf[0].cs.meter_start)) << 2;
+    state |= (!isnan(buf[0].cs.meter_start) && buf[0].cs.meter_start != 0) << 2;
     state |= (!isnan(buf[0].ce.meter_end) && buf[0].ce.meter_end != 0) << 1;
     state |= !isnan(buf[1].cs.meter_start);
 
@@ -575,6 +575,9 @@ static bool repair_logic(Charge *buf) {
     case 11:
         if (buf[-1].ce.meter_end <= buf[0].ce.meter_end
                 && buf[0].ce.meter_end - buf[-1].ce.meter_end < CHARGE_TRACKER_MAX_REPAIR) {
+            if (buf[0].cs.meter_start == 0 && buf[-1].ce.meter_end < CHARGE_TRACKER_MAX_REPAIR)
+                break;
+
             buf[0].cs.meter_start = buf[-1].ce.meter_end;
             repaired = true;
         }
