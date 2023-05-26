@@ -99,9 +99,15 @@ bool ChargeTracker::repair_last(float meter_start) {
     charges[0].ce.meter_end = NAN;
     charges[2].cs.meter_start = meter_start;
 
+    if (!LittleFS.exists(chargeRecordFilename(last_charge_record)))
+        return true;
+
     File r_file = LittleFS.open(chargeRecordFilename(last_charge_record), "r+");
-    if (r_file.size() % CHARGE_RECORD_SIZE != 0)
+    if (r_file.size() % CHARGE_RECORD_SIZE != 0) {
+        logger.printfln("Can't track start of charge: Last charge end was not tracked or file is damaged! Offset is %u bytes. Expected 0", r_file.size() % CHARGE_RECORD_SIZE);
+        // TODO: for robustness we would have to write the last end here? Yes, but only if % == 9. Also write duration 0, so we know this is a "faked" end. Still write the correct meter state.
         return false;
+    }
 
     if (r_file.size() > sizeof(Charge)) {
         r_file.seek(r_file.size() - sizeof(Charge) * 2);
@@ -134,14 +140,12 @@ bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
 
     std::lock_guard<std::mutex> lock{records_mutex};
 
-    ChargeStart cs;
-    File file = LittleFS.open(chargeRecordFilename(this->last_charge_record), "a", true);
-
     if (!repair_last(meter_start)) {
-        logger.printfln("Can't track start of charge: Last charge end was not tracked or file is damaged! Offset is %u bytes. Expected 0", file.size() % CHARGE_RECORD_SIZE);
-        // TODO: for robustness we would have to write the last end here? Yes, but only if % == 9. Also write duration 0, so we know this is a "faked" end. Still write the correct meter state.
         return false;
     }
+
+    ChargeStart cs;
+    File file = LittleFS.open(chargeRecordFilename(this->last_charge_record), "a", true);
 
     if (file.size() == CHARGE_RECORD_MAX_FILE_SIZE) {
         ++this->last_charge_record;
