@@ -432,6 +432,8 @@ void ChargeTracker::setup()
         return;
     }
 
+    repair_charges();
+
     api.restorePersistentConfig("charge_tracker/config", &config);
 
     // Fill charge_tracker/last_charges
@@ -639,8 +641,6 @@ void ChargeTracker::repair_charges() {
 void ChargeTracker::register_urls()
 {
     api.addPersistentConfig("charge_tracker/config", &config, {}, 1000);
-
-    repair_charges();
 
     server.on("/charge_tracker/charge_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{records_mutex};
