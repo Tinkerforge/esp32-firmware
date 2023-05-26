@@ -23,10 +23,13 @@ import re
 util.embed_bricklet_firmware_bin()
 
 debug_log_variables = [
+            "power_at_meter_w",
+            "power_at_meter_filtered_w",
+            "power_available_w",
+            "power_available_filtered_w",
+            "charge_manager_available_current_ma",
             "charge_manager_allocated_current_ma",
             "max_current_limited_ma",
-            "power_at_meter_w",
-            "power_available_w",
             "",
             "mode",
             "is_3phase",

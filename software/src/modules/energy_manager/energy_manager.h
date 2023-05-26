@@ -268,6 +268,7 @@ private:
     bool     just_switched_mode                  = false;
     uint32_t phase_state_change_blocked_until    = 0;
     uint32_t on_state_change_blocked_until       = 0;
+    uint32_t charge_manager_available_current_ma = 0;
     uint32_t charge_manager_allocated_current_ma = 0;
     uint32_t max_current_limited_ma              = 0;
     int32_t  power_available_w                   = 0;

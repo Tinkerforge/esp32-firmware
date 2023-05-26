@@ -51,6 +51,7 @@ void EnergyManager::pre_setup()
         {"overall_min_power", Config::Int32(0)},
         {"threshold_3to1", Config::Int32(0)},
         {"threshold_1to3", Config::Int32(0)},
+        {"charge_manager_available_current", Config::Uint32(0)},
         {"charge_manager_allocated_current", Config::Uint32(0)},
         {"max_current_limited", Config::Uint32(0)},
         {"uptime_past_hysteresis", Config::Bool(false)},
@@ -730,6 +731,9 @@ void EnergyManager::set_available_current(uint32_t current)
 
     if (!err.isEmpty())
         logger.printfln("energy_manager: set_available_current failed: %s", err.c_str());
+
+    charge_manager_available_current_ma = current;
+    low_level_state.get("charge_manager_available_current")->updateUint(current);
 }
 
 void EnergyManager::set_available_phases(uint32_t phases)

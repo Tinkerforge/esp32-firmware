@@ -6,6 +6,7 @@ export interface low_level_state {
     overall_min_power: number,
     threshold_3to1: number,
     threshold_1to3: number,
+    charge_manager_available_current: number,
     charge_manager_allocated_current: number,
     max_current_limited: number,
     uptime_past_hysteresis: boolean,

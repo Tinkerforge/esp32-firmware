@@ -77,6 +77,9 @@ export class EMDebug extends Component {
                 <FormRow label="threshold 1to3">
                     <OutputFloat value={ll_state.threshold_1to3} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
+                <FormRow label="CM available current">
+                    <OutputFloat value={ll_state.charge_manager_available_current} digits={3} scale={3} unit={'A'} />
+                </FormRow>
                 <FormRow label="CM allocated current">
                     <OutputFloat value={ll_state.charge_manager_allocated_current} digits={3} scale={3} unit={'A'} />
                 </FormRow>
