@@ -129,6 +129,8 @@ void ChargeManager::pre_setup()
         {"state", Config::Uint8(0)}, // 0 - not configured, 1 - active, 2 - shutdown
         {"uptime", Config::Uint32(0)},
         {"allocated_current", Config::Uint32(0)},
+        {"chargers_requesting_current", Config::Int32(0)},
+        {"chargers_requesting_current_low_priority", Config::Int32(0)},
         {"chargers", Config::Array(
             {},
             new Config{Config::Object({
@@ -542,12 +544,17 @@ void ChargeManager::distribute_current()
         // Sorting by the minimum current allows us to distribute the current "perfectly"
         // with a single pass over the chargers.
         int chargers_requesting_current = 0;
+        int chargers_requesting_current_low_priority = 0;
         for (auto &charger : chargers) {
-            if (!charger.get("is_charging")->asBool() && !charger.get("wants_to_charge")->asBool()) {
-                continue;
+            if (charger.get("is_charging")->asBool() || charger.get("wants_to_charge")->asBool()) {
+                ++chargers_requesting_current;
+            } else if (charger.get("wants_to_charge_low_priority")->asBool()) {
+                ++chargers_requesting_current_low_priority;
             }
-            ++chargers_requesting_current;
         }
+
+        charge_manager_state.get("chargers_requesting_current")->updateInt(chargers_requesting_current);
+        charge_manager_state.get("chargers_requesting_current_low_priority")->updateInt(chargers_requesting_current_low_priority);
 
         LOCAL_LOG("%d charger%s request%s current. %u mA available.",
                   chargers_requesting_current,
