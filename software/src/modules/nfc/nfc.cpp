@@ -27,11 +27,7 @@
 #include "task_scheduler.h"
 #include "modules.h"
 
-#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
 #define AUTHORIZED_TAG_LIST_LENGTH 16
-#else
-#define AUTHORIZED_TAG_LIST_LENGTH 8
-#endif
 
 #define TOKEN_LIFETIME_MS 30000
 #define DETECTION_THRESHOLD_MS 1000

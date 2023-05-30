@@ -34,11 +34,7 @@
 
 #define USERNAME_FILE "/users/all_usernames"
 
-#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
-#define MAX_ACTIVE_USERS 16
-#else
-#define MAX_ACTIVE_USERS 10
-#endif
+#define MAX_ACTIVE_USERS 17
 
 // We have to do access the evse/evse_v2 configs manually
 // because a lot of the code runs in setup(), i.e. before APIs
