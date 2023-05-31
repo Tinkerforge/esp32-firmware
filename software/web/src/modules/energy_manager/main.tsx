@@ -389,7 +389,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                 <InputSelect
                                     items={[
                                         ["0", __("energy_manager.content.cloud_filter_off")],
-                                        ["1", __("energy_manager.content.cloud_filter_light")],
+                                        ["1", __("energy_manager.content.cloud_filter_weak")],
                                         ["2", __("energy_manager.content.cloud_filter_medium")],
                                         ["3", __("energy_manager.content.cloud_filter_strong")],
                                     ]}

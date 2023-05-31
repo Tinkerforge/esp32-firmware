@@ -76,7 +76,7 @@
             "cloud_filter": "Wolkenfilter",
             "cloud_filter_muted": "reduziert den Einfluss von wechselnd bewölktem Wetter",
             "cloud_filter_off": "Ohne",
-            "cloud_filter_light": "Schwach",
+            "cloud_filter_weak": "Schwach",
             "cloud_filter_medium": "Mittel",
             "cloud_filter_strong": "Stark",
 

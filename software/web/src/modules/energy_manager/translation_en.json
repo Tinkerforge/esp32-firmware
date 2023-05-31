@@ -76,7 +76,7 @@
             "cloud_filter": "Cloud filter",
             "cloud_filter_muted": "reduces influence of partly cloudy weather",
             "cloud_filter_off": "None",
-            "cloud_filter_light": "Light",
+            "cloud_filter_weak": "Weak",
             "cloud_filter_medium": "Medium",
             "cloud_filter_strong": "Strong",
 
