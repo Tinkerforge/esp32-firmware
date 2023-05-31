@@ -168,7 +168,12 @@ void OutputRelay::power_sufficient()
 
 void OutputRelay::grid_draw()
 {
-    int32_t p_w = energy_manager.power_at_meter_w;
+    float power_at_meter_raw_w = energy_manager.power_at_meter_raw_w;
+
+    if (isnan(power_at_meter_raw_w))
+        return;
+
+    int32_t p_w = static_cast<int32_t>(power_at_meter_raw_w);
     bool want_set = cmp_func(p_w, 0);
     energy_manager.set_output(want_set);
 }

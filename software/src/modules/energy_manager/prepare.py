@@ -23,7 +23,7 @@ import re
 util.embed_bricklet_firmware_bin()
 
 debug_log_variables = [
-            "power_at_meter_w",
+            "power_at_meter_smooth_w",
             "power_at_meter_filtered_w",
             "power_available_w",
             "power_available_filtered_w",

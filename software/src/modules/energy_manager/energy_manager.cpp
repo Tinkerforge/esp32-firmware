@@ -529,34 +529,54 @@ void EnergyManager::update_all_data()
     low_level_state.get("is_3phase")->updateBool(is_3phase);
     state.get("phases_switched")->updateUint(have_phases);
 
-    power_at_meter_w = all_data.energy_meter_type ? all_data.power : meter.values.get("power")->asFloat(); // watt
+    power_at_meter_raw_w = all_data.energy_meter_type ? all_data.power : meter.values.get("power")->asFloat(); // watt
+
+    if (!isnan(power_at_meter_raw_w)) {
+        int32_t raw_power_w = static_cast<int32_t>(power_at_meter_raw_w);
 
 #if MODULE_EM_PV_FAKER_AVAILABLE()
-    // PV faker must influence meter value before doing anything with it.
-    power_at_meter_w -= em_pv_faker.state.get("fake_power")->asInt(); // watt
+        // PV faker must influence meter value before doing anything with it.
+        raw_power_w -= em_pv_faker.state.get("fake_power")->asInt(); // watt
 #endif
 
-    low_level_state.get("power_at_meter")->updateFloat(power_at_meter_w);
+        low_level_state.get("power_at_meter")->updateFloat(raw_power_w);
 
-    // Filtered value must not be modified anywhere else.
-    if (!isnan(power_at_meter_w)) {
-        int32_t power_w = static_cast<int32_t>(power_at_meter_w);
+        // Filtered/smoothed values must not be modified anywhere else.
+
+        // Check if smooth values need to be initialized.
+        if (power_at_meter_smooth_w == INT32_MAX) {
+            for (int32_t i = 0; i < CURRENT_POWER_SMOOTHING_SAMPLES; i++) {
+                power_at_meter_smooth_values_w[i] = raw_power_w;
+            }
+            power_at_meter_smooth_total = raw_power_w * CURRENT_POWER_SMOOTHING_SAMPLES;
+        } else {
+            power_at_meter_smooth_total = power_at_meter_smooth_total - power_at_meter_smooth_values_w[power_at_meter_smooth_position] + raw_power_w;
+            power_at_meter_smooth_values_w[power_at_meter_smooth_position] = raw_power_w;
+            power_at_meter_smooth_position++;
+            if (power_at_meter_smooth_position >= CURRENT_POWER_SMOOTHING_SAMPLES)
+                power_at_meter_smooth_position = 0;
+        }
+
+        // Signed division requires both numbers to be signed.
+        static_assert(std::is_same<int32_t, decltype(power_at_meter_smooth_total)>::value, "power_at_meter_smooth_total must be signed");
+        power_at_meter_smooth_w = power_at_meter_smooth_total / CURRENT_POWER_SMOOTHING_SAMPLES;
+
         // Check if filter values need to be initialized.
         if (power_at_meter_filtered_w == INT32_MAX) {
             for (int32_t i = 0; i < power_at_meter_mavg_values_count; i++) {
-                power_at_meter_mavg_values_w[i] = power_w;
+                power_at_meter_mavg_values_w[i] = raw_power_w;
             }
-            power_at_meter_mavg_total = power_w * power_at_meter_mavg_values_count;
+            power_at_meter_mavg_total = raw_power_w * power_at_meter_mavg_values_count;
         } else {
-            power_at_meter_mavg_total = power_at_meter_mavg_total - power_at_meter_mavg_values_w[power_at_meter_mavg_position] + power_w;
-            power_at_meter_mavg_values_w[power_at_meter_mavg_position] = power_w;
+            power_at_meter_mavg_total = power_at_meter_mavg_total - power_at_meter_mavg_values_w[power_at_meter_mavg_position] + raw_power_w;
+            power_at_meter_mavg_values_w[power_at_meter_mavg_position] = raw_power_w;
             power_at_meter_mavg_position++;
             if (power_at_meter_mavg_position >= power_at_meter_mavg_values_count)
                 power_at_meter_mavg_position = 0;
         }
 
-        // Division requires both types to be signed.
-        static_assert(std::is_same<int32_t, decltype(power_at_meter_filtered_w       )>::value, "power_at_meter_filtered_w must be signed");
+        // Signed division requires both numbers to be signed.
+        static_assert(std::is_same<int32_t, decltype(power_at_meter_mavg_total       )>::value, "power_at_meter_mavg_total must be signed");
         static_assert(std::is_same<int32_t, decltype(power_at_meter_mavg_values_count)>::value, "power_at_meter_mavg_values_count must be signed");
         power_at_meter_filtered_w = power_at_meter_mavg_total / power_at_meter_mavg_values_count;
 
@@ -848,11 +868,11 @@ void EnergyManager::update_energy()
             p_error_w          = 0;
             p_error_filtered_w = 0;
         } else {
-            if (isnan(power_at_meter_w)) {
-                logger.printfln("energy_manager: Skipping energy update because meter value is NAN.");
+            if (power_at_meter_smooth_w == INT32_MAX) {
+                logger.printfln("energy_manager: Skipping energy update because meter value is not available yet.");
                 return;
             }
-            p_error_w          = target_power_from_grid_w - static_cast<int32_t>(power_at_meter_w);
+            p_error_w          = target_power_from_grid_w - power_at_meter_smooth_w;
             p_error_filtered_w = target_power_from_grid_w - power_at_meter_filtered_w;
 
             if (p_error_w > 200)

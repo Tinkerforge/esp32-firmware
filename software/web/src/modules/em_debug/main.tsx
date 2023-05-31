@@ -56,7 +56,7 @@ export class EMDebug extends Component {
                 <DebugLogger prefix="energy_manager" translationPrefix="em_debug" debugHeader="energy_manager/debug_header" debug="energy_manager/debug" />
 
                 <FormSeparator heading={__("em_debug.content.internal_state")} />
-                <FormRow label="power at meter">
+                <FormRow label="power at meter smooth">
                     <OutputFloat value={ll_state.power_at_meter} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
                 <FormRow label="power at meter filtered">

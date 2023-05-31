@@ -33,6 +33,7 @@
 #include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
 #define EM_TASK_DELAY_MS                    250
+#define CURRENT_POWER_SMOOTHING_SAMPLES     4
 
 #define MODE_FAST                           0
 #define MODE_OFF                            1
@@ -223,7 +224,7 @@ public:
     bool     contactor_check_tripped = false;
     bool     is_3phase               = false;
     bool     wants_on_last           = false;
-    float    power_at_meter_w        = NAN;
+    float    power_at_meter_raw_w    = NAN;
 
 private:
     void update_status_led();
@@ -273,6 +274,12 @@ private:
 
     int32_t  power_available_w                   = 0;
     int32_t  power_available_filtered_w          = 0;
+
+    int32_t  power_at_meter_smooth_w             = INT32_MAX;
+    int32_t  power_at_meter_smooth_values_w[CURRENT_POWER_SMOOTHING_SAMPLES];
+    int32_t  power_at_meter_smooth_total         = 0;
+    int32_t  power_at_meter_smooth_position      = 0;
+
     int32_t  power_at_meter_filtered_w           = INT32_MAX;
     int32_t *power_at_meter_mavg_values_w        = nullptr;
     int32_t  power_at_meter_mavg_total           = 0;
