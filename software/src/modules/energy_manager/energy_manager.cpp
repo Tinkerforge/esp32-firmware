@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <type_traits>
+
 #include "energy_manager.h"
 #include "musl_libc_timegm.h"
 
@@ -528,6 +530,12 @@ void EnergyManager::update_all_data()
     state.get("phases_switched")->updateUint(have_phases);
 
     power_at_meter_w = all_data.energy_meter_type ? all_data.power : meter.values.get("power")->asFloat(); // watt
+
+#if MODULE_EM_PV_FAKER_AVAILABLE()
+    // PV faker must influence meter value before doing anything with it.
+    power_at_meter_w -= em_pv_faker.state.get("fake_power")->asInt(); // watt
+#endif
+
     low_level_state.get("power_at_meter")->updateFloat(power_at_meter_w);
 
     // Filtered value must not be modified anywhere else.
@@ -535,7 +543,7 @@ void EnergyManager::update_all_data()
         int32_t power_w = static_cast<int32_t>(power_at_meter_w);
         // Check if filter values need to be initialized.
         if (power_at_meter_filtered_w == INT32_MAX) {
-            for (uint32_t i = 0; i < power_at_meter_mavg_values_count; i++) {
+            for (int32_t i = 0; i < power_at_meter_mavg_values_count; i++) {
                 power_at_meter_mavg_values_w[i] = power_w;
             }
             power_at_meter_mavg_total = power_w * power_at_meter_mavg_values_count;
@@ -546,7 +554,12 @@ void EnergyManager::update_all_data()
             if (power_at_meter_mavg_position >= power_at_meter_mavg_values_count)
                 power_at_meter_mavg_position = 0;
         }
+
+        // Division requires both types to be signed.
+        static_assert(std::is_same<int32_t, decltype(power_at_meter_filtered_w       )>::value, "power_at_meter_filtered_w must be signed");
+        static_assert(std::is_same<int32_t, decltype(power_at_meter_mavg_values_count)>::value, "power_at_meter_mavg_values_count must be signed");
         power_at_meter_filtered_w = power_at_meter_mavg_total / power_at_meter_mavg_values_count;
+
         low_level_state.get("power_at_meter_filtered")->updateFloat(power_at_meter_filtered_w);
     }
 
@@ -830,10 +843,6 @@ void EnergyManager::update_energy()
             return;
         }
 
-#if MODULE_EM_PV_FAKER_AVAILABLE()
-        target_power_from_grid_w = em_pv_faker.state.get("fake_power")->asInt(); // watt
-#endif
-
         int32_t p_error_w, p_error_filtered_w;
         if (!excess_charging_enable) {
             p_error_w          = 0;
@@ -844,7 +853,7 @@ void EnergyManager::update_energy()
                 return;
             }
             p_error_w          = target_power_from_grid_w - static_cast<int32_t>(power_at_meter_w);
-            p_error_filtered_w = target_power_from_grid_w - static_cast<int32_t>(power_at_meter_filtered_w);
+            p_error_filtered_w = target_power_from_grid_w - power_at_meter_filtered_w;
 
             if (p_error_w > 200)
                 rgb_led.update_grid_balance(EmRgbLed::GridBalance::Export);

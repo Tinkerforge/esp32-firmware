@@ -275,8 +275,8 @@ private:
     int32_t  power_at_meter_filtered_w           = INT32_MAX;
     int32_t *power_at_meter_mavg_values_w        = nullptr;
     int32_t  power_at_meter_mavg_total           = 0;
-    uint32_t power_at_meter_mavg_values_count    = 0;
-    uint32_t power_at_meter_mavg_position        = 0;
+    int32_t  power_at_meter_mavg_values_count    = 0;
+    int32_t  power_at_meter_mavg_position        = 0;
 
     // Config cache
     uint32_t default_mode             = 0;
