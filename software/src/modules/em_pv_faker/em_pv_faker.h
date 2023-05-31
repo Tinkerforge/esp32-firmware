@@ -43,11 +43,4 @@ private:
     ConfigRoot config;
     ConfigRoot runtime_config;
     ConfigRoot runtime_config_update;
-
-    float    fake_power_from_mqtt_w         = NAN;
-    int32_t  fake_power_filtered_w          = INT32_MAX;
-    int32_t *fake_power_mavg_values_w       = nullptr;
-    int32_t  fake_power_mavg_total          = 0;
-    uint32_t fake_power_mavg_values_count   = 0;
-    uint32_t fake_power_mavg_position       = 0;
 };

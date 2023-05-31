@@ -76,46 +76,11 @@ void EmPvFaker::setup()
         return;
     }
 
-    // Set up meter power filter.
-    uint32_t fake_mavg_span_s = config.get("filter_time_constant")->asUint();
-    if (fake_mavg_span_s <= 0) {
-        fake_power_mavg_values_count = 1;
-    } else {
-        fake_power_mavg_values_count = fake_mavg_span_s * 1000 / PV_FILTER_PERIOD_MS;
-    }
-    fake_power_mavg_values_w = static_cast<int32_t*>(malloc_psram(fake_power_mavg_values_count * sizeof(fake_power_mavg_values_w[0])));
-
     int32_t target_power = conf->asInt();
     state.get("fake_power")->updateInt(target_power);
     runtime_config.get("manual_power")->updateInt(target_power);
 
     initialized = true;
-
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        if (isnan(fake_power_from_mqtt_w))
-            return;
-
-        int32_t fake_power_w = static_cast<int32_t>(fake_power_from_mqtt_w);
-        // Check if filter values need to be initialized.
-        if (fake_power_filtered_w == INT32_MAX) {
-            for (uint32_t i = 0; i < fake_power_mavg_values_count; i++) {
-                fake_power_mavg_values_w[i] = fake_power_w;
-            }
-            fake_power_mavg_total = fake_power_w * fake_power_mavg_values_count;
-        } else {
-            fake_power_mavg_total = fake_power_mavg_total - fake_power_mavg_values_w[fake_power_mavg_position] + fake_power_w;
-            fake_power_mavg_values_w[fake_power_mavg_position] = fake_power_w;
-            fake_power_mavg_position++;
-            if (fake_power_mavg_position >= fake_power_mavg_values_count)
-                fake_power_mavg_position = 0;
-        }
-        fake_power_filtered_w = fake_power_mavg_total / fake_power_mavg_values_count;
-
-        if (!config.get("auto_fake")->asBool())
-            return;
-
-        state.get("fake_power")->updateInt(fake_power_filtered_w);
-    }, PV_FILTER_PERIOD_MS, PV_FILTER_PERIOD_MS);
 }
 
 void EmPvFaker::register_urls()
@@ -165,6 +130,9 @@ bool EmPvFaker::onMqttMessage(char *topic, size_t topic_len, char *data, size_t 
     uint32_t illuminance = doc["illuminance"].as<uint32_t>();
     state.get("illuminance")->updateUint(illuminance);
 
+    if (!config.get("auto_fake")->asBool())
+        return true;
+
     uint64_t peak_power          = config.get("peak_power" )->asUint();
     uint32_t zero_at_lux         = config.get("zero_at_lux")->asUint();
     uint32_t peak_at_lux         = config.get("peak_at_lux")->asUint();
@@ -178,7 +146,8 @@ bool EmPvFaker::onMqttMessage(char *topic, size_t topic_len, char *data, size_t 
 
     uint64_t illuminance_shifted = illuminance - zero_at_lux;
 
-    fake_power_from_mqtt_w = (float)(peak_power * illuminance_shifted / peak_at_lux_shifted);
+    int32_t fake_power_w = static_cast<int32_t>(peak_power * illuminance_shifted / peak_at_lux_shifted);
+    state.get("fake_power")->updateInt(fake_power_w);
 
     return true;
 }
