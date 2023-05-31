@@ -1072,6 +1072,13 @@ void EnergyManager::update_energy()
                         current_available_ma = 0;
                     }
                 }
+            } else { // Don't want to change.
+                if (is_on) {
+                    // Power is on and wants on too, need to ensure minimum current because unfiltered power available can be negative.
+                    if (current_available_ma < min_current_now_ma) {
+                        current_available_ma = min_current_now_ma;
+                    }
+                }
             }
 
             // Apply minimum/maximum current limits.
