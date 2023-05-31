@@ -45,6 +45,7 @@
             "automatic": "Automatisch",
             "always_single_phase": "Immer einphasig",
             "always_three_phases": "Immer dreiphasig",
+            "pv1p_fast3p": "Einphasiger PV-Modus, dreiphasiger Schnell-Modus",
             "external_control": "Externe Steuerung (EVCC)",
             "external_control_notification": "Externe Steuerung für die Phasenumschaltung ist aktiv. Dadurch werden alle Einstellungen im Zusammenhang mit PV-Überschussladen deaktiviert.",
 

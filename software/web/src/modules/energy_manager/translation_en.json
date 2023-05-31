@@ -45,6 +45,7 @@
             "automatic": "Automatic",
             "always_single_phase": "Always single-phase",
             "always_three_phases": "Always three-phase",
+            "pv1p_fast3p": "Single-phase PV mode, three-phase Fast mode",
             "external_control": "External control (EVCC)",
             "external_control_notification": "External control for phase switching is active. This will disable all settings related to PV excess charging.",
 

@@ -294,7 +294,7 @@ void EnergyManager::setup()
         min_phases = 1;
     } else if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE) {
         min_phases = 3;
-    } else { // automatic or external
+    } else { // automatic, external or PV1P/FAST3P
         min_phases = 1;
     }
     if (min_phases < 3) {
@@ -947,6 +947,8 @@ void EnergyManager::update_energy()
             wants_3phase = true;
         } else if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
             wants_3phase = external_control.get("phases_wanted")->asUint() == 3;
+        } else if (phase_switching_mode == PHASE_SWITCHING_PV1P_FAST3P) {
+            wants_3phase = mode == MODE_FAST;
         } else { // automatic
             if (is_3phase) {
                 wants_3phase = power_available_filtered_w >= threshold_3to1_w;

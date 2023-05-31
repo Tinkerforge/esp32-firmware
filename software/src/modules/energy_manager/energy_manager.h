@@ -50,7 +50,8 @@
 #define PHASE_SWITCHING_ALWAYS_1PHASE       1
 #define PHASE_SWITCHING_ALWAYS_3PHASE       2
 #define PHASE_SWITCHING_EXTERNAL_CONTROL    3
-#define PHASE_SWITCHING_MAX                 3
+#define PHASE_SWITCHING_PV1P_FAST3P         4
+#define PHASE_SWITCHING_MAX                 4
 
 #define RELAY_CONFIG_MANUAL                 0
 #define RELAY_CONFIG_RULE_BASED             1
