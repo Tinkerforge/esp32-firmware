@@ -1038,6 +1038,22 @@ void EnergyManager::update_energy()
                 wants_on_last = wants_on;
             }
 
+            // Filtered power can be above the threshold while current power is below it.
+            // In that case, don't switch yet but also don't change wants_on_last state.
+            // Instead, wait for the current power to raise above threshold while wants_on(_last) is still true.
+            // The inverse applies to the switch-off period.
+            if (is_on) {
+                // Power is on. Stay on if currently available power is above threshold, even if filtered power might be below it.
+                // Requires both filtered and current available power to be below the minimum limit to switch off.
+                if (power_available_w >= overall_min_power_w)
+                    wants_on = true;
+            } else {
+                // Power is off. Stay off if currently available power is below threshold, even if filtered power might be below it.
+                // Requires both filtered and current available power to be above the minimum limit to switch on.
+                if (power_available_w < overall_min_power_w)
+                    wants_on = false;
+            }
+
             uint32_t min_current_now_ma = is_3phase ? min_current_3p_ma : min_current_1p_ma;
 
             uint32_t current_available_ma;
