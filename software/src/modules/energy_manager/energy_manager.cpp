@@ -317,8 +317,20 @@ void EnergyManager::setup()
     low_level_state.get("threshold_3to1")->updateInt(threshold_3to1_w);
     low_level_state.get("threshold_1to3")->updateInt(threshold_1to3_w);
 
-    cloud_filter_coefficient = calculate_cloud_filter_coefficient(config_in_use.get("cloud_filter_mode")->asUint());
-    logger.printfln("energy_manager: Using cloud filter coefficient %f.", cloud_filter_coefficient);
+    // Set up meter power filter.
+    uint32_t power_mavg_span_s = 0;
+    switch (mode) {
+        case CLOUD_FILTER_OFF:    power_mavg_span_s =   0; break;
+        case CLOUD_FILTER_LIGHT:  power_mavg_span_s = 120; break;
+        case CLOUD_FILTER_MEDIUM: power_mavg_span_s = 240; break;
+        case CLOUD_FILTER_STRONG: power_mavg_span_s = 480; break;
+    }
+    if (power_mavg_span_s <= 0) {
+        power_at_meter_mavg_values_count = 1;
+    } else {
+        power_at_meter_mavg_values_count = power_mavg_span_s * 1000 / EM_TASK_DELAY_MS;
+    }
+    power_at_meter_mavg_values_w = static_cast<int32_t*>(malloc_psram(power_at_meter_mavg_values_count * sizeof(power_at_meter_mavg_values_w[0])));
 
     // Initialize contactor check state so that the check doesn't trip immediately if the first response from the bricklet is invalid.
     all_data.contactor_check_state = 1;
@@ -519,12 +531,24 @@ void EnergyManager::update_all_data()
     low_level_state.get("power_at_meter")->updateFloat(power_at_meter_w);
 
     // Filtered value must not be modified anywhere else.
-    if (isnan(power_at_meter_filtered_w)) {
-        power_at_meter_filtered_w = power_at_meter_w;
-    } else {
-        power_at_meter_filtered_w = power_at_meter_filtered_w + cloud_filter_coefficient * (power_at_meter_w - power_at_meter_filtered_w);
+    if (!isnan(power_at_meter_w)) {
+        int32_t power_w = static_cast<int32_t>(power_at_meter_w);
+        // Check if filter values need to be initialized.
+        if (power_at_meter_filtered_w == INT32_MAX) {
+            for (uint32_t i = 0; i < power_at_meter_mavg_values_count; i++) {
+                power_at_meter_mavg_values_w[i] = power_w;
+            }
+            power_at_meter_mavg_total = power_w * power_at_meter_mavg_values_count;
+        } else {
+            power_at_meter_mavg_total = power_at_meter_mavg_total - power_at_meter_mavg_values_w[power_at_meter_mavg_position] + power_w;
+            power_at_meter_mavg_values_w[power_at_meter_mavg_position] = power_w;
+            power_at_meter_mavg_position++;
+            if (power_at_meter_mavg_position >= power_at_meter_mavg_values_count)
+                power_at_meter_mavg_position = 0;
+        }
+        power_at_meter_filtered_w = power_at_meter_mavg_total / power_at_meter_mavg_values_count;
+        low_level_state.get("power_at_meter_filtered")->updateFloat(power_at_meter_filtered_w);
     }
-    low_level_state.get("power_at_meter_filtered")->updateFloat(power_at_meter_filtered_w);
 
     if (contactor_installed) {
         if ((all_data.contactor_check_state & 1) == 0) {
@@ -1086,30 +1110,6 @@ void EnergyManager::update_energy()
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && switching_state != SwitchingState::Monitoring)
         state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_SWITCHING);
 #endif
-}
-
-float EnergyManager::calculate_cloud_filter_coefficient(uint32_t mode)
-{
-    // Filter's step response reaches 0.998 at t = time_constant.
-    double time_constant = 0;
-    switch (mode) {
-        case CLOUD_FILTER_OFF:    time_constant =   0; break;
-        case CLOUD_FILTER_LIGHT:  time_constant = 120; break;
-        case CLOUD_FILTER_MEDIUM: time_constant = 240; break;
-        case CLOUD_FILTER_STRONG: time_constant = 480; break;
-    }
-
-    // Avoid division by 0. The limit of the coefficient A, as time_constant approaches 0, is 1.
-    if (time_constant <= 0)
-        return 1;
-
-    double sampling_freq = 1000.0 / EM_TASK_DELAY_MS;
-    double cutoff_freq = 1 / time_constant;
-    double RC = 1 / (2 * M_PI * cutoff_freq);
-    double Ts = 1 / sampling_freq;
-    double A  = Ts / (Ts + RC);
-
-    return (float)A;
 }
 
 bool EnergyManager::get_sdcard_info(struct sdcard_info *data)

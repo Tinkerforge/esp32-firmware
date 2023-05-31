@@ -76,13 +76,14 @@ void EmPvFaker::setup()
         return;
     }
 
-    double time_constant = config.get("filter_time_constant")->asUint();
-    double sampling_freq = 1000.0 / PV_FILTER_PERIOD_MS;
-    double cutoff_freq = 1 / time_constant;
-    double RC = 1 / (2 * M_PI * cutoff_freq);
-    double Ts = 1 / sampling_freq;
-    double A  = Ts / (Ts + RC);
-    filter_coefficient = static_cast<float>(A);
+    // Set up meter power filter.
+    uint32_t fake_mavg_span_s = config.get("filter_time_constant")->asUint();
+    if (fake_mavg_span_s <= 0) {
+        fake_power_mavg_values_count = 1;
+    } else {
+        fake_power_mavg_values_count = fake_mavg_span_s * 1000 / PV_FILTER_PERIOD_MS;
+    }
+    fake_power_mavg_values_w = static_cast<int32_t*>(malloc_psram(fake_power_mavg_values_count * sizeof(fake_power_mavg_values_w[0])));
 
     int32_t target_power = conf->asInt();
     state.get("fake_power")->updateInt(target_power);
@@ -94,16 +95,26 @@ void EmPvFaker::setup()
         if (isnan(fake_power_from_mqtt_w))
             return;
 
-        if (isnan(fake_power_filtered_w)) {
-            fake_power_filtered_w = fake_power_from_mqtt_w;
+        int32_t fake_power_w = static_cast<int32_t>(fake_power_from_mqtt_w);
+        // Check if filter values need to be initialized.
+        if (fake_power_filtered_w == INT32_MAX) {
+            for (uint32_t i = 0; i < fake_power_mavg_values_count; i++) {
+                fake_power_mavg_values_w[i] = fake_power_w;
+            }
+            fake_power_mavg_total = fake_power_w * fake_power_mavg_values_count;
         } else {
-            fake_power_filtered_w = fake_power_filtered_w + filter_coefficient * (fake_power_from_mqtt_w - fake_power_filtered_w);
+            fake_power_mavg_total = fake_power_mavg_total - fake_power_mavg_values_w[fake_power_mavg_position] + fake_power_w;
+            fake_power_mavg_values_w[fake_power_mavg_position] = fake_power_w;
+            fake_power_mavg_position++;
+            if (fake_power_mavg_position >= fake_power_mavg_values_count)
+                fake_power_mavg_position = 0;
         }
+        fake_power_filtered_w = fake_power_mavg_total / fake_power_mavg_values_count;
 
         if (!config.get("auto_fake")->asBool())
             return;
 
-        state.get("fake_power")->updateInt(static_cast<int32_t>(fake_power_filtered_w));
+        state.get("fake_power")->updateInt(fake_power_filtered_w);
     }, PV_FILTER_PERIOD_MS, PV_FILTER_PERIOD_MS);
 }
 
