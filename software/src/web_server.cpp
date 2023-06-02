@@ -284,7 +284,7 @@ const char *httpStatusCodeToString(int code)
     }
 }
 
-WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *content_type, const char *content, size_t content_len)
+WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *content_type, const char *content, ssize_t content_len)
 {
     auto result = httpd_resp_set_type(req, content_type);
     if (result != ESP_OK) {
@@ -353,7 +353,7 @@ void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_t
     }
 }
 
-int WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
+int WebServerRequest::sendChunk(const char *chunk, ssize_t chunk_len)
 {
     auto result = httpd_resp_send_chunk(req, chunk, chunk_len);
     if (result != ESP_OK) {

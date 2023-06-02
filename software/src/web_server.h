@@ -37,11 +37,11 @@ class WebServerRequest
 public:
     WebServerRequest(httpd_req_t *req, bool keep_alive = false);
 
-    WebServerRequestReturnProtect send(uint16_t code, const char *content_type = "text/plain", const char *content = "", size_t content_len = HTTPD_RESP_USE_STRLEN);
+    WebServerRequestReturnProtect send(uint16_t code, const char *content_type = "text/plain", const char *content = "", ssize_t content_len = HTTPD_RESP_USE_STRLEN);
 
     void beginChunkedResponse(uint16_t code, const char *content_type);
 
-    int sendChunk(const char *chunk, size_t chunk_len);
+    int sendChunk(const char *chunk, ssize_t chunk_len);
 
     WebServerRequestReturnProtect endChunkedResponse();
 
