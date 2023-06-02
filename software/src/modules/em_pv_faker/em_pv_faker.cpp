@@ -26,6 +26,8 @@
 
 #include "mqtt_client.h"
 
+#include "gcc_warnings.h"
+
 #if !MODULE_ENERGY_MANAGER_AVAILABLE()
 #error Back-end module Energy Manager required
 #endif
@@ -70,7 +72,7 @@ void EmPvFaker::setup()
 {
     api.restorePersistentConfig("em_pv_faker/config", &config);
 
-    Config *conf = (Config*)energy_manager.config_in_use.get("target_power_from_grid");
+    Config *conf = static_cast<Config *>(energy_manager.config_in_use.get("target_power_from_grid"));
     if (!conf) {
         logger.printfln("em_pv_faker: energy_manager config target_power_from_grid not available. Disabling em_pv_faker.");
         return;

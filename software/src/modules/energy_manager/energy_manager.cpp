@@ -32,6 +32,8 @@
 #include "tools.h"
 #include "web_server.h"
 
+#include "gcc_warnings.h"
+
 void EnergyManager::pre_setup()
 {
     // States
@@ -47,7 +49,7 @@ void EnergyManager::pre_setup()
 
     low_level_state = Config::Object({
         {"power_at_meter", Config::Float(0)},
-        {"power_at_meter_filtered", Config::Float(0)},
+        {"power_at_meter_filtered", Config::Float(0)}, //TODO make this int?
         {"power_available", Config::Int32(0)},
         {"power_available_filtered", Config::Int32(0)},
         {"overall_min_power", Config::Int32(0)},
@@ -298,13 +300,13 @@ void EnergyManager::setup()
         min_phases = 1;
     }
     if (min_phases < 3) {
-        overall_min_power_w = 230 * 1 * min_current_1p_ma / 1000;
+        overall_min_power_w = static_cast<int32_t>(230 * 1 * min_current_1p_ma / 1000);
     } else {
-        overall_min_power_w = 230 * 3 * min_current_3p_ma / 1000;
+        overall_min_power_w = static_cast<int32_t>(230 * 3 * min_current_3p_ma / 1000);
     }
 
-    const int32_t max_1phase_w = 230 * 1 * max_current_unlimited_ma / 1000;
-    const int32_t min_3phase_w = 230 * 3 * min_current_3p_ma / 1000;
+    const int32_t max_1phase_w = static_cast<int32_t>(230 * 1 * max_current_unlimited_ma / 1000);
+    const int32_t min_3phase_w = static_cast<int32_t>(230 * 3 * min_current_3p_ma / 1000);
 
     if (min_3phase_w > max_1phase_w) { // have dead current range
         int32_t range_width = min_3phase_w - max_1phase_w;
@@ -320,8 +322,9 @@ void EnergyManager::setup()
     low_level_state.get("threshold_1to3")->updateInt(threshold_1to3_w);
 
     // Set up meter power filter.
-    uint32_t power_mavg_span_s = 0;
+    uint32_t power_mavg_span_s;
     switch (mode) {
+        default:
         case CLOUD_FILTER_OFF:    power_mavg_span_s =   0; break;
         case CLOUD_FILTER_LIGHT:  power_mavg_span_s = 120; break;
         case CLOUD_FILTER_MEDIUM: power_mavg_span_s = 240; break;
@@ -330,9 +333,9 @@ void EnergyManager::setup()
     if (power_mavg_span_s <= 0) {
         power_at_meter_mavg_values_count = 1;
     } else {
-        power_at_meter_mavg_values_count = power_mavg_span_s * 1000 / EM_TASK_DELAY_MS;
+        power_at_meter_mavg_values_count = static_cast<int32_t>(power_mavg_span_s * 1000 / EM_TASK_DELAY_MS);
     }
-    power_at_meter_mavg_values_w = static_cast<int32_t*>(malloc_psram(power_at_meter_mavg_values_count * sizeof(power_at_meter_mavg_values_w[0])));
+    power_at_meter_mavg_values_w = static_cast<int32_t*>(malloc_psram(static_cast<size_t>(power_at_meter_mavg_values_count) * sizeof(power_at_meter_mavg_values_w[0])));
 
     // Initialize contactor check state so that the check doesn't trip immediately if the first response from the bricklet is invalid.
     all_data.contactor_check_state = 1;
@@ -444,7 +447,7 @@ void EnergyManager::register_urls()
         if (new_mode != old_mode)
             just_switched_mode = true;
 
-        logger.printfln("energy_manager: Switched mode %i->%i", old_mode, mode);
+        logger.printfln("energy_manager: Switched mode %u->%u", old_mode, mode);
     }, false);
 
     api.addState("energy_manager/external_control", &external_control, {}, 1000);
@@ -460,6 +463,8 @@ void EnergyManager::register_urls()
             case EXTERNAL_CONTROL_STATE_SWITCHING:
                 logger.printfln("energy_manager: Ignoring external control phase change request: Phase switching in progress.");
                 return;
+            default:
+                break; // All good, proceed.
         }
 
         auto phases_wanted = external_control.get("phases_wanted");
@@ -476,7 +481,7 @@ void EnergyManager::register_urls()
             return;
         }
 
-        logger.printfln("energy_manager: External control phase change request: switching from %i to %i", old_phases, new_phases);
+        logger.printfln("energy_manager: External control phase change request: switching from %u to %u", old_phases, new_phases);
         phases_wanted->updateUint(new_phases);
     }, true);
 
@@ -525,7 +530,7 @@ void EnergyManager::update_all_data()
 
     // Update states derived from all_data
     is_3phase   = contactor_installed ? all_data.contactor_value : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
-    have_phases = 1 + is_3phase * 2;
+    have_phases = 1 + static_cast<uint32_t>(is_3phase) * 2;
     low_level_state.get("is_3phase")->updateBool(is_3phase);
     state.get("phases_switched")->updateUint(have_phases);
 
@@ -539,7 +544,7 @@ void EnergyManager::update_all_data()
         raw_power_w -= em_pv_faker.state.get("fake_power")->asInt(); // watt
 #endif
 
-        low_level_state.get("power_at_meter")->updateFloat(raw_power_w);
+        low_level_state.get("power_at_meter")->updateFloat(static_cast<float>(raw_power_w)); //TODO Maybe keep as float until here?
 
         // Filtered/smoothed values must not be modified anywhere else.
 
@@ -580,7 +585,7 @@ void EnergyManager::update_all_data()
         static_assert(std::is_same<int32_t, decltype(power_at_meter_mavg_values_count)>::value, "power_at_meter_mavg_values_count must be signed");
         power_at_meter_filtered_w = power_at_meter_mavg_total / power_at_meter_mavg_values_count;
 
-        low_level_state.get("power_at_meter_filtered")->updateFloat(power_at_meter_filtered_w);
+        low_level_state.get("power_at_meter_filtered")->updateFloat(static_cast<float>(power_at_meter_filtered_w));
     }
 
     if (contactor_installed) {
@@ -758,11 +763,15 @@ void EnergyManager::start_auto_reset_task()
 
 void EnergyManager::schedule_auto_reset_task()
 {
-    uint32_t delay_ms = ms_until_time(auto_reset_hour, auto_reset_minute);
+    time_t delay_ms = ms_until_time(static_cast<int>(auto_reset_hour), static_cast<int>(auto_reset_minute));
+    if (delay_ms < 0) {
+        logger.printfln("energy_manager: Auto reset task delay negative: %li", delay_ms);
+        return;
+    }
     task_scheduler.scheduleOnce([this](){
         switch_mode(default_mode);
         schedule_auto_reset_task();
-    }, delay_ms);
+    }, static_cast<uint32_t>(delay_ms));
 }
 
 void EnergyManager::limit_max_current(uint32_t limit_ma)
@@ -810,7 +819,7 @@ void EnergyManager::update_energy()
 #else
     static SwitchingState prev_state = switching_state;
     if (switching_state != prev_state) {
-        logger.printfln("energy_manager: now in state %d", (int)switching_state);
+        logger.printfln("energy_manager: now in state %i", static_cast<int>(switching_state));
         prev_state = switching_state;
         low_level_state.get("switching_state")->updateUint(static_cast<uint32_t>(switching_state));
     }
@@ -885,7 +894,7 @@ void EnergyManager::update_energy()
 
         switch (mode) {
             case MODE_FAST:
-                power_available_w          = 230 * 3 * max_current_limited_ma / 1000;
+                power_available_w          = static_cast<int32_t>(230 * 3 * max_current_limited_ma / 1000);
                 power_available_filtered_w = power_available_w;
                 break;
             case MODE_OFF:
@@ -1079,10 +1088,13 @@ void EnergyManager::update_energy()
             uint32_t min_current_now_ma = is_3phase ? min_current_3p_ma : min_current_1p_ma;
 
             uint32_t current_available_ma;
-            if (power_available_w <= 0)
+            if (!wants_on) {
                 current_available_ma = 0;
-            else
-                current_available_ma = (power_available_w * 1000) / (230 * have_phases) * wants_on;
+            } else if (power_available_w <= 0) {
+                current_available_ma = 0;
+            } else {
+                current_available_ma = (static_cast<uint32_t>(power_available_w) * 1000) / (230 * have_phases);
+            }
 
             // Check if switching on/off is allowed right now.
             if (wants_on != is_on) {
@@ -1217,9 +1229,9 @@ uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
     return rc == TF_E_OK ? len : 0;
 }
 
-void EnergyManager::set_output(bool output)
+void EnergyManager::set_output(bool output_value)
 {
-    int result = tf_warp_energy_manager_set_output(&device, output);
+    int result = tf_warp_energy_manager_set_output(&device, output_value);
 
     // Don't check if bricklet is reachable because the setter call won't tell us.
 
@@ -1240,13 +1252,13 @@ void EnergyManager::set_rgb_led(uint8_t pattern, uint16_t hue)
 void EnergyManager::set_time(const tm &date_time)
 {
     int rc = tf_warp_energy_manager_set_date_time(&device,
-                                                  date_time.tm_sec,
-                                                  date_time.tm_min,
-                                                  date_time.tm_hour,
-                                                  date_time.tm_mday - 1,
-                                                  date_time.tm_wday,
-                                                  date_time.tm_mon,
-                                                  date_time.tm_year - 100);
+                                                  static_cast<uint8_t >(date_time.tm_sec),
+                                                  static_cast<uint8_t >(date_time.tm_min),
+                                                  static_cast<uint8_t >(date_time.tm_hour),
+                                                  static_cast<uint8_t >(date_time.tm_mday - 1),
+                                                  static_cast<uint8_t >(date_time.tm_wday),
+                                                  static_cast<uint8_t >(date_time.tm_mon),
+                                                  static_cast<uint16_t>(date_time.tm_year - 100));
 
     if (rc != TF_E_OK)
         logger.printfln("energy_manager: Failed to set datetime: error %i", rc);
@@ -1286,7 +1298,8 @@ struct timeval EnergyManager::get_time()
 
     time.tv_sec = timegm(&date_time);
 
-    if (time.tv_sec < build_timestamp() - 24 * 3600)
+    //FIXME not Y2038-safe
+    if (time.tv_sec < static_cast<time_t>(build_timestamp() - 24 * 3600))
         time.tv_sec = 0;
 
     return time;

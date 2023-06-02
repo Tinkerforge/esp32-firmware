@@ -87,7 +87,7 @@
 #define HYSTERESIS_MIN_TIME_MINUTES         5
 
 #define ERROR_FLAGS_BAD_CONFIG_BIT_POS      31
-#define ERROR_FLAGS_BAD_CONFIG_MASK         (1 << ERROR_FLAGS_BAD_CONFIG_BIT_POS)
+#define ERROR_FLAGS_BAD_CONFIG_MASK         (1u<< ERROR_FLAGS_BAD_CONFIG_BIT_POS)
 #define ERROR_FLAGS_SDCARD_BIT_POS          25
 #define ERROR_FLAGS_SDCARD_MASK             (1 << ERROR_FLAGS_SDCARD_BIT_POS)
 #define ERROR_FLAGS_BRICKLET_BIT_POS        24
@@ -260,7 +260,7 @@ private:
     SwitchingState switching_state               = SwitchingState::Monitoring;
     uint32_t switching_start                     = 0;
     uint32_t mode                                = 0;
-    uint8_t  have_phases                         = 0;
+    uint32_t  have_phases                        = 0;
     bool     wants_3phase                        = false;
     bool     wants_3phase_last                   = false;
     bool     is_on_last                          = false;
@@ -294,7 +294,7 @@ private:
     int32_t  target_power_from_grid_w = 0;
     uint32_t guaranteed_power_w       = 0;
     bool     contactor_installed      = false;
-    uint8_t  phase_switching_mode     = 0;
+    uint32_t phase_switching_mode     = 0;
     uint32_t switching_hysteresis_ms  = 0;
     bool     hysteresis_wear_ok       = false;
     uint32_t max_current_unlimited_ma = 0;
