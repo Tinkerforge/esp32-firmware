@@ -29,9 +29,9 @@ class WS final : public IAPIBackend
 {
 public:
     WS() : web_sockets() {}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
     void addOnConnectCallback(std::function<void(WebSocketsClient)> callback);
 
     // IAPIBackend implementation

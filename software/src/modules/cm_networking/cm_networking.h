@@ -195,8 +195,8 @@ class CMNetworking final : public IModule
 {
 public:
     CMNetworking(){}
-    void setup();
-    void register_urls();
+    void setup() override;
+    void register_urls() override;
 
     int create_socket(uint16_t port);
 

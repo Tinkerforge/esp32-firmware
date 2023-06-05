@@ -36,9 +36,9 @@ class Users final : public IModule
 {
 public:
     Users(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     uint8_t next_user_id();
     void rename_user(uint8_t user_id, const String &username, const String &display_name);

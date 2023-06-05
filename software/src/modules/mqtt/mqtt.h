@@ -46,9 +46,9 @@ class Mqtt final : public IAPIBackend
 {
 public:
     Mqtt(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
     void connect();
 
     void publish_with_prefix(const String &path, const String &payload);

@@ -27,5 +27,5 @@ class ESP32EthernetBrick final : public IModule
 {
 public:
     ESP32EthernetBrick(){}
-    void setup();
+    void setup() override;
 };

@@ -66,10 +66,10 @@ class EVSE : public DeviceModule<TF_EVSE,
                                  tf_evse_destroy> {
 public:
     EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EVSE::setup_evse, this)){}
-    void pre_setup();
-    void setup();
-    void register_urls();
-    void loop();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
+    void loop() override;
 
     void update_all_data();
 

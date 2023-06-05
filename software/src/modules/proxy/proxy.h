@@ -29,9 +29,9 @@ class Proxy final : public IModule
 {
 public:
     Proxy(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
 private:
     TF_Net net;

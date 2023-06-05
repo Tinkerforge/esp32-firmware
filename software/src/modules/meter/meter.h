@@ -139,9 +139,9 @@ class Meter final : public IModule
 {
 public:
     Meter(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     void updateMeterState(uint8_t new_state, uint8_t new_type);
     void updateMeterState(uint8_t new_state);

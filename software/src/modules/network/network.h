@@ -27,9 +27,9 @@ class Network final : public IModule
 {
 public:
     Network(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     ConfigRoot config;
 };

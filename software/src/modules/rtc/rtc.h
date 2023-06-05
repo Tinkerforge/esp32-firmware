@@ -48,8 +48,8 @@ private:
 public:
     Rtc() {}
 
-    void pre_setup();
-    void setup();
+    void pre_setup() override;
+    void setup() override;
 
     void register_backend(IRtcBackend *_backend);
 

@@ -71,10 +71,10 @@ class EVSEV2 : public DeviceModule<TF_EVSEV2,
 {
 public:
     EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV2::setup_evse, this)) {}
-    void pre_setup();
-    void setup();
-    void register_urls();
-    void loop();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
+    void loop() override;
 
     // Called in evse_v2_meter setup
     void update_all_data();

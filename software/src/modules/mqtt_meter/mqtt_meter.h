@@ -27,9 +27,9 @@ class MqttMeter final : public IModule
 {
 public:
     MqttMeter(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     void onMqttConnect();
     bool onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain);

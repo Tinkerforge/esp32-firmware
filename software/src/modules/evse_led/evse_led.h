@@ -28,9 +28,9 @@ class EvseLed final : public IModule
 {
 public:
     EvseLed(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     enum Blink {
         None = -1,

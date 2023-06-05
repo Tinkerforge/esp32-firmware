@@ -29,11 +29,11 @@ class EmRtc final : public IModule, public IRtcBackend
 {
 public:
     EmRtc() {}
-    void setup();
+    void setup() override;
 
     void set_time(const tm &tm) override;
     void set_time(const timeval &tv) override;
     struct timeval get_time() override;
-    bool update_system_time()override;
-    void reset() override {} ;
+    bool update_system_time() override;
+    void reset() override {}
 };

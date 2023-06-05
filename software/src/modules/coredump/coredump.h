@@ -34,9 +34,9 @@ class Coredump final : public IModule
 {
 public:
     Coredump();
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
 private:
     bool build_coredump_info(JsonDocument &tf_coredump_json);

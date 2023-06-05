@@ -36,9 +36,9 @@ class UptimeTracker final : public IModule
 {
 public:
     UptimeTracker() {}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     bool verified = false;
     uptime_data_t old_uptime{};

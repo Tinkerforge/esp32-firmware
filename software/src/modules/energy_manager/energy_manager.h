@@ -171,11 +171,11 @@ class EnergyManager : public DeviceModule<TF_WARPEnergyManager,
 {
 public:
     EnergyManager() : DeviceModule("energy_manager", "WARP Energy Manager", "Energy Manager", std::bind(&EnergyManager::setup_energy_manager, this)){}
-    void pre_setup();
-    void setup();
-    void register_urls();
-    void register_events();
-    void loop();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
+    void register_events() override;
+    void loop() override;
 
     // Called in energy_manager_meter setup
     void update_all_data();

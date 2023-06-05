@@ -27,9 +27,9 @@ class EMMeterConfig final : public IModule
 {
 public:
     EMMeterConfig(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     ConfigRoot config;
     ConfigRoot config_in_use;

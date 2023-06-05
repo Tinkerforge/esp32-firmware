@@ -50,10 +50,10 @@ class NFC : public DeviceModule<TF_NFC,
 {
 public:
     NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this)) {}
-    void pre_setup();
-    void setup();
-    void register_urls();
-    void loop();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
+    void loop() override;
 
     struct tag_info_t {
         uint32_t last_seen;

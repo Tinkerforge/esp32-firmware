@@ -27,9 +27,9 @@ class ChargeManager final : public IModule
 {
 public:
     ChargeManager(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     void start_evse_state_update();
     void send_current();

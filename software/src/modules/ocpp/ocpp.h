@@ -28,9 +28,9 @@ class Ocpp final : public IModule
 {
 public:
     Ocpp(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     void on_tag_seen(const char *tag_id);
 

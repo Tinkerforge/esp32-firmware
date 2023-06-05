@@ -27,7 +27,7 @@ class HiddenProxy final : public IModule
 {
 public:
     HiddenProxy(){}
-    void register_urls();
+    void register_urls() override;
 
 private:
     void start_proxy();

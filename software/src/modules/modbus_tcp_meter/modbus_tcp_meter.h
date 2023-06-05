@@ -51,10 +51,10 @@ class ModbusTcpMeter final : public IModule
 {
 public:
     ModbusTcpMeter();
-    void pre_setup();
-    void setup();
-    void register_urls();
-    void loop();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
+    void loop() override;
     bool check_event_read(Modbus::ResultCode event);
     void next_register();
     void next_meter();

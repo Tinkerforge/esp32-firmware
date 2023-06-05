@@ -34,9 +34,9 @@ class Wifi final : public IModule
 {
 public:
     Wifi(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     bool was_connected = false;
 

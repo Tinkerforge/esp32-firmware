@@ -27,10 +27,10 @@ class TutorialPhase4
 {
 public:
     TutorialPhase4(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
-    void loop();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
+    void loop() override;
     void set_bricklet_color(String color);
 
     bool initialized = false;

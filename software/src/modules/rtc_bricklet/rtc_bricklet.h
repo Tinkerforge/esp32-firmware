@@ -36,7 +36,7 @@ class RtcBricklet : public DeviceModule<TF_RealTimeClockV2,
 {
 public:
     RtcBricklet(): DeviceModule("rtc", "Real Time Clock 2.0", "Real Time Clock 2.0", std::bind(&RtcBricklet::setup_rtc, this)) {};
-    void setup();
+    void setup() override;
 
     void setup_rtc();
     void set_time(const timeval &time);

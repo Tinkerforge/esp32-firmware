@@ -27,9 +27,9 @@ class ModbusTcp final : public IModule
 {
 public:
     ModbusTcp();
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
     void update_regs();
     void update_bender_regs();
     void update_keba_regs();

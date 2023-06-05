@@ -27,10 +27,10 @@ class EMMeter final : public IModule
 {
 public:
     EMMeter(){}
-    void pre_setup();
-    void setup();
+    void pre_setup() override;
+    void setup() override;
     void setupEM(bool update_module_initialized);
-    void register_urls();
+    void register_urls() override;
     void updateMeterValues();
 
     ConfigRoot all_values;

@@ -27,6 +27,6 @@ class ESP32Brick final : public IModule
 {
 public:
     ESP32Brick(){}
-    void setup();
-    void loop();
+    void setup() override;
+    void loop() override;
 };

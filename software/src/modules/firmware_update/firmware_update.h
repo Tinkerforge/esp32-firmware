@@ -30,9 +30,9 @@ class FirmwareUpdate final : public IModule
 {
 public:
     FirmwareUpdate(){}
-    void setup();
-    void register_urls();
-    void loop();
+    void setup() override;
+    void register_urls() override;
+    void loop() override;
 
     bool firmware_update_running = false;
 

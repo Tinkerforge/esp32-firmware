@@ -34,9 +34,9 @@ class Ethernet final : public IModule
 {
 public:
     Ethernet(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     bool was_connected = false;
     uint32_t last_connected = 0;

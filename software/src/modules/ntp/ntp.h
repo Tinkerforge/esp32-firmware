@@ -35,9 +35,9 @@ private:
 
 public:
     NTP(){}
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
     void set_synced();
 
     std::mutex mtx;

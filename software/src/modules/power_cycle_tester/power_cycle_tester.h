@@ -39,7 +39,7 @@ class PowerCycleTester final : public IModule
 {
 public:
     PowerCycleTester(){}
-    void setup();
+    void setup() override;
 
     void led_green();
     void led_yellow();

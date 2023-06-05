@@ -33,8 +33,8 @@ class Event final : public IAPIBackend
 {
 public:
     Event() {}
-    void pre_setup();
-    void setup();
+    void pre_setup() override;
+    void setup() override;
 
     typedef strict_variant::variant<
         const char *,

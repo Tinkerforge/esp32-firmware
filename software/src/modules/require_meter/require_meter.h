@@ -27,9 +27,9 @@ private:
     ConfigRoot config;
 
 public:
-    void pre_setup();
-    void setup();
-    void register_urls();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     void start_task();
     void set_require_meter_enabled(bool enabled);

@@ -27,9 +27,9 @@ class EVSEV2Meter final : public IModule
 {
 public:
     EVSEV2Meter(){}
-    void setup();
+    void setup() override;
     void setupEVSE(bool update_module_initialized);
-    void register_urls();
+    void register_urls() override;
     void updateMeterValues();
 
     ConfigRoot all_values;
