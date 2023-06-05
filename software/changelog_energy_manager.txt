@@ -57,7 +57,7 @@
 - Fix switching on/off too often right after start-up.
 - Add "external control" phase switching mode
 
-2023-06-05: 1.0.3 (<unknown>)
+2023-06-05: 1.0.3 (928294b2)
 - Check for overlapping networks between ethernet, WiFi or WireGuard IPs
 - Improve translation
 - Show phase switching state if externally controlled
