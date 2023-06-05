@@ -24,7 +24,9 @@
 #include "modules.h"
 #include "tools.h"
 
-InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf, bool level_init)
+#include "gcc_warnings.h"
+
+InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf, bool level_init) : prev_level(level_init)
 {
     String pin_func_str            = String("input") + num_name + "_rule_then";
     String pin_limit_str           = String("input") + num_name + "_rule_then_limit";
@@ -37,11 +39,7 @@ InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf
     uint32_t pin_conf_on_high  = conf.get(pin_on_high_str)->asUint();
     uint32_t pin_conf_on_low = conf.get(pin_on_low_str)->asUint();
 
-    // Don't risk crashing on an invalid function pointer, so make sure that update_func is always set to something sensible.
-    update_func = &InputPin::nop;
-
     invert_pin = pin_conf_when == INPUT_CONFIG_WHEN_LOW;
-    prev_level = level_init;
 
     switch(pin_conf_func) {
         case INPUT_CONFIG_BLOCK_CHARGING:
@@ -85,13 +83,13 @@ void InputPin::nop(bool level)
 
 void InputPin::block_charging(bool level)
 {
-    *(uint8_t*)out_dst = level ^ invert_pin;
+    *out_dst = level ^ invert_pin;
 }
 
 void InputPin::limit_max_current(bool level)
 {
     if (level ^ invert_pin)
-        energy_manager.limit_max_current((uint32_t)limit_ma);
+        energy_manager.limit_max_current(limit_ma);
 }
 
 void InputPin::switch_mode(bool level)

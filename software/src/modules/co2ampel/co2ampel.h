@@ -36,7 +36,7 @@ public:
     void setup();
     void register_urls();
 
-    void set_color(int c);
+    void set_color(uint32_t c);
 
     ConfigRoot state;
     ConfigRoot config;

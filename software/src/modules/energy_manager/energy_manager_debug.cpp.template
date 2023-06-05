@@ -1,10 +1,15 @@
 #include "energy_manager.h"
 #include "tools.h"
 
+#include "gcc_warnings.h"
+
 #define MAX_FMT_LENGTH 512
 #define MAX_DEBUG_LINE_LENGTH 512
 
 extern inline const char* fmt(SwitchingState) {return "%u";  }
+extern inline const char* fmt(bool          ) {return "%i";  } // implicitly converted to int
+extern inline const char* fmt(uint8_t       ) {return "%i";  } // implicitly converted to int
+extern inline const char* fmt(uint16_t      ) {return "%i";  } // implicitly converted to int
 extern inline const char* fmt(int32_t       ) {return "%i";  }
 extern inline const char* fmt(uint32_t      ) {return "%u";  }
 extern inline const char* fmt(float         ) {return "%03f";}
@@ -20,17 +25,37 @@ String EnergyManager::prepare_fmtstr() {
         {{{formats}}}
     };
 
-    fmtstr = (char*)malloc(MAX_FMT_LENGTH);
+    fmtstr = reinterpret_cast<char *>(malloc(MAX_FMT_LENGTH));
     if (!fmtstr)
         return "Out of memory";
 
-    int offset = snprintf(fmtstr, MAX_FMT_LENGTH, "\"");
-    for (unsigned long i = 0; i < (2+{{{varcount}}}); i++) {
-        offset += snprintf(fmtstr + offset, MAX_FMT_LENGTH - offset, "%s,", fmts[i]);
+    size_t offset = 0;
+
+    int ret = snprintf(fmtstr, MAX_FMT_LENGTH, "\"");
+    if (ret < 0) {
+        return "snprintf error";
+    } else {
+        offset += static_cast<size_t>(ret);
     }
-    offset += snprintf(fmtstr + offset - 1, MAX_FMT_LENGTH - 1 - offset, "\""); // offset-1 to overwrite last comma
+
+    for (unsigned long i = 0; i < (2+{{{varcount}}}); i++) {
+        ret = snprintf(fmtstr + offset, MAX_FMT_LENGTH - offset, "%s,", fmts[i]);
+        if (ret < 0) {
+            return "snprintf error";
+        } else {
+            offset += static_cast<size_t>(ret);
+        }
+    }
+
+    ret = snprintf(fmtstr + offset - 1, MAX_FMT_LENGTH - 1 - offset, "\""); // offset-1 to overwrite last comma
+    if (ret < 0) {
+        return "snprintf error";
+    } else {
+        offset += static_cast<size_t>(ret);
+    }
+
     fmtstr[MAX_FMT_LENGTH - 1] = 0;
-    fmtstr = (char*)realloc(fmtstr, offset + 1);
+    fmtstr = reinterpret_cast<char *>(realloc(fmtstr, offset + 1));
 
     //logger.printfln("energy_manager: using fmtstr='%s'", fmtstr);
 
@@ -44,6 +69,12 @@ String EnergyManager::get_energy_manager_debug_header()
            {{{header}}}
            "\"";
 }
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdouble-promotion"
+    #pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
 
 String EnergyManager::get_energy_manager_debug_line()
 {
@@ -65,3 +96,7 @@ String EnergyManager::get_energy_manager_debug_line()
 
     return String(line);
 }
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif

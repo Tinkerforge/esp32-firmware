@@ -28,10 +28,10 @@ public:
     void update();
 
 private:
-    void (OutputRelay::*update_func)();
+    void (OutputRelay::*update_func)() = &OutputRelay::nop;
     bool (*cmp_func)(int32_t a, int32_t b);
-    bool *input_val;
-    int32_t ref_val;
+    bool *input_val = nullptr;
+    int32_t ref_val = -1;
 
     void nop();
     void input_controlled();

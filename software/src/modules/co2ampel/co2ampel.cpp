@@ -26,6 +26,8 @@
 #include "task_scheduler.h"
 #include "tools.h"
 
+#include "gcc_warnings.h"
+
 extern TF_HAL hal;
 
 #define RED 3
@@ -52,26 +54,20 @@ void Co2Ampel::pre_setup()
 #define DEFAULT_YELLOW_LIMIT 1000
 #define HYSTERESIS 10
 
-uint16_t red_limit = 1500;
-uint16_t yellow_limit = 1000;
+static uint16_t red_limit = 1500;
+static uint16_t yellow_limit = 1000;
 
-bool last_blink = false;
+static bool last_blink = false;
 
-bool have_button = true;
-
-bool blink_allowed = true;
+static bool blink_allowed = true;
 
 
-void button_handler(struct TF_RGBLEDButton *device, uint8_t state, void *user_data) {
-    blink_allowed = false;
-}
-
-void touch_position_handler(TF_LCD128x64 *device, uint16_t pressure, uint16_t x,
+static void touch_position_handler(TF_LCD128x64 *device, uint16_t pressure, uint16_t x,
                                    uint16_t y, uint32_t age, void *user_data) {
     blink_allowed = false;
 }
 
-void Co2Ampel::set_color(int c) {
+void Co2Ampel::set_color(uint32_t c) {
     switch(c) {
         case RED:
             check(tf_rgb_led_v2_set_rgb_value(&rgb, 255, 0, 0), "call set_rgb_value");
@@ -82,6 +78,7 @@ void Co2Ampel::set_color(int c) {
         case GREEN:
             check(tf_rgb_led_v2_set_rgb_value(&rgb, 0, 255, 0), "call set_rgb_value");
             break;
+        default:
         case OFF:
             check(tf_rgb_led_v2_set_rgb_value(&rgb, 0, 0, 0), "call set_rgb_value");
             break;
@@ -113,7 +110,7 @@ void Co2Ampel::setup()
 
     api.restorePersistentConfig("co2/config", &config);
 
-    tf_co2_v2_set_temperature_offset(&co2, config.get("temperature_offset")->asUint());
+    tf_co2_v2_set_temperature_offset(&co2, static_cast<uint16_t>(config.get("temperature_offset")->asUint()));
     tf_lcd_128x64_clear_display(&lcd);
     tf_lcd_128x64_set_touch_position_callback_configuration(&lcd, 100, true);
     tf_lcd_128x64_register_touch_position_callback(&lcd, touch_position_handler, NULL);
@@ -130,19 +127,19 @@ void Co2Ampel::setup()
         tf_co2_v2_get_air_pressure(&co2, &air_pressure);
         state.get("air_pressure")->updateUint(air_pressure);
 
-        String test = String(co2_concentration) + "ppm    ";
+        String test = String(static_cast<unsigned int>(co2_concentration)) + "ppm    ";
         //check(tf_lcd_128x64_write_line(&lcd, 0, 0, test.c_str()), "call write_line");
         check(tf_lcd_128x64_draw_text(&lcd, 0, 0, TF_LCD_128X64_FONT_18X32, TF_LCD_128X64_COLOR_BLACK, test.c_str()), "call draw_text");
 
         char temp_buf[12] = {0};
-        int written = snprintf(temp_buf, sizeof(temp_buf)/sizeof(temp_buf[0]), "%2.1f \xF8", temperature / 100.0f);
+        int written = snprintf(temp_buf, ARRAY_SIZE(temp_buf), "%2.1f \xF8", static_cast<double>(temperature / 100.0f));
         temp_buf[written] = 'C';
         temp_buf[written+1] = ' ';
         check(tf_lcd_128x64_draw_text(&lcd, 0, 40, TF_LCD_128X64_FONT_6X24, TF_LCD_128X64_COLOR_BLACK, temp_buf), "call draw_text");
 
         char hum_buf[12] = {0};
-        written = snprintf(hum_buf, sizeof(hum_buf)/sizeof(hum_buf[0]), " %2.1f %%RH", humidity / 100.0f);
-        check(tf_lcd_128x64_draw_text(&lcd, 128 - written * 6, 40, TF_LCD_128X64_FONT_6X24, TF_LCD_128X64_COLOR_BLACK, hum_buf), "call draw_text");
+        written = snprintf(hum_buf, ARRAY_SIZE(hum_buf), " %2.1f %%RH", static_cast<double>(humidity / 100.0f));
+        check(tf_lcd_128x64_draw_text(&lcd, static_cast<uint8_t>(128 - written * 6), 40, TF_LCD_128X64_FONT_6X24, TF_LCD_128X64_COLOR_BLACK, hum_buf), "call draw_text");
 
         char t_buf[22] = {0};
         uint32_t t = millis();

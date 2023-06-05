@@ -23,6 +23,8 @@
 #include "modules.h"
 #include "task_scheduler.h"
 
+#include "gcc_warnings.h"
+
 void EMSDcard::pre_setup()
 {
     sdcard_state = Config::Object({

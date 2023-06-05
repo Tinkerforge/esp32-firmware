@@ -36,7 +36,7 @@
 // full magenta
 #define HUE_BADCONFIG   300
 // full magenta
-#define HUE_UNKNOWN     300
+#define HUE_UNKNOWN     301
 
 class EmRgbLed
 {
@@ -53,14 +53,14 @@ public:
         Import = 2,
     };
 
-    EmRgbLed();
+    EmRgbLed() {}
     void set_status(Status status);
     void update_grid_balance(GridBalance balance);
 
 private:
     void update_led();
 
-    Status status;
-    bool have_grid_balance;
-    uint32_t hue_balance;
+    Status   status            = Status::OK;
+    bool     have_grid_balance = false;
+    uint32_t hue_balance       = 0;
 };

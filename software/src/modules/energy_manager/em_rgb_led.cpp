@@ -21,18 +21,13 @@
 
 #include "modules.h"
 
-EmRgbLed::EmRgbLed()
-{
-    status = Status::OK;
-    have_grid_balance = false;
-    hue_balance = 0;
-}
+#include "gcc_warnings.h"
 
 void EmRgbLed::update_led()
 {
     if (status == Status::OK) {
         uint32_t H = have_grid_balance ? hue_balance : HUE_OK;
-        energy_manager.set_rgb_led(TF_WARP_ENERGY_MANAGER_LED_PATTERN_BREATHING, H);
+        energy_manager.set_rgb_led(TF_WARP_ENERGY_MANAGER_LED_PATTERN_BREATHING, static_cast<uint16_t>(H));
     } else {
         uint32_t H;
         if (status == Status::Warning)
@@ -44,13 +39,13 @@ void EmRgbLed::update_led()
         else
             H = HUE_UNKNOWN;
 
-        energy_manager.set_rgb_led(TF_WARP_ENERGY_MANAGER_LED_PATTERN_BLINKING, H);
+        energy_manager.set_rgb_led(TF_WARP_ENERGY_MANAGER_LED_PATTERN_BLINKING, static_cast<uint16_t>(H));
     }
 }
 
-void EmRgbLed::set_status(Status status)
+void EmRgbLed::set_status(Status status_)
 {
-    this->status = status;
+    this->status = status_;
     update_led();
 }
 

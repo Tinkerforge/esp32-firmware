@@ -28,6 +28,8 @@
 #include "tools.h"
 #include "task_scheduler.h"
 
+#include "gcc_warnings.h"
+
 void Debug::pre_setup()
 {
 }
@@ -77,25 +79,25 @@ void Debug::register_urls()
             char buf[256];
             request.beginChunkedResponse(200, "text/plain");
             while(f.available()) {
-                int read = f.read((uint8_t *)buf, ARRAY_SIZE(buf));
-                request.sendChunk(buf, read);
+                size_t read = f.read(reinterpret_cast<uint8_t *>(buf), ARRAY_SIZE(buf));
+                request.sendChunk(buf, static_cast<ssize_t>(read));
             }
             return request.endChunkedResponse();
         } else {
             request.beginChunkedResponse(200, "text/html");
             String header = String("<h1>") + f.path() + "</h1><br>";
-            request.sendChunk(header.c_str(), header.length());
+            request.sendChunk(header.c_str(), static_cast<ssize_t>(header.length()));
 
             if (path.length() > 1) {
                 int idx = path.lastIndexOf('/');
-                String up = String("<a href=\"/debug/fs") + path.substring(0, idx + 1) + "\">..</a><br>";
-                request.sendChunk(up.c_str(), up.length());
+                String up = String("<a href=\"/debug/fs") + path.substring(0, static_cast<unsigned int>(idx + 1)) + "\">..</a><br>";
+                request.sendChunk(up.c_str(), static_cast<ssize_t>(up.length()));
             }
 
             File file = f.openNextFile();
             while(file) {
                 String s = String("<a href=\"/debug/fs") + file.path() + "\">"+ file.name() +"</a><br>";
-                request.sendChunk(s.c_str(), s.length());
+                request.sendChunk(s.c_str(), static_cast<ssize_t>(s.length()));
                 file = f.openNextFile();
             }
 
@@ -150,7 +152,7 @@ void Debug::register_urls()
 
         File f = LittleFS.open(path, "w");
         char *payload = request.receive();
-        f.write((uint8_t *)payload, request.contentLength());
+        f.write(reinterpret_cast<uint8_t *>(payload), request.contentLength());
         free(payload);
         return request.send(200, "text/plain", (String("File ") + path + " created.").c_str());
     });
