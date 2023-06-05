@@ -22,6 +22,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
+#include <new>
 
 #include "config.h"
 
@@ -203,3 +204,31 @@ private:
 
 // Remove seperator for nfc tags
 void remove_separator(const char * const in, char *out);
+
+// minimal C++11 allocator with debug output
+template <class Tp>
+struct DebugAlloc {
+    typedef Tp value_type;
+    DebugAlloc() = default;
+    template <class T> DebugAlloc(const DebugAlloc<T>&) {}
+
+    int counter = 0;
+
+    Tp* allocate(std::size_t n)
+    {
+        n *= sizeof(Tp);
+        printf("!!! %d allocating %u bytes (%u)\n", counter, n, sizeof(Tp));
+        ++counter;
+        return static_cast<Tp*>(::operator new(n));
+    }
+    void deallocate(Tp* p, std::size_t n)
+    {
+        printf("!!! %d deallocating %u bytes\n", counter, n*sizeof*p);
+        ++counter;
+        ::operator delete(p);
+    }
+};
+template <class T, class U>
+bool operator==(const DebugAlloc<T>&, const DebugAlloc<U>&) { return true; }
+template <class T, class U>
+bool operator!=(const DebugAlloc<T>&, const DebugAlloc<U>&) { return false; }
