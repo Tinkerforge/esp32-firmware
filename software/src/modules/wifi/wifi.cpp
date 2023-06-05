@@ -565,7 +565,12 @@ void Wifi::setup()
                     apply_soft_ap_config_and_start();
                 }
             }
-        }, 30 * 1000, 30 * 1000);
+        },
+        enable_sta
+#if MODULE_ETHERNET_AVAILABLE()
+        || (ethernet.is_enabled() && ethernet.get_connection_state() != EthernetState::NOT_CONNECTED)
+#endif
+        ? 30 * 1000 : 1000, 10 * 1000);
     }
 
     initialized = true;
