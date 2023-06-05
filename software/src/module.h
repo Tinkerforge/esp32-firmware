@@ -22,6 +22,8 @@
 class IModule
 {
 public:
+    virtual ~IModule() = default;
+
     virtual void pre_setup() {}
     virtual void setup() { initialized = true; }
     virtual void register_urls() {}
