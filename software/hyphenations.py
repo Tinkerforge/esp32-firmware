@@ -478,7 +478,9 @@ de_hyph = [
     "drei-phasiges",
     "ein-ge-richtet",
     "ein-phasiger",
-    "ein-phasiges"
+    "Ein-phasiger",
+    "ein-phasiges",
+    "Phasen-an-for-de-rung"
 ]
 
 en_hyph = [
