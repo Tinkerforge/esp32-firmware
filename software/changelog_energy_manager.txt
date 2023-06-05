@@ -55,3 +55,4 @@
 - Fix authentication sub-page UI
 - Fix charge manager scan modal UI
 - Fix switching on/off too often right after start-up.
+- Add "external control" phase switching mode
