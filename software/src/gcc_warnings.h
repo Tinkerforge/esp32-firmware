@@ -1,5 +1,3 @@
-#pragma once
-
 #ifdef __GNUC__
 #pragma GCC diagnostic error "-Wall"
 #pragma GCC diagnostic error "-Wextra"
@@ -74,7 +72,6 @@
 
 // expect pain
 #pragma GCC diagnostic error "-Wformat-overflow=2"
-#pragma GCC diagnostic error "-Wformat-truncation=2"
 #pragma GCC diagnostic error "-Wold-style-cast"
 #pragma GCC diagnostic error "-Wshadow"
 #endif
