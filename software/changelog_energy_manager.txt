@@ -56,3 +56,22 @@
 - Fix charge manager scan modal UI
 - Fix switching on/off too often right after start-up.
 - Add "external control" phase switching mode
+
+2023-06-05: 1.0.3 (<unknown>)
+- Check for overlapping networks between ethernet, WiFi or WireGuard IPs
+- Improve translation
+- Show phase switching state if externally controlled
+- Don't log if optional devices are missing
+- Clarify event log messages
+- Add single-phase PV/three-phase fast charge mode
+- Immediately start WiFI AP if no WiFi configured and ethernet disabled or not plugged in
+- Improve zero line visibility
+- Consistently scale all 48h graphs to at least 1500 W
+- Reduce minimal hight of month overview to 10 kWh
+- Fix energy manager protocol generation
+- Fix wrong minimum current being applied when single-phase charging
+- Fix sudden charging stop at low power
+- Fix unstable switch-on during partly cloudy weather
+- Fix charger data of third and more chargers not being saved
+- Fix overlapping bars in month overview
+- Fix first and last bar in month overview being cut off
