@@ -187,7 +187,7 @@ void ChargeManager::pre_setup()
     })};
 }
 
-uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t charging_time, uint16_t target_allocated_current)
+static uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t charging_time, uint16_t target_allocated_current)
 {
     if (charger_state == 0) // not connected
         return 0;
@@ -266,7 +266,7 @@ void ChargeManager::start_manager_task()
             target->get("energy_abs")->updateFloat(state->energy_abs);
 
             if (state->error_state != 0) {
-                target->get("error")->updateUint(CHARGE_MANAGER_CLIENT_ERROR_START + state->error_state);
+                target->get("error")->updateUint(CHARGE_MANAGER_CLIENT_ERROR_START + static_cast<uint32_t>(state->error_state));
             }
 
             auto current_error = target->get("error")->asUint();

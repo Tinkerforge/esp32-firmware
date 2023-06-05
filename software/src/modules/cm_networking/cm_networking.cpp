@@ -177,13 +177,13 @@ static const uint8_t cm_command_packet_length_versions[] = {
     sizeof(struct cm_packet_header),
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v1),
 };
-static_assert(ARRAY_SIZE(cm_command_packet_length_versions) == (CM_PROTOCOL_VERSION + 1));
+static_assert(ARRAY_SIZE(cm_command_packet_length_versions) == (CM_PROTOCOL_VERSION + 1), "Unexpected amount of command packet length versions.");
 
 static const uint8_t cm_state_packet_length_versions[] = {
     sizeof(struct cm_packet_header),
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1),
 };
-static_assert(ARRAY_SIZE(cm_state_packet_length_versions) == (CM_PROTOCOL_VERSION + 1));
+static_assert(ARRAY_SIZE(cm_state_packet_length_versions) == (CM_PROTOCOL_VERSION + 1), "Unexpected amount of state packet length versions.");
 
 String CMNetworking::validate_packet_header(const struct cm_packet_header *header, ssize_t recv_length, const uint8_t packet_length_versions[], const char *packet_type_name) const
 {

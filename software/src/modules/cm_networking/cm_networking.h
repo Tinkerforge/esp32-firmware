@@ -181,7 +181,7 @@ struct cm_state_v1 {
 } __attribute__((packed));
 
 #define CM_STATE_V1_LENGTH (sizeof(cm_state_v1))
-static_assert(CM_STATE_V1_LENGTH == 72);
+static_assert(CM_STATE_V1_LENGTH == 72, "Unexpected CM_STATE_V1_LENGTH");
 
 struct cm_state_packet {
     cm_packet_header header;
@@ -189,7 +189,7 @@ struct cm_state_packet {
 } __attribute__((packed));
 
 #define CM_STATE_PACKET_LENGTH (sizeof(cm_state_packet))
-static_assert(CM_STATE_PACKET_LENGTH == 80);
+static_assert(CM_STATE_PACKET_LENGTH == 80, "Unexpected CM_STATE_PACKET_LENGTH");
 
 class CMNetworking final : public IModule
 {
