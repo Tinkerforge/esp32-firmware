@@ -65,7 +65,7 @@
 - Immediately start WiFI AP if no WiFi configured and ethernet disabled or not plugged in
 - Improve zero line visibility
 - Consistently scale all 48h graphs to at least 1500 W
-- Reduce minimal hight of month overview to 10 kWh
+- Reduce minimal height of month overview to 10 kWh
 - Don't log if optional devices are missing
 - Clarify event log messages
 - Fix energy manager protocol generation
