@@ -253,16 +253,6 @@ void EnergyManager::setup()
     });
 #endif
 
-    update_all_data();
-
-    task_scheduler.scheduleWithFixedDelay([this](){collect_data_points();}, 10000, 10000);
-    task_scheduler.scheduleWithFixedDelay([this](){set_pending_data_points();}, 10000, 100);
-
-    // Set up output relay and input pins
-    output = new OutputRelay(config_in_use);
-    input3 = new InputPin(3, 0, config_in_use, all_data.input[0]);
-    input4 = new InputPin(4, 1, config_in_use, all_data.input[1]);
-
     // Cache config for energy update
     default_mode                = config_in_use.get("default_mode")->asUint();
     excess_charging_enable      = config_in_use.get("excess_charging_enable")->asBool();
@@ -284,6 +274,30 @@ void EnergyManager::setup()
 
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
         state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+
+    // Set up meter power filter.
+    uint32_t power_mavg_span_s;
+    switch (mode) {
+        default:
+        case CLOUD_FILTER_OFF:    power_mavg_span_s =   0; break;
+        case CLOUD_FILTER_LIGHT:  power_mavg_span_s = 120; break;
+        case CLOUD_FILTER_MEDIUM: power_mavg_span_s = 240; break;
+        case CLOUD_FILTER_STRONG: power_mavg_span_s = 480; break;
+    }
+    if (power_mavg_span_s <= 0) {
+        power_at_meter_mavg_values_count = 1;
+    } else {
+        power_at_meter_mavg_values_count = static_cast<int32_t>(power_mavg_span_s * 1000 / EM_TASK_DELAY_MS);
+    }
+    power_at_meter_mavg_values_w = static_cast<int32_t*>(malloc_psram(static_cast<size_t>(power_at_meter_mavg_values_count) * sizeof(power_at_meter_mavg_values_w[0])));
+
+    // Bricklet and meter access, requires power filter to be set up
+    update_all_data();
+
+    // Set up output relay and input pins
+    output = new OutputRelay(config_in_use);
+    input3 = new InputPin(3, 0, config_in_use, all_data.input[0]);
+    input4 = new InputPin(4, 1, config_in_use, all_data.input[1]);
 
     // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
     uint32_t hysteresis_min_ms = 10 * 1000;  // milliseconds
@@ -320,22 +334,6 @@ void EnergyManager::setup()
     low_level_state.get("overall_min_power")->updateInt(overall_min_power_w);
     low_level_state.get("threshold_3to1")->updateInt(threshold_3to1_w);
     low_level_state.get("threshold_1to3")->updateInt(threshold_1to3_w);
-
-    // Set up meter power filter.
-    uint32_t power_mavg_span_s;
-    switch (mode) {
-        default:
-        case CLOUD_FILTER_OFF:    power_mavg_span_s =   0; break;
-        case CLOUD_FILTER_LIGHT:  power_mavg_span_s = 120; break;
-        case CLOUD_FILTER_MEDIUM: power_mavg_span_s = 240; break;
-        case CLOUD_FILTER_STRONG: power_mavg_span_s = 480; break;
-    }
-    if (power_mavg_span_s <= 0) {
-        power_at_meter_mavg_values_count = 1;
-    } else {
-        power_at_meter_mavg_values_count = static_cast<int32_t>(power_mavg_span_s * 1000 / EM_TASK_DELAY_MS);
-    }
-    power_at_meter_mavg_values_w = static_cast<int32_t*>(malloc_psram(static_cast<size_t>(power_at_meter_mavg_values_count) * sizeof(power_at_meter_mavg_values_w[0])));
 
     // Initialize contactor check state so that the check doesn't trip immediately if the first response from the bricklet is invalid.
     all_data.contactor_check_state = 1;
@@ -394,6 +392,9 @@ void EnergyManager::setup()
             logger.printfln("energy_manager: Excess charging enabled but no meter configured.");
         }
     }, 0);
+
+    task_scheduler.scheduleWithFixedDelay([this](){collect_data_points();}, 10000, 10000);
+    task_scheduler.scheduleWithFixedDelay([this](){set_pending_data_points();}, 10000, 100);
 }
 
 void EnergyManager::register_urls()
