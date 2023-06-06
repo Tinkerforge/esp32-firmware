@@ -235,12 +235,6 @@ void EnergyManager::setup()
     api.restorePersistentConfig("energy_manager/config", &config);
     config_in_use = config;
 
-    if ((config_in_use.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !config_in_use.get("contactor_installed")->asBool()) {
-        logger.printfln("energy_manager: Invalid configuration: Automatic phase switching selected but no contactor installed.");
-        set_config_error(CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK);
-        return;
-    }
-
 #if MODULE_DEBUG_AVAILABLE()
     api.restorePersistentConfig("energy_manager/debug_config", &debug_config);
 #endif
@@ -337,6 +331,14 @@ void EnergyManager::setup()
 
     // Initialize contactor check state so that the check doesn't trip immediately if the first response from the bricklet is invalid.
     all_data.contactor_check_state = 1;
+
+    // Check for incomplete configuration after as much as possible has been set up.
+    // The default configuration after a factory reset must be good enough for everything to run without crashing.
+    if ((config_in_use.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !config_in_use.get("contactor_installed")->asBool()) {
+        logger.printfln("energy_manager: Invalid configuration: Automatic phase switching selected but no contactor installed.");
+        set_config_error(CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK);
+        return;
+    }
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_all_data();
