@@ -31,6 +31,7 @@
 #include "task_scheduler.h"
 #include "web_server.h"
 #include "build.h"
+#include "tools.h"
 
 #ifndef TF_ESP_PREINIT
 #define TF_ESP_PREINIT
@@ -39,7 +40,7 @@
 #define TFJSON_IMPLEMENTATION
 #include "TFJson.h"
 
-bool config_constructors_allowed = false;
+BootStage boot_stage = BootStage::STATIC_INITIALIZATION;
 
 const char* DISPLAY_NAME = "{{{display_name}}}";
 
@@ -157,6 +158,7 @@ static void register_default_urls(void) {
 }
 
 void setup(void) {
+    boot_stage = BootStage::PRE_INIT;
     Serial.begin({{{monitor_speed}}});
 
     logger.setup();
@@ -167,7 +169,7 @@ void setup(void) {
 
     logger.printfln("Last reset reason was: %s", tf_reset_reason());
 
-    config_preinit();
+    config_pre_init();
 
     TF_ESP_PREINIT
 
@@ -175,7 +177,7 @@ void setup(void) {
         logger.printfln("Failed to mount SPIFFS.");
     }
 
-    config_constructors_allowed = true;
+    boot_stage = BootStage::PRE_SETUP;
 
     // Enforce that all back-end modules implement the IModule interface.
     // If you receive an error like "no matching function for call to 'std::vector<IModule*>::push_back(MyModule*)'",
@@ -192,6 +194,8 @@ void setup(void) {
     for (IModule *imodule : imodules) {
         imodule->pre_setup();
     }
+
+    boot_stage = BootStage::SETUP;
 
     // Setup task scheduler before API: The API setup can run migrations that want to start tasks.
     task_scheduler.setup();
@@ -211,6 +215,8 @@ void setup(void) {
 
     server.start();
 
+    boot_stage = BootStage::REGISTER_URLS;
+
     register_default_urls();
     logger.register_urls();
     task_scheduler.register_urls();
@@ -218,6 +224,9 @@ void setup(void) {
     for (IModule *imodule : imodules) {
         imodule->register_urls();
     }
+
+    boot_stage = BootStage::REGISTER_EVENTS;
+
     for (IModule *imodule : imodules) {
         imodule->register_events();
     }
@@ -233,6 +242,8 @@ void setup(void) {
         }
     }
     *next_chain_ptr = loop_chain; // Close loop. Overwrites loop_chain with itself if the loop is empty.
+
+    boot_stage = BootStage::LOOP;
 }
 
 void loop(void) {

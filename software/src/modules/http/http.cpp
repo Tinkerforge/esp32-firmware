@@ -81,11 +81,20 @@ static int strncmp_with_same_len(const char *left, const char *right, size_t rig
 
 bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
 {
+    if (boot_stage <= BootStage::REGISTER_URLS)
+        return false;
+
+    if (ref_uri == nullptr || in_uri == nullptr)
+        return false;
+
     // Don't match the API handler.
     if (strncmp_with_same_len("/*", in_uri, len) == 0)
         return false;
 
     size_t ref_len = strlen(ref_uri);
+
+    if (ref_len == 0)
+        return false;
 
     // Match other wildcard handlers if:
     // - ref_uri is a wildcard handler (it ends in *)

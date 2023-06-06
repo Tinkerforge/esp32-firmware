@@ -232,3 +232,15 @@ template <class T, class U>
 bool operator==(const DebugAlloc<T>&, const DebugAlloc<U>&) { return true; }
 template <class T, class U>
 bool operator!=(const DebugAlloc<T>&, const DebugAlloc<U>&) { return false; }
+
+enum class BootStage {
+    STATIC_INITIALIZATION,
+    PRE_INIT,
+    PRE_SETUP,
+    SETUP,
+    REGISTER_URLS,
+    REGISTER_EVENTS,
+    LOOP
+};
+
+extern BootStage boot_stage;

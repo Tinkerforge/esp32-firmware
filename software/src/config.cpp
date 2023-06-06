@@ -18,9 +18,10 @@
  */
 
 #include "config.h"
+
 #include "math.h"
 
-extern bool config_constructors_allowed;
+#include "tools.h"
 
 #define SLOT_HEADROOM 20
 
@@ -1010,7 +1011,7 @@ Config::ConfObject& Config::ConfObject::operator=(const ConfObject &cpy) {
 
 Config Config::Str(const String &s, uint16_t minChars, uint16_t maxChars)
 {
-    if (!config_constructors_allowed)
+    if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
     return Config{ConfString{s, minChars, maxChars}};
@@ -1018,7 +1019,7 @@ Config Config::Str(const String &s, uint16_t minChars, uint16_t maxChars)
 
 Config Config::Float(float d, float min, float max)
 {
-    if (!config_constructors_allowed)
+    if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
     return Config{ConfFloat{d, min, max}};
@@ -1026,7 +1027,7 @@ Config Config::Float(float d, float min, float max)
 
 Config Config::Int(int32_t i, int32_t min, int32_t max)
 {
-    if (!config_constructors_allowed)
+    if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
     return Config{ConfInt{i, min, max}};
@@ -1034,7 +1035,7 @@ Config Config::Int(int32_t i, int32_t min, int32_t max)
 
 Config Config::Uint(uint32_t u, uint32_t min, uint32_t max)
 {
-    if (!config_constructors_allowed)
+    if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
     return Config{ConfUint{u, min, max}};
@@ -1050,7 +1051,7 @@ Config Config::Bool(bool b)
 
 Config Config::Array(std::initializer_list<Config> arr, Config *prototype, uint16_t minElements, uint16_t maxElements, int variantType)
 {
-    if (!config_constructors_allowed)
+    if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
     return Config{ConfArray{arr, prototype, minElements, maxElements, (int8_t)variantType}};
@@ -1058,7 +1059,7 @@ Config Config::Array(std::initializer_list<Config> arr, Config *prototype, uint1
 
 Config Config::Object(std::initializer_list<std::pair<String, Config>> obj)
 {
-    if (!config_constructors_allowed)
+    if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
     return Config{ConfObject{obj}};
@@ -1472,7 +1473,7 @@ Config::Wrap::Wrap(Config *_conf)
     conf = _conf;
 }
 
-void config_preinit()
+void config_pre_init()
 {
     uint_buf = new Config::ConfUint::Slot[UINT_SLOTS];
     int_buf = new Config::ConfInt::Slot[INT_SLOTS];

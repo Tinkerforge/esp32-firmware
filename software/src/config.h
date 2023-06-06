@@ -30,7 +30,7 @@
 #include "strict_variant/variant.hpp"
 #include "strict_variant/mpl/find_with.hpp"
 
-void config_preinit();
+void config_pre_init();
 void config_postsetup();
 
 struct ConfigRoot;
