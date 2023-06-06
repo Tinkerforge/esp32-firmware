@@ -108,7 +108,8 @@ static void check_for_factory_reset() {
             }
             // If the button is still pressed, perform factory reset.
             if (button_pressed) {
-                // Perform factory reset, blue LED stays on to show success.
+                // Perform factory reset, switch on blue LED to show success.
+                digitalWrite(blue_led_pin, false);
                 factory_reset();
             } else {
                 // Factory reset aborted, switch off blue LED.
