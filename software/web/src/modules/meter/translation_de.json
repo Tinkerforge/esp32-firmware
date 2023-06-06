@@ -186,8 +186,6 @@
         },
         "script": {
             "time": "Uhrzeit",
-            "time_long_date_format": "{DD}.{MM}.{YYYY}",
-            "time_short_date_format": "{DD}.{MM}.",
             "power": "Leistung"
         }
     }

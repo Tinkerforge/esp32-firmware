@@ -186,8 +186,6 @@
         },
         "script": {
             "time": "Time of day",
-            "time_long_date_format": "{YYYY}-{MM}-{DD}",
-            "time_short_date_format": "{MM}-{DD}",
             "power": "Power"
         }
     }
