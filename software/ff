@@ -6,9 +6,8 @@ import sys
 import signal
 import subprocess
 import serial
+import time
 
-def sigint(self, sig):
-    sys.exit(0)
 
 colors = {"off":"\x1b[00m",
           "blue":   "\x1b[34m",
@@ -23,7 +22,6 @@ def red(s):
 def green(s):
     return colors["green"]+s+colors["off"]
 
-signal.signal(signal.SIGINT, sigint)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--port")
@@ -70,7 +68,14 @@ if not args.serial_only:
     os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_freq 40m --flash_size 16MB 0x1000 {}".format(port, firmware))
 
 if not args.no_serial:
-   with serial.Serial(port, 115200, timeout=1) as ser:
-        while ser.is_open:
-            sys.stdout.buffer.write(ser.read())
-            sys.stdout.flush()
+    while True:
+        try:
+            time.sleep(0.1)
+            with serial.Serial(port, 115200, timeout=1) as ser:
+                while ser.is_open:
+                    sys.stdout.buffer.write(ser.read())
+                    sys.stdout.flush()
+        except KeyboardInterrupt:
+            sys.exit(0)
+        except:
+            pass
