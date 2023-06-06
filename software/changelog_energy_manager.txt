@@ -76,7 +76,7 @@
 - Fix overlapping bars in month overview
 - Fix first and last bar in month overview being cut off
 
-2023-06-06: 1.0.4 (<unknown>)
+2023-06-06: 1.0.4 (6dad76e9)
 - Fix initialization error if meter is directly connected to energy manager
 - Fix factory reset
 - Fix race condition in web server startup
