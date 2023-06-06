@@ -82,7 +82,6 @@ int8_t blue_led_pin = -1;
 int8_t green_led_pin = -1;
 int8_t button_pin = -1;
 // filled by board module
-bool factory_reset_requested = false;
 
 ConfigRoot modules;
 

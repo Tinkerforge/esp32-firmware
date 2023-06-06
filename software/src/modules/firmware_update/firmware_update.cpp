@@ -41,7 +41,6 @@
 extern const char *DISPLAY_NAME;
 
 extern bool firmware_update_allowed;
-extern bool factory_reset_requested;
 extern int8_t green_led_pin;
 
 // Newer firmwares contain a firmware info page.
@@ -62,7 +61,7 @@ void blinky(void *arg)
 
 static bool factory_reset_running = false;
 
-void factory_reset()
+void factory_reset(bool restart_esp)
 {
     if (factory_reset_running)
         return;
@@ -85,7 +84,8 @@ void factory_reset()
 
     LittleFS.end();
     LittleFS.format();
-    ESP.restart();
+    if (restart_esp)
+        ESP.restart();
 }
 
 void FirmwareUpdate::setup()
@@ -397,10 +397,4 @@ void FirmwareUpdate::register_urls()
 
         return "";
     }, true);
-}
-
-void FirmwareUpdate::loop()
-{
-    if (factory_reset_requested)
-        factory_reset();
 }

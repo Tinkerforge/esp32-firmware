@@ -26,13 +26,14 @@
 #include "module.h"
 #include "web_server.h"
 
+void factory_reset(bool restart_esp = true);
+
 class FirmwareUpdate final : public IModule
 {
 public:
     FirmwareUpdate(){}
     void setup() override;
     void register_urls() override;
-    void loop() override;
 
     bool firmware_update_running = false;
 

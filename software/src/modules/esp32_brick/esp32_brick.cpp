@@ -48,7 +48,6 @@ extern char passphrase[20];
 extern int8_t blue_led_pin;
 extern int8_t green_led_pin;
 extern int8_t button_pin;
-extern bool factory_reset_requested;
 
 #if TF_LOCAL_ENABLE != 0
 
@@ -98,8 +97,7 @@ void ESP32Brick::loop()
     static uint32_t last_btn_change = 0;
 
     bool btn = digitalRead(BUTTON);
-    if (!factory_reset_requested)
-        digitalWrite(GREEN_LED, btn);
+    digitalWrite(GREEN_LED, btn);
 
     if (btn != last_btn_value) {
         last_btn_change = millis();
@@ -110,6 +108,6 @@ void ESP32Brick::loop()
     if (!btn && deadline_elapsed(last_btn_change + 10000)) {
         logger.printfln("IO0 button was pressed for 10 seconds. Resetting to factory defaults.");
         last_btn_change = millis();
-        factory_reset_requested = true;
+        factory_reset();
     }
 }

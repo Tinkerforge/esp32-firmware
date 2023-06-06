@@ -49,7 +49,6 @@ extern char passphrase[20];
 extern int8_t blue_led_pin;
 extern int8_t green_led_pin;
 extern int8_t button_pin;
-extern bool factory_reset_requested;
 
 #if TF_LOCAL_ENABLE != 0
 
@@ -110,7 +109,7 @@ static void check_for_factory_reset() {
             // If the button is still pressed, perform factory reset.
             if (button_pressed) {
                 // Perform factory reset, blue LED stays on to show success.
-                factory_reset_requested = true;
+                factory_reset();
             } else {
                 // Factory reset aborted, switch off blue LED.
                 blue_led_off = true;

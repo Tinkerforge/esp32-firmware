@@ -143,9 +143,8 @@ void evse_v2_button_recovery_handler() {
         // Stage 2 - ESP still crashed. Format data partition. (This also removes tracked charges and the username file)
         case 2:
             logger.printfln("Running stage 2: Formatting data partition");
-            LittleFS.begin(false, "/spiffs", 10, "spiffs");
-            LittleFS.format();
-            LittleFS.end();
+            mount_or_format_spiffs();
+            factory_reset(false);
             logger.printfln("Stage 2 done");
             break;
         // Stage 3 - ESP still crashed after formatting the data partition. The firmware is unrecoverably broken. To prevent a fast boot loop, delay here.
