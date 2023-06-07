@@ -1985,7 +1985,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                 <UplotWrapper ref={this.uplot_wrapper_5min_ref}
                                               id="em_energy_analysis_5min_chart"
                                               class="em-energy-analysis-chart"
-                                              sidebar_id="em-energy-analysis"
+                                              sidebar_id="em_energy_analysis"
                                               color_cache_group="analsyis"
                                               show={true}
                                               legend_time_label={__("em_energy_analysis.script.time_5min")}
@@ -2006,7 +2006,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                 <UplotWrapper ref={this.uplot_wrapper_daily_ref}
                                               id="em_energy_analysis_daily_chart"
                                               class="em-energy-analysis-chart"
-                                              sidebar_id="em-energy-analysis"
+                                              sidebar_id="em_energy_analysis"
                                               color_cache_group="analsyis"
                                               show={false}
                                               legend_time_label={__("em_energy_analysis.script.time_daily")}
@@ -2091,5 +2091,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-em-energy-analysis').prop('hidden', !module_init.energy_manager);
+    $('#sidebar-em_energy_analysis').prop('hidden', !module_init.energy_manager);
 }
