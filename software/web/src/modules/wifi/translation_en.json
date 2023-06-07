@@ -44,9 +44,6 @@
             "ap_channel_muted": "ignored if WiFi connection is active",
             "ap_channel_auto_select": "Selected automatically",
 
-            "required": "Required",
-            "unchanged": "Unchanged",
-
             "confirm_title": "Disable WiFi Access Point?",
             "confirm_content": null,
             "confirm_abort": "Abort",

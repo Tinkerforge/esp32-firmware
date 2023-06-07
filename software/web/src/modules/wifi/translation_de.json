@@ -32,9 +32,9 @@
             "ap_settings": "WLAN-Access-Point",
             "ap_enable": "Access Point",
             "ap_enable_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
-            "ap_enabled": "aktiviert",
-            "ap_fallback_only": "nur als Fallback",
-            "ap_disabled": "deaktiviert",
+            "ap_enabled": "Aktiviert",
+            "ap_fallback_only": "Nur als Fallback",
+            "ap_disabled": "Deaktiviert",
             "ap_ssid": "Netzwerkname (SSID)",
             "ap_hide_ssid": "Netzwerkname versteckt",
             "ap_hide_ssid_desc_pre": null,
@@ -43,9 +43,6 @@
             "ap_channel": "Kanal",
             "ap_channel_muted": "ignoriert wenn WLAN-Verbindung aktiv ist",
             "ap_channel_auto_select": "automatische Auswahl",
-
-            "required": "notwendig",
-            "unchanged": "unverändert",
 
             "confirm_title": "WLAN-Access-Point deaktivieren?",
             "confirm_content": null,

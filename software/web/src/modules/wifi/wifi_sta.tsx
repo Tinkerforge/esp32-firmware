@@ -80,7 +80,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                 this.setState({scan_running: false, scan_results: e.data});
         }, false);
 
-        this.state = {passphrase_placeholder: __("wifi.content.unchanged"),
+        this.state = {passphrase_placeholder: __("component.input_password.unchanged"),
                       passphrase_required: false,
                       scan_running: false} as any;
     }
