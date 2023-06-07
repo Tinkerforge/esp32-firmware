@@ -633,27 +633,29 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
             <>
                 <FormRow label={__("em_energy_analysis_status.status.history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <div class="card pl-1 pb-1">
-                        <UplotLoader ref={this.uplot_loader_ref}
-                                    show={true}
-                                    marker_width_reduction={8}
-                                    marker_class={'h4'} >
-                            <UplotWrapper ref={this.uplot_wrapper_ref}
-                                        id="em_energy_analysis_status_chart"
-                                        class="em-energy-analysis-status-chart"
-                                        sidebar_id="status"
-                                        color_cache_group="status"
-                                        show={true}
-                                        legend_time_label={__("em_energy_analysis.script.time_5min")}
-                                        legend_time_with_minutes={true}
-                                        legend_value_prefix={__("em_energy_analysis.script.power")}
-                                        x_format={{hour: '2-digit', minute: '2-digit'}}
-                                        x_padding_factor={0}
-                                        y_min={0}
-                                        y_max={1500}
-                                        y_unit={"W"}
-                                        y_digits={0}
-                                        default_fill={true} />
-                        </UplotLoader>
+                        <div>
+                            <UplotLoader ref={this.uplot_loader_ref}
+                                         show={true}
+                                         marker_width_reduction={8}
+                                         marker_class={'h4'} >
+                                <UplotWrapper ref={this.uplot_wrapper_ref}
+                                              id="em_energy_analysis_status_chart"
+                                              class="em-energy-analysis-status-chart"
+                                              sidebar_id="status"
+                                              color_cache_group="status"
+                                              show={true}
+                                              legend_time_label={__("em_energy_analysis.script.time_5min")}
+                                              legend_time_with_minutes={true}
+                                              legend_value_prefix={__("em_energy_analysis.script.power")}
+                                              x_format={{hour: '2-digit', minute: '2-digit'}}
+                                              x_padding_factor={0}
+                                              y_min={0}
+                                              y_max={1500}
+                                              y_unit={"W"}
+                                              y_digits={0}
+                                              default_fill={true} />
+                            </UplotLoader>
+                        </div>
                     </div>
                 </FormRow>
                 <FormRow label={__("em_energy_analysis_status.status.grid_connection_power")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
