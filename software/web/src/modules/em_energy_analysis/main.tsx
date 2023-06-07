@@ -235,6 +235,10 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             let div = this.div_ref.current;
             let aspect_ratio = parseFloat(getComputedStyle(div).aspectRatio);
 
+            if (isNaN(aspect_ratio)) {
+                aspect_ratio = 2;
+            }
+
             return {
                 width: div.clientWidth,
                 height: Math.floor((div.clientWidth + (window.innerWidth - document.documentElement.clientWidth)) / aspect_ratio),
