@@ -81,6 +81,6 @@
 - Fix factory reset
 - Fix race condition in web server startup
 
-2023-06-07: 1.0.5 (<unknown>)
+2023-06-07: 1.0.5 (52d9fc1a)
 - Fix infinitly growing energy analysis graph on status page in Safari
 - Fix zero height energy analysis graph in older browsers
