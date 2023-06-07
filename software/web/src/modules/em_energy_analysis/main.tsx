@@ -150,6 +150,7 @@ function get_color(group: string, name: string)
 interface UplotLoaderProps {
     show: boolean;
     marker_width_reduction: number;
+    marker_class: 'h3'|'h4';
     children: VNode | VNode[];
 };
 
@@ -182,10 +183,10 @@ class UplotLoader extends Component<UplotLoaderProps, {}> {
         return (
             <>
                 <div ref={this.no_data_ref} style={`position: absolute; width: calc(100% - ${props.marker_width_reduction}px); height: 100%; visibility: hidden; display: ${props.show ? 'flex' : 'none'};`}>
-                    <span class="h3" style="margin: auto;">{__("em_energy_analysis.content.no_data")}</span>
+                    <span class={props.marker_class} style="margin: auto;">{__("em_energy_analysis.content.no_data")}</span>
                 </div>
                 <div ref={this.loading_ref} style={`position: absolute; width: calc(100% - ${props.marker_width_reduction}px); height: 100%; visibility: ${props.show ? 'visible' : 'hidden'}; display: ${props.show ? 'flex' : 'none'};`}>
-                    <span class="h3" style="margin: auto;">{__("em_energy_analysis.content.loading")}</span>
+                    <span class={props.marker_class} style="margin: auto;">{__("em_energy_analysis.content.loading")}</span>
                 </div>
                 {props.children}
             </>
@@ -630,7 +631,8 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
                     <div class="card pl-1 pb-1">
                         <UplotLoader ref={this.uplot_loader_ref}
                                     show={true}
-                                    marker_width_reduction={8} >
+                                    marker_width_reduction={8}
+                                    marker_class={'h4'} >
                             <UplotWrapper ref={this.uplot_wrapper_ref}
                                         id="em_energy_analysis_status_chart"
                                         class="em-energy-analysis-status-chart"
@@ -1972,7 +1974,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         <div>
                             <UplotLoader ref={this.uplot_loader_5min_ref}
                                          show={true}
-                                         marker_width_reduction={30} >
+                                         marker_width_reduction={30}
+                                         marker_class={'h3'} >
                                 <UplotWrapper ref={this.uplot_wrapper_5min_ref}
                                               id="em_energy_analysis_5min_chart"
                                               class="em-energy-analysis-chart"
@@ -1992,7 +1995,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                             </UplotLoader>
                             <UplotLoader ref={this.uplot_loader_daily_ref}
                                          show={false}
-                                         marker_width_reduction={30} >
+                                         marker_width_reduction={30}
+                                         marker_class={'h3'} >
                                 <UplotWrapper ref={this.uplot_wrapper_daily_ref}
                                               id="em_energy_analysis_daily_chart"
                                               class="em-energy-analysis-chart"
