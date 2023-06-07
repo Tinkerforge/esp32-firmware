@@ -2080,7 +2080,7 @@ let status_ref = createRef();
 
 render(<EMEnergyAnalysisStatus ref={status_ref} />, $('#status-em_energy_analysis_status')[0]);
 
-render(<EMEnergyAnalysis status_ref={status_ref} />, $('#em-energy-analysis')[0]);
+render(<EMEnergyAnalysis status_ref={status_ref} />, $('#em_energy_analysis')[0]);
 
 export function init() {
 
