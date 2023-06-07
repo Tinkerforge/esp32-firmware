@@ -33,6 +33,7 @@ import { OutputFloat } from "src/ts/components/output_float";
 import { Zap, ZapOff } from "react-feather";
 import uPlot from 'uplot';
 import { InputText } from "src/ts/components/input_text";
+import { FormSeparator } from "../../ts/components/form_separator";
 
 interface DetailedViewEntry {
     i: number,
@@ -605,33 +606,30 @@ export class Meter extends Component<{}, MeterState> {
                 <PageHeader title={__("meter.content.energy_meter")} colClasses="col-xl-10"/>
                     <div class="row">
                         <div class="col-lg-6">
-                            <div class="row mb-3 pt-3 pr-0 pr-lg-3">
-                                <div class="d-flex justify-content-between align-items-center border-bottom col">
-                                    <span class="h3">{__("meter.status.charge_history")}</span>
-                                    <div class="mb-2">
-                                        <InputSelect value={this.state.chart_selected} onValue={(v) => {
-                                            let chart_selected: "live"|"history" = v as any;
+                            <FormSeparator heading={__("meter.status.charge_history")} first={true} colClasses={"justify-content-between align-items-center col"} extraClasses={"pr-0 pr-lg-3"} >
+                                <div class="mb-2">
+                                    <InputSelect value={this.state.chart_selected} onValue={(v) => {
+                                        let chart_selected: "live"|"history" = v as any;
 
-                                            this.setState({chart_selected: chart_selected}, () => {
-                                                if (chart_selected == 'live') {
-                                                    this.uplot_wrapper_live_ref.current.set_show(true);
-                                                    this.uplot_wrapper_history_ref.current.set_show(false);
-                                                }
-                                                else {
-                                                    this.uplot_wrapper_history_ref.current.set_show(true);
-                                                    this.uplot_wrapper_live_ref.current.set_show(false);
-                                                }
+                                        this.setState({chart_selected: chart_selected}, () => {
+                                            if (chart_selected == 'live') {
+                                                this.uplot_wrapper_live_ref.current.set_show(true);
+                                                this.uplot_wrapper_history_ref.current.set_show(false);
+                                            }
+                                            else {
+                                                this.uplot_wrapper_history_ref.current.set_show(true);
+                                                this.uplot_wrapper_live_ref.current.set_show(false);
+                                            }
 
-                                                this.update_uplot();
-                                            });
-                                        }}
-                                            items={[
-                                                ["history", __("meter.content.history")],
-                                                ["live", __("meter.content.live")],
-                                            ]}/>
-                                    </div>
+                                            this.update_uplot();
+                                        });
+                                    }}
+                                        items={[
+                                            ["history", __("meter.content.history")],
+                                            ["live", __("meter.content.live")],
+                                        ]}/>
                                 </div>
-                            </div>
+                            </FormSeparator>
                             <UplotWrapper ref={this.uplot_wrapper_live_ref}
                                           id="meter_chart_live"
                                           class="meter-chart"
@@ -654,14 +652,11 @@ export class Meter extends Component<{}, MeterState> {
                                           y_max={1500} />
                         </div>
                         <div class="col-lg-6 col-xl-4">
-                            <div class="row mb-3 pt-3">
-                                <div class="d-flex justify-content-between align-items-center border-bottom col">
-                                    <span class="h3">{__("meter.content.statistics")}</span>
-                                    <div class="mb-2" style="visibility: hidden;">
-                                        <InputSelect items={[["a", "a"]]} />
-                                    </div>
+                            <FormSeparator heading={__("meter.status.charge_history")} first={true} colClasses={"justify-content-between align-items-center col"} >
+                                <div class="mb-2" style="visibility: hidden;">
+                                    <InputSelect items={[["a", "a"]]} />
                                 </div>
-                            </div>
+                            </FormSeparator>
                             <FormRow label={__("meter.content.power")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
                                 <OutputFloat value={this.state.values.power} digits={0} scale={0} unit="W"/>
                             </FormRow>

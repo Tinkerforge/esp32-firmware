@@ -336,7 +336,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                 <Collapse in={state.file_type == "0"}>
                     <div>
                         <FormRow label={__("charge_tracker.content.pdf_text")} label_muted={__("charge_tracker.content.pdf_text_muted")}>
-                            <textarea name="test" class="text-monospace mb-1 form-control" id="test" value={state.pdf_text} onInput={(e) => {
+                            <textarea name="test" class="text-monospace form-control" id="test" value={state.pdf_text} onInput={(e) => {
                                 let value = (e.target as HTMLInputElement).value;
                                 if (new Blob([value]).size < 500)
                                     this.setState({pdf_text: value});
@@ -346,7 +346,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                         </FormRow>
 
                         <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
-                            <Button variant="primary" className="form-control mb-3" onClick={async () => {
+                            <Button variant="primary" className="form-control" onClick={async () => {
                                 this.setState({show_spinner: true});
 
                                 let start = state.start_date ?? new Date(0);
@@ -396,7 +396,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                         </FormRow>
 
                         <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
-                            <Button variant="primary" className="form-control mb-3" onClick={async () => {
+                            <Button variant="primary" className="form-control" onClick={async () => {
                                 this.setState({show_spinner: true});
 
                                 let start = state.start_date ?? new Date(0);

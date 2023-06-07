@@ -17,11 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component} from "preact";
+import { h, Component, VNode } from "preact";
 
 interface FormSeparatorProps {
     heading?: string
     colClasses?: string
+    first?: boolean
+    extraClasses?: string
+    children?: VNode | VNode[]
 }
 
 export class FormSeparator extends Component<FormSeparatorProps, {}> {
@@ -31,8 +34,11 @@ export class FormSeparator extends Component<FormSeparatorProps, {}> {
 
     render(props: FormSeparatorProps) {
         return (
-            <div class="row mb-3 pt-3">
-                <div class={"d-flex border-bottom " + (props.colClasses === undefined ? "col-xl-8" : props.colClasses)}>{props.heading ? <span class="h3">{props.heading}</span>: undefined}</div>
+            <div class={"row mb-3 " + (!props.first ? "pt-3" : "pt-0") + " " + (props.extraClasses === undefined ? "" : props.extraClasses)}>
+                <div class={"d-flex border-bottom " + (props.colClasses === undefined ? "col-xl-8" : props.colClasses)}>
+                    {props.heading ? <span class="h3">{props.heading}</span> : undefined}
+                    {props.children}
+                </div>
             </div>
         );
     }
