@@ -62,7 +62,7 @@ static TF_Local local;
 #define RESET_WAIT_SECS 8
 #endif
 
-__attribute((unused))
+#if defined(BUILD_NAME_ENERGY_MANAGER)
 static void check_for_factory_reset() {
     // A factory reset will leave the green LED on, even across a restart. Switch it off here.
     digitalWrite(green_led_pin, false);
@@ -119,6 +119,7 @@ static void check_for_factory_reset() {
     }
     digitalWrite(blue_led_pin, blue_led_off);
 }
+#endif
 
 void ESP32EthernetBrick::setup()
 {
