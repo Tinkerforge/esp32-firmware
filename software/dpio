@@ -3,5 +3,6 @@ DIRNAME2=$(basename "$(dirname " $(realpath .)")")/$(basename " $(realpath .)")
 docker run \
        --rm \
        -v $(realpath ../..):/tf \
+       -v ~/.pio:/home/pio/.pio \
        tinkerforge/build_environment_esp32 \
        /bin/bash -c "groupmod -g $(id -g) $(id -gn) || groupadd -g $(id -g) $(id -gn) && usermod -u $(id -u) -g $(id -g) pio && su pio -c \"cd /tf/$DIRNAME2 && pio $*\""
