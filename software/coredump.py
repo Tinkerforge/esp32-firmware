@@ -5,6 +5,7 @@ import string
 import json
 import argparse
 import os, sys
+import subprocess
 import tempfile
 from shutil import which
 
@@ -115,18 +116,26 @@ if __name__ == '__main__':
             firmware_path = os.path.join(script_path, "..", "..", "warp-charger", "firmwares", elf_name)
 
         if os.path.exists(firmware_path):
-            with tempfile.TemporaryDirectory() as d:
-                os.system(f"git clone {script_path}/.. {d}")
+            with tempfile.TemporaryDirectory(prefix="coredump-git-") as d:
+                os.system(f"git clone --shared --no-checkout {script_path}/.. {d}")
                 with ChangedDirectory(d):
-                    os.system(f"git checkout {tf_coredump_data['firmware_commit_id']}")
+                    os.system(f"git checkout --quiet {tf_coredump_data['firmware_commit_id']}")
+                    commit_time = int(subprocess.check_output(['git', 'log', '-1', '--pretty=%at', tf_coredump_data['firmware_commit_id']]))
+                    for (dirpath, dirnames, filenames) in os.walk('software/src'):
+                        for filename in filenames:
+                            os.utime(os.sep.join([dirpath, filename]), (commit_time, commit_time))
 
                 os.system(f"{gdb} " +
                            ("-q --batch " if not args.interactive else "") +
                            "-iex 'set pagination off' " +
                           f"-iex 'directory {d}' " +
                           f"-iex 'set substitute-path src/ {d}/software/src' " +
+                          f"-iex 'set substitute-path /home/erik/ {os.path.expanduser('~')}' " +
                            "-iex 'set style enabled on' " +
                            "-iex 'set print frame-info source-and-location' " +
+                           "-ex 'echo =======================================================\n' " +
+                           "-ex 'echo ================ Backtrace starts here ================\n' " +
+                           "-ex 'echo =======================================================\n' " +
                            "-ex 'bt full' " +
                           f"{firmware_path} {core_dump_path}")
         else:
