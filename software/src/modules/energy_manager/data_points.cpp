@@ -34,11 +34,11 @@
 
 void EnergyManager::register_events()
 {
-    event.addStateUpdate("meter/state", {"state"}, [this](Config *config){
+    event.registerEvent("meter/state", {"state"}, [this](Config *config){
         history_meter_available = config->asUint() == 2;
     });
 
-    event.addStateUpdate("meter/values", {"power"}, [this](Config *config){
+    event.registerEvent("meter/values", {"power"}, [this](Config *config){
         update_history_meter_power(config->asFloat());
     });
 }

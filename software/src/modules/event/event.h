@@ -41,7 +41,7 @@ public:
         uint16_t
     > ConfPath;
 
-    void addStateUpdate(const String &path, const std::vector<ConfPath> values, std::function<void(Config *)> callback);
+    void registerEvent(const String &path, const std::vector<ConfPath> values, std::function<void(Config *)> callback);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;

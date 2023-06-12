@@ -29,7 +29,7 @@ void Event::setup()
     initialized = true;
 }
 
-void Event::addStateUpdate(const String &path, const std::vector<ConfPath> values, std::function<void(Config *)> callback)
+void Event::registerEvent(const String &path, const std::vector<ConfPath> values, std::function<void(Config *)> callback)
 {
     for (size_t i = 0; i < api.states.size(); i++) {
         if (api.states[i].path != path) {
