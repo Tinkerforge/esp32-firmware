@@ -133,9 +133,16 @@ if __name__ == '__main__':
                           f"-iex 'set substitute-path /home/erik/ {os.path.expanduser('~')}' " +
                            "-iex 'set style enabled on' " +
                            "-iex 'set print frame-info source-and-location' " +
-                           "-ex 'echo =======================================================\n' " +
-                           "-ex 'echo ================ Backtrace starts here ================\n' " +
-                           "-ex 'echo =======================================================\n' " +
+                           "-ex 'echo =============================================================\n' " +
+                           "-ex 'echo Run \"disassemble /s\" in interactive mode to analyze assembly.\n' " +
+                           "-ex 'echo\n' " +
+                           "-ex 'echo =============================================================\n' " +
+                           "-ex 'echo ==================== Registers at crash =====================\n' " +
+                           "-ex 'echo =============================================================\n' " +
+                           "-ex 'info registers ps a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15' " +
+                           "-ex 'echo =============================================================\n' " +
+                           "-ex 'echo =================== Backtrace starts here ===================\n' " +
+                           "-ex 'echo =============================================================\n' " +
                            "-ex 'bt full' " +
                           f"{firmware_path} {core_dump_path}")
         else:
