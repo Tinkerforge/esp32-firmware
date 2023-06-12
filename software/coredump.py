@@ -122,6 +122,7 @@ if __name__ == '__main__':
                           f"-iex 'directory {d}' "
                           f"-iex 'set substitute-path src/ {d}/software/src' "
                            "-iex 'set style enabled on' "
+                           "-iex 'set print frame-info source-and-location' "
                            "-ex 'bt full' "
                           f"{firmware_path} {core_dump_path}")
         else:
