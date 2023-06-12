@@ -80,6 +80,8 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--interactive", action='store_true', help="Don't exit gdb immediately")
+
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("path", nargs='?', default=None)
     group.add_argument("-p", "--port")
@@ -119,6 +121,7 @@ if __name__ == '__main__':
                     os.system(f"git checkout {tf_coredump_data['firmware_commit_id']}")
 
                 os.system(f"{gdb} " +
+                           ("-q --batch " if not args.interactive else "") +
                           f"-iex 'directory {d}' " +
                           f"-iex 'set substitute-path src/ {d}/software/src' " +
                            "-iex 'set style enabled on' " +
