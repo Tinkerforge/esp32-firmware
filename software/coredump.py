@@ -59,6 +59,19 @@ def get_core_dump_from_debug_report(path):
 def download_core_dump(port):
     os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 read_flash 0xff0014 0xFFEC {}".format(port, core_dump_path))
 
+# use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
+class ChangedDirectory(object):
+    def __init__(self, path):
+        self.path = path
+        self.previous_path = None
+
+    def __enter__(self):
+        self.previous_path = os.getcwd()
+        os.chdir(self.path)
+
+    def __exit__(self, type_, value, traceback):
+        os.chdir(self.previous_path)
+
 if __name__ == '__main__':
     gdb = find_gdb()
     if gdb is None:
@@ -98,8 +111,19 @@ if __name__ == '__main__':
         firmware_path = os.path.join(script_path, "build", elf_name)
         if not os.path.exists(firmware_path):
             firmware_path = os.path.join(script_path, "..", "..", "warp-charger", "firmwares", elf_name)
+
         if os.path.exists(firmware_path):
-            os.system("{} -q --batch -ex 'set style enabled on' -ex 'bt full' {} {}".format(gdb, firmware_path, core_dump_path))
+            with tempfile.TemporaryDirectory() as d:
+                os.system(f"git clone {script_path}/.. {d}")
+                with ChangedDirectory(d):
+                    os.system(f"git checkout {tf_coredump_data['firmware_commit_id']}")
+
+                os.system(f"{gdb} -q --batch "
+                          f"-iex 'directory {d}' "
+                          f"-iex 'set substitute-path src/ {d}/software/src' "
+                           "-iex 'set style enabled on' "
+                           "-ex 'bt full' "
+                          f"{firmware_path} {core_dump_path}")
         else:
             print("Firmware {} not found".format(elf_name))
     finally:
