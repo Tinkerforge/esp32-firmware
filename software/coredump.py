@@ -122,6 +122,7 @@ if __name__ == '__main__':
 
                 os.system(f"{gdb} " +
                            ("-q --batch " if not args.interactive else "") +
+                           "-iex 'set pagination off' " +
                           f"-iex 'directory {d}' " +
                           f"-iex 'set substitute-path src/ {d}/software/src' " +
                            "-iex 'set style enabled on' " +
