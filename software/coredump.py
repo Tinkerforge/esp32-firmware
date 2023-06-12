@@ -118,12 +118,12 @@ if __name__ == '__main__':
                 with ChangedDirectory(d):
                     os.system(f"git checkout {tf_coredump_data['firmware_commit_id']}")
 
-                os.system(f"{gdb} -q --batch "
-                          f"-iex 'directory {d}' "
-                          f"-iex 'set substitute-path src/ {d}/software/src' "
-                           "-iex 'set style enabled on' "
-                           "-iex 'set print frame-info source-and-location' "
-                           "-ex 'bt full' "
+                os.system(f"{gdb} " +
+                          f"-iex 'directory {d}' " +
+                          f"-iex 'set substitute-path src/ {d}/software/src' " +
+                           "-iex 'set style enabled on' " +
+                           "-iex 'set print frame-info source-and-location' " +
+                           "-ex 'bt full' " +
                           f"{firmware_path} {core_dump_path}")
         else:
             print("Firmware {} not found".format(elf_name))
