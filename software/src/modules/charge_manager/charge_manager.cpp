@@ -243,14 +243,16 @@ void ChargeManager::start_manager_task()
             target->get("uptime")->updateUint(state->evse_uptime);
 
             // A charger wants to charge if:
-            // - the charging time is 0 (it has not charged this vehicle yet), no other slot blocks and we are still in charger state 1 (i.e. blocked by a slot, so the charge management slot)
-            // - OR the charger waits for the vehicle to start charging
-            // - OR the charger is already charging
-            bool wants_to_charge = (state->charging_time == 0 && state->supported_current != 0 && state->charger_state == 1) || state->charger_state == 2 || state->charger_state == 3;
+            // the charging time is 0 (it has not charged this vehicle yet), no other slot blocks
+            //     AND we are still in charger state 1 (i.e. blocked by a slot, so the charge management slot)
+            //         or 2 (i.e. already have current allocated)
+            // OR the charger is already charging
+            bool wants_to_charge = (state->charging_time == 0 && state->supported_current != 0 && (state->charger_state == 1 || state->charger_state == 2)) || state->charger_state == 3;
             target->get("wants_to_charge")->updateBool(wants_to_charge);
 
-            // A charger wants to charge and has low priority if it has already charged this vehicle and only the charge manager slot blocks.
-            bool low_prio = state->charging_time != 0 && state->supported_current != 0 && state->charger_state == 1;
+            // A charger wants to charge and has low priority if it has already charged this vehicle
+            // AND only the charge manager slot (charger_state == 1, supported_current != 0) or no slot (charger_state == 2) blocks.
+            bool low_prio = state->charging_time != 0 && state->supported_current != 0 && (state->charger_state == 1 || state->charger_state == 2);
             target->get("wants_to_charge_low_priority")->updateBool(low_prio);
 
             target->get("is_charging")->updateBool(state->charger_state == 3);
