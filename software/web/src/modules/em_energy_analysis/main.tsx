@@ -196,7 +196,6 @@ class UplotLoader extends Component<UplotLoaderProps, {}> {
 
 class UplotWrapper extends Component<UplotWrapperProps, {}> {
     uplot: uPlot;
-    series_count: number = 1;
     data: UplotData;
     pending_data: UplotData;
     series_visibility: {[id: string]: boolean} = {};
@@ -575,20 +574,16 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         else {
             this.div_ref.current.style.visibility = 'visible';
 
-            while (this.series_count > 1) {
-                --this.series_count;
-
-                this.uplot.delSeries(this.series_count);
+            while (this.uplot.series.length > 1) {
+                this.uplot.delSeries(this.uplot.series.length - 1);
             }
 
-            while (this.series_count < this.data.keys.length) {
-                if (this.series_visibility[this.data.keys[this.series_count]] === undefined) {
-                    this.series_visibility[this.data.keys[this.series_count]] = true;
+            while (this.uplot.series.length < this.data.keys.length) {
+                if (this.series_visibility[this.data.keys[this.uplot.series.length]] === undefined) {
+                    this.series_visibility[this.data.keys[this.uplot.series.length]] = true;
                 }
 
-                this.uplot.addSeries(this.get_series_opts(this.series_count));
-
-                ++this.series_count;
+                this.uplot.addSeries(this.get_series_opts(this.uplot.series.length));
             }
 
             this.update_internal_data();
