@@ -1,0 +1,2 @@
+PATH=/path/to/coverity/bin/:$PATH cov-configure --comptype gcc --compiler ~/.platformio/packages/toolchain-xtensa-esp32/bin/xtensa-esp32-elf-gcc -- -std=gnu99 -mlongcalls
+PATH=/path/to/coverity/bin/:$PATH cov-build --dir cov-int pio run -e warp2

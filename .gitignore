@@ -13,3 +13,4 @@ software/src/modules/modbus_reader/tinkerforge
 software/valovo_*
 software/changelog_valovo_*
 software/*_valovo_*
+cov-analysis-linux64-*
