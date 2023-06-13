@@ -158,31 +158,24 @@ uint8_t NFC::get_user_id(tag_info_t *tag, uint8_t *tag_idx)
     return 0;
 }
 
-void NFC::handle_event(tag_info_t *tag, bool found, bool injected)
+void NFC::tag_seen(tag_info_t *tag, bool injected)
 {
     uint8_t idx = 0;
     uint8_t user_id = get_user_id(tag, &idx);
 
     if (user_id != 0) {
-        if (found) {
-            // Found a new authorized tag. Create/overwrite auth token. Overwrite blink state even if we previously saw a not authorized tag.
-            auth_token = idx;
-            auth_token_seen = millis();
+        // Found a new authorized tag.
 #if MODULE_EVSE_LED_AVAILABLE()
-            evse_led.set_module(EvseLed::Blink::Ack, 2000);
+        evse_led.set_module(EvseLed::Blink::Ack, 2000);
 #endif
-            users.trigger_charge_action(user_id, injected ? CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION : CHARGE_TRACKER_AUTH_TYPE_NFC, Config::Object({
-                    {"tag_type", Config::Uint8(tag->tag_type)},
-                    {"tag_id", Config::Str(tag->tag_id, 0, 30)}}).value,
-                    injected ? tag_injection_action : TRIGGER_CHARGE_ANY);
+        users.trigger_charge_action(user_id, injected ? CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION : CHARGE_TRACKER_AUTH_TYPE_NFC, Config::Object({
+                {"tag_type", Config::Uint8(tag->tag_type)},
+                {"tag_id", Config::Str(tag->tag_id, 0, 30)}}).value,
+                injected ? tag_injection_action : TRIGGER_CHARGE_ANY);
 #if MODULE_OCPP_AVAILABLE()
-            ocpp.on_tag_seen(tag->tag_id);
+        ocpp.on_tag_seen(tag->tag_id);
 #endif
-        } else if (auth_token == idx) {
-            // Lost an authorized tag. If we still have it's auth token, extend the token's validity.
-            //auth_token_seen = millis();
-        }
-    } else if (found) {
+    } else {
 #if MODULE_OCPP_AVAILABLE()
         ocpp.on_tag_seen(tag->tag_id);
 #endif
