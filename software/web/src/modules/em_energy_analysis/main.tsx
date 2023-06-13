@@ -1019,7 +1019,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         if (energy_manager_data && !energy_manager_data.empty) {
             slot_count = Math.max(slot_count, energy_manager_data.power_grid.length);
 
-            uplot_data.keys.push('em_flags');
+            uplot_data.keys.push('em_power');
             uplot_data.names.push(__("em_energy_analysis.script.grid_connection"));
             uplot_data.values.push(energy_manager_data.power_grid);
             uplot_data.stacked.push(false);
@@ -1033,7 +1033,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 if (wallbox_data && !wallbox_data.empty) {
                     slot_count = Math.max(slot_count, wallbox_data.power.length);
 
-                    uplot_data.keys.push('wb' + charger.uid);
+                    uplot_data.keys.push('wb_power_' + charger.uid);
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(wallbox_data.power);
                     uplot_data.stacked.push(true);
