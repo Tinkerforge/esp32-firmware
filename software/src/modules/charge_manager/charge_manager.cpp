@@ -594,7 +594,7 @@ void ChargeManager::distribute_current()
 
             uint16_t supported_current = charger->get("supported_current")->asUint();
             if (supported_current < current_to_set) {
-                LOCAL_LOG("stage 0: Can't unblock %s (%s): It only supports %u mA, but %u mA is the configured minimum current.",
+                LOCAL_LOG("stage 0: Can't unblock %s (%s): It only supports %u mA, but %u mA is the configured minimum current. Handling as low priority charger.",
                           charger_cfg->get("name")->asEphemeralCStr(),
                           charger_cfg->get("host")->asEphemeralCStr(),
                           supported_current,
@@ -663,20 +663,24 @@ void ChargeManager::distribute_current()
             for (int i = 0; i < chargers->count(); ++i) {
                 auto charger = chargers->get(idx_array[i]);
 
-                if (!charger->get("wants_to_charge_low_priority")->asBool()) {
+                uint16_t supported_current = charger->get("supported_current")->asUint();
+
+                bool high_prio = charger->get("is_charging")->asBool() || charger->get("wants_to_charge")->asBool();
+                bool low_prio = charger->get("wants_to_charge_low_priority")->asBool();
+
+                if (!low_prio && !(high_prio && supported_current < current_to_set)) {
                     continue;
                 }
 
                 auto charger_cfg = configs->get(idx_array[i]);
 
-                uint16_t supported_current = charger->get("supported_current")->asUint();
                 if (supported_current < current_to_set) {
-                    LOCAL_LOG("stage 0: Can't unblock %s (%s): It only supports %u mA, but %u mA is the configured minimum current.",
+                    LOCAL_LOG("stage 0: %s (%s) only supports %u mA, but %u mA is the configured minimum current. Allocating %u mA.",
                               charger_cfg->get("name")->asEphemeralCStr(),
                               charger_cfg->get("host")->asEphemeralCStr(),
                               supported_current,
+                              current_to_set,
                               current_to_set);
-                    continue;
                 }
 
                 if (available_current < current_to_set) {
