@@ -107,7 +107,6 @@ if __name__ == '__main__':
             sys.exit (-1)
 
         tf_coredump_data = json.loads(tf_coredump_json)
-        print(tf_coredump_data)
         elf_name = tf_coredump_data['firmware_file_name'] + ".elf"
         script_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -138,6 +137,7 @@ if __name__ == '__main__':
                            "-ex 'echo     - Run \"disassemble /s\" to analyze assembly.\n' " +
                            "-ex 'echo     - Run \"thread apply all bt full\" to print traces of all threads.\n' " +
                            "-ex 'echo\n' " +
+                          f"-ex 'echo Crashed firmware {tf_coredump_data['firmware_file_name']}\n' " +
                            "-ex 'echo ================================================================================\n' " +
                            "-ex 'echo ============================= Registers at crash ===============================\n' " +
                            "-ex 'echo ================================================================================\n' " +
