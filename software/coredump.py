@@ -132,6 +132,7 @@ if __name__ == '__main__':
                           f"-iex 'set substitute-path /home/erik/ {os.path.expanduser('~')}' " +
                            "-iex 'set style enabled on' " +
                            "-iex 'set print frame-info source-and-location' " +
+                          ("-ex 'shell clear' " if args.interactive else "") +
                            "-ex 'echo ================================================================================\n' " +
                            "-ex 'echo In interactive mode:\n' " +
                            "-ex 'echo     - Run \"disassemble /s\" to analyze assembly.\n' " +
