@@ -248,13 +248,13 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
                 topics.push(obj["topic"]);
                 API.update(obj["topic"], obj["payload"]);
             }
+
+            for (let topic of topics) {
+                API.trigger(topic, eventTarget);
+            }
+
+            allow_render.value = true;
         });
-
-        for (let topic of topics) {
-            API.trigger(topic, eventTarget);
-        }
-
-        allow_render.value = true;
     }
 
     continuation(ws, eventTarget);
