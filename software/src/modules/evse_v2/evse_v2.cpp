@@ -256,6 +256,12 @@ void EVSEV2::pre_setup()
     });
 
     evse_require_meter_enabled_update = evse_require_meter_enabled;
+
+    evse_gp_output = Config::Object({
+        {"high_impedance", Config::Uint(0, 0, 1)}
+    });
+
+    evse_gp_output_update = evse_gp_output;
 }
 
 bool EVSEV2::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
@@ -1067,6 +1073,11 @@ void EVSEV2::register_urls()
         }
     }, false);
 
+    api.addState("evse/gp_output", &evse_gp_output, {}, 1000);
+    api.addCommand("evse/gp_output_update", &evse_gp_output_update, {}, [this](){
+        is_in_bootloader(tf_evse_v2_set_gp_output(&device, evse_gp_output_update.get("high_impedance")->asUint()));
+    }, true);
+
     this->DeviceModule::register_urls();
 }
 
@@ -1379,6 +1390,8 @@ void EVSEV2::update_all_data()
     evse_external_defaults.get("clear_on_disconnect")->updateBool(external_default_clear_on_disconnect);
 
     evse_require_meter_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_REQUIRE_METER]));
+
+    evse_gp_output.get("high_impedance")->updateUint(gpio[10] ? TF_EVSE_V2_OUTPUT_HIGH_IMPEDANCE : TF_EVSE_V2_OUTPUT_CONNECTED_TO_GROUND);
 
 #if MODULE_WATCHDOG_AVAILABLE()
     static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable");

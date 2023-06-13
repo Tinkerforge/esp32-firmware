@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-04-25.      *
+ * This file was automatically generated on 2023-06-05.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -223,6 +223,11 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_FUNCTION_TRIGGER_DC_FAULT_TEST 36
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_GP_OUTPUT 37
 
 /**
  * \ingroup TF_EVSEV2
@@ -526,12 +531,12 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_OUTPUT_LOW 0
+#define TF_EVSE_V2_OUTPUT_CONNECTED_TO_GROUND 0
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_OUTPUT_HIGH 1
+#define TF_EVSE_V2_OUTPUT_HIGH_IMPEDANCE 1
 
 /**
  * \ingroup TF_EVSEV2
@@ -1099,6 +1104,13 @@ int tf_evse_v2_get_boost_mode(TF_EVSEV2 *evse_v2, bool *ret_boost_mode_enabled);
  * TODO
  */
 int tf_evse_v2_trigger_dc_fault_test(TF_EVSEV2 *evse_v2, uint32_t password, bool *ret_started);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_gp_output(TF_EVSEV2 *evse_v2, uint8_t gp_output);
 
 /**
  * \ingroup TF_EVSEV2

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-04-25.      *
+ * This file was automatically generated on 2023-06-05.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -143,24 +143,29 @@ int tf_evse_v2_get_response_expected(TF_EVSEV2 *evse_v2, uint8_t function_id, bo
                 *ret_response_expected = (evse_v2->response_expected[1] & (1 << 4)) != 0;
             }
             break;
-        case TF_EVSE_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_EVSE_V2_FUNCTION_SET_GP_OUTPUT:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (evse_v2->response_expected[1] & (1 << 5)) != 0;
             }
             break;
-        case TF_EVSE_V2_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_EVSE_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (evse_v2->response_expected[1] & (1 << 6)) != 0;
             }
             break;
-        case TF_EVSE_V2_FUNCTION_RESET:
+        case TF_EVSE_V2_FUNCTION_SET_STATUS_LED_CONFIG:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (evse_v2->response_expected[1] & (1 << 7)) != 0;
             }
             break;
-        case TF_EVSE_V2_FUNCTION_WRITE_UID:
+        case TF_EVSE_V2_FUNCTION_RESET:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (evse_v2->response_expected[2] & (1 << 0)) != 0;
+            }
+            break;
+        case TF_EVSE_V2_FUNCTION_WRITE_UID:
+            if (ret_response_expected != NULL) {
+                *ret_response_expected = (evse_v2->response_expected[2] & (1 << 1)) != 0;
             }
             break;
         default:
@@ -271,32 +276,39 @@ int tf_evse_v2_set_response_expected(TF_EVSEV2 *evse_v2, uint8_t function_id, bo
                 evse_v2->response_expected[1] &= ~(1 << 4);
             }
             break;
-        case TF_EVSE_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_EVSE_V2_FUNCTION_SET_GP_OUTPUT:
             if (response_expected) {
                 evse_v2->response_expected[1] |= (1 << 5);
             } else {
                 evse_v2->response_expected[1] &= ~(1 << 5);
             }
             break;
-        case TF_EVSE_V2_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_EVSE_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (response_expected) {
                 evse_v2->response_expected[1] |= (1 << 6);
             } else {
                 evse_v2->response_expected[1] &= ~(1 << 6);
             }
             break;
-        case TF_EVSE_V2_FUNCTION_RESET:
+        case TF_EVSE_V2_FUNCTION_SET_STATUS_LED_CONFIG:
             if (response_expected) {
                 evse_v2->response_expected[1] |= (1 << 7);
             } else {
                 evse_v2->response_expected[1] &= ~(1 << 7);
             }
             break;
-        case TF_EVSE_V2_FUNCTION_WRITE_UID:
+        case TF_EVSE_V2_FUNCTION_RESET:
             if (response_expected) {
                 evse_v2->response_expected[2] |= (1 << 0);
             } else {
                 evse_v2->response_expected[2] &= ~(1 << 0);
+            }
+            break;
+        case TF_EVSE_V2_FUNCTION_WRITE_UID:
+            if (response_expected) {
+                evse_v2->response_expected[2] |= (1 << 1);
+            } else {
+                evse_v2->response_expected[2] &= ~(1 << 1);
             }
             break;
         default:
@@ -2525,6 +2537,64 @@ int tf_evse_v2_trigger_dc_fault_test(TF_EVSEV2 *evse_v2, uint32_t password, bool
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_evse_v2_set_gp_output(TF_EVSEV2 *evse_v2, uint8_t gp_output) {
+    if (evse_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (evse_v2->magic != 0x5446 || evse_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = evse_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_evse_v2_get_response_expected(evse_v2, TF_EVSE_V2_FUNCTION_SET_GP_OUTPUT, &_response_expected);
+    tf_tfp_prepare_send(evse_v2->tfp, TF_EVSE_V2_FUNCTION_SET_GP_OUTPUT, 1, _response_expected);
+
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(evse_v2->tfp);
+
+    _send_buf[0] = (uint8_t)gp_output;
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(evse_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 0) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 

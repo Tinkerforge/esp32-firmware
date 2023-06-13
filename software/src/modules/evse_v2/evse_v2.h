@@ -159,6 +159,8 @@ public:
     ConfigRoot evse_control_pilot_disconnect_update;
     ConfigRoot evse_require_meter_enabled;
     ConfigRoot evse_require_meter_enabled_update;
+    ConfigRoot evse_gp_output;
+    ConfigRoot evse_gp_output_update;
 
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;
