@@ -74,13 +74,17 @@ public:
         uint16_t device_id = get_device_id();
         TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, false);
 
-        if (tfp == nullptr) {
-            if (mandatory)
+        if (!log_message_printed) {
+            if (tfp == nullptr && mandatory)
                 logger.printfln("No %s Bricklet found. Disabling %s support.", device_name, module_name);
-            return false;
-        } else if (!mandatory) {
-            logger.printfln("%s Bricklet found. Enabling %s support.", device_name, module_name);
+            else if (tfp != nullptr && !mandatory)
+                logger.printfln("%s Bricklet found. Enabling %s support.", device_name, module_name);
         }
+        log_message_printed = true;
+
+        if (tfp == nullptr)
+            return false;
+
 
         device_found = true;
 
@@ -238,4 +242,6 @@ private:
 
         identity.get("device_identifier")->updateUint(device_identifier);
     }
+
+    bool log_message_printed = false;
 };
