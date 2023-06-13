@@ -342,7 +342,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
             <Collapse in={!state.minimum_current_auto}>
                 <div>
-                    <FormRow label={__("charge_manager.content.minimum_current")} label_muted={__("charge_manager.content.minimum_current_muted")}>
+                    <FormRow label={      energyManagerMode ? __("charge_manager.content.minimum_current_3p")       : __("charge_manager.content.minimum_current")}
+                             label_muted={energyManagerMode ? __("charge_manager.content.minimum_current_3p_muted") : __("charge_manager.content.minimum_current_muted")}>
                         <InputFloat
                             unit="A"
                             value={state.minimum_current}
