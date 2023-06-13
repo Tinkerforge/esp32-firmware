@@ -29,7 +29,6 @@
 
 #define AUTHORIZED_TAG_LIST_LENGTH 16
 
-#define TOKEN_LIFETIME_MS 30000
 #define DETECTION_THRESHOLD_MS 2000
 
 void NFC::pre_setup()
@@ -142,9 +141,6 @@ void NFC::check_nfc_state()
 
 uint8_t NFC::get_user_id(tag_info_t *tag, uint8_t *tag_idx)
 {
-    if (tag->last_seen >= TOKEN_LIFETIME_MS)
-        return false;
-
     Config *auth_tags = (Config *)config_in_use.get("authorized_tags");
 
     for (uint8_t auth_tag_idx = 0; auth_tag_idx < auth_tags->count(); ++auth_tag_idx) {

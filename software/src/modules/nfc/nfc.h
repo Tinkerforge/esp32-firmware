@@ -63,7 +63,6 @@ public:
 
     void update_seen_tags();
     void tag_seen(tag_info_t *tag, bool injected);
-    void handle_evse();
     void setup_nfc();
     void check_nfc_state();
     uint8_t get_user_id(tag_info_t *tag, uint8_t *tag_idx);
@@ -76,16 +75,8 @@ public:
     uint32_t last_tag_injection = 0;
     int tag_injection_action = 0;
 
-    uint32_t last_action_ms = 0;
-
-    char uid[7] = {0};
-
     tag_info_t old_tag_buffer[TAG_LIST_LENGTH] = {};
     tag_info_t new_tag_buffer[TAG_LIST_LENGTH] = {};
     tag_info_t *old_tags = old_tag_buffer;
     tag_info_t *new_tags = new_tag_buffer;
-
-    int auth_token = -1;
-    uint32_t auth_token_seen = 0;
-    int16_t blink_state = -1;
 };
