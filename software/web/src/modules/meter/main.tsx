@@ -694,7 +694,7 @@ export class Meter extends Component<{}, MeterState> {
                                                 value={x ? 0 : 1} //intentionally inverted: the high button is the first
                                                 items={[
                                                     ["primary", <Zap/>],
-                                                    ["secondary", <ZapOff/>]
+                                                    ["dark", <ZapOff/>]
                                                 ]}/>
                                         ))}
                                     </div>
@@ -707,7 +707,7 @@ export class Meter extends Component<{}, MeterState> {
                                                 value={x ? 0 : 1} //intentionally inverted: the high button is the first
                                                 items={[
                                                     ["primary", <Zap/>],
-                                                    ["secondary", <ZapOff/>]
+                                                    ["dark", <ZapOff/>]
                                                 ]}/>
                                         ))}
                                     </div>
