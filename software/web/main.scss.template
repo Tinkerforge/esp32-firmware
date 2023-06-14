@@ -526,6 +526,11 @@ body {
     }
 }
 
+.em-energy-analysis-flags-chart {
+    position: relative;
+    aspect-ratio: 4;
+}
+
 .em-energy-analysis-chart {
     position: relative;
     aspect-ratio: 2;

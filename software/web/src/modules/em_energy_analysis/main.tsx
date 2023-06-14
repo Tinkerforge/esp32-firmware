@@ -32,6 +32,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { OutputFloat } from "src/ts/components/output_float";
 import uPlot from 'uplot';
 import { InputText } from "src/ts/components/input_text";
+import { uPlotTimelinePlugin } from "../../ts/uplot-plugins";
 
 interface CachedData {
     update_timestamp: number;
@@ -44,6 +45,7 @@ interface UplotData extends CachedData {
     values: number[][];
     stacked: boolean[];
     bars: boolean[];
+    value_map?: {[id: number]: string}[];
 }
 
 interface Wallbox5minData extends CachedData {
@@ -76,25 +78,6 @@ interface EnergyManagerDailyData extends CachedData {
     energy_general_in: number[][]; // kWh
     energy_general_out: number[][]; // kWh
 };
-
-interface UplotWrapperProps {
-    id: string;
-    class: string;
-    sidebar_id: string;
-    color_cache_group: string;
-    show: boolean;
-    legend_time_label: string;
-    legend_time_with_minutes: boolean;
-    legend_value_prefix: string;
-    x_format: Intl.DateTimeFormatOptions;
-    x_padding_factor: number;
-    y_min?: number;
-    y_max?: number;
-    y_step?: number;
-    y_unit: string;
-    y_digits: number;
-    default_fill?: boolean;
-}
 
 // https://seaborn.pydata.org/tutorial/color_palettes.html#qualitative-color-palettes
 // sns.color_palette("tab10")
@@ -147,6 +130,33 @@ function get_color(group: string, name: string)
     return color_cache[key];
 }
 
+// FIXME: translation
+const wb_state_names: {[id: number]: string} = {
+    0: 'not plugged in',
+    1: 'waiting for release',
+    2: 'ready to charge',
+    3: 'charging',
+    4: 'error',
+};
+
+// FIXME: translation
+const em_threep_names: {[id: number]: string} = {
+    0: '1p',
+    1: '3p',
+};
+
+// FIXME: translation
+const em_input_names: {[id: number]: string} = {
+    0: 'low',
+    1: 'high',
+};
+
+// FIXME: translation
+const em_output_names: {[id: number]: string} = {
+    0: 'open',
+    1: 'closed',
+};
+
 interface UplotLoaderProps {
     show: boolean;
     marker_width_reduction: number;
@@ -192,6 +202,293 @@ class UplotLoader extends Component<UplotLoaderProps, {}> {
             </>
         );
     }
+}
+
+interface UplotFlagsWrapperProps {
+    id: string;
+    class: string;
+    sidebar_id: string;
+    show: boolean;
+    legend_time_label: string;
+    legend_time_with_minutes: boolean;
+    legend_value_prefix: string;
+    x_format: Intl.DateTimeFormatOptions;
+    x_padding_factor: number;
+}
+
+class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
+    uplot: uPlot;
+    data: UplotData;
+    pending_data: UplotData;
+    series_visibility: {[id: string]: boolean} = {};
+    visible: boolean = false;
+    div_ref = createRef();
+    observer: ResizeObserver;
+
+    shouldComponentUpdate() {
+        return false;
+    }
+
+    componentDidMount() {
+        if (this.uplot) {
+            return;
+        }
+
+        // FIXME: special hack for status page that is visible by default
+        //        and doesn't receive an initial shown event because of that
+        this.visible = this.props.sidebar_id === "status";
+
+        // We have to use jquery here or else the events don't fire?
+        // This can be removed once the sidebar is ported to preact.
+        $(`#sidebar-${this.props.sidebar_id}`).on('shown.bs.tab', () => {
+            this.visible = true;
+
+            if (this.pending_data !== undefined) {
+                this.set_data(this.pending_data);
+            }
+        });
+
+        $(`#sidebar-${this.props.sidebar_id}`).on('hidden.bs.tab', () => {
+            this.visible = false;
+        });
+
+        let get_size = () => {
+            let div = this.div_ref.current;
+            let aspect_ratio = parseFloat(getComputedStyle(div).aspectRatio);
+
+            if (isNaN(aspect_ratio)) {
+                aspect_ratio = 4;
+            }
+
+            return {
+                width: div.clientWidth,
+                height: Math.floor((div.clientWidth + (window.innerWidth - document.documentElement.clientWidth)) / aspect_ratio),
+            }
+        }
+
+        let options = {
+            ...get_size(),
+            pxAlign: 0,
+            cursor: {
+                drag: {
+                    x: false, // disable zoom
+                },
+            },
+            series: [
+                {
+                    label: this.props.legend_time_label,
+                    value: (self: uPlot, rawValue: number) => {
+                        if (rawValue !== null) {
+                            if (this.props.legend_time_with_minutes) {
+                                return util.timestamp_min_to_date((rawValue / 60), '???');
+                            }
+                            else {
+                                return new Date(rawValue * 1000).toLocaleDateString([], {year: 'numeric', month: '2-digit', day: '2-digit'});
+                            }
+                        }
+
+                        return null;
+                    },
+                },
+            ],
+            axes: [
+                {
+                    size: 30,
+                    incrs: [
+                        60,
+                        60 * 2,
+                        3600,
+                        3600 * 2,
+                        3600 * 4,
+                        3600 * 6,
+                        3600 * 8,
+                        3600 * 12,
+                        3600 * 24,
+                        3600 * 48,
+                    ],
+                    values: (self: uPlot, splits: number[]) => {
+                        let values: string[] = new Array(splits.length);
+
+                        for (let i = 0; i < splits.length; ++i) {
+                            values[i] = (new Date(splits[i] * 1000)).toLocaleString([], this.props.x_format);
+                        }
+
+                        return values;
+                    },
+                },
+                {
+                    size: 55,
+                }
+            ],
+            scales: {
+                x: {
+                    range: (self: uPlot, from: number, to: number): uPlot.Range.MinMax => {
+                        let pad = (to - from) * this.props.x_padding_factor;
+                        return [from - pad, to + pad];
+                    },
+                },
+            },
+            plugins: [
+                uPlotTimelinePlugin({
+                    mode: 1,
+                    fill: (seriesIdx: number, dataIdx: number, value: any) => fills[value % fills.length],
+                    stroke: (seriesIdx: number, dataIdx: number, value: any) => strokes[value % strokes.length],
+                    size: [0.9, 100],
+                }),
+                {
+                    hooks: {
+                        setSeries: (self: uPlot, seriesIdx: number, opts: uPlot.Series) => {
+                            this.series_visibility[this.data.keys[seriesIdx]] = opts.show;
+                        },
+                        /*drawAxes: [
+                            (self: uPlot) => {
+                                let ctx = self.ctx;
+
+                                ctx.save();
+
+                                let s  = self.series[0];
+                                let xd = self.data[0];
+                                let [i0, i1] = s.idxs;
+                                let xpad = (xd[i1] - xd[i0]) * this.props.x_padding_factor;
+                                let x0 = self.valToPos(xd[i0] - xpad, 'x', true) - self.axes[0].ticks.size;
+                                let y0 = self.valToPos(0, 'y', true);
+                                let x1 = self.valToPos(xd[i1] + xpad, 'x', true);
+                                let y1 = self.valToPos(0, 'y', true);
+
+                                const lineWidth = 2;
+                                const offset = (lineWidth % 2) / 2;
+
+                                ctx.translate(offset, offset);
+
+                                ctx.beginPath();
+                                ctx.lineWidth = lineWidth;
+                                ctx.strokeStyle = 'rgb(0,0,0,0.2)';
+                                ctx.moveTo(x0, y0);
+                                ctx.lineTo(x1, y1);
+                                ctx.stroke();
+
+                                ctx.translate(-offset, -offset);
+
+                                ctx.restore();
+                            }
+                        ],*/
+                    },
+                },
+            ],
+        };
+
+        let div = this.div_ref.current;
+        this.uplot = new uPlot(options, [], div);
+
+        let resize = () => {
+            let size = get_size();
+
+            if (size.width == 0 || size.height == 0) {
+                return;
+            }
+
+            this.uplot.setSize(size);
+        };
+
+        try {
+            this.observer = new ResizeObserver(() => {
+                resize();
+            });
+
+            this.observer.observe(div);
+        } catch (e) {
+            setInterval(() => {
+                resize();
+            }, 500);
+
+            window.addEventListener("resize", e => {
+                resize();
+            });
+        }
+
+        if (this.pending_data !== undefined) {
+            this.set_data(this.pending_data);
+        }
+    }
+
+    render(props?: UplotFlagsWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
+        return <div ref={this.div_ref} class={props.class} style={`display: ${props.show ? 'block' : 'none'}; visibility: hidden;`} />;
+    }
+
+    set_loading() {
+        this.div_ref.current.style.visibility = 'hidden';
+    }
+
+    set_show(show: boolean) {
+        this.div_ref.current.style.display = show ? 'block' : 'none';
+    }
+
+    get_series_opts(i: number): uPlot.Series {
+        let name = this.data.names[i];
+
+        return {
+            show: this.series_visibility[this.data.keys[i]],
+            label: this.props.legend_value_prefix + (name ? ' ' + name: ''),
+            value: (self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => {
+                if (rawValue !== null && this.data.value_map[seriesIdx]) {
+                    return this.data.value_map[seriesIdx][this.data.values[seriesIdx][idx]];
+                }
+
+                return rawValue;
+            },
+            width: 2,
+        };
+    }
+
+    set_data(data: UplotData) {
+        if (!this.uplot || !this.visible) {
+            this.pending_data = data;
+            return;
+        }
+
+        this.data = data;
+        this.pending_data = undefined;
+
+        if (!this.data || this.data.keys.length <= 1) {
+            this.div_ref.current.style.visibility = 'hidden';
+        }
+        else {
+            this.div_ref.current.style.visibility = 'visible';
+
+            while (this.uplot.series.length > 1) {
+                this.uplot.delSeries(this.uplot.series.length - 1);
+            }
+
+            while (this.uplot.series.length < this.data.keys.length) {
+                if (this.series_visibility[this.data.keys[this.uplot.series.length]] === undefined) {
+                    this.series_visibility[this.data.keys[this.uplot.series.length]] = true;
+                }
+
+                this.uplot.addSeries(this.get_series_opts(this.uplot.series.length));
+            }
+
+            this.uplot.setData(this.data.values as any);
+        }
+    }
+}
+
+interface UplotWrapperProps {
+    id: string;
+    class: string;
+    sidebar_id: string;
+    color_cache_group: string;
+    show: boolean;
+    legend_time_label: string;
+    legend_time_with_minutes: boolean;
+    legend_value_prefix: string;
+    x_format: Intl.DateTimeFormatOptions;
+    x_padding_factor: number;
+    y_min?: number;
+    y_max?: number;
+    y_step?: number;
+    y_unit: string;
+    y_digits: number;
+    default_fill?: boolean;
 }
 
 class UplotWrapper extends Component<UplotWrapperProps, {}> {
@@ -683,12 +980,14 @@ interface Charger {
 
 export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyAnalysisState> {
     uplot_loader_5min_ref = createRef();
-    uplot_wrapper_5min_ref = createRef();
+    uplot_wrapper_5min_flags_ref = createRef();
+    uplot_wrapper_5min_power_ref = createRef();
     uplot_loader_daily_ref = createRef();
     uplot_wrapper_daily_ref = createRef();
     status_ref: RefObject<EMEnergyAnalysisStatus> = null;
     uplot_update_timeout: number = null;
-    uplot_5min_cache: {[id: string]: UplotData} = {};
+    uplot_5min_flags_cache: {[id: string]: UplotData} = {};
+    uplot_5min_power_cache: {[id: string]: UplotData} = {};
     uplot_5min_status_cache: {[id: string]: UplotData} = {};
     uplot_daily_cache: {[id: string]: UplotData} = {};
     wallbox_5min_cache: {[id: number]: { [id: string]: Wallbox5minData}} = {};
@@ -975,9 +1274,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         }
     }
 
-    update_uplot_5min_cache(date: Date) {
+    update_uplot_5min_power_cache(date: Date) {
         let key = this.date_to_5min_key(date);
-        let uplot_data = this.uplot_5min_cache[key];
+        let uplot_data = this.uplot_5min_power_cache[key];
         let needs_update = false;
         let now = Date.now();
 
@@ -1051,8 +1350,172 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         uplot_data.values[0] = timestamps;
 
-        this.uplot_5min_cache[key] = uplot_data;
-        this.expire_cache(this.uplot_5min_cache);
+        this.uplot_5min_power_cache[key] = uplot_data;
+        this.expire_cache(this.uplot_5min_power_cache);
+    }
+
+    update_uplot_5min_flags_cache(date: Date) {
+        let key = this.date_to_5min_key(date);
+        let uplot_data = this.uplot_5min_flags_cache[key];
+        let needs_update = false;
+        let now = Date.now();
+
+        if (!uplot_data) {
+            needs_update = true;
+        }
+        else {
+            let energy_manager_data = this.energy_manager_5min_cache[key];
+
+            if (energy_manager_data && uplot_data.update_timestamp < energy_manager_data.update_timestamp) {
+                needs_update = true;
+            }
+
+            if (!needs_update) {
+                for (let charger of this.chargers) {
+                    if (this.wallbox_5min_cache[charger.uid]) {
+                        let wallbox_data = this.wallbox_5min_cache[charger.uid][key];
+
+                        if (wallbox_data && uplot_data.update_timestamp < wallbox_data.update_timestamp) {
+                            needs_update = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!needs_update) {
+            // cache is valid
+            uplot_data.use_timestamp = now;
+            return;
+        }
+
+        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false], bars: [false], value_map: [null]};
+
+        let slot_count: number = 0;
+        let energy_manager_data = this.energy_manager_5min_cache[key];
+
+        if (energy_manager_data && !energy_manager_data.empty) {
+            slot_count = Math.max(slot_count, energy_manager_data.flags.length);
+
+            let threep = new Array(energy_manager_data.flags.length);
+            let input1 = new Array(energy_manager_data.flags.length);
+            let input2 = new Array(energy_manager_data.flags.length);
+            let output = new Array(energy_manager_data.flags.length);
+
+            for (let i = 0; i < energy_manager_data.flags.length; ++i) {
+                if (energy_manager_data.flags[i] === null) {
+                    threep[i] = null;
+                    input1[i] = null;
+                    input2[i] = null;
+                    output[i] = null;
+                }
+                else {
+                    if (i > 0 && energy_manager_data.flags[i - 1] !== null && (energy_manager_data.flags[i] & 0b0001) == (energy_manager_data.flags[i - 1] & 0b0001)) {
+                        threep[i] = undefined;
+                    }
+                    else {
+                        threep[i] = energy_manager_data.flags[i] & 0b0001;
+                    }
+
+                    if (i > 0 && energy_manager_data.flags[i - 1] !== null && (energy_manager_data.flags[i] & 0b0010) == (energy_manager_data.flags[i - 1] & 0b0010)) {
+                        input1[i] = undefined;
+                    }
+                    else {
+                        input1[i] = (energy_manager_data.flags[i] & 0b0010) >> 1;
+                    }
+
+                    if (i > 0 && energy_manager_data.flags[i - 1] !== null && (energy_manager_data.flags[i] & 0b0100) == (energy_manager_data.flags[i - 1] & 0b0100)) {
+                        input2[i] = undefined;
+                    }
+                    else {
+                        input2[i] = (energy_manager_data.flags[i] & 0b0100) >> 2;
+                    }
+
+                    if (i > 0 && energy_manager_data.flags[i - 1] !== null && (energy_manager_data.flags[i] & 0b1000) == (energy_manager_data.flags[i - 1] & 0b1000)) {
+                        output[i] = undefined;
+                    }
+                    else {
+                        output[i] = (energy_manager_data.flags[i] & 0b1000) >> 3;
+                    }
+                }
+            }
+
+            uplot_data.keys.push('em_threep');
+            uplot_data.names.push('EM Phase'); // FIXME
+            uplot_data.values.push(threep);
+            uplot_data.stacked.push(false);
+            uplot_data.bars.push(false);
+            uplot_data.value_map.push(em_threep_names);
+
+            uplot_data.keys.push('em_input1');
+            uplot_data.names.push('EM Input 1'); // FIXME
+            uplot_data.values.push(input1);
+            uplot_data.stacked.push(false);
+            uplot_data.bars.push(false);
+            uplot_data.value_map.push(em_input_names);
+
+            uplot_data.keys.push('em_input2');
+            uplot_data.names.push('EM Input 2'); // FIXME
+            uplot_data.values.push(input2);
+            uplot_data.stacked.push(false);
+            uplot_data.bars.push(false);
+            uplot_data.value_map.push(em_input_names);
+
+            uplot_data.keys.push('em_output');
+            uplot_data.names.push('EM Output'); // FIXME
+            uplot_data.values.push(output);
+            uplot_data.stacked.push(false);
+            uplot_data.bars.push(false);
+            uplot_data.value_map.push(em_output_names);
+        }
+
+        for (let charger of this.chargers) {
+            if (this.wallbox_5min_cache[charger.uid]) {
+                let wallbox_data = this.wallbox_5min_cache[charger.uid][key];
+
+                if (wallbox_data && !wallbox_data.empty) {
+                    slot_count = Math.max(slot_count, wallbox_data.flags.length);
+
+                    let state = new Array(wallbox_data.flags.length);
+
+                    for (let i = 0; i < wallbox_data.flags.length; ++i) {
+                        if (wallbox_data.flags[i] === null) {
+                            state[i] = null;
+                        }
+                        else if (i > 0 && wallbox_data.flags[i - 1] !== null && (wallbox_data.flags[i] & 0b111) == (wallbox_data.flags[i - 1] & 0b111)) {
+                            state[i] = undefined;
+                        }
+                        else {
+                            state[i] = wallbox_data.flags[i] & 0b111;
+                        }
+                    }
+
+                    console.log('WBF ' + charger.uid);
+                    console.table(wallbox_data.flags);
+                    console.table(state);
+
+                    uplot_data.keys.push('wb_state_' + charger.uid);
+                    uplot_data.names.push(charger.name);
+                    uplot_data.values.push(state);
+                    uplot_data.stacked.push(true);
+                    uplot_data.bars.push(false);
+                    uplot_data.value_map.push(wb_state_names);
+                }
+            }
+        }
+
+        let timestamps: number[] = new Array(slot_count);
+        let base = date.getTime() / 1000;
+
+        for (let slot = 0; slot < slot_count; ++slot) {
+            timestamps[slot] = base + slot * 300;
+        }
+
+        uplot_data.values[0] = timestamps;
+
+        this.uplot_5min_flags_cache[key] = uplot_data;
+        this.expire_cache(this.uplot_5min_flags_cache);
     }
 
     update_uplot_5min_status_cache(date: Date) {
@@ -1354,8 +1817,12 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     }
 
     set_5min_loading() {
-        if (this.uplot_wrapper_5min_ref.current) {
-            this.uplot_wrapper_5min_ref.current.set_loading();
+        if (this.uplot_wrapper_5min_flags_ref.current) {
+            this.uplot_wrapper_5min_flags_ref.current.set_loading();
+        }
+
+        if (this.uplot_wrapper_5min_power_ref.current) {
+            this.uplot_wrapper_5min_power_ref.current.set_loading();
         }
 
         if (this.uplot_loader_5min_ref.current) {
@@ -1815,8 +2282,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
     update_uplot() {
         if (this.state.data_type == '5min') {
-            if (this.uplot_loader_5min_ref.current && this.uplot_wrapper_5min_ref.current) {
-                this.update_uplot_5min_cache(this.state.current_5min_date);
+            if (this.uplot_loader_5min_ref.current && this.uplot_wrapper_5min_power_ref.current && this.uplot_wrapper_5min_flags_ref.current) {
+                this.update_uplot_5min_power_cache(this.state.current_5min_date);
+                this.update_uplot_5min_flags_cache(this.state.current_5min_date);
 
                 let current_daily_date: Date = new Date(this.state.current_5min_date);
 
@@ -1829,10 +2297,12 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 this.update_uplot_daily_cache(current_daily_date);
 
                 let key = this.date_to_5min_key(this.state.current_5min_date);
-                let data = this.uplot_5min_cache[key];
+                let data_power = this.uplot_5min_power_cache[key];
+                let data_flags = this.uplot_5min_flags_cache[key];
 
-                this.uplot_loader_5min_ref.current.set_data(data);
-                this.uplot_wrapper_5min_ref.current.set_data(data);
+                this.uplot_loader_5min_ref.current.set_data(data_flags);
+                this.uplot_wrapper_5min_power_ref.current.set_data(data_power);
+                this.uplot_wrapper_5min_flags_ref.current.set_data(data_flags);
             }
         }
         else {
@@ -1977,8 +2447,18 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                          show={true}
                                          marker_width_reduction={30}
                                          marker_class={'h3'} >
-                                <UplotWrapper ref={this.uplot_wrapper_5min_ref}
-                                              id="em_energy_analysis_5min_chart"
+                                <UplotFlagsWrapper ref={this.uplot_wrapper_5min_flags_ref}
+                                                   id="em_energy_analysis_5min_flags_chart"
+                                                   class="em-energy-analysis-flags-chart"
+                                                   sidebar_id="em_energy_analysis"
+                                                   show={true}
+                                                   legend_time_label={__("em_energy_analysis.script.time_5min")}
+                                                   legend_time_with_minutes={true}
+                                                   legend_value_prefix=""
+                                                   x_format={{hour: '2-digit', minute: '2-digit'}}
+                                                   x_padding_factor={0} />
+                                <UplotWrapper ref={this.uplot_wrapper_5min_power_ref}
+                                              id="em_energy_analysis_5min_power_chart"
                                               class="em-energy-analysis-chart"
                                               sidebar_id="em_energy_analysis"
                                               color_cache_group="analsyis"
@@ -2028,7 +2508,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                     this.setState({data_type: data_type}, () => {
                                         if (data_type == '5min') {
                                             this.uplot_loader_5min_ref.current.set_show(true);
-                                            this.uplot_wrapper_5min_ref.current.set_show(true);
+                                            this.uplot_wrapper_5min_flags_ref.current.set_show(true);
+                                            this.uplot_wrapper_5min_power_ref.current.set_show(true);
                                             this.uplot_loader_daily_ref.current.set_show(false);
                                             this.uplot_wrapper_daily_ref.current.set_show(false);
                                         }
@@ -2036,7 +2517,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                             this.uplot_loader_daily_ref.current.set_show(true);
                                             this.uplot_wrapper_daily_ref.current.set_show(true);
                                             this.uplot_loader_5min_ref.current.set_show(false);
-                                            this.uplot_wrapper_5min_ref.current.set_show(false);
+                                            this.uplot_wrapper_5min_flags_ref.current.set_show(false);
+                                            this.uplot_wrapper_5min_power_ref.current.set_show(false);
                                         }
 
                                         this.update_uplot();
