@@ -20,7 +20,7 @@
 import { h, VNode } from "preact";
 import { Button, ButtonGroup } from "react-bootstrap";
 
-type variant = "primary" | "secondary" | "success" | "warning" | "danger" | "light" | "link"
+type variant = "primary" | "secondary" | "success" |  "danger" | "warning" | "info" | "light" | "dark" | "link"
 
 interface IndicatorProps {
     value: number,
