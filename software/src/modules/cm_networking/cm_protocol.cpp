@@ -73,15 +73,15 @@ static const uint8_t cm_command_packet_length_versions[] = {
     sizeof(struct cm_packet_header),
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v1),
 };
-static_assert(ARRAY_SIZE(cm_command_packet_length_versions) == (CM_PROTOCOL_VERSION + 1), "Unexpected amount of command packet length versions.");
+static_assert(ARRAY_SIZE(cm_command_packet_length_versions) == (CM_COMMAND_VERSION + 1), "Unexpected amount of command packet length versions.");
 
 static const uint8_t cm_state_packet_length_versions[] = {
     sizeof(struct cm_packet_header),
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1),
 };
-static_assert(ARRAY_SIZE(cm_state_packet_length_versions) == (CM_PROTOCOL_VERSION + 1), "Unexpected amount of state packet length versions.");
+static_assert(ARRAY_SIZE(cm_state_packet_length_versions) == (CM_STATE_VERSION + 1), "Unexpected amount of state packet length versions.");
 
-String CMNetworking::validate_packet_header(const struct cm_packet_header *header, ssize_t recv_length, const uint8_t packet_length_versions[], const char *packet_type_name) const
+static String validate_packet_header_common(const struct cm_packet_header *header, ssize_t recv_length, const uint8_t packet_length_versions[], const char *packet_type_name)
 {
     if (recv_length < sizeof(struct cm_packet_header)) {
         return String("Truncated header with ") + recv_length + " bytes.";
@@ -91,36 +91,47 @@ String CMNetworking::validate_packet_header(const struct cm_packet_header *heade
         return String("Invalid magic. Got ") + header->magic + '.';
     }
 
-    if (header->version < CM_PROTOCOL_VERSION_MIN) {
-        return String("Protocol version ") + header->version + " too old. Need at least version " MACRO_VALUE_TO_STRING(CM_PROTOCOL_VERSION_MIN) ".";
-    }
-
-    if (header->version <= CM_PROTOCOL_VERSION) { // Known protocol version; match against known packet length.
-        if (header->length != packet_length_versions[header->version])
-            return String("Invalid ") + packet_type_name + " packet length for known protocol version " + header->version + ": " + header->length + " bytes.";
-
-    } else { // Newer protocol than known; packet must be at least as long as our newest known version.
-        if (header->length < packet_length_versions[CM_PROTOCOL_VERSION])
-            return String("Invalid ") + packet_type_name + " packet length for protocol version " + header->version + " from the future: " + header->length + " bytes.";
-    }
-
     if (recv_length < header->length)
         return String("Received truncated ") + packet_type_name + " packet for protocol version " + header->version + ": " + recv_length + '/' + header->length + " bytes.";
 
     return String();
 }
 
-String CMNetworking::validate_command_packet_header(const struct cm_command_packet *pkt, ssize_t recv_length) const
-{
-    return validate_packet_header(&(pkt->header), recv_length, cm_command_packet_length_versions, "command");
+static String validate_protocol_version(const struct cm_packet_header *header, uint8_t min_version, uint8_t max_known_version, const uint8_t packet_length_versions[], const char *packet_type_name) {
+    if (header->version < min_version) {
+        return String("Protocol version ") + header->version + " too old. Need at least version " + min_version + ".";
+    }
+
+    if (header->version <= max_known_version) { // Known protocol version; match against known packet length.
+        if (header->length != packet_length_versions[header->version])
+            return String("Invalid ") + packet_type_name + " packet length for known protocol version " + header->version + ": " + header->length + " bytes.";
+
+    } else { // Newer protocol than known; packet must be at least as long as our newest known version.
+        if (header->length < packet_length_versions[max_known_version])
+            return String("Invalid ") + packet_type_name + " packet length for protocol version " + header->version + " from the future: " + header->length + " bytes.";
+    }
+    return "";
 }
 
-String CMNetworking::validate_state_packet_header(const struct cm_state_packet *pkt, ssize_t recv_length) const
+static String validate_command_packet_header(const struct cm_command_packet *pkt, ssize_t recv_length)
 {
-    return validate_packet_header(&(pkt->header), recv_length, cm_state_packet_length_versions, "state");
+    String result = validate_packet_header_common(&(pkt->header), recv_length, cm_command_packet_length_versions, "command");
+    if (result != "")
+        return result;
+
+    return validate_protocol_version(&(pkt->header), CM_COMMAND_VERSION_MIN, CM_COMMAND_VERSION, cm_command_packet_length_versions, "command");
 }
 
-bool CMNetworking::seq_num_invalid(uint16_t received_sn, uint16_t last_seen_sn) const
+static String validate_state_packet_header(const struct cm_state_packet *pkt, ssize_t recv_length)
+{
+    String result = validate_packet_header_common(&(pkt->header), recv_length, cm_state_packet_length_versions, "state");
+    if (result != "")
+        return result;
+
+    return validate_protocol_version(&(pkt->header), CM_STATE_VERSION_MIN, CM_STATE_VERSION, cm_state_packet_length_versions, "state");
+}
+
+static bool seq_num_invalid(uint16_t received_sn, uint16_t last_seen_sn)
 {
     return received_sn <= last_seen_sn && last_seen_sn - received_sn < 5;
 }
@@ -237,7 +248,7 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
     command_pkt.header.length = CM_COMMAND_PACKET_LENGTH;
     command_pkt.header.seq_num = next_seq_num;
     ++next_seq_num;
-    command_pkt.header.version = CM_PROTOCOL_VERSION;
+    command_pkt.header.version = CM_COMMAND_VERSION;
 
     command_pkt.v1.allocated_current = allocated_current;
     command_pkt.v1.command_flags = cp_disconnect_requested << CM_COMMAND_FLAGS_CPPDISC_BIT_POS;
@@ -351,7 +362,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     state_pkt.header.length = CM_STATE_PACKET_LENGTH;
     state_pkt.header.seq_num = next_seq_num;
     ++next_seq_num;
-    state_pkt.header.version = CM_PROTOCOL_VERSION;
+    state_pkt.header.version = CM_STATE_VERSION;
 
     bool has_meter_values = api.hasFeature("meter_all_values");
     bool has_meter_phases = api.hasFeature("meter_phases");

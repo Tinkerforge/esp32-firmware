@@ -39,10 +39,12 @@
 #define MAX_CLIENTS 10
 
 // Increment when changing packet structs
-#define CM_PROTOCOL_VERSION 1
+#define CM_COMMAND_VERSION 1
+#define CM_STATE_VERSION 1
 
 // Minimum protocol version supported
-#define CM_PROTOCOL_VERSION_MIN 1
+#define CM_COMMAND_VERSION_MIN 1
+#define CM_STATE_VERSION_MIN 1
 
 #define CM_PACKET_MAGIC 34127
 
@@ -224,11 +226,6 @@ public:
     void resolve_hostname(uint8_t charger_idx);
     bool is_resolved(uint8_t charger_idx);
     void clear_cached_hostname(uint8_t charger_idx);
-
-    String validate_packet_header(const struct cm_packet_header *header, ssize_t recv_length, const uint8_t packet_length_versions[], const char *packet_type_name) const;
-    String validate_command_packet_header(const struct cm_command_packet *pkt, ssize_t recv_length) const;
-    String validate_state_packet_header(const struct cm_state_packet *pkt, ssize_t recv_length) const;
-    bool seq_num_invalid(uint16_t received_sn, uint16_t last_seen_sn) const;
 
     void check_results();
 

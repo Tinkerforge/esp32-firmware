@@ -270,7 +270,7 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
                 error = SCAN_RESULT_ERROR_FIRMWARE_MISMATCH;
             } else {
                 long num_version = strtol(++protocol_version, nullptr, 10);
-                if (num_version < CM_PROTOCOL_VERSION_MIN) {
+                if (num_version < CM_STATE_VERSION_MIN) {
                     error = SCAN_RESULT_ERROR_FIRMWARE_MISMATCH;
                 }
             }
