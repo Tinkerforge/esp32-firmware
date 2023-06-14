@@ -327,7 +327,7 @@ body {
     background-color: #ffd65e !important;
 }
 
-.btn-group .btn-info.disabled, .btn-group .btn-info:disabled {
+.btn-group .btn-light.disabled, .btn-group .btn-light:disabled {
     color: #000 !important;
     opacity: 1 !important;
     background-color: #fafbfb !important;
