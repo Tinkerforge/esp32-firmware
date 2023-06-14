@@ -118,9 +118,9 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
                         items={[
                             ["primary", __("evse.status.not_connected")],
                             ["warning", __("evse.status.waiting_for_charge_release")],
-                            ["warning", __("evse.status.ready_to_charge")],
+                            ["info",    __("evse.status.ready_to_charge")],
                             ["success", __("evse.status.charging")],
-                            ["danger", __("evse.status.error")]
+                            ["danger",  __("evse.status.error")]
                         ]}/>
                 </FormRow>
 
