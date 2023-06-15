@@ -209,6 +209,7 @@ interface UplotFlagsWrapperProps {
     class: string;
     sidebar_id: string;
     show: boolean;
+    sync?: uPlot.SyncPubSub;
     legend_time_label: string;
     legend_time_with_minutes: boolean;
     legend_value_prefix: string;
@@ -272,6 +273,9 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             cursor: {
                 drag: {
                     x: false, // disable zoom
+                },
+                sync: {
+                    key: this.props.sync ? this.props.sync.key : undefined,
                 },
             },
             series: [
@@ -478,6 +482,7 @@ interface UplotWrapperProps {
     sidebar_id: string;
     color_cache_group: string;
     show: boolean;
+    sync?: uPlot.SyncPubSub;
     legend_time_label: string;
     legend_time_with_minutes: boolean;
     legend_value_prefix: string;
@@ -547,6 +552,9 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             cursor: {
                 drag: {
                     x: false, // disable zoom
+                },
+                sync: {
+                    key: this.props.sync ? this.props.sync.key : undefined,
                 },
             },
             series: [
@@ -979,6 +987,7 @@ interface Charger {
 }
 
 export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyAnalysisState> {
+    uplot_sync = uPlot.sync('foobar');
     uplot_loader_5min_ref = createRef();
     uplot_wrapper_5min_flags_ref = createRef();
     uplot_wrapper_5min_power_ref = createRef();
@@ -2452,6 +2461,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                                    class="em-energy-analysis-flags-chart"
                                                    sidebar_id="em_energy_analysis"
                                                    show={true}
+                                                   sync={this.uplot_sync}
                                                    legend_time_label={__("em_energy_analysis.script.time_5min")}
                                                    legend_time_with_minutes={true}
                                                    legend_value_prefix=""
@@ -2463,6 +2473,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               sidebar_id="em_energy_analysis"
                                               color_cache_group="analsyis"
                                               show={true}
+                                              sync={this.uplot_sync}
                                               legend_time_label={__("em_energy_analysis.script.time_5min")}
                                               legend_time_with_minutes={true}
                                               legend_value_prefix=""
