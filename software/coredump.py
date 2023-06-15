@@ -231,7 +231,8 @@ if __name__ == '__main__':
             sys.exit (-1)
 
         tf_coredump_data = json.loads(tf_coredump_json)
-        extra_data = format_extra_data(extra_data).replace('\n', '\\n')
+        if extra_data is not None:
+            extra_data = format_extra_data(extra_data).replace('\n', '\\n')
 
         elf_name = tf_coredump_data['firmware_file_name'] + ".elf"
         script_path = os.path.dirname(os.path.realpath(__file__))
@@ -271,7 +272,7 @@ if __name__ == '__main__':
                            "-ex 'echo     - Run \"thread apply all bt full\" to print traces of all threads.\n' " +
                            "-ex 'echo\n' " +
                           f"-ex 'echo Crashed firmware {tf_coredump_data['firmware_file_name']}\n' " +
-                          f"-ex 'echo {extra_data}\n' " +
+                          (f"-ex 'echo {extra_data}\n' " if extra_data is not None else "")+
                            "-ex 'echo ================================================================================\n' " +
                            "-ex 'echo ============================= Registers at crash ===============================\n' " +
                            "-ex 'echo ================================================================================\n' " +
