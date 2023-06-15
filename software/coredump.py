@@ -250,6 +250,11 @@ if __name__ == '__main__':
                         for filename in filenames:
                             os.utime(os.sep.join([dirpath, filename]), (commit_time, commit_time))
 
+                coredump_py_gdb_cmds = ""
+                if os.path.exists("coredump_py_gdb_cmds"):
+                    with open("coredump_py_gdb_cmds") as f:
+                        coredump_py_gdb_cmds = f.read().replace("\n", " ")
+
                 os.system(f"{gdb} " +
                           ("-q --batch " if not args.interactive else "") +
                            "-iex 'set pagination off' " +
@@ -258,6 +263,7 @@ if __name__ == '__main__':
                           f"-iex 'set substitute-path /home/erik/ {os.path.expanduser('~')}' " +
                            "-iex 'set style enabled on' " +
                            "-iex 'set print frame-info source-and-location' " +
+                            coredump_py_gdb_cmds +
                           ("-ex 'shell clear' " if args.interactive else "") +
                            "-ex 'echo ================================================================================\n' " +
                            "-ex 'echo In interactive mode:\n' " +

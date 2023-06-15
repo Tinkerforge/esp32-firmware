@@ -24,3 +24,4 @@ web/src/ts/api_defs.ts
 web/src/ts/branding.ts
 web/src/ts/translation.tsx
 web/src/ts/translation.json
+coredump_py_gdb_cmds
