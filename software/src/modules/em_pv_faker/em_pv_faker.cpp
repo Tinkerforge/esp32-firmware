@@ -28,9 +28,6 @@
 
 #include "gcc_warnings.h"
 
-#if !MODULE_ENERGY_MANAGER_AVAILABLE()
-#error Back-end module Energy Manager required
-#endif
 #if !MODULE_MQTT_AVAILABLE()
 #error Back-end module MQTT required
 #endif
@@ -48,7 +45,6 @@ void EmPvFaker::pre_setup()
         {"peak_power",  Config::Uint32(30*1000)},  // watt
         {"zero_at_lux", Config::Uint32(100)},      // lux
         {"peak_at_lux", Config::Uint32(105*1000)}, // lux
-        {"filter_time_constant", Config::Uint(0, 0, 600)}, // s
     }), [](Config &conf) -> String {
         if (conf.get("zero_at_lux")->asUint() >= conf.get("peak_at_lux")->asUint())
             return "Lux value for zero production must be less than lux value for peak production.";
@@ -72,13 +68,17 @@ void EmPvFaker::setup()
 {
     api.restorePersistentConfig("em_pv_faker/config", &config);
 
+    int32_t target_power = 0;
+
+#if MODULE_ENERGY_MANAGER_AVAILABLE()
     Config *conf = static_cast<Config *>(energy_manager.config_in_use.get("target_power_from_grid"));
     if (!conf) {
-        logger.printfln("em_pv_faker: energy_manager config target_power_from_grid not available. Disabling em_pv_faker.");
-        return;
+        logger.printfln("em_pv_faker: energy_manager config target_power_from_grid not available.");
+    } else {
+        target_power = conf->asInt();
     }
+#endif
 
-    int32_t target_power = conf->asInt();
     state.get("fake_power")->updateInt(target_power);
     runtime_config.get("manual_power")->updateInt(target_power);
 

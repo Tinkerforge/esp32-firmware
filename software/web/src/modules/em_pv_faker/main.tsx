@@ -62,7 +62,7 @@ render(<EmPvFakerStatus/>, $('#status-em_pv_faker')[0])
 export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.getType['em_pv_faker/runtime_config']> {
     constructor() {
         super('em_pv_faker/config',
-            __("energy_manager.script.save_failed"));
+            __("em_pv_faker.script.save_failed"));
 
         util.addApiEventListener('em_pv_faker/runtime_config', () => {
             this.setState({...API.get('em_pv_faker/runtime_config')});
@@ -135,16 +135,6 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
                             digits={3}
                             min={2}
                             max={200000}
-                        />
-                    </FormRow>
-
-                    <FormRow label={__("em_pv_faker.content.filter_time_constant")}>
-                        <InputNumber
-                            unit={"s"}
-                            value={s.filter_time_constant}
-                            onValue={this.set('filter_time_constant')}
-                            min={0}
-                            max={600}
                         />
                     </FormRow>
                 </> : <>

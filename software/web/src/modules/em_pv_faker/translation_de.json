@@ -16,7 +16,6 @@
             "peak_power": "PV-Spitzenleistung",
             "zero_at_lux": "Lichtintensität für keine Leistung",
             "peak_at_lux": "Lichtintensität für Spitzenleistung",
-            "filter_time_constant": "Filter-Zeitkonstante",
 
             "manual_power": "Manuelle PV-Erzeugung"
         },

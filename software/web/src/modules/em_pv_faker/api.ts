@@ -9,7 +9,6 @@ export interface config {
     peak_power:  number;
     zero_at_lux: number;
     peak_at_lux: number;
-    filter_time_constant: number;
 }
 
 export interface runtime_config {

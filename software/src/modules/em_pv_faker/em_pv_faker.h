@@ -19,12 +19,8 @@
 
 #pragma once
 
-#include <math.h>
-
 #include "config.h"
 #include "module.h"
-
-#define PV_FILTER_PERIOD_MS 250
 
 class EmPvFaker final : public IModule
 {
