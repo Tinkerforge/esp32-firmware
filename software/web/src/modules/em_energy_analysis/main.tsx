@@ -45,7 +45,9 @@ interface UplotData extends CachedData {
     values: number[][];
     stacked: boolean[];
     bars: boolean[];
-    value_map?: {[id: number]: string}[];
+    value_names?: {[id: number]: string}[];
+    value_strokes?: {[id: number]: string}[];
+    value_fills?: {[id: number]: string}[];
 }
 
 interface Wallbox5minData extends CachedData {
@@ -130,13 +132,28 @@ function get_color(group: string, name: string)
     return color_cache[key];
 }
 
-// FIXME: translation
 const wb_state_names: {[id: number]: string} = {
-    0: 'not plugged in',
-    1: 'waiting for release',
-    2: 'ready to charge',
-    3: 'charging',
-    4: 'error',
+    0: __("em_energy_analysis.content.state_not_connected"),
+    1: __("em_energy_analysis.content.state_waiting_for_charge_release"),
+    2: __("em_energy_analysis.content.state_ready_to_charge"),
+    3: __("em_energy_analysis.content.state_charging"),
+    4: __("em_energy_analysis.content.state_error"),
+};
+
+const wb_state_strokes: {[id: number]: string} = {
+    0: 'rgb(  0, 123, 255)',
+    1: 'rgb(255, 193,   7)',
+    2: 'rgb( 13, 202, 240)',
+    3: 'rgb( 40, 167,  69)',
+    4: 'rgb(220,  53,  69)',
+};
+
+const wb_state_fills: {[id: number]: string} = {
+    0: 'rgb(  0, 123, 255, 0.66)',
+    1: 'rgb(255, 193,   7, 0.66)',
+    2: 'rgb( 13, 202, 240, 0.66)',
+    3: 'rgb( 40, 167,  69, 0.66)',
+    4: 'rgb(220,  53,  69, 0.66)',
 };
 
 // FIXME: translation
@@ -145,16 +162,46 @@ const em_threep_names: {[id: number]: string} = {
     1: '3p',
 };
 
+const em_threep_strokes: {[id: number]: string} = {
+    0: 'rgb(108, 117, 125)',
+    1: 'rgb( 40, 167,  69)',
+};
+
+const em_threep_fills: {[id: number]: string} = {
+    0: 'rgb(108, 117, 125, 0.66)',
+    1: 'rgb( 40, 167,  69, 0.66)',
+};
+
 // FIXME: translation
 const em_input_names: {[id: number]: string} = {
     0: 'low',
     1: 'high',
 };
 
+const em_input_strokes: {[id: number]: string} = {
+    0: 'rgb(108, 117, 125)',
+    1: 'rgb( 40, 167,  69)',
+};
+
+const em_input_fills: {[id: number]: string} = {
+    0: 'rgb(108, 117, 125, 0.66)',
+    1: 'rgb( 40, 167,  69, 0.66)',
+};
+
 // FIXME: translation
 const em_output_names: {[id: number]: string} = {
     0: 'open',
     1: 'closed',
+};
+
+const em_output_strokes: {[id: number]: string} = {
+    0: 'rgb(108, 117, 125)',
+    1: 'rgb( 40, 167,  69)',
+};
+
+const em_output_fills: {[id: number]: string} = {
+    0: 'rgb(108, 117, 125, 0.66)',
+    1: 'rgb( 40, 167,  69, 0.66)',
 };
 
 interface UplotLoaderProps {
@@ -335,8 +382,8 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             plugins: [
                 uPlotTimelinePlugin({
                     mode: 1,
-                    fill: (seriesIdx: number, dataIdx: number, value: any) => fills[value % fills.length],
-                    stroke: (seriesIdx: number, dataIdx: number, value: any) => strokes[value % strokes.length],
+                    fill: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_fills && this.data.value_fills[seriesIdx] ? this.data.value_fills[seriesIdx][value] : 'rgb(0, 0, 0, 0.1)',
+                    stroke: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_strokes && this.data.value_strokes[seriesIdx] ? this.data.value_strokes[seriesIdx][value] : 'rgb(0, 0, 0)',
                     size: [0.9, 100],
                 }),
                 {
@@ -434,13 +481,13 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             show: this.series_visibility[this.data.keys[i]],
             label: this.props.legend_value_prefix + (name ? ' ' + name: ''),
             value: (self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => {
-                if (rawValue !== null && this.data.value_map[seriesIdx]) {
-                    return this.data.value_map[seriesIdx][this.data.values[seriesIdx][idx]];
+                if (rawValue !== null && this.data.value_names && this.data.value_names[seriesIdx]) {
+                    return this.data.value_names[seriesIdx][this.data.values[seriesIdx][idx]];
                 }
 
                 return rawValue;
             },
-            width: 2,
+            width: 0,
         };
     }
 
@@ -1399,7 +1446,18 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return;
         }
 
-        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false], bars: [false], value_map: [null]};
+        uplot_data = {
+            update_timestamp: now,
+            use_timestamp: now,
+            keys: [null],
+            names: [null],
+            values: [null],
+            stacked: [false],
+            bars: [false],
+            value_names: [null],
+            value_strokes: [null],
+            value_fills: [null],
+        };
 
         let slot_count: number = 0;
         let energy_manager_data = this.energy_manager_5min_cache[key];
@@ -1455,28 +1513,36 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.values.push(threep);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
-            uplot_data.value_map.push(em_threep_names);
+            uplot_data.value_names.push(em_threep_names);
+            uplot_data.value_strokes.push(em_threep_strokes);
+            uplot_data.value_fills.push(em_threep_fills);
 
             uplot_data.keys.push('em_input1');
             uplot_data.names.push('EM Input 1'); // FIXME
             uplot_data.values.push(input1);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
-            uplot_data.value_map.push(em_input_names);
+            uplot_data.value_names.push(em_input_names);
+            uplot_data.value_strokes.push(em_input_strokes);
+            uplot_data.value_fills.push(em_input_fills);
 
             uplot_data.keys.push('em_input2');
             uplot_data.names.push('EM Input 2'); // FIXME
             uplot_data.values.push(input2);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
-            uplot_data.value_map.push(em_input_names);
+            uplot_data.value_names.push(em_input_names);
+            uplot_data.value_strokes.push(em_input_strokes);
+            uplot_data.value_fills.push(em_input_fills);
 
             uplot_data.keys.push('em_output');
             uplot_data.names.push('EM Output'); // FIXME
             uplot_data.values.push(output);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
-            uplot_data.value_map.push(em_output_names);
+            uplot_data.value_names.push(em_output_names);
+            uplot_data.value_strokes.push(em_output_strokes);
+            uplot_data.value_fills.push(em_output_fills);
         }
 
         for (let charger of this.chargers) {
@@ -1509,7 +1575,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.values.push(state);
                     uplot_data.stacked.push(true);
                     uplot_data.bars.push(false);
-                    uplot_data.value_map.push(wb_state_names);
+                    uplot_data.value_names.push(wb_state_names);
+                    uplot_data.value_strokes.push(wb_state_strokes);
+                    uplot_data.value_fills.push(wb_state_fills);
                 }
             }
         }

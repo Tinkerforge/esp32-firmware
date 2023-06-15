@@ -12,7 +12,12 @@
             "loading": "Loading data...",
             "data_type": "Selection",
             "data_type_5min": "1 day in 5 minutes",
-            "data_type_daily": "1 month in days"
+            "data_type_daily": "1 month in days",
+            "state_not_connected": "Disconnected",
+            "state_waiting_for_charge_release": "Waiting for release",
+            "state_ready_to_charge": "Ready",
+            "state_charging": "Charging",
+            "state_error": "Error"
         },
         "script": {
             "time_5min": "Time of day",
