@@ -141,7 +141,7 @@ def get_tf_coredump_data(coredump_path: str):
 
         # search xtensa extra info behind out core dump data
         extra_info_idx = b.find(EXTRA_INFO_HEADER, end)
-        if extra_info_idx < 0 or (len(b) - extra_info_idx < (len(EXTRA_INFO_HEADER) + 2 + 164)):
+        if extra_info_idx < 0 or (len(b) - extra_info_idx < (len(EXTRA_INFO_HEADER) + 2 + 108)):
             return (tf_core_dump_data, None)
 
         extra_data = {}
@@ -151,7 +151,7 @@ def get_tf_coredump_data(coredump_path: str):
         # skip two bytes (probably part of the ELF section header)
         extra_info_idx += 2
 
-        extra_info = b[extra_info_idx:extra_info_idx+164]
+        extra_info = b[extra_info_idx:extra_info_idx+108]
         extra_data['crashed_task_handle'] = int.from_bytes(extra_info[:4], byteorder='little')
 
         for i in range(4, len(extra_info), 8):
