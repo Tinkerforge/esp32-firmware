@@ -358,6 +358,11 @@ void WebSocketsClient::send(const char *payload, size_t payload_len)
     ws->sendToClient(payload, payload_len, fd);
 }
 
+void WebSocketsClient::sendOwned(char *payload, size_t payload_len)
+{
+    ws->sendToClientOwned(payload, payload_len, fd);
+}
+
 void WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
 {
     if (httpd_ws_get_fd_info(server.httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET)
@@ -377,6 +382,22 @@ void WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
     }
 
     work_queue.push_back({server.httpd, {fd, -1, -1, -1, -1}, payload_copy, payload_len});
+}
+
+void WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd)
+{
+    if (httpd_ws_get_fd_info(server.httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
+        free(payload);
+        return;
+    }
+
+    std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+    if (queueFull()) {
+        free(payload);
+        return;
+    }
+
+    work_queue.push_back({server.httpd, {fd, -1, -1, -1, -1}, payload, payload_len});
 }
 
 bool WebSockets::haveActiveClient()

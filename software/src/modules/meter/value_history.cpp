@@ -51,7 +51,7 @@ void ValueHistory::setup()
         buf_written += format_live(buf + buf_written, buf_size - buf_written);
         buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", "}\n");
 
-        ws.web_sockets.sendToAllOwned(buf, buf_written);
+        client.sendOwned(buf, buf_written);
 
         // history
         buf_written = 0;
@@ -64,7 +64,7 @@ void ValueHistory::setup()
         buf_written += format_history(buf + buf_written, buf_size - buf_written);
         buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", "}\n");
 
-        ws.web_sockets.sendToAllOwned(buf, buf_written);
+        client.sendOwned(buf, buf_written);
     });
 #endif
 }
