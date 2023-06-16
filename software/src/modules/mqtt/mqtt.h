@@ -49,6 +49,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
     void connect();
 
     void publish_with_prefix(const String &path, const String &payload);

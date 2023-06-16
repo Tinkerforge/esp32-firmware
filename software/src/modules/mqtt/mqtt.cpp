@@ -141,10 +141,7 @@ void Mqtt::pushRawStateUpdate(const String &payload, const String &path)
 
 void Mqtt::wifiAvailable()
 {
-    static bool started = false;
-    if (!started)
-        esp_mqtt_client_start(client);
-    started = true;
+
 }
 
 void Mqtt::onMqttConnect()
@@ -443,4 +440,21 @@ void Mqtt::register_urls()
 {
     api.addPersistentConfig("mqtt/config", &mqtt_config, {"broker_password"}, 1000);
     api.addState("mqtt/state", &mqtt_state, {}, 1000);
+}
+
+void Mqtt::register_events() {
+    // Start MQTT client here to make sure all handlers are already registered.
+
+    // Start immediately if we already have a working ethernet connection. WiFi takes a bit longer.
+    // Wait 20 secs to not spam the event log with a failed connection attempt.
+    bool start_immediately = false;
+#if MODULE_ETHERNET_AVAILABLE()
+    start_immediately = ethernet.get_connection_state() == EthernetState::CONNECTED;
+#endif
+    if (start_immediately)
+        esp_mqtt_client_start(client);
+    else
+        task_scheduler.scheduleOnce([this]() {
+            esp_mqtt_client_start(client);
+        }, 20000);
 }
