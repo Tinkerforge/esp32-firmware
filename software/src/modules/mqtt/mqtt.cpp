@@ -431,6 +431,7 @@ void Mqtt::setup()
     mqtt_cfg.password = mqtt_config_in_use.get("broker_password")->asEphemeralCStr();
     mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE;
     mqtt_cfg.network_timeout_ms = 1000;
+    mqtt_cfg.message_retransmit_timeout = 400;
 
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
