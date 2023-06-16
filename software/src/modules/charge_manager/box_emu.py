@@ -60,15 +60,20 @@ struct cm_state_v1 {
     float energy_abs;
 } __attribute__((packed));
 
+struct cm_state_v2 {
+    uint32_t time_since_state_change;
+} __attribute__((packed));
+
 struct cm_state_packet {
     cm_packet_header header;
     cm_state_v1 v1;
+    cm_state_v2 v2;
 } __attribute__((packed));
 """
 
 header_format = "<HHHBx"
 command_format = header_format + "HBx"
-state_format = header_format + "IIIIHHBBBBffffffffffff"
+state_format = header_format + "IIIIHHBBBBffffffffffff" + "I"
 
 command_len = struct.calcsize(command_format)
 state_len = struct.calcsize(state_format)
@@ -130,12 +135,16 @@ resp_iec61851_state.addItem("3: D - Not supported")
 resp_iec61851_state.addItem("4: E/F - Error")
 layout.addRow("IEC state", resp_iec61851_state)
 
+time_since_state_change = time.time()
 resp_charger_state = QComboBox()
 resp_charger_state.addItem("0: Not connected")
 resp_charger_state.addItem("1: Waiting for release")
 resp_charger_state.addItem("2: Ready")
 resp_charger_state.addItem("3: Charging")
 resp_charger_state.addItem("4: Error")
+def lalala():
+    time_since_state_change = time.time()
+resp_charger_state.currentIndexChanged.connect(lalala)
 layout.addRow("Vehicle state", resp_charger_state)
 
 resp_error_state = QSpinBox()
@@ -172,7 +181,8 @@ resp_cp_disconnect = QCheckBox("CP disconnected")
 layout.addRow("CP disconnect state", resp_cp_disconnect)
 
 next_seq_num = 0
-protocol_version = 1
+command_version = 1
+state_version = 2
 start = time.time()
 charging_time_start = 0
 
@@ -207,7 +217,7 @@ def send():
         return
 
     resp_seq_num.setText(str(next_seq_num))
-    resp_version.setText(str(protocol_version))
+    resp_version.setText(str(state_version))
 
     if resp_block_uptime.isChecked():
         uptime = int(resp_uptime.text().split(" ")[0])
@@ -232,7 +242,7 @@ def send():
                     34127,                                      # magic
                     state_len,                                  # length
                     next_seq_num,
-                    protocol_version if not resp_wrong_proto_version.isChecked() else 0,
+                    state_version if not resp_wrong_proto_version.isChecked() else 0,
                     0x7F,                                          # features
                     uid,
                     uptime,
@@ -254,7 +264,9 @@ def send():
                     0,  # LPF2
                     0,  # power_total
                     0,  # energy_rel
-                    0)  # energy_abs
+                    0,  # energy_abs
+                    int(time.time() - time_since_state_change)
+    )
     if not resp_block_seq_num.isChecked():
         next_seq_num += 1
         next_seq_num %= 65536

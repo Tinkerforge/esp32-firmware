@@ -221,7 +221,7 @@ void ChargeManager::start_manager_task()
         names.push_back(charger.get("name")->asString());
     }
 
-    cm_networking.register_manager(std::move(hosts), names, [this, chargers](uint8_t client_id, cm_state_v1 *v1) mutable {
+    cm_networking.register_manager(std::move(hosts), names, [this, chargers](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2) mutable {
             auto target = charge_manager_state.get("chargers")->get(client_id);
             // Don't update if the uptimes are the same.
             // This means, that the EVSE hangs or the communication

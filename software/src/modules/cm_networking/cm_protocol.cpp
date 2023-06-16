@@ -78,6 +78,7 @@ static_assert(ARRAY_SIZE(cm_command_packet_length_versions) == (CM_COMMAND_VERSI
 static const uint8_t cm_state_packet_length_versions[] = {
     sizeof(struct cm_packet_header),
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1),
+    sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2),
 };
 static_assert(ARRAY_SIZE(cm_state_packet_length_versions) == (CM_STATE_VERSION + 1), "Unexpected amount of state packet length versions.");
 
@@ -138,7 +139,7 @@ static bool seq_num_invalid(uint16_t received_sn, uint16_t last_seen_sn)
 
 void CMNetworking::register_manager(std::vector<String> &&hosts,
                                     const std::vector<String> &names,
-                                    std::function<void(uint8_t /* client_id */, cm_state_v1 *)> manager_callback,
+                                    std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *)> manager_callback,
                                     std::function<void(uint8_t, uint8_t)> manager_error_callback)
 {
     hostnames = hosts;
@@ -227,7 +228,7 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
                 return;
             }
 
-            manager_callback(charger_idx, &state_pkt.v1);
+            manager_callback(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr);
         }
     }, 100, 100);
 }
@@ -341,6 +342,7 @@ void CMNetworking::register_client(std::function<void(uint16_t, bool)> client_ca
 bool CMNetworking::send_client_update(uint32_t esp32_uid,
                                       uint8_t iec61851_state,
                                       uint8_t charger_state,
+                                      uint32_t time_since_state_change,
                                       uint8_t error_state,
                                       uint32_t uptime,
                                       uint32_t charging_time,

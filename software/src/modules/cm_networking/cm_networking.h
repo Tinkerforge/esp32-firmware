@@ -40,7 +40,7 @@
 
 // Increment when changing packet structs
 #define CM_COMMAND_VERSION 1
-#define CM_STATE_VERSION 1
+#define CM_STATE_VERSION 2
 
 // Minimum protocol version supported
 #define CM_COMMAND_VERSION_MIN 1
@@ -185,13 +185,21 @@ struct cm_state_v1 {
 #define CM_STATE_V1_LENGTH (sizeof(cm_state_v1))
 static_assert(CM_STATE_V1_LENGTH == 72, "Unexpected CM_STATE_V1_LENGTH");
 
+struct cm_state_v2 {
+    uint32_t time_since_state_change;
+} __attribute__((packed));
+
+#define CM_STATE_V2_LENGTH (sizeof(cm_state_v2))
+static_assert(CM_STATE_V2_LENGTH == 4, "Unexpected CM_STATE_V2_LENGTH");
+
 struct cm_state_packet {
     cm_packet_header header;
     cm_state_v1 v1;
+    cm_state_v2 v2;
 } __attribute__((packed));
 
 #define CM_STATE_PACKET_LENGTH (sizeof(cm_state_packet))
-static_assert(CM_STATE_PACKET_LENGTH == 80, "Unexpected CM_STATE_PACKET_LENGTH");
+static_assert(CM_STATE_PACKET_LENGTH == 84, "Unexpected CM_STATE_PACKET_LENGTH");
 
 class CMNetworking final : public IModule
 {
@@ -204,7 +212,7 @@ public:
 
     void register_manager(std::vector<String> &&hosts,
                           const std::vector<String> &names,
-                          std::function<void(uint8_t /* client_id */, cm_state_v1 *)> manager_callback,
+                          std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *)> manager_callback,
                           std::function<void(uint8_t, uint8_t)> manager_error_callback);
 
     bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested);
@@ -213,6 +221,7 @@ public:
     bool send_client_update(uint32_t esp32_uid,
                             uint8_t iec61851_state,
                             uint8_t charger_state,
+                            uint32_t time_since_state_change,
                             uint8_t error_state,
                             uint32_t uptime,
                             uint32_t charging_time,

@@ -602,6 +602,7 @@ void EVSE::register_urls()
             local_uid_num,
             evse_state.get("iec61851_state")->asUint(),
             evse_state.get("charger_state")->asUint(),
+            evse_low_level_state.get("time_since_state_change")->asUint(),
             evse_state.get("error_state")->asUint(),
             evse_low_level_state.get("uptime")->asUint(),
             evse_low_level_state.get("charging_time")->asUint(),
