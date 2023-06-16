@@ -1497,7 +1497,7 @@ static void shrinkToFit(typename T::Slot * &buf, size_t &buf_size) {
     buf_size = highest + SLOT_HEADROOM;
 }
 
-void config_postsetup() {
+void config_post_setup() {
     shrinkToFit<Config::ConfUint>(uint_buf, uint_buf_size);
     shrinkToFit<Config::ConfInt>(int_buf, int_buf_size);
     shrinkToFit<Config::ConfFloat>(float_buf, float_buf_size);

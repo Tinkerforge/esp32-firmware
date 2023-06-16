@@ -31,7 +31,7 @@
 #include "strict_variant/mpl/find_with.hpp"
 
 void config_pre_init();
-void config_postsetup();
+void config_post_setup();
 
 struct ConfigRoot;
 

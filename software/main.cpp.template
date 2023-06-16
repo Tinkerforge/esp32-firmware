@@ -211,7 +211,7 @@ void setup(void) {
         {{{module_init_config}}}
     });
 
-    config_postsetup();
+    config_post_setup();
 
     server.start();
 
