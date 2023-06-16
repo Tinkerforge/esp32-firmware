@@ -24,6 +24,7 @@
 #include "api.h"
 #include "task_scheduler.h"
 #include "web_server.h"
+#include "tools.h"
 
 void WS::pre_setup()
 {
@@ -39,11 +40,13 @@ void WS::setup()
 void WS::register_urls()
 {
     web_sockets.onConnect([this](WebSocketsClient client) {
-        String to_send = "";
+        CoolString to_send;
         for (auto &reg : api.states) {
             to_send += String("{\"topic\":\"") + reg.path + String("\",\"payload\":") + reg.config->to_string_except(reg.keys_to_censor) + String("}\n");
         }
-        client.send(to_send.c_str(), to_send.length());
+        size_t len;
+        char *p = to_send.releaseOwnership(&len);
+        client.sendOwned(p, len);
         for (auto &callback : on_connect_callbacks) {
             callback(client);
         }

@@ -113,6 +113,20 @@ public:
     void shrinkToFit() {
         changeBuffer(len());
     }
+
+    char *releaseOwnership(size_t *len) {
+        char *p = const_cast<char *>(c_str());
+        *len = length();
+
+        // String::init is marked inline and cannot be called
+        // from here. copy the body of String::init to here
+        setSSO(false);
+        setBuffer(nullptr);
+        setCapacity(0);
+        setLen(0);
+
+        return p;
+    }
 };
 
 void list_dir(fs::FS &fs, const char * dirname, uint8_t depth, uint8_t current_depth = 0);
