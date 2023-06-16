@@ -27,10 +27,11 @@ interface InputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSelectEle
     onValue?: (value: string) => void
     placeholder?: string
     classList?: string
+    style?: string
 }
 
 export function InputSelect(props: InputSelectProps) {
-    let {idContext, items, onValue, placeholder, classList, ...p} = props;
+    let {idContext, items, onValue, placeholder, classList, style, ...p} = props;
 
     return (
         <select
@@ -38,6 +39,7 @@ export function InputSelect(props: InputSelectProps) {
                disabled={onValue === undefined}
                {...p}
                class={(classList ?? "") + " custom-select"}
+               style={style ?? ""}
                id={idContext === undefined ? "" : useContext(idContext)}
                onChange={onValue === undefined ? undefined : (e) => onValue((e.target as HTMLSelectElement).value)}
                >

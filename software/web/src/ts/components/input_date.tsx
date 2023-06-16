@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Context } from "preact";
-import {useContext, useRef} from "preact/hooks";
+import { h, Context, VNode, Fragment } from "preact";
+import { useContext, useRef } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { ArrowLeft, ArrowRight } from "react-feather";
@@ -30,6 +30,8 @@ interface InputDateProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
     date: Date
     onDate?: (value: Date) => void
     buttons?: "year"|"month"|"day"
+    children?: VNode | VNode[]
+    style?: string
 }
 
 export function InputDate(props: InputDateProps) {
@@ -50,22 +52,28 @@ export function InputDate(props: InputDateProps) {
         return new Date(y, mIdx - 1, d);
     }
 
-    let inner = <input class={"form-control " + props.className}
-        ref={input}
-        id={id}
-        type="date"
-        onInput={props.onDate ? (e) => {
-                let timeString = (e.target as HTMLInputElement).value;
-                if (timeString == "")
-                    return;
+    let inner =
+        <>
+            {props.children}
+            <input class={"form-control " + (props.className ?? "")}
+                   ref={input}
+                   id={id}
+                   type="date"
+                   style={props.style ?? ""}
+                   onInput={
+                       props.onDate ? (e) => {
+                           let timeString = (e.target as HTMLInputElement).value;
+                           if (timeString == "")
+                               return;
 
-                props.onDate(valueToDate(timeString));
-            } : undefined
-        }
-        disabled={!props.onDate}
-        value={dateToValue(props.date)}/>
+                           props.onDate(valueToDate(timeString));
+                       } : undefined
+                   }
+                   disabled={!props.onDate}
+                   value={dateToValue(props.date)} />
+        </>;
 
-    if (!props.onDate || !props.buttons) {
+    if ((!props.onDate || !props.buttons) && !props.children) {
         return inner;
     }
 

@@ -17,19 +17,21 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component } from "preact";
+import { h, Component, VNode } from "preact";
 
 export interface PageHeaderProps {
     title: string
     colClasses?: string
+    children?: VNode | VNode[]
 }
 
 export class PageHeader extends Component<PageHeaderProps, any> {
-    render() {
+    render(props: PageHeaderProps) {
         return (
             <div class="row sticky-under-top mb-3 pt-3">
-                <div class={"d-flex justify-content-between pb-2 border-bottom tab-header-shadow " + (this.props.colClasses === undefined ? "col-xl-8" : this.props.colClasses)}>
+                <div class={"d-flex flex-wrap justify-content-between pb-2 border-bottom tab-header-shadow " + (this.props.colClasses === undefined ? "col-xl-8" : this.props.colClasses)}>
                     <h1 class="h2" dangerouslySetInnerHTML={{__html: this.props.title}}></h1>
+                    {props.children}
                 </div>
             </div>
         );

@@ -2476,9 +2476,43 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return rows;
         };
 
+        let data_select =
+            <InputSelect value={state.data_type} style="width: 6rem" onValue={(v) => {
+                    let data_type: '5min'|'daily' = v as any;
+
+                    this.setState({data_type: data_type}, () => {
+                        if (data_type == '5min') {
+                            this.uplot_loader_5min_ref.current.set_show(true);
+                            this.uplot_wrapper_5min_flags_ref.current.set_show(true);
+                            this.uplot_wrapper_5min_power_ref.current.set_show(true);
+                            this.uplot_loader_daily_ref.current.set_show(false);
+                            this.uplot_wrapper_daily_ref.current.set_show(false);
+                        }
+                        else {
+                            this.uplot_loader_daily_ref.current.set_show(true);
+                            this.uplot_wrapper_daily_ref.current.set_show(true);
+                            this.uplot_loader_5min_ref.current.set_show(false);
+                            this.uplot_wrapper_5min_flags_ref.current.set_show(false);
+                            this.uplot_wrapper_5min_power_ref.current.set_show(false);
+                        }
+
+                        this.update_uplot();
+                    });
+                }}
+                items={[
+                    ["5min", __("em_energy_analysis.content.data_type_5min")],
+                    ["daily", __("em_energy_analysis.content.data_type_daily")],
+                ]}/>;
+
         return (
             <>
-                <PageHeader title={__("em_energy_analysis.content.em_energy_analysis")} colClasses="col-xl-10"/>
+                <PageHeader title={__("em_energy_analysis.content.em_energy_analysis")} colClasses="col-xl-10">
+                    <div>
+                        {state.data_type == '5min'
+                        ? <InputDate date={state.current_5min_date} onDate={this.set_current_5min_date.bind(this)} buttons="day" style="width: 12rem">{data_select}</InputDate>
+                        : <InputMonth date={state.current_daily_date} onDate={this.set_current_daily_date.bind(this)} buttons="month" style="width: 12rem">{data_select}</InputMonth>}
+                    </div>
+                </PageHeader>
                 <div class="row">
                     <div class="col-xl-10 mb-3">
                         <div>
@@ -2540,43 +2574,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         </div>
                     </div>
                 </div>
-                <FormRow label={__("em_energy_analysis.content.data_type")} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <InputSelect value={state.data_type} onValue={(v) => {
-                                    let data_type: '5min'|'daily' = v as any;
-
-                                    this.setState({data_type: data_type}, () => {
-                                        if (data_type == '5min') {
-                                            this.uplot_loader_5min_ref.current.set_show(true);
-                                            this.uplot_wrapper_5min_flags_ref.current.set_show(true);
-                                            this.uplot_wrapper_5min_power_ref.current.set_show(true);
-                                            this.uplot_loader_daily_ref.current.set_show(false);
-                                            this.uplot_wrapper_daily_ref.current.set_show(false);
-                                        }
-                                        else {
-                                            this.uplot_loader_daily_ref.current.set_show(true);
-                                            this.uplot_wrapper_daily_ref.current.set_show(true);
-                                            this.uplot_loader_5min_ref.current.set_show(false);
-                                            this.uplot_wrapper_5min_flags_ref.current.set_show(false);
-                                            this.uplot_wrapper_5min_power_ref.current.set_show(false);
-                                        }
-
-                                        this.update_uplot();
-                                    });
-                                }}
-                                items={[
-                                    ["5min", __("em_energy_analysis.content.data_type_5min")],
-                                    ["daily", __("em_energy_analysis.content.data_type_daily")],
-                                ]}/>
-                        </div>
-                        <div class="col-md-6">
-                            {state.data_type == '5min'
-                            ? <InputDate date={state.current_5min_date} onDate={this.set_current_5min_date.bind(this)} buttons="day"/>
-                            : <InputMonth date={state.current_daily_date} onDate={this.set_current_daily_date.bind(this)} buttons="month"/>}
-                        </div>
-                    </div>
-                </FormRow>
                 {state.data_type == '5min' ?
                     <>
                         {
