@@ -36,8 +36,11 @@
             "auto_discovery_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, ein # oder + enthalten oder leer sein.",
             "enable_meter": "MQTT Stromzähler",
             "enable_meter_desc": "Simuliert einen Stromzähler und aktualisiert ihn mit Werten von folgendem Topic.",
-            "meter_topic": "Stromzähler-Topic",
-            "meter_topic_invalid": "Das Topic darf nicht mit $ beginnen, ein # oder + enthalten oder leer sein."
+            "has_all_values": "Erweiterter Wertesatz",
+            "has_all_values_desc": "Verfügbar",
+            "meter_path": "Stromzähler-Pfad",
+            "meter_path_muted": "Pfad, unter dem /values und /all_values existieren.",
+            "meter_path_invalid": "Der Pfad darf nicht mit $ beginnen, ein # oder + enthalten oder leer sein."
         },
         "script": {
             "save_failed": "Speichern der MQTT-Einstellungen fehlgeschlagen.",

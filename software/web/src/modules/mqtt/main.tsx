@@ -161,13 +161,19 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                                 onClick={() => this.setState({meter_config: {...this.state.meter_config, enable: !state.meter_config.enable}})} />
                         </FormRow>
 
-                        <FormRow label={__("mqtt.content.meter_topic")}>
+                        <FormRow label={__("mqtt.content.has_all_values")}>
+                            <Switch desc={__("mqtt.content.has_all_values_desc")}
+                                checked={state.meter_config.has_all_values}
+                                onClick={() => this.setState({meter_config: {...this.state.meter_config, has_all_values: !state.meter_config.has_all_values}})} />
+                        </FormRow>
+
+                        <FormRow label={__("mqtt.content.meter_path")} label_muted={__("mqtt.content.meter_path_muted")}>
                             <InputText required
                                     maxLength={128}
                                     pattern="^[^#+$][^#+]*"
-                                    value={state.meter_config.topic}
-                                    onValue={(v) => this.setState({meter_config: {...this.state.meter_config, topic: v}})}
-                                    invalidFeedback={__("mqtt.content.meter_topic_invalid")}
+                                    value={state.meter_config.source_meter_path}
+                                    onValue={(v) => this.setState({meter_config: {...this.state.meter_config, source_meter_path: v}})}
+                                    invalidFeedback={__("mqtt.content.meter_path_invalid")}
                                     />
                         </FormRow>
                     </>: null}

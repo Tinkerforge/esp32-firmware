@@ -16,7 +16,8 @@ export interface auto_discovery_config {
 
 export interface meter_config {
     enable: boolean,
-    topic: string
+    has_all_values: boolean,
+    source_meter_path: string
 }
 
 export interface state {

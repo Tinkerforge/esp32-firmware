@@ -19,9 +19,13 @@
 
 #pragma once
 
-#include "config.h"
+#include <stdint.h>
+#include "ArduinoJson.h"
 
+#include "config.h"
 #include "module.h"
+
+#include "modules/meter/meter.h"
 
 class MqttMeter final : public IModule
 {
@@ -37,6 +41,12 @@ public:
     ConfigRoot config;
 
 private:
+    void handle_mqtt_values(const JsonDocument &doc);
+    void handle_mqtt_all_values(const JsonDocument &doc);
+
     bool enabled = false;
-    String source_meter_topic;
+    uint8_t mqtt_meter_type = 0;
+    String source_meter_values_topic;
+    String source_meter_all_values_topic;
+    float all_values[METER_ALL_VALUES_COUNT];
 };
