@@ -1411,10 +1411,10 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
     }
 }
 
-String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys)
-{
+template<typename T>
+String ConfigRoot::update_from_visitor(T visitor) {
     Config copy = *this;
-    String err = Config::apply_visitor(from_json{root, force_same_keys, this->permit_null_updates, true}, copy.value);
+    String err = Config::apply_visitor(visitor, copy.value);
 
     if (err != "")
         return err;
@@ -1436,28 +1436,14 @@ String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys)
     return err;
 }
 
+String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys)
+{
+    return this->update_from_visitor(from_json{root, force_same_keys, this->permit_null_updates, true});
+}
+
 String ConfigRoot::update(const Config::ConfUpdate *val)
 {
-    Config copy = *this;
-    String err = Config::apply_visitor(from_update{val}, copy.value);
-    if (err != "")
-        return err;
-
-    err = Config::apply_visitor(default_validator{}, copy.value);
-
-    if (err != "")
-        return err;
-
-    if (this->validator != nullptr) {
-        err = this->validator(copy);
-        if (err != "")
-            return err;
-    }
-
-    this->value = copy.value;
-    this->value.updated = true;
-
-    return err;
+    return this->update_from_visitor(from_update{val});
 }
 
 String ConfigRoot::validate()

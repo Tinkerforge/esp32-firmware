@@ -859,6 +859,10 @@ public:
     String update(const Config::ConfUpdate *val);
 
     String validate();
+
+private:
+    template<typename T>
+    String update_from_visitor(T visitor);
 };
 
 /*void test() {
