@@ -181,7 +181,7 @@ function distr(numItems: number, sizeFactor: number, justify: number, onlyIdx: n
 const { round, min, max, ceil } = Math;
 
 export function uPlotTimelinePlugin(opts: any) {
-    const { mode, fill, stroke } = opts;
+    const { fill, stroke } = opts;
 
     const pxRatio    = devicePixelRatio;
 
@@ -259,84 +259,52 @@ export function uPlotTimelinePlugin(opts: any) {
             u.ctx.clip();
 
             walk(sidx - 1, u.series.length - 1, yDim, (iy: number, y0: number, hgt: number) => {
-                // draw spans
-                if (mode == 1) {
-                    let last_rgt: number = undefined;
+                let last_rgt: number = undefined;
 
-                    for (let ix = 0; ix < dataY.length; ix++) {
-                        if (dataY[ix] === null) {
-                            last_rgt = undefined;
+                for (let ix = 0; ix < dataY.length; ix++) {
+                    if (dataY[ix] === null) {
+                        last_rgt = undefined;
+                    }
+                    else {
+                        let lft: number;
+
+                        if (last_rgt !== undefined) {
+                            lft = last_rgt;
                         }
                         else {
-                            let lft: number;
-
-                            if (last_rgt !== undefined) {
-                                lft = last_rgt;
-                            }
-                            else {
-                                lft = round(valToPosX(dataX[ix], scaleX, xDim, xOff));
-                            }
-
-                            let nextIx = ix;
-                            while (dataY[++nextIx] === undefined && nextIx < dataY.length) {}
-
-                            let rgt0 = valToPosX(dataX[nextIx - 1], scaleX, xDim, xOff);
-                            let rgt1 = rgt0;
-
-                            if (dataY[nextIx] !== null && dataY[nextIx] !== undefined) {
-                                rgt1 = valToPosX(dataX[nextIx], scaleX, xDim, xOff);
-                            }
-
-                            let rgt = round(rgt0 + (rgt1 - rgt0) / 2);
-
-                            last_rgt = rgt;
-
-                            putBox(
-                                u.ctx,
-                                rect,
-                                xOff,
-                                yOff,
-                                lft,
-                                round(yOff + y0),
-                                max(rgt - lft, 1),
-                                round(hgt),
-                                strokeWidth,
-                                iy,
-                                ix,
-                                dataY[ix]
-                            );
-
-                            ix = nextIx - 1;
+                            lft = round(valToPosX(dataX[ix], scaleX, xDim, xOff));
                         }
-                    }
-                }
-                // draw matrix
-                else {
-                    let colWid = valToPosX(dataX[1], scaleX, xDim, xOff) - valToPosX(dataX[0], scaleX, xDim, xOff);
-                    let gapWid = colWid * gapFactor;
-                    let barWid = round(min(maxWidth, colWid - gapWid) - strokeWidth);
-                    let xShift = align == 1 ? 0 : align == -1 ? barWid : barWid / 2;
 
-                    for (let ix = idx0; ix <= idx1; ix++) {
-                        if (dataY[ix] != null) {
-                            // TODO: all xPos can be pre-computed once for all series in aligned set
-                            let lft = valToPosX(dataX[ix], scaleX, xDim, xOff);
+                        let nextIx = ix;
+                        while (dataY[++nextIx] === undefined && nextIx < dataY.length) {}
 
-                            putBox(
-                                u.ctx,
-                                rect,
-                                xOff,
-                                yOff,
-                                round(lft - xShift),
-                                round(yOff + y0),
-                                barWid,
-                                round(hgt),
-                                strokeWidth,
-                                iy,
-                                ix,
-                                dataY[ix]
-                            );
+                        let rgt0 = valToPosX(dataX[nextIx - 1], scaleX, xDim, xOff);
+                        let rgt1 = rgt0;
+
+                        if (dataY[nextIx] !== null && dataY[nextIx] !== undefined) {
+                            rgt1 = valToPosX(dataX[nextIx], scaleX, xDim, xOff);
                         }
+
+                        let rgt = round(rgt0 + (rgt1 - rgt0) / 2);
+
+                        last_rgt = rgt;
+
+                        putBox(
+                            u.ctx,
+                            rect,
+                            xOff,
+                            yOff,
+                            lft,
+                            round(yOff + y0),
+                            max(rgt - lft, 1),
+                            round(hgt),
+                            strokeWidth,
+                            iy,
+                            ix,
+                            dataY[ix]
+                        );
+
+                        ix = nextIx - 1;
                     }
                 }
             });
@@ -407,48 +375,9 @@ export function uPlotTimelinePlugin(opts: any) {
                     }
                 },
                 scales: {
-                    /*x: {
-                        range(u: uPlot, min: number, max: number) {
-                            if (mode == 2) {
-                                let colWid = u.data[0][1] - u.data[0][0];
-                                let scalePad = colWid/2;
-
-                                if (min <= u.data[0][0])
-                                    min = u.data[0][0] - scalePad;
-
-                                let lastIdx = u.data[0].length - 1;
-
-                                if (max >= u.data[0][lastIdx])
-                                    max = u.data[0][lastIdx] + scalePad;
-                            }
-
-                            return [min, max];
-                        }
-                    },*/
                     y: {
                         range: [0, 1],
                     }
-                }
-            });
-
-            uPlot.assign(opts.axes[0], {
-                splits: mode == 2 ? (u: uPlot, axisIdx: number, scaleMin: number, scaleMax: number, foundIncr: number, foundSpace: number) => {
-                    let splits = [];
-
-                    let dataIncr = u.data[0][1] - u.data[0][0];
-                    let skipFactor = ceil(foundIncr / dataIncr);
-
-                    for (let i = 0; i < u.data[0].length; i += skipFactor) {
-                        let v = u.data[0][i];
-
-                        if (v >= scaleMin && v <= scaleMax)
-                            splits.push(v);
-                    }
-
-                    return splits;
-                } : null,
-                grid: {
-                    show: mode != 2
                 }
             });
 

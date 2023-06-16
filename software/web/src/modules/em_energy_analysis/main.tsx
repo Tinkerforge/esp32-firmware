@@ -381,7 +381,6 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             },
             plugins: [
                 uPlotTimelinePlugin({
-                    mode: 1,
                     fill: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_fills && this.data.value_fills[seriesIdx] ? this.data.value_fills[seriesIdx][value] : 'rgb(0, 0, 0, 0.1)',
                     stroke: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_strokes && this.data.value_strokes[seriesIdx] ? this.data.value_strokes[seriesIdx][value] : 'rgb(0, 0, 0)',
                     size: [0.9, 100],
@@ -391,38 +390,6 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                         setSeries: (self: uPlot, seriesIdx: number, opts: uPlot.Series) => {
                             this.series_visibility[this.data.keys[seriesIdx]] = opts.show;
                         },
-                        /*drawAxes: [
-                            (self: uPlot) => {
-                                let ctx = self.ctx;
-
-                                ctx.save();
-
-                                let s  = self.series[0];
-                                let xd = self.data[0];
-                                let [i0, i1] = s.idxs;
-                                let xpad = (xd[i1] - xd[i0]) * this.props.x_padding_factor;
-                                let x0 = self.valToPos(xd[i0] - xpad, 'x', true) - self.axes[0].ticks.size;
-                                let y0 = self.valToPos(0, 'y', true);
-                                let x1 = self.valToPos(xd[i1] + xpad, 'x', true);
-                                let y1 = self.valToPos(0, 'y', true);
-
-                                const lineWidth = 2;
-                                const offset = (lineWidth % 2) / 2;
-
-                                ctx.translate(offset, offset);
-
-                                ctx.beginPath();
-                                ctx.lineWidth = lineWidth;
-                                ctx.strokeStyle = 'rgb(0,0,0,0.2)';
-                                ctx.moveTo(x0, y0);
-                                ctx.lineTo(x1, y1);
-                                ctx.stroke();
-
-                                ctx.translate(-offset, -offset);
-
-                                ctx.restore();
-                            }
-                        ],*/
                     },
                 },
             ],
