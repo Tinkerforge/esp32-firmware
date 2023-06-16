@@ -164,11 +164,15 @@ static esp_err_t ws_handler(httpd_req_t *req)
 
             int sock = httpd_req_to_sockfd(req);
 
-            ws->keepAliveAdd(sock);
-
             if (ws->on_client_connect_fn) {
+                // call the client connect callback before adding the client to
+                // the keep alive list to ensure that the full state is send by the
+                // callback before any other message with a partial state might
+                // be send to all clients known by the keep alive list
                 ws->on_client_connect_fn(WebSocketsClient{sock, ws});
             }
+
+            ws->keepAliveAdd(sock);
         }
         return ESP_OK;
     }
