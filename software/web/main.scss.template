@@ -528,7 +528,7 @@ body {
 
 .em-energy-analysis-flags-chart {
     position: relative;
-    aspect-ratio: 4;
+    aspect-ratio: 8;
 }
 
 .em-energy-analysis-chart {

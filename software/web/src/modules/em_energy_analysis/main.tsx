@@ -305,7 +305,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             let aspect_ratio = parseFloat(getComputedStyle(div).aspectRatio);
 
             if (isNaN(aspect_ratio)) {
-                aspect_ratio = 4;
+                aspect_ratio = 8;
             }
 
             return {
