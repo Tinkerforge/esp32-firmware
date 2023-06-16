@@ -186,8 +186,12 @@ void Mqtt::onMqttConnect()
 
 void Mqtt::onMqttDisconnect()
 {
+    if (this->mqtt_state.get("connection_state")->asEnum<MqttConnectionState>() == MqttConnectionState::NOT_CONNECTED)
+        logger.printfln("MQTT: Failed to connect to broker.");
+    else
+        logger.printfln("MQTT: Disconnected from broker.");
+
     this->mqtt_state.get("connection_state")->updateInt((int)MqttConnectionState::NOT_CONNECTED);
-    logger.printfln("MQTT: Disconnected from broker.");
     if (was_connected) {
         was_connected = false;
         uint32_t now = millis();
@@ -347,14 +351,15 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             break;
         case MQTT_EVENT_ERROR: {
                 auto eh = event->error_handle;
+                bool was_connected = mqtt->mqtt_state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::NOT_CONNECTED;
 
                 if (eh->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
-                    if (eh->esp_tls_last_esp_err != ESP_OK) {
+                    if (was_connected && eh->esp_tls_last_esp_err != ESP_OK) {
                         const char *e = esp_err_to_name_r(eh->esp_tls_last_esp_err, err_buf, sizeof(err_buf) / sizeof(err_buf[0]));
                         logger.printfln("MQTT: Transport error: %s (esp_tls_last_esp_err)", e);
                         mqtt->mqtt_state.get("last_error")->updateInt(eh->esp_tls_last_esp_err);
                     }
-                    if (eh->esp_tls_stack_err != 0) {
+                    if (was_connected && eh->esp_tls_stack_err != 0) {
                         const char *e = esp_err_to_name_r(eh->esp_tls_stack_err, err_buf, sizeof(err_buf) / sizeof(err_buf[0]));
                         logger.printfln("MQTT: Transport error: %s (esp_tls_stack_err)", e);
                         mqtt->mqtt_state.get("last_error")->updateInt(eh->esp_tls_stack_err);
