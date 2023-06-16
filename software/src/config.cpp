@@ -19,6 +19,8 @@
 
 #include "config.h"
 
+#include <mutex>
+
 #include "math.h"
 
 #include "tools.h"
@@ -1411,8 +1413,11 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
     }
 }
 
+static std::recursive_mutex update_mutex;
+
 template<typename T>
 String ConfigRoot::update_from_visitor(T visitor) {
+    std::lock_guard<std::recursive_mutex> l{update_mutex};
     Config copy = *this;
     String err = Config::apply_visitor(visitor, copy.value);
 
