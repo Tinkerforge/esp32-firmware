@@ -416,15 +416,6 @@ void API::addFeature(const char *name)
     features.get(features.count() - 1)->updateString(name);
 }
 
-void API::wifiAvailable()
-{
-    task_scheduler.scheduleOnce([this]() {
-        for (auto *backend: this->backends) {
-            backend->wifiAvailable();
-        }
-    }, 0);
-}
-
 bool API::already_registered(const String &path, const char *api_type)
 {
     for (auto &reg : this->states) {

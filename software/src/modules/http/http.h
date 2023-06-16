@@ -42,7 +42,6 @@ public:
     void addResponse(size_t responseIdx, const ResponseRegistration &reg) override;
     bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
     void pushRawStateUpdate(const String &payload, const String &path) override;
-    void wifiAvailable() override;
     WebServerRequestReturnProtect api_handler_get(WebServerRequest req);
     WebServerRequestReturnProtect api_handler_put(WebServerRequest req);
 

@@ -139,11 +139,6 @@ void Mqtt::pushRawStateUpdate(const String &payload, const String &path)
     this->publish_with_prefix(path, payload);
 }
 
-void Mqtt::wifiAvailable()
-{
-
-}
-
 void Mqtt::onMqttConnect()
 {
     last_connected_ms = millis();

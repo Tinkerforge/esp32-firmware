@@ -70,7 +70,6 @@ public:
     virtual void addResponse(size_t responseIdx, const ResponseRegistration &reg) = 0;
     virtual bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) = 0;
     virtual void pushRawStateUpdate(const String &payload, const String &path) = 0;
-    virtual void wifiAvailable() = 0;
 };
 
 class API
@@ -104,8 +103,6 @@ public:
     void registerDebugUrl(WebServer *server);
 
     size_t registerBackend(IAPIBackend *backend);
-
-    void wifiAvailable();
 
     std::vector<StateRegistration> states;
     std::vector<CommandRegistration> commands;

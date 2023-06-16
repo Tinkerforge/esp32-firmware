@@ -128,7 +128,3 @@ void WS::pushRawStateUpdate(const String &payload, const String &path)
 {
     pushStateUpdate(0, payload, path);
 }
-
-void WS::wifiAvailable()
-{
-}

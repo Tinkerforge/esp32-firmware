@@ -41,7 +41,6 @@ public:
     void addResponse(size_t responseIdx, const ResponseRegistration &reg) override;
     bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
     void pushRawStateUpdate(const String &payload, const String &path) override;
-    void wifiAvailable() override;
 
     WebSockets web_sockets;
     std::vector<std::function<void(WebSocketsClient)>> on_connect_callbacks;

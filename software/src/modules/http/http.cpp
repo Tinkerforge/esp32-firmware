@@ -328,7 +328,3 @@ bool Http::pushStateUpdate(size_t stateIdx, const String &payload, const String 
 void Http::pushRawStateUpdate(const String &payload, const String &path)
 {
 }
-
-void Http::wifiAvailable()
-{
-}

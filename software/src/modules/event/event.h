@@ -50,7 +50,6 @@ public:
     void addResponse(size_t responseIdx, const ResponseRegistration &reg) override;
     bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
     void pushRawStateUpdate(const String &payload, const String &path) override;
-    void wifiAvailable() override;
 
 private:
     size_t backendIdx;

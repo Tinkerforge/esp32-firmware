@@ -91,7 +91,3 @@ bool Event::pushStateUpdate(size_t stateIdx, const String &payload, const String
 void Event::pushRawStateUpdate(const String &payload, const String &path)
 {
 }
-
-void Event::wifiAvailable()
-{
-}

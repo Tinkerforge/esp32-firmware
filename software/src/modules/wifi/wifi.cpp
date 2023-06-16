@@ -446,8 +446,6 @@ void Wifi::setup()
             logger.printfln("Wifi got IP address: %s. Connected to BSSID %s", ip.c_str(), WiFi.BSSIDstr().c_str());
             wifi_state.get("sta_ip")->updateString(ip);
             wifi_state.get("sta_bssid")->updateString(WiFi.BSSIDstr());
-
-            api.wifiAvailable();
         },
         ARDUINO_EVENT_WIFI_STA_GOT_IP);
 
