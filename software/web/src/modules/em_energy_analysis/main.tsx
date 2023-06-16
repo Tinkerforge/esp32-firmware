@@ -322,7 +322,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     x: false, // disable zoom
                 },
                 sync: {
-                    key: this.props.sync ? this.props.sync.key : undefined,
+                    key: this.props.sync?.key,
                 },
             },
             series: [
@@ -601,7 +601,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     x: false, // disable zoom
                 },
                 sync: {
-                    key: this.props.sync ? this.props.sync.key : undefined,
+                    key: this.props.sync?.key,
                 },
             },
             series: [
