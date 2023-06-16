@@ -42,7 +42,7 @@ void WS::register_urls()
     web_sockets.onConnect([this](WebSocketsClient client) {
         CoolString to_send;
         for (auto &reg : api.states) {
-            to_send += String("{\"topic\":\"") + reg.path + String("\",\"payload\":") + reg.config->to_string_except(reg.keys_to_censor) + String("}\n");
+            to_send += "{\"topic\":\"" + reg.path + "\",\"payload\":" + reg.config->to_string_except(reg.keys_to_censor) + "}\n";
         }
         size_t len;
         char *p = to_send.releaseOwnership(&len);
