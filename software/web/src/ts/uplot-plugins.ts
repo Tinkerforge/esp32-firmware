@@ -261,16 +261,35 @@ export function uPlotTimelinePlugin(opts: any) {
             walk(sidx - 1, u.series.length - 1, yDim, (iy: number, y0: number, hgt: number) => {
                 // draw spans
                 if (mode == 1) {
+                    let last_rgt: number = undefined;
+
                     for (let ix = 0; ix < dataY.length; ix++) {
-                        if (dataY[ix] != null) {
-                            let lft = round(valToPosX(dataX[ix], scaleX, xDim, xOff));
+                        if (dataY[ix] === null) {
+                            last_rgt = undefined;
+                        }
+                        else {
+                            let lft: number;
+
+                            if (last_rgt !== undefined) {
+                                lft = last_rgt;
+                            }
+                            else {
+                                lft = round(valToPosX(dataX[ix], scaleX, xDim, xOff));
+                            }
 
                             let nextIx = ix;
                             while (dataY[++nextIx] === undefined && nextIx < dataY.length) {}
 
-                            // to now (not to end of chart)
-                            //let rgt = nextIx == dataY.length ? xOff + xDim + strokeWidth : round(valToPosX(dataX[nextIx], scaleX, xDim, xOff));
-                            let rgt = nextIx == dataY.length ? round(valToPosX(dataX[dataY.length - 1], scaleX, xDim, xOff)) : round(valToPosX(dataX[nextIx], scaleX, xDim, xOff));
+                            let rgt0 = valToPosX(dataX[nextIx - 1], scaleX, xDim, xOff);
+                            let rgt1 = rgt0;
+
+                            if (dataY[nextIx] !== null && dataY[nextIx] !== undefined) {
+                                rgt1 = valToPosX(dataX[nextIx], scaleX, xDim, xOff);
+                            }
+
+                            let rgt = round(rgt0 + (rgt1 - rgt0) / 2);
+
+                            last_rgt = rgt;
 
                             putBox(
                                 u.ctx,
@@ -279,7 +298,7 @@ export function uPlotTimelinePlugin(opts: any) {
                                 yOff,
                                 lft,
                                 round(yOff + y0),
-                                rgt - lft,
+                                max(rgt - lft, 1),
                                 round(hgt),
                                 strokeWidth,
                                 iy,
