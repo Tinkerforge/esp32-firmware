@@ -39,9 +39,9 @@
 void MqttMeter::pre_setup()
 {
     config = ConfigRoot(Config::Object({
-        {"enable", Config::Bool(true)}, // TODO false
-        {"has_all_values", Config::Bool(true)},
-        {"source_meter_path", Config::Str("esp32/YsJ/meter", 0, 128)}, // TODO generalize default topic
+        {"enable", Config::Bool(false)},
+        {"has_all_values", Config::Bool(false)},
+        {"source_meter_path", Config::Str("path/to/meter", 0, 128)},
     }),  [](Config &cfg) -> String {
         const String &global_topic_prefix = mqtt.mqtt_config.get("global_topic_prefix")->asString();
         const String &meter_path = cfg.get("source_meter_path")->asString();
@@ -55,7 +55,10 @@ void MqttMeter::pre_setup()
 
 void MqttMeter::setup()
 {
-    api.restorePersistentConfig("mqtt/meter_config", &config);
+    // Module is always initialized, even if disabled.
+    initialized = true;
+
+    api.restorePersistentConfig("mqtt_meter/config", &config);
 
     enabled = config.get("enable")->asBool();
     const String &source_meter_path = config.get("source_meter_path")->asString();
@@ -71,13 +74,11 @@ void MqttMeter::setup()
     } else {
         mqtt_meter_type = METER_TYPE_CUSTOM_BASIC;
     }
-
-    initialized = true;
 }
 
 void MqttMeter::register_urls()
 {
-    api.addPersistentConfig("mqtt/meter_config", &config, {}, 1000);
+    api.addPersistentConfig("mqtt_meter/config", &config, {}, 1000);
 }
 
 void MqttMeter::onMqttConnect()

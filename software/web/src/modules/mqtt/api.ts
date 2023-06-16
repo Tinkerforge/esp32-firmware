@@ -14,12 +14,6 @@ export interface auto_discovery_config {
     auto_discovery_prefix: string
 }
 
-export interface meter_config {
-    enable: boolean,
-    has_all_values: boolean,
-    source_meter_path: string
-}
-
 export interface state {
     connection_state: number
     last_error: number

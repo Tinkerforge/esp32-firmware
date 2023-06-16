@@ -1,0 +1,23 @@
+{
+    "mqtt_meter": {
+        "status": {
+        },
+        "navbar": {
+            "mqtt_meter": "MQTT-Stromzähler"
+        },
+        "content": {
+            "title": "MQTT-Stromzähler",
+            "enable_meter": "MQTT-Stromzähler aktivieren",
+            "enable_meter_desc": "Simuliert einen Stromzähler und aktualisiert ihn mit Werten von folgendem Pfad.",
+            "has_all_values": "Erweiterter Wertesatz",
+            "has_all_values_desc": "Pfad stellt /all_values zur Verfügung",
+            "meter_path": "Stromzähler-Pfad",
+            "meter_path_muted": "Pfad, unter dem /values und /all_values existieren.",
+            "meter_path_invalid": "Der Pfad darf nicht mit $ beginnen, ein # oder + enthalten oder leer sein."
+        },
+        "script": {
+            "save_failed": "Speichern der MQTT-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "MQTT-Einstellungen"
+        }
+    }
+}
