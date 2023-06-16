@@ -1566,10 +1566,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         }
                     }
 
-                    console.log('WBF ' + charger.uid);
-                    console.table(wallbox_data.flags);
-                    console.table(state);
-
                     uplot_data.keys.push('wb_state_' + charger.uid);
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(state);
