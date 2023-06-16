@@ -17,7 +17,9 @@
             "state_waiting_for_charge_release": "Warte auf Freigabe",
             "state_ready_to_charge": "Ladebereit",
             "state_charging": "Lädt",
-            "state_error": "Fehler"
+            "state_error": "Fehler",
+            "state_single_phase": "Einphasig",
+            "state_three_phase": "Dreiphasig"
         },
         "script": {
             "time_5min": "Uhrzeit",

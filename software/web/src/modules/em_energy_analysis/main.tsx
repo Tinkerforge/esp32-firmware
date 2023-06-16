@@ -156,10 +156,9 @@ const wb_state_fills: {[id: number]: string} = {
     4: 'rgb(220,  53,  69, 0.66)',
 };
 
-// FIXME: translation
 const em_threep_names: {[id: number]: string} = {
-    0: '1p',
-    1: '3p',
+    0: __("em_energy_analysis.content.state_single_phase"),
+    1: __("em_energy_analysis.content.state_three_phase"),
 };
 
 const em_threep_strokes: {[id: number]: string} = {

@@ -17,7 +17,9 @@
             "state_waiting_for_charge_release": "Waiting for release",
             "state_ready_to_charge": "Ready",
             "state_charging": "Charging",
-            "state_error": "Error"
+            "state_error": "Error",
+            "state_single_phase": "Single-phase",
+            "state_three_phase": "Three-phase"
         },
         "script": {
             "time_5min": "Time of day",
