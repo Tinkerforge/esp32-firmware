@@ -30,7 +30,7 @@ void Meter::pre_setup()
 {
     state = Config::Object({
         {"state", Config::Uint8(0)}, // 0 - no energy meter, 1 - initialization error, 2 - meter available
-        {"type", Config::Uint8(0)} // 0 - not available, 1 - sdm72, 2 - sdm630, 3 - sdm72v2, 4 - MQTT meter
+        {"type", Config::Uint8(0)} // 0 - not available, 1 - sdm72, 2 - sdm630, 3 - sdm72v2
     });
 
     values = Config::Object({
@@ -166,6 +166,7 @@ void Meter::setupMeter(uint8_t meter_type)
             api.addFeature("meter_phases");
             /* FALLTHROUGH*/
         case METER_TYPE_SDM72CTM:
+        case METER_TYPE_CUSTOM_ALL_VALUES:
             api.addFeature("meter_all_values");
             break;
     }

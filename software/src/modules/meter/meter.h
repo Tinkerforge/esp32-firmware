@@ -42,6 +42,7 @@
 
 // Supported by mqtt_meter module
 #define METER_TYPE_CUSTOM_BASIC 200
+#define METER_TYPE_CUSTOM_ALL_VALUES 201
 
 // Supported by https://github.com/warp-more-hardware
 #define METER_TYPE_INTERNAL 254
