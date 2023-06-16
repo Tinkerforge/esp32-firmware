@@ -188,8 +188,6 @@ export function uPlotTimelinePlugin(opts: any) {
     const laneWidth   = 0.9;
     const laneDistr   = SPACE_BETWEEN;
 
-    const font      = round(14 * pxRatio) + "px Arial";
-
     function walk(yIdx: number, count: number, dim: number, draw: (iy: number, y0: number, hgt: number) => void) {
         distr(count, laneWidth, laneDistr, yIdx, (i: number, offPct: number, dimPct: number) => {
             let laneOffPx = dim * offPct;
@@ -333,48 +331,12 @@ export function uPlotTimelinePlugin(opts: any) {
         return null;
     }
 
-    function drawPoints(u: uPlot, sidx: number, i0: number, i1: number) {
-        u.ctx.save();
-        u.ctx.rect(u.bbox.left, u.bbox.top, u.bbox.width, u.bbox.height);
-        u.ctx.clip();
-
-        u.ctx.font         = font;
-        u.ctx.fillStyle    = "black";
-        u.ctx.textAlign    = mode == 1 ? "left" : "center";
-        u.ctx.textBaseline = "middle";
-
-        uPlot.orient(u, sidx, (series, dataX, dataY, scaleX, scaleY, valToPosX, valToPosY, xOff, yOff, xDim, yDim, moveTo, lineTo, rect) => {
-            let strokeWidth = round((series.width || 0) * pxRatio);
-            let textOffset = mode == 1 ? strokeWidth + 2 : 0;
-            let yMids = Array(u.series.length - 1).fill(0);
-
-            walk(null, u.series.length - 1, u.bbox.height, (iy: number, y0: number, hgt: number) => {
-                // vertical midpoints of each series' timeline (stored relative to .u-over)
-                yMids[iy] = round(y0 + hgt / 2);
-            });
-
-            let y = round(yOff + yMids[sidx - 1]);
-
-            for (let ix = 0; ix < dataY.length; ix++) {
-                if (dataY[ix] != null) {
-                    let x = valToPosX(dataX[ix], scaleX, xDim, xOff) + textOffset;
-                    u.ctx.fillText('' + (u.series[sidx].value as ((self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => string | number))(u, dataY[ix], sidx, ix), x, y);
-                }
-            }
-        });
-
-        u.ctx.restore();
-
-        return false;
-    }
-
     let qt: Quadtree;
 
     return {
         hooks: {
             drawClear: (u: uPlot) => {
                 qt = qt || new Quadtree(0, 0, u.bbox.width, u.bbox.height);
-
                 qt.clear();
 
                 // force-clear the path cache to cause drawBars() to rebuild new quadtree
@@ -386,9 +348,6 @@ export function uPlotTimelinePlugin(opts: any) {
                 if (seriesIdx > 0) {
                     uPlot.assign(u.series[seriesIdx], {
                         paths: drawPaths,
-                        points: {
-                            show: drawPoints
-                        }
                     });
                 }
             },
@@ -490,7 +449,6 @@ export function uPlotTimelinePlugin(opts: any) {
                 values:     () => Array(u.series.length - 1).fill(null).map((v, i) => u.series[i + 1].label),
                 grid:       {show: false},
                 ticks:      {show: false},
-
                 side:       3,
             });
 
@@ -498,9 +456,6 @@ export function uPlotTimelinePlugin(opts: any) {
                 if (i > 0) {
                     uPlot.assign(s, {
                         paths: drawPaths,
-                        points: {
-                            show: drawPoints
-                        },
                     });
                 }
             });
