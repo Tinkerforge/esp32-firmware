@@ -156,25 +156,25 @@ const wb_state_fills: {[id: number]: string} = {
     4: 'rgb(220,  53,  69, 0.66)',
 };
 
-const em_threep_names: {[id: number]: string} = {
+const em_contactor_names: {[id: number]: string} = {
     0: __("em_energy_analysis.content.state_single_phase"),
     1: __("em_energy_analysis.content.state_three_phase"),
 };
 
-const em_threep_strokes: {[id: number]: string} = {
+const em_contactor_strokes: {[id: number]: string} = {
     0: 'rgb(108, 117, 125)',
     1: 'rgb( 40, 167,  69)',
 };
 
-const em_threep_fills: {[id: number]: string} = {
+const em_contactor_fills: {[id: number]: string} = {
     0: 'rgb(108, 117, 125, 0.66)',
     1: 'rgb( 40, 167,  69, 0.66)',
 };
 
 // FIXME: translation
 const em_input_names: {[id: number]: string} = {
-    0: 'low',
-    1: 'high',
+    0: __("em_energy_analysis.content.state_input_low"),
+    1: __("em_energy_analysis.content.state_input_high"),
 };
 
 const em_input_strokes: {[id: number]: string} = {
@@ -188,17 +188,17 @@ const em_input_fills: {[id: number]: string} = {
 };
 
 // FIXME: translation
-const em_output_names: {[id: number]: string} = {
-    0: 'open',
-    1: 'closed',
+const em_relay_names: {[id: number]: string} = {
+    0: __("em_energy_analysis.content.state_relay_open"),
+    1: __("em_energy_analysis.content.state_relay_closed"),
 };
 
-const em_output_strokes: {[id: number]: string} = {
+const em_relay_strokes: {[id: number]: string} = {
     0: 'rgb(108, 117, 125)',
     1: 'rgb( 40, 167,  69)',
 };
 
-const em_output_fills: {[id: number]: string} = {
+const em_relay_fills: {[id: number]: string} = {
     0: 'rgb(108, 117, 125, 0.66)',
     1: 'rgb( 40, 167,  69, 0.66)',
 };
@@ -353,7 +353,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     },
                 },
                 {
-                    size: 55,
+                    size: 70,
                 }
             ],
             scales: {
@@ -621,7 +621,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     },
                 },
                 {
-                    size: 55,
+                    size: 70,
                     values: (self: uPlot, splits: number[]) => {
                         let values: string[] = new Array(splits.length);
 
@@ -1440,84 +1440,84 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         if (energy_manager_data && !energy_manager_data.empty) {
             slot_count = Math.max(slot_count, energy_manager_data.flags.length);
 
-            let threep = new Array(energy_manager_data.flags.length);
-            let input1 = new Array(energy_manager_data.flags.length);
-            let input2 = new Array(energy_manager_data.flags.length);
-            let output = new Array(energy_manager_data.flags.length);
+            let contactor = new Array(energy_manager_data.flags.length);
+            let input3 = new Array(energy_manager_data.flags.length);
+            let input4 = new Array(energy_manager_data.flags.length);
+            let relay = new Array(energy_manager_data.flags.length);
 
             for (let i = 0; i < energy_manager_data.flags.length; ++i) {
                 if (energy_manager_data.flags[i] === null) {
-                    threep[i] = null;
-                    input1[i] = null;
-                    input2[i] = null;
-                    output[i] = null;
+                    contactor[i] = null;
+                    input3[i] = null;
+                    input4[i] = null;
+                    relay[i] = null;
                 }
                 else {
                     if (i > 0 && energy_manager_data.flags[i - 1] !== null && (energy_manager_data.flags[i] & 0b0001) == (energy_manager_data.flags[i - 1] & 0b0001)) {
-                        threep[i] = undefined;
+                        contactor[i] = undefined;
                     }
                     else {
-                        threep[i] = energy_manager_data.flags[i] & 0b0001;
+                        contactor[i] = energy_manager_data.flags[i] & 0b0001;
                     }
 
                     if (i > 0 && energy_manager_data.flags[i - 1] !== null && (energy_manager_data.flags[i] & 0b0010) == (energy_manager_data.flags[i - 1] & 0b0010)) {
-                        input1[i] = undefined;
+                        input3[i] = undefined;
                     }
                     else {
-                        input1[i] = (energy_manager_data.flags[i] & 0b0010) >> 1;
+                        input3[i] = (energy_manager_data.flags[i] & 0b0010) >> 1;
                     }
 
                     if (i > 0 && energy_manager_data.flags[i - 1] !== null && (energy_manager_data.flags[i] & 0b0100) == (energy_manager_data.flags[i - 1] & 0b0100)) {
-                        input2[i] = undefined;
+                        input4[i] = undefined;
                     }
                     else {
-                        input2[i] = (energy_manager_data.flags[i] & 0b0100) >> 2;
+                        input4[i] = (energy_manager_data.flags[i] & 0b0100) >> 2;
                     }
 
                     if (i > 0 && energy_manager_data.flags[i - 1] !== null && (energy_manager_data.flags[i] & 0b1000) == (energy_manager_data.flags[i - 1] & 0b1000)) {
-                        output[i] = undefined;
+                        relay[i] = undefined;
                     }
                     else {
-                        output[i] = (energy_manager_data.flags[i] & 0b1000) >> 3;
+                        relay[i] = (energy_manager_data.flags[i] & 0b1000) >> 3;
                     }
                 }
             }
 
-            uplot_data.keys.push('em_threep');
-            uplot_data.names.push('EM Phase'); // FIXME
-            uplot_data.values.push(threep);
+            uplot_data.keys.push('em_contactor');
+            uplot_data.names.push(__("em_energy_analysis.content.state_contactor"));
+            uplot_data.values.push(contactor);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
-            uplot_data.value_names.push(em_threep_names);
-            uplot_data.value_strokes.push(em_threep_strokes);
-            uplot_data.value_fills.push(em_threep_fills);
+            uplot_data.value_names.push(em_contactor_names);
+            uplot_data.value_strokes.push(em_contactor_strokes);
+            uplot_data.value_fills.push(em_contactor_fills);
 
-            uplot_data.keys.push('em_input1');
-            uplot_data.names.push('EM Input 1'); // FIXME
-            uplot_data.values.push(input1);
+            uplot_data.keys.push('em_input3');
+            uplot_data.names.push(__("em_energy_analysis.content.state_input3"));
+            uplot_data.values.push(input3);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
             uplot_data.value_names.push(em_input_names);
             uplot_data.value_strokes.push(em_input_strokes);
             uplot_data.value_fills.push(em_input_fills);
 
-            uplot_data.keys.push('em_input2');
-            uplot_data.names.push('EM Input 2'); // FIXME
-            uplot_data.values.push(input2);
+            uplot_data.keys.push('em_input4');
+            uplot_data.names.push(__("em_energy_analysis.content.state_input4"));
+            uplot_data.values.push(input4);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
             uplot_data.value_names.push(em_input_names);
             uplot_data.value_strokes.push(em_input_strokes);
             uplot_data.value_fills.push(em_input_fills);
 
-            uplot_data.keys.push('em_output');
-            uplot_data.names.push('EM Output'); // FIXME
-            uplot_data.values.push(output);
+            uplot_data.keys.push('em_relay');
+            uplot_data.names.push(__("em_energy_analysis.content.state_relay"));
+            uplot_data.values.push(relay);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
-            uplot_data.value_names.push(em_output_names);
-            uplot_data.value_strokes.push(em_output_strokes);
-            uplot_data.value_fills.push(em_output_fills);
+            uplot_data.value_names.push(em_relay_names);
+            uplot_data.value_strokes.push(em_relay_strokes);
+            uplot_data.value_fills.push(em_relay_fills);
         }
 
         for (let charger of this.chargers) {
