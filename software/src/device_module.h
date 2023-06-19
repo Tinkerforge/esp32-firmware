@@ -72,7 +72,7 @@ public:
         destroy_function(&device);
 
         uint16_t device_id = get_device_id();
-        TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, false);
+        TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, true);
 
         if (!log_message_printed) {
             if (tfp == nullptr && mandatory)
