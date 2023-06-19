@@ -183,8 +183,6 @@ const { round, min, max, ceil } = Math;
 export function uPlotTimelinePlugin(opts: any) {
     const { fill, stroke } = opts;
 
-    const pxRatio    = devicePixelRatio;
-
     const laneWidth   = 0.9;
     const laneDistr   = SPACE_BETWEEN;
 
@@ -201,7 +199,7 @@ export function uPlotTimelinePlugin(opts: any) {
     const align = opts.align ?? 0;
 
     const gapFactor = 1 - size[0];
-    const maxWidth  = (size[1] ?? Infinity) * pxRatio;
+    const maxWidth  = (size[1] ?? Infinity) * devicePixelRatio;
 
     const fillPaths = new Map();
     const strokePaths = new Map();
@@ -252,7 +250,7 @@ export function uPlotTimelinePlugin(opts: any) {
 
     function drawPaths(u: uPlot, sidx: number, idx0: number, idx1: number): uPlot.Series.Paths|null {
         uPlot.orient(u, sidx, (series, dataX, dataY, scaleX, scaleY, valToPosX, valToPosY, xOff, yOff, xDim, yDim, moveTo, lineTo, rect) => {
-            let strokeWidth = round((series.width || 0) * pxRatio);
+            let strokeWidth = round((series.width || 0) * devicePixelRatio);
 
             u.ctx.save();
             rect(u.ctx, u.bbox.left, u.bbox.top, u.bbox.width, u.bbox.height);
@@ -347,7 +345,7 @@ export function uPlotTimelinePlugin(opts: any) {
                         if (seriesIdx == 0)
                             return closestIdx;
 
-                        let cx = round(u.cursor.left * pxRatio);
+                        let cx = round(u.cursor.left * devicePixelRatio);
                         let hovered = Array(u.series.length - 1).fill(null);
 
                         if (cx >= 0) {
@@ -389,7 +387,7 @@ export function uPlotTimelinePlugin(opts: any) {
                     walk(null, u.series.length - 1, u.bbox.height, (iy: number, y0: number, hgt: number) => {
                         // vertical midpoints of each series' timeline (stored relative to .u-over)
                         yMids[iy] = round(y0 + hgt / 2);
-                        ySplits[iy] = u.posToVal(yMids[iy] / pxRatio, "y");
+                        ySplits[iy] = u.posToVal(yMids[iy] / devicePixelRatio, "y");
                     });
 
                     return ySplits;
