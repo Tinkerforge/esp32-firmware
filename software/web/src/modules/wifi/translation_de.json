@@ -42,7 +42,7 @@
             "ap_passphrase": "Passphrase",
             "ap_channel": "Kanal",
             "ap_channel_muted": "ignoriert wenn WLAN-Verbindung aktiv ist",
-            "ap_channel_auto_select": "automatische Auswahl",
+            "ap_channel_auto_select": "Automatische Auswahl",
 
             "confirm_title": "WLAN-Access-Point deaktivieren?",
             "confirm_content": null,
