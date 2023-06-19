@@ -506,6 +506,7 @@ interface UplotWrapperProps {
     legend_time_label: string;
     legend_time_with_minutes: boolean;
     legend_value_prefix: string;
+    aspect_ratio: number;
     x_format: Intl.DateTimeFormatOptions;
     x_padding_factor: number;
     y_min?: number;
@@ -557,7 +558,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             let aspect_ratio = parseFloat(getComputedStyle(div).aspectRatio);
 
             if (isNaN(aspect_ratio)) {
-                aspect_ratio = 2;
+                aspect_ratio = this.props.aspect_ratio;
             }
 
             return {
@@ -967,6 +968,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
                                               legend_time_label={__("em_energy_analysis.script.time_5min")}
                                               legend_time_with_minutes={true}
                                               legend_value_prefix={__("em_energy_analysis.script.power")}
+                                              aspect_ratio={2}
                                               x_format={{hour: '2-digit', minute: '2-digit'}}
                                               x_padding_factor={0}
                                               y_min={0}
@@ -2548,6 +2550,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               legend_time_label={__("em_energy_analysis.script.time_5min")}
                                               legend_time_with_minutes={true}
                                               legend_value_prefix=""
+                                              aspect_ratio={3}
                                               x_format={{hour: '2-digit', minute: '2-digit'}}
                                               x_padding_factor={0}
                                               y_min={0}
@@ -2569,6 +2572,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               legend_time_label={__("em_energy_analysis.script.time_daily")}
                                               legend_time_with_minutes={false}
                                               legend_value_prefix=""
+                                              aspect_ratio={3}
                                               x_format={{month: '2-digit', day: '2-digit'}}
                                               x_padding_factor={0.015}
                                               y_min={0}

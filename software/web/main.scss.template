@@ -528,7 +528,7 @@ body {
 
 .em-energy-analysis-chart {
     position: relative;
-    aspect-ratio: 2;
+    aspect-ratio: 3;
 }
 
 .d-flex-ni {
