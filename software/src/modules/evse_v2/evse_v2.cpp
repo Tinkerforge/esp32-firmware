@@ -680,7 +680,7 @@ String EVSEV2::get_evse_debug_line()
              "%u,%u,%u,%u,%u,,"
              "%u,%u,%u,%u,%u,%u,%u,,"
              "%d,%d,%d,%d,%d,%d,%d,,"
-             "%u,%u,,"2
+             "%u,%u,,"
              "%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,,"
              "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\"",
              millis(),
