@@ -299,22 +299,8 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             this.visible = false;
         });
 
-        let get_size = () => {
-            let div = this.div_ref.current;
-            let aspect_ratio = parseFloat(getComputedStyle(div).aspectRatio);
-
-            if (isNaN(aspect_ratio)) {
-                aspect_ratio = 8;
-            }
-
-            return {
-                width: div.clientWidth,
-                height: Math.floor((div.clientWidth + (window.innerWidth - document.documentElement.clientWidth)) / aspect_ratio),
-            }
-        }
-
         let options = {
-            ...get_size(),
+            ...this.get_size(),
             pxAlign: 0,
             cursor: {
                 drag: {
@@ -388,6 +374,13 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     hooks: {
                         setSeries: (self: uPlot, seriesIdx: number, opts: uPlot.Series) => {
                             this.series_visibility[this.data.keys[seriesIdx]] = opts.show;
+                            this.resize();
+                        },
+                        addSeries: (self: uPlot, seriesIdx: number) => {
+                            this.resize();
+                        },
+                        delSeries: (self: uPlot, seriesIdx: number) => {
+                            this.resize();
                         },
                     },
                 },
@@ -397,29 +390,19 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
         let div = this.div_ref.current;
         this.uplot = new uPlot(options, [], div);
 
-        let resize = () => {
-            let size = get_size();
-
-            if (size.width == 0 || size.height == 0) {
-                return;
-            }
-
-            this.uplot.setSize(size);
-        };
-
         try {
             this.observer = new ResizeObserver(() => {
-                resize();
+                this.resize();
             });
 
             this.observer.observe(div);
         } catch (e) {
             setInterval(() => {
-                resize();
+                this.resize();
             }, 500);
 
             window.addEventListener("resize", e => {
-                resize();
+                this.resize();
             });
         }
 
@@ -430,6 +413,30 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
     render(props?: UplotFlagsWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
         return <div ref={this.div_ref} class={props.class} style={`display: ${props.show ? 'block' : 'none'}; visibility: hidden;`} />;
+    }
+
+    resize() {
+        let size = this.get_size();
+
+        if (size.width == 0 || size.height == 0) {
+            return;
+        }
+
+        this.uplot.setSize(size);
+    };
+
+    get_size() {
+        let div = this.div_ref.current;
+        let count = 1;
+
+        if (this.uplot) {
+            count = this.uplot.series.length - 1;
+        }
+
+        return {
+            width: div.clientWidth,
+            height: 30 + 30 + count * 15 + (count - 1) * 8,
+        }
     }
 
     set_loading() {
