@@ -698,7 +698,7 @@ void remove_directory(const char *path)
             return true;
         }, false);
 
-    ::rmdir((String("/spiffs") + path_string).c_str());
+    ::rmdir(("/spiffs" + path_string).c_str());
 }
 
 

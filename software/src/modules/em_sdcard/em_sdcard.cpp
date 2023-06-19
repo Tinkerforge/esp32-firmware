@@ -59,15 +59,14 @@ void EMSDcard::register_urls()
 
     api.addRawCommand("energy_manager/sdcard_format", [this](char *c, size_t s) -> String {
         StaticJsonDocument<16> doc;
-
         DeserializationError error = deserializeJson(doc, c, s);
 
         if (error) {
-            return String("Failed to deserialize string: ") + String(error.c_str());
+            return String("Failed to deserialize string: ") + error.c_str();
         }
 
         if (!doc["do_i_know_what_i_am_doing"].is<bool>()) {
-            return "you don't seem to know what you are doing";
+            return "You don't seem to know what you are doing";
         }
 
         if (!doc["do_i_know_what_i_am_doing"].as<bool>()) {

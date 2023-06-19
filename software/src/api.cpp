@@ -159,18 +159,18 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initi
             conf_modified->get("modified")->updateUint(2);
         }
 
-        String conf_modified_path = path + String("_modified");
+        String conf_modified_path = path + "_modified";
         addState(conf_modified_path, conf_modified, {}, interval_ms);
 
         addState(path, config, keys_to_censor, interval_ms);
     }
 
-    addCommand(path + String("_update"), config, keys_to_censor, [path, config, conf_modified]() {
+    addCommand(path + "_update", config, keys_to_censor, [path, config, conf_modified]() {
         API::writeConfig(path, config);
         conf_modified->get("modified")->updateUint(3);
     }, false);
 
-    addCommand(path + String("_reset"), Config::Null(), {}, [path, conf_modified]() {
+    addCommand(path + "_reset", Config::Null(), {}, [path, conf_modified]() {
         API::removeConfig(path);
         conf_modified->get("modified")->updateUint(1);
     }, false);
@@ -258,7 +258,7 @@ void API::removeAllConfig() {
 void API::addTemporaryConfig(String path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms, std::function<void(void)> callback)
 {
     addState(path, config, keys_to_censor, interval_ms);
-    addCommand(path + String("_update"), config, callback);
+    addCommand(path + "_update", config, callback);
 }
 */
 

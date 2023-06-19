@@ -312,14 +312,14 @@ void Users::pre_setup()
         {"enabled", Config::Bool(false)}
     }), [this](Config &update) -> String {
         if (!update.get("enabled")->asBool())
-            return String("");
+            return "";
 
         for (int i = 0; i < user_config.get("users")->count(); ++i) {
             if (user_config.get("users")->get(i)->get("digest_hash")->asString() != "")
-                return String("");
+                return "";
         }
 
-        return String("Can't enable HTTP authentication if not at least one user with a password is configured!");
+        return "Can't enable HTTP authentication if not at least one user with a password is configured!";
     });
 }
 
@@ -566,7 +566,7 @@ void Users::register_urls()
         DeserializationError error = deserializeJson(doc, c, s);
 
         if (error) {
-            return String("Failed to deserialize string: ") + String(error.c_str());
+            return String("Failed to deserialize string: ") + error.c_str();
         }
 
         const char * const expected_keys[] = {
@@ -594,17 +594,22 @@ void Users::register_urls()
         }
 
         if (doc["id"] != nullptr && !doc["id"].is<uint32_t>())
-            return String("[\"id\"]JSON node was not an unsigned integer.");
+            return "[\"id\"]JSON node was not an unsigned integer.";
+
         if (doc["roles"] != nullptr && !doc["roles"].is<uint32_t>())
-            return String("[\"roles\"]JSON node was not an unsigned integer.");
+            return "[\"roles\"]JSON node was not an unsigned integer.";
+
         if (doc["current"] != nullptr && !doc["current"].is<uint32_t>())
-            return String("[\"current\"]JSON node was not an unsigned integer.");
+            return "[\"current\"]JSON node was not an unsigned integer.";
+
         if (doc["display_name"] != nullptr && !doc["display_name"].is<String>())
-            return String("[\"display_name\"]JSON node was not a string.");
+            return "[\"display_name\"]JSON node was not a string.";
+
         if (doc["username"] != nullptr && !doc["username"].is<String>())
-            return String("[\"username\"]JSON node was not a string.");
+            return "[\"username\"]JSON node was not a string.";
+
         if (doc["digest_hash"] != nullptr && !doc["digest_hash"].is<String>())
-            return String("[\"digest_hash\"]JSON node was not a string.");
+            return "[\"digest_hash\"]JSON node was not a string.";
 
         if (doc["display_name"] != nullptr && doc["display_name"].as<String>().length() > USERNAME_LENGTH)
             return String("[\"display_name\"]String of maximum length ") + USERNAME_LENGTH + " was expected, but got " + doc["display_name"].as<String>().length();
@@ -619,18 +624,18 @@ void Users::register_urls()
             return String("[\"current\"]Unsigned integer value ") + doc["current"].as<uint32_t>() + " was more than the allowed maximum of 32000";
 
         if (doc["id"] == nullptr)
-            return String("Can't modify user. User ID is null or missing.");
+            return "Can't modify user. User ID is null or missing.";
 
         uint8_t id = doc["id"].as<uint8_t>();
         if (id == 0) {
             if (doc["username"] != nullptr)
-                return String("Username needs to be empty.");
+                return "Username needs to be empty.";
             if (doc["roles"] != nullptr)
-                return String("Roles need to be empty.");
+                return "Roles need to be empty.";
             if (doc["current"] != nullptr)
-                return String("Current needs to be empty.");
+                return "Current needs to be empty.";
             if (doc["digest_hash"] != nullptr)
-                return String("Digest_hash needs to be empty.");
+                return "Digest_hash needs to be empty.";
         }
 
         Config *user = nullptr;
@@ -650,7 +655,7 @@ void Users::register_urls()
          && doc["digest_hash"] == nullptr
          && user->get("username")->asString() != doc["username"]
          && user->get("digest_hash")->asString() != "") {
-            return String("Changing the username without updating the digest hash is not allowed!");
+            return "Changing the username without updating the digest hash is not allowed!";
         }
 
         for(int i = 0; i < user_config.get("users")->count(); ++i) {

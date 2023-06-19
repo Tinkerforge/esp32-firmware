@@ -41,9 +41,9 @@ struct ConfigMigration {
 ATTRIBUTE_UNUSED
 static bool read_config_file(const char *config, JsonDocument &json)
 {
-    String s = String(config);
+    String s = config;
     s.replace('/', '_');
-    String filename = String("/migration/") + s;
+    String filename = "/migration/" + s;
 
     json.clear();
 
@@ -67,9 +67,9 @@ static bool read_config_file(const char *config, JsonDocument &json)
 ATTRIBUTE_UNUSED
 static void write_config_file(const char *config, JsonDocument &json)
 {
-    String s = String(config);
+    String s = config;
     s.replace('/', '_');
-    String filename = String("/migration/") + s;
+    String filename = "/migration/" + s;
 
     File file = LittleFS.open(filename, "w");
     serializeJson(json, file);
@@ -79,9 +79,9 @@ static void write_config_file(const char *config, JsonDocument &json)
 ATTRIBUTE_UNUSED
 static void delete_config_file(const char *config)
 {
-    String s = String(config);
+    String s = config;
     s.replace('/', '_');
-    String filename = String("/migration/") + s;
+    String filename = "/migration/" + s;
 
     LittleFS.remove(filename);
 }

@@ -38,7 +38,7 @@ void Network::pre_setup()
 
 void Network::setup()
 {
-    String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
+    String default_hostname = String(BUILD_HOST_PREFIX) + "-" + local_uid_str;
 
     if (!api.restorePersistentConfig("network/config", &config)) {
         config.get("hostname")->updateString(default_hostname);

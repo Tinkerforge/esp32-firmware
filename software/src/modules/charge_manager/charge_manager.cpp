@@ -168,7 +168,7 @@ void ChargeManager::pre_setup()
         {"current", Config::Uint32(0)},
     }), [](const Config &conf) -> String {
         if (conf.get("current")->asUint() > max_avail_current)
-            return String("Current too large: maximum available current is configured to ") + String(max_avail_current);
+            return "Current too large: maximum available current is configured to " + String(max_avail_current);
         return "";
     }};
     charge_manager_available_current_update = charge_manager_available_current;

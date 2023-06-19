@@ -72,7 +72,7 @@ void Debug::register_urls()
             path = path.substring(0, path.length() - 1);
 
         if (!LittleFS.exists(path))
-            return request.send(404, "text/plain", (String("File ") + path + " not found").c_str());
+            return request.send(404, "text/plain", ("File " + path + " not found").c_str());
 
         File f = LittleFS.open(path);
         if (!f.isDirectory()) {
@@ -85,18 +85,18 @@ void Debug::register_urls()
             return request.endChunkedResponse();
         } else {
             request.beginChunkedResponse(200, "text/html");
-            String header = String("<h1>") + f.path() + "</h1><br>";
+            String header = "<h1>" + f.path() + "</h1><br>";
             request.sendChunk(header.c_str(), static_cast<ssize_t>(header.length()));
 
             if (path.length() > 1) {
                 int idx = path.lastIndexOf('/');
-                String up = String("<a href=\"/debug/fs") + path.substring(0, static_cast<unsigned int>(idx + 1)) + "\">..</a><br>";
+                String up = "<a href=\"/debug/fs" + path.substring(0, static_cast<unsigned int>(idx + 1)) + "\">..</a><br>";
                 request.sendChunk(up.c_str(), static_cast<ssize_t>(up.length()));
             }
 
             File file = f.openNextFile();
             while(file) {
-                String s = String("<a href=\"/debug/fs") + file.path() + "\">"+ file.name() +"</a><br>";
+                String s = "<a href=\"/debug/fs" + file.path() + "\">"+ file.name() +"</a><br>";
                 request.sendChunk(s.c_str(), static_cast<ssize_t>(s.length()));
                 file = f.openNextFile();
             }
@@ -111,17 +111,17 @@ void Debug::register_urls()
             path = path.substring(0, path.length() - 1);
 
         if (!LittleFS.exists(path))
-            return request.send(404, "text/plain", (String("File ") + path + " not found").c_str());
+            return request.send(404, "text/plain", ("File " + path + " not found").c_str());
 
         File f = LittleFS.open(path);
         if (!f.isDirectory()) {
             f.close();
             LittleFS.remove(path);
-            return request.send(200, "text/plain", (String("File ") + path + " deleted").c_str());
+            return request.send(200, "text/plain", ("File " + path + " deleted").c_str());
         } else {
             f.close();
             remove_directory(path.c_str());
-            return request.send(200, "text/plain", (String("Directory ") + path + " and all contents deleted").c_str());
+            return request.send(200, "text/plain", ("Directory " + path + " and all contents deleted").c_str());
         }
     });
 
@@ -134,11 +134,11 @@ void Debug::register_urls()
         if (LittleFS.exists(path)) {
             File f = LittleFS.open(path);
             if (!f.isDirectory() && create_directory)
-                return request.send(400, "text/plain", (String("File ") + path + " already exists and is not a directory").c_str());
+                return request.send(400, "text/plain", ("File " + path + " already exists and is not a directory").c_str());
             if (f.isDirectory() && !create_directory)
-                return request.send(400, "text/plain", (String("Directory ") + path + " already exists").c_str());
+                return request.send(400, "text/plain", ("Directory " + path + " already exists").c_str());
             if (f.isDirectory())
-                return request.send(200, "text/plain", (String("Directory ") + path + " already exists").c_str());
+                return request.send(200, "text/plain", ("Directory " + path + " already exists").c_str());
             else {
                 f.close();
                 LittleFS.remove(path);
@@ -147,14 +147,14 @@ void Debug::register_urls()
 
         if (create_directory) {
             LittleFS.mkdir(path);
-            return request.send(200, "text/plain", (String("Directory ") + path + " created").c_str());
+            return request.send(200, "text/plain", ("Directory " + path + " created").c_str());
         }
 
         File f = LittleFS.open(path, "w");
         char *payload = request.receive();
         f.write(reinterpret_cast<uint8_t *>(payload), request.contentLength());
         free(payload);
-        return request.send(200, "text/plain", (String("File ") + path + " created.").c_str());
+        return request.send(200, "text/plain", ("File " + path + " created.").c_str());
     });
 #endif
 }

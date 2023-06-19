@@ -234,10 +234,10 @@ private:
         value = String(position);
         identity.get("position")->updateString(value);
 
-        value = String(hw_version[0] + String(".") + hw_version[1] + "." + hw_version[2]);
+        value = hw_version[0] + String(".") + hw_version[1] + "." + hw_version[2];
         identity.get("hw_version")->updateString(value);
 
-        value = String(fw_version[0] + String(".") + fw_version[1] + "." + fw_version[2]);
+        value = fw_version[0] + String(".") + fw_version[1] + "." + fw_version[2];
         identity.get("fw_version")->updateString(value);
 
         identity.get("device_identifier")->updateUint(device_identifier);

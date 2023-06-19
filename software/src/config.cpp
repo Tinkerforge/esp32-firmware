@@ -58,48 +58,48 @@ struct default_validator {
     String operator()(const Config::ConfString &x) const
     {
         if (x.getVal()->length() < x.getSlot()->minChars)
-            return String(String("String of minimum length ") + x.getSlot()->minChars + " was expected, but got " + x.getVal()->length());
+            return String("String of minimum length ") + x.getSlot()->minChars + " was expected, but got " + x.getVal()->length();
 
         if (x.getSlot()->maxChars == 0 || x.getVal()->length() <= x.getSlot()->maxChars)
-            return String("");
+            return "";
 
-        return String(String("String of maximum length ") + x.getSlot()->maxChars + " was expected, but got " + x.getVal()->length());
+        return String("String of maximum length ") + x.getSlot()->maxChars + " was expected, but got " + x.getVal()->length();
     }
 
     String operator()(const Config::ConfFloat &x) const
     {
         if (*x.getVal() < x.getSlot()->min)
-            return String(String("Float value ") + *x.getVal() + " was less than the allowed minimum of " + x.getSlot()->min);
+            return String("Float value ") + *x.getVal() + " was less than the allowed minimum of " + x.getSlot()->min;
         if (*x.getVal() > x.getSlot()->max)
-            return String(String("Float value ") + *x.getVal() + " was more than the allowed maximum of " + x.getSlot()->max);
-        return String("");
+            return String("Float value ") + *x.getVal() + " was more than the allowed maximum of " + x.getSlot()->max;
+        return "";
     }
 
     String operator()(const Config::ConfInt &x) const
     {
         if (*x.getVal() < x.getSlot()->min)
-            return String(String("Integer value ") + *x.getVal() + " was less than the allowed minimum of " + x.getSlot()->min);
+            return String("Integer value ") + *x.getVal() + " was less than the allowed minimum of " + x.getSlot()->min;
         if (*x.getVal() > x.getSlot()->max)
-            return String(String("Integer value ") + *x.getVal() + " was more than the allowed maximum of " + x.getSlot()->max);
-        return String("");
+            return String("Integer value ") + *x.getVal() + " was more than the allowed maximum of " + x.getSlot()->max;
+        return "";
     }
 
     String operator()(const Config::ConfUint &x) const
     {
         if (*x.getVal() < x.getSlot()->min)
-            return String(String("Unsigned integer value ") + *x.getVal() + " was less than the allowed minimum of " + x.getSlot()->min);
+            return String("Unsigned integer value ") + *x.getVal() + " was less than the allowed minimum of " + x.getSlot()->min;
         if (*x.getVal() > x.getSlot()->max)
-            return String(String("Unsigned integer value ") + *x.getVal() + " was more than the allowed maximum of " + x.getSlot()->max);
-        return String("");
+            return String("Unsigned integer value ") + *x.getVal() + " was more than the allowed maximum of " + x.getSlot()->max;
+        return "";
     }
 
     String operator()(const Config::ConfBool &x) const
     {
-        return String("");
+        return "";
     }
     String operator()(const Config::ConfVariant::Empty &x)
     {
-        return String("");
+        return "";
     }
 
     String operator()(const Config::ConfArray &x) const
@@ -107,14 +107,14 @@ struct default_validator {
         const auto *slot = x.getSlot();
         const auto size = x.getVal()->size();
         if (slot->maxElements > 0 && size > slot->maxElements)
-            return String(String("Array had ") + size + " entries, but only " + slot->maxElements + " are allowed.");
+            return String("Array had ") + size + " entries, but only " + slot->maxElements + " are allowed.";
         if (slot->minElements > 0 && size < slot->minElements)
-            return String(String("Array had ") + size + " entries, but at least " + slot->maxElements + " are required.");
+            return String("Array had ") + size + " entries, but at least " + slot->maxElements + " are required.";
 
         if (slot->variantType >= 0)
             for (int i = 0; i < size; ++i)
                 if ((int)x.get(i)->value.tag != slot->variantType)
-                    return String(String("[") + i + "] has wrong type");
+                    return String("[") + i + "] has wrong type";
 
         size_t i = 0;
         for (const Config &elem : *x.getVal()) {
@@ -124,7 +124,7 @@ struct default_validator {
             ++i;
         }
 
-        return String("");
+        return "";
     }
 
     String operator()(const Config::ConfObject &x) const
@@ -136,7 +136,7 @@ struct default_validator {
                 return String("[\"") + elem.first.c_str() + "\"] " + err;
         }
 
-        return String("");
+        return "";
     }
 };
 
@@ -299,53 +299,53 @@ struct from_json {
     String operator()(Config::ConfString &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? String("") : String("Null updates not permitted.");
+            return permit_null_updates ? "" : "Null updates not permitted.";
 
         if (!json_node.is<String>())
             return "JSON node was not a string.";
         *x.getVal() = json_node.as<String>();
-        return String("");
+        return "";
     }
     String operator()(Config::ConfFloat &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? String("") : String("Null updates not permitted.");
+            return permit_null_updates ? "" : "Null updates not permitted.";
 
         if (!json_node.is<float>())
             return "JSON node was not a float.";
 
         *x.getVal() = json_node.as<float>();
-        return String("");
+        return "";
     }
     String operator()(Config::ConfInt &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? String("") : String("Null updates not permitted.");
+            return permit_null_updates ? "" : "Null updates not permitted.";
 
         if (!json_node.is<int32_t>())
             return "JSON node was not a signed integer.";
         *x.getVal() = json_node.as<int32_t>();
-        return String("");
+        return "";
     }
     String operator()(Config::ConfUint &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? String("") : String("Null updates not permitted.");
+            return permit_null_updates ? "" : "Null updates not permitted.";
 
         if (!json_node.is<uint32_t>())
             return "JSON node was not an unsigned integer.";
         *x.getVal() = json_node.as<uint32_t>();
-        return String("");
+        return "";
     }
     String operator()(Config::ConfBool &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? String("") : String("Null updates not permitted.");
+            return permit_null_updates ? "" : "Null updates not permitted.";
 
         if (!json_node.is<bool>())
             return "JSON node was not a boolean.";
         x.value = json_node.as<bool>();
-        return String("");
+        return "";
     }
     String operator()(const Config::ConfVariant::Empty &x)
     {
@@ -361,7 +361,7 @@ struct from_json {
     String operator()(Config::ConfArray &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? String("") : String("Null updates not permitted.");
+            return permit_null_updates ? "" : "Null updates not permitted.";
 
         if (!json_node.is<JsonArray>())
             return "JSON node was not an array.";
@@ -380,12 +380,12 @@ struct from_json {
                 return String("[") + i + "] " + inner_error;
         }
 
-        return String("");
+        return "";
     }
     String operator()(Config::ConfObject &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? String("") : String("Null updates not permitted.");
+            return permit_null_updates ? "" : "Null updates not permitted.";
 
         // If a user passes a non-object to an API that expects an object with exactly one member
         // Try to use the non-object as value for the single member.
@@ -448,7 +448,7 @@ struct from_json {
             return return_str;
         }
 
-        return String("");
+        return "";
     }
 
     const JsonVariant json_node;
@@ -461,38 +461,38 @@ struct from_update {
     String operator()(Config::ConfString &x)
     {
         if (Config::containsNull(update))
-            return String("");
+            return "";
 
         if (update->get<String>() == nullptr)
             return "ConfUpdate node was not a string.";
         *x.getVal() = *(update->get<String>());
-        return String("");
+        return "";
     }
     String operator()(Config::ConfFloat &x)
     {
         if (Config::containsNull(update))
-            return String("");
+            return "";
 
         if (update->get<float>() == nullptr)
             return "ConfUpdate node was not a float.";
 
         *x.getVal() = *(update->get<float>());
-        return String("");
+        return "";
     }
     String operator()(Config::ConfInt &x)
     {
         if (Config::containsNull(update))
-            return String("");
+            return "";
 
         if (update->get<int32_t>() == nullptr)
             return "ConfUpdate node was not a signed integer.";
         *x.getVal() = *(update->get<int32_t>());
-        return String("");
+        return "";
     }
     String operator()(Config::ConfUint &x)
     {
         if (Config::containsNull(update))
-            return String("");
+            return "";
 
         uint32_t new_val = 0;
         if (update->get<uint32_t>() == nullptr) {
@@ -504,17 +504,17 @@ struct from_update {
             new_val = *(update->get<uint32_t>());
         }
         *x.getVal() = new_val;
-        return String("");
+        return "";
     }
     String operator()(Config::ConfBool &x)
     {
         if (Config::containsNull(update))
-            return String("");
+            return "";
 
         if (update->get<bool>() == nullptr)
             return "ConfUpdate node was not a boolean.";
         x.value = *(update->get<bool>());
-        return String("");
+        return "";
     }
     String operator()(const Config::ConfVariant::Empty &x)
     {
@@ -523,7 +523,7 @@ struct from_update {
     String operator()(Config::ConfArray &x)
     {
         if (Config::containsNull(update))
-            return String("");
+            return "";
 
         if (update->get<Config::ConfUpdateArray>() == nullptr)
             return "ConfUpdate node was not an array.";
@@ -542,12 +542,12 @@ struct from_update {
                 return String("[") + i + "] " + inner_error;
         }
 
-        return String("");
+        return "";
     }
     String operator()(Config::ConfObject &x)
     {
         if (Config::containsNull(update))
-            return String("");
+            return "";
 
         if (update->get<Config::ConfUpdateObject>() == nullptr) {
             Serial.println(update->which());
@@ -575,7 +575,7 @@ struct from_update {
                 return String("[\"") + x.getVal()->at(i).first + "\"] " + inner_error;
         }
 
-        return String("");
+        return "";
     }
 
     const Config::ConfUpdate *update;
@@ -1383,7 +1383,7 @@ String ConfigRoot::update_from_file(File &file)
     DynamicJsonDocument doc(this->json_size(false));
     DeserializationError error = deserializeJson(doc, file);
     if (error)
-        return String("Failed to read file: ") + String(error.c_str());
+        return String("Failed to read file: ") + error.c_str();
 
     return this->update_from_json(doc.as<JsonVariant>(), false);
 }

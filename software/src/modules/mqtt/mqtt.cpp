@@ -47,8 +47,8 @@ void Mqtt::pre_setup()
         {"broker_port", Config::Uint16(1883)},
         {"broker_username", Config::Str("", 0, 64)},
         {"broker_password", Config::Str("", 0, 64)},
-        {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + String("/") + String("ABC"), 0, 64)},
-        {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + String("-") + String("ABC"), 1, 64)},
+        {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + "/" + "ABC", 0, 64)},
+        {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + "-" + "ABC", 1, 64)},
         {"interval", Config::Uint32(1)}
     }), [](Config &cfg) -> String {
 #if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()

@@ -354,7 +354,7 @@ const char *reason2str(uint8_t reason)
 
 void Wifi::setup()
 {
-    String default_ap_ssid = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
+    String default_ap_ssid = String(BUILD_HOST_PREFIX) + "-" + local_uid_str;
     String default_ap_passphrase = String(passphrase);
 
     if (!api.restorePersistentConfig("wifi/sta_config", &wifi_sta_config)) {
@@ -476,7 +476,7 @@ void Wifi::setup()
 #if MODULE_NETWORK_AVAILABLE()
     WiFi.setHostname(network.config.get("hostname")->asEphemeralCStr());
 #else
-    WiFi.setHostname((String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str)).c_str());
+    WiFi.setHostname((String(BUILD_HOST_PREFIX) + "-" + local_uid_str)).c_str();
 #endif
 
     if (enable_sta && enable_ap) {

@@ -128,7 +128,7 @@ void Ocpp::setup()
 {
     initialized = true;
     if (!api.restorePersistentConfig("ocpp/config", &config)) {
-        config.get("identity")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str));
+        config.get("identity")->updateString(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
     }
 
     config_in_use = config;

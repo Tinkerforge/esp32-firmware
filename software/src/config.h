@@ -883,10 +883,10 @@ private:
             )
         },
         {"bssid_lock", Config::Bool(false)},
-        {"passphrase", Config::Str("", 64, [](const Config::ConfString &s) {
+        {"passphrase", Config::Str("", 64, [](const Config::ConfString &s) -> String {
                 return s.value.length() == 0 ||
                     (s.value.length() >= 8 && s.value.length() <= 63) || //FIXME: check if there are only ASCII characters here.
-                    (s.value.length() == 64) ? String("") : String("passphrase must be of length zero, or 8 to 63, or 64 if PSK."); //FIXME: check if there are only hex digits here.
+                    (s.value.length() == 64) ? "" : "passphrase must be of length zero, or 8 to 63, or 64 if PSK."; //FIXME: check if there are only hex digits here.
             })
         },
         {"ip", Config::Uint32(0)},
