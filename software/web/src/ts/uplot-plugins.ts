@@ -392,7 +392,15 @@ export function uPlotTimelinePlugin(opts: any) {
 
                     return ySplits;
                 },
-                values:     () => Array(u.series.length - 1).fill(null).map((v, i) => u.series[i + 1].label),
+                values:     () => Array(u.series.length - 1).fill(null).map((v, i) => {
+                    let label = u.series[i + 1].label;
+
+                    if (label.length > 10) {
+                        label = label.slice(0, 10) + '\u2026';
+                    }
+
+                    return label;
+                }),
                 grid:       {show: false},
                 ticks:      {show: false},
                 side:       3,
