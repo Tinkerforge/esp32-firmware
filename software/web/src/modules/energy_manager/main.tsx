@@ -35,6 +35,7 @@ import { InputFloat      } from "../../ts/components/input_float";
 import { InputNumber     } from "../../ts/components/input_number";
 import { InputSelect     } from "../../ts/components/input_select";
 import { InputTime       } from "../../ts/components/input_time";
+import { InputText       } from "../../ts/components/input_text";
 import { Switch          } from "../../ts/components/switch";
 
 type StringStringTuple = [string, string];
@@ -474,7 +475,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                             </FormRow>
 
                             <FormRow label={__("energy_manager.content.relay_config_then")}>
-                                <label class="form-control">{__("energy_manager.content.relay_config_close")}</label>
+                                <InputText value={__("energy_manager.content.relay_config_close")}/>
                             </FormRow>
                         </div>
                     </Collapse>
