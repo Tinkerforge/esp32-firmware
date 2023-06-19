@@ -650,7 +650,6 @@ void EVSE::register_urls()
 #if MODULE_WS_AVAILABLE()
     server.on("/evse/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
-            logger.printfln("Start debug");
             last_debug_check = millis();
             check_debug();
             ws.pushRawStateUpdate(this->get_evse_debug_header(), "evse/debug_header");
@@ -660,14 +659,12 @@ void EVSE::register_urls()
     });
 
     server.on("/evse/continue_debug", HTTP_GET, [this](WebServerRequest request) {
-        logger.printfln("Debug wd reset");
         last_debug_check = millis();
         return request.send(200);
     });
 
     server.on("/evse/stop_debug", HTTP_GET, [this](WebServerRequest request){
         task_scheduler.scheduleOnce([this](){
-            logger.printfln("Stop debug");
             debug = false;
         }, 0);
         return request.send(200);
