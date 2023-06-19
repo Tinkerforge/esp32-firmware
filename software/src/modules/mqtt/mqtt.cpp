@@ -438,6 +438,10 @@ void Mqtt::register_urls()
 }
 
 void Mqtt::register_events() {
+    if (!mqtt_config.get("enable_mqtt")->asBool()) {
+        return;
+    }
+
     // Start MQTT client here to make sure all handlers are already registered.
 
     // Start immediately if we already have a working ethernet connection. WiFi takes a bit longer.
