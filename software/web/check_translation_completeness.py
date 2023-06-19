@@ -41,6 +41,25 @@ def get_all_ts_files(folder):
             result.append(os.path.join(root, name))
     return result
 
+def check_mismatch(translation_values, key, p):
+    last = None
+    mismatches = []
+
+    for translation_value in translation_values:
+        if isinstance(translation_value[key], dict):
+            for subkey in translation_value[key]:
+                mismatches += check_mismatch([translation_value[key] for translation_value in translation_values], subkey, p + key + '.')
+        elif last == None:
+            last = translation_value[key]
+        else:
+            a = last[:1]
+            b = translation_value[key][:1]
+
+            if a.isupper() != b.isupper() or a.isalpha() != b.isalpha():
+                mismatches.append((p + key, repr(last), repr(translation_value[key])))
+
+    return mismatches
+
 def main():
     ts_files = [os.path.join("src", "main.ts")]
 
@@ -54,6 +73,19 @@ def main():
 
     with open('./src/ts/translation.json', 'r', encoding='utf-8') as f:
         translation = json.loads(f.read())
+
+    mismatches = []
+
+    for key in translation['en']:
+        mismatches += check_mismatch(translation.values(), key, '')
+
+    if len(mismatches):
+        print("Mismatches:")
+        reported_mismatches = []
+        for x in sorted(mismatches):
+            if x not in reported_mismatches:
+                print("\t" + x[0] + " " + x[1] + " " + x[2])
+                reported_mismatches.append(x)
 
     with open('./src/index.html', 'r', encoding='utf-8') as f:
         content = f.read()
