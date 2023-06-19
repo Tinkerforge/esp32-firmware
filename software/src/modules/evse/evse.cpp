@@ -382,7 +382,28 @@ String EVSE::get_evse_debug_header()
            "Output (1),"
            "Motor Input (2),"
            "Relay (3),"
-           "Motor Fault (4)"
+           "Motor Fault (4),"
+           "SLOTS,"
+           "incoming_cable,"
+           "outgoing_cable,"
+           "shutdown_input,"
+           "gp_input,"
+           "autostart_button,"
+           "global,"
+           "user,"
+           "charge_manager,"
+           "external,"
+           "modbus_tcp,"
+           "modbus_tcp_enable,"
+           "ocpp,"
+           "charge_limits,"
+           "require_meter,"
+           "unused (14),"
+           "unused (15),"
+           "unused (16),"
+           "unused (17),"
+           "unused (18),"
+           "unused (19),"
            "\"";
 }
 
@@ -408,6 +429,10 @@ String EVSE::get_evse_debug_line()
     uint32_t charging_time;
     uint32_t time_since_state_change;
     uint32_t uptime;
+
+    // get_all_charging_slots - 60 byte
+    uint16_t max_current[20];
+    uint8_t active_and_clear_on_disconnect[20];
 
     int rc = tf_evse_get_all_data_1(&device,
                                     &iec61851_state,
@@ -443,12 +468,15 @@ String EVSE::get_evse_debug_line()
         return "get_all_data_1 failed";
     }
 
+    rc = tf_evse_get_all_charging_slots(&device, max_current, active_and_clear_on_disconnect);
+
     if (rc != TF_E_OK) {
-        logger.printfln("ll_state %d", rc);
+        logger.printfln("slots %d", rc);
         is_in_bootloader(rc);
-        return "ll_state failed";
+        return "get_all_charging_slots failed";
     }
 
+    // Currently max ~ 290
     char line[512] = {0};
     snprintf(line,
              sizeof(line) / sizeof(line[0]),
@@ -459,7 +487,8 @@ String EVSE::get_evse_debug_line()
              "%u,%u,,"
              "%d,%d,%d,,"
              "%u,%u,,"
-             "%c,%c,%c,%c,%c\"",
+             "%c,%c,%c,%c,%c,,"
+             "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\"",
              millis(),
              iec61851_state,
              charger_state,
@@ -493,7 +522,28 @@ String EVSE::get_evse_debug_line()
              gpio[1] ? '1' : '0',
              gpio[2] ? '1' : '0',
              gpio[3] ? '1' : '0',
-             gpio[4] ? '1' : '0');
+             gpio[4] ? '1' : '0',
+
+             SLOT_ACTIVE(active_and_clear_on_disconnect[0]) ? max_current[0] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[1]) ? max_current[1] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[2]) ? max_current[2] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[3]) ? max_current[3] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[4]) ? max_current[4] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[5]) ? max_current[5] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[6]) ? max_current[6] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[7]) ? max_current[7] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[8]) ? max_current[8] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[9]) ? max_current[9] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[10]) ? max_current[10] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[11]) ? max_current[11] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[12]) ? max_current[12] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[13]) ? max_current[13] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[14]) ? max_current[14] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[15]) ? max_current[15] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[16]) ? max_current[16] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[17]) ? max_current[17] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[18]) ? max_current[18] : 32000,
+             SLOT_ACTIVE(active_and_clear_on_disconnect[19]) ? max_current[19] : 32000);
     return String(line);
 }
 
