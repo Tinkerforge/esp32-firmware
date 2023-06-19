@@ -195,12 +195,6 @@ export function uPlotTimelinePlugin(opts: any) {
         });
     }
 
-    const size  = opts.size  ?? [0.6, Infinity];
-    const align = opts.align ?? 0;
-
-    const gapFactor = 1 - size[0];
-    const maxWidth  = (size[1] ?? Infinity) * devicePixelRatio;
-
     const fillPaths = new Map();
     const strokePaths = new Map();
 

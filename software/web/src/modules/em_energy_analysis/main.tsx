@@ -370,7 +370,6 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                 uPlotTimelinePlugin({
                     fill: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_fills && this.data.value_fills[seriesIdx] ? this.data.value_fills[seriesIdx][value] : 'rgb(0, 0, 0, 0.1)',
                     stroke: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_strokes && this.data.value_strokes[seriesIdx] ? this.data.value_strokes[seriesIdx][value] : 'rgb(0, 0, 0)',
-                    size: [0.9, 100],
                     bar_height: this.bar_height,
                     bar_spacing: this.bar_spacing,
                 }),
