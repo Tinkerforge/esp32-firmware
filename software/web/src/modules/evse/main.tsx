@@ -496,18 +496,33 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
         const has_meter = API.hasFeature("meter");
 
         const energy_settings = <FormRow label={__("charge_limits.content.energy")} label_muted={__("charge_limits.content.energy_muted")}>
-                <InputFloat value={s.energy_wh}
-                            onValue={(v) => this.setState({energy_wh: v})}
-                            digits={3} min={0} max={100000} unit={"kwh"}/>
-            </FormRow>;
+            <InputSelect items={[
+                    ["0", __("charge_limits.content.unlimited")],
+                    ["5000", util.toLocaleFixed(5, 0) + " kWh"],
+                    ["10000", util.toLocaleFixed(10, 0) + " kWh"],
+                    ["15000", util.toLocaleFixed(15, 0) + " kWh"],
+                    ["20000", util.toLocaleFixed(20, 0) + " kWh"],
+                    ["25000", util.toLocaleFixed(25, 0) + " kWh"],
+                    ["30000", util.toLocaleFixed(30, 0) + " kWh"],
+                    ["40000", util.toLocaleFixed(40, 0) + " kWh"],
+                    ["50000", util.toLocaleFixed(50, 0) + " kWh"],
+                    ["60000", util.toLocaleFixed(60, 0) + " kWh"],
+                    ["70000", util.toLocaleFixed(70, 0) + " kWh"],
+                    ["80000", util.toLocaleFixed(80, 0) + " kWh"],
+                    ["90000", util.toLocaleFixed(90, 0) + " kWh"],
+                    ["100000", util.toLocaleFixed(100, 0) + " kWh"]
+                ]}
+                value={s.energy_wh}
+                onValue={(v) => this.setState({ energy_wh: Number(v) })} />
+        </FormRow>
 
         const require_meter = <FormRow label={__("evse.content.meter_monitoring")}>
-                                <Switch desc={__("evse.content.meter_monitoring_desc")}
-                                    checked={require_meter_enabled.config == 2}
-                                    onClick={async () => {
-                                        this.setState({require_meter_enabled: {config: require_meter_enabled.config == 2 ? 1 : 2}});
-                                    }}/>
-                            </FormRow>;
+            <Switch desc={__("evse.content.meter_monitoring_desc")}
+                    checked={require_meter_enabled.config == 2}
+                    onClick={async () => {
+                        this.setState({require_meter_enabled: {config: require_meter_enabled.config == 2 ? 1 : 2}});
+                    }}/>
+        </FormRow>
 
 
         return <>
@@ -532,7 +547,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
                                 this.setState({slots: tmp_slots});
                             }}/>
                 </FormRow>
-                
+
                 <FormRow label={__("evse.content.enable_led_api")}>
                     <Switch onClick={async () => this.setState({led_config: {enable_api: !led_config.enable_api}})}
                             checked={led_config.enable_api}
