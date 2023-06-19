@@ -20,10 +20,11 @@
 #pragma once
 
 #include "config.h"
+#include "module.h"
 
 #include "bindings/bricklet_rgb_led_button.h"
 
-class TutorialPhase4
+class TutorialPhase4 final : public IModule
 {
 public:
     TutorialPhase4(){}

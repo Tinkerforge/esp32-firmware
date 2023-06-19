@@ -20,8 +20,9 @@
 #pragma once
 
 #include "config.h"
+#include "module.h"
 
-class TutorialPhase3
+class TutorialPhase3 final : public IModule
 {
 public:
     TutorialPhase3(){}
