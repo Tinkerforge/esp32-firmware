@@ -150,14 +150,14 @@ void EnergyManager::collect_data_points()
         }
 
         if (all_data.is_valid && !deadline_elapsed(all_data.last_update + MAX_DATA_AGE)) {
-            uint8_t flags = 0; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = output, bit 7 = no data (read only)
+            uint8_t flags = 0; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data (read only)
             int32_t power_grid = INT32_MAX; // W
             int32_t power_general[6] = {INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX}; // W
 
             flags |= is_3phase         ? 0b0001 : 0;
             flags |= all_data.input[0] ? 0b0010 : 0;
             flags |= all_data.input[1] ? 0b0100 : 0;
-            flags |= all_data.output   ? 0b1000 : 0;
+            flags |= all_data.relay    ? 0b1000 : 0;
 
             // FIXME: how to tell if meter data is stale?
             if (history_meter_available) {
@@ -1150,7 +1150,7 @@ void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
 }
 
 typedef struct {
-    uint8_t flags; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = output, bit 7 = no data
+    uint8_t flags; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data
     int32_t power_grid; // W
     int32_t power_general[6]; // W
 } __attribute__((__packed__)) EnergyManager5MinData;

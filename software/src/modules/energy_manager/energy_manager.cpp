@@ -519,7 +519,7 @@ void EnergyManager::update_all_data()
     low_level_state.get("led_rgb")->get(2)->updateUint(all_data.rgb_value_b);
     state.get("input3_state")->updateBool(all_data.input[0]);
     state.get("input4_state")->updateBool(all_data.input[1]);
-    state.get("relay_state")->updateBool(all_data.output);
+    state.get("relay_state")->updateBool(all_data.relay);
     low_level_state.get("input_voltage")->updateUint(all_data.voltage);
     low_level_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
     low_level_state.get("uptime")->updateUint(all_data.uptime);
@@ -614,7 +614,7 @@ void EnergyManager::update_all_data_struct()
         &all_data.energy_meter_type,
         all_data.error_count,
         all_data.input,
-        &all_data.output,
+        &all_data.relay,
         &all_data.voltage,
         &all_data.contactor_check_state,
         &all_data.uptime

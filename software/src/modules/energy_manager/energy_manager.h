@@ -135,7 +135,7 @@ typedef struct {
     uint32_t error_count[6];
 
     bool input[2];
-    bool output;
+    bool relay;
     uint16_t voltage;
     uint8_t contactor_check_state;
     uint32_t uptime;

@@ -70,7 +70,7 @@ debug_log_variables = [
             "all_data.input[0]",
             "all_data.input[1]",
             "",
-            "all_data.output",
+            "all_data.relay",
             "",
             "all_data.voltage",
             "",
