@@ -2509,8 +2509,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 <PageHeader title={__("em_energy_analysis.content.em_energy_analysis")} colClasses="col-xl-10">
                     <div>
                         {state.data_type == '5min'
-                        ? <InputDate date={state.current_5min_date} onDate={this.set_current_5min_date.bind(this)} buttons="day" style="width: 12rem">{data_select}</InputDate>
-                        : <InputMonth date={state.current_daily_date} onDate={this.set_current_daily_date.bind(this)} buttons="month" style="width: 12rem">{data_select}</InputMonth>}
+                        ? <InputDate date={state.current_5min_date} onDate={this.set_current_5min_date.bind(this)} buttons="day" style="width: 11rem">{data_select}</InputDate>
+                        : <InputMonth date={state.current_daily_date} onDate={this.set_current_daily_date.bind(this)} buttons="month" style="width: 11rem">{data_select}</InputMonth>}
                     </div>
                 </PageHeader>
                 <div class="row">
