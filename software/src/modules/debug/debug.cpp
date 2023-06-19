@@ -85,7 +85,7 @@ void Debug::register_urls()
             return request.endChunkedResponse();
         } else {
             request.beginChunkedResponse(200, "text/html");
-            String header = "<h1>" + f.path() + "</h1><br>";
+            String header = "<h1>" + String(f.path()) + "</h1><br>";
             request.sendChunk(header.c_str(), static_cast<ssize_t>(header.length()));
 
             if (path.length() > 1) {
@@ -96,7 +96,7 @@ void Debug::register_urls()
 
             File file = f.openNextFile();
             while(file) {
-                String s = "<a href=\"/debug/fs" + file.path() + "\">"+ file.name() +"</a><br>";
+                String s = "<a href=\"/debug/fs" + String(file.path()) + "\">"+ file.name() +"</a><br>";
                 request.sendChunk(s.c_str(), static_cast<ssize_t>(s.length()));
                 file = f.openNextFile();
             }
