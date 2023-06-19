@@ -271,6 +271,8 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
     visible: boolean = false;
     div_ref = createRef();
     observer: ResizeObserver;
+    bar_height = 20;
+    bar_spacing = 5;
 
     shouldComponentUpdate() {
         return false;
@@ -369,6 +371,8 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     fill: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_fills && this.data.value_fills[seriesIdx] ? this.data.value_fills[seriesIdx][value] : 'rgb(0, 0, 0, 0.1)',
                     stroke: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_strokes && this.data.value_strokes[seriesIdx] ? this.data.value_strokes[seriesIdx][value] : 'rgb(0, 0, 0)',
                     size: [0.9, 100],
+                    bar_height: this.bar_height,
+                    bar_spacing: this.bar_spacing,
                 }),
                 {
                     hooks: {
@@ -435,7 +439,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
         return {
             width: div.clientWidth,
-            height: 30 + 30 + count * 15 + (count - 1) * 8,
+            height: 17 + count * this.bar_height + (count - 1) * this.bar_spacing + 30,
         }
     }
 

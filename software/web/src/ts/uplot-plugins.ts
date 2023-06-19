@@ -256,56 +256,57 @@ export function uPlotTimelinePlugin(opts: any) {
             rect(u.ctx, u.bbox.left, u.bbox.top, u.bbox.width, u.bbox.height);
             u.ctx.clip();
 
-            walk(sidx - 1, u.series.length - 1, yDim, (iy: number, y0: number, hgt: number) => {
-                let last_rgt: number = undefined;
+            let hgt = opts.bar_height;
+            let iy = sidx - 1;
+            let y0 = (sidx - 1) * (opts.bar_height + opts.bar_spacing);
+            let last_rgt: number = undefined;
 
-                for (let ix = 0; ix < dataY.length; ix++) {
-                    if (dataY[ix] === null) {
-                        last_rgt = undefined;
+            for (let ix = 0; ix < dataY.length; ix++) {
+                if (dataY[ix] === null) {
+                    last_rgt = undefined;
+                }
+                else {
+                    let lft: number;
+
+                    if (last_rgt !== undefined) {
+                        lft = last_rgt;
                     }
                     else {
-                        let lft: number;
-
-                        if (last_rgt !== undefined) {
-                            lft = last_rgt;
-                        }
-                        else {
-                            lft = round(valToPosX(dataX[ix], scaleX, xDim, xOff));
-                        }
-
-                        let nextIx = ix;
-                        while (dataY[++nextIx] === undefined && nextIx < dataY.length) {}
-
-                        let rgt0 = valToPosX(dataX[nextIx - 1], scaleX, xDim, xOff);
-                        let rgt1 = rgt0;
-
-                        if (dataY[nextIx] !== null && dataY[nextIx] !== undefined) {
-                            rgt1 = valToPosX(dataX[nextIx], scaleX, xDim, xOff);
-                        }
-
-                        let rgt = round(rgt0 + (rgt1 - rgt0) / 2);
-
-                        last_rgt = rgt;
-
-                        putBox(
-                            u.ctx,
-                            rect,
-                            xOff,
-                            yOff,
-                            lft,
-                            round(yOff + y0),
-                            max(rgt - lft, 1),
-                            round(hgt),
-                            strokeWidth,
-                            iy,
-                            ix,
-                            dataY[ix]
-                        );
-
-                        ix = nextIx - 1;
+                        lft = round(valToPosX(dataX[ix], scaleX, xDim, xOff));
                     }
+
+                    let nextIx = ix;
+                    while (dataY[++nextIx] === undefined && nextIx < dataY.length) {}
+
+                    let rgt0 = valToPosX(dataX[nextIx - 1], scaleX, xDim, xOff);
+                    let rgt1 = rgt0;
+
+                    if (dataY[nextIx] !== null && dataY[nextIx] !== undefined) {
+                        rgt1 = valToPosX(dataX[nextIx], scaleX, xDim, xOff);
+                    }
+
+                    let rgt = round(rgt0 + (rgt1 - rgt0) / 2);
+
+                    last_rgt = rgt;
+
+                    putBox(
+                        u.ctx,
+                        rect,
+                        xOff,
+                        yOff,
+                        lft,
+                        round(yOff + y0),
+                        max(rgt - lft, 1),
+                        round(hgt),
+                        strokeWidth,
+                        iy,
+                        ix,
+                        dataY[ix]
+                    );
+
+                    ix = nextIx - 1;
                 }
-            });
+            }
 
             u.ctx.lineWidth = strokeWidth;
             drawBoxes(u.ctx);
