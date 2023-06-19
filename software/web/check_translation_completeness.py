@@ -73,7 +73,7 @@ def main():
     if len(used_but_missing):
         print(util.red("Missing placeholders:"))
         for x in sorted(used_but_missing):
-            print("\t" + x)
+            print("\t" + util.red(x))
 
     unused = util.get_nested_keys(translation)
     for k, v in template_literals.items():
