@@ -48,6 +48,7 @@ interface UplotData extends CachedData {
     value_names?: {[id: number]: string}[];
     value_strokes?: {[id: number]: string}[];
     value_fills?: {[id: number]: string}[];
+    default_visibilty?: boolean[];
 }
 
 interface Wallbox5minData extends CachedData {
@@ -259,6 +260,7 @@ interface UplotFlagsWrapperProps {
     legend_time_label: string;
     legend_time_with_minutes: boolean;
     legend_value_prefix: string;
+    legend_div_ref: RefObject<HTMLDivElement>;
     x_format: Intl.DateTimeFormatOptions;
     x_padding_factor: number;
 }
@@ -331,7 +333,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             ],
             axes: [
                 {
-                    size: 30,
+                    size: this.x_axis_height,
                     incrs: [
                         60,
                         60 * 2,
@@ -353,10 +355,11 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
                         return values;
                     },
+                    side: 0,
                 },
                 {
                     size: 70,
-                }
+                },
             ],
             scales: {
                 x: {
@@ -364,6 +367,14 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                         let pad = (to - from) * this.props.x_padding_factor;
                         return [from - pad, to + pad];
                     },
+                },
+            },
+            padding: [null, null, 0, null] as uPlot.Padding,
+            legend: {
+                mount: (self: uPlot, legend: HTMLElement) => {
+                    if (this.props.legend_div_ref.current) {
+                        this.props.legend_div_ref.current.appendChild(legend);
+                    }
                 },
             },
             plugins: [
@@ -430,24 +441,36 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
     get_size() {
         let div = this.div_ref.current;
-        let count = 1;
+        let count = 0;
 
         if (this.uplot) {
-            count = this.uplot.series.length - 1;
+            for (let i = 1; i < this.uplot.series.length; ++i) {
+                if (this.series_visibility[this.data.keys[i]]) {
+                    ++count;
+                }
+            }
         }
 
         return {
             width: div.clientWidth,
-            height: 17 + count * this.bar_height + (count - 1) * this.bar_spacing + 30,
+            height: count * this.bar_height + Math.max(count - 1, 0) * this.bar_spacing + this.x_axis_height,
         }
     }
 
     set_loading() {
         this.div_ref.current.style.visibility = 'hidden';
+
+        if (this.props.legend_div_ref.current) {
+            this.props.legend_div_ref.current.style.visibility = 'hidden';
+        }
     }
 
     set_show(show: boolean) {
         this.div_ref.current.style.display = show ? 'block' : 'none';
+
+        if (this.props.legend_div_ref.current) {
+            this.props.legend_div_ref.current.style.display = show ? 'block' : 'none';
+        }
     }
 
     get_series_opts(i: number): uPlot.Series {
@@ -478,9 +501,17 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
         if (!this.data || this.data.keys.length <= 1) {
             this.div_ref.current.style.visibility = 'hidden';
+
+            if (this.props.legend_div_ref.current) {
+                this.props.legend_div_ref.current.style.visibility = 'hidden';
+            }
         }
         else {
             this.div_ref.current.style.visibility = 'visible';
+
+            if (this.props.legend_div_ref.current) {
+                this.props.legend_div_ref.current.style.visibility = 'visible';
+            }
 
             while (this.uplot.series.length > 1) {
                 this.uplot.delSeries(this.uplot.series.length - 1);
@@ -488,7 +519,13 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
             while (this.uplot.series.length < this.data.keys.length) {
                 if (this.series_visibility[this.data.keys[this.uplot.series.length]] === undefined) {
-                    this.series_visibility[this.data.keys[this.uplot.series.length]] = true;
+                    let visibilty = true;
+
+                    if (this.data.default_visibilty) {
+                        visibilty = this.data.default_visibilty[this.uplot.series.length];
+                    }
+
+                    this.series_visibility[this.data.keys[this.uplot.series.length]] = visibilty;
                 }
 
                 this.uplot.addSeries(this.get_series_opts(this.uplot.series.length));
@@ -509,6 +546,7 @@ interface UplotWrapperProps {
     legend_time_label: string;
     legend_time_with_minutes: boolean;
     legend_value_prefix: string;
+    legend_div_ref?: RefObject<HTMLDivElement>;
     aspect_ratio: number;
     x_format: Intl.DateTimeFormatOptions;
     x_padding_factor: number;
@@ -654,6 +692,13 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     },
                 },
             },
+            legend: {
+                mount: (self: uPlot, legend: HTMLElement) => {
+                    if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
+                        this.props.legend_div_ref.current.appendChild(legend);
+                    }
+                },
+            },
             plugins: [
                 {
                     hooks: {
@@ -738,10 +783,18 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
     set_loading() {
         this.div_ref.current.style.visibility = 'hidden';
+
+        if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
+            this.props.legend_div_ref.current.style.visibility = 'hidden';
+        }
     }
 
     set_show(show: boolean) {
         this.div_ref.current.style.display = show ? 'block' : 'none';
+
+        if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
+            this.props.legend_div_ref.current.style.display = show ? 'block' : 'none';
+        }
     }
 
     get_series_opts(i: number): uPlot.Series {
@@ -899,9 +952,17 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
         if (!this.data || this.data.keys.length <= 1) {
             this.div_ref.current.style.visibility = 'hidden';
+
+            if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
+                this.props.legend_div_ref.current.style.visibility = 'hidden';
+            }
         }
         else {
             this.div_ref.current.style.visibility = 'visible';
+
+            if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
+                this.props.legend_div_ref.current.style.visibility = 'visible';
+            }
 
             while (this.uplot.series.length > 1) {
                 this.uplot.delSeries(this.uplot.series.length - 1);
@@ -909,7 +970,13 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
             while (this.uplot.series.length < this.data.keys.length) {
                 if (this.series_visibility[this.data.keys[this.uplot.series.length]] === undefined) {
-                    this.series_visibility[this.data.keys[this.uplot.series.length]] = true;
+                    let visibilty = true;
+
+                    if (this.data.default_visibilty) {
+                        visibilty = this.data.default_visibilty[this.uplot.series.length];
+                    }
+
+                    this.series_visibility[this.data.keys[this.uplot.series.length]] = visibilty;
                 }
 
                 this.uplot.addSeries(this.get_series_opts(this.uplot.series.length));
@@ -1016,6 +1083,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     uplot_loader_5min_ref = createRef();
     uplot_wrapper_5min_flags_ref = createRef();
     uplot_wrapper_5min_power_ref = createRef();
+    uplot_legend_div_5min_power_ref = createRef();
+    uplot_legend_div_5min_flags_ref = createRef();
     uplot_loader_daily_ref = createRef();
     uplot_wrapper_daily_ref = createRef();
     status_ref: RefObject<EMEnergyAnalysisStatus> = null;
@@ -1435,6 +1504,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             value_names: [null],
             value_strokes: [null],
             value_fills: [null],
+            default_visibilty: [null],
         };
 
         let slot_count: number = 0;
@@ -1494,6 +1564,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.value_names.push(em_contactor_names);
             uplot_data.value_strokes.push(em_contactor_strokes);
             uplot_data.value_fills.push(em_contactor_fills);
+            uplot_data.default_visibilty.push(true);
 
             uplot_data.keys.push('em_input3');
             uplot_data.names.push(__("em_energy_analysis.content.state_input3"));
@@ -1503,6 +1574,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.value_names.push(em_input_names);
             uplot_data.value_strokes.push(em_input_strokes);
             uplot_data.value_fills.push(em_input_fills);
+            uplot_data.default_visibilty.push(false);
 
             uplot_data.keys.push('em_input4');
             uplot_data.names.push(__("em_energy_analysis.content.state_input4"));
@@ -1512,6 +1584,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.value_names.push(em_input_names);
             uplot_data.value_strokes.push(em_input_strokes);
             uplot_data.value_fills.push(em_input_fills);
+            uplot_data.default_visibilty.push(false);
 
             uplot_data.keys.push('em_relay');
             uplot_data.names.push(__("em_energy_analysis.content.state_relay"));
@@ -1521,6 +1594,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.value_names.push(em_relay_names);
             uplot_data.value_strokes.push(em_relay_strokes);
             uplot_data.value_fills.push(em_relay_fills);
+            uplot_data.default_visibilty.push(false);
         }
 
         for (let charger of this.chargers) {
@@ -1552,6 +1626,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.value_names.push(wb_state_names);
                     uplot_data.value_strokes.push(wb_state_strokes);
                     uplot_data.value_fills.push(wb_state_fills);
+                    uplot_data.default_visibilty.push(true);
                 }
             }
         }
@@ -2541,6 +2616,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                                    legend_time_label={__("em_energy_analysis.script.time_5min")}
                                                    legend_time_with_minutes={true}
                                                    legend_value_prefix=""
+                                                   legend_div_ref={this.uplot_legend_div_5min_flags_ref}
                                                    x_format={{hour: '2-digit', minute: '2-digit'}}
                                                    x_padding_factor={0} />
                                 <UplotWrapper ref={this.uplot_wrapper_5min_power_ref}
@@ -2553,6 +2629,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               legend_time_label={__("em_energy_analysis.script.time_5min")}
                                               legend_time_with_minutes={true}
                                               legend_value_prefix=""
+                                              legend_div_ref={this.uplot_legend_div_5min_power_ref}
                                               aspect_ratio={3}
                                               x_format={{hour: '2-digit', minute: '2-digit'}}
                                               x_padding_factor={0}
@@ -2561,6 +2638,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               y_step={10}
                                               y_unit={"W"}
                                               y_digits={0} />
+                                <div class="uplot u-hz u-time-in-legend-alone" ref={this.uplot_legend_div_5min_flags_ref} style="width: 100%; visibility: hidden;" />
+                                <div class="uplot u-hz u-hide-first-series-in-legend" ref={this.uplot_legend_div_5min_power_ref} style="width: 100%; visibility: hidden;" />
                             </UplotLoader>
                             <UplotLoader ref={this.uplot_loader_daily_ref}
                                          show={false}

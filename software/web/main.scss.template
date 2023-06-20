@@ -534,3 +534,11 @@ body {
 .d-flex-ni {
     display: flex;
 }
+
+.u-hide-first-series-in-legend .u-legend .u-series:first-child {
+    display: none;
+}
+
+.u-time-in-legend-alone .u-legend .u-series:first-child {
+    display: block;
+}
