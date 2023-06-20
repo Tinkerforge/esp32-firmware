@@ -357,7 +357,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     side: 0,
                 },
                 {
-                    size: 70,
+                    size: 80,
                 },
             ],
             scales: {
@@ -661,7 +661,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     },
                 },
                 {
-                    size: 70,
+                    size: 80,
                     values: (self: uPlot, splits: number[]) => {
                         let values: string[] = new Array(splits.length);
 
