@@ -45,14 +45,14 @@ void Rtc::pre_setup()
         {"weekday", Config::Uint8(0)},
     });
 
-    rtc_config = Config::Object({
+    config = Config::Object({
         {"auto_sync", Config::Bool(true)},
     });
 }
 
 void Rtc::setup()
 {
-    api.restorePersistentConfig("rtc/config", &rtc_config);
+    api.restorePersistentConfig("rtc/config", &config);
 }
 
 void Rtc::register_backend(IRtcBackend *_backend)
@@ -62,7 +62,7 @@ void Rtc::register_backend(IRtcBackend *_backend)
 
     backend = _backend;
 
-    api.addPersistentConfig("rtc/config", &rtc_config, {}, 1000);
+    api.addPersistentConfig("rtc/config", &config, {}, 1000);
 
     api.addState("rtc/time", &time, {}, 100);
     api.addCommand("rtc/time_update", &time_update, {}, [this]() {

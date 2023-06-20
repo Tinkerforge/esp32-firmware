@@ -41,6 +41,6 @@ public:
 private:
     bool build_coredump_info(JsonDocument &tf_coredump_json);
 
-    ConfigRoot coredump_state;
+    ConfigRoot state;
     CoredumpSetupError setup_error;
 };

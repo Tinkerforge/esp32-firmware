@@ -34,5 +34,5 @@ public:
     bool initialized = false;
 
     // ConfigRoot object to represent the color to be send to the frontend module
-    ConfigRoot tutorial_config;
+    ConfigRoot config;
 };

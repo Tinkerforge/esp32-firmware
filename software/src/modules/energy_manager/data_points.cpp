@@ -108,7 +108,7 @@ void EnergyManager::collect_data_points()
 
     if (current_5min_slot != last_history_5min_slot) {
         // 5min data
-        for (auto &charger : charge_manager.charge_manager_state.get("chargers")) {
+        for (auto &charger : charge_manager.state.get("chargers")) {
             uint32_t last_update = charger.get("last_update")->asUint();
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
@@ -186,7 +186,7 @@ void EnergyManager::collect_data_points()
         }
 
         // daily data
-        for (const auto &charger : charge_manager.charge_manager_state.get("chargers")) {
+        for (const auto &charger : charge_manager.state.get("chargers")) {
             uint32_t last_update = charger.get("last_update")->asUint();
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {

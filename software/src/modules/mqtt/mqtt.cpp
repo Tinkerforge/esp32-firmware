@@ -41,7 +41,7 @@ extern char local_uid_str[32];
 void Mqtt::pre_setup()
 {
     // The real UID will be patched in later
-    mqtt_config = ConfigRoot(Config::Object({
+    config = ConfigRoot(Config::Object({
         {"enable_mqtt", Config::Bool(false)},
         {"broker_host", Config::Str("", 0, 128)},
         {"broker_port", Config::Uint16(1883)},
@@ -61,7 +61,7 @@ void Mqtt::pre_setup()
         return "";
     });
 
-    mqtt_state = Config::Object({
+    state = Config::Object({
         {"connection_state", Config::Int(0)},
         {"connection_start", Config::Uint(0)},
         {"connection_end", Config::Uint32(0)},
@@ -71,7 +71,7 @@ void Mqtt::pre_setup()
 
 void Mqtt::subscribe_with_prefix(const String &path, std::function<void(char *, size_t)> callback, bool forbid_retained)
 {
-    const String &prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
+    const String &prefix = config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
     subscribe(topic, callback, forbid_retained);
 }
@@ -111,7 +111,7 @@ void Mqtt::addResponse(size_t responseIdx, const ResponseRegistration &reg)
 
 void Mqtt::publish_with_prefix(const String &path, const String &payload)
 {
-    const String &prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
+    const String &prefix = config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
     // Retain messages because we only send on change.
     publish(topic, payload, true);
@@ -126,7 +126,7 @@ bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String 
 {
     auto &state = this->states[stateIdx];
 
-    if (!deadline_elapsed(state.last_send_ms + mqtt_config_in_use.get("interval")->asUint() * 1000))
+    if (!deadline_elapsed(state.last_send_ms + config_in_use.get("interval")->asUint() * 1000))
         return false;
 
     this->publish_with_prefix(path, payload);
@@ -142,10 +142,10 @@ void Mqtt::pushRawStateUpdate(const String &payload, const String &path)
 void Mqtt::onMqttConnect()
 {
     last_connected_ms = millis();
-    mqtt_state.get("connection_start")->updateUint(last_connected_ms);
+    state.get("connection_start")->updateUint(last_connected_ms);
     was_connected = true;
     logger.printfln("MQTT: Connected to broker.");
-    this->mqtt_state.get("connection_state")->updateInt((int)MqttConnectionState::CONNECTED);
+    this->state.get("connection_state")->updateInt((int)MqttConnectionState::CONNECTED);
 
     this->commands.clear();
     for (size_t i = 0; i < api.commands.size(); ++i) {
@@ -170,7 +170,7 @@ void Mqtt::onMqttConnect()
     mqtt_auto_discovery.onMqttConnect();
 #endif
 
-    const String &prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
+    const String &prefix = config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/#";
     esp_mqtt_client_unsubscribe(client, topic.c_str());
     esp_mqtt_client_subscribe(client, topic.c_str(), 0);
@@ -178,17 +178,17 @@ void Mqtt::onMqttConnect()
 
 void Mqtt::onMqttDisconnect()
 {
-    if (this->mqtt_state.get("connection_state")->asEnum<MqttConnectionState>() == MqttConnectionState::NOT_CONNECTED)
+    if (this->state.get("connection_state")->asEnum<MqttConnectionState>() == MqttConnectionState::NOT_CONNECTED)
         logger.printfln("MQTT: Failed to connect to broker.");
     else
         logger.printfln("MQTT: Disconnected from broker.");
 
-    this->mqtt_state.get("connection_state")->updateInt((int)MqttConnectionState::NOT_CONNECTED);
+    this->state.get("connection_state")->updateInt((int)MqttConnectionState::NOT_CONNECTED);
     if (was_connected) {
         was_connected = false;
         uint32_t now = millis();
         uint32_t connected_for = now - last_connected_ms;
-        mqtt_state.get("connection_end")->updateUint(now);
+        state.get("connection_end")->updateUint(now);
         if (connected_for < 0x7FFFFFFF) {
             logger.printfln("MQTT: Was connected for %u seconds.", connected_for / 1000);
         } else {
@@ -227,7 +227,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         return;
     }
 
-    const String &prefix = this->mqtt_config_in_use.get("global_topic_prefix")->asString();
+    const String &prefix = this->config_in_use.get("global_topic_prefix")->asString();
     if (topic_len < prefix.length() + 1) // + 1 because we will check for the / between the prefix and the topic.
         return;
     if (memcmp(topic, prefix.c_str(), prefix.length()) != 0)
@@ -343,31 +343,31 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             break;
         case MQTT_EVENT_ERROR: {
                 auto eh = event->error_handle;
-                bool was_connected = mqtt->mqtt_state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::NOT_CONNECTED;
+                bool was_connected = mqtt->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::NOT_CONNECTED;
 
                 if (eh->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
                     if (was_connected && eh->esp_tls_last_esp_err != ESP_OK) {
                         const char *e = esp_err_to_name_r(eh->esp_tls_last_esp_err, err_buf, sizeof(err_buf) / sizeof(err_buf[0]));
                         logger.printfln("MQTT: Transport error: %s (esp_tls_last_esp_err)", e);
-                        mqtt->mqtt_state.get("last_error")->updateInt(eh->esp_tls_last_esp_err);
+                        mqtt->state.get("last_error")->updateInt(eh->esp_tls_last_esp_err);
                     }
                     if (was_connected && eh->esp_tls_stack_err != 0) {
                         const char *e = esp_err_to_name_r(eh->esp_tls_stack_err, err_buf, sizeof(err_buf) / sizeof(err_buf[0]));
                         logger.printfln("MQTT: Transport error: %s (esp_tls_stack_err)", e);
-                        mqtt->mqtt_state.get("last_error")->updateInt(eh->esp_tls_stack_err);
+                        mqtt->state.get("last_error")->updateInt(eh->esp_tls_stack_err);
                     }
                     if (eh->esp_transport_sock_errno != 0) {
                         const char *e = strerror(eh->esp_transport_sock_errno);
                         logger.printfln("MQTT: Transport error: %s", e);
-                        mqtt->mqtt_state.get("last_error")->updateInt(eh->esp_transport_sock_errno);
+                        mqtt->state.get("last_error")->updateInt(eh->esp_transport_sock_errno);
                     }
                 } else if (eh->error_type == MQTT_ERROR_TYPE_CONNECTION_REFUSED) {
                     logger.printfln("MQTT: Connection refused: %s", get_mqtt_error(eh->connect_return_code));
                     // Minus to indicate this is a connection error
-                    mqtt->mqtt_state.get("last_error")->updateInt(-eh->connect_return_code);
+                    mqtt->state.get("last_error")->updateInt(-eh->connect_return_code);
                 } else {
                     logger.printfln("MQTT: Unknown error");
-                    mqtt->mqtt_state.get("last_error")->updateInt(0xFFFFFFFF);
+                    mqtt->state.get("last_error")->updateInt(0xFFFFFFFF);
                 }
                 break;
             }
@@ -378,30 +378,30 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
 void Mqtt::setup()
 {
-    if (!api.restorePersistentConfig("mqtt/config", &mqtt_config)) {
-        mqtt_config.get("global_topic_prefix")->updateString(String(BUILD_HOST_PREFIX) + String("/") + String(local_uid_str));
-        mqtt_config.get("client_name")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str));
+    if (!api.restorePersistentConfig("mqtt/config", &config)) {
+        config.get("global_topic_prefix")->updateString(String(BUILD_HOST_PREFIX) + String("/") + String(local_uid_str));
+        config.get("client_name")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str));
 
 #ifdef DEFAULT_MQTT_ENABLE
-        mqtt_config.get("enable_mqtt")->updateBool(DEFAULT_MQTT_ENABLE);
+        config.get("enable_mqtt")->updateBool(DEFAULT_MQTT_ENABLE);
 #endif
 #ifdef DEFAULT_MQTT_BROKER_HOST
-        mqtt_config.get("broker_host")->updateString(DEFAULT_MQTT_BROKER_HOST);
+        config.get("broker_host")->updateString(DEFAULT_MQTT_BROKER_HOST);
 #endif
 #ifdef DEFAULT_MQTT_BROKER_PORT
-        mqtt_config.get("broker_port")->updateUint(DEFAULT_MQTT_BROKER_PORT);
+        config.get("broker_port")->updateUint(DEFAULT_MQTT_BROKER_PORT);
 #endif
 #ifdef DEFAULT_MQTT_BROKER_USERNAME
-        mqtt_config.get("broker_username")->updateString(DEFAULT_MQTT_BROKER_USERNAME);
+        config.get("broker_username")->updateString(DEFAULT_MQTT_BROKER_USERNAME);
 #endif
 #ifdef DEFAULT_MQTT_BROKER_PASSWORD
-        mqtt_config.get("broker_password")->updateString(DEFAULT_MQTT_BROKER_PASSWORD);
+        config.get("broker_password")->updateString(DEFAULT_MQTT_BROKER_PASSWORD);
 #endif
     }
 
-    mqtt_config_in_use = mqtt_config;
+    config_in_use = config;
 
-    if (!mqtt_config.get("enable_mqtt")->asBool()) {
+    if (!config.get("enable_mqtt")->asBool()) {
         initialized = true;
         return;
     }
@@ -416,11 +416,11 @@ void Mqtt::setup()
 
     esp_mqtt_client_config_t mqtt_cfg = {};
 
-    mqtt_cfg.host = mqtt_config_in_use.get("broker_host")->asEphemeralCStr();
-    mqtt_cfg.port = mqtt_config_in_use.get("broker_port")->asUint();
-    mqtt_cfg.client_id = mqtt_config_in_use.get("client_name")->asEphemeralCStr();
-    mqtt_cfg.username = mqtt_config_in_use.get("broker_username")->asEphemeralCStr();
-    mqtt_cfg.password = mqtt_config_in_use.get("broker_password")->asEphemeralCStr();
+    mqtt_cfg.host = config_in_use.get("broker_host")->asEphemeralCStr();
+    mqtt_cfg.port = config_in_use.get("broker_port")->asUint();
+    mqtt_cfg.client_id = config_in_use.get("client_name")->asEphemeralCStr();
+    mqtt_cfg.username = config_in_use.get("broker_username")->asEphemeralCStr();
+    mqtt_cfg.password = config_in_use.get("broker_password")->asEphemeralCStr();
     mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE;
     mqtt_cfg.network_timeout_ms = 1000;
     mqtt_cfg.message_retransmit_timeout = 400;
@@ -433,12 +433,12 @@ void Mqtt::setup()
 
 void Mqtt::register_urls()
 {
-    api.addPersistentConfig("mqtt/config", &mqtt_config, {"broker_password"}, 1000);
-    api.addState("mqtt/state", &mqtt_state, {}, 1000);
+    api.addPersistentConfig("mqtt/config", &config, {"broker_password"}, 1000);
+    api.addState("mqtt/state", &state, {}, 1000);
 }
 
 void Mqtt::register_events() {
-    if (!mqtt_config.get("enable_mqtt")->asBool()) {
+    if (!config.get("enable_mqtt")->asBool()) {
         return;
     }
 

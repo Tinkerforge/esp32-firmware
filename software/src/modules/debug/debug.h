@@ -32,5 +32,5 @@ public:
     void register_urls() override;
 
 private:
-    ConfigRoot debug_state;
+    ConfigRoot state;
 };

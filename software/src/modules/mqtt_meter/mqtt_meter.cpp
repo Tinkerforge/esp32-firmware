@@ -43,7 +43,7 @@ void MqttMeter::pre_setup()
         {"has_all_values", Config::Bool(false)},
         {"source_meter_path", Config::Str("path/to/meter", 0, 128)},
     }),  [](Config &cfg) -> String {
-        const String &global_topic_prefix = mqtt.mqtt_config.get("global_topic_prefix")->asString();
+        const String &global_topic_prefix = mqtt.config.get("global_topic_prefix")->asString();
         const String &meter_path = cfg.get("source_meter_path")->asString();
 
         if (meter_path.startsWith(global_topic_prefix))

@@ -69,10 +69,10 @@ public:
     void onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain);
     void onMqttDisconnect();
 
-    ConfigRoot mqtt_config;
-    ConfigRoot mqtt_state;
+    ConfigRoot config;
+    ConfigRoot state;
 
-    ConfigRoot mqtt_config_in_use;
+    ConfigRoot config_in_use;
 
     std::vector<MqttCommand> commands;
     std::vector<MqttState> states;

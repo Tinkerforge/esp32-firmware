@@ -44,16 +44,16 @@ public:
     bool is_control_pilot_disconnect_supported(uint32_t last_update_cutoff);
     void set_allocated_current_callback(std::function<void(uint32_t)> callback);
 
-    ConfigRoot charge_manager_config;
-    ConfigRoot charge_manager_config_in_use;
+    ConfigRoot config;
+    ConfigRoot config_in_use;
 
-    ConfigRoot charge_manager_state;
+    ConfigRoot state;
 
-    ConfigRoot charge_manager_available_current;
-    ConfigRoot charge_manager_available_current_update;
-    ConfigRoot charge_manager_available_phases;
-    ConfigRoot charge_manager_available_phases_update;
-    ConfigRoot charge_manager_control_pilot_disconnect;
+    ConfigRoot available_current;
+    ConfigRoot available_current_update;
+    ConfigRoot available_phases;
+    ConfigRoot available_phases_update;
+    ConfigRoot control_pilot_disconnect;
 
     uint32_t last_available_current_update = 0;
 

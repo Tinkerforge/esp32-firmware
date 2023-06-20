@@ -27,7 +27,7 @@
 
 void EMSDcard::pre_setup()
 {
-    sdcard_state = Config::Object({
+    state = Config::Object({
         {"sd_status",       Config::Uint32(0)},
         {"lfs_status",      Config::Uint32(0)},
         {"card_type",       Config::Uint32(0)},
@@ -55,7 +55,7 @@ void EMSDcard::setup()
 
 void EMSDcard::register_urls()
 {
-    api.addState("energy_manager/sdcard_state", &sdcard_state, {}, 1000);
+    api.addState("energy_manager/sdcard_state", &state, {}, 1000);
 
     api.addRawCommand("energy_manager/sdcard_format", [this](char *c, size_t s) -> String {
         StaticJsonDocument<16> doc;
@@ -78,7 +78,7 @@ void EMSDcard::register_urls()
             return "Format request failed";
 
         // Fake LittleFS state to display "Formatting..." message in frontend.
-        sdcard_state.get("lfs_status")->updateUint(256);
+        state.get("lfs_status")->updateUint(256);
 
         return "";
     }, true);
@@ -89,22 +89,22 @@ void EMSDcard::update_sdcard_info()
     struct sdcard_info data;
 
     if (energy_manager.get_sdcard_info(&data)) {
-        sdcard_state.get("sd_status")->updateUint(data.sd_status);
-        sdcard_state.get("lfs_status")->updateUint(data.lfs_status);
-        sdcard_state.get("card_type")->updateUint(data.card_type);
-        sdcard_state.get("sector_count")->updateUint(data.sector_count);
-        sdcard_state.get("sector_size")->updateUint(data.sector_size);
-        sdcard_state.get("manufacturer_id")->updateUint(data.manufacturer_id);
-        sdcard_state.get("product_rev")->updateUint(data.product_rev);
-        sdcard_state.get("product_name")->updateString(data.product_name);
+        state.get("sd_status")->updateUint(data.sd_status);
+        state.get("lfs_status")->updateUint(data.lfs_status);
+        state.get("card_type")->updateUint(data.card_type);
+        state.get("sector_count")->updateUint(data.sector_count);
+        state.get("sector_size")->updateUint(data.sector_size);
+        state.get("manufacturer_id")->updateUint(data.manufacturer_id);
+        state.get("product_rev")->updateUint(data.product_rev);
+        state.get("product_name")->updateString(data.product_name);
     } else {
-        sdcard_state.get("sd_status")->updateUint(255);
-        sdcard_state.get("lfs_status")->updateUint(255);
-        sdcard_state.get("card_type")->updateUint(0);
-        sdcard_state.get("sector_count")->updateUint(0);
-        sdcard_state.get("sector_size")->updateUint(0);
-        sdcard_state.get("manufacturer_id")->updateUint(0);
-        sdcard_state.get("product_rev")->updateUint(0);
-        sdcard_state.get("product_name")->updateString("None.");
+        state.get("sd_status")->updateUint(255);
+        state.get("lfs_status")->updateUint(255);
+        state.get("card_type")->updateUint(0);
+        state.get("sector_count")->updateUint(0);
+        state.get("sector_size")->updateUint(0);
+        state.get("manufacturer_id")->updateUint(0);
+        state.get("product_rev")->updateUint(0);
+        state.get("product_name")->updateString("None.");
     }
 }

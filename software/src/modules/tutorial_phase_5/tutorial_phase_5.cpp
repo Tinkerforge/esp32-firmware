@@ -52,7 +52,7 @@ static void button_state_changed_handler(TF_RGBLEDButton *rgb_led_button, uint8_
     TutorialPhase5 *tutorial = (TutorialPhase5 *)user_data;
 
     // Update button state from RGB LED Button Bricklet button-state-changed callback
-    tutorial->tutorial_state.get("button")->updateBool(state == TF_RGB_LED_BUTTON_BUTTON_STATE_PRESSED);
+    tutorial->state.get("button")->updateBool(state == TF_RGB_LED_BUTTON_BUTTON_STATE_PRESSED);
 }
 
 void TutorialPhase5::pre_setup()
@@ -65,19 +65,19 @@ void TutorialPhase5::setup()
     // module. Containing one member "color" representing the color value
     // in HTML #RRGGBB notation. The string is limited to exactly 7 byte
     // in length.
-    tutorial_config = Config::Object({
+    config = Config::Object({
         {"color", Config::Str("#FF0000", 7, 7)}
     });
 
     // Extra ConfigRoot object to represent data updates received from the
     // frontend module. This has the same structure as the first ConfigRoot
     // object. Create it by copying the first one.
-    tutorial_config_update = tutorial_config;
+    config_update = config;
 
     // ConfigRoot object to represent the data to be send to the frontend
     // module. Containing one member "button" representing the button state:
     // true == pressed, false == released.
-    tutorial_state = Config::Object({
+    state = Config::Object({
         {"button", Config::Bool(false)}
     });
 
@@ -95,7 +95,7 @@ void TutorialPhase5::setup()
     }
 
     // Set color of RGB LED Button Bricklet to initial value
-    set_bricklet_color(tutorial_config.get("color")->asString());
+    set_bricklet_color(config.get("color")->asString());
 
     // Register the button_state_changed_handler function as handler for the
     // button-state-changed callback to be notified if the button state of
@@ -109,7 +109,7 @@ void TutorialPhase5::setup()
     if (tf_rgb_led_button_get_button_state(&rgb_led_button, &state) != TF_E_OK) {
         logger.printfln("Could not get RGB LED Button Bricklet button state");
     } else {
-        tutorial_state.get("button")->updateBool(state == TF_RGB_LED_BUTTON_BUTTON_STATE_PRESSED);
+        state.get("button")->updateBool(state == TF_RGB_LED_BUTTON_BUTTON_STATE_PRESSED);
     }
 
     // Start task with 1000 millisecond interval to read back current color
@@ -130,16 +130,16 @@ void TutorialPhase5::register_urls()
     // "tutorial_phase_5/config" to be exposed to the frontend module.
     // The API manager checks the ConfigRoot object for changes every 1000
     // milliseconds. If a change is detected an update is send.
-    api.addState("tutorial_phase_5/config", &tutorial_config, {}, 1000);
+    api.addState("tutorial_phase_5/config", &config, {}, 1000);
 
     // Add extra ConfigRoot object to the API manager as a command target under
     // the name "tutorial_phase_5/config" to receive updates from the frontend
     // module. If an update is received the lambda function is called to handle it.
-    api.addCommand("tutorial_phase_5/config_update", &tutorial_config_update, {}, [this]() {
-        String color = tutorial_config_update.get("color")->asString();
+    api.addCommand("tutorial_phase_5/config_update", &config_update, {}, [this]() {
+        String color = config_update.get("color")->asString();
 
         logger.printfln("Tutorial (Phase 5) module received color update: %s", color.c_str());
-        tutorial_config.get("color")->updateString(color);
+        config.get("color")->updateString(color);
         set_bricklet_color(color);
     }, false);
 
@@ -147,7 +147,7 @@ void TutorialPhase5::register_urls()
     // "tutorial_phase_5/state" to be exposed to the frontend module.
     // The API manager checks the ConfigRoot object for changes every 100
     // milliseconds. If a change is detected an update is send.
-    api.addState("tutorial_phase_5/state", &tutorial_state, {}, 100);
+    api.addState("tutorial_phase_5/state", &state, {}, 100);
 }
 
 void TutorialPhase5::loop()
@@ -182,5 +182,5 @@ void TutorialPhase5::poll_bricklet_color()
 
     // Update ConfigRoot object to expose the potentially changed color
     // to the frontend module.
-    tutorial_config.get("color")->updateString(color);
+    config.get("color")->updateString(color);
 }

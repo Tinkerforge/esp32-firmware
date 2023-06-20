@@ -136,9 +136,9 @@ void ChargeLimits::register_urls()
 
 
 #if MODULE_EVSE_V2_AVAILABLE()
-        auto uptime = evse_v2.evse_low_level_state.get("uptime")->asUint();
+        auto uptime = evse_v2.low_level_state.get("uptime")->asUint();
 #elif MODULE_EVSE_AVAILABLE()
-        auto uptime = evse.evse_low_level_state.get("uptime")->asUint();
+        auto uptime = evse.low_level_state.get("uptime")->asUint();
 #endif
         if (charging && !was_charging) {
             state.get("start_timestamp_ms")->updateUint(charge_tracker.current_charge.get("evse_uptime_start")->asUint());

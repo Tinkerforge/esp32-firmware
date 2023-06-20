@@ -53,7 +53,7 @@ public:
 
     void remove_username_file();
 
-    ConfigRoot user_config;
+    ConfigRoot config;
     ConfigRoot add;
     ConfigRoot remove;
     ConfigRoot http_auth;

@@ -49,7 +49,7 @@ void EmPvFaker::pre_setup()
         if (conf.get("zero_at_lux")->asUint() >= conf.get("peak_at_lux")->asUint())
             return "Lux value for zero production must be less than lux value for peak production.";
 
-        const String &global_topic_prefix = mqtt.mqtt_config.get("global_topic_prefix")->asString();
+        const String &global_topic_prefix = mqtt.config.get("global_topic_prefix")->asString();
         const String &illuminance_topic = conf.get("topic")->asString();
 
         if (illuminance_topic.startsWith(global_topic_prefix))

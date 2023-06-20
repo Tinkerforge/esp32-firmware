@@ -30,18 +30,18 @@
 
 void EVSEV2Meter::updateMeterValues()
 {
-    meter.updateMeterValues(evse_v2.evse_energy_meter_values.get("power")->asFloat(),
-                            evse_v2.evse_energy_meter_values.get("energy_rel")->asFloat(),
-                            evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
+    meter.updateMeterValues(evse_v2.energy_meter_values.get("power")->asFloat(),
+                            evse_v2.energy_meter_values.get("energy_rel")->asFloat(),
+                            evse_v2.energy_meter_values.get("energy_abs")->asFloat());
 
     bool phases_active[3];
     bool phases_connected[3];
 
     for (int i = 0; i < 3; ++i)
-        phases_active[i] = evse_v2.evse_energy_meter_values.get("phases_active")->get(i)->asBool();
+        phases_active[i] = evse_v2.energy_meter_values.get("phases_active")->get(i)->asBool();
 
     for (int i = 0; i < 3; ++i)
-        phases_connected[i] = evse_v2.evse_energy_meter_values.get("phases_connected")->get(i)->asBool();
+        phases_connected[i] = evse_v2.energy_meter_values.get("phases_connected")->get(i)->asBool();
 
     meter.updateMeterPhases(phases_connected, phases_active);
 }
@@ -50,7 +50,7 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
 {
     evse_v2.update_all_data();
 
-    uint8_t meter_type = evse_v2.evse_hardware_configuration.get("energy_meter_type")->asUint();
+    uint8_t meter_type = evse_v2.hardware_configuration.get("energy_meter_type")->asUint();
     if (meter_type == 0) {
         task_scheduler.scheduleOnce([this](){
             this->setupEVSE(true);
@@ -103,7 +103,7 @@ void EVSEV2Meter::setup()
 
 void EVSEV2Meter::register_urls()
 {
-    api.addState("meter/error_counters", &evse_v2.evse_energy_meter_errors, {}, 1000);
+    api.addState("meter/error_counters", &evse_v2.energy_meter_errors, {}, 1000);
 
     meter.registerResetCallback([this]() {
         if (!initialized) {

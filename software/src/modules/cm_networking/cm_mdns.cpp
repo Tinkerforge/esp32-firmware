@@ -73,9 +73,9 @@ void CMNetworking::register_urls()
 
             bool management_enabled = false;
         #if MODULE_EVSE_AVAILABLE()
-            management_enabled = evse.evse_management_enabled.get("enabled")->asBool();
+            management_enabled = evse.management_enabled.get("enabled")->asBool();
         #elif MODULE_EVSE_V2_AVAILABLE()
-            management_enabled = evse_v2.evse_management_enabled.get("enabled")->asBool();
+            management_enabled = evse_v2.management_enabled.get("enabled")->asBool();
         #endif
 
         // Keep "enabled" updated because it is retrieved from the EVSE.

@@ -381,8 +381,8 @@ void FirmwareUpdate::register_urls()
 #endif
 
 #if MODULE_USERS_AVAILABLE()
-            for(int i = 0; i < users.user_config.get("users")->count(); ++i) {
-                uint8_t id = users.user_config.get("users")->get(i)->get("id")->asUint();
+            for(int i = 0; i < users.config.get("users")->count(); ++i) {
+                uint8_t id = users.config.get("users")->get(i)->get("id")->asUint();
                 if (id == 0) // skip anonymous user
                     continue;
                 if (!charge_tracker.is_user_tracked(id)) {

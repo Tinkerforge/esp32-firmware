@@ -74,7 +74,7 @@ bool Coredump::build_coredump_info(JsonDocument &tf_coredump_json)
 
 void Coredump::pre_setup()
 {
-    coredump_state = Config::Object({
+    state = Config::Object({
         {"coredump_available", Config::Bool(false)}
     });
 
@@ -88,21 +88,21 @@ void Coredump::pre_setup()
 void Coredump::setup()
 {
     if (esp_core_dump_image_check() == ESP_OK)
-        coredump_state.get("coredump_available")->updateBool(true);
+        state.get("coredump_available")->updateBool(true);
 
     initialized = true;
 }
 
 void Coredump::register_urls()
 {
-    api.addState("coredump/state", &coredump_state, {}, 1000);
+    api.addState("coredump/state", &state, {}, 1000);
 
     server.on("/coredump/erase", HTTP_GET, [this](WebServerRequest request) {
         esp_core_dump_image_erase();
         if (esp_core_dump_image_check() == ESP_OK)
             return request.send(503, "text/plain", "Error while erasing core dump");
 
-        coredump_state.get("coredump_available")->updateBool(false);
+        state.get("coredump_available")->updateBool(false);
         return request.send(200);
     });
 

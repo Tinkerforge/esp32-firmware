@@ -66,9 +66,9 @@ void zero_user_slot_info()
 uint8_t get_iec_state()
 {
 #if MODULE_EVSE_AVAILABLE()
-    return evse.evse_state.get("iec61851_state")->asUint();
+    return evse.state.get("iec61851_state")->asUint();
 #elif MODULE_EVSE_V2_AVAILABLE()
-    return evse_v2.evse_state.get("iec61851_state")->asUint();
+    return evse_v2.state.get("iec61851_state")->asUint();
 #endif
     return 0;
 }
@@ -76,9 +76,9 @@ uint8_t get_iec_state()
 uint8_t get_charger_state()
 {
 #if MODULE_EVSE_AVAILABLE()
-    return evse.evse_state.get("charger_state")->asUint();
+    return evse.state.get("charger_state")->asUint();
 #elif MODULE_EVSE_V2_AVAILABLE()
-    return evse_v2.evse_state.get("charger_state")->asUint();
+    return evse_v2.state.get("charger_state")->asUint();
 #endif
     return 0;
 }
@@ -86,9 +86,9 @@ uint8_t get_charger_state()
 Config *get_user_slot()
 {
 #if MODULE_EVSE_AVAILABLE()
-    return (Config *)evse.evse_slots.get(CHARGING_SLOT_USER);
+    return (Config *)evse.slots.get(CHARGING_SLOT_USER);
 #elif MODULE_EVSE_V2_AVAILABLE()
-    return (Config *)evse_v2.evse_slots.get(CHARGING_SLOT_USER);
+    return (Config *)evse_v2.slots.get(CHARGING_SLOT_USER);
 #endif
     return nullptr;
 }
@@ -96,9 +96,9 @@ Config *get_user_slot()
 Config *get_low_level_state()
 {
 #if MODULE_EVSE_AVAILABLE()
-    return &evse.evse_low_level_state;
+    return &evse.low_level_state;
 #elif MODULE_EVSE_V2_AVAILABLE()
-    return &evse_v2.evse_low_level_state;
+    return &evse_v2.low_level_state;
 #endif
     return nullptr;
 }
@@ -216,7 +216,7 @@ public:
 
 void Users::pre_setup()
 {
-    user_config = Config::Object({
+    config = Config::Object({
         {"users", Config::Array(
             {
                 Config::Object({
@@ -256,17 +256,17 @@ void Users::pre_setup()
         if (!unblocker.try_block())
             return "Still applying the last operation. Please retry.";
 
-        if (user_config.get("next_user_id")->asUint() == 0)
+        if (config.get("next_user_id")->asUint() == 0)
             return "Can't add user. All user IDs in use.";
 
-        if (add.get("id")->asUint() != user_config.get("next_user_id")->asUint())
+        if (add.get("id")->asUint() != config.get("next_user_id")->asUint())
             return "Can't add user. Wrong next user ID";
 
-        if (user_config.get("users")->count() == MAX_ACTIVE_USERS)
+        if (config.get("users")->count() == MAX_ACTIVE_USERS)
             return "Can't add user. Already have the maximum number of active users.";
 
-        for(int i = 0; i < user_config.get("users")->count(); ++i)
-            if (user_config.get("users")->get(i)->get("username")->asString() == add.get("username")->asString())
+        for(int i = 0; i < config.get("users")->count(); ++i)
+            if (config.get("users")->get(i)->get("username")->asString() == add.get("username")->asString())
                 return "Can't add user. A user with this username already exists.";
 
         {
@@ -297,8 +297,8 @@ void Users::pre_setup()
         if (remove.get("id")->asUint() == 0)
             return "The anonymous user can't be removed.";
 
-        for (int i = 0; i < user_config.get("users")->count(); ++i) {
-            if (user_config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
+        for (int i = 0; i < config.get("users")->count(); ++i) {
+            if (config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
                 // Keep blocked for the users/add callback
                 unblocker.release();
                 return "";
@@ -314,8 +314,8 @@ void Users::pre_setup()
         if (!update.get("enabled")->asBool())
             return "";
 
-        for (int i = 0; i < user_config.get("users")->count(); ++i) {
-            if (user_config.get("users")->get(i)->get("digest_hash")->asString() != "")
+        for (int i = 0; i < config.get("users")->count(); ++i) {
+            if (config.get("users")->get(i)->get("digest_hash")->asString() != "")
                 return "";
         }
 
@@ -335,20 +335,20 @@ void create_username_file()
 
 void Users::setup()
 {
-    api.restorePersistentConfig("users/config", &user_config);
+    api.restorePersistentConfig("users/config", &config);
 
     if (!LittleFS.exists(USERNAME_FILE)) {
         logger.printfln("Username list does not exist! Recreating now.");
         create_username_file();
-        for (int i = 0; i < user_config.get("users")->count(); ++i) {
-            Config *user = (Config *)user_config.get("users")->get(i);
+        for (int i = 0; i < config.get("users")->count(); ++i) {
+            Config *user = (Config *)config.get("users")->get(i);
             this->rename_user(user->get("id")->asUint(), user->get("username")->asString(), user->get("display_name")->asString());
         }
     }
 
     // Next user id is 0 if there is no free user left.
     // After a reboot maybe tracked charges were removed.
-    if (user_config.get("next_user_id")->asUint() == 0)
+    if (config.get("next_user_id")->asUint() == 0)
         search_next_free_user();
 
     Config* user_slot = get_user_slot();
@@ -374,12 +374,12 @@ void Users::setup()
             }
             override_value = meter.values.get("energy_abs")->asFloat();
 #elif MODULE_EVSE_V2_AVAILABLE()
-            while(!deadline_elapsed(start + 10000) && evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat() == 0)
+            while(!deadline_elapsed(start + 10000) && evse_v2.energy_meter_values.get("energy_abs")->asFloat() == 0)
             {
                 evse_v2.update_all_data();
                 delay(250);
             }
-            override_value = evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat();
+            override_value = evse_v2.energy_meter_values.get("energy_abs")->asFloat();
 #endif
         }
 
@@ -438,10 +438,10 @@ void Users::setup()
 
     initialized = true;
 
-    if (user_config.get("http_auth_enabled")->asBool()) {
+    if (config.get("http_auth_enabled")->asBool()) {
         bool user_with_password_found = false;
-        for (int i = 0; i < user_config.get("users")->count(); ++i) {
-            if (user_config.get("users")->get(i)->get("digest_hash")->asString() != "") {
+        for (int i = 0; i < config.get("users")->count(); ++i) {
+            if (config.get("users")->get(i)->get("digest_hash")->asString() != "") {
                 user_with_password_found = true;
                 break;
             }
@@ -465,9 +465,9 @@ void Users::setup()
             auth = auth.substring(7);
             AuthFields fields = parseDigestAuth(auth.c_str());
 
-            for (int i = 0; i < user_config.get("users")->count(); ++i) {
-                if (user_config.get("users")->get(i)->get("username")->asString().equals(fields.username))
-                    return checkDigestAuthentication(fields, req.methodString(), fields.username.c_str(), user_config.get("users")->get(i)->get("digest_hash")->asEphemeralCStr(), nullptr, true, nullptr, nullptr, nullptr); // use of emphemeral C string ok
+            for (int i = 0; i < config.get("users")->count(); ++i) {
+                if (config.get("users")->get(i)->get("username")->asString().equals(fields.username))
+                    return checkDigestAuthentication(fields, req.methodString(), fields.username.c_str(), config.get("users")->get(i)->get("digest_hash")->asEphemeralCStr(), nullptr, true, nullptr, nullptr, nullptr); // use of emphemeral C string ok
             }
 
             return false;
@@ -478,7 +478,7 @@ void Users::setup()
 }
 
 void Users::search_next_free_user() {
-    uint8_t user_id = user_config.get("next_user_id")->asUint();
+    uint8_t user_id = config.get("next_user_id")->asUint();
     uint8_t start_uid = user_id;
     user_id++;
     {
@@ -497,12 +497,12 @@ void Users::search_next_free_user() {
     if (user_id == start_uid)
         user_id = 0;
 
-    user_config.get("next_user_id")->updateUint(user_id);
+    config.get("next_user_id")->updateUint(user_id);
 }
 
 int Users::get_display_name(uint8_t user_id, char *ret_buf)
 {
-    for (auto &cfg : user_config.get("users")) {
+    for (auto &cfg : config.get("users")) {
         if (cfg.get("id")->asUint() == user_id) {
             String s = cfg.get("display_name")->asString();
             strncpy(ret_buf, s.c_str(), 32);
@@ -539,16 +539,16 @@ void Users::register_urls()
 #if MODULE_EVSE_AVAILABLE()
 
     if (api.hasFeature("evse"))
-        user_slot = evse.evse_slots.get(CHARGING_SLOT_USER)->get("active")->asBool();
+        user_slot = evse.slots.get(CHARGING_SLOT_USER)->get("active")->asBool();
 
 #elif MODULE_EVSE_V2_AVAILABLE()
 
     if (api.hasFeature("evse"))
-        user_slot = evse_v2.evse_slots.get(CHARGING_SLOT_USER)->get("active")->asBool();
+        user_slot = evse_v2.slots.get(CHARGING_SLOT_USER)->get("active")->asBool();
 
 #endif
 
-    if (user_config.get("users")->count() <= 1 && user_slot) {
+    if (config.get("users")->count() <= 1 && user_slot) {
         logger.printfln("User slot enabled, but no users configured. Disabling user slot.");
         api.callCommand("evse/user_enabled_update", Config::ConfUpdateObject{{
             {"enabled", false}
@@ -639,9 +639,9 @@ void Users::register_urls()
         }
 
         Config *user = nullptr;
-        for(int i = 0; i < user_config.get("users")->count(); ++i) {
-            if (user_config.get("users")->get(i)->get("id")->asUint() == id) {
-                user = (Config *)user_config.get("users")->get(i);
+        for(int i = 0; i < config.get("users")->count(); ++i) {
+            if (config.get("users")->get(i)->get("id")->asUint() == id) {
+                user = (Config *)config.get("users")->get(i);
                 break;
             }
         }
@@ -658,11 +658,11 @@ void Users::register_urls()
             return "Changing the username without updating the digest hash is not allowed!";
         }
 
-        for(int i = 0; i < user_config.get("users")->count(); ++i) {
-            if (user_config.get("users")->get(i)->get("id")->asUint() == id)
+        for(int i = 0; i < config.get("users")->count(); ++i) {
+            if (config.get("users")->get(i)->get("id")->asUint() == id)
                 continue;
 
-            if (user_config.get("users")->get(i)->get("username")->asString() == doc["username"]) {
+            if (config.get("users")->get(i)->get("username")->asString() == doc["username"]) {
                 return "Can't modify user. Another user with the same username already exists.";
             }
         }
@@ -696,7 +696,7 @@ void Users::register_urls()
         if (doc["digest_hash"] != nullptr)
             user->get("digest_hash")->updateString(doc["digest_hash"]);
 
-        String err = this->user_config.validate();
+        String err = this->config.validate();
         if (err != "")
             return err;
 
@@ -706,7 +706,7 @@ void Users::register_urls()
         task_scheduler.scheduleOnce([this, display_name_changed, username_changed, user](){
             // Blocked in users/modify raw command handler
             RAIIUserApiUnblocker inner_unblocker{true};
-            API::writeConfig("users/config", &user_config);
+            API::writeConfig("users/config", &config);
 
             if (display_name_changed || username_changed)
                 this->rename_user(user->get("id")->asUint(), user->get("username")->asString(), user->get("display_name")->asString());
@@ -715,13 +715,13 @@ void Users::register_urls()
         return "";
     }, true);
 
-    api.addState("users/config", &user_config, {"digest_hash"}, 1000);
+    api.addState("users/config", &config, {"digest_hash"}, 1000);
     api.addCommand("users/add", &add, {"digest_hash"}, [this](){
         // Blocked in users/add validator
         RAIIUserApiUnblocker inner_unblocker{true};
 
-        user_config.get("users")->add();
-        Config *user = (Config *)user_config.get("users")->get(user_config.get("users")->count() - 1);
+        config.get("users")->add();
+        Config *user = (Config *)config.get("users")->get(config.get("users")->count() - 1);
 
         user->get("id")->updateUint(add.get("id")->asUint());
         user->get("roles")->updateUint(add.get("roles")->asUint());
@@ -732,7 +732,7 @@ void Users::register_urls()
 
         search_next_free_user();
 
-        API::writeConfig("users/config", &user_config);
+        API::writeConfig("users/config", &config);
         this->rename_user(user->get("id")->asUint(), user->get("username")->asString(), user->get("display_name")->asString());
     }, true);
 
@@ -741,8 +741,8 @@ void Users::register_urls()
         RAIIUserApiUnblocker inner_unblocker{true};
 
         int idx = -1;
-        for(int i = 0; i < user_config.get("users")->count(); ++i) {
-            if (user_config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
+        for(int i = 0; i < config.get("users")->count(); ++i) {
+            if (config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
                 idx = i;
                 break;
             }
@@ -753,8 +753,8 @@ void Users::register_urls()
             return;
         }
 
-        user_config.get("users")->remove(idx);
-        API::writeConfig("users/config", &user_config);
+        config.get("users")->remove(idx);
+        API::writeConfig("users/config", &config);
 
 #if MODULE_NFC_AVAILABLE()
         Config *tags = (Config *)nfc.config.get("authorized_tags");
@@ -771,10 +771,10 @@ void Users::register_urls()
             this->rename_user(remove.get("id")->asUint(), "", "");
             // If this user still has tracked charges, we can't recycle their ID, so it is correct
             // to check this here (and not one level up).
-            if (user_config.get("next_user_id")->asUint() == 0)
+            if (config.get("next_user_id")->asUint() == 0)
             {
-                user_config.get("next_user_id")->updateUint(remove.get("id")->asUint());
-                API::writeConfig("users/config", &user_config);
+                config.get("next_user_id")->updateUint(remove.get("id")->asUint());
+                API::writeConfig("users/config", &config);
             }
         }
     }, true);
@@ -785,8 +785,8 @@ void Users::register_urls()
         if (!enable)
             server.setAuthentication([](WebServerRequest req){return true;});
 
-        user_config.get("http_auth_enabled")->updateBool(enable);
-        API::writeConfig("users/config", &user_config);
+        config.get("http_auth_enabled")->updateBool(enable);
+        API::writeConfig("users/config", &config);
     }, false);
 
     server.on("/users/all_usernames", HTTP_GET, [this](WebServerRequest request) {
@@ -810,7 +810,7 @@ void Users::register_urls()
 
 uint8_t Users::next_user_id()
 {
-    return this->user_config.get("next_user_id")->asUint();
+    return this->config.get("next_user_id")->asUint();
 }
 
 void Users::rename_user(uint8_t user_id, const String &username, const String &display_name)
@@ -826,7 +826,7 @@ void Users::rename_user(uint8_t user_id, const String &username, const String &d
 
 void Users::remove_from_username_file(uint8_t user_id)
 {
-    Config *users = (Config *)user_config.get("users");
+    Config *users = (Config *)config.get("users");
     for (int i = 0; i < users->count(); ++i) {
         if (users->get(i)->get("id")->asUint() == user_id) {
             return;
@@ -834,10 +834,10 @@ void Users::remove_from_username_file(uint8_t user_id)
     }
 
     this->rename_user(user_id, "", "");
-    if (user_config.get("next_user_id")->asUint() == 0)
+    if (config.get("next_user_id")->asUint() == 0)
     {
-        user_config.get("next_user_id")->updateUint(user_id);
-        API::writeConfig("users/config", &user_config);
+        config.get("next_user_id")->updateUint(user_id);
+        API::writeConfig("users/config", &config);
     }
 }
 
@@ -851,7 +851,7 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
     // I.e. when holding an NFC tag at the box or when calling the start_charging API
 
     uint16_t current_limit = 0;
-    Config *users = (Config *)user_config.get("users");
+    Config *users = (Config *)config.get("users");
     for (int i = 0; i < users->count(); ++i) {
         if (users->get(i)->get("id")->asUint() != user_id)
             continue;

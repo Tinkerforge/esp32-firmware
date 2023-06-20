@@ -36,5 +36,5 @@ public:
 private:
     void update_sdcard_info();
 
-    ConfigRoot sdcard_state;
+    ConfigRoot state;
 };

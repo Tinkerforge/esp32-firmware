@@ -54,12 +54,12 @@ private:
     void check_for_scan_completion();
     String get_scan_results();
 
-    ConfigRoot wifi_ap_config;
-    ConfigRoot wifi_sta_config;
-    ConfigRoot wifi_state;
+    ConfigRoot ap_config;
+    ConfigRoot sta_config;
+    ConfigRoot state;
 
-    ConfigRoot wifi_ap_config_in_use;
-    ConfigRoot wifi_sta_config_in_use;
+    ConfigRoot ap_config_in_use;
+    ConfigRoot sta_config_in_use;
 
     bool soft_ap_running = false;
 

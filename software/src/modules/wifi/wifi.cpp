@@ -37,7 +37,7 @@ extern char passphrase[20];
 
 void Wifi::pre_setup()
 {
-    wifi_ap_config = ConfigRoot(Config::Object({
+    ap_config = ConfigRoot(Config::Object({
         {"enable_ap", Config::Bool(true)},
         {"ap_fallback_only", Config::Bool(false)},
         {"ssid", Config::Str("", 0, 32)},
@@ -70,7 +70,7 @@ void Wifi::pre_setup()
         return "";
     });
 
-    wifi_sta_config = ConfigRoot(Config::Object({
+    sta_config = ConfigRoot(Config::Object({
         {"enable_sta", Config::Bool(false)},
         {"ssid", Config::Str("", 0, 32)},
         {"bssid", Config::Array({
@@ -129,7 +129,7 @@ void Wifi::pre_setup()
         return "";
     });
 
-    wifi_state = Config::Object({
+    state = Config::Object({
         {"connection_state", Config::Int((int32_t)WifiState::NOT_CONFIGURED)},
         {"connection_start", Config::Uint32(0)},
         {"connection_end", Config::Uint32(0)},
@@ -159,7 +159,7 @@ void apply_weight(float *channels, int channel, float weight)
 void Wifi::apply_soft_ap_config_and_start()
 {
     static uint32_t scan_start_time = 0;
-    static int channel_to_use = wifi_ap_config_in_use.get("channel")->asUint();
+    static int channel_to_use = ap_config_in_use.get("channel")->asUint();
 
     // We don't want apply_soft_ap_config_and_start
     // to be called over and over from the fallback AP task
@@ -232,9 +232,9 @@ void Wifi::apply_soft_ap_config_and_start()
     }
 
     IPAddress ip, gateway, subnet;
-    ip.fromString(wifi_ap_config_in_use.get("ip")->asEphemeralCStr());
-    gateway.fromString(wifi_ap_config_in_use.get("gateway")->asEphemeralCStr());
-    subnet.fromString(wifi_ap_config_in_use.get("subnet")->asEphemeralCStr());
+    ip.fromString(ap_config_in_use.get("ip")->asEphemeralCStr());
+    gateway.fromString(ap_config_in_use.get("gateway")->asEphemeralCStr());
+    subnet.fromString(ap_config_in_use.get("subnet")->asEphemeralCStr());
 
     int counter = 0;
     while (ip != WiFi.softAPIP()) {
@@ -244,12 +244,12 @@ void Wifi::apply_soft_ap_config_and_start()
     }
     logger.printfln("Had to configure soft AP IP address %d times.", counter);
     logger.printfln("Wifi soft AP started");
-    logger.printfln("    SSID: %s", wifi_ap_config_in_use.get("ssid")->asEphemeralCStr());
+    logger.printfln("    SSID: %s", ap_config_in_use.get("ssid")->asEphemeralCStr());
 
-    WiFi.softAP(wifi_ap_config_in_use.get("ssid")->asEphemeralCStr(),
-                wifi_ap_config_in_use.get("passphrase")->asEphemeralCStr(),
+    WiFi.softAP(ap_config_in_use.get("ssid")->asEphemeralCStr(),
+                ap_config_in_use.get("passphrase")->asEphemeralCStr(),
                 channel_to_use,
-                wifi_ap_config_in_use.get("hide_ssid")->asBool());
+                ap_config_in_use.get("hide_ssid")->asBool());
     WiFi.setSleep(false);
 
     IPAddress myIP = WiFi.softAPIP();
@@ -272,21 +272,21 @@ bool Wifi::apply_sta_config_and_connect(WifiState current_state)
     WiFi.setAutoReconnect(false);
     WiFi.disconnect(false, true);
 
-    const char *ssid = wifi_sta_config_in_use.get("ssid")->asEphemeralCStr();
+    const char *ssid = sta_config_in_use.get("ssid")->asEphemeralCStr();
 
     uint8_t bssid[6];
-    wifi_sta_config_in_use.get("bssid")->fillArray<uint8_t, Config::ConfUint>(bssid, 6 * sizeof(bssid));
+    sta_config_in_use.get("bssid")->fillArray<uint8_t, Config::ConfUint>(bssid, 6 * sizeof(bssid));
 
-    const char *passphrase = wifi_sta_config_in_use.get("passphrase")->asEphemeralCStr();
-    bool bssid_lock = wifi_sta_config_in_use.get("bssid_lock")->asBool();
+    const char *passphrase = sta_config_in_use.get("passphrase")->asEphemeralCStr();
+    bool bssid_lock = sta_config_in_use.get("bssid_lock")->asBool();
 
     IPAddress ip, subnet, gateway, dns, dns2;
 
-    ip.fromString(wifi_sta_config_in_use.get("ip")->asEphemeralCStr());
-    subnet.fromString(wifi_sta_config_in_use.get("subnet")->asEphemeralCStr());
-    gateway.fromString(wifi_sta_config_in_use.get("gateway")->asEphemeralCStr());
-    dns.fromString(wifi_sta_config_in_use.get("dns")->asEphemeralCStr());
-    dns2.fromString(wifi_sta_config_in_use.get("dns2")->asEphemeralCStr());
+    ip.fromString(sta_config_in_use.get("ip")->asEphemeralCStr());
+    subnet.fromString(sta_config_in_use.get("subnet")->asEphemeralCStr());
+    gateway.fromString(sta_config_in_use.get("gateway")->asEphemeralCStr());
+    dns.fromString(sta_config_in_use.get("dns")->asEphemeralCStr());
+    dns2.fromString(sta_config_in_use.get("dns2")->asEphemeralCStr());
 
     if (ip != 0) {
         WiFi.config(ip, gateway, subnet, dns, dns2);
@@ -357,39 +357,39 @@ void Wifi::setup()
     String default_ap_ssid = String(BUILD_HOST_PREFIX) + "-" + local_uid_str;
     String default_ap_passphrase = String(passphrase);
 
-    if (!api.restorePersistentConfig("wifi/sta_config", &wifi_sta_config)) {
+    if (!api.restorePersistentConfig("wifi/sta_config", &sta_config)) {
 #ifdef DEFAULT_WIFI_STA_ENABLE
-        wifi_sta_config.get("enable_sta")->updateBool(DEFAULT_WIFI_STA_ENABLE);
+        sta_config.get("enable_sta")->updateBool(DEFAULT_WIFI_STA_ENABLE);
 #endif
 #ifdef DEFAULT_WIFI_STA_SSID
-        wifi_sta_config.get("ssid")->updateString(String(DEFAULT_WIFI_STA_SSID));
+        sta_config.get("ssid")->updateString(String(DEFAULT_WIFI_STA_SSID));
 #endif
 #ifdef DEFAULT_WIFI_STA_PASSPHRASE
-        wifi_sta_config.get("passphrase")->updateString(String(DEFAULT_WIFI_STA_PASSPHRASE));
+        sta_config.get("passphrase")->updateString(String(DEFAULT_WIFI_STA_PASSPHRASE));
 #endif
     }
 
-    if (!api.restorePersistentConfig("wifi/ap_config", &wifi_ap_config)) {
+    if (!api.restorePersistentConfig("wifi/ap_config", &ap_config)) {
 #ifdef DEFAULT_WIFI_AP_ENABLE
-        wifi_ap_config.get("enable_ap")->updateBool(DEFAULT_WIFI_AP_ENABLE);
+        ap_config.get("enable_ap")->updateBool(DEFAULT_WIFI_AP_ENABLE);
 #endif
 #ifdef DEFAULT_WIFI_AP_FALLBACK_ONLY
-        wifi_ap_config.get("ap_fallback_only")->updateBool(DEFAULT_WIFI_AP_FALLBACK_ONLY);
+        ap_config.get("ap_fallback_only")->updateBool(DEFAULT_WIFI_AP_FALLBACK_ONLY);
 #endif
 #ifdef DEFAULT_WIFI_AP_SSID
-        wifi_ap_config.get("ssid")->updateString(String(DEFAULT_WIFI_AP_SSID));
+        ap_config.get("ssid")->updateString(String(DEFAULT_WIFI_AP_SSID));
 #else
-        wifi_ap_config.get("ssid")->updateString(default_ap_ssid);
+        ap_config.get("ssid")->updateString(default_ap_ssid);
 #endif
 #ifdef DEFAULT_WIFI_AP_PASSPHRASE
-        wifi_ap_config.get("passphrase")->updateString(String(DEFAULT_WIFI_AP_PASSPHRASE));
+        ap_config.get("passphrase")->updateString(String(DEFAULT_WIFI_AP_PASSPHRASE));
 #else
-        wifi_ap_config.get("passphrase")->updateString(default_ap_passphrase);
+        ap_config.get("passphrase")->updateString(default_ap_passphrase);
 #endif
     }
 
-    wifi_ap_config_in_use = wifi_ap_config;
-    wifi_sta_config_in_use = wifi_sta_config;
+    ap_config_in_use = ap_config;
+    sta_config_in_use = sta_config;
 
     WiFi.persistent(false);
 
@@ -399,7 +399,7 @@ void Wifi::setup()
             const char *reason = reason2str(reason_code);
             if (!this->was_connected) {
             {
-                logger.printfln("Wifi failed to connect to %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
+                logger.printfln("Wifi failed to connect to %s: %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
                 if (first)
                 {
                     first = false;
@@ -409,19 +409,19 @@ void Wifi::setup()
             } else {
                 uint32_t now = millis();
                 uint32_t connected_for = now - last_connected_ms;
-                wifi_state.get("connection_end")->updateUint(now);
+                state.get("connection_end")->updateUint(now);
 
                 // FIXME: Use a better way of time keeping here.
                 if (connected_for < 0x7FFFFFFF)
-                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for %d seconds.", wifi_sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
+                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for %d seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
                 else
-                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for a long time.", wifi_sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
+                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for a long time.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
 
             }
             this->was_connected = false;
 
-            wifi_state.get("sta_ip")->updateString("0.0.0.0");
-            wifi_state.get("sta_bssid")->updateString("");
+            state.get("sta_ip")->updateString("0.0.0.0");
+            state.get("sta_bssid")->updateString("");
         },
         ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 
@@ -430,7 +430,7 @@ void Wifi::setup()
 
             logger.printfln("Wifi connected to %s", WiFi.SSID().c_str());
             last_connected_ms = millis();
-            wifi_state.get("connection_start")->updateUint(last_connected_ms);
+            state.get("connection_start")->updateUint(last_connected_ms);
         },
         ARDUINO_EVENT_WIFI_STA_CONNECTED);
 
@@ -444,8 +444,8 @@ void Wifi::setup()
             auto ip = WiFi.localIP().toString();
             logger.printfln("Wifi MAC address: %s", WiFi.macAddress().c_str());
             logger.printfln("Wifi got IP address: %s. Connected to BSSID %s", ip.c_str(), WiFi.BSSIDstr().c_str());
-            wifi_state.get("sta_ip")->updateString(ip);
-            wifi_state.get("sta_bssid")->updateString(WiFi.BSSIDstr());
+            state.get("sta_ip")->updateString(ip);
+            state.get("sta_bssid")->updateString(WiFi.BSSIDstr());
         },
         ARDUINO_EVENT_WIFI_STA_GOT_IP);
 
@@ -461,15 +461,15 @@ void Wifi::setup()
         this->was_connected = false;
 
         logger.printfln("Wifi lost IP. Forcing disconnect and reconnect of WiFi");
-        wifi_state.get("sta_ip")->updateString("0.0.0.0");
-        wifi_state.get("sta_bssid")->updateString("");
+        state.get("sta_ip")->updateString("0.0.0.0");
+        state.get("sta_bssid")->updateString("");
 
         WiFi.disconnect(false, true);
     }, ARDUINO_EVENT_WIFI_STA_LOST_IP);
 
-    bool enable_ap = wifi_ap_config_in_use.get("enable_ap")->asBool();
-    bool enable_sta = wifi_sta_config_in_use.get("enable_sta")->asBool();
-    bool ap_fallback_only = wifi_ap_config_in_use.get("ap_fallback_only")->asBool();
+    bool enable_ap = ap_config_in_use.get("enable_ap")->asBool();
+    bool enable_sta = sta_config_in_use.get("enable_sta")->asBool();
+    bool ap_fallback_only = ap_config_in_use.get("ap_fallback_only")->asBool();
 
     // For some reason WiFi.setHostname only writes a temporary buffer that is passed to the IDF when calling WiFi.mode.
     // As we have the same hostname for STA and AP, it is sufficient to set the hostname here once and never call WiFi.softAPsetHostname.
@@ -515,7 +515,7 @@ void Wifi::setup()
 
     WiFi.setTxPower(WIFI_POWER_19_5dBm);
 
-    wifi_state.get("ap_bssid")->updateString(WiFi.softAPmacAddress());
+    state.get("ap_bssid")->updateString(WiFi.softAPmacAddress());
 
     if (enable_ap && !ap_fallback_only) {
         apply_soft_ap_config_and_start();
@@ -526,15 +526,15 @@ void Wifi::setup()
 
     if (enable_ap) {
         task_scheduler.scheduleWithFixedDelay([this]() {
-            wifi_state.get("ap_state")->updateInt(get_ap_state());
+            state.get("ap_state")->updateInt(get_ap_state());
         }, 5000, 5000);
     }
 
     if (enable_sta) {
         task_scheduler.scheduleWithFixedDelay([this]() {
             WifiState connection_state = get_connection_state();
-            wifi_state.get("connection_state")->updateInt((int)connection_state);
-            wifi_state.get("sta_rssi")->updateInt(WiFi.RSSI());
+            state.get("connection_state")->updateInt((int)connection_state);
+            state.get("sta_rssi")->updateInt(WiFi.RSSI());
 
             static int tries = 0;
             if (tries < 10 || (tries - 10) % 8 == 0)
@@ -552,7 +552,7 @@ void Wifi::setup()
             connected = ethernet.get_connection_state() == EthernetState::CONNECTED;
 #endif
             if (!connected)
-                connected = (WifiState)wifi_state.get("connection_state")->asInt() == WifiState::CONNECTED;
+                connected = (WifiState)state.get("connection_state")->asInt() == WifiState::CONNECTED;
 
             if (connected == soft_ap_running) {
                 if (connected) {
@@ -677,7 +677,7 @@ void Wifi::start_scan()
 
 void Wifi::register_urls()
 {
-    api.addState("wifi/state", &wifi_state, {}, 1000);
+    api.addState("wifi/state", &state, {}, 1000);
 
     api.addCommand("wifi/scan", Config::Null(), {}, [this](){
         start_scan();
@@ -695,13 +695,13 @@ void Wifi::register_urls()
         return request.send(200, "application/json; charset=utf-8", result.c_str());
     });
 
-    api.addPersistentConfig("wifi/sta_config", &wifi_sta_config, {"passphrase"}, 1000);
-    api.addPersistentConfig("wifi/ap_config", &wifi_ap_config, {"passphrase"}, 1000);
+    api.addPersistentConfig("wifi/sta_config", &sta_config, {"passphrase"}, 1000);
+    api.addPersistentConfig("wifi/ap_config", &ap_config, {"passphrase"}, 1000);
 }
 
 WifiState Wifi::get_connection_state() const
 {
-    if (!wifi_sta_config_in_use.get("enable_sta")->asBool())
+    if (!sta_config_in_use.get("enable_sta")->asBool())
         return WifiState::NOT_CONFIGURED;
 
     switch (WiFi.status()) {
@@ -724,16 +724,16 @@ WifiState Wifi::get_connection_state() const
 
 bool Wifi::is_sta_enabled() const
 {
-    return wifi_sta_config_in_use.get("enable_sta")->asBool();
+    return sta_config_in_use.get("enable_sta")->asBool();
 }
 
 int Wifi::get_ap_state()
 {
-    bool enable_ap = wifi_ap_config_in_use.get("enable_ap")->asBool();
+    bool enable_ap = ap_config_in_use.get("enable_ap")->asBool();
     if (!enable_ap)
         return 0;
 
-    bool ap_fallback = wifi_ap_config_in_use.get("ap_fallback_only")->asBool();
+    bool ap_fallback = ap_config_in_use.get("ap_fallback_only")->asBool();
     if (!ap_fallback)
         return 1;
 

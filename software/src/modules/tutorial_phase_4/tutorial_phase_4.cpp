@@ -44,14 +44,14 @@ void TutorialPhase4::setup()
     // module. Containing one member "color" representing the color value
     // in HTML #RRGGBB notation. The string is limited to exactly 7 byte
     // in length.
-    tutorial_config = Config::Object({
+    config = Config::Object({
         {"color", Config::Str("#FF0000", 7, 7)}
     });
 
     // Extra ConfigRoot object to represent data updates received from the
     // frontend module. This has the same structure as the first ConfigRoot
     // object. Create it by copying the first one.
-    tutorial_config_update = tutorial_config;
+    config_update = config;
 
     // Create RGB LED Button Bricklet object. Not specifying a UID or a port
     // name (second parameter is set to nullptr) makes the create function
@@ -67,7 +67,7 @@ void TutorialPhase4::setup()
     }
 
     // Set color of RGB LED Button Bricklet to initial value
-    set_bricklet_color(tutorial_config.get("color")->asString());
+    set_bricklet_color(config.get("color")->asString());
 
     logger.printfln("Tutorial (Phase 4) module initialized");
 
@@ -80,16 +80,16 @@ void TutorialPhase4::register_urls()
     // "tutorial_phase_4/config" to be exposed to the frontend module.
     // The API manager checks the ConfigRoot object for changes every 1000
     // milliseconds. If a change is detected an update is send.
-    api.addState("tutorial_phase_4/config", &tutorial_config, {}, 1000);
+    api.addState("tutorial_phase_4/config", &config, {}, 1000);
 
     // Add extra ConfigRoot object to the API manager as a command target under
     // the name "tutorial_phase_4/config" to receive updates from the frontend
     // module. If an update is received the lambda function is called to handle it.
-    api.addCommand("tutorial_phase_4/config_update", &tutorial_config_update, {}, [this]() {
-        String color = tutorial_config_update.get("color")->asString();
+    api.addCommand("tutorial_phase_4/config_update", &config_update, {}, [this]() {
+        String color = config_update.get("color")->asString();
 
         logger.printfln("Tutorial (Phase 4) module received color update: %s", color.c_str());
-        tutorial_config.get("color")->updateString(color);
+        config.get("color")->updateString(color);
         set_bricklet_color(color);
     }, false);
 }

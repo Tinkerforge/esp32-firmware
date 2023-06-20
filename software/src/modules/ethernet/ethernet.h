@@ -47,8 +47,8 @@ public:
     void print_con_duration();
 
 private:
-    ConfigRoot ethernet_config;
-    ConfigRoot ethernet_state;
+    ConfigRoot config;
+    ConfigRoot state;
 
-    ConfigRoot ethernet_config_in_use;
+    ConfigRoot config_in_use;
 };

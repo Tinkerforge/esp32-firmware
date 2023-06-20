@@ -41,7 +41,7 @@ class Rtc final : public IModule
 private:
     ConfigRoot time;
     ConfigRoot time_update;
-    ConfigRoot rtc_config;
+    ConfigRoot config;
 
     IRtcBackend *backend = NULL;
 

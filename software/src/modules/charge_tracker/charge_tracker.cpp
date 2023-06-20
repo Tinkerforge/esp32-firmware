@@ -463,8 +463,8 @@ void ChargeTracker::setup()
 }
 
 bool user_configured(uint8_t user_id) {
-    for(int i = 0; i < users.user_config.get("users")->count(); ++i) {
-        if (users.user_config.get("users")->get(i)->get("id")->asUint() == user_id) {
+    for(int i = 0; i < users.config.get("users")->count(); ++i) {
+        if (users.config.get("users")->get(i)->get("id")->asUint() == user_id) {
             return true;
         }
     }
