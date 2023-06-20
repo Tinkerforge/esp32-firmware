@@ -43,6 +43,22 @@
 #define METER_VALUE_HISTORY_VALUE_TYPE int16_t
 #endif
 
+#ifndef METER_VALUE_HISTORY_VALUE_MAX
+#define METER_VALUE_HISTORY_VALUE_MAX 32767
+#endif
+
+#ifndef METER_VALUE_HISTORY_VALUE_MIN
+#define METER_VALUE_HISTORY_VALUE_MIN -32767
+#endif
+
+// Check for < because ::lowest() is a reserved value.
+static_assert(std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest() < METER_VALUE_HISTORY_VALUE_MIN);
+static_assert(std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::max() >= METER_VALUE_HISTORY_VALUE_MAX);
+
+// We use int to format the buffer, so at most int is allowed.
+static_assert(std::numeric_limits<int>::lowest() <= METER_VALUE_HISTORY_VALUE_MIN);
+static_assert(std::numeric_limits<int>::max() >= METER_VALUE_HISTORY_VALUE_MAX);
+
 class ValueHistory
 {
 public:
@@ -86,4 +102,6 @@ public:
 #endif
                   heap_caps_free> history;
     uint32_t history_last_update = 0;
+
+    int chars_per_value = -1;
 };

@@ -36,9 +36,15 @@ void ValueHistory::setup()
         history.push(val_min);
     }
 
+    chars_per_value = max(String(METER_VALUE_HISTORY_VALUE_MIN).length(), String(METER_VALUE_HISTORY_VALUE_MAX).length());
+    // val_min values are replaced with null -> require at least 4 chars per value.
+    chars_per_value = max(4u, chars_per_value);
+    // For ',' between the values.
+    ++chars_per_value;
+
 #if MODULE_WS_AVAILABLE()
     ws.addOnConnectCallback([this](WebSocketsClient client) {
-        const size_t buf_size = RING_BUF_SIZE * 6 + 200;
+        const size_t buf_size = RING_BUF_SIZE * chars_per_value + 200;
 
         // live
         size_t buf_written = 0;
@@ -77,7 +83,7 @@ void ValueHistory::register_urls(String base_url)
             return;
         }*/
 
-        const size_t buf_size = RING_BUF_SIZE * 6 + 100;
+        const size_t buf_size = RING_BUF_SIZE * chars_per_value + 100;
         std::unique_ptr<char[]> buf{new char[buf_size]};
         size_t buf_written = format_history(buf.get(), buf_size);
 
@@ -90,7 +96,7 @@ void ValueHistory::register_urls(String base_url)
             return;
         }*/
 
-        const size_t buf_size = RING_BUF_SIZE * 6 + 100;
+        const size_t buf_size = RING_BUF_SIZE * chars_per_value + 100;
         std::unique_ptr<char[]> buf{new char[buf_size]};
         size_t buf_written = format_live(buf.get(), buf_size);
 
@@ -101,7 +107,9 @@ void ValueHistory::register_urls(String base_url)
 void ValueHistory::add_sample(float sample)
 {
     METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
-    METER_VALUE_HISTORY_VALUE_TYPE val = clamp(val_min + 1, (int)roundf(sample), (int)std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::max());
+    METER_VALUE_HISTORY_VALUE_TYPE val = clamp((METER_VALUE_HISTORY_VALUE_TYPE) METER_VALUE_HISTORY_VALUE_MIN,
+                                               (METER_VALUE_HISTORY_VALUE_TYPE) roundf(sample),
+                                               (METER_VALUE_HISTORY_VALUE_TYPE) METER_VALUE_HISTORY_VALUE_MAX);
     live.push(val);
     live_last_update = millis();
     end_this_interval = live_last_update;
