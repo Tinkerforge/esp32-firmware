@@ -603,7 +603,7 @@ void ChargeManager::distribute_current()
                   available_current);
 
         std::stable_sort(idx_array, idx_array + chargers->count(), [&chargers](int left, int right) {
-            return chargers->get(left)->get("supported_current")->asUint() < chargers->get(right)->get("supported_current")->asUint();
+            return chargers->get(left)->get("requested_current")->asUint() < chargers->get(right)->get("requested_current")->asUint();
         });
 
         std::stable_sort(idx_array, idx_array + chargers->count(), [&chargers](int left, int right) {
@@ -670,12 +670,12 @@ void ChargeManager::distribute_current()
                 auto charger = chargers->get(idx_array[i]);
                 uint16_t current_per_charger = MIN(32000, available_current / (chargers_allocated_current_to - chargers_reallocated));
 
-                uint16_t supported_current = charger->get("supported_current")->asUint();
+                uint16_t requested_current = charger->get("requested_current")->asUint();
                 // Protect against overflow.
-                if (supported_current < current_array[idx_array[i]])
+                if (requested_current < current_array[idx_array[i]])
                     continue;
 
-                uint16_t current_to_add = MIN(supported_current - current_array[idx_array[i]], current_per_charger);
+                uint16_t current_to_add = MIN(requested_current - current_array[idx_array[i]], current_per_charger);
 
                 ++chargers_reallocated;
 
