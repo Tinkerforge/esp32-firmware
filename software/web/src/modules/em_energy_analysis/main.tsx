@@ -157,22 +157,21 @@ const wb_state_fills: {[id: number]: string} = {
     4: 'rgb(220,  53,  69, 0.66)',
 };
 
-const em_contactor_names: {[id: number]: string} = {
+const em_phase_names: {[id: number]: string} = {
     0: __("em_energy_analysis.content.state_single_phase"),
     1: __("em_energy_analysis.content.state_three_phase"),
 };
 
-const em_contactor_strokes: {[id: number]: string} = {
+const em_phase_strokes: {[id: number]: string} = {
     0: 'rgb(108, 117, 125)',
     1: 'rgb( 40, 167,  69)',
 };
 
-const em_contactor_fills: {[id: number]: string} = {
+const em_phase_fills: {[id: number]: string} = {
     0: 'rgb(108, 117, 125, 0.66)',
     1: 'rgb( 40, 167,  69, 0.66)',
 };
 
-// FIXME: translation
 const em_input_names: {[id: number]: string} = {
     0: __("em_energy_analysis.content.state_input_low"),
     1: __("em_energy_analysis.content.state_input_high"),
@@ -188,7 +187,6 @@ const em_input_fills: {[id: number]: string} = {
     1: 'rgb( 40, 167,  69, 0.66)',
 };
 
-// FIXME: translation
 const em_relay_names: {[id: number]: string} = {
     0: __("em_energy_analysis.content.state_relay_open"),
     1: __("em_energy_analysis.content.state_relay_closed"),
@@ -275,6 +273,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
     observer: ResizeObserver;
     bar_height = 20;
     bar_spacing = 5;
+    x_axis_height = 30;
 
     shouldComponentUpdate() {
         return false;
@@ -1513,24 +1512,24 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         if (energy_manager_data && !energy_manager_data.empty) {
             slot_count = Math.max(slot_count, energy_manager_data.flags.length);
 
-            let contactor = new Array(energy_manager_data.flags.length);
+            let phase = new Array(energy_manager_data.flags.length);
             let input3 = new Array(energy_manager_data.flags.length);
             let input4 = new Array(energy_manager_data.flags.length);
             let relay = new Array(energy_manager_data.flags.length);
 
             for (let i = 0; i < energy_manager_data.flags.length; ++i) {
                 if (energy_manager_data.flags[i] === null) {
-                    contactor[i] = null;
+                    phase[i] = null;
                     input3[i] = null;
                     input4[i] = null;
                     relay[i] = null;
                 }
                 else {
                     if (i > 0 && energy_manager_data.flags[i - 1] !== null && (energy_manager_data.flags[i] & 0b0001) == (energy_manager_data.flags[i - 1] & 0b0001)) {
-                        contactor[i] = undefined;
+                        phase[i] = undefined;
                     }
                     else {
-                        contactor[i] = energy_manager_data.flags[i] & 0b0001;
+                        phase[i] = energy_manager_data.flags[i] & 0b0001;
                     }
 
                     if (i > 0 && energy_manager_data.flags[i - 1] !== null && (energy_manager_data.flags[i] & 0b0010) == (energy_manager_data.flags[i - 1] & 0b0010)) {
@@ -1556,14 +1555,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 }
             }
 
-            uplot_data.keys.push('em_contactor');
-            uplot_data.names.push(__("em_energy_analysis.content.state_contactor"));
-            uplot_data.values.push(contactor);
+            uplot_data.keys.push('em_phase');
+            uplot_data.names.push(__("em_energy_analysis.content.state_phase"));
+            uplot_data.values.push(phase);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
-            uplot_data.value_names.push(em_contactor_names);
-            uplot_data.value_strokes.push(em_contactor_strokes);
-            uplot_data.value_fills.push(em_contactor_fills);
+            uplot_data.value_names.push(em_phase_names);
+            uplot_data.value_strokes.push(em_phase_strokes);
+            uplot_data.value_fills.push(em_phase_fills);
             uplot_data.default_visibilty.push(true);
 
             uplot_data.keys.push('em_input3');
