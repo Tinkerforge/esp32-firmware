@@ -265,7 +265,7 @@ def send():
                     0,  # power_total
                     0,  # energy_rel
                     0,  # energy_abs
-                    int(time.time() - time_since_state_change)
+                    int(1000 * (time.time() - time_since_state_change))
     )
     if not resp_block_seq_num.isChecked():
         next_seq_num += 1
