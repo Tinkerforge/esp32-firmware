@@ -76,6 +76,17 @@ void ChargeManager::pre_setup()
         {"minimum_current_1p", Config::Uint(6000, 6000, 32000)},
         {"minimum_current_vehicle_type", Config::Uint32(0)},
         {"verbose", Config::Bool(false)},
+        // Line currents are used to calculate the "requested current"
+        // if a charger is in state C for at least
+        // "requested_current_threshold" ms.
+        // Otherwise the "requested current" is the "supported current"
+        // to allow the car to ramp up fast.
+        {"requested_current_threshold", Config::Uint16(60)},
+        // Added to requested current before distributing current.
+        // This margin has to be large enough to make sure
+        // every vehicle can always request more current.
+        // See https://github.com/Tinkerforge/warp-charger/blob/master/tools/current_ramp/allowed_vs_effective_3.gp
+        {"requested_current_margin", Config::Uint16(3000)},
         {"chargers", Config::Array({},
             new Config{Config::Object({
                 {"host", Config::Str("", 0, 64)},
@@ -140,6 +151,7 @@ void ChargeManager::pre_setup()
                 {"uptime", Config::Uint32(0)},
                 {"supported_current", Config::Uint16(0)}, // maximum current supported by the charger
                 {"allowed_current", Config::Uint16(0)}, // last current limit reported by the charger
+                {"requested_current", Config::Uint16(0)}, // requested current calculated with the line currents reported by the charger
                 {"wants_to_charge", Config::Bool(false)},
                 {"wants_to_charge_low_priority", Config::Bool(false)},
                 {"is_charging", Config::Bool(false)},
@@ -262,6 +274,32 @@ void ChargeManager::start_manager_task()
             target->get("cp_disconnect_state")->updateBool(CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(v1->state_flags));
             target->get("last_update")->updateUint(millis());
             target->get("charger_state")->updateUint(v1->charger_state);
+
+            uint16_t requested_current = v1->supported_current;
+
+            if (v2 != nullptr && v1->charger_state == 3 && v2->time_since_state_change >= config_in_use.get("requested_current_threshold")->asUint() * 1000) {
+                int32_t max_phase_current = -1;
+
+                for (int i = 0; i < 3; i++) {
+                    if (isnan(v1->line_currents[i])) {
+                        // Don't trust the line currents if one is missing.
+                        max_phase_current = -1;
+                        break;
+                    }
+
+                    max_phase_current = max(max_phase_current, (int32_t)(v1->line_currents[i] * 1000.0f));
+                }
+
+                if (max_phase_current == -1)
+                    max_phase_current = 32000;
+
+                max_phase_current += config_in_use.get("requested_current_margin")->asUint();
+
+                max_phase_current = max(6000, min(32000, max_phase_current));
+                requested_current = min(requested_current, (uint16_t)max_phase_current);
+            }
+            target->get("requested_current")->updateUint(requested_current);
+
             target->get("meter_supported")->updateBool(CM_FEATURE_FLAGS_METER_IS_SET(v1->feature_flags));
             target->get("power_total_sum")->updateFloat(target->get("power_total_sum")->asFloat() + v1->power_total);
             target->get("power_total_count")->updateUint(target->get("power_total_count")->asUint() + 1);
