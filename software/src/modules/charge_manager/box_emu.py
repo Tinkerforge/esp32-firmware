@@ -143,6 +143,7 @@ resp_charger_state.addItem("2: Ready")
 resp_charger_state.addItem("3: Charging")
 resp_charger_state.addItem("4: Error")
 def lalala():
+    global time_since_state_change
     time_since_state_change = time.time()
 resp_charger_state.currentIndexChanged.connect(lalala)
 layout.addRow("Vehicle state", resp_charger_state)
