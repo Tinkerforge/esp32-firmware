@@ -250,10 +250,16 @@ export function uPlotTimelinePlugin(opts: any) {
             rect(u.ctx, u.bbox.left, u.bbox.top, u.bbox.width, u.bbox.height);
             u.ctx.clip();
 
-            let hgt = opts.bar_height;
+            let hgt = opts.bar_height * devicePixelRatio;
             let iy = sidx - 1;
-            let y0 = (sidx - 1) * (opts.bar_height + opts.bar_spacing);
+            let y0 = 0;
             let last_rgt: number = undefined;
+
+            for (let i = 1; i < sidx; i++) {
+                if (u.series[i].show) {
+                    y0 += (opts.bar_height + opts.bar_spacing) * devicePixelRatio;
+                }
+            }
 
             for (let ix = 0; ix < dataY.length; ix++) {
                 if (dataY[ix] === null) {
@@ -376,10 +382,18 @@ export function uPlotTimelinePlugin(opts: any) {
 
             uPlot.assign(opts.axes[1], {
                 splits: (u: uPlot, axisIdx: number) => {
-                    let yMids = Array(u.series.length - 1).fill(0);
-                    let ySplits = Array(u.series.length - 1).fill(0);
+                    let count = 0;
 
-                    walk(null, u.series.length - 1, u.bbox.height, (iy: number, y0: number, hgt: number) => {
+                    for (let i = 1; i < u.series.length; i++) {
+                        if (u.series[i].show) {
+                            ++count;
+                        }
+                    }
+
+                    let yMids = Array(count).fill(0);
+                    let ySplits = Array(count).fill(0);
+
+                    walk(null, count, u.bbox.height, (iy: number, y0: number, hgt: number) => {
                         // vertical midpoints of each series' timeline (stored relative to .u-over)
                         yMids[iy] = round(y0 + hgt / 2);
                         ySplits[iy] = u.posToVal(yMids[iy] / devicePixelRatio, "y");
@@ -387,15 +401,23 @@ export function uPlotTimelinePlugin(opts: any) {
 
                     return ySplits;
                 },
-                values:     () => Array(u.series.length - 1).fill(null).map((v, i) => {
-                    let label = u.series[i + 1].label;
+                values: (u: uPlot) => {
+                    let values: string[] = [];
 
-                    if (label.length > 10) {
-                        label = label.slice(0, 10) + '\u2026';
+                    for (let i = 1; i < u.series.length; i++) {
+                        if (u.series[i].show) {
+                            let label = u.series[i].label;
+
+                            if (label.length > 10) {
+                                label = label.slice(0, 10) + '\u2026';
+                            }
+
+                            values.push(label);
+                        }
                     }
 
-                    return label;
-                }),
+                    return values;
+                },
                 grid:       {show: false},
                 ticks:      {show: false},
                 side:       3,
