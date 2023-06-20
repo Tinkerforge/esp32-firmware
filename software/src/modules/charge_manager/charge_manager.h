@@ -31,8 +31,6 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void start_evse_state_update();
-    void send_current();
     void distribute_current();
     void start_manager_task();
     void check_watchdog();
