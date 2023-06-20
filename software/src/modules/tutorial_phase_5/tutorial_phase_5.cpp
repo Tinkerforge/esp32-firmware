@@ -47,12 +47,12 @@ static String num2hex(uint8_t num)
     return hex;
 }
 
-static void button_state_changed_handler(TF_RGBLEDButton *rgb_led_button, uint8_t state, void *user_data)
+static void button_state_changed_handler(TF_RGBLEDButton *rgb_led_button, uint8_t button_state, void *user_data)
 {
     TutorialPhase5 *tutorial = (TutorialPhase5 *)user_data;
 
     // Update button state from RGB LED Button Bricklet button-state-changed callback
-    tutorial->state.get("button")->updateBool(state == TF_RGB_LED_BUTTON_BUTTON_STATE_PRESSED);
+    tutorial->state.get("button")->updateBool(button_state == TF_RGB_LED_BUTTON_BUTTON_STATE_PRESSED);
 }
 
 void TutorialPhase5::pre_setup()
@@ -104,12 +104,12 @@ void TutorialPhase5::setup()
 
     // Get the current button state from the RGB LED Button Bricklet to be
     // used as the initial state value.
-    uint8_t state;
+    uint8_t button_state;
 
-    if (tf_rgb_led_button_get_button_state(&rgb_led_button, &state) != TF_E_OK) {
+    if (tf_rgb_led_button_get_button_state(&rgb_led_button, &button_state) != TF_E_OK) {
         logger.printfln("Could not get RGB LED Button Bricklet button state");
     } else {
-        state.get("button")->updateBool(state == TF_RGB_LED_BUTTON_BUTTON_STATE_PRESSED);
+        state.get("button")->updateBool(button_state == TF_RGB_LED_BUTTON_BUTTON_STATE_PRESSED);
     }
 
     // Start task with 1000 millisecond interval to read back current color
