@@ -38,7 +38,7 @@ void ValueHistory::setup()
 
     chars_per_value = max(String(METER_VALUE_HISTORY_VALUE_MIN).length(), String(METER_VALUE_HISTORY_VALUE_MAX).length());
     // val_min values are replaced with null -> require at least 4 chars per value.
-    chars_per_value = max(4u, chars_per_value);
+    chars_per_value = max(4, chars_per_value);
     // For ',' between the values.
     ++chars_per_value;
 
