@@ -428,6 +428,8 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
         state_pkt.v1.energy_abs = 0;
     }
 
+    state_pkt.v2.time_since_state_change = time_since_state_change;
+
     int err = sendto(client_sock, &state_pkt, sizeof(state_pkt), 0, (sockaddr *)&manager_addr, sizeof(manager_addr));
     if (err < 0) {
         if (errno != EAGAIN && errno != EWOULDBLOCK)
