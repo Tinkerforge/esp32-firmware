@@ -8,10 +8,54 @@ from flask_sock import Sock  # pip install flask-sock
 from simple_websocket import ws as WS
 import websocket  # pip install websocket-client
 from urllib.request import urlopen, Request
+import queue
+import json
+import threading
+import time
+import traceback
 
 app = Flask(__name__)
 sock = Sock(app)
 host = None
+
+ws_cache_lock = threading.RLock()
+ws_cache = {}
+ws_queues = []
+ws_thread_queue = queue.Queue()
+
+def ws_thread_fn(q: queue.Queue):
+    while True:
+        time.sleep(0.1)
+        try:
+            ws = websocket.create_connection(f'ws://{host}/ws')
+        except Exception as e:
+            print('create_connection failed:', e)
+            continue
+
+        ws.settimeout(1)
+
+        while True:
+            try:
+                to_send = q.get(timeout=0.1)
+                if to_send is None:
+                    return
+                ws.send(to_send)
+            except queue.Empty:
+                pass
+
+            try:
+                text = ws.recv()
+                lines = text.strip().split("\n")
+                msgs = [json.loads(line) for line in lines]
+                with ws_cache_lock:
+                    for msg in msgs:
+                        ws_cache[msg["topic"]] = msg["payload"]
+
+                    for ws_queue in ws_queues:
+                        ws_queue.put(text)
+            except Exception as e:
+                traceback.print_exc()
+                pass
 
 
 def make_absolute_path(path):
@@ -33,37 +77,39 @@ def forward_html(path):
 
 @sock.route('/ws')
 def forward_ws(sock):
+    q = queue.Queue()
     try:
-        ws = websocket.create_connection(f'ws://{host}/ws')
-    except Exception as e:
-        print('create_connection failed:', e)
-        sock.close()
-        return
+        with ws_cache_lock:
+            initial_data = "\n".join(json.dumps({"topic":topic,"payload":payload}) for topic, payload in ws_cache.items())
+            sock.send(initial_data)
+            ws_queues.append(q)
 
-    ws.settimeout(0.01)
-
-    while True:
-        try:
+        while True:
             data = sock.receive(timeout=0.01)
-        except WS.ConnectionClosed as e:
-            print('sock.receive failed:', e)
-            ws.close()
-            return
 
-        if data != None:
-            ws.send(data)
+            if data != None:
+                ws_thread_queue.send(data)
 
-        try:
-            data = ws.recv()
-        except:
-            pass
-        else:
-            sock.send(data)
-
+            try:
+                data = q.get(timeout=0.01)
+            except queue.Empty:
+                pass
+            else:
+                sock.send(data)
+    finally:
+        with ws_cache_lock:
+            ws_queues.remove(q)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('host')
 args = parser.parse_args(sys.argv[1:])
 host = args.host
 
+
+
+thread = threading.Thread(target=ws_thread_fn, args=[ws_thread_queue])
+thread.start()
+
 app.run(host="0.0.0.0")
+
+ws_thread_queue.put(None)
