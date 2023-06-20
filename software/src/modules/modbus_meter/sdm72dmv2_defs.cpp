@@ -1,5 +1,7 @@
 #include "sdm72dmv2_defs.h"
 
+#include "modules.h"
+
 static const RegRead sdm72dmv2_slow[] {
     {1, 76},
     {201, 46},

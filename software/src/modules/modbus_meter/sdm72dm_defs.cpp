@@ -1,5 +1,7 @@
 #include "sdm72dm_defs.h"
 
+#include "modules.h"
+
 static const RegRead sdm72dm_slow[]{};
 
 static const RegRead sdm72dm_fast[]{
@@ -42,5 +44,3 @@ MeterInfo sdm72dm {
     "SDM72DM",
     nullptr
 };
-
-

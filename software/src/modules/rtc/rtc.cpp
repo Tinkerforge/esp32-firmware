@@ -19,8 +19,9 @@
 
 #include "rtc.h"
 
-#include "modules.h"
+#include "api.h"
 #include "build.h"
+#include "task_scheduler.h"
 #include "time.h"
 
 void Rtc::pre_setup()

@@ -23,7 +23,6 @@
 
 #include "module.h"
 #include "value_history.h"
-#include "tools.h"
 
 #define METER_ALL_VALUES_COUNT 85
 

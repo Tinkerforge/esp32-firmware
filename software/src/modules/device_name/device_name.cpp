@@ -20,7 +20,6 @@
 
 #include "build.h"
 #include "api.h"
-#include "modules.h"
 #include "task_scheduler.h"
 
 extern char local_uid_str[32];

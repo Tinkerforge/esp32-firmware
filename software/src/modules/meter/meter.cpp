@@ -23,7 +23,6 @@
 #include "event_log.h"
 #include "tools.h"
 #include "task_scheduler.h"
-#include "modules.h"
 
 
 void Meter::pre_setup()

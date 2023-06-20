@@ -1,6 +1,7 @@
 #include "sdm630_defs.h"
 
 #include "api.h"
+#include "modules.h"
 
 static ConfigRoot sdm630_reset;
 
@@ -89,4 +90,3 @@ MeterInfo sdm630 {
         api.writeConfig("meter/sdm630_reset", &sdm630_reset);
     }
 };
-
