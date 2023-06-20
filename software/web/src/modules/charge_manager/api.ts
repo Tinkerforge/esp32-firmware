@@ -5,6 +5,7 @@ interface Charger {
     uptime: number,
     supported_current: number,
     allowed_current: number,
+    requested_current: number,
     wants_to_charge: boolean,
     wants_to_charge_low_priority: boolean,
     is_charging: boolean,
@@ -50,6 +51,8 @@ export interface config {
     minimum_current: number,
     minimum_current_1p: number,
     minimum_current_vehicle_type: number,
+    requested_current_threshold: number,
+    requested_current_margin: number,
     chargers: ChargerConfig[]
 }
 

@@ -37,6 +37,7 @@ import { ItemModal } from "src/ts/components/item_modal";
 import { Switch } from "src/ts/components/switch";
 import { config } from "./api";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { InputNumber } from "src/ts/components/input_number";
 
 type ChargeManagerConfig = API.getType['charge_manager/config'];
 type ChargerConfig = ChargeManagerConfig["chargers"][0];
@@ -318,6 +319,27 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                     />
             </FormRow>;
 
+        let requested_current_margin = <FormRow label={__("charge_manager.content.requested_current_margin")} label_muted={__("charge_manager.content.requested_current_margin_muted")}>
+                <InputFloat
+                    unit="A"
+                    value={state.requested_current_margin}
+                    onValue={this.set("requested_current_margin")}
+                    digits={3}
+                    min={1000}
+                    max={10000}
+                    />
+            </FormRow>;
+
+        let requested_current_threshold = <FormRow label={__("charge_manager.content.requested_current_threshold")} label_muted={__("charge_manager.content.requested_current_threshold_muted")}>
+                <InputNumber
+                    unit="s"
+                    value={state.requested_current_threshold}
+                    onValue={this.set("requested_current_threshold")}
+                    min={20}
+                    max={3600}
+                    />
+            </FormRow>;
+
         let minimum_current = <>
             <FormRow label={__("charge_manager.content.minimum_current_auto")}>
                 <Switch desc={__("charge_manager.content.minimum_current_auto_desc")}
@@ -521,6 +543,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                     {watchdog}
                                     {maximum_available_current}
                                     {default_available_current}
+                                    {requested_current_threshold}
+                                    {requested_current_margin}
                                 </div>
                             </Collapse>
 

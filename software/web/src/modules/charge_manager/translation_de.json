@@ -37,6 +37,11 @@
             "minimum_current_3p": "Minimaler dreiphasiger Ladestrom",
             "minimum_current_3p_muted": "geringster Ladestrom, der vom Fahrzeug für dreiphasiges Laden unterstützt wird",
 
+            "requested_current_margin": "Spielraum des Phasenstroms",
+            "requested_current_margin_muted": "",
+            "requested_current_threshold": "Länge der Startphase",
+            "requested_current_threshold_muted": "Wallboxen mit einem Stromzähler, der Phasenströme misst, werden nach Ablauf der Startphase auf den größten Phasenstrom plus den konfigurierten Spielraum limitiert. Damit kann der verfügbare Strom effizienter auf mehrere Wallboxen verteilt werden.",
+
             "configuration_mode": "Experteneinstellungen",
             "configuration_mode_muted": "",
 
