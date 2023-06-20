@@ -477,7 +477,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
         return {
             show: this.series_visibility[this.data.keys[i]],
-            label: this.props.legend_value_prefix + (name ? ' ' + name: ''),
+            label: (this.props.legend_value_prefix + ' ' + name).trim(),
             value: (self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => {
                 if (rawValue !== null && this.data.value_names && this.data.value_names[seriesIdx]) {
                     return this.data.value_names[seriesIdx][this.data.values[seriesIdx][idx]];
