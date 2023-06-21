@@ -41,7 +41,7 @@ import { Slash, User, UserPlus, UserX } from "react-feather";
 import { EVSE_SLOT_USER } from "../evse_common/api";
 import { ItemModal } from "src/ts/components/item_modal";
 
-const MAX_ACTIVE_USERS = 16;
+const MAX_ACTIVE_USERS = 17;
 
 type User = (API.getType['users/config']['users'][0]) & {password: string, is_invalid: number};
 type UsersConfig = Omit<API.getType['users/config'], 'users'> & {users: User[]};
