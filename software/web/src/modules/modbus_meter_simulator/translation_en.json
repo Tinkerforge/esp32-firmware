@@ -1,0 +1,19 @@
+{
+    "modbus_meter_simulator": {
+        "status": {
+        },
+        "navbar": {
+            "entry": "Modbus Meter Simulator"
+        },
+        "content": {
+            "page_header": "Modbus Meter Simulator",
+            "meter_type": "Meter type",
+            "meter_type_muted": "of simulated meter",
+            "meter_type_no_meter": "No meter"
+        },
+        "script": {
+            "save_failed": "Failed to save modbus meter simulator configuration.",
+            "reboot_content_changed": "Modbus meter simulator settings"
+        }
+    }
+}
