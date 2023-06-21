@@ -55,12 +55,26 @@ static uint32_t max_avail_current = 0;
 
 #define WATCHDOG_TIMEOUT_MS 30000
 
+// If this is an energy manager, we have exactly one charger and the margin is still the default,
+// double it to react faster if more current is available.
+#define REQUESTED_CURRENT_MARGIN_DEFAULT 3000
+#define REQUESTED_CURRENT_MARGIN_ENERGY_MANAGER_1_CHARGER_DEFAULT (2 * REQUESTED_CURRENT_MARGIN_DEFAULT)
+
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
 static void apply_energy_manager_config(Config &conf)
 {
     conf.get("enable_charge_manager")->updateBool(true);
     conf.get("enable_watchdog")->updateBool(false);
     conf.get("default_available_current")->updateUint(0);
+
+
+    if (conf.get("chargers")->count() == 1 && conf.get("requested_current_margin")->asUint() == REQUESTED_CURRENT_MARGIN_DEFAULT) {
+        conf.get("requested_current_margin")->updateUint(REQUESTED_CURRENT_MARGIN_ENERGY_MANAGER_1_CHARGER_DEFAULT);
+    }
+
+    if (conf.get("chargers")->count() != 1 && conf.get("requested_current_margin")->asUint() == REQUESTED_CURRENT_MARGIN_ENERGY_MANAGER_1_CHARGER_DEFAULT) {
+        conf.get("requested_current_margin")->updateUint(REQUESTED_CURRENT_MARGIN_DEFAULT);
+    }
 }
 #endif
 
@@ -86,7 +100,7 @@ void ChargeManager::pre_setup()
         // This margin has to be large enough to make sure
         // every vehicle can always request more current.
         // See https://github.com/Tinkerforge/warp-charger/blob/master/tools/current_ramp/allowed_vs_effective_3.gp
-        {"requested_current_margin", Config::Uint16(3000)},
+        {"requested_current_margin", Config::Uint16(REQUESTED_CURRENT_MARGIN_DEFAULT)},
         {"chargers", Config::Array({},
             new Config{Config::Object({
                 {"host", Config::Str("", 0, 64)},
