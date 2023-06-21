@@ -70,7 +70,7 @@ class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                    tf_evse_v2_destroy>
 {
 public:
-    EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV2::setup_evse, this)) {}
+    EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE", std::bind(&EVSEV2::setup_evse, this)) {}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
