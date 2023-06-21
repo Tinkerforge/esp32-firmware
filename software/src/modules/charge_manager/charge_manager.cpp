@@ -59,6 +59,8 @@ static uint32_t max_avail_current = 0;
 // double it to react faster if more current is available.
 #define REQUESTED_CURRENT_MARGIN_DEFAULT 3000
 
+extern bool firmware_update_allowed;
+
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
 #define REQUESTED_CURRENT_MARGIN_ENERGY_MANAGER_1_CHARGER_DEFAULT (2 * REQUESTED_CURRENT_MARGIN_DEFAULT)
 
@@ -268,6 +270,12 @@ void ChargeManager::start_manager_task()
 
             target->get("uid")->updateUint(v1->esp32_uid);
             target->get("uptime")->updateUint(v1->evse_uptime);
+
+#if MODULE_ENERGY_MANAGER_AVAILABLE() && !(MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE())
+            // Immediately block firmware updates if this charger reports a connected vehicle.
+            if (v1->charger_state != 0)
+                firmware_update_allowed = false;
+#endif
 
             // A charger wants to charge if:
             // the charging time is 0 (it has not charged this vehicle yet), no other slot blocks
@@ -513,6 +521,8 @@ void ChargeManager::distribute_current()
     auto chargers = state.get("chargers");
     auto configs = config_in_use.get("chargers");
 
+    bool any_charger_blocking_firmware_update = false;
+
     uint32_t current_array[MAX_CLIENTS] = {0};
 
     // Update control pilot disconnect
@@ -575,6 +585,10 @@ void ChargeManager::distribute_current()
             } else if (charger->get("error")->asUint() == CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE) {
                 charger->get("error")->updateUint(CM_NETWORKING_ERROR_NO_ERROR);
             }
+
+            // Block firmware update if charger has a vehicle connected.
+            if (charger->get("state")->asUint() != 0)
+                any_charger_blocking_firmware_update = true;
         }
 
         if (unreachable_evse_found) {
@@ -582,6 +596,9 @@ void ChargeManager::distribute_current()
             available_current = 0;
             LOCAL_LOG("%s", "stage 0: Unreachable, unreactive or misconfigured EVSE(s) found. Setting available current to 0 mA.");
             state.get("state")->updateUint(2);
+
+            // Any unreachable EVSE will block a firmware update.
+            any_charger_blocking_firmware_update = true;
         } else {
             state.get("state")->updateUint(1);
             if (last_print_local_log_was_error) {
@@ -850,6 +867,12 @@ void ChargeManager::distribute_current()
         // Inform callback about how much current we distributed to chargers.
         allocated_current_callback(available_current_init - available_current);
     }
+
+#if MODULE_ENERGY_MANAGER_AVAILABLE() && !(MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE())
+    firmware_update_allowed = !any_charger_blocking_firmware_update;
+#else
+    (void)any_charger_blocking_firmware_update;
+#endif
 }
 
 void ChargeManager::set_allocated_current_callback(std::function<void(uint32_t)> callback) {
