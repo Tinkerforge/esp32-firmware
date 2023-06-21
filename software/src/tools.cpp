@@ -892,3 +892,10 @@ void remove_separator(const char * const in, char *out) {
     }
     out[written] = '\0';
 }
+
+int strncmp_with_same_len(const char *left, const char *right, size_t right_len) {
+    size_t left_len = strlen(left);
+    if (left_len != right_len)
+        return -1;
+    return strncmp(left, right, right_len);
+}

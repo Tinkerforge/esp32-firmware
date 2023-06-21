@@ -72,13 +72,6 @@ private:
 
 static char recv_buf[RECV_BUF_SIZE] = {0};
 
-static int strncmp_with_same_len(const char *left, const char *right, size_t right_len) {
-    size_t left_len = strlen(left);
-    if (left_len != right_len)
-        return -1;
-    return strncmp(left, right, right_len);
-}
-
 bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
 {
     if (boot_stage <= BootStage::REGISTER_URLS)

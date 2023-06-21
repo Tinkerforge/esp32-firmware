@@ -266,7 +266,7 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
         if (!protocol_version) {
             error = SCAN_RESULT_ERROR_FIRMWARE_MISMATCH;
         } else {
-            if (strncmp(version, MACRO_VALUE_TO_STRING(CM_PACKET_MAGIC), protocol_version - version) != 0) {
+            if (strncmp_with_same_len(MACRO_VALUE_TO_STRING(CM_PACKET_MAGIC), version, protocol_version - version) != 0) {
                 error = SCAN_RESULT_ERROR_FIRMWARE_MISMATCH;
             } else {
                 long num_version = strtol(++protocol_version, nullptr, 10);
