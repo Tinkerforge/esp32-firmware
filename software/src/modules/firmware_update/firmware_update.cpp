@@ -278,7 +278,11 @@ void FirmwareUpdate::register_urls()
             this->reset_firmware_info();
         }
 
-        if (!firmware_update_allowed) {
+        bool firmware_update_allowed_check_required = true;
+#if MODULE_ENERGY_MANAGER_AVAILABLE() && !(MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE())
+        firmware_update_allowed_check_required = energy_manager.disallow_fw_update_with_vehicle_connected();
+#endif
+        if (firmware_update_allowed_check_required && !firmware_update_allowed) {
             request.send(400, "text/plain", "{\"error\":\"firmware_update.script.vehicle_connected\"}");
             return false;
         }

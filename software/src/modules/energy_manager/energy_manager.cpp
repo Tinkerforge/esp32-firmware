@@ -1307,3 +1307,8 @@ struct timeval EnergyManager::get_time()
 
     return time;
 }
+
+bool EnergyManager::disallow_fw_update_with_vehicle_connected()
+{
+    return config.get("contactor_installed")->asBool();
+}

@@ -198,6 +198,8 @@ public:
     void set_time(const tm &tm);
     struct timeval get_time();
 
+    bool disallow_fw_update_with_vehicle_connected();
+
     bool debug = false;
 
     ConfigRoot state;
