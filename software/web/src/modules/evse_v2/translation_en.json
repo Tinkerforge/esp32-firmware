@@ -58,7 +58,8 @@
             "reset_dc_fault_content": "Resetting the DC fault protector restores the ability to charge. <b>Ensure that the reason why the DC fault protector triggered is resolved!</b> <a href=\"{{{manual_url}}}\">See manual for details.</a> Really reset the DC fault protector?",
             "abort": "Abort",
             "reset": "Reset",
-            "trigger_dc_fault_test": "Test DC fault protector"
+            "trigger_dc_fault_test": "Test DC fault protector",
+            "time_since_dc_fault_check": "Time since last DC fault protector test"
         },
         "script": {
             "control_pilot_configuration_failed": "Updating the control pilot configuration failed",

@@ -396,6 +396,10 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                             <InputText value={util.format_timespan(Math.floor(ll_state.charging_time / 1000))}/>
                         </FormRow>
 
+                        <FormRow label={__("evse.content.time_since_dc_fault_check")}>
+                            <InputText value={util.format_timespan(Math.floor(ll_state.time_since_dc_fault_check / 1000.0))}/>
+                        </FormRow>
+
                         <FormRow label={__("evse.content.reset_description")} label_muted={__("evse.content.reset_description_muted")}>
                         <div class="input-group pb-2">
                             <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => API.call('evse/reset', {}, "")}>{__("evse.content.reset_evse")}</Button>

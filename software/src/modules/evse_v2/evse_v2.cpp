@@ -93,7 +93,8 @@ void EVSEV2::pre_setup()
             }, new Config{Config::Bool(false)}, 24, 24, Config::type_id<Config::ConfBool>())},
         {"charging_time", Config::Uint32(0)},
         {"time_since_state_change", Config::Uint32(0)},
-        {"uptime", Config::Uint32(0)}
+        {"uptime", Config::Uint32(0)},
+        {"time_since_dc_fault_check", Config::Uint32(0)}
     });
 
     energy_meter_values = Config::Object({
@@ -602,7 +603,7 @@ String EVSEV2::get_evse_debug_line()
     bool phases_connected[3];
     uint32_t error_count[6];
 
-    // get_low_level_state - 57 byte
+    // get_low_level_state - 61 byte
     uint8_t led_state;
     uint16_t cp_pwm_duty_cycle;
     uint16_t adc_values[7];
@@ -611,6 +612,7 @@ String EVSEV2::get_evse_debug_line()
     bool gpio[24];
     uint32_t charging_time;
     uint32_t time_since_state_change;
+    uint32_t time_since_dc_fault_check;
     uint32_t uptime;
 
     // get_all_charging_slots - 60 byte
@@ -652,6 +654,7 @@ String EVSEV2::get_evse_debug_line()
                                         gpio,
                                         &charging_time,
                                         &time_since_state_change,
+                                        &time_since_dc_fault_check,
                                         &uptime);
 
     if (rc != TF_E_OK) {
@@ -1200,7 +1203,7 @@ void EVSEV2::update_all_data()
     bool cp_disconnect;
     bool boost_mode_enabled;
 
-    // get_low_level_state - 57 byte
+    // get_low_level_state - 61 byte
     uint8_t led_state;
     uint16_t cp_pwm_duty_cycle;
     uint16_t adc_values[7];
@@ -1209,6 +1212,7 @@ void EVSEV2::update_all_data()
     bool gpio[24];
     uint32_t charging_time;
     uint32_t time_since_state_change;
+    uint32_t time_since_dc_fault_check;
     uint32_t uptime;
 
     // get_all_charging_slots - 60 byte
@@ -1270,6 +1274,7 @@ void EVSEV2::update_all_data()
                                         gpio,
                                         &charging_time,
                                         &time_since_state_change,
+                                        &time_since_dc_fault_check,
                                         &uptime);
 
     if (rc != TF_E_OK) {
@@ -1372,6 +1377,7 @@ void EVSEV2::update_all_data()
     low_level_state.get("charging_time")->updateUint(charging_time);
     low_level_state.get("time_since_state_change")->updateUint(time_since_state_change);
     low_level_state.get("uptime")->updateUint(uptime);
+    low_level_state.get("time_since_dc_fault_check")->updateUint(time_since_dc_fault_check);
 
     for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
         slots.get(i)->get("max_current")->updateUint(max_current[i]);
