@@ -159,6 +159,10 @@ void MqttMeter::handle_mqtt_values(const JsonDocument &doc)
     if (float_equals_zero(energy_rel)) energy_rel = NAN;
     if (float_equals_zero(energy_abs)) energy_abs = NAN;
 
+#if MODULE_EM_PV_FAKER_AVAILABLE()
+    power -= static_cast<float>(em_pv_faker.state.get("fake_power")->asInt());
+#endif
+
     meter.updateMeterValues(power, energy_rel, energy_abs);
 }
 
@@ -166,12 +170,24 @@ void MqttMeter::handle_mqtt_all_values(const JsonDocument &doc)
 {
     JsonArrayConst array = doc.as<JsonArrayConst>();
 
+    float all_values[METER_ALL_VALUES_COUNT];
+
     int i = 0;
     // Use iterator because each getElement(index) call has a complexity of O(n).
     for (const JsonVariantConst v : array) {
         all_values[i] = v.as<float>();
         i++;
     }
+
+#if MODULE_EM_PV_FAKER_AVAILABLE()
+    float pv_power = static_cast<float>(em_pv_faker.state.get("fake_power")->asInt());
+    float pv_phase_current = pv_power * (1.0f / (3.0f * 230.0f));
+
+    all_values[METER_ALL_VALUES_CURRENT_L1_A] -= pv_phase_current; // METER_ALL_VALUES_CURRENT_DEMAND_L1_A ?
+    all_values[METER_ALL_VALUES_CURRENT_L2_A] -= pv_phase_current;
+    all_values[METER_ALL_VALUES_CURRENT_L3_A] -= pv_phase_current;
+    all_values[METER_ALL_VALUES_TOTAL_SYSTEM_POWER_W] -= pv_power; // METER_ALL_VALUES_TOTAL_SYSTEM_POWER_DEMAND_W ?
+#endif
 
     meter.updateMeterAllValues(all_values);
 }

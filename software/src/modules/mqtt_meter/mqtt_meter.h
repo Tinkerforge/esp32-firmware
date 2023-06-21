@@ -25,8 +25,6 @@
 #include "config.h"
 #include "module.h"
 
-#include "modules/meter/meter.h"
-
 class MqttMeter final : public IModule
 {
 public:
@@ -48,5 +46,4 @@ private:
     uint8_t mqtt_meter_type = 0;
     String source_meter_values_topic;
     String source_meter_all_values_topic;
-    float all_values[METER_ALL_VALUES_COUNT];
 };
