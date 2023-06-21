@@ -73,6 +73,7 @@ public:
     size_t format_history(char *buf, size_t buf_size);
     float samples_per_second();
 
+    int64_t sum_this_interval = 0;
     int samples_this_interval = 0;
     uint32_t begin_this_interval = 0;
     uint32_t end_this_interval = 0;

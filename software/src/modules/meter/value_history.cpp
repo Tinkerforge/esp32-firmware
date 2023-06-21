@@ -119,6 +119,7 @@ void ValueHistory::add_sample(float sample)
     }
 
     ++samples_this_interval;
+    sum_this_interval += val;
 
 #if MODULE_WS_AVAILABLE()
     {
@@ -140,14 +141,7 @@ void ValueHistory::add_sample(float sample)
             if (samples_this_interval == 0) {
                 history_val = val_min; // TODO push 0 or intxy_t min here? intxy_t min will be translated into null when sending as json. However we document that there is only at most one block of null values at the start of the array indicating a reboot
             } else {
-                double live_sum = 0;
-                METER_VALUE_HISTORY_VALUE_TYPE live_val;
-                for(int i = 0; i < samples_this_interval; ++i) {
-                    live.peek_offset(&live_val, live.used() - 1 - i);
-                    live_sum += live_val;
-                }
-
-                history_val = roundf(live_sum / samples_this_interval);
+                history_val = sum_this_interval / samples_this_interval;
             }
 
             history.push(history_val);
@@ -157,6 +151,7 @@ void ValueHistory::add_sample(float sample)
             begin_last_interval = begin_this_interval;
             end_last_interval = end_this_interval;
 
+            sum_this_interval = 0;
             samples_this_interval = 0;
             begin_this_interval = 0;
             end_this_interval = 0;
