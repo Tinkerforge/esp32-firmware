@@ -58,9 +58,10 @@ static uint32_t max_avail_current = 0;
 // If this is an energy manager, we have exactly one charger and the margin is still the default,
 // double it to react faster if more current is available.
 #define REQUESTED_CURRENT_MARGIN_DEFAULT 3000
-#define REQUESTED_CURRENT_MARGIN_ENERGY_MANAGER_1_CHARGER_DEFAULT (2 * REQUESTED_CURRENT_MARGIN_DEFAULT)
 
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
+#define REQUESTED_CURRENT_MARGIN_ENERGY_MANAGER_1_CHARGER_DEFAULT (2 * REQUESTED_CURRENT_MARGIN_DEFAULT)
+
 static void apply_energy_manager_config(Config &conf)
 {
     conf.get("enable_charge_manager")->updateBool(true);
