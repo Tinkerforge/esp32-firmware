@@ -652,7 +652,7 @@ export class Meter extends Component<{}, MeterState> {
                                           y_max={1500} />
                         </div>
                         <div class="col-lg-6 col-xl-4">
-                            <FormSeparator heading={__("meter.status.charge_history")} first={true} colClasses={"justify-content-between align-items-center col"} >
+                            <FormSeparator heading={__("meter.content.statistics")} first={true} colClasses={"justify-content-between align-items-center col"} >
                                 <div class="mb-2" style="visibility: hidden;">
                                     <InputSelect items={[["a", "a"]]} />
                                 </div>
