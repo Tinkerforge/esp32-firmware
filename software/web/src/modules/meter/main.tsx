@@ -118,7 +118,6 @@ interface UplotWrapperProps {
     y_min?: number;
     y_max?: number;
     y_diff_min?: number;
-    y_step?: number;
 }
 
 class UplotWrapper extends Component<UplotWrapperProps, {}> {
@@ -128,6 +127,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     visible: boolean = false;
     div_ref = createRef();
     observer: ResizeObserver;
+    y_min: number = 0;
+    y_max: number = 0;
 
     shouldComponentUpdate() {
         return false;
@@ -268,14 +269,9 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             ],
             scales: {
                 y: {
-                    range: {
-                        min: {
-                            mode: 1 as uPlot.Range.SoftMode,
-                        },
-                        max: {
-                            mode: 1 as uPlot.Range.SoftMode,
-                        },
-                    },
+                    range: (self: uPlot, initMin: number, initMax: number, scaleKey: string): uPlot.Range.MinMax => {
+                        return uPlot.rangeNum(this.y_min, this.y_max, {min: {}, max: {}});
+                    }
                 },
             },
             plugins: [
@@ -413,14 +409,9 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             }
         }
 
-        let y_step = this.props.y_step;
+        this.y_min = y_min;
+        this.y_max = y_max;
 
-        if (y_step !== undefined) {
-            y_min = Math.floor(y_min / y_step) * y_step;
-            y_max = Math.ceil(y_max / y_step) * y_step;
-        }
-
-        this.uplot.setScale('y', {min: y_min, max: y_max});
         this.uplot.setData([this.data.timestamps, this.data.samples]);
     }
 
@@ -638,8 +629,7 @@ export class Meter extends Component<{}, MeterState> {
                                           legend_time_with_seconds={true}
                                           x_height={30}
                                           x_include_date={false}
-                                          y_diff_min={100}
-                                          y_step={10} />
+                                          y_diff_min={100} />
                             <UplotWrapper ref={this.uplot_wrapper_history_ref}
                                           id="meter_chart_history"
                                           class="meter-chart"

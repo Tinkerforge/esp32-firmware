@@ -362,9 +362,9 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             ],
             scales: {
                 x: {
-                    range: (self: uPlot, from: number, to: number): uPlot.Range.MinMax => {
-                        let pad = (to - from) * this.props.x_padding_factor;
-                        return [from - pad, to + pad];
+                    range: (self: uPlot, initMin: number, initMax: number, scaleKey: string): uPlot.Range.MinMax => {
+                        let pad = (initMax - initMin) * this.props.x_padding_factor;
+                        return [initMin - pad, initMax + pad];
                     },
                 },
             },
@@ -551,7 +551,6 @@ interface UplotWrapperProps {
     x_padding_factor: number;
     y_min?: number;
     y_max?: number;
-    y_step?: number;
     y_unit: string;
     y_digits: number;
     default_fill?: boolean;
@@ -565,6 +564,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     visible: boolean = false;
     div_ref = createRef();
     observer: ResizeObserver;
+    y_min: number = 0;
+    y_max: number = 0;
 
     shouldComponentUpdate() {
         return false;
@@ -675,20 +676,15 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             ],
             scales: {
                 x: {
-                    range: (self: uPlot, from: number, to: number): uPlot.Range.MinMax => {
-                        let pad = (to - from) * this.props.x_padding_factor;
-                        return [from - pad, to + pad];
+                    range: (self: uPlot, initMin: number, initMax: number, scaleKey: string): uPlot.Range.MinMax => {
+                        let pad = (initMax - initMin) * this.props.x_padding_factor;
+                        return [initMin - pad, initMax + pad];
                     },
                 },
                 y: {
-                    range: {
-                        min: {
-                            mode: 1 as uPlot.Range.SoftMode,
-                        },
-                        max: {
-                            mode: 1 as uPlot.Range.SoftMode,
-                        },
-                    },
+                    range: (self: uPlot, initMin: number, initMax: number, scaleKey: string): uPlot.Range.MinMax => {
+                        return uPlot.rangeNum(this.y_min, this.y_max, {min: {}, max: {}});
+                    }
                 },
             },
             legend: {
@@ -884,14 +880,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             y_max = y_min;
         }
 
-        let y_step = this.props.y_step;
-
-        if (y_step !== undefined) {
-            y_min = Math.floor(y_min / y_step) * y_step;
-            y_max = Math.ceil(y_max / y_step) * y_step;
-        }
-
-        this.uplot.setScale('y', {min: y_min, max: y_max});
+        this.y_min = y_min;
+        this.y_max = y_max;
 
         let uplot_values: number[][] = [];
         last_stacked_values = [];
@@ -2634,7 +2624,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               x_padding_factor={0}
                                               y_min={0}
                                               y_max={100}
-                                              y_step={10}
                                               y_unit={"W"}
                                               y_digits={0} />
                                 <div class="uplot u-hz u-time-in-legend-alone" ref={this.uplot_legend_div_5min_flags_ref} style="width: 100%; visibility: hidden;" />
@@ -2658,7 +2647,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               x_padding_factor={0.015}
                                               y_min={0}
                                               y_max={10}
-                                              y_step={1}
                                               y_unit={"kWh"}
                                               y_digits={2}
                                               default_fill={true} />
