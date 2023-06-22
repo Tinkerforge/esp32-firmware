@@ -145,11 +145,11 @@
 
             "save_failed": "(De)Activating the charge management failed",
 
-            "slot_disabled": "not active",
-            "slot_blocks": "blocks",
-            "slot_no_limit": "no limit",
-
             "reset_slot_failed": "Releasing the current limit failed",
+
+            "slot_disabled": "Not active",
+            "slot_blocks": "Blocks",
+            "slot_no_limit": "Released",
 
             "slot_0": "Supply cable",
             "slot_1": "Charging cable",

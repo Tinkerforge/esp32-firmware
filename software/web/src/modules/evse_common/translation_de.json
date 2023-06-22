@@ -147,9 +147,9 @@
 
             "reset_slot_failed": "Freigeben der Stromgrenze fehlgeschlagen",
 
-            "slot_disabled": "nicht aktiv",
-            "slot_blocks": "blockiert",
-            "slot_no_limit": "freigegeben",
+            "slot_disabled": "Nicht aktiv",
+            "slot_blocks": "Blockiert",
+            "slot_no_limit": "Freigegeben",
 
             "slot_0": "Zuleitung",
             "slot_1": "Ladekabel",
