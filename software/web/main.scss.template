@@ -542,3 +542,8 @@ body {
 .u-time-in-legend-alone .u-legend .u-series:first-child {
     display: block;
 }
+
+table ul {
+    margin-bottom: 0 !important;
+    padding-left: 1rem !important;
+}
