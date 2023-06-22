@@ -18,7 +18,7 @@
         },
         "content": {
             "sta_settings": "WLAN-Verbindung",
-            "sta_enable_sta": "Verbindung aktiviert",
+            "sta_enable_sta": "WLAN-Verbindung aktiviert",
             "sta_enable_sta_desc": null,
             "sta_ssid": "Netzwerkname (SSID)",
             "sta_scan": "Netzwerksuche",

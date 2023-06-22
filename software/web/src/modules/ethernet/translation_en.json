@@ -12,7 +12,7 @@
         },
         "content": {
             "ethernet": "LAN Connection",
-            "enable": "Connection enabled",
+            "enable": "LAN connection enabled",
             "enable_desc": "Automatically connects to the configured network on start-up"
         },
         "script": {

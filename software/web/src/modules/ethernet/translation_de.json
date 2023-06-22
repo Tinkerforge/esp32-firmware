@@ -12,7 +12,7 @@
         },
         "content": {
             "ethernet": "LAN-Verbindung",
-            "enable": "Verbindung aktiviert",
+            "enable": "LAN-Verbindung aktiviert",
             "enable_desc": null
         },
         "script": {
