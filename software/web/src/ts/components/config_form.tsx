@@ -68,7 +68,7 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
 
     resetButton = () => this.props.onReset ?
             <button onClick={async () => {await this.props.onReset()}} class="btn btn-danger mb-2 ml-sm-2 col" disabled={!this.props.isModified}>
-                {__("component.config_page_header.reset")}
+                {__("component.config_form.reset")}
                 <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner} ></span>
             </button> : <></>
 
@@ -82,7 +82,7 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
                             <div class="col-12 col-sm row no-gutters">
                                 {this.resetButton()}
                                 <button type="submit" form={props.id} class="btn btn-primary col mb-2 ml-2 ml-md-3 mr-0" disabled={state.saveDisabled}>
-                                    {__("component.config_page_header.save")}
+                                    {__("component.config_form.save")}
                                     <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
                                 </button>
                             </div>

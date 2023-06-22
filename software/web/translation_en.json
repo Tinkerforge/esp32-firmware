@@ -14,7 +14,7 @@
         "reboot": "Reboot"
     },
     "component": {
-        "config_page_header": {
+        "config_form": {
             "save": "Save",
             "reset": "Reset"
         },

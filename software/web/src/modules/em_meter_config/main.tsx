@@ -24,8 +24,6 @@ import * as API from "../../ts/api";
 
 import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
-//import { ConfigPageHeader } from "../../ts/components/config_page_header";
-//import { Switch } from "src/ts/components/switch";
 import { ConfigComponent } from "src/ts/components/config_component";
 import { ConfigForm } from "src/ts/components/config_form";
 import { FormRow } from "src/ts/components/form_row";

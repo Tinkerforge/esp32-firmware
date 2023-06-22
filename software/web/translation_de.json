@@ -14,7 +14,7 @@
         "reboot": "Neu starten"
     },
     "component": {
-        "config_page_header": {
+        "config_form": {
             "save": "Speichern",
             "reset": "Zurücksetzen"
         },
