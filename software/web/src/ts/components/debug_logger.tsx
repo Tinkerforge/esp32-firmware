@@ -43,7 +43,11 @@ interface DebugLoggerProps {
 
 export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 {
-    debug_log = "";
+    debug_prefix: string = '';
+    debug_header: string = '';
+    debug_log_dropped: number = 0;
+    debug_log: Array<string> = [];
+    debug_suffix: string = '';
 
     constructor(props: any)
     {
@@ -55,19 +59,25 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         }
 
         util.addApiEventListener(this.props.debugHeader, (e) => {
-            this.debug_log += e.data + "\n";
+            this.debug_header = e.data + "\n";
         }, false);
 
         util.addApiEventListener(this.props.debug, (e) => {
-            this.debug_log += e.data + "\n";
+            while (this.debug_log.length > 20000) {
+                this.debug_log.shift();
+                ++this.debug_log_dropped;
+            }
+
+            this.debug_log.push(e.data + "\n");
         }, false);
     }
 
     async get_debug_report_and_event_log() {
+        let text = '';
+
         try {
             this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.loading_debug_report")});
-            this.debug_log += await util.download("/debug_report").then(blob => blob.text());
-            this.debug_log += "\n\n";
+            text += await util.download("/debug_report").then(blob => blob.text()) + "\n\n";
         } catch (error) {
             this.setState({debug_running: false, debug_status: translate_unchecked(this.props.translationPrefix + ".script.loading_debug_report_failed")});
             throw translate_unchecked(this.props.translationPrefix + ".script.loading_debug_report_failed") + ": " + error;
@@ -75,12 +85,13 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
         try {
             this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.loading_event_log")});
-            this.debug_log += await util.download("/event_log").then(blob => blob.text());
-            this.debug_log += "\n";
+            text += await util.download("/event_log").then(blob => blob.text()) + "\n";
         } catch (error) {
             this.setState({debug_running: false, debug_status: translate_unchecked(this.props.translationPrefix + ".script.loading_event_log_failed")});
             throw translate_unchecked(this.props.translationPrefix + ".script.loading_event_log_failed") + ": " + error;
         }
+
+        return text;
     }
 
     debugTimeout: number;
@@ -95,11 +106,15 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
     }
 
     async debug_start() {
-        this.debug_log = "";
+        this.debug_prefix = '';
+        this.debug_header = '';
+        this.debug_log_dropped = 0;
+        this.debug_log = [];
+        this.debug_suffix = '';
         this.setState({debug_running: true});
 
         try {
-            await this.get_debug_report_and_event_log();
+            this.debug_prefix = await this.get_debug_report_and_event_log();
 
             this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.starting_debug")});
         } catch(error) {
@@ -130,22 +145,27 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         }
 
         try {
-            this.debug_log += "\n\n";
             this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.debug_stopped")});
-
-            await this.get_debug_report_and_event_log();
+            this.debug_suffix = "\n" + await this.get_debug_report_and_event_log();
             this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.debug_done")});
         } catch (error) {
-            this.debug_log += "\n\nError while stopping charge protocol: ";
-            this.debug_log += error;
-
+            this.debug_suffix = "\nError while stopping charge protocol: " + error;
             this.setState({debug_status: error});
         }
 
-        //Download log in any case: Even an incomplete log can be useful for debugging.
-        util.downloadToFile(this.debug_log, this.props.prefix + "-debug-protocol", "txt", "text/plain");
-    }
+        let full_log = [this.debug_prefix];
 
+        if (this.debug_log_dropped > 0) {
+            full_log.push('' + this.debug_log_dropped + ' lines have been dropped from the following table.\n\n');
+        }
+
+        full_log.push(this.debug_header);
+        full_log = full_log.concat(this.debug_log);
+        full_log.push(this.debug_suffix);
+
+        //Download log in any case: Even an incomplete log can be useful for debugging.
+        util.downloadToFile(full_log.join(''), this.props.prefix + "-debug-protocol", "txt", "text/plain");
+    }
 
     render(props: DebugLoggerProps, s: DebugLoggerState)
     {
