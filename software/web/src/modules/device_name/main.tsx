@@ -46,7 +46,7 @@ export class DeviceName extends ConfigComponent<'info/display_name'> {
         return (
             <div class="col-12 col-xl-8">
                 <div class="row pt-3 border-bottom tab-header-shadow">
-                    <h1 class="col-4 col-xl-6 h2 pb-2">{__("device_name.status.status")}</h1>
+                    <h1 class="col-4 col-xl-6 page-header pb-2">{__("device_name.status.status")}</h1>
                     <form class="col-8 col-xl-6" onSubmit={(e: Event) => {
                         e.preventDefault();
                         e.stopPropagation();

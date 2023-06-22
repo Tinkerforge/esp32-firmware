@@ -486,13 +486,13 @@ body {
 }
 
 @include media-breakpoint-only(xs) {
-    .config-header {
+    .page-header {
         font-size: 1.75rem;
     }
 }
 
 @include media-breakpoint-up(sm) {
-    .config-header {
+    .page-header {
         font-size: 2rem;
     }
 }

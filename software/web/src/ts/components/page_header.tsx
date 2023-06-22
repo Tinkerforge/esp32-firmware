@@ -30,7 +30,7 @@ export class PageHeader extends Component<PageHeaderProps, any> {
         return (
             <div class="row sticky-under-top mb-3 pt-3">
                 <div class={"d-flex flex-wrap justify-content-between pb-2 border-bottom tab-header-shadow " + (this.props.colClasses === undefined ? "col-xl-8" : this.props.colClasses)}>
-                    <h1 class="h2" dangerouslySetInnerHTML={{__html: this.props.title}}></h1>
+                    <h1 class="page-header" dangerouslySetInnerHTML={{__html: this.props.title}}></h1>
                     {props.children}
                 </div>
             </div>
