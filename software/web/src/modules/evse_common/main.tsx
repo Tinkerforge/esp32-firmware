@@ -74,7 +74,9 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
         if (real_maximum == 32000)
             return util.toLocaleFixed(real_maximum / 1000.0, 3) + " A";
 
-        let status_string = util.toLocaleFixed(real_maximum / 1000.0, 3) + " A " + __("evse.script.by") + " ";
+        let rm_string = (real_maximum == 0) ? __("evse.script.acc_blocked") : (util.toLocaleFixed(real_maximum / 1000.0, 3)  + " A");
+
+        let status_string = rm_string + " " + __("evse.script.by") + " ";
 
         let status_list = [];
         for(let i = 0; i < slots.length; ++i) {

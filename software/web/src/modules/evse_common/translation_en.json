@@ -140,6 +140,7 @@
             "debug_stopped": "Stopped charge log capture",
             "debug_done": "Done",
 
+            "acc_blocked": "Blocked",
             "by": "by",
 
             "save_failed": "(De)Activating the charge management failed",

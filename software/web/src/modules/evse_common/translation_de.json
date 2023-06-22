@@ -140,6 +140,7 @@
             "debug_stopped": "Aufzeichnung des Ladecontroller-Logs gestoppt.",
             "debug_done": "Abgeschlossen.",
 
+            "acc_blocked": "Blockiert",
             "by": "durch",
 
             "save_failed": "(De-)Aktivieren des Lastmanagements fehlgeschlagen",
