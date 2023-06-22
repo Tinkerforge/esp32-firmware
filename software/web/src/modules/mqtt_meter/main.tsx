@@ -37,7 +37,7 @@ export class MqttMeter extends ConfigComponent<'mqtt_meter/config'> {
             __("mqtt_meter.script.reboot_content_changed"));
         }
 
-    render(props: {}, conf: Readonly<API.getType['mqtt_meter/config']>) {
+    render(props: {}, state: Readonly<API.getType['mqtt_meter/config']>) {
         if (!util.render_allowed())
             return <></>
 
@@ -45,14 +45,14 @@ export class MqttMeter extends ConfigComponent<'mqtt_meter/config'> {
             <ConfigForm id="mqtt_meter_config_form" title={__("mqtt_meter.content.title")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                 <FormRow label={__("mqtt_meter.content.enable_meter")}>
                     <Switch desc={__("mqtt_meter.content.enable_meter_desc")}
-                        checked={conf.enable}
+                        checked={state.enable}
                         onClick={this.toggle('enable')}
                     />
                 </FormRow>
 
                 <FormRow label={__("mqtt_meter.content.has_all_values")}>
                     <Switch desc={__("mqtt_meter.content.has_all_values_desc")}
-                        checked={conf.has_all_values}
+                        checked={state.has_all_values}
                         onClick={this.toggle('has_all_values')}
                     />
                 </FormRow>
@@ -61,7 +61,7 @@ export class MqttMeter extends ConfigComponent<'mqtt_meter/config'> {
                     <InputText required
                         maxLength={128}
                         pattern="^[^#+$][^#+]*"
-                        value={conf.source_meter_path}
+                        value={state.source_meter_path}
                         onValue={this.set('source_meter_path')}
                         invalidFeedback={__("mqtt_meter.content.meter_path_invalid")}
                     />
