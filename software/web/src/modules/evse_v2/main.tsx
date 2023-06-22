@@ -559,6 +559,33 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
                                 desc={__("evse.content.enable_led_api_desc")}/>
                     </FormRow>
 
+                    <FormRow label={__("evse.content.boost_mode_desc")} label_muted={__("evse.content.boost_mode_desc_muted")}>
+                        <Switch desc={__("evse.content.boost_mode")}
+                                checked={boost_mode.enabled}
+                                onClick={async () => this.setState({boost_mode: {enabled: !boost_mode.enabled}})}/>
+                    </FormRow>
+
+                    {require_meter_enabled.config != 0 ? require_meter : <></>}
+
+                    <FormRow label={__("charge_limits.content.duration")} label_muted={__("charge_limits.content.duration_muted")}>
+                        <InputSelect items={[
+                            ["0", __("charge_limits.content.unlimited")],
+                            ["1", __("charge_limits.content.min15")],
+                            ["2", __("charge_limits.content.min30")],
+                            ["3", __("charge_limits.content.min45")],
+                            ["4", __("charge_limits.content.h1")],
+                            ["5", __("charge_limits.content.h2")],
+                            ["6", __("charge_limits.content.h3")],
+                            ["7", __("charge_limits.content.h4")],
+                            ["8", __("charge_limits.content.h6")],
+                            ["9", __("charge_limits.content.h8")],
+                            ["10", __("charge_limits.content.h12")]
+                        ]}
+                        value={s.duration}
+                        onValue={(v) => this.setState({duration: Number(v)})}/>
+                    </FormRow>
+                    {has_meter ? energy_settings : <></>}
+
                     <FormRow label={__("evse.content.button_configuration")} label_muted={__("evse.content.button_configuration_muted")}>
                         <InputSelect items={[
                                         ["0",__("evse.content.button_configuration_deactivated")],
@@ -638,33 +665,6 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
                                 checked={ev_wakeup.enabled}
                                 onClick={async () => this.setState({ev_wakeup: {enabled: !ev_wakeup.enabled}})}/>
                     </FormRow>
-
-                    <FormRow label={__("evse.content.boost_mode_desc")} label_muted={__("evse.content.boost_mode_desc_muted")}>
-                        <Switch desc={__("evse.content.boost_mode")}
-                                checked={boost_mode.enabled}
-                                onClick={async () => this.setState({boost_mode: {enabled: !boost_mode.enabled}})}/>
-                    </FormRow>
-
-                    {require_meter_enabled.config != 0 ? require_meter : <></>}
-
-                    <FormRow label={__("charge_limits.content.duration")} label_muted={__("charge_limits.content.duration_muted")}>
-                        <InputSelect items={[
-                            ["0", __("charge_limits.content.unlimited")],
-                            ["1", __("charge_limits.content.min15")],
-                            ["2", __("charge_limits.content.min30")],
-                            ["3", __("charge_limits.content.min45")],
-                            ["4", __("charge_limits.content.h1")],
-                            ["5", __("charge_limits.content.h2")],
-                            ["6", __("charge_limits.content.h3")],
-                            ["7", __("charge_limits.content.h4")],
-                            ["8", __("charge_limits.content.h6")],
-                            ["9", __("charge_limits.content.h8")],
-                            ["10", __("charge_limits.content.h12")]
-                        ]}
-                        value={s.duration}
-                        onValue={(v) => this.setState({duration: Number(v)})}/>
-                    </FormRow>
-                    {has_meter ? energy_settings : <></>}
                 </ConfigForm>
         </>;
     }
