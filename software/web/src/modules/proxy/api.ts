@@ -2,6 +2,7 @@ interface Device {
     uid: string,
     port: string,
     name: string
+    device_id: string
 }
 
 

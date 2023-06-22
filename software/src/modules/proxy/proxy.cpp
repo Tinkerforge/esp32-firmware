@@ -39,6 +39,7 @@ void Proxy::pre_setup()
             {"uid", Config::Str("", 0, 7)},
             {"port", Config::Str("", 0, 1)},
             {"name", Config::Str("", 0, 50)},
+            {"device_id", Config::Uint16(0)}
         })},
         0, 12, Config::type_id<Config::ConfObject>()
     );
@@ -129,6 +130,7 @@ void Proxy::setup()
         devices.get(devices.count() - 1)->get("uid")->updateString(String(uid));
         devices.get(devices.count() - 1)->get("port")->updateString(String(port_name));
         devices.get(devices.count() - 1)->get("name")->updateString(String(tf_get_device_display_name(device_id)));
+        devices.get(devices.count() - 1)->get("device_id")->updateUint(device_id);
         ++i;
     }
 
