@@ -37,6 +37,7 @@ import { IPConfiguration } from "src/ts/components/ip_configuration";
 import { Slash } from "react-feather";
 import { InputIP } from "src/ts/components/input_ip";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { InputSubnet } from "src/ts/components/input_subnet";
 
 type WireGuardConfig = API.getType['wireguard/config'];
 
@@ -143,10 +144,11 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
                     </FormRow>
 
                     <FormRow label={__("wireguard.content.allowed_subnet")}>
-                        <InputIP invalidFeedback={__("wireguard.content.allowed_subnet_invalid")}
-                            required
+                        <InputSubnet required
                             value={state.allowed_subnet}
-                            onValue={this.set("allowed_subnet")}/>
+                            onValue={this.set("allowed_subnet")}
+                            placeholder={__("component.ip_configuration.subnet_placeholder")}
+                        />
                     </FormRow>
                 </ConfigForm>
             </>

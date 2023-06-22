@@ -21,7 +21,7 @@ import { h, Context } from "preact";
 import {useContext} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 
-interface InputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
+export interface InputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
     idContext?: Context<string>
     items: [string, string][];
     onValue?: (value: string) => void

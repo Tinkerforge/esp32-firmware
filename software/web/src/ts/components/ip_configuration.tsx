@@ -26,6 +26,7 @@ import { parseIP, unparseIP } from "../util";
 
 import Collapse from 'react-bootstrap/Collapse';
 import { InputSelect } from "./input_select";
+import { InputSubnet } from "./input_subnet";
 
 export interface IPConfig {
     ip: string,
@@ -103,40 +104,11 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                          onValue={(v) => this.onUpdate("gateway", v)}/>
             </FormRow>
             <FormRow label={props.subnet_label ? props.subnet_label : __("component.ip_configuration.subnet")}>
-                <InputSelect classList={captured_subnet_name != "" ? "is-invalid" : ""}
+                <InputSubnet classList={captured_subnet_name != "" ? "is-invalid" : ""}
                         required={!props.showDhcp || !dhcp}
                         value={props.value.subnet}
                         onValue={(v) => this.onUpdate("subnet", v)}
                         placeholder={__("component.ip_configuration.subnet_placeholder")}
-                        items={[
-                            ["255.255.255.254", "/31 (255.255.255.254)"],
-                            ["255.255.255.252", "/30 (255.255.255.252)"],
-                            ["255.255.255.248", "/29 (255.255.255.248)"],
-                            ["255.255.255.240", "/28 (255.255.255.240)"],
-                            ["255.255.255.224", "/27 (255.255.255.224)"],
-                            ["255.255.255.192", "/26 (255.255.255.192)"],
-                            ["255.255.255.128", "/25 (255.255.255.128)"],
-
-                            ["255.255.255.0", "/24 (255.255.255.0)"],
-                            ["255.255.254.0", "/23 (255.255.254.0)"],
-                            ["255.255.252.0", "/22 (255.255.252.0)"],
-                            ["255.255.248.0", "/21 (255.255.248.0)"],
-                            ["255.255.240.0", "/20 (255.255.240.0)"],
-                            ["255.255.224.0", "/19 (255.255.224.0)"],
-                            ["255.255.192.0", "/18 (255.255.192.0)"],
-                            ["255.255.128.0", "/17 (255.255.128.0)"],
-
-                            ["255.255.0.0", "/16 (255.255.0.0)"],
-                            ["255.254.0.0", "/15 (255.254.0.0)"],
-                            ["255.252.0.0", "/14 (255.252.0.0)"],
-                            ["255.248.0.0", "/13 (255.248.0.0)"],
-                            ["255.240.0.0", "/12 (255.240.0.0)"],
-                            ["255.224.0.0", "/11 (255.224.0.0)"],
-                            ["255.192.0.0", "/10 (255.192.0.0)"],
-                            ["255.128.0.0", "/9 (255.128.0.0)"],
-
-                            ["255.0.0.0", "/8 (255.0.0.0)"],
-                        ]}
                     />
                 <div class="invalid-feedback">{__("component.ip_configuration.subnet_captures_prefix") + captured_subnet_name + " (" + captured_subnet_ip + ") " + __("component.ip_configuration.subnet_captures_suffix")}</div>
             </FormRow>
