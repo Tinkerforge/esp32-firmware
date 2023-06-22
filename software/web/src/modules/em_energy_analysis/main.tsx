@@ -825,7 +825,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
         this.uplot.delBand(null);
 
-        for (let i = 1; i < this.data.values.length; ++i) {
+        for (let i = this.data.values.length - 1; i > 0; --i) {
             if (!this.data.stacked[i]) {
                 for (let k = 0; k < this.data.values[i].length; ++k) {
                     let value = this.data.values[i][k];
@@ -886,9 +886,9 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         let uplot_values: number[][] = [];
         last_stacked_values = [];
 
-        for (let i = 0; i < this.data.keys.length; ++i) {
+        for (let i = this.data.values.length - 1; i >= 0; --i) {
             if (!this.data.stacked[i] || !this.series_visibility[this.data.keys[i]]) {
-                uplot_values.push(this.data.values[i]);
+                uplot_values.unshift(this.data.values[i]);
             }
             else {
                 let stacked_values: number[] = new Array(this.data.values[i].length);
@@ -904,7 +904,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     }
                 }
 
-                uplot_values.push(stacked_values);
+                uplot_values.unshift(stacked_values);
                 last_stacked_values = stacked_values;
             }
         }
@@ -913,7 +913,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
         let last_stacked_index: number = null;
 
-        for (let i = 1; i < this.data.keys.length; ++i) {
+        for (let i = this.data.values.length - 1; i > 0; --i) {
             if (this.data.stacked[i] && this.series_visibility[this.data.keys[i]]) {
                 if (last_stacked_index === null) {
                     this.uplot.delSeries(i);
