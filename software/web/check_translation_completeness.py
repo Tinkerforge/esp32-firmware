@@ -80,11 +80,11 @@ def main():
         mismatches += check_mismatch(translation.values(), key, '')
 
     if len(mismatches):
-        print("Mismatches:")
+        print("Case mismatches:")
         reported_mismatches = []
         for x in sorted(mismatches):
             if x not in reported_mismatches:
-                print("\t" + x[0] + " " + x[1] + " " + x[2])
+                print("\t", *[s.replace('\\xad', '') for s in x])
                 reported_mismatches.append(x)
 
     with open('./src/index.html', 'r', encoding='utf-8') as f:
