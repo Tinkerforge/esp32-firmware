@@ -404,7 +404,9 @@ def main():
         f.write('#define BUILD_NAME_{}\n'.format(name.upper()))
         f.write('#define BUILD_CONFIG_TYPE "{}"\n'.format(config_type))
         f.write('#define BUILD_DISPLAY_NAME "{}"\n'.format(display_name))
+        f.write('#define BUILD_DISPLAY_NAME_UPPER "{}"\n'.format(display_name.upper()))
         f.write('#define BUILD_REQUIRE_FIRMWARE_INFO {}\n'.format(require_firmware_info))
+        f.write('#define BUILD_MONITOR_SPEED {}\n'.format(monitor_speed))
         f.write('uint32_t build_timestamp(void);\n')
         f.write('const char *build_timestamp_hex_str(void);\n')
         f.write('const char *build_version_full_str(void);\n')
@@ -467,10 +469,7 @@ def main():
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
         '{{{module_decls}}}': '\n'.join(['{} {};'.format(x.camel, x.under) for x in backend_modules]),
         '{{{imodule_vector}}}': '\n    '.join(['imodules.push_back(&{});'.format(x.under) for x in backend_modules]),
-        '{{{display_name}}}': display_name,
-        '{{{display_name_upper}}}': display_name.upper(),
         '{{{module_init_config}}}': ',\n        '.join('{{"{0}", Config::Bool({0}.initialized)}}'.format(x.under) for x in backend_modules if not x.under.startswith("hidden_")),
-        '{{{monitor_speed}}}': str(monitor_speed),
     })
 
 

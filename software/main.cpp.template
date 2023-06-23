@@ -42,7 +42,7 @@
 
 BootStage boot_stage = BootStage::STATIC_INITIALIZATION;
 
-const char* DISPLAY_NAME = "{{{display_name}}}";
+const char* DISPLAY_NAME = BUILD_DISPLAY_NAME;
 
 {{{module_decls}}}
 
@@ -159,11 +159,11 @@ static void register_default_urls(void) {
 
 void setup(void) {
     boot_stage = BootStage::PRE_INIT;
-    Serial.begin({{{monitor_speed}}});
+    Serial.begin(BUILD_MONITOR_SPEED);
 
     logger.setup();
 
-    logger.printfln("    **** TINKERFORGE {{{display_name_upper}}} V%s ****", build_version_full_str());
+    logger.printfln("    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str());
     logger.printfln("         %dK RAM SYSTEM   %d HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     logger.printfln("READY.");
 
