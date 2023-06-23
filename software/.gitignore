@@ -11,6 +11,7 @@ src/**/*.embedded.h
 src/**/*.embedded.cpp
 src/main.cpp
 src/modules.h
+src/modules.cpp
 src/build.h
 src/build.cpp
 src/modules/pwa/manifest.json

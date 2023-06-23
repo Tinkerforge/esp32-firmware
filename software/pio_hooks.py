@@ -466,10 +466,6 @@ def main():
         env.Replace(SRC_FILTER=[' '.join(build_src_filter)])
 
     specialize_template("main.cpp.template", os.path.join("src", "main.cpp"), {
-        '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
-        '{{{module_decls}}}': '\n'.join(['{} {};'.format(x.camel, x.under) for x in backend_modules]),
-        '{{{imodule_vector}}}': '\n    '.join(['imodules.push_back(&{});'.format(x.under) for x in backend_modules]),
-        '{{{module_init_config}}}': ',\n        '.join('{{"{0}", Config::Bool({0}.initialized)}}'.format(x.under) for x in backend_modules if not x.under.startswith("hidden_")),
     })
 
 
@@ -486,6 +482,12 @@ def main():
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
         '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE() {}'.format(x, "1" if x in backend_mods_upper else "0") for x in all_mods]),
         '{{{module_extern_decls}}}': '\n'.join(['extern {} {};'.format(x.camel, x.under) for x in backend_modules]),
+    })
+
+    specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
+        '{{{module_decls}}}': '\n'.join(['{} {};'.format(x.camel, x.under) for x in backend_modules]),
+        '{{{imodule_vector}}}': '\n    '.join(['imodules->push_back(&{});'.format(x.under) for x in backend_modules]),
+        '{{{module_init_config}}}': ',\n        '.join('{{"{0}", Config::Bool({0}.initialized)}}'.format(x.under) for x in backend_modules if not x.under.startswith("hidden_")),
     })
 
     # Handle frontend modules

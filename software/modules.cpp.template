@@ -1,0 +1,28 @@
+// WARNING: Edit only modules.cpp.template. Do not edit modules.cpp.
+
+#include "config.h"
+#include "module.h"
+#include "modules.h"
+#include "modules_main.h"
+
+{{{module_decls}}}
+
+void modules_get_imodules(std::vector<IModule*> *imodules)
+{
+    // Enforce that all back-end modules implement the IModule interface.
+    // If you receive an error like "no matching function for call to 'std::vector<IModule*>::push_back(MyModule*)'",
+    // you have to add the IModule interface to your back-end module's class declaration:
+    // class MyModule final : public IModule {
+    //     // content here
+    // }
+    {{{imodule_vector}}}
+}
+
+ConfigRoot modules_get_init_config()
+{
+    return Config::Object({
+        // Fake that the event_log is a module for now.
+        {"event_log", Config::Bool(true)},
+        {{{module_init_config}}}
+    });
+}

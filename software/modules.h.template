@@ -1,3 +1,5 @@
+// WARNING: Edit only modules.h.template. Do not edit modules.h.
+
 #pragma once
 
 {{{module_includes}}}

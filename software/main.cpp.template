@@ -24,13 +24,14 @@
 #include <string.h>
 
 #include "index_html.embedded.h"
-{{{module_includes}}}
 
 #include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
 #include "web_server.h"
 #include "build.h"
+#include "module.h"
+#include "modules_main.h"
 #include "tools.h"
 
 #ifndef TF_ESP_PREINIT
@@ -43,8 +44,6 @@
 BootStage boot_stage = BootStage::STATIC_INITIALIZATION;
 
 const char* DISPLAY_NAME = BUILD_DISPLAY_NAME;
-
-{{{module_decls}}}
 
 struct loop_chain {
     struct loop_chain *next;
@@ -179,14 +178,8 @@ void setup(void) {
 
     boot_stage = BootStage::PRE_SETUP;
 
-    // Enforce that all back-end modules implement the IModule interface.
-    // If you receive an error like "no matching function for call to 'std::vector<IModule*>::push_back(MyModule*)'",
-    // you have to add the IModule interface to your back-end module's class declaration:
-    // class MyModule final : public IModule {
-    //     // content here
-    // }
     std::vector<IModule*> imodules;
-    {{{imodule_vector}}}
+    modules_get_imodules(&imodules);
 
     task_scheduler.pre_setup();
     api.pre_setup();
@@ -205,11 +198,7 @@ void setup(void) {
         imodule->setup();
     }
 
-    modules = Config::Object({
-        // Fake that the event_log is a module for now.
-        {"event_log", Config::Bool(true)},
-        {{{module_init_config}}}
-    });
+    modules = modules_get_init_config();
 
     config_post_setup();
 
