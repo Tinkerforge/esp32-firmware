@@ -114,6 +114,6 @@ export interface identity {
     device_identifier: number
 }
 
-export interface led_config {
+export interface led_configuration {
     enable_api: boolean
 }

@@ -36,13 +36,13 @@ void EvseLed::pre_setup()
 
 void EvseLed::setup()
 {
-    api.restorePersistentConfig("evse/led_config", &config);
+    api.restorePersistentConfig("evse/led_configuration", &config);
     config_in_use = config;
 }
 
 void EvseLed::register_urls()
 {
-    api.addPersistentConfig("evse/led_config", &config, {}, 1000);
+    api.addPersistentConfig("evse/led_configuration", &config, {}, 1000);
 
     api.addCommand("evse/led_update", &led, {}, [this](){
         this->set_api(led.get("indication")->asEnum<EvseLed::Blink>(), led.get("duration")->asUint());

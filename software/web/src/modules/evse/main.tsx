@@ -56,7 +56,7 @@ interface EVSESettingsState {
     boost_mode: API.getType['evse/boost_mode'];
     auto_start_charging: API.getType['evse/auto_start_charging'];
     require_meter_enabled: API.getType['require_meter/config'];
-    led_config: API.getType['evse/led_config'];
+    led_configuration: API.getType['evse/led_configuration'];
     meter_abs: number;
     evse_uptime: number;
 }
@@ -457,8 +457,8 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
             this.setState({require_meter_enabled: API.get("require_meter/config")});
         })
 
-        util.addApiEventListener("evse/led_config", () => {
-            this.setState({led_config: API.get("evse/led_config")});
+        util.addApiEventListener("evse/led_configuration", () => {
+            this.setState({led_configuration: API.get("evse/led_configuration")});
         })
     }
 
@@ -467,7 +467,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
         await API.save('evse/external_enabled', {"enabled": this.state.slots[EVSE_SLOT_EXTERNAL].active}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, __("evse.script.save_failed"));
         await API.save('require_meter/config', {"config": this.state.require_meter_enabled.config}, __("evse.script.save_failed"));
-        await API.save('evse/led_config', this.state.led_config, __("evse.script.save_failed"));
+        await API.save('evse/led_configuration', this.state.led_configuration, __("evse.script.save_failed"));
         super.sendSave(t, cfg);
     }
 
@@ -476,7 +476,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
         await API.save('evse/external_enabled', {"enabled": false}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": false}, __("evse.script.save_failed"));
         await API.reset('require_meter/config',__("evse.script.save_failed"));
-        await API.reset('evse/led_config', __("evse.script.save_failed"));
+        await API.reset('evse/led_configuration', __("evse.script.save_failed"));
         super.sendReset(t);
     }
 
@@ -491,7 +491,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
             boost_mode,
             auto_start_charging,
             require_meter_enabled,
-            led_config} = s;
+            led_configuration} = s;
 
         const has_meter = API.hasFeature("meter");
 
@@ -549,8 +549,8 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
                 </FormRow>
 
                 <FormRow label={__("evse.content.enable_led_api")}>
-                    <Switch onClick={async () => this.setState({led_config: {enable_api: !led_config.enable_api}})}
-                            checked={led_config.enable_api}
+                    <Switch onClick={async () => this.setState({led_configuration: {enable_api: !led_configuration.enable_api}})}
+                            checked={led_configuration.enable_api}
                             desc={__("evse.content.enable_led_api_desc")}/>
                 </FormRow>
 
