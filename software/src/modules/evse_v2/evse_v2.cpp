@@ -578,7 +578,7 @@ String EVSEV2::get_evse_debug_header()
            "unused (16),"
            "unused (17),"
            "unused (18),"
-           "unused (19),"
+           "unused (19)"
            "\"";
 }
 
