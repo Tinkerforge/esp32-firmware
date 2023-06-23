@@ -259,7 +259,7 @@ void EVSEV2::pre_setup()
     require_meter_enabled_update = require_meter_enabled;
 
     gp_output = Config::Object({
-        {"high_impedance", Config::Uint(0, 0, 1)}
+        {"gp_output", Config::Uint(0, 0, 1)}
     });
 
     gp_output_update = gp_output;
@@ -1135,7 +1135,7 @@ void EVSEV2::register_urls()
 
     api.addState("evse/gp_output", &gp_output, {}, 1000);
     api.addCommand("evse/gp_output_update", &gp_output_update, {}, [this](){
-        is_in_bootloader(tf_evse_v2_set_gp_output(&device, gp_output_update.get("high_impedance")->asUint()));
+        is_in_bootloader(tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()));
     }, true);
 
     this->DeviceModule::register_urls();
@@ -1454,7 +1454,7 @@ void EVSEV2::update_all_data()
 
     require_meter_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_REQUIRE_METER]));
 
-    gp_output.get("high_impedance")->updateUint(gpio[10] ? TF_EVSE_V2_OUTPUT_HIGH_IMPEDANCE : TF_EVSE_V2_OUTPUT_CONNECTED_TO_GROUND);
+    gp_output.get("gp_output")->updateUint(gpio[10] ? TF_EVSE_V2_OUTPUT_CONNECTED_TO_GROUND : TF_EVSE_V2_OUTPUT_HIGH_IMPEDANCE);
 
 #if MODULE_WATCHDOG_AVAILABLE()
     static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable");
