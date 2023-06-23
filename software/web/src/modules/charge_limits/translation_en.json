@@ -1,7 +1,6 @@
 {
     "charge_limits": {
         "content": {
-            "reset": "Reset",
             "overridden": "(active)",
             "configured": "(configured)",
             "left": " left",
@@ -11,8 +10,6 @@
             "duration_muted": "May be overwritten for a charge on the status page.",
             "energy": "Charging energy limit",
             "energy_muted": "May be overwritten for a charge on the status page.",
-            "time_left": "Charging time left",
-            "energy_left": "Energy left",
             "unlimited": "Unlimited",
             "min15": "15 Minutes",
             "min30": "30 Minutes",

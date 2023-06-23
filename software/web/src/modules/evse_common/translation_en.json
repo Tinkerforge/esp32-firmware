@@ -125,7 +125,6 @@
         "script": {
             "error_code": "Error code",
             "set_charging_current_failed": "Failed to set charging current",
-            "auto_start_charging_update": "Failed to set auto charge.",
             "start_charging_failed": "Failed to start charging",
             "stop_charging_failed": "Failed to stop charging",
             "tab_close_warning": "Charge log capture will be aborted if this tab is closed.",

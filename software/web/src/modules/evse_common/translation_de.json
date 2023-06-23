@@ -125,7 +125,6 @@
         "script": {
             "error_code": "Fehlercode",
             "set_charging_current_failed": "Konnte Ladestrom nicht setzen",
-            "auto_start_charging_update": "Manuelle Ladefregabe (de)aktivieren fehlgeschlagen.",
             "start_charging_failed": "Ladestart auslösen fehlgeschlagen",
             "stop_charging_failed": "Ladestop auslösen fehlgeschlagen",
             "tab_close_warning": "Die Aufzeichnung des Ladecontroller-Logs wird abgebrochen, wenn der Tab geschlossen wird.",

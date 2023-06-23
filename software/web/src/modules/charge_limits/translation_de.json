@@ -1,7 +1,6 @@
 {
     "charge_limits": {
         "content": {
-            "reset": "Reset",
             "overridden": "(aktiv)",
             "configured": "(konfiguriert)",
             "left": " verbleibend",
@@ -11,8 +10,6 @@
             "duration_muted": "Kann auf der Statusseite für einen Ladevorgang überschrieben werden.",
             "energy": "Energielimit",
             "energy_muted": "Kann auf der Statusseite für einen Ladevorgang überschrieben werden.",
-            "time_left": "Ladezeit übrig",
-            "energy_left": "Energie übrig",
             "unlimited": "Unbegrenzt",
             "min15": "15 Minuten",
             "min30": "30 Minuten",
