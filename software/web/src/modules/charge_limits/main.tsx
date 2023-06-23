@@ -28,7 +28,7 @@ import { __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "src/ts/components/input_select";
 
-function ChargeLimitsOverride() {
+function ChargeLimitsStatus() {
     if (!util.render_allowed() || !API.hasFeature("evse"))
         return <></>;
 
@@ -171,7 +171,7 @@ function ChargeLimitsOverride() {
         </>
 }
 
-render(<ChargeLimitsOverride/>, $('#charge_limits_override')[0]);
+render(<ChargeLimitsStatus/>, $('#charge_limits_override')[0]);
 
 export function init()
 {
