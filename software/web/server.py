@@ -56,7 +56,6 @@ def ws_thread_fn(q: queue.Queue):
                     for ws_queue in ws_queues:
                         ws_queue.put(text)
             except Exception as e:
-                traceback.print_exc()
                 break
 
 
