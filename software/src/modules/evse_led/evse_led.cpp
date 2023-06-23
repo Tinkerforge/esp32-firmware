@@ -44,7 +44,8 @@ void EvseLed::register_urls()
 {
     api.addPersistentConfig("evse/led_configuration", &config, {}, 1000);
 
-    api.addCommand("evse/led_update", &led, {}, [this](){
+    // Has to be named this way, because evse/indicator_led is the corresponding read API.
+    api.addCommand("evse/indicator_led_update", &led, {}, [this](){
         this->set_api(led.get("indication")->asEnum<EvseLed::Blink>(), led.get("duration")->asUint());
     }, true);
 }
