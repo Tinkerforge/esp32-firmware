@@ -465,10 +465,6 @@ def main():
 
         env.Replace(SRC_FILTER=[' '.join(build_src_filter)])
 
-    specialize_template("main.cpp.template", os.path.join("src", "main.cpp"), {
-    })
-
-
     all_mods = []
     for existing_backend_module in os.listdir(os.path.join('src', 'modules')):
         if not os.path.isdir(os.path.join('src', 'modules', existing_backend_module)):
