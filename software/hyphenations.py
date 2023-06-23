@@ -480,7 +480,19 @@ de_hyph = [
     "ein-phasiger",
     "Ein-phasiger",
     "ein-phasiges",
-    "Phasen-an-for-de-rung"
+    "Phasen-an-for-de-rung",
+    "Blink-muster",
+    "Fehler-blinken",
+    "Blink-dauer",
+    "Fehler-schutz",
+    "Fehler-schutz-test",
+    "Frei-ge-geben",
+    "Milli-sekunden",
+    "Phasen-strom",
+    "Phasen-stroms",
+    "Start-phase",
+    "Zähler-über-wach-ung",
+    "ef-fi-zi-ent-er",
 ]
 
 en_hyph = [
@@ -614,7 +626,10 @@ en_hyph = [
     "diff-er-ence",
     "Elec-tricity",
     "elec-tricity",
-    "over-written"
+    "over-written",
+    "in-di-ca-tion",
+    "mal-function",
+    "milli-seconds"
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
