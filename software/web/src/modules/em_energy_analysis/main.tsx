@@ -1500,7 +1500,15 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return;
         }
 
-        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false], bars: [false]};
+        uplot_data = {
+            update_timestamp: now,
+            use_timestamp: now,
+            keys: [null],
+            names: [null],
+            values: [null],
+            stacked: [false],
+            bars: [false],
+        };
 
         let slot_count: number = 0;
         let energy_manager_data = this.energy_manager_5min_cache[key];
@@ -1754,7 +1762,15 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return;
         }
 
-        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false], bars: [false]};
+        uplot_data = {
+            update_timestamp: now,
+            use_timestamp: now,
+            keys: [null],
+            names: [null],
+            values: [null],
+            stacked: [false],
+            bars: [false],
+        };
 
         let slot_count: number = 0;
         let energy_manager_data = this.energy_manager_5min_cache[key];
@@ -1834,7 +1850,15 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return;
         }
 
-        uplot_data = {update_timestamp: now, use_timestamp: now, keys: [null], names: [null], values: [null], stacked: [false], bars: [false]};
+        uplot_data = {
+            update_timestamp: now,
+            use_timestamp: now,
+            keys: [null],
+            names: [null],
+            values: [null],
+            stacked: [false],
+            bars: [false],
+        };
 
         let slot_count: number = 0;
         let energy_manager_data = this.energy_manager_daily_cache[key];
