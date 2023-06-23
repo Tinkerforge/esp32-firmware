@@ -143,7 +143,7 @@
             "acc_blocked": "Blockiert",
             "by": "durch",
 
-            "save_failed": "(De-)Aktivieren des Lastmanagements fehlgeschlagen",
+            "save_failed": "Speichern der Ladeeinstellungen fehlgeschlagen",
 
             "reset_slot_failed": "Freigeben der Stromgrenze fehlgeschlagen",
 

@@ -26,7 +26,7 @@
 
             "todo": "Ideen bzw. Wünsche? Schreib eine Mail an info@tinkerforge.com",
             "gpio_in": "Konfigurierbarer Eingang",
-            "gpio_in_muted": "kann als GPIO 16 gelesen werden",
+            "gpio_in_muted": "Kann als GPIO 16 gelesen werden",
             "gpio_out": "Konfigurierbarer Ausgang",
             "gpio_out_muted": "<a href=\"https://de.wikipedia.org/wiki/Open-Collector-Ausgang\">Open-Collector-Ausgang</a>",
             "gpio_out_high": "Hochohmig",

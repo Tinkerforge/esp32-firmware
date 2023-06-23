@@ -26,7 +26,7 @@
             "topic_prefix_invalid": "The topic prefix can not start with $ or contain a # or +.",
             "client_name": "Client ID",
             "interval": "Maximum send interval",
-            "interval_muted": "messages are only sent if the payload has changed",
+            "interval_muted": "Messages are only sent if the payload has changed.",
             "auto_discovery_mode": "Discovery mode",
             "auto_discovery_mode_muted": "Support auto discovery by home automation.",
             "auto_discovery_mode_disabled": "Disabled",
