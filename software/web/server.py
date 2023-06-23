@@ -42,6 +42,8 @@ def ws_thread_fn(q: queue.Queue):
                 ws.send(to_send)
             except queue.Empty:
                 pass
+            except Exception:
+                break
 
             try:
                 text = ws.recv()
@@ -55,7 +57,7 @@ def ws_thread_fn(q: queue.Queue):
                         ws_queue.put(text)
             except Exception as e:
                 traceback.print_exc()
-                pass
+                break
 
 
 def make_absolute_path(path):
