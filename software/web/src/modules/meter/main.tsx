@@ -255,7 +255,22 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     },
                 },
                 {
-                    size: 55,
+                    size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
+                        let size = 0;
+
+                        if (values) {
+                            self.ctx.save();
+                            self.ctx.font = self.axes[axisIdx].font;
+
+                            for (let i = 0; i < values.length; ++i) {
+                                size = Math.max(size, self.ctx.measureText(values[i]).width);
+                            }
+
+                            self.ctx.restore();
+                        }
+
+                        return Math.ceil(size / devicePixelRatio) + 25;
+                    },
                     values: (self: uPlot, splits: number[]) => {
                         let values: string[] = new Array(splits.length);
 
