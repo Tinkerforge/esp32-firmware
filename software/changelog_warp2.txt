@@ -369,7 +369,7 @@
 - Allow clicking stop on status page if charger is blocked on another slot
 - Show error if electricity price is obviously wrong
 
-<unknown>: 2.1.3 (<unknown>)
+2023-06-23: 2.1.3 (0771049a)
 - Add PWA-style bookmark support
 - Add option to require up-to-date meter value when starting a charge. Automatically enabled the first time a meter is found.
 - Add automatic DC fault protector test after each charging session and at least every 24 hours (EVSE 2.0 Bricklet firmware 2.1.13)
