@@ -591,6 +591,7 @@ interface UplotWrapperProps {
     y_min?: number;
     y_max?: number;
     y_unit: string;
+    y_label: string;
     y_digits: number;
     y_skip_upper?: boolean;
     y_sync_ref?: RefObject<UplotFlagsWrapper>;
@@ -610,6 +611,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     y_max: number = 0;
     y_size: number = 0;
     y_other_size: number = 0;
+    y_label_size: number = 20;
 
     shouldComponentUpdate() {
         return false;
@@ -698,6 +700,10 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     },
                 },
                 {
+                    label: this.props.y_label,
+                    labelSize: this.y_label_size,
+                    labelGap: 2,
+                    labelFont: 'bold 14px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                     size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
                         let size = 0;
 
@@ -713,10 +719,10 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         }
 
                         this.y_size = Math.ceil(size / devicePixelRatio) + 20;
-                        size = Math.max(this.y_size, this.y_other_size);
+                        size = Math.max(this.y_size + this.y_label_size, this.y_other_size) - this.y_label_size;
 
                         if (this.props.y_sync_ref && this.props.y_sync_ref.current) {
-                            this.props.y_sync_ref.current.set_y_other_size(this.y_size);
+                            this.props.y_sync_ref.current.set_y_other_size(this.y_size + this.y_label_size);
                         }
 
                         return size;
@@ -1123,9 +1129,10 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
                                               y_min={0}
                                               y_max={1500}
                                               y_unit={"W"}
+                                              y_label={__("em_energy_analysis.script.power") + " [Watt]"}
                                               y_digits={0}
                                               default_fill={true}
-                                              padding={[null, 15, null, null] as uPlot.Padding} />
+                                              padding={[null, 15, null, 5] as uPlot.Padding} />
                             </UplotLoader>
                         </div>
                     </div>
@@ -2695,7 +2702,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                                    sync={this.uplot_sync}
                                                    legend_time_label={__("em_energy_analysis.script.time_5min")}
                                                    legend_time_with_minutes={true}
-                                                   legend_value_prefix=""
+                                                   legend_value_prefix={""}
                                                    legend_div_ref={this.uplot_legend_div_5min_flags_ref}
                                                    x_format={{hour: '2-digit', minute: '2-digit'}}
                                                    x_padding_factor={0}
@@ -2717,6 +2724,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               y_min={0}
                                               y_max={100}
                                               y_unit={"W"}
+                                              y_label={__("em_energy_analysis.script.power") + " [Watt]"}
                                               y_digits={0}
                                               y_skip_upper={true}
                                               y_sync_ref={this.uplot_wrapper_5min_flags_ref}
@@ -2736,13 +2744,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               show={false}
                                               legend_time_label={__("em_energy_analysis.script.time_daily")}
                                               legend_time_with_minutes={false}
-                                              legend_value_prefix=""
+                                              legend_value_prefix={""}
                                               aspect_ratio={3}
                                               x_format={{month: '2-digit', day: '2-digit'}}
                                               x_padding_factor={0.015}
                                               y_min={0}
                                               y_max={10}
                                               y_unit={"kWh"}
+                                              y_label={__("em_energy_analysis.script.energy") + " [kWh]"}
                                               y_digits={2}
                                               default_fill={true}
                                               padding={[null, 5, null, null] as uPlot.Padding} />

@@ -255,6 +255,10 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     },
                 },
                 {
+                    label: __("meter.script.power") + " [Watt]",
+                    labelSize: 20,
+                    labelGap: 2,
+                    labelFont: 'bold 14px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                     size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
                         let size = 0;
 
@@ -269,7 +273,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                             self.ctx.restore();
                         }
 
-                        return Math.ceil(size / devicePixelRatio) + 25;
+                        return Math.ceil(size / devicePixelRatio) + 20;
                     },
                     values: (self: uPlot, splits: number[]) => {
                         let values: string[] = new Array(splits.length);
@@ -289,6 +293,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     }
                 },
             },
+            padding: [null, 20, null, 5] as uPlot.Padding,
             plugins: [
                 {
                     hooks: {
