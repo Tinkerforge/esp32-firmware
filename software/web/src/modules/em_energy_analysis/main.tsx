@@ -376,7 +376,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                             self.ctx.restore();
                         }
 
-                        this.y_size = Math.ceil(size / devicePixelRatio) + 15;
+                        this.y_size = Math.ceil(size / devicePixelRatio) + 10;
                         size = Math.max(this.y_size, this.y_other_size);
 
                         if (this.props.y_sync_ref && this.props.y_sync_ref.current) {
@@ -395,7 +395,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     },
                 },
             },
-            padding: [null, null, 0, null] as uPlot.Padding,
+            padding: [null, 5, 0, null] as uPlot.Padding,
             legend: {
                 mount: (self: uPlot, legend: HTMLElement) => {
                     if (this.props.legend_div_ref.current) {
@@ -712,7 +712,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                             self.ctx.restore();
                         }
 
-                        this.y_size = Math.ceil(size / devicePixelRatio) + 25;
+                        this.y_size = Math.ceil(size / devicePixelRatio) + 20;
                         size = Math.max(this.y_size, this.y_other_size);
 
                         if (this.props.y_sync_ref && this.props.y_sync_ref.current) {
@@ -1124,7 +1124,8 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
                                               y_max={1500}
                                               y_unit={"W"}
                                               y_digits={0}
-                                              default_fill={true} />
+                                              default_fill={true}
+                                              padding={[null, 15, null, null] as uPlot.Padding} />
                             </UplotLoader>
                         </div>
                     </div>
@@ -2719,7 +2720,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               y_digits={0}
                                               y_skip_upper={true}
                                               y_sync_ref={this.uplot_wrapper_5min_flags_ref}
-                                              padding={[0, null, null, null] as uPlot.Padding}/>
+                                              padding={[0, 5, null, null] as uPlot.Padding}/>
                                 <div class="uplot u-hz u-time-in-legend-alone" ref={this.uplot_legend_div_5min_flags_ref} style="width: 100%; visibility: hidden;" />
                                 <div class="uplot u-hz u-hide-first-series-in-legend" ref={this.uplot_legend_div_5min_power_ref} style="width: 100%; visibility: hidden;" />
                             </UplotLoader>
@@ -2743,7 +2744,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               y_max={10}
                                               y_unit={"kWh"}
                                               y_digits={2}
-                                              default_fill={true} />
+                                              default_fill={true}
+                                              padding={[null, 5, null, null] as uPlot.Padding} />
                             </UplotLoader>
                         </div>
                     </div>
