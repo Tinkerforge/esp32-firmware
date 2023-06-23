@@ -203,8 +203,8 @@ export function uPlotTimelinePlugin(options: any) {
                         if (u.series[i].show) {
                             let label = u.series[i].label;
 
-                            if (label.length > 10) {
-                                label = label.slice(0, 10) + '\u2026';
+                            if (label.length > 15) {
+                                label = label.slice(0, 15) + '\u2026';
                             }
 
                             values.push(label);

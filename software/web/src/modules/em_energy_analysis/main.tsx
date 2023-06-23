@@ -261,6 +261,7 @@ interface UplotFlagsWrapperProps {
     legend_div_ref: RefObject<HTMLDivElement>;
     x_format: Intl.DateTimeFormatOptions;
     x_padding_factor: number;
+    y_sync_ref?: RefObject<UplotWrapper>;
 }
 
 class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
@@ -271,9 +272,10 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
     visible: boolean = false;
     div_ref = createRef();
     observer: ResizeObserver;
-    bar_height = 20;
-    bar_spacing = 5;
-    x_axis_height = 30;
+    bar_height: number = 20;
+    bar_spacing: number = 5;
+    y_size: number = 0;
+    y_other_size: number = 0;
 
     shouldComponentUpdate() {
         return false;
@@ -332,7 +334,10 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             ],
             axes: [
                 {
-                    size: this.x_axis_height,
+                    size: 1,// with size = 0 the width of the whole plot changes relative to the power plot
+                    ticks: {
+                        size: 0
+                    },
                     incrs: [
                         60,
                         60 * 2,
@@ -357,7 +362,29 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     side: 0,
                 },
                 {
-                    size: 80,
+                    size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
+                        let size = 0;
+
+                        if (values) {
+                            self.ctx.save();
+                            self.ctx.font = self.axes[axisIdx].font;
+
+                            for (let i = 0; i < values.length; ++i) {
+                                size = Math.max(size, self.ctx.measureText(values[i]).width);
+                            }
+
+                            self.ctx.restore();
+                        }
+
+                        this.y_size = Math.ceil(size / devicePixelRatio) + 15;
+                        size = Math.max(this.y_size, this.y_other_size);
+
+                        if (this.props.y_sync_ref && this.props.y_sync_ref.current) {
+                            this.props.y_sync_ref.current.set_y_other_size(this.y_size);
+                        }
+
+                        return size;
+                    },
                 },
             ],
             scales: {
@@ -452,7 +479,19 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
         return {
             width: div.clientWidth,
-            height: count * this.bar_height + Math.max(count - 1, 0) * this.bar_spacing + this.x_axis_height,
+            height: 1 + count * this.bar_height + Math.max(count - 1, 0) * this.bar_spacing + 17,
+        }
+    }
+
+    set_y_other_size(size: number) {
+        if (this.y_other_size == size) {
+            return;
+        }
+
+        this.y_other_size = size;
+
+        if (this.y_other_size != this.y_size) {
+            this.resize();
         }
     }
 
@@ -553,7 +592,10 @@ interface UplotWrapperProps {
     y_max?: number;
     y_unit: string;
     y_digits: number;
+    y_skip_upper?: boolean;
+    y_sync_ref?: RefObject<UplotFlagsWrapper>;
     default_fill?: boolean;
+    padding?: uPlot.Padding;
 }
 
 class UplotWrapper extends Component<UplotWrapperProps, {}> {
@@ -566,6 +608,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     observer: ResizeObserver;
     y_min: number = 0;
     y_max: number = 0;
+    y_size: number = 0;
+    y_other_size: number = 0;
 
     shouldComponentUpdate() {
         return false;
@@ -594,22 +638,14 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             this.visible = false;
         });
 
-        let get_size = () => {
-            let div = this.div_ref.current;
-            let aspect_ratio = parseFloat(getComputedStyle(div).aspectRatio);
+        let padding: uPlot.Padding = this.props.padding;
 
-            if (isNaN(aspect_ratio)) {
-                aspect_ratio = this.props.aspect_ratio;
-            }
-
-            return {
-                width: div.clientWidth,
-                height: Math.floor((div.clientWidth + (window.innerWidth - document.documentElement.clientWidth)) / aspect_ratio),
-            }
+        if (!padding) {
+            padding = [null, null, null, null] as uPlot.Padding;
         }
 
         let options = {
-            ...get_size(),
+            ...this.get_size(),
             pxAlign: 0,
             cursor: {
                 drag: {
@@ -662,17 +698,44 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     },
                 },
                 {
-                    size: 80,
+                    size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
+                        let size = 0;
+
+                        if (values) {
+                            self.ctx.save();
+                            self.ctx.font = self.axes[axisIdx].font;
+
+                            for (let i = 0; i < values.length; ++i) {
+                                size = Math.max(size, self.ctx.measureText(values[i]).width);
+                            }
+
+                            self.ctx.restore();
+                        }
+
+                        this.y_size = Math.ceil(size / devicePixelRatio) + 25;
+                        size = Math.max(this.y_size, this.y_other_size);
+
+                        if (this.props.y_sync_ref && this.props.y_sync_ref.current) {
+                            this.props.y_sync_ref.current.set_y_other_size(this.y_size);
+                        }
+
+                        return size;
+                    },
                     values: (self: uPlot, splits: number[]) => {
                         let values: string[] = new Array(splits.length);
 
                         for (let i = 0; i < splits.length; ++i) {
-                            values[i] = util.toLocaleFixed(splits[i], this.props.y_digits);
+                            if (this.props.y_skip_upper && splits[i] >= this.y_max) {
+                                values[i] = '';
+                            }
+                            else {
+                                values[i] = util.toLocaleFixed(splits[i], this.props.y_digits);
+                            }
                         }
 
                         return values;
                     },
-                }
+                },
             ],
             scales: {
                 x: {
@@ -694,6 +757,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     }
                 },
             },
+            padding: padding,
             plugins: [
                 {
                     hooks: {
@@ -731,7 +795,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                 ctx.translate(-offset, -offset);
 
                                 ctx.restore();
-                            }
+                            },
                         ],
                     },
                 },
@@ -741,29 +805,19 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         let div = this.div_ref.current;
         this.uplot = new uPlot(options, [], div);
 
-        let resize = () => {
-            let size = get_size();
-
-            if (size.width == 0 || size.height == 0) {
-                return;
-            }
-
-            this.uplot.setSize(size);
-        };
-
         try {
             this.observer = new ResizeObserver(() => {
-                resize();
+                this.resize();
             });
 
             this.observer.observe(div);
         } catch (e) {
             setInterval(() => {
-                resize();
+                this.resize();
             }, 500);
 
             window.addEventListener("resize", e => {
-                resize();
+                this.resize();
             });
         }
 
@@ -774,6 +828,42 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
     render(props?: UplotWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
         return <div ref={this.div_ref} class={props.class} style={`display: ${props.show ? 'block' : 'none'}; visibility: hidden;`} />;
+    }
+
+    resize() {
+        let size = this.get_size();
+
+        if (size.width == 0 || size.height == 0) {
+            return;
+        }
+
+        this.uplot.setSize(size);
+    };
+
+    get_size() {
+        let div = this.div_ref.current;
+        let aspect_ratio = parseFloat(getComputedStyle(div).aspectRatio);
+
+        if (isNaN(aspect_ratio)) {
+            aspect_ratio = this.props.aspect_ratio;
+        }
+
+        return {
+            width: div.clientWidth,
+            height: Math.floor((div.clientWidth + (window.innerWidth - document.documentElement.clientWidth)) / aspect_ratio),
+        }
+    }
+
+    set_y_other_size(size: number) {
+        if (this.y_other_size == size) {
+            return;
+        }
+
+        this.y_other_size = size;
+
+        if (this.y_other_size != this.y_size) {
+            this.resize();
+        }
     }
 
     set_loading() {
@@ -2607,7 +2697,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                                    legend_value_prefix=""
                                                    legend_div_ref={this.uplot_legend_div_5min_flags_ref}
                                                    x_format={{hour: '2-digit', minute: '2-digit'}}
-                                                   x_padding_factor={0} />
+                                                   x_padding_factor={0}
+                                                   y_sync_ref={this.uplot_wrapper_5min_power_ref} />
                                 <UplotWrapper ref={this.uplot_wrapper_5min_power_ref}
                                               id="em_energy_analysis_5min_power_chart"
                                               class="em-energy-analysis-chart"
@@ -2625,7 +2716,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                               y_min={0}
                                               y_max={100}
                                               y_unit={"W"}
-                                              y_digits={0} />
+                                              y_digits={0}
+                                              y_skip_upper={true}
+                                              y_sync_ref={this.uplot_wrapper_5min_flags_ref}
+                                              padding={[0, null, null, null] as uPlot.Padding}/>
                                 <div class="uplot u-hz u-time-in-legend-alone" ref={this.uplot_legend_div_5min_flags_ref} style="width: 100%; visibility: hidden;" />
                                 <div class="uplot u-hz u-hide-first-series-in-legend" ref={this.uplot_legend_div_5min_power_ref} style="width: 100%; visibility: hidden;" />
                             </UplotLoader>
