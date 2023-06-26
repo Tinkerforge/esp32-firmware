@@ -20,7 +20,6 @@
 #pragma once
 
 #include "device_module.h"
-#include "config.h"
 #include "bindings/bricklet_real_time_clock_v2.h"
 #include "real_time_clock_v2_bricklet_firmware_bin.embedded.h"
 #include "../rtc/rtc.h"

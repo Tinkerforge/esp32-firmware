@@ -20,11 +20,10 @@
 #include "rtc_bricklet.h"
 
 #include "build.h"
-#include "esp_sntp.h"
-#include "api.h"
 #include "modules.h"
-#include "task_scheduler.h"
 #include <ctime>
+
+#include "gcc_warnings.h"
 
 bool RtcBricklet::update_system_time()
 {
@@ -67,13 +66,13 @@ void RtcBricklet::setup()
 
 void RtcBricklet::set_time(const tm &date_time)
 {
-    uint16_t year = date_time.tm_year + 1900;
-    uint8_t  mon  = date_time.tm_mon + 1;
-    uint8_t  day  = date_time.tm_mday;
-    uint8_t  hour = date_time.tm_hour;
-    uint8_t  min  = date_time.tm_min;
-    uint8_t  sec  = date_time.tm_sec;
-    uint8_t  wday = date_time.tm_wday;
+    uint16_t year = static_cast<uint16_t>(date_time.tm_year + 1900);
+    uint8_t  mon  = static_cast<uint8_t >(date_time.tm_mon + 1);
+    uint8_t  day  = static_cast<uint8_t >(date_time.tm_mday);
+    uint8_t  hour = static_cast<uint8_t >(date_time.tm_hour);
+    uint8_t  min  = static_cast<uint8_t >(date_time.tm_min);
+    uint8_t  sec  = static_cast<uint8_t >(date_time.tm_sec);
+    uint8_t  wday = static_cast<uint8_t >(date_time.tm_wday);
 
     // Bricklet expects Sunday to be 7, but tm_wday is specified to use 0 for Sunday.
     if (wday == 0)
@@ -106,12 +105,13 @@ struct timeval RtcBricklet::get_time()
     }
 
     struct timeval time;
-    time.tv_usec = ts % 1000 * 1000;
-    time.tv_sec = ts / 1000;
+    time.tv_usec = static_cast<suseconds_t>(ts % 1000) * 1000;
+    time.tv_sec  = static_cast<time_t>(ts / 1000);
 
     time.tv_sec += 946684800;
 
-    if (time.tv_sec < build_timestamp())
+    // FIXME not Y2038-safe
+    if (time.tv_sec < static_cast<time_t>(build_timestamp() - 14 * 3600))
     {
         struct timeval tmp;
         tmp.tv_sec = 0;
