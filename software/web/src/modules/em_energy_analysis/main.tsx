@@ -2140,7 +2140,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         try {
             response = await (await util.put('energy_manager/history_wallbox_5min', {uid: uid, year: year, month: month, day: day})).text();
         } catch (e) {
-            console.log('Could not get wallbox 5min data: ' + e);
+            console.log('Energy Analysis: Could not get wallbox 5min data: ' + e);
             return false;
         }
 
@@ -2206,7 +2206,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         try {
             response = await (await util.put('energy_manager/history_energy_manager_5min', {year: year, month: month, day: day})).text();
         } catch (e) {
-            console.log('Could not get energy manager 5min data: ' + e);
+            console.log('Energy Analysis: Could not get energy manager 5min data: ' + e);
             return false;
         }
 
@@ -2320,7 +2320,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         try {
             response = await (await util.put('energy_manager/history_wallbox_daily', {uid: uid, year: year, month: month})).text();
         } catch (e) {
-            console.log('Could not get wallbox daily data: ' + e);
+            console.log('Energy Analysis: Could not get wallbox daily data: ' + e);
             return false;
         }
 
@@ -2389,7 +2389,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         try {
             response = await (await util.put('energy_manager/history_energy_manager_daily', {year: year, month: month})).text();
         } catch (e) {
-            console.log('Could not get energy manager daily data: ' + e);
+            console.log('Energy Analysis: Could not get energy manager daily data: ' + e);
             return false;
         }
 
