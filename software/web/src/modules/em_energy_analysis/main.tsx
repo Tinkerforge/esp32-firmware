@@ -423,8 +423,6 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                                 let series = document.querySelectorAll('.u-time-in-legend-alone .u-legend .u-series');
                                 let element = series[seriesIdx] as HTMLElement;
 
-                                console.log('addSeries ' + series.length + ' / ' + seriesIdx + ' -> ' + element);
-
                                 if (element) {
                                     element.style.display = 'none';
                                 }
