@@ -539,8 +539,16 @@ body {
     display: none;
 }
 
+.u-time-in-legend-alone .u-legend .u-series:first-child th {
+    cursor: default;
+}
+
 .u-time-in-legend-alone .u-legend .u-series:first-child {
     display: block;
+}
+
+.u-time-in-legend-alone .u-legend .u-marker {
+    display: none;
 }
 
 table ul {

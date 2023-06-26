@@ -43,11 +43,13 @@ interface UplotData extends CachedData {
     keys: string[];
     names: string[];
     values: number[][];
+    extras?: number[][];
     stacked: boolean[];
     bars: boolean[];
     value_names?: {[id: number]: string}[];
     value_strokes?: {[id: number]: string}[];
     value_fills?: {[id: number]: string}[];
+    extra_names?: {[id: number]: string}[];
     default_visibilty?: boolean[];
 }
 
@@ -417,6 +419,17 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                             this.resize();
                         },
                         addSeries: (self: uPlot, seriesIdx: number) => {
+                            if (this.data && this.data.keys[seriesIdx].startsWith('wb_state_')) {
+                                let series = document.querySelectorAll('.u-time-in-legend-alone .u-legend .u-series');
+                                let element = series[seriesIdx] as HTMLElement;
+
+                                console.log('addSeries ' + series.length + ' / ' + seriesIdx + ' -> ' + element);
+
+                                if (element) {
+                                    element.style.display = 'none';
+                                }
+                            }
+
                             this.resize();
                         },
                         delSeries: (self: uPlot, seriesIdx: number) => {
@@ -770,6 +783,17 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         setSeries: (self: uPlot, seriesIdx: number, opts: uPlot.Series) => {
                             this.series_visibility[this.data.keys[seriesIdx]] = opts.show;
                             this.update_internal_data();
+
+                            if (this.props.y_sync_ref && this.props.y_sync_ref.current && this.data.keys[seriesIdx].startsWith('wb_power_')) {
+                                let key = this.data.keys[seriesIdx].replace('_power_', '_state_');
+
+                                for (let i = 1; i < this.props.y_sync_ref.current.data.keys.length; ++i) {
+                                    if (this.props.y_sync_ref.current.data.keys[i] == key) {
+                                        this.props.y_sync_ref.current.uplot.setSeries(i, {show: opts.show});
+                                        break;
+                                    }
+                                }
+                            }
                         },
                         drawAxes: [
                             (self: uPlot) => {
@@ -899,7 +923,13 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             label: this.props.legend_value_prefix + (name ? ' ' + name: ''),
             value: (self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => {
                 if (rawValue !== null) {
-                    return util.toLocaleFixed(this.data.values[seriesIdx][idx], this.props.y_digits) + " " + this.props.y_unit;
+                    let prefix = '';
+
+                    if (this.data.extras && this.data.extra_names && this.data.extra_names[seriesIdx]) {
+                        prefix = this.data.extra_names[seriesIdx][this.data.extras[seriesIdx][idx]] + ' / ';
+                    }
+
+                    return prefix + util.toLocaleFixed(this.data.values[seriesIdx][idx], this.props.y_digits) + " " + this.props.y_unit;
                 }
 
                 return null;
@@ -1506,8 +1536,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             keys: [null],
             names: [null],
             values: [null],
+            extras: [null],
             stacked: [false],
             bars: [false],
+            extra_names: [null],
         };
 
         let slot_count: number = 0;
@@ -1519,8 +1551,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.keys.push('em_power');
             uplot_data.names.push(__("em_energy_analysis.script.grid_connection"));
             uplot_data.values.push(energy_manager_data.power_grid);
+            uplot_data.extras.push(null);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
+            uplot_data.extra_names.push(null);
         }
 
         for (let charger of this.chargers) {
@@ -1530,11 +1564,24 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 if (wallbox_data && !wallbox_data.empty) {
                     slot_count = Math.max(slot_count, wallbox_data.power.length);
 
+                    let state = new Array(wallbox_data.flags.length);
+
+                    for (let i = 0; i < wallbox_data.flags.length; ++i) {
+                        if (wallbox_data.flags[i] === null) {
+                            state[i] = null;
+                        }
+                        else {
+                            state[i] = wallbox_data.flags[i] & 0b111;
+                        }
+                    }
+
                     uplot_data.keys.push('wb_power_' + charger.uid);
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(wallbox_data.power);
+                    uplot_data.extras.push(state);
                     uplot_data.stacked.push(true);
                     uplot_data.bars.push(false);
+                    uplot_data.extra_names.push(wb_state_names);
                 }
             }
         }
