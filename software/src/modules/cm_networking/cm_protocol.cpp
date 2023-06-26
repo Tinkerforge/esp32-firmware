@@ -92,13 +92,10 @@ static String validate_packet_header_common(const struct cm_packet_header *heade
         return String("Invalid magic. Got ") + header->magic + '.';
     }
 
-    if (recv_length < header->length)
-        return String("Received truncated ") + packet_type_name + " packet for protocol version " + header->version + ": " + recv_length + '/' + header->length + " bytes.";
-
     return String();
 }
 
-static String validate_protocol_version(const struct cm_packet_header *header, uint8_t min_version, uint8_t max_known_version, const uint8_t packet_length_versions[], const char *packet_type_name) {
+static String validate_protocol_version(const struct cm_packet_header *header, uint8_t min_version, uint8_t max_known_version, const uint8_t packet_length_versions[], const char *packet_type_name, ssize_t recv_length) {
     if (header->version < min_version) {
         return String("Protocol version ") + header->version + " too old. Need at least version " + min_version + ".";
     }
@@ -107,9 +104,17 @@ static String validate_protocol_version(const struct cm_packet_header *header, u
         if (header->length != packet_length_versions[header->version])
             return String("Invalid ") + packet_type_name + " packet length for known protocol version " + header->version + ": " + header->length + " bytes.";
 
+        // This is a known version. The recv_buf was large enough to receive the complete packet. Enforce length correctness
+        if (recv_length != header->length)
+            return String("Received truncated ") + packet_type_name + " packet for known protocol version " + header->version + ": " + recv_length + '/' + header->length + " bytes.";
+
     } else { // Newer protocol than known; packet must be at least as long as our newest known version.
         if (header->length < packet_length_versions[max_known_version])
             return String("Invalid ") + packet_type_name + " packet length for protocol version " + header->version + " from the future: " + header->length + " bytes.";
+
+        // Received packet must be truncated because of the buffer size, other truncations are errors.
+        if (recv_length != packet_length_versions[max_known_version])
+            return String("Received truncated ") + packet_type_name + " packet for protocol version " + header->version + ": " + recv_length + '/' + header->length + " bytes.";
     }
     return "";
 }
@@ -120,7 +125,7 @@ static String validate_command_packet_header(const struct cm_command_packet *pkt
     if (result != "")
         return result;
 
-    return validate_protocol_version(&(pkt->header), CM_COMMAND_VERSION_MIN, CM_COMMAND_VERSION, cm_command_packet_length_versions, "command");
+    return validate_protocol_version(&(pkt->header), CM_COMMAND_VERSION_MIN, CM_COMMAND_VERSION, cm_command_packet_length_versions, "command", recv_length);
 }
 
 static String validate_state_packet_header(const struct cm_state_packet *pkt, ssize_t recv_length)
@@ -129,7 +134,7 @@ static String validate_state_packet_header(const struct cm_state_packet *pkt, ss
     if (result != "")
         return result;
 
-    return validate_protocol_version(&(pkt->header), CM_STATE_VERSION_MIN, CM_STATE_VERSION, cm_state_packet_length_versions, "state");
+    return validate_protocol_version(&(pkt->header), CM_STATE_VERSION_MIN, CM_STATE_VERSION, cm_state_packet_length_versions, "state", recv_length);
 }
 
 static bool seq_num_invalid(uint16_t received_sn, uint16_t last_seen_sn)
