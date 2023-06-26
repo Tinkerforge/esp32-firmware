@@ -67,17 +67,21 @@ void RtcBricklet::setup()
 
 void RtcBricklet::set_time(const tm &date_time)
 {
-    auto ret = tf_real_time_clock_v2_set_date_time(&device,
-                                                   date_time.tm_year + 1900,
-                                                   date_time.tm_mon + 1,
-                                                   date_time.tm_mday,
-                                                   date_time.tm_hour,
-                                                   date_time.tm_min,
-                                                   date_time.tm_sec,
-                                                   0,
-                                                   date_time.tm_wday);
+    uint16_t year = date_time.tm_year + 1900;
+    uint8_t  mon  = date_time.tm_mon + 1;
+    uint8_t  day  = date_time.tm_mday;
+    uint8_t  hour = date_time.tm_hour;
+    uint8_t  min  = date_time.tm_min;
+    uint8_t  sec  = date_time.tm_sec;
+    uint8_t  wday = date_time.tm_wday;
+
+    // Bricklet expects Sunday to be 7, but tm_wday is specified to use 0 for Sunday.
+    if (wday == 0)
+        wday = 7;
+
+    auto ret = tf_real_time_clock_v2_set_date_time(&device, year, mon, day, hour, min, sec, 0, wday);
     if (ret)
-        logger.printfln("Setting rtc failed with code %i", ret);
+        logger.printfln("Setting RTC to %04u-%02u-%02u %02u:%02u:%02u (wd %i) failed with code %i", year, mon, day, hour, min, sec, wday, ret);
 }
 
 void RtcBricklet::set_time(const timeval &time)
@@ -85,17 +89,7 @@ void RtcBricklet::set_time(const timeval &time)
     struct tm date_time;
     gmtime_r(&time.tv_sec, &date_time);
 
-    auto ret = tf_real_time_clock_v2_set_date_time(&device,
-                                                   date_time.tm_year +1900,
-                                                   date_time.tm_mon + 1,
-                                                   date_time.tm_mday,
-                                                   date_time.tm_hour,
-                                                   date_time.tm_min,
-                                                   date_time.tm_sec,
-                                                   0,
-                                                   date_time.tm_wday);
-    if (ret)
-        logger.printfln("Setting rtc failed with code %i", ret);
+    set_time(date_time);
 }
 
 struct timeval RtcBricklet::get_time()
