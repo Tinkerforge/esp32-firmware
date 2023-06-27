@@ -170,6 +170,11 @@ void MqttMeter::handle_mqtt_all_values(const JsonDocument &doc)
 {
     JsonArrayConst array = doc.as<JsonArrayConst>();
 
+    if (array.size() != METER_ALL_VALUES_COUNT) {
+        logger.printfln("mqtt_meter: Unexpected amount of meter values: %u/%i", array.size(), METER_ALL_VALUES_COUNT);
+        return;
+    }
+
     float all_values[METER_ALL_VALUES_COUNT];
 
     int i = 0;
