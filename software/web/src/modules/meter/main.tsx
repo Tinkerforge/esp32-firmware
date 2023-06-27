@@ -387,6 +387,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     }
 
     render(props?: UplotWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
+        // the plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow
         return <div><div ref={this.div_ref} id={props.id} class={props.class} style={`display: ${props.show ? 'block' : 'none'};`} /></div>;
     }
 
