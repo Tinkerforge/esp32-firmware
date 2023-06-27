@@ -1153,7 +1153,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
             <>
                 <FormRow label={__("em_energy_analysis_status.status.history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <div class="card pl-1 pb-1">
-                        <div>
+                        <div> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                             <UplotLoader ref={this.uplot_loader_ref}
                                          show={true}
                                          marker_width_reduction={8}
@@ -2773,7 +2773,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     </div>
                 </PageHeader>
                 <div class="mb-3">
-                    <div>
+                    <div> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader ref={this.uplot_loader_5min_ref}
                                         show={true}
                                         marker_width_reduction={30}
