@@ -278,8 +278,23 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     values: (self: uPlot, splits: number[]) => {
                         let values: string[] = new Array(splits.length);
 
-                        for (let i = 0; i < splits.length; ++i) {
-                            values[i] = util.toLocaleFixed(splits[i]); // FIXME: assuming that no fractional part is necessary
+                        for (let digits = 0; digits <= 3; ++digits) {
+                            let last_value: string = null;
+                            let unique = true;
+
+                            for (let i = 0; i < splits.length; ++i) {
+                                values[i] = util.toLocaleFixed(splits[i], digits);
+
+                                if (last_value == values[i]) {
+                                    unique = false;
+                                }
+
+                                last_value = values[i];
+                            }
+
+                            if (unique) {
+                                break;
+                            }
                         }
 
                         return values;

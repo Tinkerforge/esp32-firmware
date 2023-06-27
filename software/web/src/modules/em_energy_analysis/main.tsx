@@ -741,12 +741,27 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     values: (self: uPlot, splits: number[]) => {
                         let values: string[] = new Array(splits.length);
 
-                        for (let i = 0; i < splits.length; ++i) {
-                            if (this.props.y_skip_upper && splits[i] >= this.y_max) {
-                                values[i] = '';
+                        for (let digits = 0; digits <= 3; ++digits) {
+                            let last_value: string = null;
+                            let unique = true;
+
+                            for (let i = 0; i < splits.length; ++i) {
+                                if (this.props.y_skip_upper && splits[i] >= this.y_max) {
+                                    values[i] = '';
+                                }
+                                else {
+                                    values[i] = util.toLocaleFixed(splits[i], digits);
+                                }
+
+                                if (last_value == values[i]) {
+                                    unique = false;
+                                }
+
+                                last_value = values[i];
                             }
-                            else {
-                                values[i] = util.toLocaleFixed(splits[i], this.props.y_digits);
+
+                            if (unique) {
+                                break;
                             }
                         }
 
