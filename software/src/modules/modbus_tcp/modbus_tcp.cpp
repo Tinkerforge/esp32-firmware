@@ -1029,7 +1029,6 @@ void ModbusTcp::register_urls()
 
     if (config.get("table")->asUint() == 0)
     {
-
         uint16_t allowed_current = 32000;
         bool enable_charging = false;
         bool autostart_button = false;
