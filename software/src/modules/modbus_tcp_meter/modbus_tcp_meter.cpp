@@ -60,11 +60,13 @@ void ModbusTcpMeter::pre_setup()
 {
     Config *config_element = new Config{Config::Object({
         {"enable", Config::Bool(false)},
+        {"display_name", Config::Str("", 0, 32)},
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
         {"register_set", Config::Array(
             {},
             new Config{Config::Object({
+                {"role", Config::Uint16(0)},
                 {"register", Config::Uint32(0)},
                 {"register_type", Config::Uint8(0)}, // input, holding, coil, discrete
                 {"value_type", Config::Uint8(0)},    // uint16, int16, uint32, int32, etc...
