@@ -78,10 +78,10 @@ void ModbusTcpMeter::pre_setup()
     })};
 
     config = Config::Array(
-        {}, 
-        config_element, 
-        MODBUS_TCP_METER_COUNT_MAX, 
-        MODBUS_TCP_METER_COUNT_MAX, 
+        {},
+        config_element,
+        MODBUS_TCP_METER_COUNT_MAX,
+        MODBUS_TCP_METER_COUNT_MAX,
         Config::type_id<Config::ConfObject>()
     );
 
