@@ -50,7 +50,7 @@ export class EMDebug extends Component {
         let state    = API.get('energy_manager/state');
 
         return (
-            <SubPage colClasses="col-xl-10">
+            <SubPage>
                 <PageHeader title={__("em_debug.content.em_debug")}/>
 
                 <FormSeparator heading={__("em_debug.content.protocol")} first={true} />
