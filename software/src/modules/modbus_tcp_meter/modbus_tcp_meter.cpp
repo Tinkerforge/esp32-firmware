@@ -139,7 +139,7 @@ void ModbusTcpMeter::next_meter()
 
         // Start new read deadline after we read all registers from all meters once
         read_deadline = millis(); 
-        kostal_test_print();
+        //kostal_test_print();
     }
 }
 
@@ -260,9 +260,9 @@ void ModbusTcpMeter::loop()
     mb.task();
 }
 
-// We assume that after scale and offset is applied, every value fits in an int64
+// We assume that after scale and offset is applied, every value fits in a float
 #define AS_UINT16_ARR(x) ((uint16_t*)&(x))
-int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t register_num)
+float ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t register_num)
 {
     if(meter_num >= MODBUS_TCP_METER_COUNT_MAX) {
         return 0;
@@ -276,7 +276,7 @@ int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t registe
     const float    scale      = register_config->get("scale")->asFloat();
     const float    offset     = register_config->get("offset")->asFloat();
 
-    int64_t result = 0;
+    float result = 0;
 
     // TODO: I am not sure of endianess between the 16 bit values, we may have to shift the indices around
     switch(value_type) {
@@ -284,7 +284,7 @@ int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t registe
             uint16_t tmp = 0;
             AS_UINT16_ARR(tmp)[0] = results[meter_num][register_num][0];
 
-            result = (int64_t)tmp;
+            result = (tmp + offset) * scale;
             break;
         }
 
@@ -293,7 +293,7 @@ int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t registe
             AS_UINT16_ARR(tmp)[0] = results[meter_num][register_num][0];
             AS_UINT16_ARR(tmp)[1] = results[meter_num][register_num][1];
 
-            result = (int64_t)tmp;
+            result = (tmp + offset) * scale;
             break;
         }
 
@@ -304,7 +304,7 @@ int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t registe
             AS_UINT16_ARR(tmp)[2] = results[meter_num][register_num][2];
             AS_UINT16_ARR(tmp)[3] = results[meter_num][register_num][3];
 
-            result = (int64_t)tmp;
+            result = (tmp + offset) * scale;
             break;
         }
 
@@ -312,7 +312,7 @@ int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t registe
             int16_t tmp = 0;
             AS_UINT16_ARR(tmp)[0] = results[meter_num][register_num][0];
 
-            result = (int64_t)tmp;
+            result = (tmp + offset) * scale;
             break;
         }
 
@@ -321,7 +321,7 @@ int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t registe
             AS_UINT16_ARR(tmp)[0] = results[meter_num][register_num][0];
             AS_UINT16_ARR(tmp)[1] = results[meter_num][register_num][1];
 
-            result = (int64_t)tmp;
+            result = (tmp + offset) * scale;
             break;
         }
 
@@ -332,7 +332,7 @@ int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t registe
             AS_UINT16_ARR(tmp)[2] = results[meter_num][register_num][2];
             AS_UINT16_ARR(tmp)[3] = results[meter_num][register_num][3];
 
-            result = (int64_t)tmp;
+            result = (tmp + offset) * scale;
             break;
         }
 
@@ -341,7 +341,7 @@ int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t registe
             AS_UINT16_ARR(tmp)[0] = results[meter_num][register_num][0];
             AS_UINT16_ARR(tmp)[1] = results[meter_num][register_num][1];
 
-            result = (int64_t)tmp;
+            result = (tmp + offset) * scale;
             break;
         }
 
@@ -352,7 +352,7 @@ int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t registe
             AS_UINT16_ARR(tmp)[2] = results[meter_num][register_num][2];
             AS_UINT16_ARR(tmp)[3] = results[meter_num][register_num][3];
 
-            result = (int64_t)tmp;
+            result = (tmp + offset) * scale;
             break;
         }
 
@@ -360,7 +360,7 @@ int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t registe
             uint16_t tmp = 0;
             AS_UINT16_ARR(tmp)[0] = results[meter_num][register_num][0];
 
-            result = (int64_t)tmp;
+            result = (tmp + offset) * scale;
             break;
         }
 
@@ -369,7 +369,7 @@ int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t registe
             AS_UINT16_ARR(tmp)[0] = results[meter_num][register_num][0];
             AS_UINT16_ARR(tmp)[1] = results[meter_num][register_num][1];
 
-            result = (int64_t)tmp;
+            result = (tmp + offset) * scale;
             break;
         }
 
@@ -379,15 +379,13 @@ int64_t ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t registe
         }
     }
 
-    result = (int64_t)((result + offset)*scale);
-
     return result;
 }
 
 // TODO: Testing only, remove me
 void ModbusTcpMeter::kostal_test_print()
 {
-    logger.printfln("Meter 0, Register 0 -> Voltage L1 (V)  -> %d", (int16_t)get_value(0, 0));
-    logger.printfln("Meter 0, Register 1 -> Power      (W)  -> %d", (int16_t)get_value(0, 1));
-    logger.printfln("Meter 0, Register 2 -> Exported   (Wh) -> %d", (uint32_t)get_value(0, 2));
+    logger.printfln("Meter 0, Register 0 -> Voltage L1 (V)  -> %f", get_value(0, 0));
+    logger.printfln("Meter 0, Register 1 -> Power      (W)  -> %f", get_value(0, 1));
+    logger.printfln("Meter 0, Register 2 -> Exported   (Wh) -> %f", get_value(0, 2));
 }

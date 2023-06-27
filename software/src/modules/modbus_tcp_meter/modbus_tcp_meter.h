@@ -61,7 +61,7 @@ public:
     void zero_results();
     void read_register(const char *host, Config *register_config, uint16_t *result);
     uint8_t get_length_from_type(const uint8_t value_type);
-    int64_t get_value(const uint8_t meter_num, const uint8_t register_num);
+    float get_value(const uint8_t meter_num, const uint8_t register_num);
 
     void kostal_test_print();
 
