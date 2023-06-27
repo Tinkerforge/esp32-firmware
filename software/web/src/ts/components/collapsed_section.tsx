@@ -38,8 +38,8 @@ export class CollapsedSection extends Component<CollapsedSectionProps, Collapsed
     render(props: CollapsedSectionProps, state: Readonly<CollapsedSectionState>) {
         return (
             <>
-            <div class="mb-3 pt-3">
-                <div class="border-bottom d-flex justify-content-between">
+            <div class="row mb-3 pt-3">
+                <div class="col border-bottom d-flex justify-content-between">
                     <span class="h3">{props.label}</span>
                     <Button variant="primary"
                             className="mb-2"

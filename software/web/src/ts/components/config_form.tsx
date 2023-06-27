@@ -75,8 +75,8 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
     override render (props: ConfigFormProps, state: Readonly<ConfigFormState>) {
         return (
             <>
-                <div class="sticky-under-top mb-3 pt-3">
-                    <div class="pb-2 border-bottom tab-header-shadow">
+                <div class="row sticky-under-top mb-3 pt-3">
+                    <div class="col pb-2 border-bottom tab-header-shadow">
                         <div class="row no-gutters">
                             <h1 class="page-header col-12 col-sm text-center text-sm-left text-nowrap" dangerouslySetInnerHTML={{__html: props.title}}></h1>
                             <div class="col-12 col-sm row no-gutters">

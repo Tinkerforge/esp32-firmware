@@ -34,8 +34,8 @@ export class FormSeparator extends Component<FormSeparatorProps, {}> {
 
     render(props: FormSeparatorProps) {
         return (
-            <div class={"mb-3 " + (!props.first ? "pt-3" : "pt-0") + " " + (props.extraClasses === undefined ? "" : props.extraClasses)}>
-                <div class={"d-flex border-bottom " + (props.colClasses === undefined ? "" : props.colClasses)}>
+            <div class={"row mb-3 " + (!props.first ? "pt-3" : "pt-0") + " " + (props.extraClasses === undefined ? "" : props.extraClasses)}>
+                <div class={"d-flex border-bottom " + (props.colClasses === undefined ? "col" : props.colClasses)}>
                     {props.heading ? <span class="h3">{props.heading}</span> : undefined}
                     {props.children}
                 </div>

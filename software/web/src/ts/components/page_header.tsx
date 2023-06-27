@@ -27,8 +27,8 @@ export interface PageHeaderProps {
 export class PageHeader extends Component<PageHeaderProps, any> {
     render(props: PageHeaderProps) {
         return (
-            <div class="sticky-under-top mb-3 pt-3">
-                <div class="d-flex flex-wrap justify-content-between pb-2 border-bottom tab-header-shadow">
+            <div class="row sticky-under-top mb-3 pt-3">
+                <div class="col d-flex flex-wrap justify-content-between pb-2 border-bottom tab-header-shadow">
                     <h1 class="page-header" dangerouslySetInnerHTML={{__html: this.props.title}}></h1>
                     {props.children}
                 </div>
