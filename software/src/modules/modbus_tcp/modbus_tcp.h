@@ -30,10 +30,11 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+
+private:
     void update_regs();
     void update_bender_regs();
     void update_keba_regs();
 
-private:
     ConfigRoot config;
 };
