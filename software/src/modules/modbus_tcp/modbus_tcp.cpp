@@ -417,7 +417,7 @@ void ModbusTcp::setup()
 {
     api.restorePersistentConfig("modbus_tcp/config", &config);
 
-    if (config.get("enable")->asBool() == true)
+    if (config.get("enable")->asBool())
     {
         void *modbus_handle = NULL;
         esp_err_t err = mbc_slave_init_tcp(&modbus_handle);
@@ -762,7 +762,7 @@ void ModbusTcp::update_regs()
             uint32_t current = slots->get(i)->get("max_current")->asUint();
             uint32_t val = 0xFFFFFFFF;
 
-            if (slots->get(i)->get("active")->asBool() == true)
+            if (slots->get(i)->get("active")->asBool())
             {
                 val = current;
             }
@@ -1021,7 +1021,7 @@ void ModbusTcp::register_urls()
 {
     api.addPersistentConfig("modbus_tcp/config", &config, {}, 1000);
 
-    if (config.get("enable")->asBool() == true)
+    if (config.get("enable")->asBool())
     {
         spinlock_initialize(&mtx);
 

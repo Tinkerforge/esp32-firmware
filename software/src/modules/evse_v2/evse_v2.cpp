@@ -826,12 +826,12 @@ uint16_t EVSEV2::get_ocpp_current()
 void EVSEV2::check_debug()
 {
     task_scheduler.scheduleOnce([this](){
-        if (deadline_elapsed(last_debug_check + 60000) && debug == true)
+        if (deadline_elapsed(last_debug_check + 60000) && debug)
         {
             logger.printfln("Debug log creation canceled because no continue call was received for more than 60 seconds.");
             debug = false;
         }
-        else if (debug == true)
+        else if (debug)
             check_debug();
     }, 70000);
 }
