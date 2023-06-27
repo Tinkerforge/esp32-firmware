@@ -238,16 +238,24 @@ void EnergyManager::collect_data_points()
             if (meter.state.get("state")->asUint() == 2) {
                 have_data = true;
 
-                if (api.hasFeature("meter_all_values")) {
+                float total_import = meter.all_values.get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat(); // kWh
+                float total_export = meter.all_values.get(METER_ALL_VALUES_TOTAL_EXPORT_KWH)->asFloat(); // kWh
+
+                if (api.hasFeature("meter_all_values") && !isnan(total_import)) {
                     energy_grid_in = clamp<uint64_t>(0,
-                                                     roundf(meter.all_values.get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat() * 100.0), // kWh -> dWh
+                                                     roundf(total_import * 100.0), // kWh -> dWh
                                                      UINT32_MAX - 1);
-                    energy_grid_out = clamp<uint64_t>(0,
-                                                      roundf(meter.all_values.get(METER_ALL_VALUES_TOTAL_EXPORT_KWH)->asFloat() * 100.0), // kWh -> dWh
-                                                      UINT32_MAX - 1);
                 }
                 else {
                     energy_grid_in = clamp<uint64_t>(0, roundf(history_meter_energy_import), UINT32_MAX - 1);
+                }
+
+                if (api.hasFeature("meter_all_values") && !isnan(total_export)) {
+                    energy_grid_out = clamp<uint64_t>(0,
+                                                      roundf(total_export * 100.0), // kWh -> dWh
+                                                      UINT32_MAX - 1);
+                }
+                else {
                     energy_grid_out = clamp<uint64_t>(0, roundf(history_meter_energy_export), UINT32_MAX - 1);
                 }
             }
