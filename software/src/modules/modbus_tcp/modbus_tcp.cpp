@@ -1021,76 +1021,77 @@ void ModbusTcp::register_urls()
 {
     api.addPersistentConfig("modbus_tcp/config", &config, {}, 1000);
 
-    if (config.get("enable")->asBool())
+    if (!config.get("enable")->asBool()) {
+        return;
+    }
+
+    spinlock_initialize(&mtx);
+
+    if (config.get("table")->asUint() == 0)
     {
-        spinlock_initialize(&mtx);
 
-        if (config.get("table")->asUint() == 0)
+        uint16_t allowed_current = 32000;
+        bool enable_charging = false;
+        bool autostart_button = false;
+
+#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
+        if (api.hasFeature("evse"))
         {
+            auto slots = api.getState("evse/slots");
+            allowed_current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint();
+            enable_charging = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000;
+            autostart_button = slots->get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->asUint() == 32000;
+        }
+#endif
 
-            uint16_t allowed_current = 32000;
-            bool enable_charging = false;
-            bool autostart_button = false;
+        taskENTER_CRITICAL(&mtx);
+            input_regs->table_version = fromUint(MODBUS_TABLE_VERSION);
+            input_regs->box_id = fromUint(local_uid_num);
+            input_regs->firmware_major = fromUint(BUILD_VERSION_MAJOR);
+            input_regs->firmware_minor = fromUint(BUILD_VERSION_MINOR);
+            input_regs->firmware_patch = fromUint(BUILD_VERSION_PATCH);
+            input_regs->firmware_build_ts = fromUint(build_timestamp());
 
-    #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
-            if (api.hasFeature("evse"))
-            {
-                auto slots = api.getState("evse/slots");
-                allowed_current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint();
-                enable_charging = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000;
-                autostart_button = slots->get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->asUint() == 32000;
-            }
-    #endif
+            evse_holding_regs->allowed_current = fromUint(allowed_current);
+            evse_holding_regs->enable_charging = fromUint(enable_charging);
 
+            evse_coils->autostart_button = autostart_button;
+            evse_coils_copy->autostart_button = autostart_button;
+
+            evse_coils->enable_charging = enable_charging;
+            evse_coils_copy->enable_charging = enable_charging;
+        taskEXIT_CRITICAL(&mtx);
+
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            this->update_regs();
+        }, 0, 500);
+    }
+    else if (config.get("table")->asUint() == 1)
+    {
+        if (api.hasFeature("evse"))
+        {
+#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
             taskENTER_CRITICAL(&mtx);
-                input_regs->table_version = fromUint(MODBUS_TABLE_VERSION);
-                input_regs->box_id = fromUint(local_uid_num);
-                input_regs->firmware_major = fromUint(BUILD_VERSION_MAJOR);
-                input_regs->firmware_minor = fromUint(BUILD_VERSION_MINOR);
-                input_regs->firmware_patch = fromUint(BUILD_VERSION_PATCH);
-                input_regs->firmware_build_ts = fromUint(build_timestamp());
-
-                evse_holding_regs->allowed_current = fromUint(allowed_current);
-                evse_holding_regs->enable_charging = fromUint(enable_charging);
-
-                evse_coils->autostart_button = autostart_button;
-                evse_coils_copy->autostart_button = autostart_button;
-
-                evse_coils->enable_charging = enable_charging;
-                evse_coils_copy->enable_charging = enable_charging;
+                bender_hems->hems_limit = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
+                bender_general->chargepoint_available = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
             taskEXIT_CRITICAL(&mtx);
-
-            task_scheduler.scheduleWithFixedDelay([this]() {
-                this->update_regs();
-            }, 0, 500);
-        }
-        else if (config.get("table")->asUint() == 1)
-        {
-            if (api.hasFeature("evse"))
-            {
-#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
-                taskENTER_CRITICAL(&mtx);
-                    bender_hems->hems_limit = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
-                    bender_general->chargepoint_available = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
-                taskEXIT_CRITICAL(&mtx);
 #endif
-            }
+        }
 
-            task_scheduler.scheduleWithFixedDelay([this]() {
-                this->update_bender_regs();
-            }, 0, 500);
-        }
-        else if (config.get("table")->asUint() == 2)
-        {
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            this->update_bender_regs();
+        }, 0, 500);
+    }
+    else if (config.get("table")->asUint() == 2)
+    {
 #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
-                taskENTER_CRITICAL(&mtx);
-                    keba_write->set_charging_current = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
-                    keba_write->enable_station = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
-                taskEXIT_CRITICAL(&mtx);
+            taskENTER_CRITICAL(&mtx);
+                keba_write->set_charging_current = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
+                keba_write->enable_station = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
+            taskEXIT_CRITICAL(&mtx);
 #endif
-            task_scheduler.scheduleWithFixedDelay([this]() {
-                this->update_keba_regs();
-            }, 0, 500);
-        }
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            this->update_keba_regs();
+        }, 0, 500);
     }
 }
