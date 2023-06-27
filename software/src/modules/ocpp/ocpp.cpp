@@ -27,7 +27,7 @@
 #include <ctype.h>
 #include <string.h>
 
-extern char local_uid_str[7];
+extern char local_uid_str[32];
 
 void Ocpp::pre_setup()
 {
