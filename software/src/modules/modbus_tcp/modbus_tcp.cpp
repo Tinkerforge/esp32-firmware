@@ -1070,9 +1070,11 @@ void ModbusTcp::register_urls()
         if (api.hasFeature("evse"))
         {
 #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
+            uint16_t current = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
+            uint16_t enable = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
             taskENTER_CRITICAL(&mtx);
-                bender_hems->hems_limit = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
-                bender_general->chargepoint_available = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
+                bender_hems->hems_limit = current;
+                bender_general->chargepoint_available = enable;
             taskEXIT_CRITICAL(&mtx);
 #endif
         }
@@ -1084,9 +1086,11 @@ void ModbusTcp::register_urls()
     else if (config.get("table")->asUint() == 2)
     {
 #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
+            uint16_t current = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
+            uint16_t enable = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
             taskENTER_CRITICAL(&mtx);
-                keba_write->set_charging_current = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
-                keba_write->enable_station = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
+                keba_write->set_charging_current = current;
+                keba_write->enable_station = enable;
             taskEXIT_CRITICAL(&mtx);
 #endif
         task_scheduler.scheduleWithFixedDelay([this]() {
