@@ -33,6 +33,7 @@ import { InputText } from "../../ts/components/input_text";
 import { Button, Card, ListGroup, ListGroupItem, Modal } from "react-bootstrap";
 import { InputSelect } from "src/ts/components/input_select";
 import { ItemModal } from "src/ts/components/item_modal";
+import { SubPage } from "src/ts/components/sub_page";
 
 const MAX_AUTHORIZED_TAGS = 16;
 
@@ -131,7 +132,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
         </div>
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("nfc.content.authorized_tags")}>
                         <div class="row row-cols-1 row-cols-md-2">
@@ -249,7 +250,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                 />
                         </FormGroup>
                 </ItemModal>
-            </>
+            </SubPage>
         )
     }
 }

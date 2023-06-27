@@ -29,6 +29,7 @@ import { ConfigForm      } from "../../ts/components/config_form";
 import { FormRow         } from "../../ts/components/form_row";
 import { InputText       } from "../../ts/components/input_text";
 import { Switch          } from "../../ts/components/switch";
+import { SubPage } from "../../ts/components/sub_page";
 
 export class MqttMeter extends ConfigComponent<'mqtt_meter/config'> {
     constructor() {
@@ -41,7 +42,7 @@ export class MqttMeter extends ConfigComponent<'mqtt_meter/config'> {
         if (!util.render_allowed())
             return <></>
 
-        return <>
+        return <SubPage>
             <ConfigForm id="mqtt_meter_config_form" title={__("mqtt_meter.content.title")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                 <FormRow label={__("mqtt_meter.content.enable_meter")}>
                     <Switch desc={__("mqtt_meter.content.enable_meter_desc")}
@@ -67,7 +68,7 @@ export class MqttMeter extends ConfigComponent<'mqtt_meter/config'> {
                     />
                 </FormRow>
             </ConfigForm>
-        </>
+        </SubPage>
     }
 }
 

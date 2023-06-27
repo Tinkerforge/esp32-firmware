@@ -38,6 +38,7 @@ import { Slash } from "react-feather";
 import { InputIP } from "src/ts/components/input_ip";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
 import { InputSubnet } from "src/ts/components/input_subnet";
+import { SubPage } from "src/ts/components/sub_page";
 
 type WireGuardConfig = API.getType['wireguard/config'];
 
@@ -54,7 +55,7 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
             return <></>
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="wireguard_config_form" title={__("wireguard.content.wireguard")} isModified={this.isModified()} onSave={() => this.save()} onReset={() => this.reset()} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("wireguard.content.enable_wireguard")}>
                         <Switch desc={__("wireguard.content.enable_wireguard_desc")}
@@ -151,7 +152,7 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
                         />
                     </FormRow>
                 </ConfigForm>
-            </>
+            </SubPage>
         )
     }
 }

@@ -29,6 +29,7 @@ import { FormRow        } from "../../ts/components/form_row";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputText      } from "../../ts/components/input_text";
 import { PageHeader     } from "../../ts/components/page_header";
+import { SubPage } from "../../ts/components/sub_page";
 
 export class EMSDcard extends Component {
     render() {
@@ -39,7 +40,7 @@ export class EMSDcard extends Component {
 
         if (state.sd_status == 51) { // No card
             return (
-                <>
+                <SubPage>
                     <PageHeader title={__("em_sdcard.content.header")} />
 
                     <IndicatorGroup
@@ -47,7 +48,7 @@ export class EMSDcard extends Component {
                         items={[
                             ["warning", __("em_sdcard.content.error_no_card")],
                         ]} />
-                </>
+                </SubPage>
             )
         }
 
@@ -110,7 +111,7 @@ export class EMSDcard extends Component {
         }
 
         return (
-            <>
+            <SubPage>
                 <PageHeader title={__("em_sdcard.content.header")} />
 
                 <FormRow label={__("em_sdcard.content.manufacturer_id")}>
@@ -161,7 +162,7 @@ export class EMSDcard extends Component {
                         }
                     }}>{__("em_sdcard.content.format_sdcard")}</Button>
                 </FormRow>
-            </>
+            </SubPage>
         )
     }
 }

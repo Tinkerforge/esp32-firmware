@@ -38,6 +38,7 @@ import { Switch } from "src/ts/components/switch";
 import { config } from "./api";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
 import { InputNumber } from "src/ts/components/input_number";
+import { SubPage } from "src/ts/components/sub_page";
 
 type ChargeManagerConfig = API.getType['charge_manager/config'];
 type ChargerConfig = ChargeManagerConfig["chargers"][0];
@@ -514,7 +515,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                 </ItemModal>
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     {!energyManagerMode || warpUltimateMode ?
                         charge_manager_mode
@@ -561,7 +562,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                     }
                 </ConfigForm>
                 {modal}
-            </>
+            </SubPage>
         )
     }
 }

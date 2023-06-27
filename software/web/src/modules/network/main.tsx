@@ -31,6 +31,7 @@ import { ConfigForm } from "src/ts/components/config_form";
 import { FormRow } from "src/ts/components/form_row";
 import { InputText } from "src/ts/components/input_text";
 import { InputNumber } from "src/ts/components/input_number";
+import { SubPage } from "src/ts/components/sub_page";
 
 type NetworkConfig = API.getType['network/config'];
 
@@ -46,7 +47,7 @@ export class Network extends ConfigComponent<'network/config'> {
             return <></>
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="network_config_form"
                             title={__("network.content.network")}
                             onSave={this.save}
@@ -77,7 +78,7 @@ export class Network extends ConfigComponent<'network/config'> {
                                      onValue={this.set("web_server_port")}/>
                     </FormRow>
                 </ConfigForm>
-            </>
+            </SubPage>
         );
     }
 }

@@ -35,6 +35,7 @@ import { InputSelect } from "src/ts/components/input_select";
 import { Button } from "react-bootstrap";
 import { InputText } from "src/ts/components/input_text";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { SubPage } from "src/ts/components/sub_page";
 
 type NTPConfig = API.getType['ntp/config'];
 
@@ -67,7 +68,7 @@ export class NTP extends ConfigComponent<'ntp/config'> {
         let splt = state.timezone.split("/");
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="ntp_config_form"
                             title={__("ntp.content.ntp")}
                             onSave={this.save}
@@ -135,7 +136,7 @@ export class NTP extends ConfigComponent<'ntp/config'> {
                 </ConfigForm>
 
 
-            </>
+            </SubPage>
         );
     }
 }

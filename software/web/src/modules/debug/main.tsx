@@ -28,6 +28,7 @@ import { Button     } from "react-bootstrap";
 import { FormRow    } from "../../ts/components/form_row";
 import { InputText  } from "../../ts/components/input_text";
 import { PageHeader } from "../../ts/components/page_header";
+import { SubPage } from "../../ts/components/sub_page";
 
 export class Debug extends Component
 {
@@ -38,7 +39,7 @@ export class Debug extends Component
         let state = API.get('debug/state');
 
         return (
-            <>
+            <SubPage>
                 <PageHeader title={__("debug.content.debug")} />
 
                 <FormRow label={__("debug.content.uptime")}>
@@ -67,7 +68,7 @@ export class Debug extends Component
                         <Button variant="primary" className="form-control rounded-left" onClick={util.resumeWebSockets}>{__("debug.content.websocket_resume")}</Button>
                     </div>
                 </FormRow>
-            </>
+            </SubPage>
         )
     }
 }

@@ -31,6 +31,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { Button, Spinner } from "react-bootstrap";
 
 import { Download } from 'react-feather';
+import { SubPage } from "src/ts/components/sub_page";
 
 interface EventLogState {
     log: string
@@ -114,7 +115,7 @@ export class EventLog extends Component<{}, EventLogState> {
             return (<></>);
 
         return (
-            <>
+            <SubPage>
                 <PageHeader title={__("event_log.content.event_log")} />
 
                 <FormRow label={__("event_log.content.event_log_desc")} label_muted={__("event_log.content.event_log_desc_muted")}>
@@ -135,7 +136,7 @@ export class EventLog extends Component<{}, EventLogState> {
                         <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
                     </Button>
                 </FormRow>
-            </>
+            </SubPage>
         );
     }
 }

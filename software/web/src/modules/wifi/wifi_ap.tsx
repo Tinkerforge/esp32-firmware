@@ -31,6 +31,7 @@ import { Button, Modal } from "react-bootstrap";
 import { InputText } from "../../ts/components/input_text";
 import { InputPassword } from "../../ts/components/input_password";
 import { InputSelect } from "../../ts/components/input_select";
+import { SubPage } from "src/ts/components/sub_page";
 
 type APConfig = API.getType['wifi/ap_config'];
 
@@ -58,7 +59,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
             return <></>
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="wifi_ap_config_form"
                             title={__("wifi.content.ap_settings")}
                             onSave={this.save}
@@ -173,7 +174,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                         </Button>
                     </Modal.Footer>
                 </Modal>
-            </>
+            </SubPage>
         );
     }
 }

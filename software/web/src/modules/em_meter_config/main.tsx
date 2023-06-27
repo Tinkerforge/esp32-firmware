@@ -32,6 +32,7 @@ import { Collapse } from "react-bootstrap";
 import { FormSeparator } from "src/ts/components/form_separator";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
 import { OutputFloat } from "src/ts/components/output_float";
+import { SubPage } from "src/ts/components/sub_page";
 
 interface EMMeterConfigState {
     meter_state: API.getType['energy_manager/meter_state']
@@ -63,7 +64,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
         }
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="em_meter_config_config_form" title={__("em_meter_config.content.em_meter_config")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("em_meter_config.content.meter_source")} label_muted={__("em_meter_config.content.meter_source_muted")}>
                         <InputSelect
@@ -121,7 +122,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
                         </div>
                     </Collapse>
                 </ConfigForm>
-            </>
+            </SubPage>
         )
     }
 }

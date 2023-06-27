@@ -40,6 +40,7 @@ import { InputPassword } from "src/ts/components/input_password";
 import { Slash, User, UserPlus, UserX } from "react-feather";
 import { EVSE_SLOT_USER } from "../evse_common/api";
 import { ItemModal } from "src/ts/components/item_modal";
+import { SubPage } from "src/ts/components/sub_page";
 
 const MAX_ACTIVE_USERS = 17;
 
@@ -298,7 +299,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         let user_slot_allowed = state.users.length > 1;
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="users_config_form" title={__("users.content.users")} isModified={this.isModified()} onSave={async () =>{this.save();}}
                     onReset={this.reset}
                     onDirtyChange={(d) => this.ignore_updates = d}>
@@ -435,7 +436,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                 />
                         </FormGroup>
                 </ItemModal>
-            </>
+            </SubPage>
         )
     }
 }

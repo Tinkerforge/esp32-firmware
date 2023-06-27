@@ -30,6 +30,7 @@ import { FormRow } from "src/ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
 import { __ } from "src/ts/translation";
 import { ConfigForm } from "src/ts/components/config_form";
+import { SubPage } from "src/ts/components/sub_page";
 
 
 type RTCTime = API.getType['rtc/time'];
@@ -94,7 +95,7 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
         if (!util.render_allowed() || !API.hasFeature("rtc"))
             return <></>
 
-        return <>
+        return <SubPage>
                     <ConfigForm id="rtc_config_form"
                                 title={__("rtc.content.rtc")}
                                 onSave={this.save}
@@ -118,7 +119,7 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
                                             disabled={this.state.auto_sync}/>
                         </FormRow>
                     </ConfigForm>
-                </>
+                </SubPage>
         }
 }
 

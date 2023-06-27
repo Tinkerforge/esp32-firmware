@@ -30,6 +30,7 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "src/ts/components/input_select";
+import { SubPage } from "src/ts/components/sub_page";
 import { EVSE_SLOT_MODBUS_TCP } from "../evse_common/api";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
 
@@ -89,8 +90,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
         if (!util.render_allowed())
             return (<></>);
 
-        let docu = <CollapsedSection label={__("modbus_tcp.content.table_docu")} collapseClasses="row">
-            <div class="col-xl-8">
+        let docu = <CollapsedSection label={__("modbus_tcp.content.table_docu")}>
             <table class="table table-bordered table-sm">
                 <thead class="thead-light">
                     <tr>
@@ -150,11 +150,10 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                                                                                     translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
                 </tbody>
             </table>
-            </div>
         </CollapsedSection>
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="modbus_tcp_config_form" title={__("modbus_tcp.content.modbus_tcp")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("modbus_tcp.content.enable")}>
                         <InputSelect items={[
@@ -188,7 +187,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                 {
                     this.state.table == 0 ? docu : <></>
                 }
-            </>
+            </SubPage>
         );
     }
 }

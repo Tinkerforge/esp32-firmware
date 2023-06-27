@@ -31,6 +31,7 @@ import { Dropdown, Spinner } from "react-bootstrap";
 import { InputText } from "../../ts/components/input_text";
 import { InputPassword } from "../../ts/components/input_password";
 import { Lock, Unlock } from "react-feather";
+import { SubPage } from "src/ts/components/sub_page";
 
 type STAConfig = API.getType['wifi/sta_config'];
 
@@ -202,7 +203,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
             return <></>
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="wifi_sta_config_form"
                             title={__("wifi.content.sta_settings")}
                             onSave={this.save}
@@ -275,7 +276,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         />
 
                 </ConfigForm>
-            </>
+            </SubPage>
         );
     }
 }

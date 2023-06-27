@@ -32,6 +32,7 @@ import { InputNumber     } from "../../ts/components/input_number";
 import { InputText       } from "../../ts/components/input_text";
 import { OutputFloat     } from "../../ts/components/output_float";
 import { Switch          } from "../../ts/components/switch";
+import { SubPage } from "../../ts/components/sub_page";
 
 export class EmPvFakerStatus extends Component {
     render() {
@@ -84,7 +85,7 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
         if (!util.render_allowed())
             return <></>
 
-        return <>
+        return <SubPage>
             <ConfigForm id="em_pv_faker_config_form" title={__("em_pv_faker.content.page_header")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
 
                 <FormRow label={__("em_pv_faker.content.auto_fake")}>
@@ -152,7 +153,7 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
                 </>}
 
             </ConfigForm>
-        </>
+        </SubPage>
     }
 }
 

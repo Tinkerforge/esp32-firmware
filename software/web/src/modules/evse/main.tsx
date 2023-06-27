@@ -42,6 +42,7 @@ import { ConfigComponent } from "src/ts/components/config_component";
 import { InputFloat } from "src/ts/components/input_float";
 import { InputSelect } from "src/ts/components/input_select";
 import { ConfigForm } from "src/ts/components/config_form";
+import { SubPage } from "src/ts/components/sub_page";
 
 interface EVSEState {
     state: API.getType['evse/state'];
@@ -104,7 +105,7 @@ export class EVSE extends Component<{}, EVSEState> {
         let min = Math.min(...slots.filter(s => s.active).map(s => s.max_current));
 
         return (
-            <>
+            <SubPage>
                 <PageHeader title={__("evse.content.status")} />
                     <FormRow label={__("evse.content.iec_state")}>
                         <IndicatorGroup
@@ -417,7 +418,7 @@ export class EVSE extends Component<{}, EVSEState> {
                             <InputText value={user_calibration.resistance_880.join(", ")}/>
                         </FormRow>
                     </CollapsedSection>
-            </>
+            </SubPage>
         )
     }
 }
@@ -525,7 +526,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
         </FormRow>
 
 
-        return <>
+        return <SubPage>
 
                 <ConfigForm id="evse_settings" title={__("evse.content.settings")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                 <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
@@ -581,7 +582,7 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
                 </FormRow>
                 {has_meter ? energy_settings : <></>}
             </ConfigForm>
-            </>;
+            </SubPage>;
     }
 }
 

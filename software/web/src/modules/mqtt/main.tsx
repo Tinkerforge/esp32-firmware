@@ -34,6 +34,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputPassword } from "../../ts/components/input_password";
 import { Switch } from "../../ts/components/switch";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { SubPage } from "src/ts/components/sub_page";
 
 type MqttConfig = API.getType['mqtt/config'];
 
@@ -63,7 +64,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
             return <></>
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="mqtt_config_form" title={__("mqtt.content.mqtt")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("mqtt.content.enable_mqtt")}>
                         <Switch desc={__("mqtt.content.enable_mqtt_desc")}
@@ -148,7 +149,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                         </FormRow>
                     </> : null}
                 </ConfigForm>
-            </>
+            </SubPage>
         );
     }
 }

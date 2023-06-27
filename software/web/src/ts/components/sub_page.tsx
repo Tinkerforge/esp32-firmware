@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2022 Matthias Bolte <matthias@tinkerforge.com>
+ * Copyright (C) 2023 Erik Fleckstein <erik@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,22 +17,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, VNode } from "preact";
+import { ComponentChildren, h, toChildArray } from "preact";
 
-export interface PageHeaderProps {
-    title: string
-    children?: VNode | VNode[]
+interface SubPageProps {
+    children: ComponentChildren
+    colClasses?: string
 }
 
-export class PageHeader extends Component<PageHeaderProps, any> {
-    render(props: PageHeaderProps) {
-        return (
-            <div class="sticky-under-top mb-3 pt-3">
-                <div class="d-flex flex-wrap justify-content-between pb-2 border-bottom tab-header-shadow">
-                    <h1 class="page-header" dangerouslySetInnerHTML={{__html: this.props.title}}></h1>
-                    {props.children}
-                </div>
+export function SubPage(props: SubPageProps) {
+    return (
+        <div class="row">
+            <div class={props.colClasses === undefined ? "col-xl-8" : props.colClasses}>
+                {toChildArray(props.children)}
             </div>
-        );
-    }
+        </div>
+    )
 }

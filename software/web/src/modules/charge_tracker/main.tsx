@@ -36,6 +36,7 @@ import { getAllUsernames } from "../users/main";
 import { ConfigComponent } from "src/ts/components/config_component";
 import { ConfigForm } from "src/ts/components/config_form";
 import { InputFloat } from "src/ts/components/input_float";
+import { SubPage } from "src/ts/components/sub_page";
 import { useMemo } from "preact/hooks";
 
 type Charge = API.getType['charge_tracker/last_charges'][0];
@@ -281,7 +282,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
             return <></>
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="charge_tracker_config_form" title={__("charge_tracker.content.charge_tracker")} onSave={this.save} isModified={this.isModified()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("charge_tracker.content.price")}>
                         <InputFloat class={state.electricity_price == 0 || state.electricity_price >= 100 ? "" : "is-invalid"} value={state.electricity_price} onValue={this.set('electricity_price')} digits={2} unit={'ct/kWh'} max={65535} min={0}/>
@@ -460,7 +461,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                         {this.get_last_charges(state.last_charges ?? [], state.electricity_price)}
                     </ListGroup>
                 </FormRow>
-            </>
+            </SubPage>
         );
     }
 }

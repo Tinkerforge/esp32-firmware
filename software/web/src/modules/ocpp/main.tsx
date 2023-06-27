@@ -35,6 +35,7 @@ import { CollapsedSection } from "src/ts/components/collapsed_section";
 import { state } from "./api";
 import { InputPassword } from "src/ts/components/input_password";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { SubPage } from "src/ts/components/sub_page";
 
 type OcppConfig = API.getType['ocpp/config']
 
@@ -83,7 +84,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
         let ocpp_debug = API.hasFeature("ocpp_debug");
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="ocpp_config_form" title={__("ocpp.content.ocpp")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("ocpp.content.enable_ocpp")}>
                         <Switch desc={__("ocpp.content.enable_ocpp_desc")}
@@ -225,7 +226,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                         )}
                     </CollapsedSection>
                 </ConfigForm>
-            </>
+            </SubPage>
         );
     }
 }

@@ -34,6 +34,7 @@ import { ConfigForm } from "src/ts/components/config_form";
 import { InputPassword } from "src/ts/components/input_password";
 import { InputNumber } from "src/ts/components/input_number";
 import { InputIP } from "src/ts/components/input_ip";
+import { SubPage } from "src/ts/components/sub_page";
 import { Slash } from "react-feather";
 
 interface ProxyState {
@@ -63,7 +64,7 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
             return <></>
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="proxy_config_form" title={__("proxy.content.proxy")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("proxy.content.auth_secret")} label_muted={__("proxy.content.auth_secret_muted")}>
                         <InputPassword maxLength={64}
@@ -135,7 +136,7 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
                         </Table>
                     </FormRow>
                 </ConfigForm>
-            </>
+            </SubPage>
         )
     }
 }

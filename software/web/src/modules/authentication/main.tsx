@@ -34,6 +34,7 @@ import { InputText } from "../../ts/components/input_text";
 import { InputPassword } from "src/ts/components/input_password";
 import { Button } from "react-bootstrap";
 import { Switch } from "src/ts/components/switch";
+import { SubPage } from "src/ts/components/sub_page";
 
 type AuthenticationState = API.getType['authentication/config'] & {password: string};
 
@@ -59,7 +60,7 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
         let pass_required = (state.enable_auth && !API.get("authentication/config").enable_auth) || (state.username != API.get("authentication/config").username);
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="auth_config_form" title={__("authentication.content.authentication")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("authentication.content.enable_authentication")}>
                         <Switch desc={__("authentication.content.enable_authentication_desc")}
@@ -105,7 +106,7 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
                         }}>{__("authentication.content.disable_auth")}</Button>
                     </FormRow>
                 </ConfigForm>
-            </>
+            </SubPage>
         )
     }
 }

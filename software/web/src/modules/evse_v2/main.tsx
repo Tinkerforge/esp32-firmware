@@ -40,6 +40,7 @@ import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_GLOBAL } from "../evse_common/api";
 import { DebugLogger } from "../../ts/components/debug_logger";
 import { ConfigForm } from "src/ts/components/config_form";
 import { InputFloat } from "src/ts/components/input_float";
+import { SubPage } from "src/ts/components/sub_page";
 
 interface EVSEState {
     state: API.getType['evse/state'];
@@ -104,7 +105,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
         let min = Math.min(...slots.filter(s => s.active).map(s => s.max_current));
 
         return (
-            <>
+            <SubPage>
                 <PageHeader title={__("evse.content.status")} />
                     <FormRow label={__("evse.content.iec_state")}>
                         <IndicatorGroup
@@ -408,7 +409,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                         <Button variant="primary" className="form-control" onClick={() => API.call('evse/trigger_dc_fault_test', {}, "")}>{__("evse.content.trigger_dc_fault_test")}</Button>
                         </FormRow>
                     </CollapsedSection>
-            </>
+            </SubPage>
         )
     }
 }
@@ -535,7 +536,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
                                             }}/>
                                     </FormRow>;
 
-        return <>
+        return <SubPage>
                 <ConfigForm id="evse_settings" title={__("evse.content.settings")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
                         <Switch desc={__("evse.content.auto_start_enable")}
@@ -666,7 +667,7 @@ class EVSEV2Settings extends ConfigComponent<"charge_limits/default_limits", {},
                                 onClick={async () => this.setState({ev_wakeup: {enabled: !ev_wakeup.enabled}})}/>
                     </FormRow>
                 </ConfigForm>
-        </>;
+        </SubPage>;
     }
 }
 

@@ -31,6 +31,7 @@ import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputText      } from "../../ts/components/input_text";
 import { OutputFloat    } from "../../ts/components/output_float";
 import { PageHeader     } from "../../ts/components/page_header";
+import { SubPage } from "../../ts/components/sub_page";
 
 export class EMDebug extends Component {
     ms2time(ms: number) {
@@ -49,8 +50,8 @@ export class EMDebug extends Component {
         let state    = API.get('energy_manager/state');
 
         return (
-            <>
-                <PageHeader title={__("em_debug.content.em_debug")} colClasses="col-xl-10"/>
+            <SubPage colClasses="col-xl-10">
+                <PageHeader title={__("em_debug.content.em_debug")}/>
 
                 <FormSeparator heading={__("em_debug.content.protocol")} first={true} />
                 <DebugLogger prefix="energy_manager" translationPrefix="em_debug" debugHeader="energy_manager/debug_header" debug="energy_manager/debug" />
@@ -211,7 +212,7 @@ export class EMDebug extends Component {
                 <FormRow label={__("em_debug.content.state_input_voltage")}>
                     <OutputFloat value={ll_state.input_voltage} digits={3} scale={3} unit={'V'} />
                 </FormRow>
-            </>
+            </SubPage>
         )
     }
 }

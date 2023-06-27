@@ -24,8 +24,6 @@ import { __ } from "../../ts/translation";
 interface CollapsedSectionProps {
     label: string
     children: VNode | VNode[]
-    colClasses?: string
-    collapseClasses?: string
 }
 
 interface CollapsedSectionState {
@@ -40,8 +38,8 @@ export class CollapsedSection extends Component<CollapsedSectionProps, Collapsed
     render(props: CollapsedSectionProps, state: Readonly<CollapsedSectionState>) {
         return (
             <>
-            <div class="row mb-3 pt-3">
-                <div class={"border-bottom d-flex justify-content-between " + (props.colClasses === undefined ? "col-xl-8" : props.colClasses)}>
+            <div class="mb-3 pt-3">
+                <div class="border-bottom d-flex justify-content-between">
                     <span class="h3">{props.label}</span>
                     <Button variant="primary"
                             className="mb-2"
@@ -50,7 +48,7 @@ export class CollapsedSection extends Component<CollapsedSectionProps, Collapsed
                     </Button>
                 </div>
             </div>
-            <Collapse in={state.show} className={props.collapseClasses}>
+            <Collapse in={state.show}>
                 <div>
                     {toChildArray(props.children)}
                 </div>

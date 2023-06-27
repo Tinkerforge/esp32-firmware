@@ -37,6 +37,7 @@ import { InputSelect     } from "../../ts/components/input_select";
 import { InputTime       } from "../../ts/components/input_time";
 import { InputText       } from "../../ts/components/input_text";
 import { Switch          } from "../../ts/components/switch";
+import { SubPage } from "../../ts/components/sub_page";
 
 type StringStringTuple = [string, string];
 
@@ -255,7 +256,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         let debug_mode = API.hasModule("debug");
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="energy_manager_config_form" title={__("energy_manager.content.page_header")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
 
                     <FormSeparator heading={__("energy_manager.content.header_phase_switching")} first={true} />
@@ -640,7 +641,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                         </FormRow>
                     </> : null }
                 </ConfigForm>
-            </>
+            </SubPage>
         )
     }
 }

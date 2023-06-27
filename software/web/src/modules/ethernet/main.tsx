@@ -30,6 +30,7 @@ import { FormRow         } from "../../ts/components/form_row";
 import { IndicatorGroup  } from "../../ts/components/indicator_group";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
 import { Switch          } from "../../ts/components/switch";
+import { SubPage } from "src/ts/components/sub_page";
 
 type EthernetConfig = API.getType['ethernet/config'];
 
@@ -55,7 +56,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
             return <></>
 
         return (
-            <>
+            <SubPage>
                 <ConfigForm id="ethernet_config_form"
                             title={__("ethernet.content.ethernet")}
                             onSave={this.save}
@@ -91,7 +92,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
                         />
 
                 </ConfigForm>
-            </>
+            </SubPage>
         );
     }
 }

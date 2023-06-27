@@ -30,6 +30,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputFile } from "../../ts/components/input_file";
 import { Button } from "react-bootstrap";
+import { SubPage } from "src/ts/components/sub_page";
 
 type FirmwareUpdateConfig = API.getType['info/version'];
 
@@ -100,7 +101,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
             show_config_reset = true;
 
         return (
-            <>
+            <SubPage>
                 <PageHeader title={__("firmware_update.content.firmware_update")} />
 
                 <FormRow label={__("firmware_update.content.current_firmware")}>
@@ -190,7 +191,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                         }
                     }}>{__("firmware_update.content.factory_reset")}</Button>
                 </FormRow>
-            </>
+            </SubPage>
         );
     }
 }
