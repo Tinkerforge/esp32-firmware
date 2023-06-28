@@ -100,12 +100,23 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
         if (API.hasModule("users"))
             show_config_reset = true;
 
+        let build_time: string = '';
+
+        try {
+            let timestamp = parseInt(state.firmware.split('-')[1], 16);
+
+            if (util.hasValue(timestamp) && !isNaN(timestamp)) {
+                build_time = __("firmware_update.script.build_time") + util.timestamp_sec_to_date(timestamp);
+            }
+        } catch {
+        }
+
         return (
             <SubPage>
                 <PageHeader title={__("firmware_update.content.firmware_update")} />
 
                 <FormRow label={__("firmware_update.content.current_firmware")}>
-                    <InputText value={state.firmware}/>
+                    <InputText value={state.firmware + build_time}/>
                 </FormRow>
 
                 <FormRow label={__("firmware_update.content.firmware_update_label")} label_muted={__("firmware_update.content.firmware_update_desc")}>

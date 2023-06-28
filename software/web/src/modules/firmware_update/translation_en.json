@@ -44,7 +44,8 @@
             "no_info_page": null,
             "info_page_corrupted": "Firmware file corrupted (checksum error)",
             "wrong_firmware_type": null,
-            "downgrade": "Firmware file contains a downgrade to version %fw%. Installed is version %installed%."
+            "downgrade": "Firmware file contains a downgrade to version %fw%. Installed is version %installed%.",
+            "build_time": " created "
         }
     }
 }

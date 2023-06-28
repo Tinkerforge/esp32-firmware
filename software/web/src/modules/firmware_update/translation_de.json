@@ -43,7 +43,8 @@
             "no_info_page": null,
             "info_page_corrupted": "Firmware-Datei ist beschädigt (Checksummenfehler)",
             "wrong_firmware_type": null,
-            "downgrade": "Firmware-Datei beinhaltet ein Downgrade auf Version %fw%. Installiert ist Version %installed%."
+            "downgrade": "Firmware-Datei beinhaltet ein Downgrade auf Version %fw%. Installiert ist Version %installed%.",
+            "build_time": " erstellt "
         }
     }
 }
