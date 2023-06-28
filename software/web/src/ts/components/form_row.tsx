@@ -47,14 +47,14 @@ export class FormRow extends Component<FormRowProps, any> {
     render(props: FormRowProps) {
         let inner = <>{(toChildArray(props.children) as VNode[]).map(c => cloneElement(c, {idContext: this.idContext}))}</>;
         if (props.contentColClasses === undefined || props.contentColClasses !== "")
-            inner = <div class={props.contentColClasses === undefined ? "col-9" : props.contentColClasses}>
+            inner = <div class={props.contentColClasses === undefined ? "col-lg-9" : props.contentColClasses}>
                 {inner}
             </div>
 
 
         return (
             <div class="form-group row" hidden={props.hidden == undefined ? false : props.hidden}>
-                <label for={this.id} class={"col-form-label " + (props.labelColClasses === undefined ? "col-3" : props.labelColClasses)}>
+                <label for={this.id} class={"col-form-label " + (props.labelColClasses === undefined ? "col-lg-3" : props.labelColClasses)}>
                     {props.label_prefix ? props.label_prefix : <></>}
                     {props.label ? <span class={"form-label" + (props.label_muted && !props.label_infix ? " pr-2" : "")} dangerouslySetInnerHTML={{__html: props.label}}></span> : ""}
                     {props.label_infix ? props.label_infix : <></>}
