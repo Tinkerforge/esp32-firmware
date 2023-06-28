@@ -236,7 +236,7 @@ void Users::pre_setup()
                 {"username", Config::Str("", 0, USERNAME_LENGTH)},
                 {"digest_hash", Config::Str("", 0, 32)},
             })),
-            0, MAX_ACTIVE_USERS,
+            1, MAX_ACTIVE_USERS,
             Config::type_id<Config::ConfObject>()
         )},
         {"next_user_id", Config::Uint8(0)},
