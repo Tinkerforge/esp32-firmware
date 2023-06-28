@@ -8,6 +8,8 @@ import json
 import re
 import binascii
 import struct
+import mimetypes
+from base64 import b64encode
 
 def get_digest_paths(dst_dir, var_name, env=None):
     if env is not None:
@@ -283,3 +285,22 @@ def specialize_template(template_filename, destination_filename, replacements, c
 
     if remove_template:
         os.remove(template_filename)
+
+def file_to_data_url(path):
+    with open(path, 'rb') as f:
+        data = b64encode(f.read()).decode('ascii')
+
+    mimetypes.init()
+    mtype, encoding = mimetypes.guess_type(path)
+    if mtype is None:
+        print("Failed to guess mimetype for", path)
+        sys.exit(1)
+
+    return "data:{};base64,{}".format(mtype, data)
+
+def file_to_embedded_ts(path):
+    data_url = file_to_data_url(path)
+    basename = os.path.basename(path).replace(".", "_")
+    path = path.replace(os.path.basename(path), basename)
+    with open(path + ".embedded.ts", 'w') as f:
+        f.write('export let {} = "{}";'.format(basename, data_url))
