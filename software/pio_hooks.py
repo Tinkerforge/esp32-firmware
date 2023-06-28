@@ -507,6 +507,17 @@ def main():
     for frontend_module in frontend_modules:
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
 
+        if os.path.exists(os.path.join(mod_path, "prepare.py")):
+            print('Preparing frontend module:', frontend_module.space)
+
+            environ = dict(os.environ)
+            environ['PLATFORMIO_PROJECT_DIR'] = env.subst('$PROJECT_DIR')
+            environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
+
+            abs_branding_module = os.path.abspath(branding_module)
+            with ChangedDirectory(mod_path):
+                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_module], env=environ)
+
         if os.path.exists(os.path.join(mod_path, 'navbar.html')):
             with open(os.path.join(mod_path, 'navbar.html'), 'r', encoding='utf-8') as f:
                 navbar_entries.append(f.read())
