@@ -207,7 +207,6 @@ const em_relay_fills: {[id: number]: string} = {
 
 interface UplotLoaderProps {
     show: boolean;
-    marker_width_reduction: number;
     marker_class: 'h3'|'h4';
     children: VNode | VNode[];
 };
@@ -240,10 +239,10 @@ class UplotLoader extends Component<UplotLoaderProps, {}> {
     render(props?: UplotLoaderProps, state?: Readonly<{}>, context?: any): ComponentChild {
         return (
             <>
-                <div ref={this.no_data_ref} style={`position: absolute; width: calc(100% - ${props.marker_width_reduction}px); height: 100%; visibility: hidden; display: ${props.show ? 'flex' : 'none'};`}>
+                <div ref={this.no_data_ref} style={`position: absolute; width: 100%; height: 100%; visibility: hidden; display: ${props.show ? 'flex' : 'none'};`}>
                     <span class={props.marker_class} style="margin: auto;">{__("em_energy_analysis.content.no_data")}</span>
                 </div>
-                <div ref={this.loading_ref} style={`position: absolute; width: calc(100% - ${props.marker_width_reduction}px); height: 100%; visibility: ${props.show ? 'visible' : 'hidden'}; display: ${props.show ? 'flex' : 'none'};`}>
+                <div ref={this.loading_ref} style={`position: absolute; width: 100%; height: 100%; visibility: ${props.show ? 'visible' : 'hidden'}; display: ${props.show ? 'flex' : 'none'};`}>
                     <span class={props.marker_class} style="margin: auto;">{__("em_energy_analysis.content.loading")}</span>
                 </div>
                 {props.children}
@@ -1153,10 +1152,9 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
             <>
                 <FormRow label={__("em_energy_analysis_status.status.history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <div class="card pl-1 pb-1">
-                        <div> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                        <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                             <UplotLoader ref={this.uplot_loader_ref}
                                          show={true}
-                                         marker_width_reduction={8}
                                          marker_class={'h4'} >
                                 <UplotWrapper ref={this.uplot_wrapper_ref}
                                               id="em_energy_analysis_status_chart"
@@ -2773,10 +2771,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     </div>
                 </PageHeader>
                 <div class="mb-3">
-                    <div> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                    <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader ref={this.uplot_loader_5min_ref}
                                         show={true}
-                                        marker_width_reduction={30}
                                         marker_class={'h3'} >
                             <UplotFlagsWrapper ref={this.uplot_wrapper_5min_flags_ref}
                                                 id="em_energy_analysis_5min_flags_chart"
@@ -2818,7 +2815,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         </UplotLoader>
                         <UplotLoader ref={this.uplot_loader_daily_ref}
                                         show={false}
-                                        marker_width_reduction={30}
                                         marker_class={'h3'} >
                             <UplotWrapper ref={this.uplot_wrapper_daily_ref}
                                             id="em_energy_analysis_daily_chart"
