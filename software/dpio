@@ -2,10 +2,8 @@
 DIRNAME2=$(basename "$(dirname " $(realpath .)")")/$(basename " $(realpath .)")
 
 if [[ -v PLATFORMIO_BUILD_FLAGS ]]; then
-    echo "!!! a"
     PIO_FLAGS="-e PLATFORMIO_BUILD_FLAGS=$PLATFORMIO_BUILD_FLAGS"
 else
-    echo "!!! b"
     PIO_FLAGS=""
 fi
 
