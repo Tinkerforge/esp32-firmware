@@ -28,6 +28,8 @@ interface OutputFloatProps {
     digits: 0|1|2|3
     scale: number
     unit: string
+    maxFractionalDigitsOnPage?: number
+    maxUnitLengthOnPage?: number
 }
 
 export function OutputFloat(props: OutputFloatProps) {
@@ -35,12 +37,15 @@ export function OutputFloat(props: OutputFloatProps) {
 
     let val = util.toLocaleFixed(props.value / pow10, props.digits);
 
+    let maxFracDigits = props.maxFractionalDigitsOnPage === undefined ? 3 : props.maxFractionalDigitsOnPage;
+    let maxUnitLength = props.maxUnitLengthOnPage === undefined ? 2.5 : props.maxUnitLengthOnPage; // Hand-tuned at the moment to fit kvarh
+
     let pad_right = "padding-right: min(" +
         "calc(100% - 2px " + // border
                   "- .75rem " + // left padding
-                  "- 4rem " + // unit
+                  `- ${maxUnitLength}rem ` + // unit
                   `- ${util.toLocaleFixed(props.value / pow10, 0).length}ch` + // digits before decimal separator
-        `), calc(${props.digits == 0 ? 4 : (3-props.digits)}ch + .75rem));`;
+        `), calc(${props.digits == 0 ? (maxFracDigits > 0 ? maxFracDigits + 1 : 0) : (maxFracDigits-props.digits)}ch + .75rem));`;
 
     return (
         <div class="input-group">
@@ -51,7 +56,7 @@ export function OutputFloat(props: OutputFloatProps) {
                        disabled
                        value={val}/>
             <div class="input-group-append">
-                <div class="form-control input-group-text" style="width: 4rem;">
+                <div class="form-control input-group-text" style={`width: ${maxUnitLength + 1.5}rem;`}>
                     {this.props.unit}
                 </div>
 
