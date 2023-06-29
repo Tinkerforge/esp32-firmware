@@ -228,7 +228,7 @@ void Wifi::apply_soft_ap_config_and_start()
     }
     if (channel_to_use == 0 && scan_start_time != 0 && deadline_elapsed(scan_start_time + 7000)) {
         channel_to_use = (esp_random() % 4) * 4 + 1;
-        logger.printfln("Channel selection scan timeout elapsed! Randomly selected channel %u", channel_to_use);
+        logger.printfln("Channel selection scan timeout elapsed! Randomly selected channel %i", channel_to_use);
     }
 
     IPAddress ip, gateway, subnet;
@@ -413,7 +413,7 @@ void Wifi::setup()
 
                 // FIXME: Use a better way of time keeping here.
                 if (connected_for < 0x7FFFFFFF)
-                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for %d seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
+                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for %u seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
                 else
                     logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for a long time.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
 

@@ -436,7 +436,7 @@ bool EnergyManager::set_wallbox_5min_data_point(const struct tm *utc, const stru
                                     "\"flags\":%u,"
                                     "\"power\":%s}}\n",
                                    uid,
-                                   2000 + local_year,
+                                   2000U + local_year,
                                    local_month,
                                    local_day,
                                    local_hour,
@@ -502,7 +502,7 @@ bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_
                                     "\"day\":%u,"
                                     "\"energy\":%s}}\n",
                                    uid,
-                                   2000 + year,
+                                   2000U + year,
                                    month,
                                    day,
                                    energy_str);
@@ -594,7 +594,7 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
                                     "\"flags\":%u,"
                                     "\"power_grid\":%s,"
                                     "\"power_general\":[%s,%s,%s,%s,%s,%s]}}\n",
-                                   2000 + local_year,
+                                   2000U + local_year,
                                    local_month,
                                    local_day,
                                    local_hour,
@@ -699,7 +699,7 @@ bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
                                     "\"energy_grid_out\":%s,"
                                     "\"energy_general_in\":[%s,%s,%s,%s,%s,%s],"
                                     "\"energy_general_out\":[%s,%s,%s,%s,%s,%s]}}\n",
-                                   2000 + year,
+                                   2000U + year,
                                    month,
                                    day,
                                    energy_grid_in_str,

@@ -165,7 +165,7 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
 
         if (strncmp(DISPLAY_NAME, info.firmware_name, ARRAY_SIZE(info.firmware_name)) != 0) {
             if (log) {
-                logger.printfln("Failed to update: Firmware is for a %.*s but this is a %s!", ARRAY_SIZE(info.firmware_name), info.firmware_name, DISPLAY_NAME);
+                logger.printfln("Failed to update: Firmware is for a %.*s but this is a %s!", static_cast<int>(ARRAY_SIZE(info.firmware_name)), info.firmware_name, DISPLAY_NAME);
             }
             return "{\"error\":\"firmware_update.script.wrong_firmware_type\"}";
         }
@@ -176,9 +176,9 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
                 logger.printfln("Failed to update: Firmware is a downgrade!");
             }
             char buf[128];
-            snprintf(buf, sizeof(buf)/sizeof(buf[0]), "{\"error\":\"firmware_update.script.downgrade\", \"fw\":\"%u.%u.%u\", \"installed\":\"%u.%u.%u\"}",
+            snprintf(buf, sizeof(buf)/sizeof(buf[0]), "{\"error\":\"firmware_update.script.downgrade\", \"fw\":\"%u.%u.%u\", \"installed\":\"%i.%i.%i\"}",
                      info.fw_version[0], info.fw_version[1], info.fw_version[2],
-                     (uint8_t) BUILD_VERSION_MAJOR, (uint8_t) BUILD_VERSION_MINOR, (uint8_t) BUILD_VERSION_PATCH);
+                     BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH);
             return String(buf);
         }
     }

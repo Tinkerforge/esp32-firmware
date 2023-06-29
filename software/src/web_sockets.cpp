@@ -81,7 +81,7 @@ bool WebSockets::queueFull()
     if (work_queue.size() >= MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE) {
         return true;
     }
-    logger.printfln("WebSocket work queue was full but %d items were cleaned.", MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE - work_queue.size());
+    logger.printfln("WebSocket work queue was full but %u items were cleaned.", MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE - work_queue.size());
 
     return false;
 }
@@ -480,7 +480,7 @@ void WebSockets::triggerHttpThread()
         // If the packet that enqueues the worker is lost
         // worker_active must be reset or web sockets will never send data again.
         if (last_worker_run != 0 && deadline_elapsed(last_worker_run + KEEP_ALIVE_TIMEOUT_MS * 2)) {
-            logger.printfln("WebSocket worker ran %u seconds. Control socket drop? Restarting worker.", (KEEP_ALIVE_TIMEOUT_MS * 2) / 1000);
+            logger.printfln("WebSocket worker ran %u seconds. Control socket drop? Restarting worker.", (KEEP_ALIVE_TIMEOUT_MS * 2) / 1000U);
             last_worker_run = millis();
             worker_active = false;
 

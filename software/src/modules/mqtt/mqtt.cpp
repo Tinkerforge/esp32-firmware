@@ -31,9 +31,9 @@
 extern char local_uid_str[32];
 
 #if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
-#define MQTT_RECV_BUFFER_SIZE 4096
+#define MQTT_RECV_BUFFER_SIZE 4096U
 #else
-#define MQTT_RECV_BUFFER_SIZE 2048
+#define MQTT_RECV_BUFFER_SIZE 2048U
 #endif
 
 #define MQTT_RECV_BUFFER_HEADROOM (MQTT_RECV_BUFFER_SIZE / 4)
@@ -288,7 +288,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     // It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client
     // because it matches an established subscription regardless of how the flag was set in the message it received [MQTT-3.3.1-9].
     if (!retain)
-        logger.printfln("MQTT: Received message on unknown topic '%.*s'. data_len=%i", topic_len, topic, data_len);
+        logger.printfln("MQTT: Received message on unknown topic '%.*s'. data_len=%u", static_cast<int>(topic_len), topic, data_len);
 }
 
 static char err_buf[64] = {0};
