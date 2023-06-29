@@ -39,7 +39,7 @@ import { config } from "./api";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
 import { InputNumber } from "src/ts/components/input_number";
 import { SubPage } from "src/ts/components/sub_page";
-import { Table, TableRow } from "../../ts/components/table";
+import { Table } from "../../ts/components/table";
 
 type ChargeManagerConfig = API.getType['charge_manager/config'];
 type ChargerConfig = ChargeManagerConfig["chargers"][0];
