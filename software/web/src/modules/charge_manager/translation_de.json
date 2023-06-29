@@ -52,6 +52,12 @@
             "add_charger_modal_save": "Hinzufügen",
             "add_charger_modal_found": "Gefundene Wallboxen",
 
+            "edit_charger_modal_title": "Wallbox bearbeiten",
+            "edit_charger_modal_name": "Anzeigename",
+            "edit_charger_modal_host": "IP-Adresse oder Hostname",
+            "edit_charger_modal_abort": "Verwerfen",
+            "edit_charger_modal_save": "Übernehmen",
+
             "multi_broadcast_modal_title": "Reservierte, Multi- oder Broadcast IP-Adresse(n) gefunden",
             "multi_broadcast_modal_body": "Folgende reservierte, Multi- oder Broadcast-IP-Adressen wurden gefunden: ",
             "multi_broadcast_modal_body_end": "Sind sie sicher, dass sie die Einstellungen übernehmen wollen?",
@@ -105,9 +111,9 @@
             "last_update_suffix": "",
             "save_failed": "Speichern der Lastmanager-Konfiguration fehlgeschlagen",
             "set_available_current_failed": "Setzen des verfügbaren Stroms fehlgeschlagen",
-            "add_charger": "Wallbox hinzufügen",
-            "add_charger_disabled_prefix": "Es werden nur bis zu ",
-            "add_charger_disabled_suffix": " Wallboxen unterstützt.",
+            "add_charger_prefix": "",
+            "add_charger_infix": " von ",
+            "add_charger_suffix": " Wallboxen konfiguriert",
 
             "reboot_content_changed": "Lastmanagement-Einstellungen",
 

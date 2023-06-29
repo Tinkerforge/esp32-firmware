@@ -562,3 +562,7 @@ table ul {
     margin-bottom: 0 !important;
     padding-left: 1rem !important;
 }
+
+.card-body th {
+    border-top: none;
+}

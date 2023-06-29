@@ -39,6 +39,7 @@ import { config } from "./api";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
 import { InputNumber } from "src/ts/components/input_number";
 import { SubPage } from "src/ts/components/sub_page";
+import { Table, TableRow } from "../../ts/components/table";
 
 type ChargeManagerConfig = API.getType['charge_manager/config'];
 type ChargerConfig = ChargeManagerConfig["chargers"][0];
@@ -46,19 +47,15 @@ type ScanCharger = Exclude<API.getType['charge_manager/scan_result'], string>[0]
 
 const MAX_CONTROLLED_CHARGERS = 10;
 
-let charger_add_symbol = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server" style=""><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line y1="18" y2="18" x1="18" x2="18.01"></line><line x1="19" x2="19" y1="3" y2="9"></line><line x1="22" x2="16" y1="6" y2="6"></line></svg>
-let charger_delete_symbol = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server mr-2" style=""><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line y1="18" y2="18" x1="18" x2="18.01"></line><line x1="17" x2="22" y1="4" y2="9"></line><line x1="22" x2="17" y1="4" y2="9"></line></svg>
-let charger_symbol = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server" style=""><rect x="2" y="8" width="20" height="8" rx="2" ry="2"></rect><line y1="12" y2="12" x1="18" x2="18.01"></line></svg>
-
-
 interface ChargeManagerState {
-    showModal: boolean
-    newCharger: ChargerConfig
+    showAddModal: boolean
+    addCharger: ChargerConfig
+    showEditModal: number
+    editCharger: ChargerConfig
     managementEnabled: boolean
     showExpert: boolean
     scanResult: Readonly<ScanCharger[]>
 }
-
 
 export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, ChargeManagerState> {
     intervalID: number = null;
@@ -69,8 +66,10 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
               __("charge_manager.script.reboot_content_changed"));
 
         this.state = {
-            showModal: false,
-            newCharger: {host: "", name: ""},
+            showAddModal: false,
+            addCharger: {host: "", name: ""},
+            showEditModal: null,
+            editCharger: {host: "", name: ""},
             managementEnabled: false,
             showExpert: false,
             scanResult: []
@@ -246,22 +245,6 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         let energyManagerMode = API.hasModule("energy_manager") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
         let warpUltimateMode  = API.hasModule("energy_manager") &&  (API.hasModule("evse_v2") || API.hasModule("evse"));
 
-        let addChargerCard = <div class="col mb-4">
-                <Card className="h-100" key={999}>
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    {charger_add_symbol}
-                    <Button variant="outline-dark" size="sm" style="visibility: hidden;">
-                        {charger_delete_symbol}<span style="font-size: 1rem; vertical-align: middle;">{__("charge_manager.script.delete")}</span>
-                    </Button>
-                </div>
-                <Card.Body>
-                    {state.chargers.length >= MAX_CONTROLLED_CHARGERS
-                        ? <span>{__("charge_manager.script.add_charger_disabled_prefix") + MAX_CONTROLLED_CHARGERS + __("charge_manager.script.add_charger_disabled_suffix")}</span>
-                        : <Button variant="light" size="lg" block style="height: 100%;" onClick={() => this.setState({showModal: true})}>{__("charge_manager.script.add_charger")}</Button>}
-                </Card.Body>
-            </Card>
-        </div>
-
         let charge_manager_mode = <FormRow label={__("charge_manager.content.enable_charge_manager")} label_muted={__("charge_manager.content.enable_charge_manager_muted")}>
              <InputSelect
                     items={[
@@ -423,69 +406,52 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         }
 
         let chargers = <FormRow label={__("charge_manager.content.managed_boxes")}>
-                <div class="row row-cols-1 row-cols-md-2">
-                {state.chargers.map((c, i) => (
-                    <div class="col mb-4">
-                    <Card className="h-100" key={i}>
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            {charger_symbol}
-                            <Button variant="outline-dark" size="sm"
-                                    style={!energyManagerMode && c.host == "127.0.0.1" ? "visibility: hidden;" : ""}
-                                    onClick={() => {
+                <div>
+                    <Table columnNames={[__("charge_manager.script.display_name"), __("charge_manager.content.add_charger_modal_host")]}
+                           rows={state.chargers.map((charger, i) =>
+                               { return {
+                                    columnData: [charger.name, charger.host],
+                                    columnRepresentations: [<>{charger.name}</>, <a target="_blank" rel="noopener noreferrer" href={(charger.host == '127.0.0.1' || charger.host == 'localhost') ? '/' : "http://" + charger.host}>{charger.host}</a>],
+                                    onEditClick: () => this.setState({showEditModal: i, editCharger: {name: state.chargers[i].name, host: state.chargers[i].host}}),
+                                    onRemoveClick: !energyManagerMode && (charger.host == "127.0.0.1" || charger.host == "localhost") ? undefined : () => {
                                         this.setState({chargers: state.chargers.filter((v, idx) => idx != i)});
-                                        this.hackToAllowSave();} }>
-                                {charger_delete_symbol}<span style="font-size: 1rem; vertical-align: middle;">{__("charge_manager.script.delete")}</span>
-                            </Button>
-                        </div>
-                        <Card.Body>
-                            <FormGroup label={__("charge_manager.script.display_name")}>
-                                <InputText value={c.name}
-                                        onValue={(v) => this.setCharger(i, {name: v})}
-                                        maxLength={32}
-                                        required/>
-                            </FormGroup>
-                            <FormGroup label={__("charge_manager.script.host")}>
-                                <InputText value={c.host}
-                                        onValue={(v) => this.setCharger(i, {host: v})}
-                                        maxLength={64}
-                                        required
-                                        class={check_host(c.host, i) != undefined ? "is-invalid" : ""}
-                                        invalidFeedback={check_host(c.host, i)}/>
-                            </FormGroup>
-                        </Card.Body>
-                    </Card>
-                    </div>
-                )).concat(addChargerCard)}
+                                        this.hackToAllowSave();
+                                    }}
+                               })
+                           }
+                           maxRowCount={MAX_CONTROLLED_CHARGERS}
+                           addMessage={__("charge_manager.script.add_charger_prefix") + state.chargers.length + __("charge_manager.script.add_charger_infix") + MAX_CONTROLLED_CHARGERS + __("charge_manager.script.add_charger_suffix")}
+                           onAddClick={() => this.setState({showAddModal: true})}/>
                 </div>
             </FormRow>
 
-        let modal = <ItemModal onSubmit={() => {
-                this.setState({showModal: false,
-                    chargers: state.chargers.concat(state.newCharger),
-                    newCharger: {name: "", host: ""}});
+        let addModal = <ItemModal onSubmit={() => {
+                this.setState({showAddModal: false,
+                    chargers: state.chargers.concat(state.addCharger),
+                    addCharger: {name: "", host: ""}});
                 this.hackToAllowSave();}}
-            onHide={() => this.setState({showModal: false})}
+            onHide={() => this.setState({showAddModal: false, addCharger: {name: "", host: ""}})}
             onEnter={() => {this.scan_services(); this.intervalID = setInterval(this.scan_services, 3000)}}
             onExited={() => {this.setState({scanResult: []}); window.clearInterval(this.intervalID)}}
-            show={state.showModal}
+            show={state.showAddModal}
             no_variant="secondary"
             yes_variant="primary"
             title={__("charge_manager.content.add_charger_modal_title")}
             no_text={__("charge_manager.content.add_charger_modal_abort")}
             yes_text={__("charge_manager.content.add_charger_modal_save")}>
                     <FormGroup label={__("charge_manager.content.add_charger_modal_name")}>
-                                <InputText value={state.newCharger.name}
-                                        onValue={(v) => this.setState({newCharger: {...state.newCharger, name: v}})}
+                                <InputText value={state.addCharger.name}
+                                        onValue={(v) => this.setState({addCharger: {...state.addCharger, name: v}})}
                                         maxLength={32}
                                         required/>
                             </FormGroup>
                             <FormGroup label={__("charge_manager.content.add_charger_modal_host")}>
-                                <InputText value={state.newCharger.host}
-                                        onValue={(v) => this.setState({newCharger: {...state.newCharger, host: v}})}
+                                <InputText value={state.addCharger.host}
+                                        onValue={(v) => this.setState({addCharger: {...state.addCharger, host: v}})}
                                         maxLength={64}
                                         required
-                                        class={check_host(state.newCharger.host, -1) != undefined ? "is-invalid" : ""}
-                                        invalidFeedback={check_host(state.newCharger.host, -1)}/>
+                                        class={check_host(state.addCharger.host, -1) != undefined ? "is-invalid" : ""}
+                                        invalidFeedback={check_host(state.addCharger.host, -1)}/>
                             </FormGroup>
                             <FormGroup label={__("charge_manager.content.add_charger_modal_found")}>
                                 <ListGroup>
@@ -495,7 +461,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                             <ListGroup.Item key={c.hostname}
                                                         action type="button"
                                                         onClick={c.error != 0 ? () => {} : () => {
-                                                            this.setState({newCharger: {host: c.hostname + ".local", name: c.display_name}})
+                                                            this.setState({addCharger: {host: c.hostname + ".local", name: c.display_name}})
                                                         }}
                                                         style={c.error == 0 ? "" : "background-color: #eeeeee !important;"}>
                                                 <div class="d-flex w-100 justify-content-between">
@@ -511,6 +477,34 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                             </ListGroup.Item>))
                                 }
                                 </ListGroup>
+                            </FormGroup>
+                </ItemModal>
+
+        let editModal = <ItemModal onSubmit={() => {
+                this.setState({showEditModal: null,
+                    chargers: state.chargers.map((charger, i) => state.showEditModal === i ? state.editCharger : charger),
+                    editCharger: {name: "", host: ""}});
+                this.hackToAllowSave();}}
+            onHide={() => this.setState({showEditModal: null, editCharger: {name: "", host: ""}})}
+            show={state.showEditModal !== null}
+            no_variant="secondary"
+            yes_variant="primary"
+            title={__("charge_manager.content.edit_charger_modal_title")}
+            no_text={__("charge_manager.content.edit_charger_modal_abort")}
+            yes_text={__("charge_manager.content.edit_charger_modal_save")}>
+                    <FormGroup label={__("charge_manager.content.edit_charger_modal_name")}>
+                                <InputText value={state.editCharger.name}
+                                        onValue={(v) => this.setState({editCharger: {...state.editCharger, name: v}})}
+                                        maxLength={32}
+                                        required/>
+                            </FormGroup>
+                            <FormGroup label={__("charge_manager.content.add_charger_modal_host")}>
+                                <InputText value={state.editCharger.host}
+                                        onValue={(v) => this.setState({editCharger: {...state.editCharger, host: v}})}
+                                        maxLength={64}
+                                        required
+                                        class={check_host(state.editCharger.host, state.showEditModal) != undefined ? "is-invalid" : ""}
+                                        invalidFeedback={check_host(state.editCharger.host, state.showEditModal)}/>
                             </FormGroup>
                 </ItemModal>
 
@@ -561,7 +555,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                     </Collapse>
                     }
                 </ConfigForm>
-                {modal}
+                {addModal}
+                {editModal}
             </SubPage>
         )
     }
