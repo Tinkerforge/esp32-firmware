@@ -15,7 +15,7 @@ args = parser.parse_args()
 def get_latest_fw(fw_type=''):
     files = os.listdir("build")
     files = [x for x in files if x.endswith(".elf") and (fw_type == '' or x.startswith(fw_type + "_firmware"))]
-    latest = max(files, key=lambda x: int(x.replace(".elf", "").replace("-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE", "").split("_firmware_")[1].split("_")[3], 16), default=None)
+    latest = max(files, key=lambda x: int(x.replace(".elf", "").replace("-NIGHTLY", "").replace("-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE", "").split("_firmware_")[1].split("_")[3], 16), default=None)
     if latest is None:
         print("Failed to find a firmware containing the string {}".format(fw_type))
         sys.exit(0)
