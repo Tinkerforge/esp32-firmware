@@ -62,6 +62,11 @@ export class ItemModal extends Component<ItemModalProps, any> {
                 <form onSubmit={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+
+                    if (!(e.target as HTMLFormElement).checkValidity() || (e.target as HTMLFormElement).querySelector(".is-invalid")) {
+                        return;
+                    }
+
                     onSubmit();
                     onHide();
                 }}>
