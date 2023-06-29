@@ -122,7 +122,7 @@ bool EmPvFaker::onMqttMessage(char *topic, size_t topic_len, char *data, size_t 
         return false;
     }
 
-    StaticJsonDocument<64> doc;
+    StaticJsonDocument<JSON_OBJECT_SIZE(10)> doc;
     DeserializationError error = deserializeJson(doc, data, data_len);
     if (error) {
         logger.printfln("em_pv_faker: Failed to deserialize MQTT payload: %s", error.c_str());
