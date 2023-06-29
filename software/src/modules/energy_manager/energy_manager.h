@@ -150,7 +150,7 @@ struct sdcard_info {
     uint8_t  manufacturer_id;
     uint8_t  product_rev;
     char     product_name[6];
-} __attribute__((packed));
+};
 
 enum class SwitchingState
 {
