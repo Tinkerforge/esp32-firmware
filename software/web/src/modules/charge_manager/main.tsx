@@ -456,7 +456,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                             <FormGroup label={__("charge_manager.content.add_charger_modal_found")}>
                                 <ListGroup>
                                 {
-                                    state.scanResult.filter(c => !state.chargers.some(c1 => c1.host == c.hostname + ".local"))
+                                    state.scanResult.filter(c => !state.chargers.some(c1 => c1.host == c.hostname + ".local" || c1.host == c.ip))
                                         .map(c => (
                                             <ListGroup.Item key={c.hostname}
                                                         action type="button"
