@@ -160,9 +160,17 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         __("users.script.reboot_content_changed"));
     }
 
+    user_has_password(u: User) {
+        return (u.digest_hash == null &&    // user is known and has password set, which is censored
+                u.password !== "") ||       // password will not be removed, an empty string as password would mean to remove the password
+               (u.digest_hash == "" &&      // user is new and/or has currently no password set
+                u.password !== undefined &&
+                u.password !== null &&      // password will be changed/set
+                u.password !== "")          // password will not be removed, an empty string as password would mean to remove the password
+    }
+
     http_auth_allowed() {
-        return (this.state as Readonly<UsersState & UsersConfig>).users.some(u => (u.digest_hash == null && (u.password !== "")) ||
-                                                                                  (u.digest_hash == "" && u.password !== undefined && u.password !== null && u.password !== ""))
+        return (this.state as Readonly<UsersState & UsersConfig>).users.some(u => this.user_has_password(u))
     };
 
     override async sendSave(t: "users/config", new_config: UsersConfig) {
