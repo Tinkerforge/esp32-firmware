@@ -64,6 +64,11 @@
         },
         "input_file": {
             "uploading": "uploading..."
+        },
+        "table": {
+            "abort": "Discard",
+            "add": "Add",
+            "apply": "Apply"
         }
     },
     "util": {

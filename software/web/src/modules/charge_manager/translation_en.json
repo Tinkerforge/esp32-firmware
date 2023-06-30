@@ -48,15 +48,11 @@
             "add_charger_modal_title": "Add charger",
             "add_charger_modal_name": "Display name",
             "add_charger_modal_host": "IP address or hostname",
-            "add_charger_modal_abort": "Discard",
-            "add_charger_modal_save": "Add",
             "add_charger_modal_found": "Discovered chargers",
 
             "edit_charger_modal_title": "Edit charger",
             "edit_charger_modal_name": "Display name",
             "edit_charger_modal_host": "IP address or hostname",
-            "edit_charger_modal_abort": "Discard",
-            "edit_charger_modal_save": "Apply",
 
             "multi_broadcast_modal_title": "Reserved, multi- or broadcast ip addresses found",
             "multi_broadcast_modal_body": "These reserved, multi- or broadcast ip addresses were detected: ",

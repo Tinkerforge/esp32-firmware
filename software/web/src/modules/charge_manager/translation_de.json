@@ -48,15 +48,11 @@
             "add_charger_modal_title": "Wallbox hinzufügen",
             "add_charger_modal_name": "Anzeigename",
             "add_charger_modal_host": "IP-Adresse oder Hostname",
-            "add_charger_modal_abort": "Verwerfen",
-            "add_charger_modal_save": "Hinzufügen",
             "add_charger_modal_found": "Gefundene Wallboxen",
 
             "edit_charger_modal_title": "Wallbox bearbeiten",
             "edit_charger_modal_name": "Anzeigename",
             "edit_charger_modal_host": "IP-Adresse oder Hostname",
-            "edit_charger_modal_abort": "Verwerfen",
-            "edit_charger_modal_save": "Übernehmen",
 
             "multi_broadcast_modal_title": "Reservierte, Multi- oder Broadcast IP-Adresse(n) gefunden",
             "multi_broadcast_modal_body": "Folgende reservierte, Multi- oder Broadcast-IP-Adressen wurden gefunden: ",
