@@ -260,7 +260,6 @@ void NFC::update_seen_tags()
             // because this will probably only happen if this
             // task slowed down because something else blocked
             // for more than one second.
-            logger.printfln("Seen %s", new_tags[new_idx].tag_id);
             tag_seen(&new_tags[new_idx], new_idx == TAG_LIST_LENGTH - 1);
             continue;
         }
@@ -274,7 +273,6 @@ void NFC::update_seen_tags()
             // -> The tag was seen, then removed and then seen again.
             // If old_seen was also true, this would be a tag that
             // is detected continously, which only counts as one detection.
-            logger.printfln("Seen %s", new_tags[new_idx].tag_id);
             tag_seen(&new_tags[new_idx], new_idx == TAG_LIST_LENGTH - 1);
             continue;
         }
