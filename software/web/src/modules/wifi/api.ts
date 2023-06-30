@@ -40,6 +40,7 @@ export interface state {
     ap_state: number,
     ap_bssid: string,
     sta_ip: string,
+    sta_subnet: string,
     sta_rssi: number,
     sta_bssid: string
 }

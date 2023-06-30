@@ -136,6 +136,7 @@ void Wifi::pre_setup()
         {"ap_state", Config::Int(0)},
         {"ap_bssid", Config::Str("", 0, 20)},
         {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
+        {"sta_subnet", Config::Str("0.0.0.0", 7, 15)},
         {"sta_rssi", Config::Int8(0)},
         {"sta_bssid", Config::Str("", 0, 20)}
     });
@@ -421,6 +422,7 @@ void Wifi::setup()
             this->was_connected = false;
 
             state.get("sta_ip")->updateString("0.0.0.0");
+            state.get("sta_subnet")->updateString("0.0.0.0");
             state.get("sta_bssid")->updateString("");
         },
         ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
@@ -442,9 +444,11 @@ void Wifi::setup()
             this->was_connected = true;
 
             auto ip = WiFi.localIP().toString();
+            auto subnet = WiFi.subnetMask();
             logger.printfln("Wifi MAC address: %s", WiFi.macAddress().c_str());
-            logger.printfln("Wifi got IP address: %s. Connected to BSSID %s", ip.c_str(), WiFi.BSSIDstr().c_str());
+            logger.printfln("Wifi got IP address: %s/%u. Connected to BSSID %s", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet), WiFi.BSSIDstr().c_str());
             state.get("sta_ip")->updateString(ip);
+            state.get("sta_subnet")->updateString(subnet.toString());
             state.get("sta_bssid")->updateString(WiFi.BSSIDstr());
         },
         ARDUINO_EVENT_WIFI_STA_GOT_IP);
@@ -462,6 +466,7 @@ void Wifi::setup()
 
         logger.printfln("Wifi lost IP. Forcing disconnect and reconnect of WiFi");
         state.get("sta_ip")->updateString("0.0.0.0");
+        state.get("sta_subnet")->updateString("0.0.0.0");
         state.get("sta_bssid")->updateString("");
 
         WiFi.disconnect(false, true);

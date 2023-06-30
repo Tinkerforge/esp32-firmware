@@ -79,6 +79,7 @@ void Ethernet::pre_setup()
         {"connection_start", Config::Uint(0)},
         {"connection_end", Config::Uint(0)},
         {"ip", Config::Str("0.0.0.0", 7, 15)},
+        {"subnet", Config::Str("0.0.0.0", 7, 15)},
         {"full_duplex", Config::Bool(false)},
         {"link_speed", Config::Uint8(0)}
     });
@@ -153,9 +154,11 @@ void Ethernet::setup()
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             auto ip = ETH.localIP().toString();
-            logger.printfln("Ethernet got IP address: %s", ip.c_str());
+            auto subnet = ETH.subnetMask();
+            logger.printfln("Ethernet got IP address: %s/%u", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet));
             state.get("connection_state")->updateUint((uint)EthernetState::CONNECTED);
             state.get("ip")->updateString(ip);
+            state.get("subnet")->updateString(subnet.toString());
 
             was_connected = true;
             last_connected = millis();
@@ -173,6 +176,7 @@ void Ethernet::setup()
             state.get("connection_state")->updateUint((uint)EthernetState::CONNECTING);
 
             state.get("ip")->updateString("0.0.0.0");
+            state.get("subnet")->updateString("0.0.0.0");
             this->print_con_duration();
         },
         ARDUINO_EVENT_ETH_LOST_IP);
@@ -182,6 +186,7 @@ void Ethernet::setup()
             state.get("connection_state")->updateUint((uint)EthernetState::NOT_CONNECTED);
 
             state.get("ip")->updateString("0.0.0.0");
+            state.get("subnet")->updateString("0.0.0.0");
             this->print_con_duration();
         },
         ARDUINO_EVENT_ETH_DISCONNECTED);
