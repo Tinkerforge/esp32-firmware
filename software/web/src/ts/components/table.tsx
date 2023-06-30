@@ -30,8 +30,7 @@ export interface TableModalRow {
 }
 
 export interface TableRow {
-    columnData: string[]
-    columnRepresentations: VNode[]
+    columnValues: VNode[]
     editTitle?: string
     onEditStart?: () => void
     onEditGetRows?: () => TableModalRow[]
@@ -85,8 +84,8 @@ export class Table extends Component<TableProps, TableState> {
                     <tbody>
                         {props.rows.map((row, i) =>
                             <tr>
-                                {row.columnRepresentations.map((representation) => (
-                                    <td class="text-break" style="vertical-align: middle;">{representation}</td>
+                                {row.columnValues.map((value) => (
+                                    <td class="text-break" style="vertical-align: middle;">{value}</td>
                                 ))}
                                 <td style="width: 1%; white-space: nowrap; vertical-align: middle;">
                                     <Button variant="primary"
@@ -132,7 +131,7 @@ export class Table extends Component<TableProps, TableState> {
                 <div class={`d-block d-${props.tableTill ? props.tableTill : 'sm'}-none`}>
                     {props.rows.map((row, i) => <Card className="mb-3">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="text-break" style="margin-bottom: 0;">{row.columnRepresentations[0]}</h5>
+                            <h5 class="text-break" style="margin-bottom: 0;">{row.columnValues[0]}</h5>
                             <div style="white-space: nowrap; vertical-align: middle;">
                                 <Button variant="primary"
                                         size="sm"
@@ -156,7 +155,7 @@ export class Table extends Component<TableProps, TableState> {
                         <Card.Body style="padding-bottom: 0.5rem;">
                         {props.columnNames.slice(1).map((columnName, i) =>
                         <FormGroup label={columnName}>
-                            <span class="form-control" readonly>{row.columnRepresentations[1 + i]}</span>
+                            <span class="form-control" readonly>{row.columnValues[1 + i]}</span>
                         </FormGroup>)}
                     </Card.Body></Card>)}
                     {props.onAddStart ?

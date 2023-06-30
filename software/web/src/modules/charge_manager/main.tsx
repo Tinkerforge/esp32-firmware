@@ -48,9 +48,7 @@ type ScanCharger = Exclude<API.getType['charge_manager/scan_result'], string>[0]
 const MAX_CONTROLLED_CHARGERS = 10;
 
 interface ChargeManagerState {
-    showAddModal: boolean
     addCharger: ChargerConfig
-    showEditModal: number
     editCharger: ChargerConfig
     managementEnabled: boolean
     showExpert: boolean
@@ -66,9 +64,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
               __("charge_manager.script.reboot_content_changed"));
 
         this.state = {
-            showAddModal: false,
             addCharger: {host: "", name: ""},
-            showEditModal: null,
             editCharger: {host: "", name: ""},
             managementEnabled: false,
             showExpert: false,
@@ -410,15 +406,13 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         }
 
         let chargers = <FormRow label={__("charge_manager.content.managed_boxes")}>
-                <div>
                     <Table
                         columnNames={[__("charge_manager.script.display_name"), __("charge_manager.content.add_charger_modal_host")]}
                         rows={state.chargers.map((charger, i) =>
                             { return {
-                                columnData: [charger.name, charger.host],
-                                columnRepresentations: [<>{charger.name}</>, <a target="_blank" rel="noopener noreferrer" href={(charger.host == '127.0.0.1' || charger.host == 'localhost') ? '/' : "http://" + charger.host}>{charger.host}</a>],
+                                columnValues: [<>{charger.name}</>, <a target="_blank" rel="noopener noreferrer" href={(charger.host == '127.0.0.1' || charger.host == 'localhost') ? '/' : "http://" + charger.host}>{charger.host}</a>],
                                 editTitle: __("charge_manager.content.edit_charger_modal_title"),
-                                onEditStart: () => this.setState({editCharger: {name: state.chargers[i].name.trim(), host: state.chargers[i].host.trim()}}),
+                                onEditStart: () => this.setState({editCharger: {name: charger.name.trim(), host: charger.host.trim()}}),
                                 onEditGetRows: () => [
                                     {
                                         name: __("charge_manager.content.edit_charger_modal_name"),
@@ -513,7 +507,6 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                             this.hackToAllowSave();
                         }}
                         onAddAbort={() => this.setState({addCharger: {name: "", host: ""}})} />
-                </div>
             </FormRow>
 
         return (
