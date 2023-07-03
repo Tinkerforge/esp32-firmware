@@ -37,9 +37,8 @@ export class DeviceName extends ConfigComponent<'info/display_name'> {
     }
 
     render(props: {}, state: Readonly<API.getType['info/display_name']>) {
-        if (!util.render_allowed()) {
-            return (<></>);
-        }
+        if (!util.render_allowed() || !API.hasModule("device_name"))
+            return <></>
 
         document.title = API.get("info/display_name").display_name + " - " + __("main.title");
 
