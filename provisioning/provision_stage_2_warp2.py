@@ -338,7 +338,7 @@ def main(stage3):
     github_reachable = True
     try:
         with urllib.request.urlopen('https://github.com/Tinkerforge/firmwares', timeout=5.0) as req:
-            req.recv()
+            req.read()
     except:
         print("github.com not reachable: Will not pull firmwares git.")
         github_reachable = False
