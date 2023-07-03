@@ -481,7 +481,7 @@ void Wifi::setup()
 #if MODULE_NETWORK_AVAILABLE()
     WiFi.setHostname(network.config.get("hostname")->asEphemeralCStr());
 #else
-    WiFi.setHostname((String(BUILD_HOST_PREFIX) + "-" + local_uid_str)).c_str();
+    WiFi.setHostname((String(BUILD_HOST_PREFIX) + "-" + local_uid_str).c_str());
 #endif
 
     if (enable_sta && enable_ap) {
