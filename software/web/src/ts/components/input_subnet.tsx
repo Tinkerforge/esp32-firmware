@@ -20,37 +20,28 @@
 import { h } from "preact";
 import { InputSelect, InputSelectProps } from "./input_select";
 
-export function InputSubnet(props: Omit<InputSelectProps, "items">) {
+import { unparseIP } from "../util";
+import { useMemo } from "preact/hooks";
+
+export interface InputSubnetProps extends Omit<InputSelectProps, "items"> {
+    minPrefixLength?: number
+    maxPrefixLength?: number
+}
+
+export function InputSubnet(props: InputSubnetProps) {
+    let {minPrefixLength = 8, maxPrefixLength = 31, ...rest} = props;
+
+    const items = useMemo(() => {
+            let result: [string, string][] = [];
+            for(let i = maxPrefixLength; i >= minPrefixLength; --i) {
+                let x = i == 32 ? 0xFFFFFFFF : ~(0xFFFFFFFF >>> (i));
+                result.push([unparseIP(x), "/" + i + " (" + unparseIP(x) + ")"]);
+            }
+            return result;
+        }, [minPrefixLength, maxPrefixLength]);
+
     return (
-        <InputSelect items={[
-                        ["255.255.255.254", "/31 (255.255.255.254)"],
-                        ["255.255.255.252", "/30 (255.255.255.252)"],
-                        ["255.255.255.248", "/29 (255.255.255.248)"],
-                        ["255.255.255.240", "/28 (255.255.255.240)"],
-                        ["255.255.255.224", "/27 (255.255.255.224)"],
-                        ["255.255.255.192", "/26 (255.255.255.192)"],
-                        ["255.255.255.128", "/25 (255.255.255.128)"],
-
-                        ["255.255.255.0", "/24 (255.255.255.0)"],
-                        ["255.255.254.0", "/23 (255.255.254.0)"],
-                        ["255.255.252.0", "/22 (255.255.252.0)"],
-                        ["255.255.248.0", "/21 (255.255.248.0)"],
-                        ["255.255.240.0", "/20 (255.255.240.0)"],
-                        ["255.255.224.0", "/19 (255.255.224.0)"],
-                        ["255.255.192.0", "/18 (255.255.192.0)"],
-                        ["255.255.128.0", "/17 (255.255.128.0)"],
-
-                        ["255.255.0.0", "/16 (255.255.0.0)"],
-                        ["255.254.0.0", "/15 (255.254.0.0)"],
-                        ["255.252.0.0", "/14 (255.252.0.0)"],
-                        ["255.248.0.0", "/13 (255.248.0.0)"],
-                        ["255.240.0.0", "/12 (255.240.0.0)"],
-                        ["255.224.0.0", "/11 (255.224.0.0)"],
-                        ["255.192.0.0", "/10 (255.192.0.0)"],
-                        ["255.128.0.0", "/9 (255.128.0.0)"],
-
-                        ["255.0.0.0", "/8 (255.0.0.0)"],
-                    ]}
-                    {...props}
+        <InputSelect items={items}
+                    {...rest}
                 />);
 }
