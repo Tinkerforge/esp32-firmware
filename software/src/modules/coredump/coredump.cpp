@@ -28,7 +28,7 @@
 #include "esp_core_dump.h"
 
 // Pre- and postfix take up 54 characters.
-COREDUMP_DRAM_ATTR char tf_coredump_info[256];
+COREDUMP_DRAM_ATTR char tf_coredump_info[512];
 
 Coredump::Coredump()
 {
