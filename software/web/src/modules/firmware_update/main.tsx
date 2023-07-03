@@ -106,7 +106,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
             let timestamp = parseInt(state.firmware.split('-')[1], 16);
 
             if (util.hasValue(timestamp) && !isNaN(timestamp)) {
-                build_time = __("firmware_update.script.build_time") + util.timestamp_sec_to_date(timestamp);
+                build_time = __("firmware_update.script.build_time_prefix") + util.timestamp_sec_to_date(timestamp) + __("firmware_update.script.build_time_suffix");
             }
         } catch {
         }
