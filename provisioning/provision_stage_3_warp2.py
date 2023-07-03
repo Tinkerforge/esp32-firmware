@@ -709,7 +709,7 @@ class Stage3:
         time.sleep(RELAY_SETTLE_DURATION)
 
         # step 01: test IEC states
-        for state in ['A', 'B', 'C', 'D']:
+        for state in ['A', 'B', 'C', 'B', 'C', 'B', 'C', 'D']:
             print('Changing CP-PE state to {0}'.format(state))
 
             self.change_cp_pe_state(state)
