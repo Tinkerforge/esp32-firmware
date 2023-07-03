@@ -146,6 +146,8 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
 
                     <FormRow label={__("wireguard.content.allowed_subnet")}>
                         <InputSubnet required
+                            minPrefixLength={0}
+                            maxPrefixLength={32}
                             value={state.allowed_subnet}
                             onValue={this.set("allowed_subnet")}
                             placeholder={__("component.ip_configuration.subnet_placeholder")}
