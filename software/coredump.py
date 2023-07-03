@@ -200,6 +200,10 @@ def download_core_dump(port):
     if core_dump_offset is None or core_dump_size is None:
         raise Exception("Failed to get core dump partition offset or size from partition table!")
 
+    # Remove header before ELF file
+    core_dump_offset += 20
+    core_dump_size -= 20
+
     os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 read_flash {} {} {}".format(port, core_dump_offset, core_dump_size, core_dump_path))
 
 # use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
