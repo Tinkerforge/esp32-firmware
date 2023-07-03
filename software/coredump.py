@@ -9,6 +9,8 @@ import subprocess
 import tempfile
 from shutil import which
 
+import parttool
+
 def find_gdb():
     path = which("xtensa-esp32-elf-gdb")
     if path is not None:
@@ -182,7 +184,23 @@ def get_core_dump_from_debug_report(path):
             f.write(core_dump)
 
 def download_core_dump(port):
-    os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 read_flash 0xff0014 0xFFEC {}".format(port, core_dump_path))
+    # The partition table is always at the same offset, so read it first,
+    # get the core dump partition offset and size and then read the core dump itself.
+    os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 read_flash 0x8000 0x1000 {}".format(port, core_dump_path))
+
+    core_dump_offset = None
+    core_dump_size = None
+
+    target = parttool.ParttoolTarget(core_dump_path)
+    for p in target.partition_table:
+        if p.type == parttool.DATA_TYPE and p.subtype == parttool.SUBTYPES[parttool.DATA_TYPE]['coredump']:
+            core_dump_offset = p.offset
+            core_dump_size = p.size
+
+    if core_dump_offset is None or core_dump_size is None:
+        raise Exception("Failed to get core dump partition offset or size from partition table!")
+
+    os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 read_flash {} {} {}".format(port, core_dump_offset, core_dump_size, core_dump_path))
 
 # use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
 class ChangedDirectory(object):
