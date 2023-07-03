@@ -93,6 +93,7 @@ void ESP32Brick::setup()
 
 void ESP32Brick::loop()
 {
+#if MODULE_FIRMWARE_UPDATE_AVAILABLE()
     static bool last_btn_value = false;
     static uint32_t last_btn_change = 0;
 
@@ -110,4 +111,5 @@ void ESP32Brick::loop()
         last_btn_change = millis();
         factory_reset();
     }
+#endif
 }
