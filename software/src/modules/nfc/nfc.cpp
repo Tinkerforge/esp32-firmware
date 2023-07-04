@@ -239,9 +239,10 @@ void NFC::update_seen_tags()
         if (new_tags[new_idx].last_seen == 0)
             continue;
 
-        bool new_found_in_old = false;
-        int old_idx;
-        for (old_idx = 0; old_idx < TAG_LIST_LENGTH; ++old_idx) {
+        // Don't stop searching after the first old tag with a matching ID.
+        // There could be another entry (typically the injected one) with a lower last_seen value.
+        int min_old_idx = -1;
+        for (int old_idx = 0; old_idx < TAG_LIST_LENGTH; ++old_idx) {
             if (old_tags[old_idx].last_seen == 0)
                 continue;
 
@@ -250,11 +251,12 @@ void NFC::update_seen_tags()
                        NFC_TAG_ID_STRING_LENGTH) != 0)
                 continue;
 
-            new_found_in_old = true;
-            break;
+            if (min_old_idx == -1 ||
+                old_tags[min_old_idx].last_seen > old_tags[old_idx].last_seen)
+                min_old_idx = old_idx;
         }
 
-        if (!new_found_in_old) {
+        if (min_old_idx == -1) {
             // This tag is in the new list but not in the old.
             // We don't care about the detection threshold here,
             // because this will probably only happen if this
@@ -264,7 +266,7 @@ void NFC::update_seen_tags()
             continue;
         }
 
-        bool old_seen = old_tags[old_idx].last_seen < DETECTION_THRESHOLD_MS;
+        bool old_seen = old_tags[min_old_idx].last_seen < DETECTION_THRESHOLD_MS;
         bool new_seen = new_tags[new_idx].last_seen < DETECTION_THRESHOLD_MS;
 
         if (!old_seen && new_seen) {
