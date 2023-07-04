@@ -193,8 +193,8 @@ struct to_json {
                 obj.createNestedObject(key);
             } else if (child.is<Config::ConfArray>()) {
                 obj.createNestedArray(key);
-            } else {
-                obj.getOrAddMember(key);
+            } else if (!obj.containsKey(key)) {
+                obj[key] = nullptr;
             }
 
             Config::apply_visitor(to_json{obj[key], keys_to_censor}, child.value);
