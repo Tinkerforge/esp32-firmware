@@ -57,12 +57,12 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
     is_smart = not is_basic and energy_meter_type == 0
     is_pro = not is_basic and energy_meter_type != 0
 
-    stage3.test_front_panel_button(qr_stand == '0')
+    stage3.test_front_panel_button(qr_stand == '0' or qr_stand_wiring == '0')
     result["front_panel_button_tested"] = True
 
     seen_tags = []
     if is_smart or is_pro:
-        if qr_stand != '0':
+        if qr_stand != '0' and qr_stand_wiring != '0':
             def download_seen_tags():
                 with urllib.request.urlopen('http://{}/nfc/seen_tags'.format(ssid), timeout=3) as f:
                     nfc_str = f.read()
@@ -437,7 +437,7 @@ def main(stage3):
         print("    Hardware type: {}".format(hardware_type))
         print("    UID: {}".format(esp_uid_qr))
 
-        if qr_stand == '0':
+        if qr_stand == '0' or qr_stand_wiring == '0':
             seen_tags = collect_nfc_tag_ids(stage3, stage3.get_nfc_tag_ids, False)
 
         result["uid"] = esp_uid_qr
@@ -500,7 +500,7 @@ def main(stage3):
 
         seen_tags2 = run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_wiring, ssid, stage3)
 
-        if qr_stand != '0':
+        if qr_stand != '0' and qr_stand_wiring != '0':
             seen_tags = seen_tags2
 
         try:
@@ -600,7 +600,7 @@ def main(stage3):
         ipcon = IPConnection()
         ipcon.connect("localhost", 4223)
 
-        run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, None, stage3)
+        run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_wiring, stage3)
         print("Flashing EVSE")
         run(["python3", "comcu_flasher.py", result["evse_uid"], evse_path])
         result["evse_firmware"] = evse_path.split("/")[-1]
