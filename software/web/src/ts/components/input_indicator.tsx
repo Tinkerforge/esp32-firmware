@@ -20,6 +20,7 @@
 import { h, Context } from "preact";
 import {useContext} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
+import { Button } from "react-bootstrap";
 
 type variant = "primary" | "secondary" | "success" | "warning" | "danger" | "light" | "link"
 
@@ -29,8 +30,9 @@ interface InputIndicatorProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputE
     variant: variant
 
     onReset?: () => void
+    resetVariant?: variant
     resetText?: string
-    resetDisabled?: boolean
+    resetHidden?: boolean
 }
 
 export function InputIndicator(props: InputIndicatorProps) {
@@ -44,13 +46,13 @@ export function InputIndicator(props: InputIndicatorProps) {
                readonly={!props.onValue}
                {...props}/>
     );
-    if (!props.onReset)
+    if (!props.onReset || props.resetHidden)
         return inner;
 
     return <div class="input-group">
         {inner}
         <div class="input-group-append">
-            <button class="btn btn-primary form-control rounded-right" type="button" onClick={props.onReset} disabled={props.resetDisabled}>{props.resetText}</button>
+            <Button variant={props.resetVariant} className="form-control rounded-right" type="button" onClick={props.onReset}>{props.resetText}</Button>
         </div>
     </div>
 

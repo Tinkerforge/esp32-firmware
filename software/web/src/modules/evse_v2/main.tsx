@@ -278,8 +278,9 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                                             __("evse.script.reset_slot_failed"));
                                     }
                                 }
+                                resetVariant="danger"
                                 resetText={__("evse.content.reset_slot")}
-                                resetDisabled={!slot.active || slot.max_current == 32000}/>
+                                resetHidden={!slot.active || slot.max_current == 32000}/>
                         </FormRow>
                     })}
 

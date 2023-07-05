@@ -60,7 +60,7 @@
             "evse_fw_version": "Firmware-Version des Ladecontrollers",
             "charging_current": "Ladestromgrenzen",
             "charging_current_muted": "Minimum der Ladestromgrenzen",
-            "reset_slot": "Freigeben",
+            "reset_slot": "Zurücksetzen",
             "low_level_state": "Low-Level-Zustand",
             "led_state": "LED-Zustand",
             "led_state_off": "Aus",
