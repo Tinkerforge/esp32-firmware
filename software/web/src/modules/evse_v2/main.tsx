@@ -253,7 +253,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                             variant = slot.max_current == min ? "warning" : "primary";
                         }
 
-                        if (i != EVSE_SLOT_GLOBAL && i != EVSE_SLOT_EXTERNAL)
+                        if (i != EVSE_SLOT_EXTERNAL)
                             return <FormRow key={i} label={translate_unchecked(`evse.content.slot_${i}`)}>
                                 <InputIndicator value={value} variant={variant as any} />
                             </FormRow>
@@ -261,8 +261,6 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                         return <FormRow key={i} label={translate_unchecked(`evse.content.slot_${i}`)}>
                             <InputIndicator value={value} variant={variant as any}
                                 onReset={
-                                    i == EVSE_SLOT_GLOBAL ?
-                                    () => API.save('evse/global_current', {"current": 32000}, __("evse.script.reset_slot_failed")) :
                                     () => {
                                         API.save('evse/external_defaults', {
                                                 "current": 32000,
