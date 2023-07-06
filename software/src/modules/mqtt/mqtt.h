@@ -42,6 +42,14 @@ struct MqttState {
     uint32_t last_send_ms;
 };
 
+class IMqttConsumer {
+public:
+    virtual ~IMqttConsumer() = default;
+
+    virtual void onMqttConnect() {}
+    virtual bool onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain) { return false;}
+};
+
 class Mqtt final : public IAPIBackend
 {
 public:
@@ -56,6 +64,8 @@ public:
     void subscribe_with_prefix(const String &path, std::function<void(char *, size_t)> callback, bool forbid_retained);
     void publish(const String &topic, const String &payload, bool retain);
     void subscribe(const String &topic, std::function<void(char *, size_t)> callback, bool forbid_retained);
+
+    void register_consumer(IMqttConsumer *consumer);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
@@ -80,4 +90,6 @@ public:
 
     uint32_t last_connected_ms = 0;
     bool was_connected = false;
+
+    std::vector<IMqttConsumer *> consumers;
 };

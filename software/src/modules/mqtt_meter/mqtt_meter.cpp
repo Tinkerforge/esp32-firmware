@@ -55,6 +55,8 @@ void MqttMeter::pre_setup()
 
 void MqttMeter::setup()
 {
+    mqtt.register_consumer(this);
+
     // Module is always initialized, even if disabled.
     initialized = true;
 

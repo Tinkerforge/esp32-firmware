@@ -160,15 +160,9 @@ void Mqtt::onMqttConnect()
         publish_with_prefix(reg.path, reg.config->to_string_except(reg.keys_to_censor));
     }
 
-#if MODULE_MQTT_METER_AVAILABLE()
-    mqtt_meter.onMqttConnect();
-#endif
-#if MODULE_EM_PV_FAKER_AVAILABLE()
-    em_pv_faker.onMqttConnect();
-#endif
-#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
-    mqtt_auto_discovery.onMqttConnect();
-#endif
+    for (auto *consumer : this->consumers) {
+        consumer->onMqttConnect();
+    }
 
     const String &prefix = config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/#";
@@ -199,18 +193,11 @@ void Mqtt::onMqttDisconnect()
 
 void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
 {
-#if MODULE_MQTT_METER_AVAILABLE()
-    if (mqtt_meter.onMqttMessage(topic, topic_len, data, data_len, retain))
-        return;
-#endif
-#if MODULE_EM_PV_FAKER_AVAILABLE()
-    if (em_pv_faker.onMqttMessage(topic, topic_len, data, data_len, retain))
-        return;
-#endif
-#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
-    if (mqtt_auto_discovery.onMqttMessage(topic, topic_len, data, data_len, retain))
-        return;
-#endif
+    for (auto *consumer : this->consumers) {
+        if (consumer->onMqttMessage(topic, topic_len, data, data_len, retain)) {
+            return;
+        }
+    }
 
     for (auto &c : commands) {
         if (c.topic.length() != topic_len)
@@ -374,6 +361,10 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         default:
             break;
     }
+}
+
+void Mqtt::register_consumer(IMqttConsumer *consumer) {
+    this->consumers.push_back(consumer);
 }
 
 void Mqtt::setup()

@@ -66,6 +66,8 @@ void EmPvFaker::pre_setup()
 
 void EmPvFaker::setup()
 {
+    mqtt.register_consumer(this);
+
     api.restorePersistentConfig("em_pv_faker/config", &config);
 
     int32_t target_power = 0;

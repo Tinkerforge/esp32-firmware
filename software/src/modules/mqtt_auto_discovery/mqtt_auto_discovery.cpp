@@ -45,6 +45,8 @@ void MqttAutoDiscovery::pre_setup()
 
 void MqttAutoDiscovery::setup()
 {
+    mqtt.register_consumer(this);
+
     api.restorePersistentConfig("mqtt/auto_discovery_config", &config);
 
     config_in_use = config;
