@@ -166,16 +166,7 @@ void EVSEV2::pre_setup()
     gp_output_update = gp_output;
 }
 
-void EVSEV2::set_charge_limits_slot(uint16_t current, bool enabled)
-{
-    is_in_bootloader(tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_CHARGE_LIMITS, current, enabled, false));
-}
-/*
-void EVSEV2::set_charge_time_restriction_slot(uint16_t current, bool enabled)
-{
-    is_in_bootloader(tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_TIME_RESTRICTION, current, enabled, true));
-}
-*/
+
 void EVSEV2::factory_reset()
 {
     tf_evse_v2_factory_reset(&device, 0x2342FACD);
@@ -206,32 +197,6 @@ void EVSEV2::get_data_storage(uint8_t page, uint8_t *data)
 void EVSEV2::set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret_status)
 {
     tf_evse_v2_set_indicator_led(&device, indication, duration, ret_status);
-}
-
-void EVSEV2::set_require_meter_blocking(bool blocking) {
-    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_REQUIRE_METER, blocking ? 0 : 32000));
-}
-
-void EVSEV2::set_require_meter_enabled(bool enabled) {
-    if (!initialized)
-        return;
-
-    evse_common.apply_slot_default(CHARGING_SLOT_REQUIRE_METER, 0, enabled, false);
-    is_in_bootloader(tf_evse_v2_set_charging_slot_active(&device, CHARGING_SLOT_REQUIRE_METER, enabled));
-}
-
-bool EVSEV2::get_require_meter_blocking() {
-    uint16_t current = 0;
-    bool enabled = get_require_meter_enabled();
-    if (!enabled)
-        return false;
-
-    is_in_bootloader(tf_evse_v2_get_charging_slot(&device, CHARGING_SLOT_REQUIRE_METER, &current, &enabled, nullptr));
-    return enabled && current == 0;
-}
-
-bool EVSEV2::get_require_meter_enabled() {
-    return require_meter_enabled.get("enabled")->asBool();
 }
 
 void EVSEV2::setup()
@@ -606,38 +571,6 @@ int EVSEV2::set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool
 
 bool EVSEV2::is_in_bootloader(int rc) {
     return DeviceModule::is_in_bootloader(rc);
-}
-
-void EVSEV2::set_managed_current(uint16_t current)
-{
-    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_CHARGE_MANAGER, current));
-    this->last_current_update = millis();
-    this->shutdown_logged = false;
-}
-
-void EVSEV2::set_user_current(uint16_t current)
-{
-    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_USER, current));
-}
-
-void EVSEV2::set_modbus_current(uint16_t current)
-{
-    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP, current));
-}
-
-void EVSEV2::set_modbus_enabled(bool enabled)
-{
-    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, enabled ? 32000 : 0));
-}
-
-void EVSEV2::set_ocpp_current(uint16_t current)
-{
-     is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_OCPP, current));
-}
-
-uint16_t EVSEV2::get_ocpp_current()
-{
-    return slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
 }
 
 void EVSEV2::check_debug()

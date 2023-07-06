@@ -38,23 +38,6 @@ public:
 
     virtual void update_all_data() = 0;
 
-    virtual void set_managed_current(uint16_t) = 0;
-
-    virtual void set_user_current(uint16_t) = 0;
-
-    virtual void set_modbus_current(uint16_t) = 0;
-    virtual void set_modbus_enabled(bool) = 0;
-
-    virtual void set_require_meter_blocking(bool) = 0;
-    virtual void set_require_meter_enabled(bool) = 0;
-    virtual bool get_require_meter_blocking() = 0;
-    virtual bool get_require_meter_enabled() = 0;
-
-    virtual void set_charge_limits_slot(uint16_t, bool) = 0;
-
-    virtual void set_ocpp_current(uint16_t) = 0;
-    virtual uint16_t get_ocpp_current() = 0;
-
     virtual void factory_reset() = 0;
 
     virtual void set_data_storage(uint8_t, const uint8_t*) = 0;
@@ -110,8 +93,6 @@ public:
     ConfigRoot require_meter_enabled;
     ConfigRoot require_meter_enabled_update;
 
-    uint32_t last_current_update = 0;
-    bool shutdown_logged = 0;
     uint32_t last_debug_check = 0;
 
     bool debug = false;
@@ -158,5 +139,8 @@ public:
     ConfigRoot& get_state();
     ConfigRoot& get_slots();
     ConfigRoot& get_low_level_state();
-    ConfigRoot& get_management_enabled();
+    bool get_management_enabled();
+
+    uint32_t last_current_update = 0;
+    bool shutdown_logged = false;
 };

@@ -279,18 +279,18 @@ void EvseCommon::register_urls() {
     }, 1000, 1000);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        if (!deadline_elapsed(backend->last_current_update + 30000))
+        if (!deadline_elapsed(last_current_update + 30000))
             return;
         if (!backend->management_enabled.get("enabled")->asBool()) {
             // Push back the next check for 30 seconds: If managed gets enabled,
             // we want to wait 30 seconds before setting the current for the first time.
-            backend->last_current_update = millis();
+            last_current_update = millis();
             return;
         }
-        if(!backend->shutdown_logged)
+        if(!shutdown_logged)
             logger.printfln("Got no managed current update for more than 30 seconds. Setting managed current to 0");
-        backend->shutdown_logged = true;
-       backend->set_charging_slot_max_current(CHARGING_SLOT_CHARGE_MANAGER, 0);
+        shutdown_logged = true;
+        backend->set_charging_slot_max_current(CHARGING_SLOT_CHARGE_MANAGER, 0);
     }, 1000, 1000);
 #endif
 
@@ -349,7 +349,7 @@ void EvseCommon::register_urls() {
 
     api.addState("evse/management_current", &backend->management_current, {}, 1000);
     api.addCommand("evse/management_current_update", &backend->management_current_update, {}, [this](){
-        backend->set_managed_current(backend->management_current_update.get("current")->asUint());
+        set_managed_current(backend->management_current_update.get("current")->asUint());
     }, false);
 
     api.addState("evse/boost_mode", &backend->boost_mode, {}, 1000);
@@ -507,47 +507,59 @@ void EvseCommon::loop() {
 }
 
 void EvseCommon::set_managed_current(uint16_t current) {
-    backend->set_managed_current(current);
+    backend->set_charging_slot_max_current(CHARGING_SLOT_CHARGE_MANAGER, current);
+    last_current_update = millis();
+    shutdown_logged = false;
 }
 
 void EvseCommon::set_user_current(uint16_t current) {
-    backend->set_user_current(current);
+    backend->set_charging_slot_max_current(CHARGING_SLOT_USER, current);
 }
 
 void EvseCommon::set_modbus_current(uint16_t current) {
-    backend->set_modbus_current(current);
+    backend->set_charging_slot_max_current(CHARGING_SLOT_MODBUS_TCP, current);
 }
 
 void EvseCommon::set_modbus_enabled(bool enabled) {
-    backend->set_modbus_enabled(enabled);
+    backend->set_charging_slot_max_current(CHARGING_SLOT_MODBUS_TCP_ENABLE, enabled ? 32000 : 0);
 }
 
 void EvseCommon::set_require_meter_blocking(bool blocking) {
-    backend->set_require_meter_blocking(blocking);
+    backend->set_charging_slot_max_current(CHARGING_SLOT_REQUIRE_METER, blocking ? 0 : 32000);
 }
 
 void EvseCommon::set_require_meter_enabled(bool enabled) {
-    backend->set_require_meter_enabled(enabled);
+    if (!initialized)
+        return;
+
+    apply_slot_default(CHARGING_SLOT_REQUIRE_METER, 0, enabled, false);
+    backend->set_charging_slot_active(CHARGING_SLOT_REQUIRE_METER, enabled);
 }
 
 bool EvseCommon::get_require_meter_blocking() {
-    return backend->get_require_meter_blocking();
+    uint16_t current = 0;
+    bool enabled = get_require_meter_enabled();
+    if (!enabled)
+        return false;
+
+    backend->get_charging_slot(CHARGING_SLOT_REQUIRE_METER, &current, &enabled, nullptr);
+    return enabled && current == 0;
 }
 
 bool EvseCommon::get_require_meter_enabled() {
-    return backend->get_require_meter_enabled();
+    return backend->require_meter_enabled.get("enabled")->asBool();
 }
 
 void EvseCommon::set_charge_limits_slot(uint16_t current, bool enabled) {
-    backend->set_charge_limits_slot(current, enabled);
+    backend->set_charging_slot(CHARGING_SLOT_CHARGE_LIMITS, current, enabled, false);
 }
 
 void EvseCommon::set_ocpp_current(uint16_t current) {
-    backend->set_ocpp_current(current);
+    backend->set_charging_slot_max_current(CHARGING_SLOT_OCPP, current);
 }
 
 uint16_t EvseCommon::get_ocpp_current() {
-    return backend->get_ocpp_current();
+    return backend->slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
 }
 
 void EvseCommon::factory_reset() {
@@ -578,6 +590,6 @@ ConfigRoot &EvseCommon::get_state() {
     return backend->state;
 }
 
-ConfigRoot &EvseCommon::get_management_enabled() {
-    return backend->management_enabled;
+bool EvseCommon::get_management_enabled() {
+    return backend->management_enabled.get("enabled")->asBool();
 }

@@ -352,73 +352,9 @@ bool EVSE::is_in_bootloader(int rc) {
     return DeviceModule::is_in_bootloader(rc);
 }
 
-void EVSE::set_managed_current(uint16_t current)
-{
-    is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_CHARGE_MANAGER, current));
-    this->last_current_update = millis();
-    this->shutdown_logged = false;
-}
-
-void EVSE::set_user_current(uint16_t current)
-{
-    is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_USER, current));
-}
-
-void EVSE::set_modbus_current(uint16_t current)
-{
-    is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP, current));
-}
-
-void EVSE::set_modbus_enabled(bool enabled)
-{
-    is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, enabled ? 32000 : 0));
-}
-
-
-void EVSE::set_charge_limits_slot(uint16_t current, bool enabled)
-{
-    is_in_bootloader(tf_evse_set_charging_slot(&device, CHARGING_SLOT_CHARGE_LIMITS, current, enabled, false));
-}
-/*
-void EVSE::set_charge_time_restriction_slot(uint16_t current, bool enabled)
-{
-    is_in_bootloader(tf_evse_set_charging_slot(&device, CHARGING_SLOT_TIME_RESTRICTION, current, enabled, true));
-}
-*/
-void EVSE::set_ocpp_current(uint16_t current)
-{
-     is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_OCPP, current));
-}
-
 uint16_t EVSE::get_ocpp_current()
 {
     return slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
-}
-
-void EVSE::set_require_meter_blocking(bool blocking) {
-    is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_REQUIRE_METER, blocking ? 0 : 32000));
-}
-
-void EVSE::set_require_meter_enabled(bool enabled) {
-    if (!initialized)
-        return;
-
-    evse_common.apply_slot_default(CHARGING_SLOT_REQUIRE_METER, 0, enabled, false);
-    is_in_bootloader(tf_evse_set_charging_slot_active(&device, CHARGING_SLOT_REQUIRE_METER, enabled));
-}
-
-bool EVSE::get_require_meter_blocking() {
-    uint16_t current = 0;
-    bool enabled = get_require_meter_enabled();
-    if (!enabled)
-        return false;
-
-    is_in_bootloader(tf_evse_get_charging_slot(&device, CHARGING_SLOT_REQUIRE_METER, &current, &enabled, nullptr));
-    return enabled && current == 0;
-}
-
-bool EVSE::get_require_meter_enabled() {
-    return require_meter_enabled.get("enabled")->asBool();
 }
 
 void EVSE::check_debug()
