@@ -75,12 +75,7 @@ void factory_reset(bool restart_esp)
             tskIDLE_PRIORITY,
             &xTaskBuffer);
 
-#if MODULE_EVSE_AVAILABLE()
-    evse.factory_reset();
-#endif
-#if MODULE_EVSE_V2_AVAILABLE()
-    evse_v2.factory_reset();
-#endif
+    evse_common.factory_reset();
 
     LittleFS.end();
     LittleFS.format();
@@ -377,12 +372,7 @@ void FirmwareUpdate::register_urls()
 
         task_scheduler.scheduleOnce([](){
             logger.printfln("Config reset requested");
-#if MODULE_EVSE_AVAILABLE()
-            evse.factory_reset();
-#endif
-#if MODULE_EVSE_V2_AVAILABLE()
-            evse_v2.factory_reset();
-#endif
+            evse_common.factory_reset();
 
 #if MODULE_USERS_AVAILABLE()
             for(int i = 0; i < users.config.get("users")->count(); ++i) {

@@ -564,13 +564,8 @@ void ModbusTcp::update_bender_regs()
         bender_general_cpy->hardware_curr_limit = api.getState("evse/slots")->get(1)->get("max_current")->asUint() / 1000;
         bender_charge_cpy->current_signaled = api.getState("evse/state")->get("allowed_charging_current")->asUint() / 1000;
 
-#if MODULE_EVSE_V2_AVAILABLE()
-        evse_v2.set_modbus_current(bender_hems_cpy->hems_limit * 1000);
-        evse_v2.set_modbus_enabled(true);
-#elif MODULE_EVSE_AVAILABLE()
-        evse.set_modbus_current(bender_hems_cpy->hems_limit * 1000);
-        evse.set_modbus_enabled(true);
-#endif
+        evse_common.set_modbus_current(bender_hems->hems_limit * 1000);
+        evse_common.set_modbus_enabled(true);
 
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
         int32_t user_id = api.getState("charge_tracker/current_charge")->get("user_id")->asInt();
@@ -747,13 +742,8 @@ void ModbusTcp::update_regs()
         if (set_evse_led)
             evse_led.set_api(EvseLed::Blink((uint32_t)evse_holding_regs_copy->led_blink_state), evse_holding_regs_copy->led_blink_duration);
 
-#if MODULE_EVSE_V2_AVAILABLE()
-        evse_v2.set_modbus_current(evse_holding_regs_copy->allowed_current);
-        evse_v2.set_modbus_enabled(enable_charging);
-#elif MODULE_EVSE_AVAILABLE()
-        evse.set_modbus_current(evse_holding_regs_copy->allowed_current);
-        evse.set_modbus_enabled(enable_charging);
-#endif
+        evse_common.set_modbus_current(evse_holding_regs_copy->allowed_current);
+        evse_common.set_modbus_enabled(enable_charging);
 
         auto slots = api.getState("evse/slots");
 
@@ -948,13 +938,10 @@ void ModbusTcp::update_keba_regs()
 #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
     if (api.hasFeature("evse"))
     {
-#if MODULE_EVSE_V2_AVAILABLE()
-        evse_v2.set_modbus_current(keba_write_cpy->set_charging_current);
-        evse_v2.set_modbus_enabled(keba_write_cpy->enable_station == 1 ? true : false);
-#elif MODULE_EVSE_AVAILABLE()
-        evse.set_modbus_current(keba_write_cpy->set_charging_current);
-        evse.set_modbus_enabled(keba_write_cpy->enable_station == 1 ? true : false);
-#endif
+
+        evse_common.set_modbus_current(keba_write_cpy->set_charging_current);
+        evse_common.set_modbus_enabled(keba_write_cpy->enable_station == 1 ? true : false);
+
         if (api.getState("evse/state")->get("iec61851_state")->asUint() == 4)
             keba_read_general_cpy->charging_state = fromUint(4);
         else

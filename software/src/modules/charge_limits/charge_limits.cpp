@@ -105,11 +105,7 @@ void ChargeLimits::register_urls()
     //if we dont set the target timestamp right away we will have 0 seconds left displayed in the webinterface until we start and end a charge.
     state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration")->asUint()));
 
- #if MODULE_EVSE_V2_AVAILABLE()
-    evse_v2.set_charge_limits_slot(32000, true);
- #elif MODULE_EVSE_AVAILABLE()
-    evse.set_charge_limits_slot(32000, true);
- #endif
+    evse_common.set_charge_limits_slot(32000, true);
 
 
     task_scheduler.scheduleWithFixedDelay([this](){
@@ -123,11 +119,8 @@ void ChargeLimits::register_urls()
                 config_in_use.get("energy_wh")->updateUint(config.get("energy_wh")->asUint());
             }
 
-#if MODULE_EVSE_V2_AVAILABLE()
-            evse_v2.set_charge_limits_slot(32000, true);
-#elif MODULE_EVSE_AVAILABLE()
-            evse.set_charge_limits_slot(32000, true);
-#endif
+            evse_common.set_charge_limits_slot(32000, true);
+
             state.get("start_timestamp_ms")->updateUint(0);
             state.get("start_energy_kwh")->updateFloat(NAN);
             state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration")->asUint()));
@@ -135,11 +128,8 @@ void ChargeLimits::register_urls()
         }
 
 
-#if MODULE_EVSE_V2_AVAILABLE()
-        auto uptime = evse_v2.low_level_state.get("uptime")->asUint();
-#elif MODULE_EVSE_AVAILABLE()
-        auto uptime = evse.low_level_state.get("uptime")->asUint();
-#endif
+        auto uptime = evse_common.get_low_level_state().get("uptime")->asUint();
+
         if (charging && !was_charging) {
             state.get("start_timestamp_ms")->updateUint(charge_tracker.current_charge.get("evse_uptime_start")->asUint());
             if (api.hasFeature("meter") && !isnan(charge_tracker.current_charge.get("meter_start")->asFloat()))
@@ -171,11 +161,7 @@ void ChargeLimits::register_urls()
                 target_current = 0;
         }
 
-#if MODULE_EVSE_V2_AVAILABLE()
-        evse_v2.set_charge_limits_slot(target_current, true);
-#elif MODULE_EVSE_AVAILABLE()
-        evse.set_charge_limits_slot(target_current, true);
-#endif
+        evse_common.set_charge_limits_slot(target_current, true);
 
         was_charging = charging;
 

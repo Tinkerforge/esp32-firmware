@@ -113,12 +113,8 @@ bool EvseLed::set(Blink state, uint16_t duration_ms, bool via_api)
     micros_t new_duration_end_us = now_us() + micros_t{duration_ms * 1000};
 
     uint8_t error_code = 1;
-#if MODULE_EVSE_AVAILABLE()
-    evse.set_indicator_led(state, duration_ms, &error_code);
-#endif
-#if MODULE_EVSE_V2_AVAILABLE()
-    evse_v2.set_indicator_led(state, duration_ms, &error_code);
-#endif
+
+    evse_common.set_indicator_led(state, duration_ms, &error_code);
 
     if (error_code == 0) {
         current_state = state;

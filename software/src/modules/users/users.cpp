@@ -41,19 +41,15 @@
 // are registered.
 void set_data_storage(uint8_t *buf)
 {
-#if MODULE_EVSE_AVAILABLE()
-    evse.set_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
-#elif MODULE_EVSE_V2_AVAILABLE()
-    evse_v2.set_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    evse_common.set_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #endif
 }
 
 void get_data_storage(uint8_t *buf)
 {
-#if MODULE_EVSE_AVAILABLE()
-    evse.get_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
-#elif MODULE_EVSE_V2_AVAILABLE()
-    evse_v2.get_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    evse_common.get_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #endif
 }
 
@@ -63,53 +59,21 @@ void zero_user_slot_info()
     set_data_storage(buf);
 }
 
-uint8_t get_iec_state()
-{
-#if MODULE_EVSE_AVAILABLE()
-    return evse.state.get("iec61851_state")->asUint();
-#elif MODULE_EVSE_V2_AVAILABLE()
-    return evse_v2.state.get("iec61851_state")->asUint();
-#endif
-    return 0;
-}
 
 uint8_t get_charger_state()
 {
-#if MODULE_EVSE_AVAILABLE()
-    return evse.state.get("charger_state")->asUint();
-#elif MODULE_EVSE_V2_AVAILABLE()
-    return evse_v2.state.get("charger_state")->asUint();
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    return evse_common.get_state().get("charger_state")->asUint();
 #endif
     return 0;
 }
 
 Config *get_user_slot()
 {
-#if MODULE_EVSE_AVAILABLE()
-    return (Config *)evse.slots.get(CHARGING_SLOT_USER);
-#elif MODULE_EVSE_V2_AVAILABLE()
-    return (Config *)evse_v2.slots.get(CHARGING_SLOT_USER);
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    return (Config *)evse_common.get_slots().get(CHARGING_SLOT_USER);
 #endif
     return nullptr;
-}
-
-Config *get_low_level_state()
-{
-#if MODULE_EVSE_AVAILABLE()
-    return &evse.low_level_state;
-#elif MODULE_EVSE_V2_AVAILABLE()
-    return &evse_v2.low_level_state;
-#endif
-    return nullptr;
-}
-
-void set_user_current(uint16_t current)
-{
-#if MODULE_EVSE_AVAILABLE()
-    evse.set_user_current(current);
-#elif MODULE_EVSE_V2_AVAILABLE()
-    evse_v2.set_user_current(current);
-#endif
 }
 
 float get_energy()
@@ -536,17 +500,8 @@ void Users::register_urls()
     // No users (except anonymous) configured: Make sure the EVSE's user slot is disabled.
     bool user_slot = false;
 
-#if MODULE_EVSE_AVAILABLE()
-
     if (api.hasFeature("evse"))
-        user_slot = evse.slots.get(CHARGING_SLOT_USER)->get("active")->asBool();
-
-#elif MODULE_EVSE_V2_AVAILABLE()
-
-    if (api.hasFeature("evse"))
-        user_slot = evse_v2.slots.get(CHARGING_SLOT_USER)->get("active")->asBool();
-
-#endif
+        user_slot = evse_common.get_slots().get(CHARGING_SLOT_USER)->get("active")->asBool();
 
     if (config.get("users")->count() <= 1 && user_slot) {
         logger.printfln("User slot enabled, but no users configured. Disabling user slot.");
@@ -864,8 +819,8 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
         return false;
     }
 
-    uint8_t iec_state = get_iec_state();
-    uint32_t tscs = get_low_level_state()->get("time_since_state_change")->asUint();
+    uint8_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
+    uint32_t tscs = evse_common.get_low_level_state().get("time_since_state_change")->asUint();
 
     switch (iec_state) {
         case IEC_STATE_B: // State B: The user wants to start charging. If we already have a tracked charge, stop charging to allow switching to another user.
@@ -899,14 +854,14 @@ bool Users::start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth
     if (charge_tracker.currentlyCharging())
         return false;
 
-    uint32_t evse_uptime = get_low_level_state()->get("uptime")->asUint();
+    uint32_t evse_uptime = evse_common.get_low_level_state().get("uptime")->asUint();
     float meter_start = get_energy();
     uint32_t timestamp = timestamp_minutes();
 
     if (!charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime, auth_type, auth_info))
         return false;
     write_user_slot_info(user_id, evse_uptime, timestamp, meter_start);
-    set_user_current(current_limit);
+    evse_common.set_user_current(current_limit);
 
     return true;
 }
@@ -927,7 +882,7 @@ bool Users::stop_charging(uint8_t user_id, bool force, float meter_abs)
 
         uint32_t charge_duration = 0;
         if (success) {
-            uint32_t now_seconds = get_low_level_state()->get("uptime")->asUint() / 1000;
+            uint32_t now_seconds = evse_common.get_low_level_state().get("uptime")->asUint() / 1000;
             uint32_t start_seconds = info.evse_uptime_on_start / 1000;
             if (now_seconds < start_seconds) {
                 now_seconds += (0xFFFFFFFF / 1000);
@@ -942,7 +897,7 @@ bool Users::stop_charging(uint8_t user_id, bool force, float meter_abs)
     }
 
     zero_user_slot_info();
-    set_user_current(0);
+    evse_common.set_user_current(0);
 
     return true;
 }

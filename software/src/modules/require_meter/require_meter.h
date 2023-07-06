@@ -32,11 +32,6 @@ public:
     void register_urls() override;
 
     void start_task();
-    void set_require_meter_enabled(bool enabled);
-    void set_require_meter_blocking(bool block);
-
-    bool get_require_meter_enabled();
-    bool get_require_meter_blocking();
     bool allow_charging(float meter_value);
 
     bool initialized = false;

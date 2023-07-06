@@ -40,10 +40,10 @@ void RequireMeter::setup() {
     api.restorePersistentConfig("require_meter/config", &config);
 
     if (config.get("config")->asUint() == WARP_PRO_ENABLED) {
-        set_require_meter_enabled(true);
+        evse_common.set_require_meter_enabled(true);
         start_task();
     } else
-        set_require_meter_enabled(false);
+        evse_common.set_require_meter_enabled(false);
     initialized = true;
 }
 
@@ -57,13 +57,12 @@ void RequireMeter::register_urls() {
             if (api.hasFeature("meter")) {
                 config.get("config")->updateUint(WARP_PRO_ENABLED);
                 api.writeConfig("require_meter/config", &config);
-                set_require_meter_enabled(true);
+                evse_common.set_require_meter_enabled(true);
                 start_task();
             }
         });
     }
 }
-
 
 void RequireMeter::start_task() {
     static bool is_running = false;
@@ -75,16 +74,12 @@ void RequireMeter::start_task() {
         bool meter_timeout = false;
 
         // Block if we have not seen any energy_abs value after METER_BOOTUP_ENERGY_TIMEOUT or if we are already blocked.
-        meter_timeout |= isnan(meter.values.get("energy_abs")->asFloat()) && (deadline_elapsed(METER_BOOTUP_ENERGY_TIMEOUT) || get_require_meter_blocking());
+        meter_timeout |= isnan(meter.values.get("energy_abs")->asFloat()) && (deadline_elapsed(METER_BOOTUP_ENERGY_TIMEOUT) || evse_common.get_require_meter_blocking());
 
         // Block if all seen meter values are stuck for METER_TIMEOUT.
         meter_timeout |= deadline_elapsed(meter.last_value_change + METER_TIMEOUT);
 
-        #if MODULE_EVSE_V2_AVAILABLE()
-            evse_v2.set_require_meter_blocking(meter_timeout);
-        #elif MODULE_EVSE_AVAILABLE()
-            evse.set_require_meter_blocking(meter_timeout);
-        #endif
+        evse_common.set_require_meter_blocking(meter_timeout);
 
         if (meter_timeout)
             users.stop_charging(0, true, 0);
@@ -93,41 +88,9 @@ void RequireMeter::start_task() {
     is_running = true;
 }
 
-void RequireMeter::set_require_meter_enabled(bool enabled) {
-    #if MODULE_EVSE_V2_AVAILABLE()
-        evse_v2.set_require_meter_enabled(enabled);
-    #elif MODULE_EVSE_AVAILABLE()
-        evse.set_require_meter_enabled(enabled);
-    #endif
-}
-
-void RequireMeter::set_require_meter_blocking(bool blocking) {
-    #if MODULE_EVSE_V2_AVAILABLE()
-        evse_v2.set_require_meter_blocking(blocking);
-    #elif MODULE_EVSE_AVAILABLE()
-        evse.set_require_meter_blocking(blocking);
-    #endif
-}
-
-bool RequireMeter::get_require_meter_blocking() {
-    #if MODULE_EVSE_V2_AVAILABLE()
-        return evse_v2.get_require_meter_blocking();
-    #elif MODULE_EVSE_AVAILABLE()
-        return evse.get_require_meter_blocking();
-    #endif
-}
-
-bool RequireMeter::get_require_meter_enabled() {
-    #if MODULE_EVSE_V2_AVAILABLE()
-        return evse_v2.get_require_meter_enabled();
-    #elif MODULE_EVSE_AVAILABLE()
-        return evse.get_require_meter_enabled();
-    #endif
-}
-
 bool RequireMeter::allow_charging(float meter_value) {
-    if (get_require_meter_enabled() && (isnan(meter_value) || get_require_meter_blocking())) {
-        set_require_meter_blocking(true);
+    if (evse_common.get_require_meter_enabled() && (isnan(meter_value) || evse_common.get_require_meter_blocking())) {
+        evse_common.set_require_meter_blocking(true);
         return false;
     }
     return true;
