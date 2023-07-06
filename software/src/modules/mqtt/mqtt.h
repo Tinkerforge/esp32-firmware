@@ -23,6 +23,7 @@
 
 #include "api.h"
 #include "config.h"
+#include "consumer.h"
 
 enum class MqttConnectionState {
     NOT_CONFIGURED,
@@ -40,14 +41,6 @@ struct MqttCommand {
 struct MqttState {
     String topic;
     uint32_t last_send_ms;
-};
-
-class IMqttConsumer {
-public:
-    virtual ~IMqttConsumer() = default;
-
-    virtual void onMqttConnect() {}
-    virtual bool onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain) { return false;}
 };
 
 class Mqtt final : public IAPIBackend

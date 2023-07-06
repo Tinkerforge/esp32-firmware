@@ -24,6 +24,7 @@
 #include "module.h"
 #include "mqtt_discovery_topics.h"
 #include "tools.h"
+#include "modules/mqtt/consumer.h"
 
 class MqttAutoDiscovery final : public IModule, public IMqttConsumer
 {

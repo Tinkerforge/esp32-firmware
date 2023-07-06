@@ -24,6 +24,7 @@
 
 #include "config.h"
 #include "module.h"
+#include "modules/mqtt/consumer.h"
 
 class MqttMeter final : public IModule, public IMqttConsumer
 {

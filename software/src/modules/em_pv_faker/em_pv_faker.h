@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include "module.h"
+#include "modules/mqtt/consumer.h"
 
 class EmPvFaker final : public IModule, public IMqttConsumer
 {
