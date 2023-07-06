@@ -27,6 +27,7 @@ import { ItemModal } from "./item_modal";
 export interface TableModalRow {
     name: string
     value: VNode
+    valueClassList?: string
 }
 
 export interface TableRow {
@@ -202,7 +203,7 @@ export class Table extends Component<TableProps, TableState> {
                     yes_text={__("component.table.add")}>
                     {state.showAddModal && props.onAddGetRows ?
                         props.onAddGetRows().map((addRow) =>
-                        <FormGroup label={addRow.name}>
+                        <FormGroup label={addRow.name} valueClassList={addRow.valueClassList}>
                             {addRow.value}
                         </FormGroup>) : undefined}
                 </ItemModal>
@@ -230,7 +231,7 @@ export class Table extends Component<TableProps, TableState> {
                     yes_text={__("component.table.apply")}>
                     {state.showEditModal !== null && props.rows[state.showEditModal].onEditGetRows ?
                         props.rows[state.showEditModal].onEditGetRows().map((editRow) =>
-                        <FormGroup label={editRow.name}>
+                        <FormGroup label={editRow.name} valueClassList={editRow.valueClassList}>
                             {editRow.value}
                         </FormGroup>) : undefined}
                 </ItemModal>
