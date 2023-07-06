@@ -36,8 +36,6 @@
 
 BootStage boot_stage = BootStage::STATIC_INITIALIZATION;
 
-const char* DISPLAY_NAME = BUILD_DISPLAY_NAME;
-
 struct loop_chain {
     struct loop_chain *next;
     IModule *imodule;
