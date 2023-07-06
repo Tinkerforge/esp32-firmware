@@ -34,6 +34,8 @@
 #include "modules_main.h"
 #include "tools.h"
 
+#include "gcc_warnings.h"
+
 BootStage boot_stage = BootStage::STATIC_INITIALIZATION;
 
 struct loop_chain {
@@ -46,6 +48,8 @@ static struct loop_chain *loop_chain = nullptr;
 static bool is_module_loop_overridden(const IModule *imodule) {
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wold-style-cast"
+    #pragma GCC diagnostic ignored "-Wpedantic"
     #pragma GCC diagnostic ignored "-Wpmf-conversions"
     // GCC pointer to member function magic
     // http://www.cs.fsu.edu/~baker/ada/gnat/html/gcc_6.html#SEC151
@@ -154,7 +158,7 @@ void setup(void) {
     logger.pre_init();
 
     logger.printfln("    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str());
-    logger.printfln("         %dK RAM SYSTEM   %d HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
+    logger.printfln("         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     logger.printfln("READY.");
 
     logger.printfln("Last reset reason was: %s", tf_reset_reason());
@@ -218,7 +222,7 @@ void setup(void) {
     struct loop_chain **next_chain_ptr = &loop_chain;
     for (IModule *imodule : imodules) {
         if (is_module_loop_overridden(imodule)) {
-            *next_chain_ptr = (struct loop_chain*)malloc(sizeof(struct loop_chain));
+            *next_chain_ptr = static_cast<struct loop_chain*>(malloc(sizeof(struct loop_chain)));
             (*next_chain_ptr)->imodule = imodule;
             next_chain_ptr = &(*next_chain_ptr)->next;
         }
