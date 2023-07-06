@@ -374,7 +374,10 @@ void FirmwareUpdate::register_urls()
 
         task_scheduler.scheduleOnce([](){
             logger.printfln("Config reset requested");
-            evse_common.factory_reset();
+
+#if MODULE_EVSE_COMMON_AVAILABLE()
+        evse_common.factory_reset();
+#endif
 
 #if MODULE_USERS_AVAILABLE()
             for(int i = 0; i < users.config.get("users")->count(); ++i) {
