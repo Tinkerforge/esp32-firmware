@@ -34,9 +34,6 @@
 #include "modules_main.h"
 #include "tools.h"
 
-#define TFJSON_IMPLEMENTATION
-#include "TFJson.h"
-
 BootStage boot_stage = BootStage::STATIC_INITIALIZATION;
 
 const char* DISPLAY_NAME = BUILD_DISPLAY_NAME;
