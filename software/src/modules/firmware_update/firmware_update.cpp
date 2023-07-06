@@ -75,7 +75,9 @@ void factory_reset(bool restart_esp)
             tskIDLE_PRIORITY,
             &xTaskBuffer);
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
     evse_common.factory_reset();
+#endif
 
     LittleFS.end();
     LittleFS.format();
