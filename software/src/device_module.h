@@ -47,7 +47,7 @@ template <typename DeviceT,
           int (*reset_function)(DeviceT *),
           int (*destroy_function)(DeviceT *),
           bool mandatory = true>
-class DeviceModule : public IModule
+class DeviceModule : virtual public IModule
 {
 public:
     DeviceModule(const char *url_prefix,

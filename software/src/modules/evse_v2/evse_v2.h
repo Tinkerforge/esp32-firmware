@@ -24,6 +24,7 @@
 #include "config.h"
 #include "device_module.h"
 #include "evse_v2_bricklet_firmware_bin.embedded.h"
+#include "../evse_common/evse_common.h"
 
 #define CHARGING_SLOT_COUNT 14
 #define CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE 20
@@ -67,7 +68,7 @@ class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                    tf_evse_v2_create,
                                    tf_evse_v2_get_bootloader_mode,
                                    tf_evse_v2_reset,
-                                   tf_evse_v2_destroy>
+                                   tf_evse_v2_destroy>, public IEvseBackend
 {
 public:
     EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE", std::bind(&EVSEV2::setup_evse, this)) {}
@@ -75,6 +76,24 @@ public:
     void setup() override;
     void register_urls() override;
     void loop() override;
+
+    void post_setup();
+    void post_register_urls();
+
+    int get_charging_slot(uint8_t slot, uint16_t *ret_current, bool *ret_enabled, bool *ret_reset_on_dc);
+    int set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool reset_on_dc);
+
+    void set_boost_mode(bool enabled);
+
+    void set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected);
+    bool get_control_pilot_disconnect();
+    void set_charging_slot_max_current(uint8_t slot, uint16_t current);
+    void set_charging_slot_clear_on_disconnect(uint8_t slot, bool clear_on_disconnect);
+    void set_charging_slot_active(uint8_t slot, bool enabled);
+    int get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect);
+    int set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect);
+
+    bool is_in_bootloader(int rc);
 
     // Called in evse_v2_meter setup
     void update_all_data();
@@ -100,9 +119,6 @@ public:
     void set_ocpp_current(uint16_t current);
     uint16_t get_ocpp_current();
 
-    bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
-    void apply_defaults();
-
     void factory_reset();
 
     uint16_t get_all_energy_meter_values(float *ret_values);
@@ -113,56 +129,17 @@ public:
 
     void check_debug();
 
-    bool debug = false;
-
-    ConfigRoot state;
-    ConfigRoot hardware_configuration;
-    ConfigRoot low_level_state;
     ConfigRoot energy_meter_values;
     ConfigRoot energy_meter_errors;
-    ConfigRoot button_state;
-    ConfigRoot slots;
-    ConfigRoot indicator_led;
     ConfigRoot reset_dc_fault_current_state;
     ConfigRoot gpio_configuration;
     ConfigRoot gpio_configuration_update;
     ConfigRoot button_configuration;
     ConfigRoot button_configuration_update;
-    ConfigRoot auto_start_charging;
-    ConfigRoot auto_start_charging_update;
-    ConfigRoot global_current;
-    ConfigRoot global_current_update;
-    ConfigRoot management_enabled;
-    ConfigRoot management_enabled_update;
-    ConfigRoot user_current;
-    ConfigRoot user_enabled;
-    ConfigRoot user_enabled_update;
-    ConfigRoot external_enabled;
-    ConfigRoot external_enabled_update;
-    ConfigRoot external_defaults;
-    ConfigRoot external_defaults_update;
-    ConfigRoot management_current;
-    ConfigRoot management_current_update;
-    ConfigRoot external_current;
-    ConfigRoot external_current_update;
-    ConfigRoot external_clear_on_disconnect;
-    ConfigRoot external_clear_on_disconnect_update;
-    ConfigRoot modbus_enabled;
-    ConfigRoot modbus_enabled_update;
-    ConfigRoot ocpp_enabled;
-    ConfigRoot ocpp_enabled_update;
     ConfigRoot ev_wakeup;
     ConfigRoot ev_wakeup_update;
-    ConfigRoot boost_mode;
-    ConfigRoot boost_mode_update;
     ConfigRoot control_pilot_disconnect;
     ConfigRoot control_pilot_disconnect_update;
-    ConfigRoot require_meter_enabled;
-    ConfigRoot require_meter_enabled_update;
     ConfigRoot gp_output;
     ConfigRoot gp_output_update;
-
-    uint32_t last_current_update = 0;
-    bool shutdown_logged = false;
-    uint32_t last_debug_check = 0;
 };
