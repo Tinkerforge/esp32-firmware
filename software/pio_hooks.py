@@ -487,6 +487,7 @@ def main():
 
     specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
         '{{{module_decls}}}': '\n'.join(['{} {};'.format(x.camel, x.under) for x in backend_modules]),
+        '{{{imodule_count}}}': str(len(backend_modules)),
         '{{{imodule_vector}}}': '\n    '.join(['imodules->push_back(&{});'.format(x.under) for x in backend_modules]),
         '{{{module_init_config}}}': ',\n        '.join('{{"{0}", Config::Bool({0}.initialized)}}'.format(x.under) for x in backend_modules if not x.under.startswith("hidden_")),
     })

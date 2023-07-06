@@ -9,6 +9,8 @@
 
 void modules_get_imodules(std::vector<IModule*> *imodules)
 {
+    imodules->reserve({{{imodule_count}}});
+
     // Enforce that all back-end modules implement the IModule interface.
     // If you receive an error like "no matching function for call to 'std::vector<IModule*>::push_back(MyModule*)'",
     // you have to add the IModule interface to your back-end module's class declaration:
