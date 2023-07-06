@@ -59,9 +59,6 @@
 #define DATA_STORE_PAGE_CHARGE_TRACKER 0
 #define DATA_STORE_PAGE_RECOVERY 15
 
-void evse_v2_button_recovery_handler();
-#define TF_ESP_PREINIT evse_v2_button_recovery_handler();
-
 class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                    evse_v2_bricklet_firmware_bin_data,
                                    evse_v2_bricklet_firmware_bin_length,
@@ -72,6 +69,7 @@ class EVSEV2 : public DeviceModule<TF_EVSEV2,
 {
 public:
     EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE", std::bind(&EVSEV2::setup_evse, this)) {}
+    void pre_init() override;
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

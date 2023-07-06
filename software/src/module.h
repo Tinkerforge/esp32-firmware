@@ -24,6 +24,10 @@ class IModule
 public:
     virtual ~IModule() = default;
 
+    // pre_init() is only for special handlers that must run very early.
+    // No config, HAL or data partition available.
+    virtual void pre_init() {}
+
     virtual void pre_setup() {}
     virtual void setup() { initialized = true; }
     virtual void register_urls() {}

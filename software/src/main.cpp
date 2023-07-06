@@ -34,10 +34,6 @@
 #include "modules_main.h"
 #include "tools.h"
 
-#ifndef TF_ESP_PREINIT
-#define TF_ESP_PREINIT
-#endif
-
 #define TFJSON_IMPLEMENTATION
 #include "TFJson.h"
 
@@ -168,18 +164,20 @@ void setup(void) {
 
     logger.printfln("Last reset reason was: %s", tf_reset_reason());
 
+    std::vector<IModule*> imodules;
+    modules_get_imodules(&imodules);
+
     config_pre_init();
 
-    TF_ESP_PREINIT
+    for (IModule *imodule : imodules) {
+        imodule->pre_init();
+    }
 
     if(!mount_or_format_spiffs()) {
         logger.printfln("Failed to mount SPIFFS.");
     }
 
     boot_stage = BootStage::PRE_SETUP;
-
-    std::vector<IModule*> imodules;
-    modules_get_imodules(&imodules);
 
     task_scheduler.pre_setup();
     api.pre_setup();
