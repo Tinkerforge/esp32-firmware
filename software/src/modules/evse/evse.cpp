@@ -84,92 +84,6 @@ void EVSE::pre_setup()
         {"uptime", Config::Uint32(0)}
     });
 
-    button_state = Config::Object({
-        {"button_press_time", Config::Uint32(0)},
-        {"button_release_time", Config::Uint32(0)},
-        {"button_pressed", Config::Bool(false)},
-    });
-
-    Config *evse_charging_slot = new Config{Config::Object({
-        {"max_current", Config::Uint8(0)},
-        {"active", Config::Bool(false)},
-        {"clear_on_disconnect", Config::Bool(false)}
-    })};
-
-    slots = Config::Array({},
-        evse_charging_slot,
-        CHARGING_SLOT_COUNT, CHARGING_SLOT_COUNT,
-        Config::type_id<Config::ConfObject>());
-
-    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i)
-        slots.add();
-
-    indicator_led = Config::Object({
-        {"indication", Config::Int16(0)},
-        {"duration", Config::Uint16(0)},
-    });
-
-    // Actions
-
-    // TODO indicator LED
-
-    auto_start_charging = Config::Object({
-        {"auto_start_charging", Config::Bool(true)}
-    });
-
-    auto_start_charging_update = Config::Object({
-        {"auto_start_charging", Config::Bool(true)}
-    });
-
-    global_current = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
-
-    global_current_update = global_current;
-
-    management_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    management_enabled_update = management_enabled;
-
-    user_current = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
-
-    user_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    user_enabled_update = user_enabled;
-
-    external_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    external_enabled_update = external_enabled;
-
-    external_defaults = Config::Object({
-        {"current", Config::Uint16(0)},
-        {"clear_on_disconnect", Config::Bool(false)},
-    });
-    external_defaults_update = external_defaults;
-
-    management_current = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
-
-    management_current_update = management_current;
-
-    external_current = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
-
-    external_current_update = external_current;
-
-    external_clear_on_disconnect = Config::Object({
-        {"clear_on_disconnect", Config::Bool(false)}
-    });
-
-    external_clear_on_disconnect_update = external_clear_on_disconnect;
-
     user_calibration = Config::Object({
         {"user_calibration_active", Config::Bool(false)},
         {"voltage_diff", Config::Int16(0)},
@@ -193,27 +107,6 @@ void EVSE::pre_setup()
                 Config::Int16(0),
             }, new Config{Config::Int16(0)}, 14, 14, Config::type_id<Config::ConfInt>())}
     });
-
-    modbus_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    modbus_enabled_update = modbus_enabled;
-
-    ocpp_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    ocpp_enabled_update = ocpp_enabled;
-
-    boost_mode = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    boost_mode_update = boost_mode;
-
-    require_meter_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-
-    require_meter_enabled_update = require_meter_enabled;
 }
 
 void EVSE::factory_reset()

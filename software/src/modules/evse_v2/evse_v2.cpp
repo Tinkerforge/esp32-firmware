@@ -125,39 +125,11 @@ void EVSEV2::pre_setup()
         {"slave_device_failure", Config::Uint32(0)},
     });
 
-    button_state = Config::Object({
-        {"button_press_time", Config::Uint32(0)},
-        {"button_release_time", Config::Uint32(0)},
-        {"button_pressed", Config::Bool(false)},
-    });
-
-    Config *evse_charging_slot = new Config{Config::Object({
-        {"max_current", Config::Uint32(0)},
-        {"active", Config::Bool(false)},
-        {"clear_on_disconnect", Config::Bool(false)}
-    })};
-
-    slots = Config::Array({},
-        evse_charging_slot,
-        CHARGING_SLOT_COUNT, CHARGING_SLOT_COUNT,
-        Config::type_id<Config::ConfObject>());
-
-    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i)
-        slots.add();
-
-    indicator_led = Config::Object({
-        {"indication", Config::Int16(0)},
-        {"duration", Config::Uint16(0)},
-    });
-
     // Actions
 
     reset_dc_fault_current_state = Config::Object({
         {"password", Config::Uint32(0)} // 0xDC42FA23
     });
-
-    // TODO indicator LED
-
 
     // EVSE configs
     gpio_configuration = Config::Object({
@@ -176,94 +148,16 @@ void EVSEV2::pre_setup()
         {"button", Config::Uint8(2)}
     });
 
-    auto_start_charging = Config::Object({
-        {"auto_start_charging", Config::Bool(true)}
-    });
-
-    auto_start_charging_update = Config::Object({
-        {"auto_start_charging", Config::Bool(true)}
-    });
-
-    global_current = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
-
-    global_current_update = global_current;
-
-    management_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    management_enabled_update = management_enabled;
-
-    user_current = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
-
-    user_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    user_enabled_update = user_enabled;
-
-    external_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    external_enabled_update = external_enabled;
-
-    external_defaults = Config::Object({
-        {"current", Config::Uint16(0)},
-        {"clear_on_disconnect", Config::Bool(false)},
-    });
-    external_defaults_update = external_defaults;
-
-    management_current = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
-
-    management_current_update = management_current;
-
-    external_current = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
-
-    external_current_update = external_current;
-
-    external_clear_on_disconnect = Config::Object({
-        {"clear_on_disconnect", Config::Bool(false)}
-    });
-
-    external_clear_on_disconnect_update = external_clear_on_disconnect;
-
-    modbus_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    modbus_enabled_update = modbus_enabled;
-
-    ocpp_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    ocpp_enabled_update = ocpp_enabled;
-
     ev_wakeup = Config::Object({
         {"enabled", Config::Bool(false)}
     });
     ev_wakeup_update = ev_wakeup;
-
-    boost_mode = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    boost_mode_update = boost_mode;
 
     control_pilot_disconnect = Config::Object({
         {"disconnect", Config::Bool(false)}
     });
 
     control_pilot_disconnect_update = control_pilot_disconnect;
-
-    require_meter_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-
-    require_meter_enabled_update = require_meter_enabled;
 
     gp_output = Config::Object({
         {"gp_output", Config::Uint(0, 0, 1)}

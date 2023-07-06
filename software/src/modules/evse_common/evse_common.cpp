@@ -31,7 +31,108 @@ EvseCommon::EvseCommon() {
 }
 
 void EvseCommon::pre_setup() {
+    backend->button_state = Config::Object({
+        {"button_press_time", Config::Uint32(0)},
+        {"button_release_time", Config::Uint32(0)},
+        {"button_pressed", Config::Bool(false)},
+    });
 
+    Config *evse_charging_slot = new Config{Config::Object({
+        {"max_current", Config::Uint16(0)},
+        {"active", Config::Bool(false)},
+        {"clear_on_disconnect", Config::Bool(false)}
+    })};
+
+    backend->slots = Config::Array({},
+        evse_charging_slot,
+        CHARGING_SLOT_COUNT, CHARGING_SLOT_COUNT,
+        Config::type_id<Config::ConfObject>());
+
+    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i)
+        backend->slots.add();
+
+    backend->indicator_led = Config::Object({
+        {"indication", Config::Int16(0)},
+        {"duration", Config::Uint16(0)},
+    });
+
+    backend->auto_start_charging = Config::Object({
+        {"auto_start_charging", Config::Bool(true)}
+    });
+
+    backend->auto_start_charging_update = Config::Object({
+        {"auto_start_charging", Config::Bool(true)}
+    });
+
+    backend->global_current = Config::Object({
+        {"current", Config::Uint16(32000)}
+    });
+
+    backend->global_current_update = backend->global_current;
+
+    backend->management_enabled = Config::Object({
+        {"enabled", Config::Bool(false)}
+    });
+    backend->management_enabled_update = backend->management_enabled;
+
+    backend->user_current = Config::Object({
+        {"current", Config::Uint16(32000)}
+    });
+
+    backend->user_enabled = Config::Object({
+        {"enabled", Config::Bool(false)}
+    });
+    backend->user_enabled_update = backend->user_enabled;
+
+    backend->external_enabled = Config::Object({
+        {"enabled", Config::Bool(false)}
+    });
+    backend->external_enabled_update = backend->external_enabled;
+
+    backend->external_defaults = Config::Object({
+        {"current", Config::Uint16(0)},
+        {"clear_on_disconnect", Config::Bool(false)},
+    });
+    backend->external_defaults_update = backend->external_defaults;
+
+    backend->management_current = Config::Object({
+        {"current", Config::Uint16(32000)}
+    });
+
+    backend->management_current_update = backend->management_current;
+
+    backend->external_current = Config::Object({
+        {"current", Config::Uint16(32000)}
+    });
+
+    backend->external_current_update = backend->external_current;
+
+    backend->external_clear_on_disconnect = Config::Object({
+        {"clear_on_disconnect", Config::Bool(false)}
+    });
+
+    backend->external_clear_on_disconnect_update = backend->external_clear_on_disconnect;
+
+    backend->modbus_enabled = Config::Object({
+        {"enabled", Config::Bool(false)}
+    });
+    backend->modbus_enabled_update = backend->modbus_enabled;
+
+    backend->ocpp_enabled = Config::Object({
+        {"enabled", Config::Bool(false)}
+    });
+    backend->ocpp_enabled_update = backend->ocpp_enabled;
+
+    backend->boost_mode = Config::Object({
+        {"enabled", Config::Bool(false)}
+    });
+    backend->boost_mode_update = backend->boost_mode;
+
+    backend->require_meter_enabled = Config::Object({
+        {"enabled", Config::Bool(false)}
+    });
+
+    backend->require_meter_enabled_update = backend->require_meter_enabled;
 }
 
 bool EvseCommon::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
