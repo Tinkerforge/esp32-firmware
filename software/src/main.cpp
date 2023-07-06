@@ -153,7 +153,7 @@ void setup(void) {
     boot_stage = BootStage::PRE_INIT;
     Serial.begin(BUILD_MONITOR_SPEED);
 
-    logger.setup();
+    logger.pre_init();
 
     logger.printfln("    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str());
     logger.printfln("         %dK RAM SYSTEM   %d HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());

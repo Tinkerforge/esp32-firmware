@@ -28,7 +28,7 @@
 // Global definition here to match the declaration in event_log.h.
 EventLog logger;
 
-void EventLog::setup()
+void EventLog::pre_init()
 {
     event_buf.setup();
 }

@@ -44,7 +44,7 @@ public:
 #endif
                   heap_caps_free> event_buf;
 
-    void setup();
+    void pre_init();
 
     void write(const char *buf, size_t len);
 
