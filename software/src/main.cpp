@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2020-2023 Erik Fleckstein <erik@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,13 +18,13 @@
  */
 
 #include <Arduino.h>
-#include <WiFi.h>
 
 #include <stdio.h>
 #include <string.h>
 
 #include "index_html.embedded.h"
 
+#include "bindings/hal_common.h"
 #include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
