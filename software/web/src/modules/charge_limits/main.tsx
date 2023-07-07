@@ -58,7 +58,6 @@ function ChargeLimitsStatus() {
     }
 
     let duration_items: [string, string][] = [
-        ["disabled", get_duration_left()],
         ["0", __("charge_limits.content.unlimited")],
         ["1", __("charge_limits.content.min15")],
         ["2", __("charge_limits.content.min30")],
@@ -72,12 +71,14 @@ function ChargeLimitsStatus() {
         ["10", __("charge_limits.content.h12")]
     ];
 
-    if (config_in_use.duration != 0)
-        duration_items[0][1] = duration_items[config_in_use.duration + 1][1] + " | " + get_duration_left() + __("charge_limits.content.left");
+    let duration_placeholder = duration_items[config_in_use.duration][1];
 
-    duration_items[config.duration + 1][1] += " " + __("charge_limits.content.configured");
+    if (config_in_use.duration != 0)
+        duration_placeholder += " | " + get_duration_left() + __("charge_limits.content.left");
+
+    duration_items[config.duration][1] += " " + __("charge_limits.content.configured");
     if (config.duration != config_in_use.duration)
-        duration_items[config_in_use.duration + 1][1] += " " + __("charge_limits.content.overridden");
+        duration_items[config_in_use.duration][1] += " " + __("charge_limits.content.overridden");
 
     let energy_row = <></>
 
@@ -102,7 +103,6 @@ function ChargeLimitsStatus() {
         }
 
         let energy_items: [string, string][] = [
-            ["disabled", get_energy_left()],
             ["0", __("charge_limits.content.unlimited")],
             ["5000", util.toLocaleFixed(5, 0) + " kWh"],
             ["10000", util.toLocaleFixed(10, 0) + " kWh"],
@@ -120,23 +120,24 @@ function ChargeLimitsStatus() {
         ];
 
         if (electricity_price > 0) {
-            for(let i = 2; i < energy_items.length; ++i) {
+            for(let i = 1; i < energy_items.length; ++i) {
                 energy_items[i][1] += ` (~ ${util.toLocaleFixed(electricity_price / 10000 * parseFloat(energy_items[i][0]) / 1000, 2)} €)`
             }
         }
 
-        if (config_in_use.energy_wh != 0)
-            energy_items[0][1] = util.toLocaleFixed(config_in_use.energy_wh / 1000, 0) + " kWh" + " | " + get_energy_left() + __("charge_limits.content.left");
+        let energy_placeholder = __("charge_limits.content.unlimited");
 
-        let conf_idx = energy_items.findIndex(x => x[0] == config.energy_wh.toString())
+        if (config_in_use.energy_wh != 0)
+            energy_placeholder = util.toLocaleFixed(config_in_use.energy_wh / 1000, 0) + " kWh" + " | " + get_energy_left() + __("charge_limits.content.left");
+
+        let conf_idx = energy_items.findIndex(x => x[0] == config.energy_wh.toString());
         if (conf_idx == -1)
-            energy_items = [energy_items[0],
-                            [config.energy_wh.toString(),
+            energy_items = [[config.energy_wh.toString(),
                                 util.toLocaleFixed(config.energy_wh / 1000.0, 3)
                                 + " kWh "
                                 + (electricity_price > 0 ? ` (~ ${util.toLocaleFixed(electricity_price / 10000 * config.energy_wh / 1000, 2)} €)` : "")
                                 + __("charge_limits.content.configured")],
-                            ...energy_items.slice(1)];
+                            ...energy_items];
         else
             energy_items[conf_idx][1] += " " + __("charge_limits.content.configured");
 
@@ -150,7 +151,8 @@ function ChargeLimitsStatus() {
 
         energy_row = <FormRow label={__("charge_limits.content.override_energy")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
             <InputSelect items={energy_items}
-                value={"disabled"}
+                placeholder={energy_placeholder}
+                value={""}
                 onValue={(v) => {
                     this.setState({config_in_use: {...config_in_use, energy_wh: Number(v)}})
                     API.call("charge_limits/override_energy", {energy_wh: Number(v)}, __("charge_limits.script.override_failed"));
@@ -161,7 +163,8 @@ function ChargeLimitsStatus() {
     return <>
             <FormRow label={__("charge_limits.content.override_duration")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
                 <InputSelect items={duration_items}
-                    value={"disabled"}
+                    placeholder={duration_placeholder}
+                    value={""}
                     onValue={(v) => {
                         this.setState({config_in_use: {...config_in_use, duration: Number(v)}})
                         API.call("charge_limits/override_duration", {duration: Number(v)}, __("charge_limits.script.override_failed"));

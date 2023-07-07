@@ -47,7 +47,7 @@ export function InputSelect(props: InputSelectProps) {
                  (placeholder ? [<option value="" disabled selected>{placeholder}</option>] : [])
                     .concat(
                         items.map((k) =>
-                            <option value={k[0]} key={k[0]} disabled={k[0].endsWith("disabled")}>{k[1]}</option>))
+                            <option value={k[0].endsWith("disabled") ? "" : k[0]} key={k[0]} disabled={k[0].endsWith("disabled")}>{k[1]}</option>))
             }
         </select>
     );

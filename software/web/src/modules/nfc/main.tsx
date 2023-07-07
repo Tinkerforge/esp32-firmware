@@ -68,7 +68,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
             newTag: {
                 tag_id: "",
                 user_id: 0,
-                tag_type: "disabled" as any}
+                tag_type: "" as any}
         } as any;
     }
 
@@ -199,7 +199,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                         }
                         this.setState({showModal: false,
                                        authorized_tags: state.authorized_tags.concat(state.newTag),
-                                       newTag: {tag_id: "", user_id: 0, tag_type: "disabled" as any}});
+                                       newTag: {tag_id: "", user_id: 0, tag_type: "" as any}});
                         this.hackToAllowSave();}}
                     title={__("nfc.content.add_tag_modal_title")}
                     no_text={__("nfc.content.add_tag_modal_abort")}
@@ -237,13 +237,13 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                         </FormGroup>
                         <FormGroup label={__("nfc.content.add_tag_modal_tag_type")}>
                             <InputSelect items={[
-                                    ["disabled", __("nfc.content.select_type")],
                                     ["0",__("nfc.content.type_0")],
                                     ["1",__("nfc.content.type_1")],
                                     ["2",__("nfc.content.type_2")],
                                     ["3",__("nfc.content.type_3")],
                                     ["4",__("nfc.content.type_4")],
                                 ]}
+                                placeholder={__("nfc.content.select_type")}
                                 value={state.newTag.tag_type.toString()}
                                 onValue={(v) => this.setState({newTag: {...state.newTag, tag_type: parseInt(v)}})}
                                 required
