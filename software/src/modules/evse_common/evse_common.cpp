@@ -25,8 +25,10 @@ extern uint32_t local_uid_num;
 EvseCommon::EvseCommon() {
 #if MODULE_EVSE_AVAILABLE()
     backend = &evse;
-#else
+#elif MODULE_EVSE_V2_AVAILABLE()
     backend = &evse_v2;
+#else
+    #error Unknown or missing EVSE module!
 #endif
 }
 
