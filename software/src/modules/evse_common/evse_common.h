@@ -59,7 +59,8 @@
 #define SLOT_CLEAR_ON_DISCONNECT(x) ((bool)(x & 0x02))
 
 class IEvseBackend : virtual public IModule {
-public:
+    friend class EvseCommon;
+protected:
     IEvseBackend() {}
     virtual ~IEvseBackend() {}
 
@@ -96,40 +97,6 @@ public:
     virtual String get_evse_debug_header() = 0;
     virtual String get_evse_debug_line() = 0;
     virtual void update_all_data() = 0;
-
-    ConfigRoot low_level_state;
-    ConfigRoot management_enabled;
-    ConfigRoot management_enabled_update;
-    ConfigRoot state;
-    ConfigRoot slots;
-    ConfigRoot hardware_configuration;
-    ConfigRoot indicator_led;
-    ConfigRoot button_state;
-    ConfigRoot external_current;
-    ConfigRoot external_current_update;
-    ConfigRoot external_clear_on_disconnect;
-    ConfigRoot external_clear_on_disconnect_update;
-    ConfigRoot management_current;
-    ConfigRoot management_current_update;
-    ConfigRoot boost_mode;
-    ConfigRoot boost_mode_update;
-    ConfigRoot auto_start_charging;
-    ConfigRoot auto_start_charging_update;
-    ConfigRoot global_current;
-    ConfigRoot global_current_update;
-    ConfigRoot user_current;
-    ConfigRoot user_enabled;
-    ConfigRoot user_enabled_update;
-    ConfigRoot external_enabled;
-    ConfigRoot external_enabled_update;
-    ConfigRoot external_defaults;
-    ConfigRoot external_defaults_update;
-    ConfigRoot modbus_enabled;
-    ConfigRoot modbus_enabled_update;
-    ConfigRoot ocpp_enabled;
-    ConfigRoot ocpp_enabled_update;
-    ConfigRoot require_meter_enabled;
-    ConfigRoot require_meter_enabled_update;
 };
 
 class EvseCommon final : public IModule {
@@ -185,4 +152,38 @@ public:
 
     uint32_t last_debug_keep_alive = 0;
     bool debug = false;
+
+    ConfigRoot low_level_state;
+    ConfigRoot management_enabled;
+    ConfigRoot management_enabled_update;
+    ConfigRoot state;
+    ConfigRoot slots;
+    ConfigRoot hardware_configuration;
+    ConfigRoot indicator_led;
+    ConfigRoot button_state;
+    ConfigRoot external_current;
+    ConfigRoot external_current_update;
+    ConfigRoot external_clear_on_disconnect;
+    ConfigRoot external_clear_on_disconnect_update;
+    ConfigRoot management_current;
+    ConfigRoot management_current_update;
+    ConfigRoot boost_mode;
+    ConfigRoot boost_mode_update;
+    ConfigRoot auto_start_charging;
+    ConfigRoot auto_start_charging_update;
+    ConfigRoot global_current;
+    ConfigRoot global_current_update;
+    ConfigRoot user_current;
+    ConfigRoot user_enabled;
+    ConfigRoot user_enabled_update;
+    ConfigRoot external_enabled;
+    ConfigRoot external_enabled_update;
+    ConfigRoot external_defaults;
+    ConfigRoot external_defaults_update;
+    ConfigRoot modbus_enabled;
+    ConfigRoot modbus_enabled_update;
+    ConfigRoot ocpp_enabled;
+    ConfigRoot ocpp_enabled_update;
+    ConfigRoot require_meter_enabled;
+    ConfigRoot require_meter_enabled_update;
 };

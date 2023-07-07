@@ -31,7 +31,7 @@ EvseCommon::EvseCommon() {
 }
 
 void EvseCommon::pre_setup() {
-    backend->button_state = Config::Object({
+    button_state = Config::Object({
         {"button_press_time", Config::Uint32(0)},
         {"button_release_time", Config::Uint32(0)},
         {"button_pressed", Config::Bool(false)},
@@ -43,96 +43,96 @@ void EvseCommon::pre_setup() {
         {"clear_on_disconnect", Config::Bool(false)}
     })};
 
-    backend->slots = Config::Array({},
+    slots = Config::Array({},
         evse_charging_slot,
         CHARGING_SLOT_COUNT, CHARGING_SLOT_COUNT,
         Config::type_id<Config::ConfObject>());
 
     for (int i = 0; i < CHARGING_SLOT_COUNT; ++i)
-        backend->slots.add();
+        slots.add();
 
-    backend->indicator_led = Config::Object({
+    indicator_led = Config::Object({
         {"indication", Config::Int16(0)},
         {"duration", Config::Uint16(0)},
     });
 
-    backend->auto_start_charging = Config::Object({
+    auto_start_charging = Config::Object({
         {"auto_start_charging", Config::Bool(true)}
     });
 
-    backend->auto_start_charging_update = Config::Object({
+    auto_start_charging_update = Config::Object({
         {"auto_start_charging", Config::Bool(true)}
     });
 
-    backend->global_current = Config::Object({
+    global_current = Config::Object({
         {"current", Config::Uint16(32000)}
     });
 
-    backend->global_current_update = backend->global_current;
+    global_current_update = global_current;
 
-    backend->management_enabled = Config::Object({
+    management_enabled = Config::Object({
         {"enabled", Config::Bool(false)}
     });
-    backend->management_enabled_update = backend->management_enabled;
+    management_enabled_update = management_enabled;
 
-    backend->user_current = Config::Object({
+    user_current = Config::Object({
         {"current", Config::Uint16(32000)}
     });
 
-    backend->user_enabled = Config::Object({
+    user_enabled = Config::Object({
         {"enabled", Config::Bool(false)}
     });
-    backend->user_enabled_update = backend->user_enabled;
+    user_enabled_update = user_enabled;
 
-    backend->external_enabled = Config::Object({
+    external_enabled = Config::Object({
         {"enabled", Config::Bool(false)}
     });
-    backend->external_enabled_update = backend->external_enabled;
+    external_enabled_update = external_enabled;
 
-    backend->external_defaults = Config::Object({
+    external_defaults = Config::Object({
         {"current", Config::Uint16(0)},
         {"clear_on_disconnect", Config::Bool(false)},
     });
-    backend->external_defaults_update = backend->external_defaults;
+    external_defaults_update = external_defaults;
 
-    backend->management_current = Config::Object({
+    management_current = Config::Object({
         {"current", Config::Uint16(32000)}
     });
 
-    backend->management_current_update = backend->management_current;
+    management_current_update = management_current;
 
-    backend->external_current = Config::Object({
+    external_current = Config::Object({
         {"current", Config::Uint16(32000)}
     });
 
-    backend->external_current_update = backend->external_current;
+    external_current_update = external_current;
 
-    backend->external_clear_on_disconnect = Config::Object({
+    external_clear_on_disconnect = Config::Object({
         {"clear_on_disconnect", Config::Bool(false)}
     });
 
-    backend->external_clear_on_disconnect_update = backend->external_clear_on_disconnect;
+    external_clear_on_disconnect_update = external_clear_on_disconnect;
 
-    backend->modbus_enabled = Config::Object({
+    modbus_enabled = Config::Object({
         {"enabled", Config::Bool(false)}
     });
-    backend->modbus_enabled_update = backend->modbus_enabled;
+    modbus_enabled_update = modbus_enabled;
 
-    backend->ocpp_enabled = Config::Object({
+    ocpp_enabled = Config::Object({
         {"enabled", Config::Bool(false)}
     });
-    backend->ocpp_enabled_update = backend->ocpp_enabled;
+    ocpp_enabled_update = ocpp_enabled;
 
-    backend->boost_mode = Config::Object({
+    boost_mode = Config::Object({
         {"enabled", Config::Bool(false)}
     });
-    backend->boost_mode_update = backend->boost_mode;
+    boost_mode_update = boost_mode;
 
-    backend->require_meter_enabled = Config::Object({
+    require_meter_enabled = Config::Object({
         {"enabled", Config::Bool(false)}
     });
 
-    backend->require_meter_enabled_update = backend->require_meter_enabled;
+    require_meter_enabled_update = require_meter_enabled;
 }
 
 bool EvseCommon::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
@@ -271,22 +271,22 @@ void EvseCommon::register_urls() {
         for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
             if (i == CHARGING_SLOT_CHARGE_MANAGER)
                 continue;
-            if (!backend->slots.get(i)->get("active")->asBool())
+            if (!slots.get(i)->get("active")->asBool())
                 continue;
-            supported_current = min(supported_current, (uint16_t)backend->slots.get(i)->get("max_current")->asUint());
+            supported_current = min(supported_current, (uint16_t)slots.get(i)->get("max_current")->asUint());
         }
 
         cm_networking.send_client_update(
             local_uid_num,
-            backend->state.get("iec61851_state")->asUint(),
-            backend->state.get("charger_state")->asUint(),
-            backend->low_level_state.get("time_since_state_change")->asUint(),
-            backend->state.get("error_state")->asUint(),
-            backend->low_level_state.get("uptime")->asUint(),
-            backend->low_level_state.get("charging_time")->asUint(),
-            backend->slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->asUint(),
+            state.get("iec61851_state")->asUint(),
+            state.get("charger_state")->asUint(),
+            low_level_state.get("time_since_state_change")->asUint(),
+            state.get("error_state")->asUint(),
+            low_level_state.get("uptime")->asUint(),
+            low_level_state.get("charging_time")->asUint(),
+            slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->asUint(),
             supported_current,
-            backend->management_enabled.get("enabled")->asBool(),
+            management_enabled.get("enabled")->asBool(),
             backend->get_control_pilot_disconnect()
         );
     }, 1000, 1000);
@@ -294,7 +294,7 @@ void EvseCommon::register_urls() {
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (!deadline_elapsed(last_current_update + 30000))
             return;
-        if (!backend->management_enabled.get("enabled")->asBool()) {
+        if (!management_enabled.get("enabled")->asBool()) {
             // Push back the next check for 30 seconds: If managed gets enabled,
             // we want to wait 30 seconds before setting the current for the first time.
             last_current_update = millis();
@@ -308,21 +308,21 @@ void EvseCommon::register_urls() {
 #endif
 
     // States
-    api.addState("evse/state", &backend->state, {}, 1000);
-    api.addState("evse/hardware_configuration", &backend->hardware_configuration, {}, 1000);
-    api.addState("evse/low_level_state", &backend->low_level_state, {}, 1000);
-    api.addState("evse/button_state", &backend->button_state, {}, 250);
-    api.addState("evse/slots", &backend->slots, {}, 1000);
-    api.addState("evse/indicator_led", &backend->indicator_led, {}, 1000);
+    api.addState("evse/state", &state, {}, 1000);
+    api.addState("evse/hardware_configuration", &hardware_configuration, {}, 1000);
+    api.addState("evse/low_level_state", &low_level_state, {}, 1000);
+    api.addState("evse/button_state", &button_state, {}, 250);
+    api.addState("evse/slots", &slots, {}, 1000);
+    api.addState("evse/indicator_led", &indicator_led, {}, 1000);
 
     //Actions
     api.addCommand("evse/stop_charging", Config::Null(), {}, [this](){
-        if (backend->state.get("iec61851_state")->asUint() != IEC_STATE_A)
+        if (state.get("iec61851_state")->asUint() != IEC_STATE_A)
             backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOSTART_BUTTON, 0);
     }, true);
 
     api.addCommand("evse/start_charging", Config::Null(), {}, [this](){
-        if (backend->state.get("iec61851_state")->asUint() != IEC_STATE_A)
+        if (state.get("iec61851_state")->asUint() != IEC_STATE_A)
             backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOSTART_BUTTON, 32000);
     }, true);
 
@@ -350,33 +350,33 @@ void EvseCommon::register_urls() {
     });
 #endif
 
-    api.addState("evse/external_current", &backend->external_current, {}, 1000);
-    api.addCommand("evse/external_current_update", &backend->external_current_update, {}, [this](){
-        backend->set_charging_slot_max_current(CHARGING_SLOT_EXTERNAL, backend->external_current_update.get("current")->asUint());
+    api.addState("evse/external_current", &external_current, {}, 1000);
+    api.addCommand("evse/external_current_update", &external_current_update, {}, [this](){
+        backend->set_charging_slot_max_current(CHARGING_SLOT_EXTERNAL, external_current_update.get("current")->asUint());
     }, false);
 
-    api.addState("evse/external_clear_on_disconnect", &backend->external_clear_on_disconnect, {}, 1000);
-    api.addCommand("evse/external_clear_on_disconnect_update", &backend->external_clear_on_disconnect_update, {}, [this](){
-        backend->set_charging_slot_clear_on_disconnect(CHARGING_SLOT_EXTERNAL, backend->external_clear_on_disconnect_update.get("clear_on_disconnect")->asBool());
+    api.addState("evse/external_clear_on_disconnect", &external_clear_on_disconnect, {}, 1000);
+    api.addCommand("evse/external_clear_on_disconnect_update", &external_clear_on_disconnect_update, {}, [this](){
+        backend->set_charging_slot_clear_on_disconnect(CHARGING_SLOT_EXTERNAL, external_clear_on_disconnect_update.get("clear_on_disconnect")->asBool());
     }, false);
 
-    api.addState("evse/management_current", &backend->management_current, {}, 1000);
-    api.addCommand("evse/management_current_update", &backend->management_current_update, {}, [this](){
-        set_managed_current(backend->management_current_update.get("current")->asUint());
+    api.addState("evse/management_current", &management_current, {}, 1000);
+    api.addCommand("evse/management_current_update", &management_current_update, {}, [this](){
+        set_managed_current(management_current_update.get("current")->asUint());
     }, false);
 
-    api.addState("evse/boost_mode", &backend->boost_mode, {}, 1000);
-    api.addCommand("evse/boost_mode_update", &backend->boost_mode_update, {}, [this](){
-        backend->set_boost_mode(backend->boost_mode_update.get("enabled")->asBool());
+    api.addState("evse/boost_mode", &boost_mode, {}, 1000);
+    api.addCommand("evse/boost_mode_update", &boost_mode_update, {}, [this](){
+        backend->set_boost_mode(boost_mode_update.get("enabled")->asBool());
     }, true);
 
-    api.addState("evse/auto_start_charging", &backend->auto_start_charging, {}, 1000);
-    api.addCommand("evse/auto_start_charging_update", &backend->auto_start_charging_update, {}, [this](){
+    api.addState("evse/auto_start_charging", &auto_start_charging, {}, 1000);
+    api.addCommand("evse/auto_start_charging_update", &auto_start_charging_update, {}, [this](){
         // 1. set auto start
         // 2. make persistent
         // 3. fake a start/stop charging
 
-        bool enable_auto_start = backend->auto_start_charging_update.get("auto_start_charging")->asBool();
+        bool enable_auto_start = auto_start_charging_update.get("auto_start_charging")->asBool();
 
         backend->set_charging_slot_clear_on_disconnect(CHARGING_SLOT_AUTOSTART_BUTTON, !enable_auto_start);
 
@@ -391,24 +391,24 @@ void EvseCommon::register_urls() {
         } else {
             // Only "stop" charging if no car is currently plugged in.
             // Clear on disconnect only triggers once, so we have to zero the current manually here.
-            uint8_t iec_state = backend->state.get("iec61851_state")->asUint();
+            uint8_t iec_state = state.get("iec61851_state")->asUint();
             if (iec_state != 2 && iec_state != 3)
                 backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOSTART_BUTTON, 0);
         }
     }, false);
 
-    api.addState("evse/global_current", &backend->global_current, {}, 1000);
-    api.addCommand("evse/global_current_update", &backend->global_current_update, {}, [this](){
-        uint16_t current = backend->global_current_update.get("current")->asUint();
+    api.addState("evse/global_current", &global_current, {}, 1000);
+    api.addCommand("evse/global_current_update", &global_current_update, {}, [this](){
+        uint16_t current = global_current_update.get("current")->asUint();
         backend->set_charging_slot_max_current(CHARGING_SLOT_GLOBAL, current);
         apply_slot_default(CHARGING_SLOT_GLOBAL, current, true, false);
     }, false);
 
-    api.addState("evse/management_enabled", &backend->management_enabled, {}, 1000);
-    api.addCommand("evse/management_enabled_update", &backend->management_enabled_update, {}, [this](){
-        bool enabled = backend->management_enabled_update.get("enabled")->asBool();
+    api.addState("evse/management_enabled", &management_enabled, {}, 1000);
+    api.addCommand("evse/management_enabled_update", &management_enabled_update, {}, [this](){
+        bool enabled = management_enabled_update.get("enabled")->asBool();
 
-        if (enabled == backend->management_enabled.get("enabled")->asBool())
+        if (enabled == management_enabled.get("enabled")->asBool())
             return;
 
         if (enabled)
@@ -422,12 +422,12 @@ void EvseCommon::register_urls() {
             apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 32000, false, false);
     }, false);
 
-    api.addState("evse/user_current", &backend->user_current, {}, 1000);
-    api.addState("evse/user_enabled", &backend->user_enabled, {}, 1000);
-    api.addCommand("evse/user_enabled_update", &backend->user_enabled_update, {}, [this](){
-        bool enabled = backend->user_enabled_update.get("enabled")->asBool();
+    api.addState("evse/user_current", &user_current, {}, 1000);
+    api.addState("evse/user_enabled", &user_enabled, {}, 1000);
+    api.addCommand("evse/user_enabled_update", &user_enabled_update, {}, [this](){
+        bool enabled = user_enabled_update.get("enabled")->asBool();
 
-        if (enabled == backend->user_enabled.get("enabled")->asBool())
+        if (enabled == user_enabled.get("enabled")->asBool())
             return;
 
 #if MODULE_USERS_AVAILABLE()
@@ -447,29 +447,29 @@ void EvseCommon::register_urls() {
             apply_slot_default(CHARGING_SLOT_USER, 32000, false, false);
     }, false);
 
-    api.addState("evse/external_enabled", &backend->external_enabled, {}, 1000);
-    api.addCommand("evse/external_enabled_update", &backend->external_enabled_update, {}, [this](){
-        bool enabled = backend->external_enabled_update.get("enabled")->asBool();
+    api.addState("evse/external_enabled", &external_enabled, {}, 1000);
+    api.addCommand("evse/external_enabled_update", &external_enabled_update, {}, [this](){
+        bool enabled = external_enabled_update.get("enabled")->asBool();
 
-        if (enabled == backend->external_enabled.get("enabled")->asBool())
+        if (enabled == external_enabled.get("enabled")->asBool())
             return;
 
         backend->set_charging_slot_active(CHARGING_SLOT_EXTERNAL, enabled);
         apply_slot_default(CHARGING_SLOT_EXTERNAL, 32000, enabled, false);
     }, false);
 
-    api.addState("evse/external_defaults", &backend->external_defaults, {}, 1000);
-    api.addCommand("evse/external_defaults_update", &backend->external_defaults_update, {}, [this](){
+    api.addState("evse/external_defaults", &external_defaults, {}, 1000);
+    api.addCommand("evse/external_defaults_update", &external_defaults_update, {}, [this](){
         bool enabled;
         backend->get_charging_slot_default(CHARGING_SLOT_EXTERNAL, nullptr, &enabled, nullptr);
-        apply_slot_default(CHARGING_SLOT_EXTERNAL, backend->external_defaults_update.get("current")->asUint(), enabled, backend->external_defaults_update.get("clear_on_disconnect")->asBool());
+        apply_slot_default(CHARGING_SLOT_EXTERNAL, external_defaults_update.get("current")->asUint(), enabled, external_defaults_update.get("clear_on_disconnect")->asBool());
     }, false);
 
-    api.addState("evse/modbus_tcp_enabled", &backend->modbus_enabled, {}, 1000);
-    api.addCommand("evse/modbus_tcp_enabled_update", &backend->modbus_enabled_update, {}, [this](){
-        bool enabled = backend->modbus_enabled_update.get("enabled")->asBool();
+    api.addState("evse/modbus_tcp_enabled", &modbus_enabled, {}, 1000);
+    api.addCommand("evse/modbus_tcp_enabled_update", &modbus_enabled_update, {}, [this](){
+        bool enabled = modbus_enabled_update.get("enabled")->asBool();
 
-        if (enabled == backend->modbus_enabled.get("enabled")->asBool())
+        if (enabled == modbus_enabled.get("enabled")->asBool())
             return;
 
         if (enabled) {
@@ -489,11 +489,11 @@ void EvseCommon::register_urls() {
         }
     }, false);
 
-    api.addState("evse/ocpp_enabled", &backend->ocpp_enabled, {}, 1000);
-    api.addCommand("evse/ocpp_enabled_update", &backend->ocpp_enabled_update, {}, [this](){
-        bool enabled = backend->ocpp_enabled_update.get("enabled")->asBool();
+    api.addState("evse/ocpp_enabled", &ocpp_enabled, {}, 1000);
+    api.addCommand("evse/ocpp_enabled_update", &ocpp_enabled_update, {}, [this](){
+        bool enabled = ocpp_enabled_update.get("enabled")->asBool();
 
-        if (enabled == backend->ocpp_enabled.get("enabled")->asBool())
+        if (enabled == ocpp_enabled.get("enabled")->asBool())
             return;
 
         if (enabled) {
@@ -560,7 +560,7 @@ bool EvseCommon::get_require_meter_blocking() {
 }
 
 bool EvseCommon::get_require_meter_enabled() {
-    return backend->require_meter_enabled.get("enabled")->asBool();
+    return require_meter_enabled.get("enabled")->asBool();
 }
 
 void EvseCommon::set_charge_limits_slot(uint16_t current, bool enabled) {
@@ -572,7 +572,7 @@ void EvseCommon::set_ocpp_current(uint16_t current) {
 }
 
 uint16_t EvseCommon::get_ocpp_current() {
-    return backend->slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
+    return slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
 }
 
 void EvseCommon::factory_reset() {
@@ -596,19 +596,19 @@ void EvseCommon::set_indicator_led(int16_t indication, uint16_t duration, uint8_
 }
 
 ConfigRoot &EvseCommon::get_slots() {
-    return backend->slots;
+    return slots;
 }
 
 ConfigRoot &EvseCommon::get_low_level_state() {
-    return backend->low_level_state;
+    return low_level_state;
 }
 
 ConfigRoot &EvseCommon::get_state() {
-    return backend->state;
+    return state;
 }
 
 bool EvseCommon::get_management_enabled() {
-    return backend->management_enabled.get("enabled")->asBool();
+    return management_enabled.get("enabled")->asBool();
 }
 
 void EvseCommon::check_debug()
