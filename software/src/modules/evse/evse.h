@@ -50,6 +50,7 @@ public:
     bool is_in_bootloader(int rc) override  {return this->DeviceModule::is_in_bootloader(rc);}
 
     void factory_reset() override;
+    void reset() override { this->DeviceModule::reset(); }
 
     void set_data_storage(uint8_t page, const uint8_t *data) override;
     void get_data_storage(uint8_t page, uint8_t *data) override;

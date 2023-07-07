@@ -579,6 +579,10 @@ void EvseCommon::factory_reset() {
     backend->factory_reset();
 }
 
+void EvseCommon::reset() {
+    backend->reset();
+}
+
 void EvseCommon::set_data_storage(uint8_t page, const uint8_t* data) {
     backend->set_data_storage(page, data);
 }

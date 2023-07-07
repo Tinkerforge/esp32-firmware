@@ -72,6 +72,7 @@ public:
 
     // Pass through to bindings functions
     virtual void factory_reset() = 0;
+    virtual void reset() = 0;
 
     virtual void set_data_storage(uint8_t, const uint8_t*) = 0;
     virtual void get_data_storage(uint8_t, uint8_t*) = 0;
@@ -163,6 +164,7 @@ public:
     uint16_t get_ocpp_current();
 
     void factory_reset();
+    void reset();
 
     void set_data_storage(uint8_t, const uint8_t*);
     void get_data_storage(uint8_t, uint8_t*);
