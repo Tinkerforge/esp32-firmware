@@ -111,6 +111,26 @@ void EVSE::pre_setup()
     });
 }
 
+void EVSE::post_setup() {}
+
+void EVSE::post_register_urls() {
+    api.addState("evse/user_calibration", &user_calibration, {}, 1000);
+    api.addCommand("evse/user_calibration_update", &user_calibration, {}, [this](){
+        int16_t resistance_880[14];
+        user_calibration.get("resistance_880")->fillArray<int16_t, Config::ConfInt>(resistance_880, sizeof(resistance_880)/sizeof(resistance_880[0]));
+
+        is_in_bootloader(tf_evse_set_user_calibration(&device,
+            0xCA11B4A0,
+            user_calibration.get("user_calibration_active")->asBool(),
+            user_calibration.get("voltage_diff")->asInt(),
+            user_calibration.get("voltage_mul")->asInt(),
+            user_calibration.get("voltage_div")->asInt(),
+            user_calibration.get("resistance_2700")->asInt(),
+            resistance_880
+            ));
+    }, true);
+}
+
 void EVSE::factory_reset()
 {
     tf_evse_factory_reset(&device, 0x2342FACD);
@@ -131,7 +151,37 @@ void EVSE::set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret
     tf_evse_set_indicator_led(&device, indication, duration, ret_status);
 }
 
-void EVSE::post_setup() {}
+void EVSE::set_boost_mode(bool enabled) {
+    is_in_bootloader(tf_evse_set_boost_mode(&device, enabled));
+}
+
+int EVSE::get_charging_slot(uint8_t slot, uint16_t *ret_current, bool *ret_enabled, bool *ret_reset_on_dc) {
+    return tf_evse_get_charging_slot(&device, slot, ret_current, ret_enabled, ret_reset_on_dc);
+}
+
+int EVSE::set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool reset_on_dc) {
+    return tf_evse_set_charging_slot(&device, slot, current, enabled, reset_on_dc);
+}
+
+void EVSE::set_charging_slot_max_current(uint8_t slot, uint16_t current) {
+    is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, slot, current));
+}
+
+void EVSE::set_charging_slot_clear_on_disconnect(uint8_t slot, bool clear_on_disconnect) {
+    is_in_bootloader(tf_evse_set_charging_slot_clear_on_disconnect(&device, slot, clear_on_disconnect));
+}
+
+void EVSE::set_charging_slot_active(uint8_t slot, bool enabled) {
+    tf_evse_set_charging_slot_active(&device, slot, enabled);
+}
+
+int EVSE::get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect) {
+    return tf_evse_get_charging_slot_default(&device, slot, ret_max_current, ret_enabled, ret_clear_on_disconnect);
+}
+
+int EVSE::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect) {
+    return tf_evse_set_charging_slot_default(&device, slot, current, enabled, clear_on_disconnect);
+}
 
 String EVSE::get_evse_debug_header()
 {
@@ -332,65 +382,6 @@ String EVSE::get_evse_debug_line()
              SLOT_ACTIVE(active_and_clear_on_disconnect[18]) ? max_current[18] : 32000,
              SLOT_ACTIVE(active_and_clear_on_disconnect[19]) ? max_current[19] : 32000);
     return String(line);
-}
-
-int EVSE::get_charging_slot(uint8_t slot, uint16_t *ret_current, bool *ret_enabled, bool *ret_reset_on_dc) {
-    return tf_evse_get_charging_slot(&device, slot, ret_current, ret_enabled, ret_reset_on_dc);
-}
-
-int EVSE::set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool reset_on_dc) {
-    return tf_evse_set_charging_slot(&device, slot, current, enabled, reset_on_dc);
-}
-
-void EVSE::set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected) {
-    (void)cp_disconnect; // not supported
-    (void)cp_disconnected;
-}
-
-void EVSE::set_charging_slot_max_current(uint8_t slot, uint16_t current) {
-    is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, slot, current));
-}
-
-void EVSE::set_charging_slot_clear_on_disconnect(uint8_t slot, bool clear_on_disconnect) {
-    is_in_bootloader(tf_evse_set_charging_slot_clear_on_disconnect(&device, slot, clear_on_disconnect));
-}
-
-void EVSE::set_boost_mode(bool enabled) {
-    is_in_bootloader(tf_evse_set_boost_mode(&device, enabled));
-}
-
-void EVSE::set_charging_slot_active(uint8_t slot, bool enabled) {
-    tf_evse_set_charging_slot_active(&device, slot, enabled);
-}
-
-int EVSE::get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect) {
-    return tf_evse_get_charging_slot_default(&device, slot, ret_max_current, ret_enabled, ret_clear_on_disconnect);
-}
-
-int EVSE::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect) {
-    return tf_evse_set_charging_slot_default(&device, slot, current, enabled, clear_on_disconnect);
-}
-
-bool EVSE::get_control_pilot_disconnect() {
-    return false; //cp-disconnect not supported
-}
-
-void EVSE::post_register_urls() {
-    api.addState("evse/user_calibration", &user_calibration, {}, 1000);
-    api.addCommand("evse/user_calibration_update", &user_calibration, {}, [this](){
-        int16_t resistance_880[14];
-        user_calibration.get("resistance_880")->fillArray<int16_t, Config::ConfInt>(resistance_880, sizeof(resistance_880)/sizeof(resistance_880[0]));
-
-        is_in_bootloader(tf_evse_set_user_calibration(&device,
-            0xCA11B4A0,
-            user_calibration.get("user_calibration_active")->asBool(),
-            user_calibration.get("voltage_diff")->asInt(),
-            user_calibration.get("voltage_mul")->asInt(),
-            user_calibration.get("voltage_div")->asInt(),
-            user_calibration.get("resistance_2700")->asInt(),
-            resistance_880
-            ));
-    }, true);
 }
 
 void EVSE::update_all_data()
