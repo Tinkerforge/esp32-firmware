@@ -76,7 +76,7 @@ public:
 
     String get_evse_debug_header() override;
     String get_evse_debug_line() override;
-    void update_all_data();
+    void update_all_data() override;
     //End IEvseBackend implementation
 
     ConfigRoot user_calibration;
