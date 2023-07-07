@@ -43,7 +43,7 @@ public:
     void loop() override {this->DeviceModule::loop();};
 
     // IEvseBackend implementation
-    void post_setup() override;
+    void post_setup() override {};
     void post_register_urls() override;
 
     bool setup_device() override {return this->DeviceModule::setup_device();}

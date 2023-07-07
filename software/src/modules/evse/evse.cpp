@@ -107,8 +107,6 @@ void EVSE::pre_setup()
     });
 }
 
-void EVSE::post_setup() {}
-
 void EVSE::post_register_urls() {
     api.addState("evse/user_calibration", &user_calibration, {}, 1000);
     api.addCommand("evse/user_calibration_update", &user_calibration, {}, [this](){
