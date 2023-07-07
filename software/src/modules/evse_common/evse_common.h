@@ -93,7 +93,7 @@ public:
     ConfigRoot require_meter_enabled;
     ConfigRoot require_meter_enabled_update;
 
-    uint32_t last_debug_check = 0;
+    uint32_t last_debug_keep_alive = 0;
 
     bool debug = false;
 };

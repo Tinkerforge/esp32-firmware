@@ -316,7 +316,7 @@ void EvseCommon::register_urls() {
 #if MODULE_WS_AVAILABLE()
     server.on("/evse/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
-            backend->last_debug_check = millis();
+            backend->last_debug_keep_alive = millis();
             backend->check_debug();
             ws.pushRawStateUpdate(backend->get_evse_debug_header(), "evse/debug_header");
             backend->debug = true;
@@ -325,7 +325,7 @@ void EvseCommon::register_urls() {
     });
 
     server.on("/evse/continue_debug", HTTP_GET, [this](WebServerRequest request) {
-        backend->last_debug_check = millis();
+        backend->last_debug_keep_alive = millis();
         return request.send(200);
     });
 

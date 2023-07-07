@@ -209,7 +209,7 @@ void EnergyManager::setup_energy_manager()
 void EnergyManager::check_debug()
 {
     task_scheduler.scheduleOnce([this](){
-        if (deadline_elapsed(last_debug_check + 60000) && debug)
+        if (deadline_elapsed(last_debug_keep_alive + 60000) && debug)
         {
             logger.printfln("Debug log creation canceled because no continue call was received for more than 60 seconds.");
             debug = false;
@@ -407,7 +407,7 @@ void EnergyManager::register_urls()
 #if MODULE_WS_AVAILABLE()
     server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
-            last_debug_check = millis();
+            last_debug_keep_alive = millis();
             check_debug();
             ws.pushRawStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
             debug = true;
@@ -416,7 +416,7 @@ void EnergyManager::register_urls()
     });
 
     server.on("/energy_manager/continue_debug", HTTP_GET, [this](WebServerRequest request) {
-        last_debug_check = millis();
+        last_debug_keep_alive = millis();
         return request.send(200);
     });
 
