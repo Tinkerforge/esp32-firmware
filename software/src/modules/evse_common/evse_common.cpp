@@ -250,7 +250,7 @@ void EvseCommon::setup() {
 
 void EvseCommon::setup_evse()
 {
-    if (!backend->setup_device_module_device()) {
+    if (!backend->setup_device()) {
         return;
     }
 

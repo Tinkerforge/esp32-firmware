@@ -98,7 +98,7 @@ public:
 
     void setup_evse();
 
-    bool setup_device_module_device() {return this->DeviceModule::setup_device();}
+    bool setup_device() override {return this->DeviceModule::setup_device();}
 
     String get_evse_debug_header();
     String get_evse_debug_line();
