@@ -166,22 +166,9 @@ void EVSEV2::pre_setup()
     gp_output_update = gp_output;
 }
 
-
 void EVSEV2::factory_reset()
 {
     tf_evse_v2_factory_reset(&device, 0x2342FACD);
-}
-
-uint16_t EVSEV2::get_all_energy_meter_values(float *ret_values)
-{
-    uint16_t len = 0;
-    tf_evse_v2_get_all_energy_meter_values(&device, ret_values, &len);
-    return len;
-}
-
-void EVSEV2::reset_energy_meter_relative_energy()
-{
-    tf_evse_v2_reset_energy_meter_relative_energy(&device);
 }
 
 void EVSEV2::set_data_storage(uint8_t page, const uint8_t *data)
@@ -197,6 +184,18 @@ void EVSEV2::get_data_storage(uint8_t page, uint8_t *data)
 void EVSEV2::set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret_status)
 {
     tf_evse_v2_set_indicator_led(&device, indication, duration, ret_status);
+}
+
+uint16_t EVSEV2::get_all_energy_meter_values(float *ret_values)
+{
+    uint16_t len = 0;
+    tf_evse_v2_get_all_energy_meter_values(&device, ret_values, &len);
+    return len;
+}
+
+void EVSEV2::reset_energy_meter_relative_energy()
+{
+    tf_evse_v2_reset_energy_meter_relative_energy(&device);
 }
 
 void EVSEV2::setup()
