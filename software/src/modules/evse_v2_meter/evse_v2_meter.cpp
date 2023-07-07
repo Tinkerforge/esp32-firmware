@@ -50,7 +50,7 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
 {
     evse_v2.update_all_data();
 
-    uint8_t meter_type = evse_common.hardware_configuration.get("energy_meter_type")->asUint();
+    uint8_t meter_type = evse_v2.get_energy_meter_type();
     if (meter_type == 0) {
         task_scheduler.scheduleOnce([this](){
             this->setupEVSE(true);

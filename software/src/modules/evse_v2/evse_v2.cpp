@@ -943,3 +943,8 @@ void EVSEV2::reset_energy_meter_relative_energy()
 {
     tf_evse_v2_reset_energy_meter_relative_energy(&device);
 }
+
+uint8_t EVSEV2::get_energy_meter_type()
+{
+    return evse_common.hardware_configuration.get("energy_meter_type")->asUint();
+}

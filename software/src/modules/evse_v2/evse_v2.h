@@ -44,6 +44,7 @@ public:
     void register_urls() override {this->DeviceModule::register_urls();};
     void loop() override {this->DeviceModule::loop();};
 
+protected:
     // IEvseBackend implementation
     void post_setup() override;
     void post_register_urls() override;
@@ -74,14 +75,19 @@ public:
 
     String get_evse_debug_header() override;
     String get_evse_debug_line() override;
+
+// To allow the evse_v2_meter module to get/set energy meter values
+public:
     void update_all_data() override;
     // End IEvseBackend implementation
 
     uint16_t get_all_energy_meter_values(float *ret_values);
     void reset_energy_meter_relative_energy();
+    uint8_t get_energy_meter_type();
 
     ConfigRoot energy_meter_values;
     ConfigRoot energy_meter_errors;
+private:
     ConfigRoot reset_dc_fault_current_state;
     ConfigRoot gpio_configuration;
     ConfigRoot gpio_configuration_update;

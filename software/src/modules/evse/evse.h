@@ -42,6 +42,7 @@ public:
     void register_urls() override {this->DeviceModule::register_urls();};
     void loop() override {this->DeviceModule::loop();};
 
+protected:
     // IEvseBackend implementation
     void post_setup() override {};
     void post_register_urls() override;

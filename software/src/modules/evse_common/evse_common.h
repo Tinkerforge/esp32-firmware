@@ -100,6 +100,11 @@ protected:
 };
 
 class EvseCommon final : public IModule {
+    // TODO: It's a bit ugly that we have to declare all specific EVSE modules as friends here.
+    // But this allows us to make the configs private, to enforce all access happens via the public methods below.
+    friend class EVSE;
+    friend class EVSEV2;
+
 private:
     IEvseBackend *backend = NULL;
 
@@ -153,6 +158,7 @@ public:
     uint32_t last_debug_keep_alive = 0;
     bool debug = false;
 
+private:
     ConfigRoot low_level_state;
     ConfigRoot management_enabled;
     ConfigRoot management_enabled_update;
