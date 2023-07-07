@@ -346,11 +346,6 @@ bool EVSE::is_in_bootloader(int rc) {
     return DeviceModule::is_in_bootloader(rc);
 }
 
-uint16_t EVSE::get_ocpp_current()
-{
-    return slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
-}
-
 void EVSE::set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected) {
     (void)cp_disconnect; // not supported
     (void)cp_disconnected;
