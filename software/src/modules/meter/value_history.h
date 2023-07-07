@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "ringbuffer.h"
 #include "malloc_tools.h"
 #include "esp_heap_caps.h"
@@ -104,5 +107,5 @@ public:
                   heap_caps_free> history;
     uint32_t history_last_update = 0;
 
-    int chars_per_value = -1;
+    size_t chars_per_value = -1;
 };
