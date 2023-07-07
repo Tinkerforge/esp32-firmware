@@ -232,8 +232,11 @@ void EvseCommon::apply_defaults()
 
 
 void EvseCommon::setup() {
+    setup_evse();
+
     if (!backend->initialized)
         return;
+
     // Get all data once before announcing the EVSE feature.
     backend->update_all_data();
     api.addFeature("evse");
@@ -243,6 +246,16 @@ void EvseCommon::setup() {
 
     backend->post_setup();
     initialized = true;
+}
+
+void EvseCommon::setup_evse()
+{
+    if (!backend->setup_device_module_device()) {
+        return;
+    }
+
+    evse_common.apply_defaults();
+    backend->initialized = true;
 }
 
 void EvseCommon::register_urls() {

@@ -34,6 +34,8 @@ extern bool firmware_update_allowed;
 #define SLOT_ACTIVE(x) ((bool)(x & 0x01))
 #define SLOT_CLEAR_ON_DISCONNECT(x) ((bool)(x & 0x02))
 
+EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EvseCommon::setup_evse, evse_common)) {}
+
 void EVSE::pre_setup()
 {
     // States
@@ -127,14 +129,6 @@ void EVSE::get_data_storage(uint8_t page, uint8_t *data)
 void EVSE::set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret_status)
 {
     tf_evse_set_indicator_led(&device, indication, duration, ret_status);
-}
-
-void EVSE::setup()
-{
-    setup_evse();
-    if (!device_found)
-        return;
-
 }
 
 void EVSE::post_setup() {}
@@ -418,16 +412,6 @@ void EVSE::post_register_urls() {
 void EVSE::loop()
 {
     this->DeviceModule::loop();
-}
-
-void EVSE::setup_evse()
-{
-    if (!this->DeviceModule::setup_device()) {
-        return;
-    }
-
-    evse_common.apply_defaults();
-    initialized = true;
 }
 
 void EVSE::update_all_data()

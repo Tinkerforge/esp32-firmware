@@ -36,6 +36,8 @@ extern bool firmware_update_allowed;
 
 extern void evse_v2_button_recovery_handler();
 
+EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE", std::bind(&EvseCommon::setup_evse, evse_common)) {}
+
 void EVSEV2::pre_init()
 {
     evse_v2_button_recovery_handler();
@@ -196,13 +198,6 @@ uint16_t EVSEV2::get_all_energy_meter_values(float *ret_values)
 void EVSEV2::reset_energy_meter_relative_energy()
 {
     tf_evse_v2_reset_energy_meter_relative_energy(&device);
-}
-
-void EVSEV2::setup()
-{
-    setup_evse();
-    if (!device_found)
-        return;
 }
 
 void EVSEV2::post_setup() {
@@ -668,16 +663,6 @@ void EVSEV2::post_register_urls() {
 void EVSEV2::loop()
 {
     this->DeviceModule::loop();
-}
-
-void EVSEV2::setup_evse()
-{
-    if (!this->DeviceModule::setup_device()) {
-        return;
-    }
-
-    evse_common.apply_defaults();
-    initialized = true;
 }
 
 void EVSEV2::update_all_data()

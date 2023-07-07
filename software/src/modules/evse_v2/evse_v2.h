@@ -68,10 +68,10 @@ class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                    tf_evse_v2_destroy>, public IEvseBackend
 {
 public:
-    EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE", std::bind(&EVSEV2::setup_evse, this)) {}
+    EVSEV2();
     void pre_init() override;
     void pre_setup() override;
-    void setup() override;
+    void setup() override {}; // Override empty: Base method sets initialized to true, but we want EvseCommon to decide this.
     void register_urls() override;
     void loop() override;
 
@@ -97,6 +97,9 @@ public:
     void update_all_data();
 
     void setup_evse();
+
+    bool setup_device_module_device() {return this->DeviceModule::setup_device();}
+
     String get_evse_debug_header();
     String get_evse_debug_line();
     void set_managed_current(uint16_t current);

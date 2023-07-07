@@ -30,6 +30,8 @@ public:
     virtual void post_setup() = 0;
     virtual void post_register_urls() = 0;
 
+    virtual bool setup_device_module_device() = 0;
+
     virtual String get_evse_debug_header() = 0;
     virtual String get_evse_debug_line() = 0;
 
@@ -103,6 +105,8 @@ public:
     void setup() override;
     void register_urls() override;
     void loop() override;
+
+    void setup_evse();
 
     void set_managed_current(uint16_t);
 
