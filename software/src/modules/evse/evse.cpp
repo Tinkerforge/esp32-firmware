@@ -28,7 +28,6 @@
 #include "web_server.h"
 #include "modules.h"
 
-extern uint32_t local_uid_num;
 extern bool firmware_update_allowed;
 
 EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EvseCommon::setup_evse, evse_common)) {}
