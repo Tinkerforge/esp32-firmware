@@ -58,13 +58,13 @@
 
 #define DATA_STORE_PAGE_CHARGE_TRACKER 0
 
-class EVSE : public DeviceModule<TF_EVSE,
-                                 evse_bricklet_firmware_bin_data,
-                                 evse_bricklet_firmware_bin_length,
-                                 tf_evse_create,
-                                 tf_evse_get_bootloader_mode,
-                                 tf_evse_reset,
-                                 tf_evse_destroy>, public IEvseBackend {
+class EVSE final : public DeviceModule<TF_EVSE,
+                                       evse_bricklet_firmware_bin_data,
+                                       evse_bricklet_firmware_bin_length,
+                                       tf_evse_create,
+                                       tf_evse_get_bootloader_mode,
+                                       tf_evse_reset,
+                                       tf_evse_destroy>, public IEvseBackend {
 public:
     EVSE();
 
