@@ -167,6 +167,7 @@ void EVSEV2::pre_setup()
 void EVSEV2::post_setup() {
     if (!device_found)
         return;
+
     task_scheduler.scheduleOnce([this](){
         uint32_t press_time = 0;
         tf_evse_v2_get_button_press_boot_time(&device, true, &press_time);
