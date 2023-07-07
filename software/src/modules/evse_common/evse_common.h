@@ -30,20 +30,16 @@ public:
     virtual void post_setup() = 0;
     virtual void post_register_urls() = 0;
 
+    // Pass through to DeviceModule if used
     virtual bool setup_device() = 0;
+    virtual bool is_in_bootloader(int rc) = 0;
 
-    virtual String get_evse_debug_header() = 0;
-    virtual String get_evse_debug_line() = 0;
-
-    virtual int get_charging_slot(uint8_t, uint16_t*, bool*, bool*) = 0;
-    virtual int set_charging_slot(uint8_t, uint16_t, bool, bool) = 0;
-
-    virtual void update_all_data() = 0;
-
+    // Pass through to bindings functions
     virtual void factory_reset() = 0;
 
     virtual void set_data_storage(uint8_t, const uint8_t*) = 0;
     virtual void get_data_storage(uint8_t, uint8_t*) = 0;
+
     virtual void set_indicator_led(int16_t, uint16_t, uint8_t*) = 0;
 
     virtual void set_control_pilot_disconnect(bool, bool*) = 0;
@@ -51,13 +47,18 @@ public:
 
     virtual void set_boost_mode(bool enabled) = 0;
 
+    virtual int get_charging_slot(uint8_t, uint16_t*, bool*, bool*) = 0;
+    virtual int set_charging_slot(uint8_t, uint16_t, bool, bool) = 0;
     virtual void set_charging_slot_max_current(uint8_t slot, uint16_t current) = 0;
     virtual void set_charging_slot_clear_on_disconnect(uint8_t slot, bool clear_on_disconnect) = 0;
     virtual void set_charging_slot_active(uint8_t slot, bool enabled) = 0;
     virtual int get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect) = 0;
     virtual int set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect) = 0;
+    // End: Pass through to bindings functions
 
-    virtual bool is_in_bootloader(int rc) = 0;
+    virtual String get_evse_debug_header() = 0;
+    virtual String get_evse_debug_line() = 0;
+    virtual void update_all_data() = 0;
 
     ConfigRoot low_level_state;
     ConfigRoot management_enabled;

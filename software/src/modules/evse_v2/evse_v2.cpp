@@ -563,10 +563,6 @@ int EVSEV2::set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool
     return tf_evse_v2_set_charging_slot(&device, slot, current, enabled, reset_on_dc);
 }
 
-bool EVSEV2::is_in_bootloader(int rc) {
-    return DeviceModule::is_in_bootloader(rc);
-}
-
 void EVSEV2::set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected) {
     is_in_bootloader(tf_evse_v2_set_control_pilot_disconnect(&device, cp_disconnect, cp_disconnected));
 }
@@ -597,13 +593,6 @@ int EVSEV2::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabl
 
 bool EVSEV2::get_control_pilot_disconnect() {
     return control_pilot_disconnect.get("disconnect")->asBool();
-}
-
-void EVSEV2::register_urls()
-{
-    // TODO: indicator led update as API?
-
-    this->DeviceModule::register_urls();
 }
 
 void EVSEV2::post_register_urls() {
@@ -658,11 +647,6 @@ void EVSEV2::post_register_urls() {
     api.addCommand("evse/gp_output_update", &gp_output_update, {}, [this](){
         is_in_bootloader(tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()));
     }, true);
-}
-
-void EVSEV2::loop()
-{
-    this->DeviceModule::loop();
 }
 
 void EVSEV2::update_all_data()

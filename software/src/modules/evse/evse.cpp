@@ -342,10 +342,6 @@ int EVSE::set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool r
     return tf_evse_set_charging_slot(&device, slot, current, enabled, reset_on_dc);
 }
 
-bool EVSE::is_in_bootloader(int rc) {
-    return DeviceModule::is_in_bootloader(rc);
-}
-
 void EVSE::set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected) {
     (void)cp_disconnect; // not supported
     (void)cp_disconnected;
@@ -379,13 +375,6 @@ bool EVSE::get_control_pilot_disconnect() {
     return false; //cp-disconnect not supported
 }
 
-void EVSE::register_urls()
-{
-    // TODO: indicator led update as API?
-
-    this->DeviceModule::register_urls();
-}
-
 void EVSE::post_register_urls() {
     api.addState("evse/user_calibration", &user_calibration, {}, 1000);
     api.addCommand("evse/user_calibration_update", &user_calibration, {}, [this](){
@@ -402,11 +391,6 @@ void EVSE::post_register_urls() {
             resistance_880
             ));
     }, true);
-}
-
-void EVSE::loop()
-{
-    this->DeviceModule::loop();
 }
 
 void EVSE::update_all_data()

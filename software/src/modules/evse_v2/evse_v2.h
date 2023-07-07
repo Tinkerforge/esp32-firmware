@@ -69,64 +69,50 @@ class EVSEV2 : public DeviceModule<TF_EVSEV2,
 {
 public:
     EVSEV2();
+
+    // IModule implementation (inherited through DeviceModule and IEvseBackend)
     void pre_init() override;
     void pre_setup() override;
     void setup() override {}; // Override empty: Base method sets initialized to true, but we want EvseCommon to decide this.
-    void register_urls() override;
-    void loop() override;
+    void register_urls() override {this->DeviceModule::register_urls();};
+    void loop() override {this->DeviceModule::loop();};
 
-    void post_setup();
-    void post_register_urls();
-
-    int get_charging_slot(uint8_t slot, uint16_t *ret_current, bool *ret_enabled, bool *ret_reset_on_dc);
-    int set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool reset_on_dc);
-
-    void set_boost_mode(bool enabled);
-
-    void set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected);
-    bool get_control_pilot_disconnect();
-    void set_charging_slot_max_current(uint8_t slot, uint16_t current);
-    void set_charging_slot_clear_on_disconnect(uint8_t slot, bool clear_on_disconnect);
-    void set_charging_slot_active(uint8_t slot, bool enabled);
-    int get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect);
-    int set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect);
-
-    bool is_in_bootloader(int rc);
-
-    // Called in evse_v2_meter setup
-    void update_all_data();
-
-    void setup_evse();
+    // IEvseBackend implementation
+    void post_setup() override;
+    void post_register_urls() override;
 
     bool setup_device() override {return this->DeviceModule::setup_device();}
+    bool is_in_bootloader(int rc) override  {return this->DeviceModule::is_in_bootloader(rc);}
 
-    String get_evse_debug_header();
-    String get_evse_debug_line();
-    void set_managed_current(uint16_t current);
+    void factory_reset() override;
 
-    void set_user_current(uint16_t current);
+    void set_data_storage(uint8_t page, const uint8_t *data) override;
+    void get_data_storage(uint8_t page, uint8_t *data) override;
 
-    void set_modbus_current(uint16_t current);
-    void set_modbus_enabled(bool enabled);
+    void set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret_status) override;
 
-    void set_require_meter_blocking(bool blocking);
-    void set_require_meter_enabled(bool enabled);
-    bool get_require_meter_blocking();
-    bool get_require_meter_enabled();
+    // Not supported, does nothing
+    void set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected) override;
+    // Not supported, always returns false
+    bool get_control_pilot_disconnect() override;
 
-    void set_charge_limits_slot(uint16_t current, bool enabled);
-    //void set_charge_time_restriction_slot(uint16_t current, bool enabled);
+    void set_boost_mode(bool enabled) override;
 
-    void set_ocpp_current(uint16_t current);
-    uint16_t get_ocpp_current();
+    int get_charging_slot(uint8_t slot, uint16_t *ret_current, bool *ret_enabled, bool *ret_reset_on_dc) override;
+    int set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool reset_on_dc) override;
+    void set_charging_slot_max_current(uint8_t slot, uint16_t current) override;
+    void set_charging_slot_clear_on_disconnect(uint8_t slot, bool clear_on_disconnect) override;
+    void set_charging_slot_active(uint8_t slot, bool enabled) override;
+    int get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect) override;
+    int set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect) override;
 
-    void factory_reset();
+    String get_evse_debug_header() override;
+    String get_evse_debug_line() override;
+    void update_all_data();
+    // End IEvseBackend implementation
 
     uint16_t get_all_energy_meter_values(float *ret_values);
     void reset_energy_meter_relative_energy();
-    void set_data_storage(uint8_t page, const uint8_t *data);
-    void get_data_storage(uint8_t page, uint8_t *data);
-    void set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret_status);
 
     ConfigRoot energy_meter_values;
     ConfigRoot energy_meter_errors;
