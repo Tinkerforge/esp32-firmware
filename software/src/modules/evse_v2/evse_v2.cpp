@@ -31,9 +31,6 @@
 extern uint32_t local_uid_num;
 extern bool firmware_update_allowed;
 
-#define SLOT_ACTIVE(x) ((bool)(x & 0x01))
-#define SLOT_CLEAR_ON_DISCONNECT(x) ((bool)(x & 0x02))
-
 extern void evse_v2_button_recovery_handler();
 
 EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE", std::bind(&EvseCommon::setup_evse, evse_common)) {}

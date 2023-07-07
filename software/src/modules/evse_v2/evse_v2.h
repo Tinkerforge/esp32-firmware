@@ -26,39 +26,6 @@
 #include "evse_v2_bricklet_firmware_bin.embedded.h"
 #include "../evse_common/evse_common.h"
 
-#define CHARGING_SLOT_COUNT 14
-#define CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE 20
-
-#define CHARGING_SLOT_INCOMING_CABLE 0
-#define CHARGING_SLOT_OUTGOING_CABLE 1
-#define CHARGING_SLOT_SHUTDOWN_INPUT 2
-#define CHARGING_SLOT_GP_INPUT 3
-#define CHARGING_SLOT_AUTOSTART_BUTTON 4
-#define CHARGING_SLOT_GLOBAL 5
-#define CHARGING_SLOT_USER 6
-#define CHARGING_SLOT_CHARGE_MANAGER 7
-#define CHARGING_SLOT_EXTERNAL 8
-#define CHARGING_SLOT_MODBUS_TCP 9
-#define CHARGING_SLOT_MODBUS_TCP_ENABLE 10
-#define CHARGING_SLOT_OCPP 11
-#define CHARGING_SLOT_CHARGE_LIMITS 12
-#define CHARGING_SLOT_REQUIRE_METER 13
-
-#define IEC_STATE_A 0
-#define IEC_STATE_B 1
-#define IEC_STATE_C 2
-#define IEC_STATE_D 3
-#define IEC_STATE_EF 4
-
-#define CHARGER_STATE_NOT_PLUGGED_IN 0
-#define CHARGER_STATE_WAITING_FOR_RELEASE 1
-#define CHARGER_STATE_READY_TO_CHARGE 2
-#define CHARGER_STATE_CHARGING 3
-#define CHARGER_STATE_ERROR 4
-
-#define DATA_STORE_PAGE_CHARGE_TRACKER 0
-#define DATA_STORE_PAGE_RECOVERY 15
-
 class EVSEV2 final : public DeviceModule<TF_EVSEV2,
                                          evse_v2_bricklet_firmware_bin_data,
                                          evse_v2_bricklet_firmware_bin_length,
