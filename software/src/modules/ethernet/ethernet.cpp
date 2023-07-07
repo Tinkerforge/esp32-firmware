@@ -33,6 +33,8 @@
 #include "modules.h"
 #include "tools.h"
 
+extern char local_uid_str[32];
+
 void Ethernet::pre_setup()
 {
     config = ConfigRoot(Config::Object({
