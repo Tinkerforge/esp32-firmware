@@ -50,7 +50,7 @@ protected:
     void post_register_urls() override;
 
     bool setup_device() override {return this->DeviceModule::setup_device();}
-    bool is_in_bootloader(int rc) override  {return this->DeviceModule::is_in_bootloader(rc);}
+    bool is_in_bootloader(int rc) override {return this->DeviceModule::is_in_bootloader(rc);}
 
     void factory_reset() override;
     void reset() override { this->DeviceModule::reset(); }
