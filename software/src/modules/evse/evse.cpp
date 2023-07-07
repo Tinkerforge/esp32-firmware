@@ -357,19 +357,6 @@ uint16_t EVSE::get_ocpp_current()
     return slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
 }
 
-void EVSE::check_debug()
-{
-    task_scheduler.scheduleOnce([this](){
-        if (deadline_elapsed(last_debug_keep_alive + 60000) && debug)
-        {
-            logger.printfln("Debug log creation canceled because no continue call was received for more than 60 seconds.");
-            debug = false;
-        }
-        else if (debug)
-            check_debug();
-    }, 10000);
-}
-
 void EVSE::set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected) {
     (void)cp_disconnect; // not supported
     (void)cp_disconnected;

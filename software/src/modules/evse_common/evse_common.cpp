@@ -316,22 +316,22 @@ void EvseCommon::register_urls() {
 #if MODULE_WS_AVAILABLE()
     server.on("/evse/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
-            backend->last_debug_keep_alive = millis();
-            backend->check_debug();
+            last_debug_keep_alive = millis();
+            check_debug();
             ws.pushRawStateUpdate(backend->get_evse_debug_header(), "evse/debug_header");
-            backend->debug = true;
+            debug = true;
         }, 0);
         return request.send(200);
     });
 
     server.on("/evse/continue_debug", HTTP_GET, [this](WebServerRequest request) {
-        backend->last_debug_keep_alive = millis();
+        last_debug_keep_alive = millis();
         return request.send(200);
     });
 
     server.on("/evse/stop_debug", HTTP_GET, [this](WebServerRequest request){
         task_scheduler.scheduleOnce([this](){
-            backend->debug = false;
+            debug = false;
         }, 0);
         return request.send(200);
     });
@@ -499,7 +499,7 @@ void EvseCommon::register_urls() {
 void EvseCommon::loop() {
 #if MODULE_WS_AVAILABLE()
     static uint32_t last_debug = 0;
-    if (backend->debug && deadline_elapsed(last_debug + 50)) {
+    if (debug && deadline_elapsed(last_debug + 50)) {
         last_debug = millis();
         ws.pushRawStateUpdate(backend->get_evse_debug_line(), "evse/debug");
     }
@@ -592,4 +592,17 @@ ConfigRoot &EvseCommon::get_state() {
 
 bool EvseCommon::get_management_enabled() {
     return backend->management_enabled.get("enabled")->asBool();
+}
+
+void EvseCommon::check_debug()
+{
+    task_scheduler.scheduleOnce([this](){
+        if (deadline_elapsed(last_debug_keep_alive + 60000) && debug)
+        {
+            logger.printfln("Debug log creation canceled because no continue call was received for more than 60 seconds.");
+            debug = false;
+        }
+        else if (debug)
+            check_debug();
+    }, 10000);
 }

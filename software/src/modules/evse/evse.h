@@ -119,7 +119,5 @@ public:
     void get_data_storage(uint8_t page, uint8_t *data);
     void set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret_status);
 
-    void check_debug();
-
     ConfigRoot user_calibration;
 };

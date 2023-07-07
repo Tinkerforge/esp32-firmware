@@ -44,8 +44,6 @@ public:
     virtual void get_data_storage(uint8_t, uint8_t*) = 0;
     virtual void set_indicator_led(int16_t, uint16_t, uint8_t*) = 0;
 
-    virtual void check_debug() = 0;
-
     virtual void set_control_pilot_disconnect(bool, bool*) = 0;
     virtual bool get_control_pilot_disconnect() = 0;
 
@@ -92,10 +90,6 @@ public:
     ConfigRoot ocpp_enabled_update;
     ConfigRoot require_meter_enabled;
     ConfigRoot require_meter_enabled_update;
-
-    uint32_t last_debug_keep_alive = 0;
-
-    bool debug = false;
 };
 
 class EvseCommon final : public IModule {
@@ -141,6 +135,11 @@ public:
     ConfigRoot& get_low_level_state();
     bool get_management_enabled();
 
+    void check_debug();
+
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;
+
+    uint32_t last_debug_keep_alive = 0;
+    bool debug = false;
 };

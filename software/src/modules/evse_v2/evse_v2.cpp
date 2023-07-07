@@ -573,19 +573,6 @@ bool EVSEV2::is_in_bootloader(int rc) {
     return DeviceModule::is_in_bootloader(rc);
 }
 
-void EVSEV2::check_debug()
-{
-    task_scheduler.scheduleOnce([this](){
-        if (deadline_elapsed(last_debug_keep_alive + 60000) && debug)
-        {
-            logger.printfln("Debug log creation canceled because no continue call was received for more than 60 seconds.");
-            debug = false;
-        }
-        else if (debug)
-            check_debug();
-    }, 10000);
-}
-
 void EVSEV2::set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected) {
     is_in_bootloader(tf_evse_v2_set_control_pilot_disconnect(&device, cp_disconnect, cp_disconnected));
 }
