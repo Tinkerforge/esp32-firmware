@@ -30,10 +30,12 @@
 
 extern bool firmware_update_allowed;
 
-EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EvseCommon::setup_evse, evse_common)) {}
+EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", [](){}) {}
 
 void EVSE::pre_setup()
 {
+    this->DeviceModule::setup_function = std::bind(&EvseCommon::setup_evse, evse_common);
+
     // States
     evse_common.state = Config::Object({
         {"iec61851_state", Config::Uint8(0)},
