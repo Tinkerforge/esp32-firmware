@@ -106,7 +106,7 @@ class EvseCommon final : public IModule {
     friend class EVSEV2;
 
 private:
-    IEvseBackend *backend = NULL;
+    IEvseBackend *backend = nullptr;
 
 public:
     EvseCommon();
