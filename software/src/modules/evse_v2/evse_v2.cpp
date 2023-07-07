@@ -583,7 +583,7 @@ void EVSEV2::check_debug()
         }
         else if (debug)
             check_debug();
-    }, 70000);
+    }, 10000);
 }
 
 void EVSEV2::set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected) {

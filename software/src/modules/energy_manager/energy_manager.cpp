@@ -216,7 +216,7 @@ void EnergyManager::check_debug()
         }
         else if (debug)
             check_debug();
-    }, 70000);
+    }, 10000);
 }
 
 void EnergyManager::setup()
