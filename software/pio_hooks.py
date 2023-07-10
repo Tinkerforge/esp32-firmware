@@ -802,7 +802,12 @@ def main():
             pass
 
         with ChangedDirectory('web'):
-            subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "build.py"] + ([] if not frontend_debug else ['--js-source-map', '--css-source-map']))
+            try:
+                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "build.py"] + ([] if not frontend_debug else ['--js-source-map', '--css-source-map']))
+            except subprocess.CalledProcessError as e:
+                if e.returncode != 42:
+                    print(e, file=sys.stderr)
+                exit(1)
 
         with open('web/build/main.min.css', 'r', encoding='utf-8') as f:
             css = f.read()
