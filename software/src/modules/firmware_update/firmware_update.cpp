@@ -18,6 +18,7 @@
  */
 
 #include "firmware_update.h"
+#include "module_dependencies.h"
 
 #include <Arduino.h>
 
@@ -29,7 +30,6 @@
 #include "task_scheduler.h"
 #include "tools.h"
 #include "build.h"
-#include "modules.h"
 #include "web_server.h"
 
 #include "./crc32.h"
@@ -274,7 +274,7 @@ void FirmwareUpdate::register_urls()
         }
 
         bool firmware_update_allowed_check_required = true;
-#if MODULE_ENERGY_MANAGER_AVAILABLE() && !(MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE())
+#if MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
         firmware_update_allowed_check_required = energy_manager.disallow_fw_update_with_vehicle_connected();
 #endif
         if (firmware_update_allowed_check_required && !firmware_update_allowed) {
@@ -377,7 +377,7 @@ void FirmwareUpdate::register_urls()
         evse_common.factory_reset();
 #endif
 
-#if MODULE_USERS_AVAILABLE()
+#if MODULE_USERS_AVAILABLE() && MODULE_CHARGE_TRACKER_AVAILABLE()
             for(int i = 0; i < users.config.get("users")->count(); ++i) {
                 uint8_t id = users.config.get("users")->get(i)->get("id")->asUint();
                 if (id == 0) // skip anonymous user
