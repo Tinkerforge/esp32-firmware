@@ -534,8 +534,8 @@ def main():
                 allow_nonexist = config['Dependencies'].getboolean('AllowNonexist', False)
 
                 requires = config['Dependencies'].get('Requires', "")
-                requires += f"\n{backend_module.space}" # Every module requires itself
                 requires = requires.splitlines()
+                requires.append(backend_module.space)
                 old_len = len(requires)
                 requires = list(dict.fromkeys(requires))
                 if len(requires) != old_len:
