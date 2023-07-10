@@ -31,10 +31,11 @@ import { InputText } from "../../ts/components/input_text";
 import { ConfigForm } from "../../ts/components/config_form";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { Button } from "react-bootstrap";
-import { CollapsedSection } from "../../ts/components/collapsed_section";
-import { InputPassword } from "../../ts/components/input_password";
-import { IndicatorGroup } from "../../ts/components/indicator_group";
-import { SubPage } from "../../ts/components/sub_page";
+import { CollapsedSection } from "src/ts/components/collapsed_section";
+import { InputPassword } from "src/ts/components/input_password";
+import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { SubPage } from "src/ts/components/sub_page";
+import { InputSelect } from "src/ts/components/input_select";
 
 type OcppConfig = API.getType["ocpp/config"];
 
@@ -89,6 +90,22 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                         <Switch desc={__("ocpp.content.enable_ocpp_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}/>
+                    </FormRow>
+                    <FormRow label={"Cert config"}>
+                        <InputSelect items={[
+                                ["-1", "Use cert bundle"],
+                                ["0", "Use cert 0"],
+                                ["1", "Use cert 1"],
+                                ["2", "Use cert 2"],
+                                ["3", "Use cert 3"],
+                                ["4", "Use cert 4"],
+                                ["5", "Use cert 5"],
+                                ["6", "Use cert 6"],
+                                ["7", "Use cert 7"]
+                            ]}
+                            value={state.cert_id}
+                            onValue={(v) => this.setState({cert_id: parseInt(v)})}
+                        />
                     </FormRow>
                     <FormRow label={__("ocpp.content.endpoint_url")}>
                         <InputText required

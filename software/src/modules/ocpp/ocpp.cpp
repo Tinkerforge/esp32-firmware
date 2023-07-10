@@ -24,6 +24,8 @@
 #include "task_scheduler.h"
 #include "module_dependencies.h"
 
+#include "modules/certs/certs.h"
+
 #include <ctype.h>
 #include <string.h>
 
@@ -36,7 +38,8 @@ void Ocpp::pre_setup()
         {"url", Config::Str("", 0, 128)},
         {"identity", Config::Str("", 0, 64)},
         {"enable_auth",Config::Bool(false)},
-        {"pass", Config::Str("", 0, 64)}
+        {"pass", Config::Str("", 0, 64)},
+        {"cert_id", Config::Int(-1, -1, MAX_CERTS - 1)}
     });
 
     change_configuration = Config::Object({

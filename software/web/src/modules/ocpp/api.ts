@@ -4,6 +4,7 @@ export interface config {
     identity: string,
     enable_auth: boolean,
     pass: string
+    cert_id: number
 }
 
 export interface reset {}

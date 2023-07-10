@@ -71,7 +71,22 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
     tf_websocket_client_config_t websocket_cfg = {};
     websocket_cfg.uri = websocket_url;
     websocket_cfg.subprotocol = "ocpp1.6";
-    websocket_cfg.crt_bundle_attach = esp_crt_bundle_attach;
+    int8_t cert_id = ocpp.config.get("cert_id")->asInt();
+    if (cert_id == -1)
+        websocket_cfg.crt_bundle_attach = esp_crt_bundle_attach;
+    else {
+        size_t cert_len = 0;
+        auto cert = certs.get_cert(cert_id, &cert_len);
+
+        // Release the cert buffer unique_ptr's ownership.
+        // This effectively leaks the buffer, but as per the
+        // esp_transport_ssl_set_cert_data documentation:
+        // "Note that, this function stores the pointer to data, rather than making a copy.
+        //  So this data must remain valid until after the connection is cleaned up"
+        // esp_transport_ssl_set_cert_data is called by esp_websocket_client_start.
+        websocket_cfg.cert_pem = (const char *)cert.release();
+    }
+
     websocket_cfg.disable_auto_reconnect = false;
 
     // We can't completely disable sending pings.
