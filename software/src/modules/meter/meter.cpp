@@ -206,5 +206,5 @@ void Meter::register_urls()
         api.writeConfig("meter/last_reset", &last_reset);
     }, true);
 
-    power_hist.register_urls("meter/");
+    power_hist.register_urls("meter");
 }

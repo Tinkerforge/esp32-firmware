@@ -71,9 +71,9 @@ void ValueHistory::setup()
         if (buf == nullptr)
             return;
 
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "{\"topic\":\"meter/live\",\"payload\":");
+        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"topic\":\"%s/live\",\"payload\":", base_url.c_str());
         buf_written += format_live(buf + buf_written, buf_size - buf_written);
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "}\n");
+        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "}\n");
 
         client.sendOwned(buf, buf_written);
 
@@ -84,18 +84,20 @@ void ValueHistory::setup()
         if (buf == nullptr)
             return;
 
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "{\"topic\":\"meter/history\",\"payload\":");
+        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"topic\":\"%s/history\",\"payload\":", base_url.c_str());
         buf_written += format_history(buf + buf_written, buf_size - buf_written);
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "}\n");
+        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "}\n");
 
         client.sendOwned(buf, buf_written);
     });
 #endif
 }
 
-void ValueHistory::register_urls(String base_url)
+void ValueHistory::register_urls(String base_url_)
 {
-    server.on(("/" + base_url + "history").c_str(), HTTP_GET, [this](WebServerRequest request) {
+    base_url = base_url_;
+
+    server.on(("/" + base_url + "/history").c_str(), HTTP_GET, [this](WebServerRequest request) {
         /*if (!initialized) {
             request.send(400, "text/html", "not initialized");
             return;
@@ -108,7 +110,7 @@ void ValueHistory::register_urls(String base_url)
         return request.send(200, "application/json; charset=utf-8", buf.get(), static_cast<ssize_t>(buf_written));
     });
 
-    server.on(("/" + base_url + "live").c_str(), HTTP_GET, [this](WebServerRequest request) {
+    server.on(("/" + base_url + "/live").c_str(), HTTP_GET, [this](WebServerRequest request) {
         /*if (!initialized) {
             request.send(400, "text/html", "not initialized");
             return;
@@ -142,7 +144,7 @@ void ValueHistory::add_sample(float sample)
 #if MODULE_WS_AVAILABLE()
     {
         char *buf;
-        int buf_written = asprintf(&buf, "{\"topic\":\"meter/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[%d]}}\n", static_cast<double>(samples_per_second()), static_cast<int>(val));
+        int buf_written = asprintf(&buf, "{\"topic\":\"%s/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[%d]}}\n", base_url.c_str(), static_cast<double>(samples_per_second()), static_cast<int>(val));
 
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, static_cast<size_t>(buf_written));
@@ -177,12 +179,11 @@ void ValueHistory::add_sample(float sample)
 #if MODULE_WS_AVAILABLE()
             char *buf;
             int buf_written;
-            const char *prefix = "{\"topic\":\"meter/history_samples\",\"payload\":{\"samples\":";
 
             if (history_val == val_min) {
-                buf_written = asprintf(&buf, "%s[null]}}\n", prefix);
+                buf_written = asprintf(&buf, "{\"topic\":\"%s/history_samples\",\"payload\":{\"samples\":[null]}}\n", base_url.c_str());
             } else {
-                buf_written = asprintf(&buf, "%s[%d]}}\n", prefix, static_cast<int>(history_val));
+                buf_written = asprintf(&buf, "{\"topic\":\"%s/history_samples\",\"payload\":{\"samples\":[%d]}}\n", base_url.c_str(), static_cast<int>(history_val));
             }
 
             if (buf_written > 0) {
