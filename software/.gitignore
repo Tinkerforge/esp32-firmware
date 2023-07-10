@@ -9,6 +9,7 @@ packages/*-dev
 src/**/*.digest
 src/**/*.embedded.h
 src/**/*.embedded.cpp
+src/modules/*/module_dependencies.h
 src/modules.h
 src/modules.cpp
 src/build.h

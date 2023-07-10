@@ -18,23 +18,15 @@
  */
 
 #include "mqtt_meter.h"
+#include "module_dependencies.h"
 
 #include <math.h>
 #include <string.h>
 #include "mqtt_client.h"
 
 #include "api.h"
-#include "modules.h"
 
 #include "gcc_warnings.h"
-
-#if !MODULE_METER_AVAILABLE()
-#error Back-end module Meter required
-#endif
-
-#if !MODULE_MQTT_AVAILABLE()
-#error Back-end module MQTT required
-#endif
 
 void MqttMeter::pre_setup()
 {
