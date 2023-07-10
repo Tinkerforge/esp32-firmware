@@ -32,7 +32,7 @@ extern bool firmware_update_allowed;
 
 extern void evse_v2_button_recovery_handler();
 
-EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE", std::bind(&EvseCommon::setup_evse, &evse_common)) {}
+EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE", [](){evse_common.setup_evse();}) {}
 
 void EVSEV2::pre_init()
 {

@@ -37,7 +37,7 @@ class ModbusMeter : public DeviceModule<TF_RS485,
                                         false>
 {
 public:
-    ModbusMeter() : DeviceModule("rs485", "RS485", "Modbus Meter", std::bind(&ModbusMeter::setupRS485, this)) {}
+    ModbusMeter() : DeviceModule("rs485", "RS485", "Modbus Meter", [this](){this->setupRS485();}) {}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

@@ -170,7 +170,7 @@ class EnergyManager : public DeviceModule<TF_WARPEnergyManager,
                                           tf_warp_energy_manager_destroy>
 {
 public:
-    EnergyManager() : DeviceModule("energy_manager", "WARP Energy Manager", "Energy Manager", std::bind(&EnergyManager::setup_energy_manager, this)){}
+    EnergyManager() : DeviceModule("energy_manager", "WARP Energy Manager", "Energy Manager", [this](){this->setup_energy_manager();}) {}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

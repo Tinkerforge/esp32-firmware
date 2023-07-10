@@ -49,7 +49,7 @@ class NFC : public DeviceModule<TF_NFC,
                                 >
 {
 public:
-    NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this)) {}
+    NFC() : DeviceModule("nfc", "NFC", "NFC", [this](){this->setup_nfc();}) {}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

@@ -30,7 +30,7 @@
 
 extern bool firmware_update_allowed;
 
-EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EvseCommon::setup_evse, &evse_common)) {}
+EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", [](){evse_common.setup_evse();}) {}
 
 void EVSE::pre_setup()
 {
