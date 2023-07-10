@@ -124,9 +124,10 @@ void evse_v2_button_recovery_handler() {
             logger.printfln("Running stage 0: Resetting network configuration and disabling web interface login");
 
             mount_or_format_spiffs();
-            if (api.restorePersistentConfig("users/config", &users.config))
+            if (api.restorePersistentConfig("users/config", &users.config)) {
                 users.config.get("http_auth_enabled")->updateBool(false);
-            api.writeConfig("users/config", &users.config);
+                api.writeConfig("users/config", &users.config);
+            }
 
             api.removeConfig("ethernet/config");
             api.removeConfig("wifi/sta_config");
