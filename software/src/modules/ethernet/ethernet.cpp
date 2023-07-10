@@ -18,6 +18,7 @@
  */
 
 #include "ethernet.h"
+#include "module_dependencies.h"
 
 #define ETH_ADDR        0
 #define ETH_POWER_PIN   5
@@ -30,7 +31,6 @@
 #include "api.h"
 #include "task_scheduler.h"
 #include "build.h"
-#include "modules.h"
 #include "tools.h"
 
 extern char local_uid_str[32];

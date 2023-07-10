@@ -18,6 +18,7 @@
  */
 
 #include "esp32_ethernet_brick.h"
+#include "module_dependencies.h"
 
 #include <Arduino.h>
 
@@ -25,7 +26,6 @@
 #include "tools.h"
 #include "hal_arduino_esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick.h"
 #include "event_log.h"
-#include "modules.h"
 #include "task_scheduler.h"
 
 #if TF_LOCAL_ENABLE != 0

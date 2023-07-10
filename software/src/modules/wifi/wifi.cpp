@@ -18,6 +18,7 @@
  */
 
 #include "wifi.h"
+#include "module_dependencies.h"
 
 #include <WiFi.h>
 #include <esp_wifi.h>
@@ -28,7 +29,6 @@
 #include "event_log.h"
 #include "web_server.h"
 
-#include "modules.h"
 #include "build.h"
 #include "tools.h"
 

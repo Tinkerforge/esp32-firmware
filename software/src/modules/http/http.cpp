@@ -18,11 +18,11 @@
  */
 
 #include "http.h"
+#include "module_dependencies.h"
 
 #include "api.h"
 #include "task_scheduler.h"
 #include "web_server.h"
-#include "modules.h"
 
 #if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
 #define RECV_BUF_SIZE 4096
