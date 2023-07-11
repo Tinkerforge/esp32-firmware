@@ -10,14 +10,16 @@
 
             "authorized_tags": "Berechtigte Tags",
 
-            "add_tag_modal_title": "Tag hinzufügen",
-            "add_tag_modal_seen_tags": "Zuletzt erkannte Tags",
-            "add_tag_modal_user_id": "Zugeordneter Benutzer",
-            "add_tag_modal_tag_id": "Tag-ID",
-            "add_tag_modal_tag_type": "Tag-Typ",
-            "add_tag_modal_abort": "Verwerfen",
-            "add_tag_modal_save": "Hinzufügen",
-            "last_seen": "Erkannt vor ",
+            "add_tag_title": "Tag hinzufügen",
+            "add_tag_seen_tags": "Zuletzt erkannte Tags",
+            "add_tag_user_id": "Zugeordneter Benutzer",
+            "add_tag_tag_id": "Tag-ID",
+            "add_tag_tag_type": "Tag-Typ",
+            "edit_tag_title": "Tag bearbeiten",
+            "edit_tag_tag_id": "Tag-ID",
+            "edit_tag_user_id": "Zugeordneter Benutzer",
+            "edit_tag_tag_type": "Tag-Typ",
+            "last_seen": "Vor ",
             "last_seen_suffix": "",
             "select_type": "Tag-Typ auswählen...",
             "type_0": "Mifare Classic",
@@ -30,17 +32,19 @@
         },
         "script": {
             "add_tag": "Tag hinzufügen",
-            "add_tag_disabled_prefix": "Es werden nur bis zu ",
-            "add_tag_disabled_suffix": " Tags unterstützt.",
+            "add_tag_prefix": "",
+            "add_tag_infix": " von ",
+            "add_tag_suffix": " Tags konfiguriert",
             "delete": "Löschen",
             "tag_id": "Tag-ID",
             "user_id": "Zugeordneter Benutzer",
             "tag_type": "Tag-Typ",
-            "not_seen": "Seit 24 Stunden oder dem letzten Neustart nicht erkannt",
+            "last_seen_title": "Zuletzt erkannt",
+            "not_seen": "Unbekannt",
             "save_failed": "Aktualisieren der NFC-Einstellungen fehlgeschlagen",
             "reboot_content_changed": "NFC-Einstellungen",
             "not_assigned": "Nicht zugeordnet",
-            "not_assigned_desc": "Dieses Tag kann keinen Ladevorgang freigeben"
+            "not_assigned_desc": "Dieses Tag kann keinen Ladevorgang freigeben."
         }
     }
 }
