@@ -18,12 +18,12 @@
  */
 
 #include "cm_networking.h"
+#include "module_dependencies.h"
 
 #include <Arduino.h>
 
 #include "api.h"
 #include "event_log.h"
-#include "modules.h"
 #include "task_scheduler.h"
 #include "tools.h"
 #include "web_server.h"
@@ -59,7 +59,7 @@ void CMNetworking::register_urls()
 
 // If we don't have the evse or evse_v2 module, but have cm_networking, this is probably an energy manager.
 // We only want to announce manageable chargers, not managers.
-#if MODULE_NETWORK_AVAILABLE() && (MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE())
+#if MODULE_NETWORK_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
     if (!network.config.get("enable_mdns")->asBool())
         return;
 

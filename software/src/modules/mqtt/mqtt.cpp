@@ -18,6 +18,7 @@
  */
 
 #include "mqtt.h"
+#include "module_dependencies.h"
 
 #include <Arduino.h>
 
@@ -26,7 +27,6 @@
 #include "api.h"
 #include "event_log.h"
 #include "build.h"
-#include "modules.h"
 
 extern char local_uid_str[32];
 

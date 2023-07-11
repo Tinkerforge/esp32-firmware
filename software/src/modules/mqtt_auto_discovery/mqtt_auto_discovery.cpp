@@ -17,14 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <string.h>
+#include "mqtt_auto_discovery.h"
+#include "module_dependencies.h"
 
+#include <string.h>
 #include "mqtt_client.h"
 
 #include "api.h"
 #include "build.h"
-#include "modules.h"
-#include "mqtt_auto_discovery.h"
 #include "task_scheduler.h"
 
 void MqttAutoDiscovery::pre_setup()

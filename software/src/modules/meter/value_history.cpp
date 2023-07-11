@@ -18,8 +18,7 @@
  */
 
 #include "value_history.h"
-
-#include "modules.h"
+#include "module_dependencies.h"
 
 #include "gcc_warnings.h"
 #ifdef __GNUC__

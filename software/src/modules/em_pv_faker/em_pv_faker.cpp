@@ -18,19 +18,15 @@
  */
 
 #include "em_pv_faker.h"
+#include "module_dependencies.h"
 
 #include "api.h"
 #include "event_log.h"
-#include "modules.h"
 #include "task_scheduler.h"
 
 #include "mqtt_client.h"
 
 #include "gcc_warnings.h"
-
-#if !MODULE_MQTT_AVAILABLE()
-#error Back-end module MQTT required
-#endif
 
 void EmPvFaker::pre_setup()
 {

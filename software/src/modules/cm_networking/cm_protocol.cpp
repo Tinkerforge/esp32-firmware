@@ -18,12 +18,12 @@
  */
 
 #include "cm_networking.h"
+#include "module_dependencies.h"
 
 #include <Arduino.h>
 
 #include "api.h"
 #include "event_log.h"
-#include "modules.h"
 #include "task_scheduler.h"
 #include "tools.h"
 

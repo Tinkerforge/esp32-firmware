@@ -18,22 +18,19 @@
  */
 
 #include "charge_manager.h"
+#include "module_dependencies.h"
 
+#include <algorithm>
 #include <Arduino.h>
+#include "esp_http_client.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "time.h"
 
 #include "api.h"
+#include "build.h"
 #include "task_scheduler.h"
 #include "tools.h"
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_http_client.h"
-
-#include "modules.h"
-#include "build.h"
-
-#include <algorithm>
 
 #define DISTRIBUTION_LOG_LEN 2048
 
@@ -271,7 +268,7 @@ void ChargeManager::start_manager_task()
             target->get("uid")->updateUint(v1->esp32_uid);
             target->get("uptime")->updateUint(v1->evse_uptime);
 
-#if MODULE_ENERGY_MANAGER_AVAILABLE() && !(MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE())
+#if MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
             // Immediately block firmware updates if this charger reports a connected vehicle.
             if (v1->charger_state != 0)
                 firmware_update_allowed = false;
@@ -868,7 +865,7 @@ void ChargeManager::distribute_current()
         allocated_current_callback(available_current_init - available_current);
     }
 
-#if MODULE_ENERGY_MANAGER_AVAILABLE() && !(MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE())
+#if MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
     firmware_update_allowed = !any_charger_blocking_firmware_update;
 #else
     (void)any_charger_blocking_firmware_update;
