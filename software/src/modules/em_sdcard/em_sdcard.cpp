@@ -18,9 +18,9 @@
  */
 
 #include "em_sdcard.h"
+#include "module_dependencies.h"
 
 #include "api.h"
-#include "modules.h"
 #include "task_scheduler.h"
 
 #include "gcc_warnings.h"

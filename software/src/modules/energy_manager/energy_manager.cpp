@@ -20,6 +20,7 @@
 #include <type_traits>
 
 #include "energy_manager.h"
+#include "module_dependencies.h"
 #include "musl_libc_timegm.h"
 
 #include "bindings/errors.h"
@@ -27,7 +28,6 @@
 #include "api.h"
 #include "build.h"
 #include "event_log.h"
-#include "modules.h"
 #include "task_scheduler.h"
 #include "tools.h"
 #include "web_server.h"
@@ -240,12 +240,10 @@ void EnergyManager::setup()
 #endif
     debug_config_in_use = debug_config;
 
-#if MODULE_CHARGE_MANAGER_AVAILABLE()
     charge_manager.set_allocated_current_callback([this](uint32_t current_ma){
         //logger.printfln("energy_manager: allocated current callback: %u", current_ma);
         charge_manager_allocated_current_ma = current_ma;
     });
-#endif
 
     // Cache config for energy update
     default_mode                = config_in_use.get("default_mode")->asUint();
@@ -350,7 +348,6 @@ void EnergyManager::setup()
 
     start_network_check_task();
 
-#if MODULE_CHARGE_MANAGER_AVAILABLE()
     // Tell CM how many phases are available. is_3phase is updated in the previous call to update_all_data().
     // set_available_phases() uses callCommand(), which is not available during setup phase, so schedule a task for it.
     task_scheduler.scheduleOnce([this](){
@@ -364,11 +361,6 @@ void EnergyManager::setup()
             set_config_error(CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK);
         }
     }, 0);
-#else
-    logger.printfln("energy_manager: Module 'Charge Manager' not available. Disabling energy distribution.");
-        set_config_error(CONFIG_ERROR_FLAGS_NO_CM_MASK);
-    return;
-#endif
 
     if (max_current_unlimited_ma == 0) {
         logger.printfln("energy_manager: No maximum current configured for chargers. Disabling energy distribution.");
@@ -404,7 +396,6 @@ void EnergyManager::register_urls()
     // Always export state so that the status page can show an error when no bricklet was found.
     api.addState("energy_manager/state", &state, {}, 1000);
 
-#if MODULE_WS_AVAILABLE()
     server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
             last_debug_keep_alive = millis();
@@ -426,7 +417,6 @@ void EnergyManager::register_urls()
         }, 0);
         return request.send(200);
     });
-#endif
 
     api.addPersistentConfig("energy_manager/config", &config, {}, 1000);
 #if MODULE_DEBUG_AVAILABLE()
@@ -500,13 +490,11 @@ void EnergyManager::loop()
 {
     this->DeviceModule::loop();
 
-#if MODULE_WS_AVAILABLE()
     static uint32_t last_debug = 0;
     if (debug && deadline_elapsed(last_debug + 50)) {
         last_debug = millis();
         ws.pushRawStateUpdate(this->get_energy_manager_debug_line(), "energy_manager/debug");
     }
-#endif
 }
 
 void EnergyManager::update_all_data()
@@ -817,9 +805,6 @@ void EnergyManager::set_available_phases(uint32_t phases)
 
 void EnergyManager::update_energy()
 {
-#if !MODULE_CHARGE_MANAGER_AVAILABLE()
-    logger.printfln("energy_manager: Module 'Charge Manager' not available. update_energy() does nothing.");
-#else
     static SwitchingState prev_state = switching_state;
     if (switching_state != prev_state) {
         logger.printfln("energy_manager: now in state %i", static_cast<int>(switching_state));
@@ -1178,7 +1163,6 @@ void EnergyManager::update_energy()
 
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && switching_state != SwitchingState::Monitoring)
         state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_SWITCHING);
-#endif
 }
 
 bool EnergyManager::get_sdcard_info(struct sdcard_info *data)

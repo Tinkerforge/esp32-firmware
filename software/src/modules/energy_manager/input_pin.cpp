@@ -21,7 +21,7 @@
 
 #include "event_log.h"
 #include "input_pin.h"
-#include "modules.h"
+#include "module_dependencies.h"
 #include "tools.h"
 
 #include "gcc_warnings.h"

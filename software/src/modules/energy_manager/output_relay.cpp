@@ -19,10 +19,9 @@
 
 #include "WString.h"
 
-#include "bindings/bricklet_warp_energy_manager.h"
 #include "event_log.h"
 #include "output_relay.h"
-#include "modules.h"
+#include "module_dependencies.h"
 
 #include "gcc_warnings.h"
 
