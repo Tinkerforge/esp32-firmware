@@ -18,6 +18,7 @@
  */
 
 #include "em_meter.h"
+#include "module_dependencies.h"
 
 #include "bindings/errors.h"
 
@@ -26,7 +27,6 @@
 #include "tools.h"
 #include "task_scheduler.h"
 #include "web_server.h"
-#include "modules.h"
 
 void EMMeter::pre_setup()
 {

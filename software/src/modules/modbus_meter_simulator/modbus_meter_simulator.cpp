@@ -18,13 +18,13 @@
  */
 
 #include "modbus_meter_simulator.h"
+#include "module_dependencies.h"
 
 #include "bindings/hal_common.h"
 extern TF_HAL hal;
 
 #include "api.h"
 #include "event_log.h"
-#include "modules.h"
 #include "task_scheduler.h"
 
 #include "modules/modbus_meter/meter_defs.h"

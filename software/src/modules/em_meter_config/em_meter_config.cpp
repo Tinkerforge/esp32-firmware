@@ -18,12 +18,12 @@
  */
 
 #include "em_meter_config.h"
+#include "module_dependencies.h"
 
 //#include "bindings/errors.h"
 
 #include "api.h"
 #include "event_log.h"
-#include "modules.h"
 
 void EMMeterConfig::pre_setup()
 {
