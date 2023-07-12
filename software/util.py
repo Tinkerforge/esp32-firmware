@@ -261,6 +261,22 @@ def green(s):
 def gray(s):
     return colors['gray']+s+colors["off"]
 
+def write_file_if_different(path, new_content):
+    if type(new_content) == str:
+        new_content = bytes(new_content, encoding='utf-8')
+
+    content_identical = False
+    try:
+        with open(path, 'rb') as f:
+            old_content = f.read()
+            content_identical = old_content == new_content
+    except:
+        pass
+
+    if not content_identical:
+        with open(path, 'wb') as f:
+            f.write(new_content)
+
 def specialize_template(template_filename, destination_filename, replacements, check_completeness=True, remove_template=False):
     lines = []
     replaced = set()
@@ -280,8 +296,7 @@ def specialize_template(template_filename, destination_filename, replacements, c
     if check_completeness and replaced != set(replacements.keys()):
         raise Exception('Not all replacements for {0} have been applied. Missing are {1}'.format(template_filename, ', '.join(set(replacements.keys() - replaced))))
 
-    with open(destination_filename, 'w', encoding='utf-8') as f:
-        f.writelines(lines)
+    write_file_if_different(destination_filename, "".join(lines))
 
     if remove_template:
         os.remove(template_filename)

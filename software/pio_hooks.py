@@ -57,31 +57,6 @@ class FlavoredName(object):
 
             return self.cache[key]
 
-def specialize_template(template_filename, destination_filename, replacements, check_completeness=True, remove_template=False):
-    lines = []
-    replaced = set()
-
-    with open(template_filename, 'r', encoding='utf-8') as f:
-        for line in f.readlines():
-            for key in replacements:
-                replaced_line = line.replace(key, replacements[key])
-
-                if replaced_line != line:
-                    replaced.add(key)
-
-                line = replaced_line
-
-            lines.append(line)
-
-    if check_completeness and replaced != set(replacements.keys()):
-        raise Exception('Not all replacements for {0} have been applied. Missing are {1}'.format(template_filename, ', '.join(set(replacements.keys() - replaced))))
-
-    with open(destination_filename, 'w', encoding='utf-8') as f:
-        f.writelines(lines)
-
-    if remove_template:
-        os.remove(template_filename)
-
 # use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
 class ChangedDirectory(object):
     def __init__(self, path):
@@ -252,22 +227,6 @@ def repair_rtc_dir():
         os.remove(path + "/real_time_clock_v2_bricklet_firmware_bin.embedded.h")
     except:
         pass
-
-def write_file_if_different(path, new_content):
-    if type(new_content) == str:
-        new_content = bytes(new_content, encoding='utf-8')
-
-    content_identical = False
-    try:
-        with open(path, 'rb') as f:
-            old_content = f.read()
-            content_identical = old_content == new_content
-    except:
-        pass
-
-    if not content_identical:
-        with open(path, 'wb') as f:
-            f.write(new_content)
 
 def find_backend_module_space(backend_modules, name_space):
     index = 0
@@ -504,13 +463,13 @@ def main():
 
     backend_mods_upper = [x.upper for x in backend_modules]
 
-    specialize_template("modules.h.template", os.path.join("src", "modules.h"), {
+    util.specialize_template("modules.h.template", os.path.join("src", "modules.h"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
         '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE() {}'.format(x, "1" if x in backend_mods_upper else "0") for x in all_mods]),
         '{{{module_extern_decls}}}': '\n'.join(['extern {} {};'.format(x.camel, x.under) for x in backend_modules]),
     })
 
-    specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
+    util.specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
         '{{{module_decls}}}': '\n'.join(['{} {};'.format(x.camel, x.under) for x in backend_modules]),
         '{{{imodule_count}}}': str(len(backend_modules)),
         '{{{imodule_vector}}}': '\n    '.join(['imodules->push_back(&{});'.format(x.under) for x in backend_modules]),
@@ -620,7 +579,7 @@ def main():
                     header_content += '#include "config.h"\n'
                     header_content += 'extern Config modules;\n'
 
-                write_file_if_different(header_path, header_content)
+                util.write_file_if_different(header_path, header_content)
 
     # Handle frontend modules
     navbar_entries = []
@@ -739,7 +698,7 @@ def main():
         if color.endswith(';'):
             color = color[:-1]
 
-    specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
+    util.specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
         '{{{logo_base64}}}': logo_base64,
         '{{{navbar}}}': '\n                        '.join(navbar_entries),
@@ -748,25 +707,25 @@ def main():
         '{{{theme_color}}}': color
     })
 
-    specialize_template(os.path.join("web", "main.ts.template"), os.path.join("web", "src", "main.ts"), {
+    util.specialize_template(os.path.join("web", "main.ts.template"), os.path.join("web", "src", "main.ts"), {
         '{{{module_imports}}}': '\n'.join(['import * as {0} from "./modules/{0}/main";'.format(x) for x in main_ts_entries]),
         '{{{modules}}}': ', '.join([x for x in main_ts_entries]),
         '{{{preact_debug}}}': 'import "preact/debug";' if frontend_debug else ''
     })
 
-    specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
+    util.specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
         '{{{module_pre_imports}}}': '\n'.join(['@import "{0}";'.format(x.replace('\\', '/')) for x in pre_scss_paths]),
         '{{{module_post_imports}}}': '\n'.join(['@import "{0}";'.format(x.replace('\\', '/')) for x in post_scss_paths])
     })
 
-    specialize_template(os.path.join("web", "api_defs.ts.template"), os.path.join("web", "src", "ts", "api_defs.ts"), {
+    util.specialize_template(os.path.join("web", "api_defs.ts.template"), os.path.join("web", "src", "ts", "api_defs.ts"), {
         '{{{imports}}}': '\n'.join(api_imports),
         '{{{module_interface}}}': ',\n    '.join('{}: boolean'.format(x.under) for x in backend_modules),
         '{{{config_map_entries}}}': '\n    '.join(api_config_map_entries),
         '{{{api_cache_entries}}}': '\n    '.join(api_cache_entries),
     })
 
-    specialize_template(os.path.join("web", "branding.ts.template"), os.path.join("web", "src", "ts", "branding.ts"), {
+    util.specialize_template(os.path.join("web", "branding.ts.template"), os.path.join("web", "src", "ts", "branding.ts"), {
         '{{{logo_base64}}}': logo_base64,
         '{{{branding}}}': branding,
     })
@@ -815,7 +774,7 @@ def main():
 
     translation_str += '} as const\n'
 
-    specialize_template(os.path.join("web", "translation.tsx.template"), os.path.join("web", "src", "ts", "translation.tsx"), {
+    util.specialize_template(os.path.join("web", "translation.tsx.template"), os.path.join("web", "src", "ts", "translation.tsx"), {
         '{{{translation}}}': translation_str,
     })
 
