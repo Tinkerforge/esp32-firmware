@@ -375,29 +375,30 @@ def main():
 
     write_firmware_info(display_name, *version, timestamp)
 
-    with open(os.path.join('src', 'build.h'), 'w', encoding='utf-8') as f:
-        f.write('#pragma once\n')
-        f.write('#include <stdint.h>\n')
-        f.write('#define OLDEST_VERSION_MAJOR {}\n'.format(oldest_version[0]))
-        f.write('#define OLDEST_VERSION_MINOR {}\n'.format(oldest_version[1]))
-        f.write('#define OLDEST_VERSION_PATCH {}\n'.format(oldest_version[2]))
-        f.write('#define BUILD_VERSION_MAJOR {}\n'.format(version[0]))
-        f.write('#define BUILD_VERSION_MINOR {}\n'.format(version[1]))
-        f.write('#define BUILD_VERSION_PATCH {}\n'.format(version[2]))
-        f.write('#define BUILD_VERSION_STRING "{}.{}.{}"\n'.format(*version))
-        f.write('#define BUILD_HOST_PREFIX "{}"\n'.format(host_prefix))
-        f.write('#define BUILD_NAME_{}\n'.format(name.upper()))
-        f.write('#define BUILD_CONFIG_TYPE "{}"\n'.format(config_type))
-        f.write('#define BUILD_DISPLAY_NAME "{}"\n'.format(display_name))
-        f.write('#define BUILD_DISPLAY_NAME_UPPER "{}"\n'.format(display_name.upper()))
-        f.write('#define BUILD_REQUIRE_FIRMWARE_INFO {}\n'.format(require_firmware_info))
-        f.write('#define BUILD_MONITOR_SPEED {}\n'.format(monitor_speed))
-        f.write('uint32_t build_timestamp(void);\n')
-        f.write('const char *build_timestamp_hex_str(void);\n')
-        f.write('const char *build_version_full_str(void);\n')
-        f.write('const char *build_info_str(void);\n')
-        f.write('const char *build_filename_str(void);')
-        f.write('const char *build_commit_id_str(void);')
+    build_lines = []
+    build_lines.append('#pragma once')
+    build_lines.append('#include <stdint.h>')
+    build_lines.append('#define OLDEST_VERSION_MAJOR {}'.format(oldest_version[0]))
+    build_lines.append('#define OLDEST_VERSION_MINOR {}'.format(oldest_version[1]))
+    build_lines.append('#define OLDEST_VERSION_PATCH {}'.format(oldest_version[2]))
+    build_lines.append('#define BUILD_VERSION_MAJOR {}'.format(version[0]))
+    build_lines.append('#define BUILD_VERSION_MINOR {}'.format(version[1]))
+    build_lines.append('#define BUILD_VERSION_PATCH {}'.format(version[2]))
+    build_lines.append('#define BUILD_VERSION_STRING "{}.{}.{}"'.format(*version))
+    build_lines.append('#define BUILD_HOST_PREFIX "{}"'.format(host_prefix))
+    build_lines.append('#define BUILD_NAME_{}'.format(name.upper()))
+    build_lines.append('#define BUILD_CONFIG_TYPE "{}"'.format(config_type))
+    build_lines.append('#define BUILD_DISPLAY_NAME "{}"'.format(display_name))
+    build_lines.append('#define BUILD_DISPLAY_NAME_UPPER "{}"'.format(display_name.upper()))
+    build_lines.append('#define BUILD_REQUIRE_FIRMWARE_INFO {}'.format(require_firmware_info))
+    build_lines.append('#define BUILD_MONITOR_SPEED {}'.format(monitor_speed))
+    build_lines.append('uint32_t build_timestamp(void);')
+    build_lines.append('const char *build_timestamp_hex_str(void);')
+    build_lines.append('const char *build_version_full_str(void);')
+    build_lines.append('const char *build_info_str(void);')
+    build_lines.append('const char *build_filename_str(void);')
+    build_lines.append('const char *build_commit_id_str(void);')
+    util.write_file_if_different(os.path.join('src', 'build.h'), '\n'.join(build_lines))
 
     firmware_basename = '{}_firmware{}{}_{}_{:x}{}'.format(
         name,
@@ -407,15 +408,17 @@ def main():
         timestamp,
         dirty_suffix,
     )
-    with open(os.path.join('src', 'build.cpp'), 'w', encoding='utf-8') as f:
-        f.write('#include "build.h"\n')
-        f.write('uint32_t build_timestamp(void) {{ return {}; }}\n'.format(timestamp))
-        f.write('const char *build_timestamp_hex_str(void) {{ return "{:x}"; }}\n'.format(timestamp))
-        f.write('const char *build_version_full_str(void) {{ return "{}.{}.{}-{:x}"; }}\n'.format(*version, timestamp))
-        f.write('const char *build_info_str(void) {{ return "git url: {}, git branch: {}, git commit id: {}"; }}\n'.format(git_url, branch_name, git_commit_id))
-        f.write('const char *build_filename_str(void){{return "{}"; }}\n'.format(firmware_basename))
-        f.write('const char *build_commit_id_str(void){{return "{}"; }}\n'.format(git_commit_id))
 
+    build_lines = []
+    build_lines.append('#include "build.h"')
+    build_lines.append('uint32_t build_timestamp(void) {{ return {}; }}'.format(timestamp))
+    build_lines.append('const char *build_timestamp_hex_str(void) {{ return "{:x}"; }}'.format(timestamp))
+    build_lines.append('const char *build_version_full_str(void) {{ return "{}.{}.{}-{:x}"; }}'.format(*version, timestamp))
+    build_lines.append('const char *build_info_str(void) {{ return "git url: {}, git branch: {}, git commit id: {}"; }}'.format(git_url, branch_name, git_commit_id))
+    build_lines.append('const char *build_filename_str(void){{return "{}"; }}'.format(firmware_basename))
+    build_lines.append('const char *build_commit_id_str(void){{return "{}"; }}'.format(git_commit_id))
+    util.write_file_if_different(os.path.join('src', 'build.cpp'), '\n'.join(build_lines))
+    del build_lines
 
     with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
         f.write(firmware_basename)
@@ -675,14 +678,13 @@ def main():
         print('Error: Translation missing')
         sys.exit(1)
 
-    with open(os.path.join('web', 'src', 'ts', 'translation.json'), 'w', encoding='utf-8') as f:
-        data = json.dumps(translation, indent=4, ensure_ascii=False)
-        data = data.replace('{{{display_name}}}', display_name)
-        data = data.replace('{{{manual_url}}}', manual_url)
-        data = data.replace('{{{apidoc_url}}}', apidoc_url)
-        data = data.replace('{{{firmware_url}}}', firmware_url)
-
-        f.write(data)
+    translation_data = json.dumps(translation, indent=4, ensure_ascii=False)
+    translation_data = translation_data.replace('{{{display_name}}}', display_name)
+    translation_data = translation_data.replace('{{{manual_url}}}', manual_url)
+    translation_data = translation_data.replace('{{{apidoc_url}}}', apidoc_url)
+    translation_data = translation_data.replace('{{{firmware_url}}}', firmware_url)
+    util.write_file_if_different(os.path.join('web', 'src', 'ts', 'translation.json'), translation_data)
+    del translation_data
 
     with open(os.path.join(branding_module, 'favicon.png'), 'rb') as f:
         favicon = b64encode(f.read()).decode('ascii')
