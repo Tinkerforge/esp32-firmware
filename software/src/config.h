@@ -88,7 +88,6 @@ struct Config {
         using Slot = ConfIntSlot;
     private:
         uint16_t idx;
-
         Slot *getSlot();
 
     public:
@@ -110,7 +109,6 @@ struct Config {
         using Slot = ConfUintSlot;
     private:
         uint16_t idx;
-
         Slot *getSlot();
 
     public:
@@ -140,7 +138,6 @@ struct Config {
         using Slot = ConfArraySlot;
     private:
         uint16_t idx;
-
         Slot *getSlot();
 
     public:
@@ -164,7 +161,6 @@ struct Config {
         using Slot = ConfObjectSlot;
     private:
         uint16_t idx;
-
         Slot *getSlot();
 
     public:
