@@ -844,4 +844,3 @@ private:
     template<typename T>
     String update_from_visitor(T visitor);
 };
-
