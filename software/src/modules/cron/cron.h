@@ -21,15 +21,34 @@
 
 #include "module.h"
 #include "config.h"
+#include <map>
+#include <vector>
+
+class ICronModule {
+public:
+    virtual bool action_triggered(Config *config) = 0;
+};
+
+
+typedef std::function<void()>       ActionCb;
+typedef std::map<String, ActionCb>  ActionMap;
+typedef std::vector<String>         EventVec;
 
 class Cron : public IModule {
     ConfigRoot config;
     ConfigRoot config_in_use;
-    ConfigRoot timed_config;
-    ConfigRoot timed_config_in_use;
-    
+    ConfigRoot enabled;
+    ConfigRoot enabled_in_use;
+
+    ActionMap action_map;
+
 public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+
+    void register_action(String &name, ActionCb &callback);
+    void register_trigger(uint32_t number);
+
+    void trigger_action(ICronModule *module, uint32_t number);
 };

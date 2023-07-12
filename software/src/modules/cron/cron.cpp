@@ -21,28 +21,49 @@
 #include "api.h"
 
 void Cron::pre_setup() {
-    config = Config::Object({
+    config = Config::Array(
+        {},
+        new Config{
+            Config::Object({
+                {"trigger", Config::Object({
+                    {"number", Config::Uint(0)},
+                    {"h", Config::Uint(0, 0, 2)},
+                    {"m", Config::Uint(0, 1, 60)}
+                })},
+                {"action", Config::Str("", 0, 128)}
+            })
+        }, 0, 20, Config::type_id<Config::ConfObject>()
+    );
+
+    enabled = Config::Object({
         {"enabled", Config::Bool(false)}
     });
-
-    timed_config = Config::Array(
-        {},
-        new Config{Config::Object({
-            {"h", Config::Uint(0, 0, 24)},
-            {"m", Config::Uint(0, 0, 60)},
-            {"s", Config::Uint(0, 0, 60)}
-        })}, 0, 20, Config::type_id<Config::ConfObject>());
 }
 
 void Cron::setup() {
     api.restorePersistentConfig("cron/config", &config);
-    api.restorePersistentConfig("cron/timed_config", &timed_config);
+    api.restorePersistentConfig("cron/timed_config", &enabled);
 
     config_in_use = config;
-    timed_config_in_use = timed_config;
+    enabled_in_use = enabled;
 }
 
 void Cron::register_urls() {
     api.addPersistentConfig("cron/config", &config, {}, 1000);
-    api.addPersistentConfig("cron/timed_config", &timed_config, {}, 1000);
+    api.addPersistentConfig("cron/timed_config", &enabled, {}, 1000);
+}
+
+void Cron::register_action(String &name, ActionCb &action) {
+    action_map[name] = action;
+}
+
+void Cron::register_trigger(uint32_t number) {
+
+}
+
+void Cron::trigger_action(ICronModule *module, uint32_t number) {
+    for (auto it = config.begin(); it != config.end(); it++) {
+        if ((*it).get("trigger")->get("number")->asUint() == number && module->action_triggered((Config*)(*it).get("trigger")))
+            action_map[(*it).get("action")->asString()]();
+    }
 }
