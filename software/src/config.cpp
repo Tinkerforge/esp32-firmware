@@ -1548,3 +1548,25 @@ Config::ConstWrap::ConstWrap(const Config *_conf)
 {
     conf = _conf;
 }
+
+Config::Wrap Config::add() {
+    if (!this->is<Config::ConfArray>()) {
+        logger.printfln("Tried to add to a node that is not an array!");
+        delay(100);
+        return Wrap(nullptr);
+    }
+
+    std::vector<Config> &children = this->asArray();
+
+    const auto &arr = value.val.a;
+
+    const auto max_elements = arr.getSlot()->maxElements;
+    if (children.size() >= max_elements) {
+        logger.printfln("Tried to add to an ConfArray that already has the max allowed number of elements (%u).", max_elements);
+        delay(100);
+        return Wrap(nullptr);
+    }
+
+    children.push_back(*arr.getSlot()->prototype);
+    return Wrap(&children.back());
+}
