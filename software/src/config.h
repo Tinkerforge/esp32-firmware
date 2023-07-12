@@ -34,15 +34,16 @@ void config_pre_init();
 void config_post_setup();
 
 struct ConfigRoot;
+struct ConfStringSlot;
+struct ConfFloatSlot;
+struct ConfIntSlot;
+struct ConfUintSlot;
+struct ConfArraySlot;
+struct ConfObjectSlot;
 
 struct Config {
     struct ConfString {
-        struct Slot {
-            String val = "";
-            uint16_t minChars = 0;
-            uint16_t maxChars = 0;
-            bool inUse = false;
-        };
+        using Slot = ConfStringSlot;
     private:
         uint16_t idx;
         Slot *getSlot();
@@ -63,11 +64,7 @@ struct Config {
     };
 
     struct ConfFloat {
-        struct Slot {
-            float val = 0;
-            float min = 0;
-            float max = 0;
-        };
+        using Slot = ConfFloatSlot;
     private:
         uint16_t idx;
         Slot *getSlot();
@@ -88,11 +85,7 @@ struct Config {
     };
 
     struct ConfInt {
-        struct Slot {
-            int32_t val = 0;
-            int32_t min = 0;
-            int32_t max = 0;
-        };
+        using Slot = ConfIntSlot;
     private:
         uint16_t idx;
 
@@ -114,11 +107,7 @@ struct Config {
     };
 
     struct ConfUint {
-        struct Slot {
-            uint32_t val = 0;
-            uint32_t min = 0;
-            uint32_t max = 0;
-        };
+        using Slot = ConfUintSlot;
     private:
         uint16_t idx;
 
@@ -148,13 +137,7 @@ struct Config {
     };
 
     struct ConfArray {
-        struct Slot {
-            std::vector<Config> val;
-            Config *prototype;
-            uint32_t minElements : 12, maxElements : 12;
-            int8_t variantType;
-            bool inUse = false;
-        };
+        using Slot = ConfArraySlot;
     private:
         uint16_t idx;
 
@@ -178,10 +161,7 @@ struct Config {
     };
 
     struct ConfObject {
-        struct Slot {
-            std::vector<std::pair<String, Config>> val;
-            bool inUse = false;
-        };
+        using Slot = ConfObjectSlot;
     private:
         uint16_t idx;
 

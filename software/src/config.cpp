@@ -27,6 +27,44 @@
 
 #define SLOT_HEADROOM 20
 
+struct ConfStringSlot {
+    String val = "";
+    uint16_t minChars = 0;
+    uint16_t maxChars = 0;
+    bool inUse = false;
+};
+
+struct ConfFloatSlot {
+    float val = 0;
+    float min = 0;
+    float max = 0;
+};
+
+struct ConfIntSlot {
+    int32_t val = 0;
+    int32_t min = 0;
+    int32_t max = 0;
+};
+
+struct ConfUintSlot {
+    uint32_t val = 0;
+    uint32_t min = 0;
+    uint32_t max = 0;
+};
+
+struct ConfArraySlot {
+    std::vector<Config> val;
+    Config *prototype;
+    uint32_t minElements : 12, maxElements : 12;
+    int8_t variantType;
+    bool inUse = false;
+};
+
+struct ConfObjectSlot {
+    std::vector<std::pair<String, Config>> val;
+    bool inUse = false;
+};
+
 #define UINT_SLOTS 512
 Config::ConfUint::Slot *uint_buf = nullptr;
 size_t uint_buf_size = 0;
