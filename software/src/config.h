@@ -777,6 +777,8 @@ public:
     size_t json_size(bool zero_copy) const;
     size_t max_string_length() const;
 
+    DynamicJsonDocument to_json(const std::vector<String> &keys_to_censor) const;
+
     void save_to_file(File &file);
 
     void write_to_stream(Print &output);

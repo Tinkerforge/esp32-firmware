@@ -1279,8 +1279,7 @@ size_t Config::max_string_length() const
     return Config::apply_visitor(string_length_visitor{}, value);
 }
 
-void Config::save_to_file(File &file)
-{
+DynamicJsonDocument Config::to_json(const std::vector<String> &keys_to_censor) const {
     DynamicJsonDocument doc(json_size(false));
 
     JsonVariant var;
@@ -1291,7 +1290,13 @@ void Config::save_to_file(File &file)
     } else {
         var = doc.as<JsonVariant>();
     }
-    Config::apply_visitor(to_json{var, {}}, value);
+    Config::apply_visitor(::to_json{var, keys_to_censor}, value);
+    return doc;
+}
+
+void Config::save_to_file(File &file)
+{
+    auto doc = this->to_json({});
 
     if (doc.overflowed())
         logger.printfln("JSON doc overflow while writing %s!", file.name());
@@ -1300,17 +1305,7 @@ void Config::save_to_file(File &file)
 
 void Config::write_to_stream(Print &output)
 {
-    DynamicJsonDocument doc(json_size(false));
-
-    JsonVariant var;
-    if (is<Config::ConfObject>()) {
-        var = doc.to<JsonObject>();
-    } else if (is<Config::ConfArray>()) {
-        var = doc.to<JsonArray>();
-    } else {
-        var = doc.as<JsonVariant>();
-    }
-    Config::apply_visitor(to_json{var, {}}, value);
+    auto doc = this->to_json({});
 
     if (doc.overflowed())
         logger.printfln("JSON doc overflow!");
@@ -1324,17 +1319,7 @@ String Config::to_string() const
 
 String Config::to_string_except(const std::vector<String> &keys_to_censor) const
 {
-    DynamicJsonDocument doc(json_size(false));
-
-    JsonVariant var;
-    if (is<Config::ConfObject>()) {
-        var = doc.to<JsonObject>();
-    } else if (is<Config::ConfArray>()) {
-        var = doc.to<JsonArray>();
-    } else {
-        var = doc.as<JsonVariant>();
-    }
-    Config::apply_visitor(to_json{var, keys_to_censor}, value);
+    auto doc = this->to_json(keys_to_censor);
 
     if (doc.overflowed())
         logger.printfln("JSON doc overflow!");
@@ -1346,17 +1331,7 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) const
 
 void Config::write_to_stream_except(Print &output, const std::vector<String> &keys_to_censor)
 {
-    DynamicJsonDocument doc(json_size(false));
-
-    JsonVariant var;
-    if (is<Config::ConfObject>()) {
-        var = doc.to<JsonObject>();
-    } else if (is<Config::ConfArray>()) {
-        var = doc.to<JsonArray>();
-    } else {
-        var = doc.as<JsonVariant>();
-    }
-    Config::apply_visitor(to_json{var, keys_to_censor}, value);
+    auto doc = this->to_json(keys_to_censor);
 
     if (doc.overflowed())
         logger.printfln("JSON doc overflow!");
