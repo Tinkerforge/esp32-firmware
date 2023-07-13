@@ -1449,7 +1449,6 @@ size_t Config::fillInt32Array(int32_t *arr, size_t elements)
     return fillArray<int32_t, Config::ConfInt>(arr, elements);
 }
 
-
 size_t Config::json_size(bool zero_copy) const
 {
     return Config::apply_visitor(json_length_visitor{zero_copy}, value);
