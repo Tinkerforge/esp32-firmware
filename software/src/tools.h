@@ -260,3 +260,10 @@ enum class BootStage {
 extern BootStage boot_stage;
 
 int strncmp_with_same_len(const char *left, const char *right, size_t right_len);
+
+// C++17 adds this: https://en.cppreference.com/w/cpp/utility/as_const
+template<class T>
+constexpr const T& as_const(T& t) noexcept
+{
+    return t;
+}

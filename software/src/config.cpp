@@ -406,9 +406,7 @@ struct from_json {
 
         JsonArray arr = json_node.as<JsonArray>();
 
-        // C++17 adds https://en.cppreference.com/w/cpp/utility/as_const
-        // until then we have to use this to make sure the const version of getSlot() is called.
-        const auto *prototype = ((const Config::ConfArray&)x).getSlot()->prototype;
+        const auto *prototype = as_const(x).getSlot()->prototype;
 
         x.getVal()->clear();
         for (size_t i = 0; i < arr.size(); ++i) {
@@ -568,9 +566,7 @@ struct from_update {
 
         const Config::ConfUpdateArray *arr = update->get<Config::ConfUpdateArray>();
 
-        // C++17 adds https://en.cppreference.com/w/cpp/utility/as_const
-        // until then we have to use this to make sure the const version of getSlot() is called.
-        const auto *prototype = ((const Config::ConfArray&)x).getSlot()->prototype;
+        const auto *prototype = as_const(x).getSlot()->prototype;
 
         x.getVal()->clear();
         for (size_t i = 0; i < arr->elements.size(); ++i) {
