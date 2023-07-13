@@ -37,6 +37,41 @@ void Cron::pre_setup() {
         }, 0, 20, Config::type_id<Config::ConfObject>()
     );
 
+    Config trigger_prototype = Config::Union(
+                    *Config::Null(),
+                    0,
+                    new Config*[2] {
+                        Config::Null(),
+                        new Config(Config::Object({
+                            {"ident-no", Config::Uint(0)},
+                            {"mday", Config::Int(-1, -1, 30)},
+                            {"wday", Config::Int(-1, -1, 6)},
+                            {"hour", Config::Int(-1, -1, 23)},
+                            {"minute", Config::Int(-1, -1, 59)}
+                        }))
+                    },
+                    2);
+
+    Config action_prototype = Config::Union(
+                    *Config::Null(),
+                    0,
+                    new Config*[2] {
+                        Config::Null(),
+                        new Config(Config::Object({
+                            {"message", Config::Str("", 0, 32)}
+                        }))
+                    },
+                    2);
+
+    config = Config::Array(
+        {},
+        new Config{
+            Config::Object({
+                {"trigger", trigger_prototype},
+                {"action", action_prototype}
+            })
+        }, 0, 20, Config::type_id<Config::ConfObject>());
+
     enabled = Config::Object({
         {"enabled", Config::Bool(false)}
     });
@@ -71,7 +106,7 @@ void Cron::register_trigger(uint32_t number) {
 
 void Cron::trigger_action(ICronModule *module, uint32_t number) {
     for (auto it = config.begin(); it != config.end(); it++) {
-        if ((*it).get("trigger")->get("number")->asUint() == number && module->action_triggered((Config*)(*it).get("trigger"))) {
+        if ((*it).get("trigger")->get() == number && module->action_triggered((Config*)(*it).get("trigger"))) {
             uint32_t action_ident = (*it).get("action")->asUint();
             if (action_map.find(action_ident) != action_map.end())
                 action_map[action_ident]();
