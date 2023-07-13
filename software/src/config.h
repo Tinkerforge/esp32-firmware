@@ -40,6 +40,7 @@ struct ConfIntSlot;
 struct ConfUintSlot;
 struct ConfArraySlot;
 struct ConfObjectSlot;
+struct ConfUnionSlot;
 
 struct Config {
     struct ConfString {
@@ -180,8 +181,34 @@ struct Config {
         ConfObject& operator=(const ConfObject &cpy);
     };
 
+    struct ConfUnion {
+        using Slot = ConfUnionSlot;
+    private:
+        uint16_t idx;
+        Slot *getSlot();
+
+    public:
+        static bool slotEmpty(size_t i);
+        static constexpr const char *variantName = "ConfUnion";
+
+        uint8_t getTag() const;
+        void setTag(uint8_t tag);
+
+        Config *getVal();
+        const Config *getVal() const;
+        const Slot *getSlot() const;
+
+        ConfUnion(const Config &val, uint8_t tag, uint8_t tag_max, const Config * const *prototypes);
+        ConfUnion(const ConfUnion &cpy);
+        ~ConfUnion();
+
+        ConfUnion& operator=(const ConfUnion &cpy);
+    };
+
+
     struct ConfUpdateArray;
     struct ConfUpdateObject;
+    struct ConfUpdateUnion;
 
     typedef strict_variant::variant<
         std::nullptr_t, // DON'T MOVE THIS!
@@ -191,7 +218,8 @@ struct Config {
         int32_t,
         bool,
         ConfUpdateArray,
-        ConfUpdateObject
+        ConfUpdateObject,
+        ConfUpdateUnion
     > ConfUpdate;
     // This is necessary as we can't use get to distinguish between
     // a get<std::nullptr_t>() that returned nullptr because the variant
@@ -210,6 +238,11 @@ struct Config {
         std::vector<std::pair<String, ConfUpdate>> elements;
     };
 
+    struct ConfUpdateUnion {
+        uint8_t tag;
+        ConfUpdate &value;
+    };
+
 
     struct ConfVariant {
         struct Empty{uint8_t x;};
@@ -221,7 +254,8 @@ struct Config {
             UINT,
             BOOL,
             ARRAY,
-            OBJECT
+            OBJECT,
+            UNION
         };
         Tag tag = Tag::EMPTY;
         uint8_t updated;
@@ -235,16 +269,18 @@ struct Config {
             ConfBool b;
             ConfArray a;
             ConfObject o;
+            ConfUnion un;
             ~Val() {}
         } val;
 
-        ConfVariant(ConfString s) : tag(Tag::STRING), updated(0xFF), val() {new(&val.s) ConfString{s};}
-        ConfVariant(ConfFloat f)  : tag(Tag::FLOAT),  updated(0xFF), val() {new(&val.f) ConfFloat{f};}
-        ConfVariant(ConfInt i)    : tag(Tag::INT),    updated(0xFF), val() {new(&val.i) ConfInt{i};}
-        ConfVariant(ConfUint u)   : tag(Tag::UINT),   updated(0xFF), val() {new(&val.u) ConfUint{u};}
-        ConfVariant(ConfBool b)   : tag(Tag::BOOL),   updated(0xFF), val() {new(&val.b) ConfBool{b};}
-        ConfVariant(ConfArray a)  : tag(Tag::ARRAY),  updated(0xFF), val() {new(&val.a) ConfArray{a};}
-        ConfVariant(ConfObject o) : tag(Tag::OBJECT), updated(0xFF), val() {new(&val.o) ConfObject{o};}
+        ConfVariant(ConfString s) : tag(Tag::STRING), updated(0xFF), val() {new(&val.s)  ConfString{s};}
+        ConfVariant(ConfFloat f)  : tag(Tag::FLOAT),  updated(0xFF), val() {new(&val.f)  ConfFloat{f};}
+        ConfVariant(ConfInt i)    : tag(Tag::INT),    updated(0xFF), val() {new(&val.i)  ConfInt{i};}
+        ConfVariant(ConfUint u)   : tag(Tag::UINT),   updated(0xFF), val() {new(&val.u)  ConfUint{u};}
+        ConfVariant(ConfBool b)   : tag(Tag::BOOL),   updated(0xFF), val() {new(&val.b)  ConfBool{b};}
+        ConfVariant(ConfArray a)  : tag(Tag::ARRAY),  updated(0xFF), val() {new(&val.a)  ConfArray{a};}
+        ConfVariant(ConfObject o) : tag(Tag::OBJECT), updated(0xFF), val() {new(&val.o)  ConfObject{o};}
+        ConfVariant(ConfUnion un) : tag(Tag::UNION),  updated(0xFF), val() {new(&val.un) ConfUnion{un};}
 
         ConfVariant() : tag(Tag::EMPTY), updated(0xFF), val() {}
 
@@ -276,6 +312,9 @@ struct Config {
                     break;
                 case ConfVariant::Tag::OBJECT:
                     new(&val.o) ConfObject(cpy.val.o);
+                    break;
+                case ConfVariant::Tag::UNION:
+                    new(&val.un) ConfUnion(cpy.val.un);
                     break;
             }
             this->tag = cpy.tag;
@@ -315,6 +354,9 @@ struct Config {
                 case ConfVariant::Tag::OBJECT:
                     new(&val.o) ConfObject(cpy.val.o);
                     break;
+                case ConfVariant::Tag::UNION:
+                    new(&val.un) ConfUnion(cpy.val.un);
+                    break;
             }
             this->tag = cpy.tag;
             this->updated = cpy.updated;
@@ -348,6 +390,9 @@ struct Config {
                 case ConfVariant::Tag::OBJECT:
                     val.o.~ConfObject();
                     break;
+                case ConfVariant::Tag::UNION:
+                    val.un.~ConfUnion();
+                    break;
             }
         }
 
@@ -375,6 +420,8 @@ struct Config {
                 return visitor(v.val.a);
             case ConfVariant::Tag::OBJECT:
                 return visitor(v.val.o);
+            case ConfVariant::Tag::UNION:
+                return visitor(v.val.un);
         }
 #ifdef __GNUC__
         __builtin_unreachable();
@@ -400,6 +447,8 @@ struct Config {
                 return visitor(v.val.a);
             case ConfVariant::Tag::OBJECT:
                 return visitor(v.val.o);
+            case ConfVariant::Tag::UNION:
+                return visitor(v.val.un);
         }
 #ifdef __GNUC__
         __builtin_unreachable();
@@ -430,6 +479,8 @@ struct Config {
             return (int)ConfVariant::Tag::ARRAY;
         if (std::is_same<T, ConfObject>())
             return (int)ConfVariant::Tag::OBJECT;
+        if (std::is_same<T, ConfUnion>())
+            return (int)ConfVariant::Tag::UNION;
         return -1;
     }
 
@@ -468,6 +519,8 @@ struct Config {
                         int variantType);
 
     static Config Object(std::initializer_list<std::pair<String, Config>> obj);
+
+    static Config Union(Config value, uint8_t tag, const Config * const *prototypes, uint8_t prototypes_len);
 
     static ConfigRoot *Null();
 
