@@ -407,6 +407,12 @@ void Mqtt::setup()
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
 
+#if MODULE_CRON_AVAILABLE()
+    cron.register_action(CRON_ACTION_MQTT, [this](Config *cfg) {
+        publish(cfg->get("topic")->asString(), cfg->get("payload")->asString(), cfg->get("retain")->asBool());
+    });
+#endif
+
     initialized = true;
 }
 

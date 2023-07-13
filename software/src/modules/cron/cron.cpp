@@ -41,13 +41,18 @@ void Cron::pre_setup() {
     Config action_prototype = Config::Union(
                     *Config::Null(),
                     0,
-                    new Config*[2] {
+                    new Config*[3] {
                         Config::Null(),
                         new Config(Config::Object({
                             {"message", Config::Str("", 0, 32)}
                         })),
+                        new Config(Config::Object({
+                            {"topic", Config::Str("", 0, 128)},
+                            {"payload", Config::Str("", 0, 128)},
+                            {"retain", Config::Bool(false)}
+                        }))
                     },
-                    2);
+                    3);
 
     config = Config::Array(
         {},
@@ -70,7 +75,7 @@ void Cron::setup() {
     config_in_use = config;
     enabled_in_use = enabled;
 
-    register_action(0, [this](Config *cfg) {
+    register_action(CRON_ACTION_PRINT, [this](Config *cfg) {
         logger.printfln("Got message: %s", cfg->get("message")->asString().c_str());
     });
 
@@ -84,6 +89,7 @@ void Cron::register_urls() {
 
 void Cron::register_action(uint32_t ident, ActionCb action) {
     action_map[ident] = action;
+    logger.printfln("registered action nr. %u", ident);
 }
 
 void Cron::register_trigger(uint32_t number) {
