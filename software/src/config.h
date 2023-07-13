@@ -780,11 +780,9 @@ public:
     void save_to_file(File &file);
 
     void write_to_stream(Print &output);
-    void write_to_stream_except(Print &output, const std::initializer_list<String> &keys_to_censor);
     void write_to_stream_except(Print &output, const std::vector<String> &keys_to_censor);
 
     String to_string() const;
-    String to_string_except(const std::initializer_list<String> &keys_to_censor) const;
     String to_string_except(const std::vector<String> &keys_to_censor) const;
 };
 

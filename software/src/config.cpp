@@ -1322,29 +1322,6 @@ String Config::to_string() const
     return this->to_string_except({});
 }
 
-String Config::to_string_except(const std::initializer_list<String> &keys_to_censor) const
-{
-    DynamicJsonDocument doc(json_size(false));
-
-    JsonVariant var;
-    if (is<Config::ConfObject>()) {
-        var = doc.to<JsonObject>();
-    } else if (is<Config::ConfArray>()) {
-        var = doc.to<JsonArray>();
-    } else {
-        var = doc.as<JsonVariant>();
-    }
-    Config::apply_visitor(to_json{var, keys_to_censor}, value);
-
-
-    if (doc.overflowed())
-        logger.printfln("JSON doc overflow!");
-
-    String result;
-    serializeJson(doc, result);
-    return result;
-}
-
 String Config::to_string_except(const std::vector<String> &keys_to_censor) const
 {
     DynamicJsonDocument doc(json_size(false));
@@ -1365,25 +1342,6 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) const
     String result;
     serializeJson(doc, result);
     return result;
-}
-
-void Config::write_to_stream_except(Print &output, const std::initializer_list<String> &keys_to_censor)
-{
-    DynamicJsonDocument doc(json_size(false));
-
-    JsonVariant var;
-    if (is<Config::ConfObject>()) {
-        var = doc.to<JsonObject>();
-    } else if (is<Config::ConfArray>()) {
-        var = doc.to<JsonArray>();
-    } else {
-        var = doc.as<JsonVariant>();
-    }
-    Config::apply_visitor(to_json{var, keys_to_censor}, value);
-
-    if (doc.overflowed())
-        logger.printfln("JSON doc overflow!");
-    serializeJson(doc, output);
 }
 
 void Config::write_to_stream_except(Print &output, const std::vector<String> &keys_to_censor)
