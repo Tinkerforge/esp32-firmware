@@ -31,7 +31,7 @@ public:
 
 
 typedef std::function<void()>       ActionCb;
-typedef std::map<String, ActionCb>  ActionMap;
+typedef std::map<uint32_t, ActionCb>  ActionMap;
 typedef std::vector<String>         EventVec;
 
 class Cron : public IModule {
@@ -47,7 +47,7 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void register_action(String &name, ActionCb &callback);
+    void register_action(uint32_t ident, ActionCb callback);
     void register_trigger(uint32_t number);
 
     void trigger_action(ICronModule *module, uint32_t number);

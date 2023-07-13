@@ -23,6 +23,7 @@
 #include "build.h"
 #include "task_scheduler.h"
 #include "time.h"
+#include "module_dependencies.h"
 
 void Rtc::pre_setup()
 {
@@ -49,12 +50,10 @@ void Rtc::pre_setup()
     config = Config::Object({
         {"auto_sync", Config::Bool(true)},
     });
+
 }
 
-void Rtc::setup()
-{
-    api.restorePersistentConfig("rtc/config", &config);
-}
+void Rtc::setup() {}
 
 void Rtc::register_backend(IRtcBackend *_backend)
 {
@@ -91,6 +90,8 @@ void Rtc::register_backend(IRtcBackend *_backend)
         tm tm;
         gmtime_r(&tv.tv_sec, &tm);
 
+        uint32_t last_minute = time.get("minute")->asUint();
+
         time.get("year")->updateUint(tm.tm_year + 1900);
         time.get("month")->updateUint(tm.tm_mon + 1);
         time.get("day")->updateUint(tm.tm_mday);
@@ -98,6 +99,9 @@ void Rtc::register_backend(IRtcBackend *_backend)
         time.get("minute")->updateUint(tm.tm_min);
         time.get("second")->updateUint(tm.tm_sec);
         time.get("weekday")->updateUint(tm.tm_wday);
+
+        if (last_minute < tm.tm_min)
+            cron.trigger_action(this, 0);
     }, 0, 200);
 
     api.addFeature("rtc");
@@ -143,4 +147,23 @@ bool Rtc::update_system_time()
     if (!backend)
         return false;
     return backend->update_system_time();
+}
+
+bool Rtc::action_triggered(Config *conf) {
+    uint8_t triggered = !(conf->get("mday")->asInt() == time.get("day")->asUint() || conf->get("mday")->asInt() == -1);
+    triggered += !(conf->get("wday")->asInt() == time.get("weekday")->asUint() || conf->get("wday")->asInt() == -1);
+    triggered += !(conf->get("hour")->asInt() == time.get("hour")->asUint() || conf->get("hour")->asInt() == -1);
+    triggered += !(conf->get("minute")->asInt() == time.get("minute")->asUint() || conf->get("minute")->asInt() == -1);
+
+    switch (conf->get("number")->asUint()) {
+        case 0:
+            if (triggered == 0) {
+                return true;
+            }
+            break;
+
+        default:
+            return false;
+    }
+    return false;
 }

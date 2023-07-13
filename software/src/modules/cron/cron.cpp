@@ -27,10 +27,12 @@ void Cron::pre_setup() {
             Config::Object({
                 {"trigger", Config::Object({
                     {"number", Config::Uint(0)},
-                    {"h", Config::Uint(0, 0, 2)},
-                    {"m", Config::Uint(0, 1, 60)}
+                    {"mday", Config::Int(-1, -1, 30)},
+                    {"wday", Config::Int(-1, -1, 6)},
+                    {"hour", Config::Int(-1, -1, 23)},
+                    {"minute", Config::Int(-1, -1, 59)}
                 })},
-                {"action", Config::Str("", 0, 128)}
+                {"action", Config::Uint(0)}
             })
         }, 0, 20, Config::type_id<Config::ConfObject>()
     );
@@ -46,6 +48,12 @@ void Cron::setup() {
 
     config_in_use = config;
     enabled_in_use = enabled;
+
+    register_action(0, [this]() {
+        logger.printfln("Action 0 triggered");
+    });
+
+    initialized = true;
 }
 
 void Cron::register_urls() {
@@ -53,8 +61,8 @@ void Cron::register_urls() {
     api.addPersistentConfig("cron/timed_config", &enabled, {}, 1000);
 }
 
-void Cron::register_action(String &name, ActionCb &action) {
-    action_map[name] = action;
+void Cron::register_action(uint32_t ident, ActionCb action) {
+    action_map[ident] = action;
 }
 
 void Cron::register_trigger(uint32_t number) {
@@ -63,7 +71,12 @@ void Cron::register_trigger(uint32_t number) {
 
 void Cron::trigger_action(ICronModule *module, uint32_t number) {
     for (auto it = config.begin(); it != config.end(); it++) {
-        if ((*it).get("trigger")->get("number")->asUint() == number && module->action_triggered((Config*)(*it).get("trigger")))
-            action_map[(*it).get("action")->asString()]();
+        if ((*it).get("trigger")->get("number")->asUint() == number && module->action_triggered((Config*)(*it).get("trigger"))) {
+            uint32_t action_ident = (*it).get("action")->asUint();
+            if (action_map.find(action_ident) != action_map.end())
+                action_map[action_ident]();
+            else
+                logger.printfln("There is no action with ident-nr %u!", action_ident);
+        }
     }
 }
