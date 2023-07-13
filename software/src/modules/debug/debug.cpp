@@ -91,12 +91,13 @@ void Debug::register_urls()
             if (path.length() > 1) {
                 int idx = path.lastIndexOf('/');
                 String up = "<a href=\"/debug/fs" + path.substring(0, static_cast<unsigned int>(idx + 1)) + "\">..</a><br>";
+
                 request.sendChunk(up.c_str(), static_cast<ssize_t>(up.length()));
             }
 
             File file = f.openNextFile();
             while(file) {
-                String s = "<a href=\"/debug/fs" + String(file.path()) + "\">"+ file.name() +"</a><br>";
+                String s = "<a href=\"/debug/fs" + String(file.path()) + "\">"+ file.name() +"</a><button type=\"button\" onclick=\"fetch('/debug/fs" + String(file.path()) + "', {method: 'DELETE'})\">Delete</button><br>";
                 request.sendChunk(s.c_str(), static_cast<ssize_t>(s.length()));
                 file = f.openNextFile();
             }
