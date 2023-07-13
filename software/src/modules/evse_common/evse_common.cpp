@@ -252,7 +252,7 @@ void EvseCommon::setup() {
 bool EvseCommon::action_triggered(Config *config) {
     Config *cfg = (Config*)config->get();
     switch (config->getTag() - 1) {
-        case 1:
+        case CRON_TRIGGER_IEC_CHANGE:
                 if (cfg->get("iec61851_state")->asUint() == state.get("iec61851_state")->asUint())
                     return true;
             break;
@@ -529,7 +529,7 @@ void EvseCommon::register_urls() {
         static uint32_t last_state = 0;
         uint32_t state_now = cfg->get("iec61851_state")->asUint();
         if (last_state != state_now) {
-            cron.trigger_action(this, 1);
+            cron.trigger_action(this, CRON_TRIGGER_IEC_CHANGE);
             last_state = state_now;
         }
     });

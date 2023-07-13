@@ -101,7 +101,7 @@ void Rtc::register_backend(IRtcBackend *_backend)
         time.get("weekday")->updateUint(tm.tm_wday);
 
         if (last_minute < tm.tm_min)
-            cron.trigger_action(this, 0);
+            cron.trigger_action(this, CRON_TRIGGER_CRON);
     }, 0, 200);
 
     api.addFeature("rtc");
@@ -157,7 +157,7 @@ bool Rtc::action_triggered(Config *conf) {
     triggered += !(cfg->get("minute")->asInt() == time.get("minute")->asUint() || cfg->get("minute")->asInt() == -1);
 
     switch (conf->getTag() - 1) {
-        case 0:
+        case CRON_TRIGGER_CRON:
             if (triggered == 0) {
                 return true;
             }

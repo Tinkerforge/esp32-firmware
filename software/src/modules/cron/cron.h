@@ -24,6 +24,12 @@
 #include <map>
 #include <vector>
 
+#define CRON_TRIGGER_CRON 0
+#define CRON_TRIGGER_IEC_CHANGE 1
+
+#define CRON_ACTION_PRINT 0
+#define CRON_ACTION_MQTT 1
+
 class ICronModule {
 public:
     virtual bool action_triggered(Config *config) = 0;
