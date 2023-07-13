@@ -67,9 +67,9 @@ struct ConfObjectSlot {
 
 struct ConfUnionSlot {
     uint8_t tag = 0;
-    uint8_t tag_max = 0;
+    uint8_t prototypes_len = 0;
     Config val;
-    const Config * const *prototypes = nullptr;
+    const ConfUnionPrototype * prototypes = nullptr;
 };
 
 #define UINT_SLOTS 512
@@ -189,10 +189,7 @@ struct default_validator {
     }
 
     String operator()(const Config::ConfUnion &x) const {
-        const auto tag = x.getSlot()->tag;
-        const auto tag_max = x.getSlot()->tag_max;
-        if (tag >= tag_max)
-            return String("Union had tag ") + tag + ", but maximun allowed tag is " + tag_max;
+        // Tag match is already checked in from_json.
 
         return Config::apply_visitor(default_validator{}, x.getVal()->value);
     }
@@ -324,8 +321,8 @@ struct string_length_visitor {
 
     size_t operator()(const Config::ConfUnion &x) {
         size_t max_len = Config::apply_visitor(string_length_visitor{}, x.getVal()->value);
-        for (size_t i = 0; i < as_const(x).getSlot()->tag_max; ++i) {
-            max_len = std::max(max_len, Config::apply_visitor(string_length_visitor{}, as_const(x).getSlot()->prototypes[i]->value));
+        for (size_t i = 0; i < as_const(x).getSlot()->prototypes_len; ++i) {
+            max_len = std::max(max_len, Config::apply_visitor(string_length_visitor{}, as_const(x).getSlot()->prototypes[i].config.value));
         }
         return max_len + 6; // [255,]
     }
@@ -374,8 +371,8 @@ struct json_length_visitor {
 
     size_t operator()(const Config::ConfUnion &x) {
         size_t max_len = Config::apply_visitor(json_length_visitor{zero_copy}, x.getVal()->value);
-        for (size_t i = 0; i < as_const(x).getSlot()->tag_max; ++i) {
-            max_len = std::max(max_len, Config::apply_visitor(json_length_visitor{zero_copy}, as_const(x).getSlot()->prototypes[i]->value));
+        for (size_t i = 0; i < as_const(x).getSlot()->prototypes_len; ++i) {
+            max_len = std::max(max_len, Config::apply_visitor(json_length_visitor{zero_copy}, as_const(x).getSlot()->prototypes[i].config.value));
         }
         return max_len + JSON_ARRAY_SIZE(2);
     }
@@ -565,11 +562,8 @@ struct from_json {
 
 
         if (new_tag != x.getTag()) {
-            if (new_tag >= as_const(x).getSlot()->tag_max)
-                return "[0] Union tag too high.";
-
-            x.setTag(new_tag);
-            *x.getVal() = *as_const(x).getSlot()->prototypes[new_tag];
+            if (!x.changeUnionVariant(new_tag))
+                return "[0] Unknown union tag";
         }
 
         return Config::apply_visitor(from_json{arr[1], force_same_keys, permit_null_updates, false}, x.getVal()->value);
@@ -710,11 +704,8 @@ struct from_update {
 
         const Config::ConfUpdateUnion *un = update->get<Config::ConfUpdateUnion>();
 
-        if (un->tag > as_const(x).getSlot()->tag_max)
-            return "ConfUpdate union tag too high";
-
-        if (un->tag != as_const(x).getSlot()->tag_max) {
-            *x.getVal() = *as_const(x).getSlot()->prototypes[un->tag];
+        if (un->tag != as_const(x).getSlot()->tag) {
+            x.changeUnionVariant(un->tag);
         }
 
         return Config::apply_visitor(from_update{&un->value}, x.getVal()->value);
@@ -841,7 +832,18 @@ bool Config::ConfUnion::slotEmpty(size_t i) {
     return union_buf[i].prototypes == nullptr;
 }
 
-void Config::ConfUnion::setTag(uint8_t tag) { union_buf[idx].tag = tag; }
+bool Config::ConfUnion::changeUnionVariant(uint8_t tag) {
+    auto &slot = union_buf[idx];
+    for(int i = 0; i < slot.prototypes_len; ++i) {
+        if (slot.prototypes[i].tag == tag) {
+            union_buf[idx].tag = tag;
+            slot.val = slot.prototypes[i].config;
+            return true;
+        }
+    }
+
+    return false;
+}
 uint8_t Config::ConfUnion::getTag() const { return union_buf[idx].tag; }
 
 Config* Config::ConfUnion::getVal() { return &union_buf[idx].val; }
@@ -850,13 +852,13 @@ const Config* Config::ConfUnion::getVal() const { return &union_buf[idx].val; }
 const Config::ConfUnion::Slot* Config::ConfUnion::getSlot() const { return &union_buf[idx]; }
 Config::ConfUnion::Slot* Config::ConfUnion::getSlot() { return &union_buf[idx]; }
 
-Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t tag_max, const Config * const *prototypes)
+Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_len, const ConfUnionPrototype prototypes[])
 {
     idx = nextSlot<Config::ConfUnion>(union_buf, union_buf_size);
 
     this->getSlot()->val = val;
     this->getSlot()->tag = tag;
-    this->getSlot()->tag_max = tag_max;
+    this->getSlot()->prototypes_len = prototypes_len;
     this->getSlot()->prototypes = prototypes;
 }
 
@@ -878,7 +880,7 @@ Config::ConfUnion::~ConfUnion()
 {
     this->getSlot()->val = nullconf;
     this->getSlot()->tag = 0;
-    this->getSlot()->tag_max = 0;
+    this->getSlot()->prototypes_len = 0;
     this->getSlot()->prototypes = nullptr;
 }
 
@@ -1278,7 +1280,7 @@ Config Config::Object(std::initializer_list<std::pair<String, Config>> obj)
     return Config{ConfObject{obj}};
 }
 
-Config Config::Union(Config value, uint8_t tag, const Config * const *prototypes, uint8_t prototypes_len)
+Config Config::Union(Config value, uint8_t tag, const ConfUnionPrototype prototypes[], uint8_t prototypes_len)
 {
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");

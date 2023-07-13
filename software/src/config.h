@@ -42,6 +42,8 @@ struct ConfArraySlot;
 struct ConfObjectSlot;
 struct ConfUnionSlot;
 
+struct ConfUnionPrototype;
+
 struct Config {
     struct ConfString {
         using Slot = ConfStringSlot;
@@ -192,13 +194,13 @@ struct Config {
         static constexpr const char *variantName = "ConfUnion";
 
         uint8_t getTag() const;
-        void setTag(uint8_t tag);
+        bool changeUnionVariant(uint8_t tag);
 
         Config *getVal();
         const Config *getVal() const;
         const Slot *getSlot() const;
 
-        ConfUnion(const Config &val, uint8_t tag, uint8_t tag_max, const Config * const *prototypes);
+        ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_len, const ConfUnionPrototype prototypes[]);
         ConfUnion(const ConfUnion &cpy);
         ~ConfUnion();
 
@@ -520,7 +522,7 @@ struct Config {
 
     static Config Object(std::initializer_list<std::pair<String, Config>> obj);
 
-    static Config Union(Config value, uint8_t tag, const Config * const *prototypes, uint8_t prototypes_len);
+    static Config Union(Config value, uint8_t tag, const ConfUnionPrototype prototypes[], uint8_t prototypes_len);
 
     static ConfigRoot *Null();
 
@@ -890,4 +892,9 @@ public:
 private:
     template<typename T>
     String update_from_visitor(T visitor);
+};
+
+struct ConfUnionPrototype {
+    uint8_t tag;
+    const Config config;
 };
