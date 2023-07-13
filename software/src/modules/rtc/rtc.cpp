@@ -150,12 +150,13 @@ bool Rtc::update_system_time()
 }
 
 bool Rtc::action_triggered(Config *conf) {
-    uint8_t triggered = !(conf->get("mday")->asInt() == time.get("day")->asUint() || conf->get("mday")->asInt() == -1);
-    triggered += !(conf->get("wday")->asInt() == time.get("weekday")->asUint() || conf->get("wday")->asInt() == -1);
-    triggered += !(conf->get("hour")->asInt() == time.get("hour")->asUint() || conf->get("hour")->asInt() == -1);
-    triggered += !(conf->get("minute")->asInt() == time.get("minute")->asUint() || conf->get("minute")->asInt() == -1);
+    Config *cfg = (Config*)conf->get();
+    uint8_t triggered = !(cfg->get("mday")->asInt() == time.get("day")->asUint() || cfg->get("mday")->asInt() == -1);
+    triggered += !(cfg->get("wday")->asInt() == time.get("weekday")->asUint() || cfg->get("wday")->asInt() == -1);
+    triggered += !(cfg->get("hour")->asInt() == time.get("hour")->asUint() || cfg->get("hour")->asInt() == -1);
+    triggered += !(cfg->get("minute")->asInt() == time.get("minute")->asUint() || cfg->get("minute")->asInt() == -1);
 
-    switch (conf->get("number")->asUint()) {
+    switch (conf->getTag() - 1) {
         case 0:
             if (triggered == 0) {
                 return true;

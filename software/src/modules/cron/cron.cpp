@@ -21,36 +21,22 @@
 #include "api.h"
 
 void Cron::pre_setup() {
-    config = Config::Array(
-        {},
-        new Config{
-            Config::Object({
-                {"trigger", Config::Object({
-                    {"number", Config::Uint(0)},
-                    {"mday", Config::Int(-1, -1, 30)},
-                    {"wday", Config::Int(-1, -1, 6)},
-                    {"hour", Config::Int(-1, -1, 23)},
-                    {"minute", Config::Int(-1, -1, 59)}
-                })},
-                {"action", Config::Uint(0)}
-            })
-        }, 0, 20, Config::type_id<Config::ConfObject>()
-    );
-
     Config trigger_prototype = Config::Union(
                     *Config::Null(),
                     0,
-                    new Config*[2] {
+                    new Config*[3] {
                         Config::Null(),
                         new Config(Config::Object({
-                            {"ident-no", Config::Uint(0)},
                             {"mday", Config::Int(-1, -1, 30)},
                             {"wday", Config::Int(-1, -1, 6)},
                             {"hour", Config::Int(-1, -1, 23)},
                             {"minute", Config::Int(-1, -1, 59)}
+                        })),
+                        new Config(Config::Object({
+                            {"iec61851_state", Config::Uint(0, 0, 4)}
                         }))
                     },
-                    2);
+                    3);
 
     Config action_prototype = Config::Union(
                     *Config::Null(),
@@ -59,7 +45,7 @@ void Cron::pre_setup() {
                         Config::Null(),
                         new Config(Config::Object({
                             {"message", Config::Str("", 0, 32)}
-                        }))
+                        })),
                     },
                     2);
 
@@ -84,8 +70,8 @@ void Cron::setup() {
     config_in_use = config;
     enabled_in_use = enabled;
 
-    register_action(0, [this]() {
-        logger.printfln("Action 0 triggered");
+    register_action(0, [this](Config *cfg) {
+        logger.printfln("Got message: %s", cfg->get("message")->asString().c_str());
     });
 
     initialized = true;
@@ -106,10 +92,10 @@ void Cron::register_trigger(uint32_t number) {
 
 void Cron::trigger_action(ICronModule *module, uint32_t number) {
     for (auto it = config.begin(); it != config.end(); it++) {
-        if ((*it).get("trigger")->get() == number && module->action_triggered((Config*)(*it).get("trigger"))) {
-            uint32_t action_ident = (*it).get("action")->asUint();
+        if ((*it).get("trigger")->getTag() - 1 == number && module->action_triggered((Config*)(*it).get("trigger"))) {
+            uint32_t action_ident = (*it).get("action")->getTag() - 1;
             if (action_map.find(action_ident) != action_map.end())
-                action_map[action_ident]();
+                action_map[action_ident]((Config *)(*it).get("action")->get());
             else
                 logger.printfln("There is no action with ident-nr %u!", action_ident);
         }

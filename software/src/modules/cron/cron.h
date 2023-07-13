@@ -30,9 +30,9 @@ public:
 };
 
 
-typedef std::function<void()>       ActionCb;
-typedef std::map<uint32_t, ActionCb>  ActionMap;
-typedef std::vector<String>         EventVec;
+typedef std::function<void(Config *)>   ActionCb;
+typedef std::map<uint32_t, ActionCb>    ActionMap;
+typedef std::vector<String>             EventVec;
 
 class Cron : public IModule {
     ConfigRoot config;

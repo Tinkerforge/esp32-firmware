@@ -232,7 +232,6 @@ void EvseCommon::apply_defaults()
     }
 }
 
-
 void EvseCommon::setup() {
     setup_evse();
 
@@ -248,6 +247,20 @@ void EvseCommon::setup() {
 
     backend->post_setup();
     initialized = true;
+}
+
+bool EvseCommon::action_triggered(Config *config) {
+    Config *cfg = (Config*)config->get();
+    switch (config->getTag() - 1) {
+        case 1:
+                if (cfg->get("iec61851_state")->asUint() == state.get("iec61851_state")->asUint())
+                    return true;
+            break;
+
+        default:
+            return false;
+    }
+    return false;
 }
 
 void EvseCommon::setup_evse()
@@ -509,6 +522,18 @@ void EvseCommon::register_urls() {
     }, false);
 
     backend->post_register_urls();
+
+    event.registerEvent("evse/state", {}, [this](Config *cfg) {
+
+        // we need this since not only iec state changes trigger this api event.
+        static uint32_t last_state = 0;
+        uint32_t state_now = cfg->get("iec61851_state")->asUint();
+        if (last_state != state_now) {
+            cron.trigger_action(this, 1);
+            last_state = state_now;
+        }
+    });
+
 }
 
 void EvseCommon::loop() {
