@@ -580,12 +580,22 @@ struct Config {
             const Config *conf;
     };
 
+    // for ConfUnion
+    Wrap get();
+
+    // for ConfObject
     Wrap get(const String &s);
 
+    // for ConfArray
     Wrap get(uint16_t i);
 
+    // for ConfUnion
+    const ConstWrap get() const;
+
+    // for ConfObject
     const ConstWrap get(const String &s) const;
 
+    // for ConfArray
     const ConstWrap get(uint16_t i) const;
 
     Wrap add();
@@ -664,6 +674,15 @@ struct Config {
             return std::vector<Config>::iterator();
         }
         return this->asArray().end();
+    }
+
+    uint8_t getTag() const {
+        if (!this->is<Config::ConfUnion>()) {
+            logger.printfln("Tried to get tag of a node that is not a union!");
+            delay(100);
+            return -1;
+        }
+        return this->get<ConfUnion>()->getTag();
     }
 
     template<typename ConfigT>

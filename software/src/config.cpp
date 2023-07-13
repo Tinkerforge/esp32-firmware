@@ -1324,6 +1324,30 @@ Config Config::Int32(int32_t i)
     return Config::Int(i, std::numeric_limits<int32_t>::lowest(), std::numeric_limits<int32_t>::max());
 }
 
+Config::Wrap Config::get() {
+    if (!this->is<Config::ConfUnion>()) {
+        logger.printfln("Config is not a union!");
+        delay(100);
+        return Wrap(nullptr);
+    }
+    Wrap wrap(value.val.un.getVal());
+
+    return wrap;
+}
+
+const Config::ConstWrap Config::get() const {
+    if (!this->is<Config::ConfUnion>()) {
+        logger.printfln("Config is not a union!");
+        delay(100);
+        return ConstWrap(nullptr);
+    }
+    ConstWrap wrap(value.val.un.getVal());
+
+    return wrap;
+}
+
+
+
 Config::Wrap Config::get(const String &s)
 {
 
