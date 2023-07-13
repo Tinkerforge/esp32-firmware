@@ -1337,7 +1337,7 @@ Config::Wrap Config::get(const String &s)
     return wrap;
 }
 
- Config::Wrap Config::get(uint16_t i)
+Config::Wrap Config::get(uint16_t i)
 {
 
     if (!this->is<Config::ConfArray>()) {
