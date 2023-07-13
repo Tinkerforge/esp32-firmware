@@ -483,9 +483,13 @@ static void check_waiting_for_start(Config *ignored) {
     (void) ignored;
 
     static Config *iec_state = (Config *) api.getState("evse/state", false)->get("iec61851_state");
+    static Config *user_slot_active = (Config *) api.getState("evse/slots", false)->get(CHARGING_SLOT_USER)->get("active");
     static Config *user_slot_current = (Config *) api.getState("evse/slots", false)->get(CHARGING_SLOT_USER)->get("max_current");
 
-    if (iec_state == nullptr || user_slot_current == nullptr)
+    if (iec_state == nullptr || user_slot_active == nullptr || user_slot_current == nullptr)
+        return;
+
+    if (!user_slot_active->asBool())
         return;
 
     bool waiting_for_start = (iec_state->asUint() == 1)
