@@ -61,7 +61,9 @@ export function update<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T
 }
 
 export function get<T extends keyof ConfigMap>(topic: T) : Readonly<ConfigMap[T]> {
-    return api_cache[topic];
+    // This should be unnecessary, but putting a tuple in a DeepSignal seems to drop
+    // the tuple's type information. Typescript then thinks the tuple is an array.
+    return api_cache[topic] as any;
 }
 
 export function is_modified<T extends keyof ConfigMap>(topic: T): boolean {
