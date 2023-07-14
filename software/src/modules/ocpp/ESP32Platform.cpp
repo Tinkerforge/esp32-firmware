@@ -25,6 +25,17 @@ static bool feature_meter_phases = false;
 void(*recv_cb)(char *, size_t, void *) = nullptr;
 void *recv_cb_userdata = nullptr;
 
+// For some reason it can happen with some OCPP servers, that a connection
+// is closed (via TLS) immediately after the establishment. This happens
+// so fast that the ESP websocket client does not create a disconnected
+// event. In this case, we receive the connected event, but
+// esp_websocket_client_is_connected returns false forever.
+
+// To fix this, explicitly disconnect and reconnect if we've seen the
+// connected event, but esp_websocket_client_is_connected returns false.
+
+// This can race on a "normal" connection close, but in this case calling
+// disconnect again should do nothing.
 static bool connected_by_event = false;
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
@@ -136,6 +147,10 @@ void platform_destroy(void *ctx) {
 bool platform_ws_connected(void *ctx)
 {
     bool is_connected = esp_websocket_client_is_connected(client);
+
+    // Reset connected_by_event if we now see that the client is connected.
+    if (is_connected)
+        connected_by_event = false;
 
     if (connected_by_event && !is_connected) {
         logger.printfln("OCPP was disconnected immediately after connection was established! Reconnecting in 10 seconds.");
