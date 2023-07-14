@@ -30,10 +30,10 @@ void *recv_cb_userdata = nullptr;
 // so fast that the ESP websocket client does not create a disconnected
 // event. In this case, we receive the connected event, but
 // esp_websocket_client_is_connected returns false forever.
-
+//
 // To fix this, explicitly disconnect and reconnect if we've seen the
 // connected event, but esp_websocket_client_is_connected returns false.
-
+//
 // This can race on a "normal" connection close, but in this case calling
 // disconnect again should do nothing.
 static bool connected_by_event = false;
