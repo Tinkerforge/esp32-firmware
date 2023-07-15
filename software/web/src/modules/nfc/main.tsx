@@ -85,7 +85,6 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
     }
 
     render(props: {}, state: NfcConfig & NfcState) {
-        console.log("nfc render 1");
         if (!util.render_allowed() || !API.hasFeature("nfc"))
             return <></>
 
@@ -118,8 +117,6 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
 
                 unauth_seen_tags.push(seen_tags[i]);
             }
-
-        console.log("nfc render 2");
 
         return (
             <SubPage>
