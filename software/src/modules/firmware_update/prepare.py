@@ -17,7 +17,6 @@ if 'software' not in sys.modules:
     create_software_module()
 
 from software import util
-import gzip
 
 with open('recovery.html', 'rb') as f:
-    util.embed_data_with_digest(f.read(), '.', 'recovery_html', 'char', data_filter=gzip.compress)
+    util.embed_data_with_digest(f.read(), '.', 'recovery_html', 'char', data_filter=util.gzip_compress)

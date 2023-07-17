@@ -16,7 +16,6 @@ import time
 import re
 import json
 import glob
-import gzip
 from base64 import b64encode
 from zlib import crc32
 import util
@@ -916,7 +915,7 @@ def main():
         with open('web/build/index.standalone.html', 'wb') as f:
             f.write(html_bytes)
 
-        util.embed_data(gzip.compress(html_bytes), 'src', 'index_html', 'char')
+        util.embed_data(util.gzip_compress(html_bytes), 'src', 'index_html', 'char')
         util.store_digest(index_html_digest, 'src', 'index_html', env=env)
 
     print("Checking HTML ID usage")

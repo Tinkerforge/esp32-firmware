@@ -4,7 +4,6 @@ import io
 import re
 import hashlib
 from zipfile import ZipFile
-import json
 import re
 import binascii
 import struct
@@ -197,6 +196,17 @@ def embed_bricklet_firmware_bin(env=None):
         fw = patch_beta_firmware(fw, int(beta_version))
 
     embed_data_with_digest(fw, '.', firmware_name + '_bricklet_firmware_bin', 'uint8_t', env=env)
+
+def gzip_compress(data):
+    from shutil import which
+    sevenz_path = which('7z') or which('7za')
+    if sevenz_path:
+        from subprocess import run
+        result = run([sevenz_path, 'a', '-tgzip', '-mx=9', '-mfb=258', '-mpass=5', '-an', '-si', '-so'], input=data, capture_output=True)
+        if result.returncode == 0:
+            return result.stdout
+    from gzip import compress
+    return compress(data)
 
 def merge(left, right, path=[]):
     for key in right:
