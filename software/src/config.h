@@ -896,5 +896,5 @@ private:
 
 struct ConfUnionPrototype {
     uint8_t tag;
-    const Config config;
+    Config config;
 };
