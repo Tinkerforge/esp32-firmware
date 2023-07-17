@@ -1649,6 +1649,7 @@ void config_pre_init()
     string_buf = new Config::ConfString::Slot[STRING_SLOTS];
     array_buf = new Config::ConfArray::Slot[ARRAY_SLOTS];
     object_buf = new Config::ConfObject::Slot[OBJECT_SLOTS];
+    union_buf = new Config::ConfUnion::Slot[UNION_SLOTS];
 
     uint_buf_size = UINT_SLOTS;
     int_buf_size = INT_SLOTS;
@@ -1656,6 +1657,7 @@ void config_pre_init()
     string_buf_size = STRING_SLOTS;
     array_buf_size = ARRAY_SLOTS;
     object_buf_size = OBJECT_SLOTS;
+    union_buf_size = UNION_SLOTS;
 }
 
 template<typename T>
@@ -1681,6 +1683,7 @@ void config_post_setup() {
     shrinkToFit<Config::ConfString>(string_buf, string_buf_size);
     shrinkToFit<Config::ConfArray>(array_buf, array_buf_size);
     shrinkToFit<Config::ConfObject>(object_buf, object_buf_size);
+    shrinkToFit<Config::ConfUnion>(union_buf, union_buf_size);
 }
 
 Config::ConstWrap::ConstWrap(const Config *_conf)
