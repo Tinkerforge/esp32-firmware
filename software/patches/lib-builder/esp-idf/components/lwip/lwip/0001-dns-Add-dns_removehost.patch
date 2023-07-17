@@ -12,21 +12,6 @@ diff --git a/src/core/dns.c b/src/core/dns.c
 index bd02aa83..5a0ad78e 100644
 --- a/src/core/dns.c
 +++ b/src/core/dns.c
-@@ -389,11 +389,11 @@ dns_setserver(u8_t numdns, const ip_addr_t *dnsserver)
- }
-
- #if ESP_DNS
--void
-+void
- dns_clear_servers(bool keep_fallback)
- {
--  u8_t numdns = 0;
--
-+  u8_t numdns = 0;
-+
-   for (numdns = 0; numdns < DNS_MAX_SERVERS; numdns ++) {
-     if (keep_fallback && numdns == DNS_FALLBACK_SERVER_INDEX) {
-       continue;
 @@ -408,6 +408,22 @@ dns_clear_cache(void)
  {
    memset(dns_table, 0, sizeof(struct dns_table_entry) * DNS_TABLE_SIZE);
