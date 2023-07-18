@@ -140,6 +140,131 @@ def write_firmware_info(display_name, major, minor, patch, build_time):
     with open(os.path.join(env.subst("$BUILD_DIR"), "firmware_info.bin"), "wb") as f:
         f.write(buf)
 
+def generate_module_dependencies_header(info_path, header_path, backend_module, backend_modules, all_mods_upper):
+    if backend_module:
+        module_name = backend_module.space
+    else:
+        module_name = f'[{info_path}]'
+
+    has_dependencies = False
+
+    if os.path.exists(info_path):
+        config = configparser.ConfigParser()
+        config.read(info_path)
+        if config.has_section('Dependencies'):
+            has_dependencies = True
+            required_mods = []
+            available_optional_mods = []
+            all_optional_mods_upper = []
+
+            allow_nonexist = config['Dependencies'].getboolean('AllowNonexist', False)
+
+            requires = config['Dependencies'].get('Requires', "")
+            requires = requires.splitlines()
+            if backend_module:
+                requires.append(backend_module.space)
+            old_len = len(requires)
+            requires = list(dict.fromkeys(requires))
+            if len(requires) != old_len:
+                print(f"List of required modules for module '{module_name}' contains duplicates.", file=sys.stderr)
+            for req_name in requires:
+                req_module, _ = find_backend_module_space(backend_modules, req_name)
+                if not req_module:
+                    if '_'.join(req_name.split(' ')).upper() in all_mods_upper:
+                        print(f"Error: Module '{module_name}' requires module '{req_name}', which is available but not enabled for this environment.", file=sys.stderr)
+                    else:
+                        print(f"Error: Module '{module_name}' requires module '{req_name}', which does not exist.", file=sys.stderr)
+                    sys.exit(1)
+                required_mods.append(req_module)
+
+            optional = config['Dependencies'].get('Optional')
+            if optional is not None:
+                optional = optional.splitlines()
+                old_len = len(optional)
+                optional = list(dict.fromkeys(optional))
+                if len(optional) != old_len:
+                    print(f"List of optional modules for module '{module_name}' contains duplicates.", file=sys.stderr)
+                for opt_name in optional:
+                    opt_name_upper = '_'.join(opt_name.split(' ')).upper()
+                    opt_module, _ = find_backend_module_space(backend_modules, opt_name)
+                    if not opt_module:
+                        if not allow_nonexist and opt_name_upper not in all_mods_upper:
+                            print(f"Error: Optional module '{opt_name}' wanted by module '{module_name}' does not exist.", file=sys.stderr)
+                            sys.exit(1)
+                    else:
+                        if opt_module in required_mods:
+                            print(f"Error: Optional module '{opt_name}' wanted by module '{module_name}' is already listed as required.", file=sys.stderr)
+                            sys.exit(1)
+                        available_optional_mods.append(opt_module)
+                    all_optional_mods_upper.append(opt_name_upper)
+
+            if backend_module:
+                cur_module_index = backend_modules.index(backend_module)
+
+            after = config['Dependencies'].get('After')
+            if after is not None:
+                after = after.splitlines()
+                old_len = len(after)
+                after = list(dict.fromkeys(after))
+                if len(after) != old_len:
+                    print(f"List of 'After' modules for module '{module_name}' contains duplicates.", file=sys.stderr)
+                for after_name in after:
+                    _, index = find_backend_module_space(backend_modules, after_name)
+                    if index < 0:
+                        if not allow_nonexist and '_'.join(after_name.split(' ')).upper() not in all_mods_upper:
+                            print(f"Error: Module '{after_name}' in 'After' list of module '{module_name}' does not exist.", file=sys.stderr)
+                            sys.exit(1)
+                    elif index > cur_module_index:
+                        print(f"Error: Module '{module_name}' must be loaded after module '{after_name}'.", file=sys.stderr)
+                        sys.exit(1)
+
+            before = config['Dependencies'].get('Before')
+            if before is not None:
+                before = before.splitlines()
+                old_len = len(before)
+                before = list(dict.fromkeys(before))
+                if len(before) != old_len:
+                    print(f"List of 'Before' modules for module '{module_name}' contains duplicates.", file=sys.stderr)
+                for before_name in before:
+                    _, index = find_backend_module_space(backend_modules, before_name)
+                    if index < 0:
+                        if not allow_nonexist and '_'.join(before_name.split(' ')).upper() not in all_mods_upper:
+                            print(f"Error: Module '{before_name}' in 'Before' list of module '{module_name}' does not exist.", file=sys.stderr)
+                            sys.exit(1)
+                    elif index < cur_module_index:
+                        print(f"Error: Module '{module_name}' must be loaded before module '{before_name}'.", file=sys.stderr)
+                        sys.exit(1)
+
+            dep_mods = required_mods + available_optional_mods
+            backend_mods_upper = [x.upper for x in backend_modules]
+
+            defines  = ''.join(['#define MODULE_{}_AVAILABLE() {}\n'.format(x, "1" if x in backend_mods_upper else "0") for x in all_optional_mods_upper])
+            includes = ''.join([f'#include "modules/{x.under}/{x.under}.h"\n' for x in dep_mods])
+            decls    = ''.join([f'extern {x.camel} {x.under};\n' for x in dep_mods])
+
+            header_content  = '// WARNING: This file is generated.\n\n'
+            header_content += '#pragma once\n'
+
+            if defines:
+                header_content += '\n' + defines
+            if includes:
+                header_content += '\n' + includes
+            if decls:
+                header_content += '\n' + decls
+
+            if config['Dependencies'].getboolean('ModuleList', False):
+                header_content += '\n'
+                header_content += '#include "config.h"\n'
+                header_content += 'extern Config modules;\n'
+
+            util.write_file_if_different(header_path, header_content)
+
+    if not has_dependencies:
+        try:
+            os.remove(header_path)
+        except FileNotFoundError:
+            pass
+
 def update_translation(translation, update, override=False, parent_key=None):
     if parent_key == None:
         parent_key = []
@@ -233,6 +358,12 @@ def find_backend_module_space(backend_modules, name_space):
         if backend_module.space == name_space:
             return backend_module, index
         index += 1
+
+    name_upper = '_'.join(name_space.split(' ')).upper()
+    for backend_module in backend_modules:
+        if backend_module.upper == name_upper:
+            print(f"Error: Encountered incorrectly capitalized backend module '{name_space}'", file=sys.stderr)
+            sys.exit(1)
 
     return None, -1
 
@@ -479,109 +610,12 @@ def main():
     })
 
     print("Generating module_dependencies.h from module.ini", flush=True)
+    generate_module_dependencies_header('src/web_dependencies.ini', 'src/web_dependencies.h', None, backend_modules, all_mods)
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
         info_path = os.path.join(mod_path, 'module.ini')
         header_path = os.path.join(mod_path, 'module_dependencies.h')
-
-        if os.path.exists(info_path):
-            config = configparser.ConfigParser()
-            config.read(info_path)
-            if config.has_section('Dependencies'):
-                required_mods = []
-                available_optional_mods = []
-                all_optional_mods_upper = []
-
-                allow_nonexist = config['Dependencies'].getboolean('AllowNonexist', False)
-
-                requires = config['Dependencies'].get('Requires', "")
-                requires = requires.splitlines()
-                requires.append(backend_module.space)
-                old_len = len(requires)
-                requires = list(dict.fromkeys(requires))
-                if len(requires) != old_len:
-                    print(f"List of required modules for module '{backend_module.space}' contains duplicates.", file=sys.stderr)
-                for req_name in requires:
-                    req_module, _ = find_backend_module_space(backend_modules, req_name)
-                    if not req_module:
-                        if '_'.join(req_name.split(' ')).upper() in all_mods:
-                            print(f"Module '{backend_module.space}' requires module '{req_name}', which is available but not enabled for this environment.", file=sys.stderr)
-                        else:
-                            print(f"Module '{backend_module.space}' requires module '{req_name}', which does not exist.", file=sys.stderr)
-                        exit(1)
-                    required_mods.append(req_module)
-
-                optional = config['Dependencies'].get('Optional')
-                if optional is not None:
-                    optional = optional.splitlines()
-                    old_len = len(optional)
-                    optional = list(dict.fromkeys(optional))
-                    if len(optional) != old_len:
-                        print(f"List of optional modules for module '{backend_module.space}' contains duplicates.", file=sys.stderr)
-                    for opt_name in optional:
-                        opt_name_upper = '_'.join(opt_name.split(' ')).upper()
-                        opt_module, _ = find_backend_module_space(backend_modules, opt_name)
-                        if not opt_module:
-                            if not allow_nonexist and opt_name_upper not in all_mods:
-                                print(f"Optional module '{opt_name}' wanted by module '{backend_module.space}' does not exist.", file=sys.stderr)
-                                exit(1)
-                        else:
-                            if opt_module in required_mods:
-                                print(f"Optional module '{opt_name}' wanted by module '{backend_module.space}' is already listed as required.", file=sys.stderr)
-                                exit(1)
-                            available_optional_mods.append(opt_module)
-                        all_optional_mods_upper.append(opt_name_upper)
-
-                cur_module_index = backend_modules.index(backend_module)
-
-                after = config['Dependencies'].get('After')
-                if after is not None:
-                    after = after.splitlines()
-                    old_len = len(after)
-                    after = list(dict.fromkeys(after))
-                    if len(after) != old_len:
-                        print(f"List of 'After' modules for module '{backend_module.space}' contains duplicates.", file=sys.stderr)
-                    for after_name in after:
-                        _, index = find_backend_module_space(backend_modules, after_name)
-                        if index < 0:
-                            if not allow_nonexist and '_'.join(after_name.split(' ')).upper() not in all_mods:
-                                print(f"Module '{after_name}' in 'After' list of module '{backend_module.space}' does not exist.", file=sys.stderr)
-                                exit(1)
-                        elif index > cur_module_index:
-                            print(f"Module '{backend_module.space}' must be loaded after module '{after_name}'.", file=sys.stderr)
-                            exit(1)
-
-                before = config['Dependencies'].get('Before')
-                if before is not None:
-                    before = before.splitlines()
-                    old_len = len(before)
-                    before = list(dict.fromkeys(before))
-                    if len(before) != old_len:
-                        print(f"List of 'Before' modules for module '{backend_module.space}' contains duplicates.", file=sys.stderr)
-                    for before_name in before:
-                        _, index = find_backend_module_space(backend_modules, before_name)
-                        if index < 0:
-                            if not allow_nonexist and '_'.join(before_name.split(' ')).upper() not in all_mods:
-                                print(f"Module '{before_name}' in 'Before' list of module '{backend_module.space}' does not exist.", file=sys.stderr)
-                                exit(1)
-                        elif index < cur_module_index:
-                            print(f"Module '{backend_module.space}' must be loaded before module '{before_name}'.", file=sys.stderr)
-                            exit(1)
-
-                dep_mods = required_mods + available_optional_mods
-
-                header_content  = '// WARNING: This file is generated.\n\n'
-                header_content += '#pragma once\n\n'
-                header_content += ''.join(['#define MODULE_{}_AVAILABLE() {}\n'.format(x, "1" if x in backend_mods_upper else "0") for x in all_optional_mods_upper])
-                header_content += ''.join([f'#include "modules/{x.under}/{x.under}.h"\n' for x in dep_mods])
-                header_content += ''.join([f'extern {x.camel} {x.under};\n' for x in dep_mods])
-
-                if config['Dependencies'].getboolean('ModuleList', False):
-                    header_content += '\n'
-                    header_content += '#include "config.h"\n'
-                    header_content += 'extern Config modules;\n'
-
-                util.write_file_if_different(header_path, header_content)
+        generate_module_dependencies_header(info_path, header_path, backend_module, backend_modules, all_mods)
 
     # Handle frontend modules
     navbar_entries = []
@@ -897,7 +931,7 @@ def main():
             except subprocess.CalledProcessError as e:
                 if e.returncode != 42:
                     print(e, file=sys.stderr)
-                exit(1)
+                sys.exit(1)
 
         with open('web/build/main.min.css', 'r', encoding='utf-8') as f:
             css = f.read()
