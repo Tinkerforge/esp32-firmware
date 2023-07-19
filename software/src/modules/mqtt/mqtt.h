@@ -24,6 +24,13 @@
 #include "api.h"
 #include "config.h"
 
+class Mqtt;
+
+#include "module_dependencies.h"
+#if MODULE_CRON_AVAILABLE()
+ #include "modules/cron/cron.h"
+#endif
+
 enum class MqttConnectionState {
     NOT_CONFIGURED,
     NOT_CONNECTED,
@@ -43,7 +50,16 @@ struct MqttState {
     uint32_t last_send_ms;
 };
 
+struct MqttMessage {
+    String topic;
+    String payload;
+    bool retained;
+};
+
 class Mqtt final : public IAPIBackend
+#if MODULE_CRON_AVAILABLE()
+, ICronModule
+#endif
 {
 public:
     Mqtt(){}
@@ -70,6 +86,10 @@ public:
     void onMqttConnect();
     void onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain);
     void onMqttDisconnect();
+
+#if MODULE_CRON_AVAILABLE()
+    bool action_triggered(Config *config, void *data);
+#endif
 
     ConfigRoot config;
     ConfigRoot state;

@@ -69,6 +69,30 @@ void Mqtt::pre_setup()
         {"connection_end", Config::Uint32(0)},
         {"last_error", Config::Int(0)}
     });
+
+#if MODULE_CRON_AVAILABLE()
+    ConfUnionPrototype proto;
+    proto.tag = CRON_TRIGGER_MQTT;
+    proto.config = Config::Object({
+            {"topic", Config::Str("", 0, 64)},
+            {"payload", Config::Str("", 0, 64)},
+            {"retain", Config::Bool(false)}
+        });
+
+    cron.register_trigger(proto);
+
+    proto.tag = CRON_ACTION_MQTT;
+    proto.config = Config::Object({
+            {"topic", Config::Str("", 0, 64)},
+            {"payload", Config::Str("", 0, 64)},
+            {"retain", Config::Bool(false)}
+        });
+
+    cron.register_action(proto, [this](Config *cfg) {
+        logger.printfln("Publishing message to %s", cfg->get("topic")->asString().c_str());
+        publish(cfg->get("topic")->asString(), cfg->get("payload")->asString(), cfg->get("retain")->asBool());
+    });
+#endif
 }
 
 void Mqtt::subscribe_with_prefix(const String &path, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained)
@@ -262,6 +286,15 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         return;
     }
 
+#if MODULE_CRON_AVAILABLE()
+    MqttMessage msg;
+    msg.topic = String(topic).substring(0, topic_len);
+    msg.payload = String(data).substring(0, data_len);
+    msg.retained = retain;
+    if (cron.trigger_action(this, CRON_TRIGGER_MQTT, &msg))
+        return;
+#endif
+
     // Don't print error message if this packet was received because it was retained (as opposed to a newly published message)
     // The spec says:
     // It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client
@@ -407,12 +440,6 @@ void Mqtt::setup()
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
 
-#if MODULE_CRON_AVAILABLE()
-    cron.register_action(CRON_ACTION_MQTT, [this](Config *cfg) {
-        publish(cfg->get("topic")->asString(), cfg->get("payload")->asString(), cfg->get("retain")->asBool());
-    });
-#endif
-
     initialized = true;
 }
 
@@ -442,3 +469,21 @@ void Mqtt::register_events() {
             esp_mqtt_client_start(client);
         }, 20000);
 }
+
+#if MODULE_CRON_AVAILABLE()
+bool Mqtt::action_triggered(Config *config, void *data) {
+    Config *cfg = (Config*)config->get();
+    MqttMessage *msg = (MqttMessage *)data;
+    switch (config->getTag())
+    {
+    case CRON_TRIGGER_MQTT:
+        if (cfg->get("topic")->asString() == msg->topic && cfg->get("payload")->asString() == msg->payload)
+            return true;
+        break;
+
+    default:
+        break;
+    }
+    return false;
+}
+#endif
