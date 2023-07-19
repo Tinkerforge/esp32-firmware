@@ -92,9 +92,9 @@ void Cron::register_trigger(ConfUnionPrototype &proto) {
     trigger_vec.push_back(proto);
 }
 
-void Cron::trigger_action(ICronModule *module, uint8_t number) {
+void Cron::trigger_action(ICronModule *module, uint8_t number, void *data) {
     for (auto conf: config) {
-        if (conf.get("trigger")->getTag() == number && module->action_triggered((Config*)conf.get("trigger"))) {
+        if (conf.get("trigger")->getTag() == number && module->action_triggered((Config*)conf.get("trigger"), data)) {
             uint8_t action_ident = conf.get("action")->getTag();
             if (action_map.find(action_ident) != action_map.end())
                 action_map[action_ident]((Config *)conf.get("action")->get());

@@ -111,7 +111,7 @@ void Rtc::register_backend(IRtcBackend *_backend)
         time.get("weekday")->updateUint(tm.tm_wday);
 
         if (last_minute < tm.tm_min)
-            cron.trigger_action(this, CRON_TRIGGER_CRON);
+            cron.trigger_action(this, CRON_TRIGGER_CRON, 0);
     }, 0, 200);
 
     api.addFeature("rtc");
@@ -159,7 +159,7 @@ bool Rtc::update_system_time()
     return backend->update_system_time();
 }
 
-bool Rtc::action_triggered(Config *conf) {
+bool Rtc::action_triggered(Config *conf, void *data) {
     Config *cfg = (Config*)conf->get();
     uint8_t triggered = !(cfg->get("mday")->asInt() == time.get("day")->asUint() || cfg->get("mday")->asInt() == -1);
     triggered += !(cfg->get("wday")->asInt() == time.get("weekday")->asUint() || cfg->get("wday")->asInt() == -1);

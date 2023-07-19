@@ -151,7 +151,7 @@ public:
     ConfigRoot& get_low_level_state();
     bool get_management_enabled();
 
-    bool action_triggered(Config *config);
+    bool action_triggered(Config *config, void *data);
 
     void check_debug();
 

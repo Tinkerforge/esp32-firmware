@@ -60,5 +60,5 @@ public:
     timeval get_time();
     bool update_system_time();
 
-    bool action_triggered(Config *config);
+    bool action_triggered(Config *config, void *data);
 };

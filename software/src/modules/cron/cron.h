@@ -33,7 +33,7 @@
 
 class ICronModule {
 public:
-    virtual bool action_triggered(Config *config) = 0;
+    virtual bool action_triggered(Config *config, void *data) = 0;
 };
 
 
@@ -60,5 +60,5 @@ public:
     void register_action(ConfUnionPrototype &proto, ActionCb callback);
     void register_trigger(ConfUnionPrototype &proto);
 
-    void trigger_action(ICronModule *module, uint8_t number);
+    void trigger_action(ICronModule *module, uint8_t number, void *data);
 };
