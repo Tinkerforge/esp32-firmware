@@ -141,7 +141,7 @@ void Http::setup()
 
 static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cmdidx)
 {
-    CommandRegistration reg = api.commands[cmdidx];
+    CommandRegistration &reg = api.commands[cmdidx];
 
     // TODO: Use streamed parsing
     int bytes_written = req.receive(recv_buf, RECV_BUF_SIZE);
