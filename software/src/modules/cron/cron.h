@@ -60,5 +60,5 @@ public:
     void register_action(ConfUnionPrototype &proto, ActionCb callback);
     void register_trigger(ConfUnionPrototype &proto);
 
-    void trigger_action(ICronModule *module, uint8_t number, void *data);
+    bool trigger_action(ICronModule *module, uint8_t number, void *data);
 };
