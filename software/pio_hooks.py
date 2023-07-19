@@ -159,6 +159,12 @@ def generate_module_dependencies_header(info_path, header_path, backend_module, 
 
             allow_nonexist = config['Dependencies'].getboolean('AllowNonexist', False)
 
+            known_keys = set(['requires', 'optional', 'after', 'before', 'modulelist'])
+            unknown_keys = set(config['Dependencies'].keys()).difference(known_keys)
+            if len(unknown_keys) > 0:
+                print(f"Error: '{backend_module.under}/module.ini contains unknown keys {unknown_keys}  ", file=sys.stderr)
+                sys.exit(1)
+
             requires = config['Dependencies'].get('Requires', "")
             requires = requires.splitlines()
             if backend_module:
