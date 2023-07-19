@@ -75,12 +75,15 @@ public:
 class API
 {
 public:
-    API() {}
+    API();
 
     void pre_setup();
     void setup();
 
-    String callCommand(const String &path, const Config::ConfUpdate &payload);
+    // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
+    String callCommand(const CommandRegistration &reg, char *payload, size_t len);
+
+    String callCommand(const char *path, Config::ConfUpdate payload);
 
     Config *getState(const String &path, bool log_if_not_found = true);
 
@@ -114,8 +117,14 @@ public:
     ConfigRoot features;
     ConfigRoot version;
 
+    SemaphoreHandle_t commandRunning = nullptr;
+    StaticSemaphore_t cmdRunBuffer;
+    TaskHandle_t mainTaskHandle;
+
 private:
     bool already_registered(const String &path, const char *api_type);
+
+    void executeCommand(const CommandRegistration &reg, Config::ConfUpdate payload);
 };
 
 // Make global variable available everywhere because it is not declared in modules.h.

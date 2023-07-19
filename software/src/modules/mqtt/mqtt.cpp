@@ -235,13 +235,10 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             return;
         }
 
-        String error = reg.config->update_from_cstr(data, data_len);
-        if(error == "") {
-            task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
-            return;
-        }
+        String error = api.callCommand(reg, data, data_len);
 
-        logger.printfln("MQTT: Failed to update %s from MQTT payload: %s", reg.path.c_str(), error.c_str());
+        if (error != "")
+            logger.printfln("MQTT: Failed to update %s from MQTT payload: %s", reg.path.c_str(), error.c_str());
         return;
     }
 

@@ -33,8 +33,15 @@ extern TF_HAL hal;
 // Global definition here to match the declaration in api.h.
 API api;
 
+API::API() {
+    this->commandRunning = xSemaphoreCreateBinaryStatic(&this->cmdRunBuffer);
+    xSemaphoreGive(this->commandRunning);
+}
+
 void API::pre_setup()
 {
+    mainTaskHandle = xTaskGetCurrentTaskHandle();
+
     features = Config::Array(
         {},
         new Config{Config::Str("", 0, 32)},
@@ -366,20 +373,71 @@ size_t API::registerBackend(IAPIBackend *backend)
     return backendIdx;
 }
 
-String API::callCommand(const String &path, const Config::ConfUpdate &payload)
+String API::callCommand(const CommandRegistration &reg, char *payload, size_t len) {
+    if (this->mainTaskHandle == xTaskGetCurrentTaskHandle()) {
+        return "Use ConfUpdate overload of callCommand in main thread!";
+    }
+
+    if (payload == nullptr && !reg.config->is_null())
+        return "empty payload only allowed for null configs";
+
+    // It is okay to block here forever: If the main task does not execute
+    // tasks any more, we have bigger problems and the watchdog will
+    // restart soon.
+    if (!xSemaphoreTake(this->commandRunning, portMAX_DELAY)) {
+        return "Failed to get command semaphore!";
+    }
+
+    if (payload != nullptr) {
+        String error = reg.config->update_from_cstr(payload, len);
+        if(error != "") {
+            xSemaphoreGive(this->commandRunning);
+            return error;
+        }
+    }
+
+    task_scheduler.scheduleOnce([this, reg](){reg.callback(); xSemaphoreGive(this->commandRunning);}, 0);
+    return "";
+}
+
+void API::executeCommand(const CommandRegistration &reg, Config::ConfUpdate payload) {
+    // We are in the main thread, and other command callbacks are executed
+    // in the main thread, so if we block on taking the semaphore,
+    // those callbacks are never executed and we dead lock.
+    // Only take the semaphore non-blocking and if this fails,
+    // (because another command callback is enqueued or will be shortly)
+    // create a new task to push this command execution behind other command callback tasks.
+
+    if (!xSemaphoreTake(this->commandRunning, 0)) {
+        task_scheduler.scheduleOnce([this, reg, payload](){this->executeCommand(reg, payload);}, 1);
+        return;
+    }
+
+    String error = reg.config->update(&payload);
+
+    if (error != "") {
+        logger.printfln("Failed to API::callCommand %s: %s", reg.path.c_str(), error.c_str());
+        xSemaphoreGive(this->commandRunning);
+        return;
+    }
+
+    reg.callback();
+    xSemaphoreGive(this->commandRunning);
+}
+
+String API::callCommand(const char *path, Config::ConfUpdate payload)
 {
+    if (this->mainTaskHandle != xTaskGetCurrentTaskHandle()) {
+        return "Use char *, size_t overload of callCommand in non-main thread!";
+    }
+
     for (CommandRegistration &reg : commands) {
         if (reg.path != path) {
             continue;
         }
 
-        String error = reg.config->update(&payload);
-
-        if (error == "") {
-            task_scheduler.scheduleOnce([reg]() { reg.callback(); }, 0);
-        }
-
-        return error;
+        task_scheduler.scheduleOnce([this, reg, payload](){this->executeCommand(reg, payload);}, 1);
+        return "";
     }
 
     return String("Unknown command ") + path;

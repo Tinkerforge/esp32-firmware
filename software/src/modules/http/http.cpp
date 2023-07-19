@@ -148,18 +148,21 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     if (bytes_written == -1) {
         // buffer was not large enough
         return req.send(413);
-    } else if (bytes_written < 0) {
-        logger.printfln("Failed to receive command payload: error code %d", bytes_written);
-        return req.send(400);
-    } else if (bytes_written == 0 && reg.config->is_null()) {
-        task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
-        return req.send(200, "text/html", "");
     }
 
-    String message = reg.config->update_from_cstr(recv_buf, bytes_written);
+    if (bytes_written < 0) {
+        logger.printfln("Failed to receive command payload: error code %d", bytes_written);
+        return req.send(400);
+    }
+
+    String message;
+    if (bytes_written == 0 && reg.config->is_null()) {
+        message = api.callCommand(reg, nullptr, 0);
+    } else {
+        message = api.callCommand(reg, recv_buf, bytes_written);
+    }
 
     if (message == "") {
-        task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
         return req.send(200, "text/html", "");
     }
     return req.send(400, "text/html", message.c_str());
