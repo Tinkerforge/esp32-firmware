@@ -30,6 +30,7 @@
 #include "em_rgb_led.h"
 #include "input_pin.h"
 #include "output_relay.h"
+#include "structs.h"
 #include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
 #define EM_TASK_DELAY_MS                    250
@@ -116,41 +117,6 @@
 #define EXTERNAL_CONTROL_STATE_DISABLED     1
 #define EXTERNAL_CONTROL_STATE_UNAVAILABLE  2
 #define EXTERNAL_CONTROL_STATE_SWITCHING    3
-
-typedef struct {
-    uint32_t last_update;
-    bool is_valid;
-
-    bool contactor_value;
-
-    uint8_t rgb_value_r;
-    uint8_t rgb_value_g;
-    uint8_t rgb_value_b;
-
-    float power;
-    float energy_import;
-    float energy_export;
-
-    uint8_t energy_meter_type;
-    uint32_t error_count[6];
-
-    bool input[2];
-    bool relay;
-    uint16_t voltage;
-    uint8_t contactor_check_state;
-    uint32_t uptime;
-} EnergyManagerAllData;
-
-struct sdcard_info {
-    uint32_t sd_status;
-    uint32_t lfs_status;
-    uint32_t card_type;
-    uint32_t sector_count;
-    uint16_t sector_size;
-    uint8_t  manufacturer_id;
-    uint8_t  product_rev;
-    char     product_name[6];
-};
 
 enum class SwitchingState
 {
