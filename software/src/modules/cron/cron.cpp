@@ -25,9 +25,12 @@ Cron::Cron() {
     proto.tag = 0;
     proto.config = *Config::Null();
 
-    event_vec.push_back(proto);
+    trigger_vec.push_back(proto);
     action_vec.push_back(proto);
+}
 
+void Cron::pre_setup() {
+    ConfUnionPrototype proto;
     proto.tag = CRON_ACTION_PRINT;
     proto.config = Config {
         Config::Object({
@@ -38,14 +41,11 @@ Cron::Cron() {
     register_action(proto, [this](Config *cfg) {
         logger.printfln("Got message: %s", cfg->get("message")->asString().c_str());
     });
-}
-
-void Cron::pre_setup() {
     Config trigger_prototype = Config::Union(
                     *Config::Null(),
                     0,
-                    event_vec.data(),
-                    event_vec.size());
+                    trigger_vec.data(),
+                    trigger_vec.size());
 
     Config action_prototype = Config::Union(
                     *Config::Null(),
@@ -89,15 +89,15 @@ void Cron::register_action(ConfUnionPrototype &proto, ActionCb action) {
 }
 
 void Cron::register_trigger(ConfUnionPrototype &proto) {
-    event_vec.push_back(proto);
+    trigger_vec.push_back(proto);
 }
 
-void Cron::trigger_action(ICronModule *module, uint32_t number) {
-    for (auto it = config.begin(); it != config.end(); it++) {
-        if ((*it).get("trigger")->getTag() - 1 == number && module->action_triggered((Config*)(*it).get("trigger"))) {
-            uint32_t action_ident = (*it).get("action")->getTag() - 1;
+void Cron::trigger_action(ICronModule *module, uint8_t number) {
+    for (auto conf: config) {
+        if (conf.get("trigger")->getTag() == number && module->action_triggered((Config*)conf.get("trigger"))) {
+            uint8_t action_ident = conf.get("action")->getTag();
             if (action_map.find(action_ident) != action_map.end())
-                action_map[action_ident]((Config *)(*it).get("action")->get());
+                action_map[action_ident]((Config *)conf.get("action")->get());
             else
                 logger.printfln("There is no action with ident-nr %u!", action_ident);
         }

@@ -24,12 +24,12 @@
 #include <map>
 #include <vector>
 
-#define CRON_TRIGGER_CRON 0
-#define CRON_TRIGGER_IEC_CHANGE 1
-#define CRON_TRIGGER_MQTT 2
+#define CRON_TRIGGER_CRON 1
+#define CRON_TRIGGER_IEC_CHANGE 2
+#define CRON_TRIGGER_MQTT 3
 
-#define CRON_ACTION_PRINT 0
-#define CRON_ACTION_MQTT 1
+#define CRON_ACTION_PRINT 1
+#define CRON_ACTION_MQTT 2
 
 class ICronModule {
 public:
@@ -47,7 +47,7 @@ class Cron : public IModule {
     ConfigRoot enabled_in_use;
 
     ActionMap   action_map;
-    std::vector<ConfUnionPrototype>    event_vec;
+    std::vector<ConfUnionPrototype>    trigger_vec;
     std::vector<ConfUnionPrototype>    action_vec;
 
 public:
@@ -60,5 +60,5 @@ public:
     void register_action(ConfUnionPrototype &proto, ActionCb callback);
     void register_trigger(ConfUnionPrototype &proto);
 
-    void trigger_action(ICronModule *module, uint32_t number);
+    void trigger_action(ICronModule *module, uint8_t number);
 };

@@ -166,7 +166,7 @@ bool Rtc::action_triggered(Config *conf) {
     triggered += !(cfg->get("hour")->asInt() == time.get("hour")->asUint() || cfg->get("hour")->asInt() == -1);
     triggered += !(cfg->get("minute")->asInt() == time.get("minute")->asUint() || cfg->get("minute")->asInt() == -1);
 
-    switch (conf->getTag() - 1) {
+    switch (conf->getTag()) {
         case CRON_TRIGGER_CRON:
             if (triggered == 0) {
                 return true;

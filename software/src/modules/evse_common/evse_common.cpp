@@ -259,7 +259,7 @@ void EvseCommon::setup() {
 
 bool EvseCommon::action_triggered(Config *config) {
     Config *cfg = (Config*)config->get();
-    switch (config->getTag() - 1) {
+    switch (config->getTag()) {
         case CRON_TRIGGER_IEC_CHANGE:
                 if (cfg->get("iec61851_state")->asUint() == state.get("iec61851_state")->asUint())
                     return true;
