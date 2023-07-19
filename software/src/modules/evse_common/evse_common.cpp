@@ -135,6 +135,14 @@ void EvseCommon::pre_setup() {
     });
 
     require_meter_enabled_update = require_meter_enabled;
+
+    ConfUnionPrototype proto;
+    proto.tag = CRON_TRIGGER_IEC_CHANGE;
+    proto.config = Config::Object({
+        {"iec61851_state", Config::Uint(0, 0, 4)}
+    });
+
+    cron.register_trigger(proto);
 }
 
 bool EvseCommon::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)

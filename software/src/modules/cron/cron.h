@@ -26,6 +26,7 @@
 
 #define CRON_TRIGGER_CRON 0
 #define CRON_TRIGGER_IEC_CHANGE 1
+#define CRON_TRIGGER_MQTT 2
 
 #define CRON_ACTION_PRINT 0
 #define CRON_ACTION_MQTT 1
@@ -36,9 +37,8 @@ public:
 };
 
 
-typedef std::function<void(Config *)>   ActionCb;
-typedef std::map<uint32_t, ActionCb>    ActionMap;
-typedef std::vector<String>             EventVec;
+typedef std::function<void(Config *)>               ActionCb;
+typedef std::map<uint32_t, ActionCb>                ActionMap;
 
 class Cron : public IModule {
     ConfigRoot config;
@@ -46,15 +46,19 @@ class Cron : public IModule {
     ConfigRoot enabled;
     ConfigRoot enabled_in_use;
 
-    ActionMap action_map;
+    ActionMap   action_map;
+    std::vector<ConfUnionPrototype>    event_vec;
+    std::vector<ConfUnionPrototype>    action_vec;
 
 public:
+    Cron();
+
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
 
-    void register_action(uint32_t ident, ActionCb callback);
-    void register_trigger(uint32_t number);
+    void register_action(ConfUnionPrototype &proto, ActionCb callback);
+    void register_trigger(ConfUnionPrototype &proto);
 
     void trigger_action(ICronModule *module, uint32_t number);
 };

@@ -51,6 +51,16 @@ void Rtc::pre_setup()
         {"auto_sync", Config::Bool(true)},
     });
 
+    ConfUnionPrototype proto;
+    proto.tag = CRON_TRIGGER_CRON;
+    proto.config = Config::Object({
+        {"mday", Config::Int(-1, -1, 29)},
+        {"wday", Config::Int(-1, -1, 6)},
+        {"hour", Config::Int(-1, -1, 23)},
+        {"minute", Config::Int(-1, -1, 59)}
+    });
+
+    cron.register_trigger(proto);
 }
 
 void Rtc::setup() {}

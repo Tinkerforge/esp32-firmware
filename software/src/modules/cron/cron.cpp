@@ -20,39 +20,38 @@
 #include "cron.h"
 #include "api.h"
 
+Cron::Cron() {
+    ConfUnionPrototype proto;
+    proto.tag = 0;
+    proto.config = *Config::Null();
+
+    event_vec.push_back(proto);
+    action_vec.push_back(proto);
+
+    proto.tag = CRON_ACTION_PRINT;
+    proto.config = Config {
+        Config::Object({
+            {"message", Config::Str("", 0, 64)}
+        })
+    };
+
+    register_action(proto, [this](Config *cfg) {
+        logger.printfln("Got message: %s", cfg->get("message")->asString().c_str());
+    });
+}
+
 void Cron::pre_setup() {
     Config trigger_prototype = Config::Union(
                     *Config::Null(),
                     0,
-                    new Config*[3] {
-                        Config::Null(),
-                        new Config(Config::Object({
-                            {"mday", Config::Int(-1, -1, 30)},
-                            {"wday", Config::Int(-1, -1, 6)},
-                            {"hour", Config::Int(-1, -1, 23)},
-                            {"minute", Config::Int(-1, -1, 59)}
-                        })),
-                        new Config(Config::Object({
-                            {"iec61851_state", Config::Uint(0, 0, 4)}
-                        }))
-                    },
-                    3);
+                    event_vec.data(),
+                    event_vec.size());
 
     Config action_prototype = Config::Union(
                     *Config::Null(),
                     0,
-                    new Config*[3] {
-                        Config::Null(),
-                        new Config(Config::Object({
-                            {"message", Config::Str("", 0, 32)}
-                        })),
-                        new Config(Config::Object({
-                            {"topic", Config::Str("", 0, 128)},
-                            {"payload", Config::Str("", 0, 128)},
-                            {"retain", Config::Bool(false)}
-                        }))
-                    },
-                    3);
+                    action_vec.data(),
+                    action_vec.size());
 
     config = Config::Array(
         {},
@@ -75,10 +74,6 @@ void Cron::setup() {
     config_in_use = config;
     enabled_in_use = enabled;
 
-    register_action(CRON_ACTION_PRINT, [this](Config *cfg) {
-        logger.printfln("Got message: %s", cfg->get("message")->asString().c_str());
-    });
-
     initialized = true;
 }
 
@@ -87,13 +82,14 @@ void Cron::register_urls() {
     api.addPersistentConfig("cron/timed_config", &enabled, {}, 1000);
 }
 
-void Cron::register_action(uint32_t ident, ActionCb action) {
-    action_map[ident] = action;
-    logger.printfln("registered action nr. %u", ident);
+void Cron::register_action(ConfUnionPrototype &proto, ActionCb action) {
+    action_vec.push_back(proto);
+    action_map[proto.tag] = action;
+    logger.printfln("registered action nr. %u", proto.tag);
 }
 
-void Cron::register_trigger(uint32_t number) {
-
+void Cron::register_trigger(ConfUnionPrototype &proto) {
+    event_vec.push_back(proto);
 }
 
 void Cron::trigger_action(ICronModule *module, uint32_t number) {
