@@ -1,0 +1,55 @@
+/* esp32-firmware
+ * Copyright (C) 2023 Mattias Schäffersmann <mattias@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#pragma once
+
+#include "imeter.h"
+#include "meter_generator.h"
+
+#include <stdint.h>
+
+#include "config.h"
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #include "gcc_warnings.h"
+#endif
+
+class MeterGeneratorNone final : public MeterGenerator, public IMeter
+{
+public:
+    // for MeterGenerator
+    virtual IMeter *new_meter(Config *state, const Config *config) override;
+    virtual const Config *get_config_prototype() override;
+    virtual const Config *get_state_prototype() override;
+
+    const Config * const config_prototype = Config::Null();
+    const Config * const state_prototype  = Config::Null();
+
+    // for IMeter
+    void setup() override {}
+    void register_urls(String base_url) override {}
+
+    // for both
+    uint32_t get_class() const override _ATTRIBUTE((const));
+};
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
