@@ -136,6 +136,7 @@ void EvseCommon::pre_setup() {
 
     require_meter_enabled_update = require_meter_enabled;
 
+#if MODULE_CRON_AVAILABLE()
     ConfUnionPrototype proto;
     proto.tag = CRON_TRIGGER_IEC_CHANGE;
     proto.config = Config::Object({
@@ -143,6 +144,7 @@ void EvseCommon::pre_setup() {
     });
 
     cron.register_trigger(proto);
+#endif
 }
 
 bool EvseCommon::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
@@ -531,6 +533,7 @@ void EvseCommon::register_urls() {
 
     backend->post_register_urls();
 
+#if MODULE_CRON_AVAILABLE()
     event.registerEvent("evse/state", {}, [this](Config *cfg) {
 
         // we need this since not only iec state changes trigger this api event.
@@ -541,6 +544,7 @@ void EvseCommon::register_urls() {
             last_state = state_now;
         }
     });
+#endif
 
 }
 

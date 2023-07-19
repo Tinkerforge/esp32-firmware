@@ -22,7 +22,9 @@
 #include "config.h"
 
 #include "module.h"
-#include "../cron/cron.h"
+
+class Rtc;
+#include "module_dependencies.h"
 
 class IRtcBackend
 {
@@ -37,7 +39,10 @@ public:
     virtual void reset() = 0;
 };
 
-class Rtc final : public IModule, public ICronModule
+class Rtc final : public IModule
+#if MODULE_CRON_AVAILABLE()
+,public ICronModule
+#endif
 {
 private:
     ConfigRoot time;
@@ -60,5 +65,7 @@ public:
     timeval get_time();
     bool update_system_time();
 
+#if MODULE_CRON_AVAILABLE()
     bool action_triggered(Config *config, void *data);
+#endif
 };

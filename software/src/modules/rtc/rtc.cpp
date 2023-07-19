@@ -51,6 +51,7 @@ void Rtc::pre_setup()
         {"auto_sync", Config::Bool(true)},
     });
 
+#if MODULE_CRON_AVAILABLE()
     ConfUnionPrototype proto;
     proto.tag = CRON_TRIGGER_CRON;
     proto.config = Config::Object({
@@ -61,6 +62,7 @@ void Rtc::pre_setup()
     });
 
     cron.register_trigger(proto);
+#endif
 }
 
 void Rtc::setup() {}
@@ -100,7 +102,11 @@ void Rtc::register_backend(IRtcBackend *_backend)
         tm tm;
         gmtime_r(&tv.tv_sec, &tm);
 
+#if MODULE_CRON_AVAILABLE()
         uint32_t last_minute = time.get("minute")->asUint();
+        if (last_minute < tm.tm_min)
+            cron.trigger_action(this, CRON_TRIGGER_CRON, &tm);
+#endif
 
         time.get("year")->updateUint(tm.tm_year + 1900);
         time.get("month")->updateUint(tm.tm_mon + 1);
@@ -109,9 +115,6 @@ void Rtc::register_backend(IRtcBackend *_backend)
         time.get("minute")->updateUint(tm.tm_min);
         time.get("second")->updateUint(tm.tm_sec);
         time.get("weekday")->updateUint(tm.tm_wday);
-
-        if (last_minute < tm.tm_min)
-            cron.trigger_action(this, CRON_TRIGGER_CRON, 0);
     }, 0, 200);
 
     api.addFeature("rtc");
@@ -159,12 +162,14 @@ bool Rtc::update_system_time()
     return backend->update_system_time();
 }
 
+#if MODULE_CRON_AVAILABLE()
 bool Rtc::action_triggered(Config *conf, void *data) {
     Config *cfg = (Config*)conf->get();
-    uint8_t triggered = !(cfg->get("mday")->asInt() == time.get("day")->asUint() || cfg->get("mday")->asInt() == -1);
-    triggered += !(cfg->get("wday")->asInt() == time.get("weekday")->asUint() || cfg->get("wday")->asInt() == -1);
-    triggered += !(cfg->get("hour")->asInt() == time.get("hour")->asUint() || cfg->get("hour")->asInt() == -1);
-    triggered += !(cfg->get("minute")->asInt() == time.get("minute")->asUint() || cfg->get("minute")->asInt() == -1);
+    tm *time_struct = (tm *)data;
+    uint8_t triggered = !(cfg->get("mday")->asInt() == time_struct->tm_mday || cfg->get("mday")->asInt() == -1);
+    triggered += !(cfg->get("wday")->asInt() == time_struct->tm_wday || cfg->get("wday")->asInt() == -1);
+    triggered += !(cfg->get("hour")->asInt() == time_struct->tm_hour || cfg->get("hour")->asInt() == -1);
+    triggered += !(cfg->get("minute")->asInt() == time_struct->tm_min || cfg->get("minute")->asInt() == -1);
 
     switch (conf->getTag()) {
         case CRON_TRIGGER_CRON:
@@ -178,3 +183,4 @@ bool Rtc::action_triggered(Config *conf, void *data) {
     }
     return false;
 }
+#endif
