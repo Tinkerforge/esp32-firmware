@@ -563,7 +563,7 @@ struct from_json {
 
         if (new_tag != x.getTag()) {
             if (!x.changeUnionVariant(new_tag))
-                return "[0] Unknown union tag";
+                return String("[0] Unknown union tag: ") + new_tag;
         }
 
         return Config::apply_visitor(from_json{arr[1], force_same_keys, permit_null_updates, false}, x.getVal()->value);
