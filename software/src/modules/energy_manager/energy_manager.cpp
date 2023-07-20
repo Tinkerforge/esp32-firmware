@@ -249,6 +249,16 @@ void EnergyManager::setup()
     }
 #endif
 
+#if MODULE_METERS_AVAILABLE()
+    uint32_t meter_slot = 1; // make a font-end setting for this
+    source_meter = meters.get_meter(meter_slot);
+
+    if (!source_meter->supports_power()) {
+        logger.printfln("energy_manager: Configured source meter in slot %u isn't usable because it doesn't provide power.", meter_slot);
+        source_meter = nullptr;
+    }
+#endif
+
     // Cache config for energy update
     default_mode                = config_in_use.get("default_mode")->asUint();
     excess_charging_enable      = config_in_use.get("excess_charging_enable")->asBool();
@@ -531,7 +541,12 @@ void EnergyManager::update_all_data()
     low_level_state.get("is_3phase")->updateBool(is_3phase);
     state.get("phases_switched")->updateUint(have_phases);
 
-    power_at_meter_raw_w = all_data.energy_meter_type ? all_data.power : meter.values.get("power")->asFloat(); // watt
+#if MODULE_METERS_AVAILABLE()
+    if (!source_meter || !source_meter->get_power(&power_at_meter_raw_w))
+        power_at_meter_raw_w = NAN;
+#else
+    power_at_meter_raw_w = NAN;
+#endif
 
     if (!isnan(power_at_meter_raw_w)) {
         int32_t raw_power_w = static_cast<int32_t>(power_at_meter_raw_w);
