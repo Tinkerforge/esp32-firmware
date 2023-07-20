@@ -28,6 +28,8 @@
 #include "event_log.h"
 #include "build.h"
 
+#include "matchTopicFilter.h"
+
 extern char local_uid_str[32];
 
 #if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
@@ -208,7 +210,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     for (auto &c : commands) {
         if (c.topic.length() != topic_len)
             continue;
-        if (memcmp(c.topic.c_str(), topic, topic_len) != 0)
+        if (!matchTopicFilter(topic, topic_len, c.topic.c_str(), c.topic.length()))
             continue;
 
         if (retain && c.forbid_retained) {
