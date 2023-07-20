@@ -49,8 +49,19 @@ void MeterEM::setup()
         0, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>()
     );
 
-    for (int i = all_values_conf.count(); i < METER_ALL_VALUES_COUNT; i++) {
+    for (ssize_t i = all_values_conf.count(); i < METER_ALL_VALUES_COUNT; i++) {
         all_values_conf.add();
+    }
+
+    all_values_names = Config::Array({},
+        new Config(Config::Str("", 0, 64)),
+        METER_ALL_VALUES_COUNT,
+        METER_ALL_VALUES_COUNT,
+        Config::type_id<Config::ConfString>()
+    );
+    for (ssize_t i = all_values_names.count(); i < METER_ALL_VALUES_COUNT; i++) {
+        all_values_names.add();
+        all_values_names.get(static_cast<uint16_t>(i))->updateString(meter_all_values_names[i]);
     }
 }
 
@@ -60,6 +71,7 @@ void MeterEM::register_urls(String base_url)
 
     api.addState(base_url + "/error_counters", &errors, {}, 1000);
     api.addState(base_url + "/all_values", &all_values_conf, {}, 1000);
+    api.addState(base_url + "/all_values_names", &all_values_names, {}, 1000);
 }
 
 bool MeterEM::get_power(float *power_w)
