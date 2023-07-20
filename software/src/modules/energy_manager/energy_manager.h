@@ -25,6 +25,7 @@
 #include "config.h"
 
 #include "bindings/bricklet_warp_energy_manager.h"
+#include "modules/meters_em/meter_em.h"
 
 #include "device_module.h"
 #include "em_rgb_led.h"
@@ -211,6 +212,8 @@ private:
 
     void check_debug();
     String prepare_fmtstr();
+
+    MeterEM *local_meter;
 
     EmRgbLed rgb_led;
     OutputRelay *output;
