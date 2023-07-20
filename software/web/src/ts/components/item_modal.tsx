@@ -23,8 +23,8 @@ import { __ } from "../translation";
 
 
 interface ItemModalProps extends ModalProps {
-    onSubmit: () => void
-    onHide: () => void
+    onSubmit: () => Promise<void>
+    onHide: () => Promise<void>
 
     show: boolean
 
@@ -59,7 +59,7 @@ export class ItemModal extends Component<ItemModalProps, any> {
                 <Modal.Header closeButton>
                     <label class="modal-title form-label">{title}</label>
                 </Modal.Header>
-                <form onSubmit={(e) => {
+                <form onSubmit={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
 
@@ -67,8 +67,8 @@ export class ItemModal extends Component<ItemModalProps, any> {
                         return;
                     }
 
-                    onSubmit();
-                    onHide();
+                    await onSubmit();
+                    await onHide();
                 }}>
                     <Modal.Body>
                         {(toChildArray(children) as VNode[]).map(c => cloneElement(c, {idContext: this.idContext}))}

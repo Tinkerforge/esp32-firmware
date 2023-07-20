@@ -412,7 +412,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                             { return {
                                 columnValues: [<>{charger.name}</>, <a target="_blank" rel="noopener noreferrer" href={(charger.host == '127.0.0.1' || charger.host == 'localhost') ? '/' : "http://" + charger.host}>{charger.host}</a>],
                                 editTitle: __("charge_manager.content.edit_charger_modal_title"),
-                                onEditStart: () => this.setState({editCharger: {name: charger.name.trim(), host: charger.host.trim()}}),
+                                onEditStart: async () => this.setState({editCharger: {name: charger.name.trim(), host: charger.host.trim()}}),
                                 onEditGetRows: () => [
                                     {
                                         name: __("charge_manager.content.edit_charger_modal_name"),
@@ -433,7 +433,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                                         invalidFeedback={check_host(state.editCharger.host, i)}/>
                                     }
                                 ],
-                                onEditCommit: () => {
+                                onEditCommit: async () => {
                                     this.setState({
                                         chargers: state.chargers.map((charger, k) => i === k ? state.editCharger : charger),
                                         editCharger: {name: "", host: ""}
@@ -441,8 +441,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
                                     this.hackToAllowSave();
                                 },
-                                onEditAbort: () => this.setState({editCharger: {name: "", host: ""}}),
-                                onRemoveClick: !energyManagerMode && i == 0 /* localhost */ ? undefined : () => {
+                                onEditAbort: async () => this.setState({editCharger: {name: "", host: ""}}),
+                                onRemoveClick: !energyManagerMode && i == 0 /* localhost */ ? undefined : async () => {
                                     this.setState({chargers: state.chargers.filter((v, idx) => idx != i)});
                                     this.hackToAllowSave();
                                 }
@@ -451,7 +451,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                         maxRowCount={MAX_CONTROLLED_CHARGERS}
                         addTitle={__("charge_manager.content.add_charger_modal_title")}
                         addMessage={__("charge_manager.script.add_charger_prefix") + state.chargers.length + __("charge_manager.script.add_charger_infix") + MAX_CONTROLLED_CHARGERS + __("charge_manager.script.add_charger_suffix")}
-                        onAddStart={() => this.setState({addCharger: {name: "", host: ""}})}
+                        onAddStart={async () => this.setState({addCharger: {name: "", host: ""}})}
                         onAddGetRows={() => [
                             {
                                 name: __("charge_manager.content.add_charger_modal_name"),
@@ -498,7 +498,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                     </ListGroup>
                             }
                         ]}
-                        onAddCommit={() => {
+                        onAddCommit={async () => {
                             this.setState({
                                 chargers: state.chargers.concat({name: state.addCharger.name.trim(), host: state.addCharger.host.trim()}),
                                 addCharger: {name: "", host: ""}
@@ -506,7 +506,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
                             this.hackToAllowSave();
                         }}
-                        onAddAbort={() => this.setState({addCharger: {name: "", host: ""}})} />
+                        onAddAbort={async () => this.setState({addCharger: {name: "", host: ""}})} />
             </FormRow>
 
         return (

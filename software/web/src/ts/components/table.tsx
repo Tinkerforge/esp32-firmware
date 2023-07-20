@@ -33,11 +33,11 @@ export interface TableModalRow {
 export interface TableRow {
     columnValues: VNode[]
     editTitle?: string
-    onEditStart?: () => void
+    onEditStart?: () => Promise<void>
     onEditGetRows?: () => TableModalRow[]
-    onEditCommit?: () => void
-    onEditAbort?: () => void
-    onRemoveClick?: () => void
+    onEditCommit?: () => Promise<void>
+    onEditAbort?: () => Promise<void>
+    onRemoveClick?: () => Promise<void>
 }
 
 export interface TableProps {
@@ -46,10 +46,10 @@ export interface TableProps {
     maxRowCount?: number
     addMessage?: string
     addTitle?: string
-    onAddStart?: () => void
+    onAddStart?: () => Promise<void>
     onAddGetRows?: () => TableModalRow[]
-    onAddCommit?: () => void
-    onAddAbort?: () => void
+    onAddCommit?: () => Promise<void>
+    onAddAbort?: () => Promise<void>
     tableTill?: string
 }
 
@@ -92,9 +92,9 @@ export class Table extends Component<TableProps, TableState> {
                                     <Button variant="primary"
                                             size="sm"
                                             className="mr-2"
-                                            onClick={() => {
+                                            onClick={async () => {
+                                                await row.onEditStart();
                                                 this.setState({showEditModal: i});
-                                                row.onEditStart();
                                             }}
                                             disabled={!row.onEditStart}>
                                         <Edit3/>
@@ -115,9 +115,9 @@ export class Table extends Component<TableProps, TableState> {
                             <td style="text-align: right;">
                                 <Button variant="primary"
                                         size="sm"
-                                        onClick={() => {
+                                        onClick={async () => {
+                                            await props.onAddStart();
                                             this.setState({showAddModal: true});
-                                            props.onAddStart();
                                         }}
                                         disabled={props.maxRowCount !== undefined && props.rows.length >= props.maxRowCount}>
                                     <Plus/>
@@ -137,9 +137,9 @@ export class Table extends Component<TableProps, TableState> {
                                 <Button variant="primary"
                                         size="sm"
                                         className="ml-2"
-                                        onClick={() => {
+                                        onClick={async () => {
+                                            await row.onEditStart();
                                             this.setState({showEditModal: i});
-                                            row.onEditStart();
                                         }}
                                         disabled={!row.onEditStart}>
                                     <Edit3/>
@@ -167,9 +167,9 @@ export class Table extends Component<TableProps, TableState> {
                             <Button variant="primary"
                                     size="sm"
                                     className="ml-2"
-                                    onClick={() => {
+                                    onClick={async () => {
+                                        await props.onAddStart();
                                         this.setState({showAddModal: true});
-                                        props.onAddStart();
                                     }}
                                     disabled={props.maxRowCount !== undefined && props.rows.length >= props.maxRowCount}>
                                 <Plus/>
@@ -181,16 +181,16 @@ export class Table extends Component<TableProps, TableState> {
                 </div>
 
                 <ItemModal
-                    onSubmit={() => {
+                    onSubmit={async () => {
                         if (props.onAddCommit) {
-                            props.onAddCommit();
+                            await props.onAddCommit();
                         }
 
                         this.setState({showAddModal: false});
                     }}
-                    onHide={() => {
+                    onHide={async () => {
                         if (props.onAddAbort) {
-                            props.onAddAbort();
+                            await props.onAddAbort();
                         }
 
                         this.setState({showAddModal: false});
@@ -209,16 +209,16 @@ export class Table extends Component<TableProps, TableState> {
                 </ItemModal>
 
                 <ItemModal
-                    onSubmit={() => {
+                    onSubmit={async () => {
                         if (props.rows[state.showEditModal].onEditCommit) {
-                            props.rows[state.showEditModal].onEditCommit();
+                            await props.rows[state.showEditModal].onEditCommit();
                         }
 
                         this.setState({showEditModal: null});
                     }}
-                    onHide={() => {
+                    onHide={async () => {
                         if (props.rows[state.showEditModal].onEditAbort) {
-                            props.rows[state.showEditModal].onEditAbort();
+                            await props.rows[state.showEditModal].onEditAbort();
                         }
 
                         this.setState({showEditModal: null});

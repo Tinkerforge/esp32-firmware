@@ -134,7 +134,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                         <>{auth_seen_ids.indexOf(i) >= 0 ? __("nfc.content.last_seen") + util.format_timespan(Math.floor(auth_seen_tags[auth_seen_ids.indexOf(i)].last_seen / 1000)) + __("nfc.content.last_seen_suffix") : __("nfc.script.not_seen")}</>
                                     ],
                                     editTitle: __("nfc.content.edit_tag_title"),
-                                    onEditStart: () => this.setState({editTag: {tag_id: tag.tag_id, user_id: tag.user_id, tag_type: tag.tag_type}}),
+                                    onEditStart: async () => this.setState({editTag: {tag_id: tag.tag_id, user_id: tag.user_id, tag_type: tag.tag_type}}),
                                     onEditGetRows: () => [
                                         {
                                             name: __("nfc.content.edit_tag_tag_id"),
@@ -168,7 +168,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                                 <div class="mt-2" style={state.editTag.user_id == 0 ? undefined : 'visibility: hidden'}>{__("nfc.script.not_assigned_desc")}</div></>
                                         },
                                     ],
-                                    onEditCommit: () => {
+                                    onEditCommit: async () => {
                                         this.setState({
                                             authorized_tags: state.authorized_tags.map((tag, k) => i === k ? state.editTag : tag),
                                             editTag: {tag_id: "", user_id: 0, tag_type: "" as any}
@@ -176,8 +176,8 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
 
                                         this.hackToAllowSave();
                                     },
-                                    onEditAbort: () => this.setState({editTag: {tag_id: "", user_id: 0, tag_type: "" as any}}),
-                                    onRemoveClick: () => {
+                                    onEditAbort: async () => this.setState({editTag: {tag_id: "", user_id: 0, tag_type: "" as any}}),
+                                    onRemoveClick: async () => {
                                         this.setState({authorized_tags: state.authorized_tags.filter((v, idx) => idx != i)});
                                         this.hackToAllowSave();
                                     }
@@ -186,7 +186,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                             maxRowCount={MAX_AUTHORIZED_TAGS}
                             addTitle={__("nfc.content.add_tag_title")}
                             addMessage={__("nfc.script.add_tag_prefix") + state.authorized_tags.length + __("nfc.script.add_tag_infix") + MAX_AUTHORIZED_TAGS + __("nfc.script.add_tag_suffix")}
-                            onAddStart={() => this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}})}
+                            onAddStart={async () => this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}})}
                             onAddGetRows={() => [
                                 {
                                     name: __("nfc.content.add_tag_seen_tags"),
@@ -240,7 +240,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                             <div class="mt-2" style={state.addTag.user_id == 0 ? undefined : 'visibility: hidden'}>{__("nfc.script.not_assigned_desc")}</div></>
                                 },
                             ]}
-                            onAddCommit={() => {
+                            onAddCommit={async () => {
                                 this.setState({
                                     authorized_tags: state.authorized_tags.concat({tag_id: state.addTag.tag_id, user_id: state.addTag.user_id, tag_type: state.addTag.tag_type}),
                                     addTag: {tag_id: "", user_id: 0, tag_type: "" as any}
@@ -248,7 +248,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
 
                                 this.hackToAllowSave();
                             }}
-                            onAddAbort={() => this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}})} />
+                            onAddAbort={async () => this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}})} />
                     </div>
                 </ConfigForm>
             </SubPage>
