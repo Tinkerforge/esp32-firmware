@@ -42,13 +42,13 @@ public:
     void register_urls(String base_url) override;
 
     bool supports_power() override {return true;}
-    bool get_power(int32_t *power_w) override;
+    bool get_power(float *power_w) override;
 
     bool supports_import_export() override {return true;}
     bool get_import_export(float *energy_import_kwh, float *energy_export_kwh) override;
 
     bool supports_line_currents() override {return true;}
-    bool get_line_currents(int32_t *l1_current_ma, int32_t *l2_current_ma, int32_t *l3_current_ma) override;
+    bool get_line_currents(float *l1_current_ma, float *l2_current_ma, float *l3_current_ma) override;
 
     void update_from_em_all_data(EnergyManagerAllData &all_data);
 private:

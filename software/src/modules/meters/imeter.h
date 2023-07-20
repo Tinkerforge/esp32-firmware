@@ -33,13 +33,13 @@ public:
     virtual void register_urls(String base_url) {power_hist.register_urls(base_url);}
 
     virtual bool supports_power() {return false;}
-    virtual bool get_power(int32_t *power_w) {return false;}
+    virtual bool get_power(float *power_w) {return false;}
 
     virtual bool supports_import_export() {return false;}
     virtual bool get_import_export(float *energy_import_kwh, float *energy_export_kwh) {return false;}
 
     virtual bool supports_line_currents() {return false;}
-    virtual bool get_line_currents(int32_t *l1_current_ma, int32_t *l2_current_ma, int32_t *l3_current_ma) {return false;}
+    virtual bool get_line_currents(float *l1_current_ma, float *l2_current_ma, float *l3_current_ma) {return false;}
 
     //virtual bool supports_phases() {return false;}
     //virtual bool get_phases(/* TODO */) {return false;}
