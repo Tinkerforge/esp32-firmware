@@ -146,6 +146,14 @@ IMeter *Meters::new_meter_of_class(uint32_t meter_class, Config *state, const Co
     return generator->new_meter(state, config);
 }
 
+IMeter *Meters::get_meter(uint32_t slot)
+{
+    if (slot >= METER_SLOTS)
+        return nullptr;
+
+    return meters[slot];
+}
+
 uint32_t Meters::get_meters(uint32_t meter_class, IMeter **found_meters, uint32_t found_meters_capacity)
 {
     uint32_t found_count = 0;

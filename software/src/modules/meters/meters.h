@@ -45,6 +45,7 @@ public:
     void register_urls() override;
 
     void register_meter_generator(uint32_t meter_class, MeterGenerator *generator);
+    IMeter *get_meter(uint32_t slot);
     uint32_t get_meters(uint32_t meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
 
 private:
