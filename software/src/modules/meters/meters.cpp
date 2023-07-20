@@ -18,7 +18,6 @@
  */
 
 #include "meters.h"
-#include "meter_class_defs.h"
 #include "meter_class_none.h"
 
 #include "api.h"
@@ -39,22 +38,20 @@ void Meters::setup()
 {
     generators.shrink_to_fit();
 
-    // Create config and state prototypes, depending on available generators.
+    // Create config prototypes, depending on available generators.
     uint8_t class_count = static_cast<uint8_t>(generators.size());
     ConfUnionPrototype *config_prototypes = new ConfUnionPrototype[class_count];
-    ConfUnionPrototype *state_prototypes  = new ConfUnionPrototype[class_count];
 
     for (uint32_t i = 0; i < class_count; i++) {
         const auto &generator_tuple = generators[i];
         uint8_t meter_class = static_cast<uint8_t>(std::get<0>(generator_tuple));
         auto meter_generator = std::get<1>(generator_tuple);
         config_prototypes[i] = {meter_class, *meter_generator->get_config_prototype()};
-        state_prototypes[i]  = {meter_class, *meter_generator->get_state_prototype()};
     }
 
     for (uint32_t i = 0; i < METER_SLOTS; i++) {
         // Initialize config.
-        configs[i] = Config::Union(
+        config_unions[i] = Config::Union(
             *get_generator_for_class(METER_CLASS_NONE)->get_config_prototype(),
             METER_CLASS_NONE,
             config_prototypes,
@@ -64,38 +61,23 @@ void Meters::setup()
         // Load config.
         char path_buf[32];
         snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/%u/config", i);
-        api.restorePersistentConfig(path_buf, &configs[i]);
+        api.restorePersistentConfig(path_buf, &config_unions[i]);
 
-        uint32_t configured_meter_class = configs[i].getTag();
+        uint32_t configured_meter_class = config_unions[i].getTag();
+
         // Generator might be a NONE class generator if the requested class is not available.
         MeterGenerator *generator = get_generator_for_class(configured_meter_class);
 
         // Initialize state to match (loaded) config.
-        states[i] = Config::Union(
-            *generator->get_state_prototype(),
-            static_cast<uint8_t>(generator->get_class()),
-            state_prototypes,
-            class_count
-        );
-
-        Config &conf = configs[i];
-        Config &state = states[i];
+        states[i] = *generator->get_state_prototype();
 
         // Create meter from config.
-        uint32_t meter_class_conf = conf.getTag();
-        uint32_t meter_class_state = state.getTag();
-        if (meter_class_conf != meter_class_state) {
-            logger.printfln("meters: Inconsistent tags for class of meter %u: conf=%u state=%u", i, meter_class_conf, meter_class_state);
-            auto generator_none = get_generator_for_class(METER_CLASS_NONE);
-            Config *heap_state = new Config(*generator_none->get_state_prototype());
-            meters[i] = new_meter_of_class(generator_none->get_class(), heap_state, generator_none->get_config_prototype());
-        }
-        const Config *meter_conf = static_cast<const Config *>(conf.get());
-        Config *meter_state = static_cast<Config *>(state.get());
+        const Config *meter_conf = static_cast<const Config *>(config_unions[i].get());
+        Config *meter_state = &states[i];
 
-        IMeter *meter = new_meter_of_class(meter_class_state, meter_state, meter_conf);
+        IMeter *meter = new_meter_of_class(configured_meter_class, meter_state, meter_conf);
         if (!meter) {
-            logger.printfln("meters: Failed to create meter of class %u.", meter_class_state);
+            logger.printfln("meters: Failed to create meter of class %u.", configured_meter_class);
             continue;
         }
         meter->setup();
@@ -114,7 +96,7 @@ void Meters::register_urls()
         api.addState(path_buf, &states[i], {}, 1000);
 
         snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/%u/config", i);
-        api.addPersistentConfig(path_buf, &configs[i], {}, 1000);
+        api.addPersistentConfig(path_buf, &config_unions[i], {}, 1000);
 
         if (meters[i]) {
             snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/%u", i);
