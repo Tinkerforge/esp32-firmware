@@ -69,14 +69,14 @@ void Mqtt::pre_setup()
     });
 }
 
-void Mqtt::subscribe_with_prefix(const String &path, std::function<void(char *, size_t)> callback, bool forbid_retained)
+void Mqtt::subscribe_with_prefix(const String &path, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained)
 {
     const String &prefix = config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
     subscribe(topic, callback, forbid_retained);
 }
 
-void Mqtt::subscribe(const String &topic, std::function<void(char *, size_t)> callback, bool forbid_retained)
+void Mqtt::subscribe(const String &topic, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained)
 {
     this->commands.push_back({topic, callback, forbid_retained});
 
@@ -210,7 +210,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             return;
         }
 
-        c.callback(data, data_len);
+        c.callback(topic, topic_len, data, data_len);
         return;
     }
 

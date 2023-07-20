@@ -34,7 +34,7 @@ enum class MqttConnectionState {
 
 struct MqttCommand {
     String topic;
-    std::function<void(char *, size_t)> callback;
+    std::function<void(const char *, size_t, char *, size_t)> callback;
     bool forbid_retained;
 };
 
@@ -54,9 +54,9 @@ public:
     void connect();
 
     void publish_with_prefix(const String &path, const String &payload);
-    void subscribe_with_prefix(const String &path, std::function<void(char *, size_t)> callback, bool forbid_retained);
+    void subscribe_with_prefix(const String &path, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained);
     void publish(const String &topic, const String &payload, bool retain);
-    void subscribe(const String &topic, std::function<void(char *, size_t)> callback, bool forbid_retained);
+    void subscribe(const String &topic, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained);
 
     void register_consumer(IMqttConsumer *consumer);
 
