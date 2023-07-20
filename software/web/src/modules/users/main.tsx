@@ -41,6 +41,7 @@ import { Slash, User, UserPlus, UserX } from "react-feather";
 import { EVSE_SLOT_USER } from "../evse_common/api";
 import { ItemModal } from "src/ts/components/item_modal";
 import { SubPage } from "src/ts/components/sub_page";
+import { Table } from "../../ts/components/table";
 
 const MAX_ACTIVE_USERS = 17;
 
@@ -49,11 +50,11 @@ type UsersConfig = Omit<API.getType['users/config'], 'users'> & {users: User[]};
 
 interface UsersState {
     userSlotEnabled: boolean
-    showModal: boolean
-    newUser: User
+    addUser: User
+    editUser: User
 }
 
- // This is a bit hacky: the user modification API can take some time because it writes the changed user/display name to flash
+// This is a bit hacky: the user modification API can take some time because it writes the changed user/display name to flash
 // The API will block up to five seconds, but just to be sure we try this twice.
 function retry_once<T>(fn: () => Promise<T>, topic: string) {
     return fn().catch(() => {
@@ -94,7 +95,29 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
               __("users.script.save_failed"),
               __("users.script.reboot_content_changed"));
 
-        this.state = {userSlotEnabled: false, showModal: false, newUser: {id: 0, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: ""}} as any;
+        this.state = {
+            userSlotEnabled: false,
+            addUser: {
+                id: -1,
+                roles: 0xFFFF,
+                username: "",
+                display_name: "",
+                current: 32000,
+                digest_hash: "",
+                password: "",
+                is_invalid: 0,
+            },
+            editUser: {
+                id: -1,
+                roles: 0xFFFF,
+                username: "",
+                display_name: "",
+                current: 32000,
+                digest_hash: "",
+                password: "",
+                is_invalid: 0,
+            },
+        } as any;
 
         util.addApiEventListener('evse/slots', () => {
             this.setState({userSlotEnabled: API.get('evse/slots')[EVSE_SLOT_USER].active});
@@ -227,7 +250,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         await API.save_maybe('evse/user_enabled', {"enabled": this.state.userSlotEnabled}, __("evse.script.save_failed"));
     }
 
-
     setUser(i: number, val: Partial<User>) {
         // We have to copy the users array here to make sure the change detection in sendSave works.
         let users = this.state.users.slice(0);
@@ -253,6 +275,30 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         if (this.state.users.length > 1 || this.state.users[0].display_name != "Anonymous")
             return true;
         return false
+    }
+
+    async checkUsername(user: User, ignore_i: number): Promise<number> {
+        for (let i = 0; i < this.state.users.length; ++i) {
+            if (i != ignore_i && this.state.users[i].username.trim() == user.username.trim()) {
+                return 1;
+            }
+        }
+
+        if (API.get('users/config').next_user_id == 0) {
+            return 3;
+        }
+
+        if (this.isChangedUser(user)) {
+            let all_usernames = await getAllUsernames();
+
+            for (let i = 0; i < all_usernames[0].length; ++i) {
+                if (all_usernames[0][i].trim() == user.username.trim()) {
+                    return 2;
+                }
+            }
+        }
+
+        return 0;
     }
 
     errorMessage(user: User): string {
@@ -284,7 +330,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         if (!util.render_allowed())
             return <></>
 
-        let addUserCard = this.state.next_user_id != 0 ? <div class="col mb-4">
+        /*let addUserCard = this.state.next_user_id != 0 ? <div class="col mb-4">
                 <Card className="h-100" key={999}>
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <UserPlus/>
@@ -296,10 +342,10 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                     {state.users.length >= MAX_ACTIVE_USERS
                         // One user slot is always taken by the unknown user, so display MAX_ACTIVE_USERS - 1 as the maximum number of users that can be added.
                         ? <span>{__("users.script.add_user_disabled_prefix") + (MAX_ACTIVE_USERS - 1) + __("users.script.add_user_disabled_suffix")}</span>
-                        : <Button variant="light" size="lg" block style="height: 100%;" onClick={() => this.setState({showModal: true})}>{__("users.script.add_user")}</Button>}
+                        : <Button variant="light" size="lg" block style="height: 100%;" onClick={() => this.setState({showAddModal: true})}>{__("users.script.add_user")}</Button>}
                 </Card.Body>
             </Card>
-        </div> : <></>
+        </div> : <></>*/
 
         let auth_allowed = this.http_auth_allowed();
 
@@ -339,7 +385,148 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                     </FormRow>
 
                     <FormRow label={__("users.content.authorized_users")}>
-                        <div class="row row-cols-1 row-cols-md-2">
+
+                        <Table columnNames={[__("users.script.username"), __("users.script.display_name"), __("users.script.current"), __("users.script.password")]}
+                            rows={state.users.slice(1).map((user, i) =>
+                                { return {
+                                    columnValues: [
+                                        <>{user.username}</>,
+                                        <>{user.display_name}</>,
+                                        <>{util.toLocaleFixed(user.current / 1000, 3) + ' A'}</>,
+                                        <>{this.user_has_password(user) ? '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' : ''}</>
+                                    ],
+                                    editTitle: __("users.content.edit_user_title"),
+                                    onEditStart: async () => this.setState({editUser: {id: user.id, roles: user.roles, username: user.username, display_name: user.display_name, current: user.current, digest_hash: user.digest_hash, password: user.password, is_invalid: user.is_invalid}}),
+                                    onEditGetRows: () => [
+                                        {
+                                            name: __("users.script.username"),
+                                            value: <InputText
+                                                        value={state.editUser.username}
+                                                        onValue={(v) => this.setState({editUser: {...state.editUser, username: v}})}
+                                                        minLength={1}
+                                                        maxLength={32}
+                                                        required
+                                                        class={state.editUser.is_invalid != undefined && state.editUser.is_invalid != 0 ? "is-invalid" : ""}
+                                                        invalidFeedback={this.errorMessage(state.editUser)}/>
+                                        },
+                                        {
+                                            name: __("users.script.display_name"),
+                                            value: <InputText
+                                                        value={state.editUser.display_name}
+                                                        onValue={(v) => this.setState({editUser: {...state.editUser, display_name: v}})}
+                                                        minLength={1}
+                                                        maxLength={32}
+                                                        required/>
+                                        },
+                                        {
+                                            name: __("users.script.current"),
+                                            value: <InputFloat
+                                                        unit="A"
+                                                        value={state.editUser.current}
+                                                        onValue={(v) => this.setState({editUser: {...state.editUser, current: v}})}
+                                                        digits={3}
+                                                        min={6000}
+                                                        max={32000}/>
+                                        },
+                                        {
+                                            name: __("users.script.password"),
+                                            value: <InputPassword
+                                                        required={this.require_password(state.editUser)}
+                                                        maxLength={64}
+                                                        value={state.editUser.password === undefined ? state.editUser.digest_hash : state.editUser.password}
+                                                        onValue={(v) => this.setState({editUser: {...state.editUser, password: v}})}
+                                                        clearPlaceholder={__("users.script.login_disabled")}
+                                                        clearSymbol={<Slash/>}
+                                                        allowAPIClear/>
+                                        }
+                                    ],
+                                    onEditCheck: async () => {
+                                        let is_invalid = await this.checkUsername(state.editUser, i + 1);
+
+                                        return new Promise<boolean>((resolve) => {
+                                            this.setState({editUser: {...state.editUser, is_invalid: is_invalid}}, () => resolve(is_invalid == undefined || is_invalid == 0));
+                                        });
+                                    },
+                                    onEditCommit: async () => {
+                                        this.setUser(i + 1, state.editUser);
+                                        this.setState({editUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}});
+                                        this.hackToAllowSave();
+                                    },
+                                    onEditAbort: async () => this.setState({editUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}}),
+                                    onRemoveClick: async () => {
+                                        this.setState({users: state.users.filter((v, idx) => idx != i + 1)});
+                                        this.hackToAllowSave();
+                                    }}
+                                })
+                            }
+                            // One user slot is always taken by the unknown user, so display MAX_ACTIVE_USERS - 1 as the maximum number of users that can be added.
+                            maxRowCount={MAX_ACTIVE_USERS - 1}
+                            addTitle={__("users.content.add_user_title")}
+                            addMessage={__("users.script.add_user_prefix") + (state.users.length - 1) + __("users.script.add_user_infix") + (MAX_ACTIVE_USERS - 1) + __("users.script.add_user_suffix")}
+                            onAddStart={async () => this.setState({addUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}})}
+                            onAddGetRows={() => [
+                                {
+                                    name: __("users.content.add_user_username"),
+                                    value: <InputText
+                                                value={state.addUser.username}
+                                                onValue={(v) => this.setState({addUser: {...state.addUser, username: v}})}
+                                                required
+                                                minLength={1}
+                                                maxLength={32}
+                                                placeholder={__("users.content.add_user_username_desc")}
+                                                class={state.addUser.is_invalid != undefined && state.addUser.is_invalid != 0 ? "is-invalid" : ""}
+                                                invalidFeedback={this.errorMessage(state.addUser)} />
+                                },
+                                {
+                                    name: __("users.content.add_user_display_name"),
+                                    value: <InputText
+                                                value={state.addUser.display_name}
+                                                onValue={(v) => this.setState({addUser: {...state.addUser, display_name: v}})}
+                                                required
+                                                minLength={1}
+                                                maxLength={32}
+                                                placeholder={__("users.content.add_user_display_name_desc")} />
+                                },
+                                {
+                                    name: __("users.content.add_user_current"),
+                                    value: <InputFloat
+                                                unit="A"
+                                                value={state.addUser.current}
+                                                onValue={(v) => this.setState({addUser: {...state.addUser, current: v}})}
+                                                digits={3}
+                                                min={6000}
+                                                max={32000} />
+                                },
+                                {
+                                    name: __("users.content.add_user_password"),
+                                    value: <InputPassword
+                                                maxLength={64}
+                                                value={state.addUser.password}
+                                                onValue={(v) => this.setState({addUser: {...state.addUser, password: v}})}
+                                                hideClear
+                                                placeholder={__("users.content.add_user_password_desc")} />
+                                },
+                            ]}
+                            onAddCheck={async () => {
+                                let is_invalid = await this.checkUsername(state.addUser, undefined);
+
+                                return new Promise<boolean>((resolve) => {
+                                    this.setState({addUser: {...state.addUser, is_invalid: is_invalid}}, () => resolve(is_invalid == undefined || is_invalid == 0));
+                                });
+                            }}
+                            onAddCommit={async () => {
+                                this.setState({
+                                    users: state.users.concat({...state.addUser, id: -1, roles: 0xFFFF}),
+                                    addUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0},
+                                });
+
+                                this.hackToAllowSave();
+                            }}
+                            onAddAbort={async () => this.setState({addUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}})}
+                            />
+
+
+                        {/*<div class="row row-cols-1 row-cols-md-2">
                         {state.users.slice(1).map((user, i) => (
                             <div class="col mb-4">
                             <Card className="h-100" key={user.id}>
@@ -391,15 +578,15 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                             </Card>
                             </div>
                         )).concat(addUserCard)}
-                        </div>
+                        </div>*/}
                     </FormRow>
                 </ConfigForm>
 
-                <ItemModal show={state.showModal}
-                    onHide={() => this.setState({showModal: false})}
-                    onSubmit={() => {this.setState({showModal: false,
-                        users: state.users.concat({...state.newUser, id: -1, roles: 0xFFFF}),
-                        newUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}});
+                {/*<ItemModal show={state.showAddModal}
+                    onHide={() => this.setState({showAddModal: false})}
+                    onSubmit={() => {this.setState({showAddModal: false,
+                        users: state.users.concat({...state.addUser, id: -1, roles: 0xFFFF}),
+                        addUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}});
                         this.hackToAllowSave();}}
                     title={__("users.content.add_user_modal_title")}
                     no_variant={"secondary"}
@@ -408,8 +595,8 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                     yes_text={__("users.content.add_user_modal_save")}>
                         <FormGroup label={__("users.content.add_user_modal_username")}>
                             <InputText
-                                value={state.newUser.username}
-                                onValue={(v) => this.setState({newUser: {...state.newUser, username: v}})}
+                                value={state.addUser.username}
+                                onValue={(v) => this.setState({addUser: {...state.addUser, username: v}})}
                                 required
                                 maxLength={32}
                                 placeholder={__("users.content.add_user_modal_username_desc")}
@@ -417,8 +604,8 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                         </FormGroup>
                         <FormGroup label={__("users.content.add_user_modal_display_name")}>
                             <InputText
-                                value={state.newUser.display_name}
-                                onValue={(v) => this.setState({newUser: {...state.newUser, display_name: v}})}
+                                value={state.addUser.display_name}
+                                onValue={(v) => this.setState({addUser: {...state.addUser, display_name: v}})}
                                 required
                                 maxLength={32}
                                 placeholder={__("users.content.add_user_modal_display_name_desc")}
@@ -427,8 +614,8 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                         <FormGroup label={__("users.content.add_user_modal_current")}>
                             <InputFloat
                                     unit="A"
-                                    value={state.newUser.current}
-                                    onValue={(v) => this.setState({newUser: {...state.newUser, current: v}})}
+                                    value={state.addUser.current}
+                                    onValue={(v) => this.setState({addUser: {...state.addUser, current: v}})}
                                     digits={3}
                                     min={6000}
                                     max={32000}
@@ -437,13 +624,69 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                         <FormGroup label={__("users.content.add_user_modal_password")}>
                             <InputPassword
                                 maxLength={64}
-                                value={state.newUser.password}
-                                onValue={(v) => this.setState({newUser: {...state.newUser, password: v}})}
+                                value={state.addUser.password}
+                                onValue={(v) => this.setState({addUser: {...state.addUser, password: v}})}
                                 hideClear
                                 placeholder={__("users.content.add_user_modal_password_desc")}
                                 />
                         </FormGroup>
-                </ItemModal>
+                </ItemModal>*/}
+
+                {/*this.setState({showEditModal: null,
+                    chargers: state.chargers.map((charger, i) => state.showEditModal === i ? state.editCharger : charger),
+                    editCharger: {name: "", host: ""}});
+                this.hackToAllowSave();}}
+
+
+                <ItemModal show={state.showEditModal}
+                    onHide={() => this.setState({showEditModal: null})}
+                    onSubmit={() => {this.setState({showEditModal: null,
+                        users: state.users.map({...state.addUser, id: -1, roles: 0xFFFF}),
+                        addUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}});
+                        this.hackToAllowSave();}}
+                    title={__("users.content.add_user_modal_title")}
+                    no_variant={"secondary"}
+                    yes_variant={"primary"}
+                    no_text={__("users.content.add_user_modal_abort")}
+                    yes_text={__("users.content.add_user_modal_save")}>
+                        <FormGroup label={__("users.content.add_user_modal_username")}>
+                            <InputText
+                                value={state.addUser.username}
+                                onValue={(v) => this.setState({addUser: {...state.addUser, username: v}})}
+                                required
+                                maxLength={32}
+                                placeholder={__("users.content.add_user_modal_username_desc")}
+                                />
+                        </FormGroup>
+                        <FormGroup label={__("users.content.add_user_modal_display_name")}>
+                            <InputText
+                                value={state.addUser.display_name}
+                                onValue={(v) => this.setState({addUser: {...state.addUser, display_name: v}})}
+                                required
+                                maxLength={32}
+                                placeholder={__("users.content.add_user_modal_display_name_desc")}
+                                />
+                        </FormGroup>
+                        <FormGroup label={__("users.content.add_user_modal_current")}>
+                            <InputFloat
+                                    unit="A"
+                                    value={state.addUser.current}
+                                    onValue={(v) => this.setState({addUser: {...state.addUser, current: v}})}
+                                    digits={3}
+                                    min={6000}
+                                    max={32000}
+                                    />
+                        </FormGroup>
+                        <FormGroup label={__("users.content.add_user_modal_password")}>
+                            <InputPassword
+                                maxLength={64}
+                                value={state.addUser.password}
+                                onValue={(v) => this.setState({addUser: {...state.addUser, password: v}})}
+                                hideClear
+                                placeholder={__("users.content.add_user_modal_password_desc")}
+                                />
+                        </FormGroup>
+                </ItemModal>*/}
             </SubPage>
         )
     }

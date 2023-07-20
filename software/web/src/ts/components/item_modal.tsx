@@ -23,6 +23,7 @@ import { __ } from "../translation";
 
 
 interface ItemModalProps extends ModalProps {
+    onCheck?: () => Promise<boolean>
     onSubmit: () => Promise<void>
     onHide: () => Promise<void>
 
@@ -52,7 +53,7 @@ export class ItemModal extends Component<ItemModalProps, any> {
     }
 
     render(props: ItemModalProps) {
-        let {onSubmit, onHide, show, title, children, no_variant, no_text, yes_variant, yes_text, ...p} = props;
+        let {onCheck, onSubmit, onHide, show, title, children, no_variant, no_text, yes_variant, yes_text, ...p} = props;
         
         return (
             <Modal show={show} onHide={() => onHide()} centered {...p}>
@@ -62,6 +63,10 @@ export class ItemModal extends Component<ItemModalProps, any> {
                 <form onSubmit={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
+
+                    if (onCheck && !await onCheck()) {
+                        return;
+                    }
 
                     if (!(e.target as HTMLFormElement).checkValidity() || (e.target as HTMLFormElement).querySelector(".is-invalid")) {
                         return;

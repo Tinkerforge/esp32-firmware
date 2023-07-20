@@ -35,6 +35,7 @@ export interface TableRow {
     editTitle?: string
     onEditStart?: () => Promise<void>
     onEditGetRows?: () => TableModalRow[]
+    onEditCheck?: () => Promise<boolean>
     onEditCommit?: () => Promise<void>
     onEditAbort?: () => Promise<void>
     onRemoveClick?: () => Promise<void>
@@ -48,6 +49,7 @@ export interface TableProps {
     addTitle?: string
     onAddStart?: () => Promise<void>
     onAddGetRows?: () => TableModalRow[]
+    onAddCheck?: () => Promise<boolean>
     onAddCommit?: () => Promise<void>
     onAddAbort?: () => Promise<void>
     tableTill?: string
@@ -181,6 +183,13 @@ export class Table extends Component<TableProps, TableState> {
                 </div>
 
                 <ItemModal
+                    onCheck={async () => {
+                        if (props.onAddCheck) {
+                            return await props.onAddCheck();
+                        }
+
+                        return true;
+                    }}
                     onSubmit={async () => {
                         if (props.onAddCommit) {
                             await props.onAddCommit();
@@ -209,6 +218,13 @@ export class Table extends Component<TableProps, TableState> {
                 </ItemModal>
 
                 <ItemModal
+                    onCheck={async () => {
+                        if (props.rows[state.showEditModal].onEditCheck) {
+                            return await props.rows[state.showEditModal].onEditCheck();
+                        }
+
+                        return true;
+                    }}
                     onSubmit={async () => {
                         if (props.rows[state.showEditModal].onEditCommit) {
                             await props.rows[state.showEditModal].onEditCommit();
