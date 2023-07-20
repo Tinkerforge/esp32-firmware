@@ -140,7 +140,7 @@ void EvseCommon::pre_setup() {
     ConfUnionPrototype proto;
     proto.tag = CRON_TRIGGER_IEC_CHANGE;
     proto.config = Config::Object({
-        {"iec61851_state", Config::Uint(0, 0, 4)}
+        {"charger_state", Config::Uint(0, 0, 4)}
     });
 
     cron.register_trigger(proto);
@@ -538,7 +538,7 @@ void EvseCommon::register_urls() {
 
         // we need this since not only iec state changes trigger this api event.
         static uint32_t last_state = 0;
-        uint32_t state_now = cfg->get("iec61851_state")->asUint();
+        uint32_t state_now = cfg->get("charger_state")->asUint();
         if (last_state != state_now) {
             cron.trigger_action(this, CRON_TRIGGER_IEC_CHANGE, 0);
             last_state = state_now;
