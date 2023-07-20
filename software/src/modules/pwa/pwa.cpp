@@ -18,16 +18,10 @@
  */
 
 #include "pwa.h"
-#include "web_server.h"
-#include "event_log.h"
-#include "modules.h"
 #include "manifest.embedded.h"
+#include "module_dependencies.h"
 
-void Pwa::pre_setup() {}
-
-void Pwa::setup() {
-    initialized = true;
-}
+#include "web_server.h"
 
 void Pwa::register_urls() {
     server.on("/manifest.json", HTTP_GET, [](WebServerRequest request) {
