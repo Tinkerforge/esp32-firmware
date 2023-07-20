@@ -239,6 +239,16 @@ void EnergyManager::setup()
         charge_manager_allocated_current_ma = current_ma;
     });
 
+#if MODULE_METERS_AVAILABLE() && MODULE_METERS_EM_AVAILABLE()
+    IMeter *found_meter;
+    uint32_t found_count = meters.get_meters(METER_CLASS_LOCAL_EM, &found_meter, 1);
+    if (found_count > 0) {
+        if (found_meter->get_class() == METER_CLASS_LOCAL_EM) {
+            local_meter = static_cast<MeterEM *>(found_meter);
+        }
+    }
+#endif
+
     // Cache config for energy update
     default_mode                = config_in_use.get("default_mode")->asUint();
     excess_charging_enable      = config_in_use.get("excess_charging_enable")->asBool();
@@ -508,6 +518,12 @@ void EnergyManager::update_all_data()
         meter_state.get("energy_meter_energy_import")->updateFloat(all_data.energy_import);
         meter_state.get("energy_meter_energy_export")->updateFloat(all_data.energy_export);
     }
+
+#if MODULE_METERS_EM_AVAILABLE()
+    if (local_meter) {
+        local_meter->update_from_em_all_data(all_data);
+    }
+#endif
 
     // Update states derived from all_data
     is_3phase   = contactor_installed ? all_data.contactor_value : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
