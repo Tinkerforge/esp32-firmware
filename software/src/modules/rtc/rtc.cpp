@@ -55,8 +55,8 @@ void Rtc::pre_setup()
     ConfUnionPrototype proto;
     proto.tag = CRON_TRIGGER_CRON;
     proto.config = Config::Object({
-        {"mday", Config::Int(-1, -1, 29)},
-        {"wday", Config::Int(-1, -1, 6)},
+        {"mday", Config::Int(-1, -1, 31)},
+        {"wday", Config::Int(-1, -1, 7)},
         {"hour", Config::Int(-1, -1, 23)},
         {"minute", Config::Int(-1, -1, 59)}
     });
@@ -166,14 +166,14 @@ bool Rtc::update_system_time()
 bool Rtc::action_triggered(Config *conf, void *data) {
     Config *cfg = (Config*)conf->get();
     tm *time_struct = (tm *)data;
-    uint8_t triggered = !(cfg->get("mday")->asInt() == time_struct->tm_mday || cfg->get("mday")->asInt() == -1);
-    triggered += !(cfg->get("wday")->asInt() == time_struct->tm_wday || cfg->get("wday")->asInt() == -1);
-    triggered += !(cfg->get("hour")->asInt() == time_struct->tm_hour || cfg->get("hour")->asInt() == -1);
-    triggered += !(cfg->get("minute")->asInt() == time_struct->tm_min || cfg->get("minute")->asInt() == -1);
+    bool triggered = !(cfg->get("mday")->asInt() == time_struct->tm_mday || cfg->get("mday")->asInt() == -1 || cfg->get("mday")->asInt() == 0);
+    triggered |= !((cfg->get("wday")->asInt() % 7) == time_struct->tm_wday || cfg->get("wday")->asInt() == -1);
+    triggered |= !(cfg->get("hour")->asInt() == time_struct->tm_hour || cfg->get("hour")->asInt() == -1);
+    triggered |= !(cfg->get("minute")->asInt() == time_struct->tm_min || cfg->get("minute")->asInt() == -1);
 
     switch (conf->getTag()) {
         case CRON_TRIGGER_CRON:
-            if (triggered == 0) {
+            if (triggered) {
                 return true;
             }
             break;
