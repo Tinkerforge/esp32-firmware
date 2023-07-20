@@ -57,6 +57,7 @@ private:
     Config *state;
     ConfigRoot errors;
     ConfigRoot all_values_conf;
+    ConfigRoot all_values_names;
     float all_values_float[METER_ALL_VALUES_COUNT] = {NAN};
     bool all_values_task_started = false;
 };
