@@ -173,7 +173,7 @@ bool Rtc::action_triggered(Config *conf, void *data) {
 
     switch (conf->getTag()) {
         case CRON_TRIGGER_CRON:
-            if (triggered) {
+            if (!triggered) {
                 return true;
             }
             break;
