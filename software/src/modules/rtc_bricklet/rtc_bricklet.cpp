@@ -18,9 +18,9 @@
  */
 
 #include "rtc_bricklet.h"
+#include "module_dependencies.h"
 
 #include "build.h"
-#include "modules.h"
 #include <ctime>
 
 #include "gcc_warnings.h"

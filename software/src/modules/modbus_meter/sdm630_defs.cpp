@@ -1,7 +1,7 @@
 #include "sdm630_defs.h"
+#include "module_dependencies.h"
 
 #include "api.h"
-#include "modules.h"
 
 static ConfigRoot sdm630_reset;
 

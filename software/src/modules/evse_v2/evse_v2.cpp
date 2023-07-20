@@ -18,6 +18,7 @@
  */
 
 #include "evse_v2.h"
+#include "module_dependencies.h"
 
 #include "bindings/errors.h"
 
@@ -26,7 +27,6 @@
 #include "task_scheduler.h"
 #include "tools.h"
 #include "web_server.h"
-#include "modules.h"
 
 extern bool firmware_update_allowed;
 

@@ -18,7 +18,7 @@
  */
 
 #include "evse_common.h"
-#include "modules.h"
+#include "module_dependencies.h"
 
 extern uint32_t local_uid_num;
 
