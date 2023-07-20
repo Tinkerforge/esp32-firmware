@@ -62,19 +62,25 @@ void MeterEM::register_urls(String base_url)
     api.addState(base_url + "/all_values", &all_values_conf, {}, 1000);
 }
 
-bool have_values = false;
-
-bool MeterEM::get_power(int32_t *power_w)
+bool MeterEM::get_power(float *power_w)
 {
-    return have_values;
+    float power = all_values_float[METER_ALL_VALUES_TOTAL_SYSTEM_POWER_W];
+
+    if (isnan(power))
+        return false;
+
+    *power_w = power;
+    return true;
 }
+
+bool have_values = false;
 
 bool MeterEM::get_import_export(float *energy_import_kwh, float *energy_export_kwh)
 {
     return have_values;
 }
 
-bool MeterEM::get_line_currents(int32_t *l1_current_ma, int32_t *l2_current_ma, int32_t *l3_current_ma)
+bool MeterEM::get_line_currents(float *l1_current_ma, float *l2_current_ma, float *l3_current_ma)
 {
     return have_values;
 }
@@ -99,6 +105,8 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
         //METER_ALL_VALUES_CURRENT_L1_A
         //METER_ALL_VALUES_CURRENT_L2_A
         //METER_ALL_VALUES_CURRENT_L3_A
+
+        power_hist.add_sample(power);
 
         if (!all_values_task_started) {
             task_scheduler.scheduleWithFixedDelay([this](){
