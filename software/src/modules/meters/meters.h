@@ -20,6 +20,7 @@
 #pragma once
 
 #include "imeter.h"
+#include "meter_class_defs.h"
 #include "meter_generator.h"
 
 #include <stdint.h>
@@ -50,7 +51,7 @@ private:
     MeterGenerator *get_generator_for_class(uint32_t meter_class);
     IMeter *new_meter_of_class(uint32_t meter_class, Config *state, const Config *config);
 
-    ConfigRoot configs[METER_SLOTS];
+    ConfigRoot config_unions[METER_SLOTS];
     ConfigRoot states[METER_SLOTS];
 
     std::vector<std::tuple<uint32_t, MeterGenerator *>> generators;
