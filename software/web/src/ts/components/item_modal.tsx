@@ -55,7 +55,7 @@ export class ItemModal extends Component<ItemModalProps, any> {
 
     render(props: ItemModalProps) {
         let {onCheck, onSubmit, onHide, show, title, children, no_variant, no_text, yes_variant, yes_text, ...p} = props;
-        
+
         return (
             <Modal show={show} onHide={() => onHide()} centered {...p}>
                 <Modal.Header closeButton>
