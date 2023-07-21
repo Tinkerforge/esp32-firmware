@@ -128,10 +128,10 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                             rows={state.authorized_tags.map((tag, i) =>
                                 { return {
                                     columnValues: [
-                                        <>{tag.tag_id}</>,
-                                        <>{translate_unchecked(`nfc.content.type_${tag.tag_type}`)}</>,
-                                        <>{tag.user_id == 0 ? __("nfc.script.not_assigned") : state.userCfg.users[tag.user_id].display_name}</>,
-                                        <>{auth_seen_ids.indexOf(i) >= 0 ? __("nfc.content.last_seen") + util.format_timespan(Math.floor(auth_seen_tags[auth_seen_ids.indexOf(i)].last_seen / 1000)) + __("nfc.content.last_seen_suffix") : __("nfc.script.not_seen")}</>
+                                        tag.tag_id,
+                                        translate_unchecked(`nfc.content.type_${tag.tag_type}`),
+                                        tag.user_id == 0 ? __("nfc.script.not_assigned") : state.userCfg.users[tag.user_id].display_name,
+                                        auth_seen_ids.indexOf(i) >= 0 ? __("nfc.content.last_seen") + util.format_timespan(Math.floor(auth_seen_tags[auth_seen_ids.indexOf(i)].last_seen / 1000)) + __("nfc.content.last_seen_suffix") : __("nfc.script.not_seen")
                                     ],
                                     editTitle: __("nfc.content.edit_tag_title"),
                                     onEditStart: async () => this.setState({editTag: {tag_id: tag.tag_id, user_id: tag.user_id, tag_type: tag.tag_type}}),

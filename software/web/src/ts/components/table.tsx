@@ -159,7 +159,7 @@ export class Table extends Component<TableProps, TableState> {
                         <Card.Body style="padding-bottom: 0.5rem;">
                         {props.columnNames.slice(1).map((columnName, i) =>
                         <FormGroup label={columnName}>
-                            <span class="form-control" style="height: unset;" readonly>{row.columnValues[1 + i]}</span>
+                            <span class="form-control" style="height: unset;" readonly>{row.columnValues[1 + i] ? row.columnValues[1 + i] : <>&nbsp;</>}</span>
                         </FormGroup>)}
                     </Card.Body></Card>)}
                     {props.onAddStart ?
