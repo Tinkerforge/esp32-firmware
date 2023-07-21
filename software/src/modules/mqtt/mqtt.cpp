@@ -208,8 +208,6 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     }
 
     for (auto &c : commands) {
-        if (c.topic.length() != topic_len)
-            continue;
         if (!matchTopicFilter(topic, topic_len, c.topic.c_str(), c.topic.length()))
             continue;
 
