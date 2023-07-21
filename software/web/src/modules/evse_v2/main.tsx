@@ -221,14 +221,6 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                         <InputText value={util.format_timespan(Math.floor(ll_state.uptime / 1000.0))}/>
                     </FormRow>
 
-                    {/*<FormRow label={__("evse.content.control_pilot_disconnect_desc")} label_muted={__("evse.content.control_pilot_disconnect_desc_muted")}>
-                        <Switch desc={__("evse.content.control_pilot_disconnect")}
-                                checked={control_pilot_disconnect.disconnect}
-                                onClick={async () => {
-                                    let inverted = !control_pilot_disconnect.disconnect;
-                                    await API.save('evse/control_pilot_disconnect', {"disconnect": inverted}, __("evse.script.save_failed"));
-                                }}/>
-                            </FormRow>*/}
 
                     <FormSeparator heading={__("evse.content.charging_current")}/>
 
