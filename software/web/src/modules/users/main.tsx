@@ -330,23 +330,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         if (!util.render_allowed())
             return <></>
 
-        /*let addUserCard = this.state.next_user_id != 0 ? <div class="col mb-4">
-                <Card className="h-100" key={999}>
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <UserPlus/>
-                    <Button variant="outline-dark" size="sm" style="visibility: hidden;">
-                        <UserX/><span class="ml-2" style="font-size: 1rem; vertical-align: middle;">{__("users.script.delete")}</span>
-                    </Button>
-                </div>
-                <Card.Body>
-                    {state.users.length >= MAX_ACTIVE_USERS
-                        // One user slot is always taken by the unknown user, so display MAX_ACTIVE_USERS - 1 as the maximum number of users that can be added.
-                        ? <span>{__("users.script.add_user_disabled_prefix") + (MAX_ACTIVE_USERS - 1) + __("users.script.add_user_disabled_suffix")}</span>
-                        : <Button variant="light" size="lg" block style="height: 100%;" onClick={() => this.setState({showAddModal: true})}>{__("users.script.add_user")}</Button>}
-                </Card.Body>
-            </Card>
-        </div> : <></>*/
-
         let auth_allowed = this.http_auth_allowed();
 
         // Only allow enabling the user slot if there are at least two users (anonymous counts as one)
