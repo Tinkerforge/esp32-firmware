@@ -23,8 +23,8 @@
 #include "event_log.h"
 #include "tools.h"
 #include "task_scheduler.h"
-#include "web_server.h"
-#include "modules.h"
+
+#include "module_dependencies.h"
 
 void APIMeter::pre_setup()
 {
