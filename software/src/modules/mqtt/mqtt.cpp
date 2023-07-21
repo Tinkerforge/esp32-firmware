@@ -78,7 +78,7 @@ void Mqtt::subscribe_with_prefix(const String &path, std::function<void(const ch
 
 void Mqtt::subscribe(const String &topic, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained)
 {
-    this->commands.push_back({topic, callback, forbid_retained});
+    this->commands.push_back({topic, callback, forbid_retained, topic.startsWith(config_in_use.get("global_topic_prefix")->asString())});
 
     esp_mqtt_client_unsubscribe(client, topic.c_str());
     esp_mqtt_client_subscribe(client, topic.c_str(), 0);
@@ -147,7 +147,6 @@ void Mqtt::onMqttConnect()
     logger.printfln("MQTT: Connected to broker.");
     this->state.get("connection_state")->updateInt((int)MqttConnectionState::CONNECTED);
 
-    this->commands.clear();
     for (size_t i = 0; i < api.commands.size(); ++i) {
         auto &reg = api.commands[i];
         this->addCommand(i, reg);
@@ -168,6 +167,13 @@ void Mqtt::onMqttConnect()
     String topic = prefix + "/#";
     esp_mqtt_client_unsubscribe(client, topic.c_str());
     esp_mqtt_client_subscribe(client, topic.c_str(), 0);
+
+    for (auto &cmd : this->commands) {
+        if (cmd.starts_with_global_topic_prefix)
+            continue;
+        esp_mqtt_client_unsubscribe(client, cmd.topic.c_str());
+        esp_mqtt_client_subscribe(client, cmd.topic.c_str(), 0);
+    }
 }
 
 void Mqtt::onMqttDisconnect()

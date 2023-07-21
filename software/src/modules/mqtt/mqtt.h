@@ -36,6 +36,7 @@ struct MqttCommand {
     String topic;
     std::function<void(const char *, size_t, char *, size_t)> callback;
     bool forbid_retained;
+    bool starts_with_global_topic_prefix;
 };
 
 struct MqttState {
