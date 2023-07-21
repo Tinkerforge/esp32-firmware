@@ -11,10 +11,12 @@
 #include "esp_crt_bundle.h"
 #include "mbedtls/base64.h"
 #include "esp_transport_ws.h"
+#include "LittleFS.h"
 
-#include "modules.h"
 #include "api.h"
 #include "build.h"
+#include "task_scheduler.h"
+#include "module_dependencies.h"
 
 static bool feature_evse = false;
 static bool feature_meter = false;
@@ -826,9 +828,7 @@ void platform_reset(bool hard) {
         At receipt of a hard reset the Charge Point SHALL restart (all) the hardware, it is not required to gracefully stop
         ongoing transaction.
         */
-#if MODULE_EVSE_COMMON_AVAILABLE()
         evse_common.reset();
-#endif
 #if MODULE_MODBUS_METER_AVAILABLE()
         modbus_meter.reset();
 #endif

@@ -20,9 +20,9 @@
 #include "ocpp.h"
 
 #include "build.h"
-#include "modules.h"
 #include "api.h"
 #include "task_scheduler.h"
+#include "module_dependencies.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -194,6 +194,7 @@ void Ocpp::register_urls()
 #endif
 }
 
+#if MODULE_NFC_AVAILABLE()
 void Ocpp::on_tag_seen(const char *tag_id) {
     if (tag_seen_cb == nullptr)
         return;
@@ -205,3 +206,4 @@ void Ocpp::on_tag_seen(const char *tag_id) {
 
     tag_seen_cb(1, buf, tag_seen_cb_user_data);
 }
+#endif
