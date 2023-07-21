@@ -24,8 +24,8 @@
 #include "esp_netif.h"
 
 #include "api.h"
-#include "modules.h"
 #include "task_scheduler.h"
+#include "module_dependencies.h"
 
 #include "modbus_tcp.h"
 #include "build.h"

@@ -21,9 +21,10 @@
 
 #include <memory>
 
-#include "modules.h"
+#include "api.h"
 #include "task_scheduler.h"
 #include "tools.h"
+#include "module_dependencies.h"
 
 #include "pdf_charge_log.h"
 
