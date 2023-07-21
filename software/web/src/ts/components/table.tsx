@@ -82,7 +82,11 @@ export class Table extends Component<TableProps, TableState> {
                             {props.columnNames.map((columnName) => (
                                 <th scope="col" style="vertical-align: middle;">{columnName}</th>
                             ))}
-                            <th scope="col"></th>
+                            <th scope="col">
+                                <Button size="sm" disabled={true} style="visibility: hidden;">
+                                    <Trash2/>
+                                </Button>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
