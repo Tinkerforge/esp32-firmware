@@ -111,12 +111,11 @@ void Mqtt::addResponse(size_t responseIdx, const ResponseRegistration &reg)
 {
 }
 
-void Mqtt::publish_with_prefix(const String &path, const String &payload)
+void Mqtt::publish_with_prefix(const String &path, const String &payload, bool retain)
 {
     const String &prefix = config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
-    // Retain messages because we only send on change.
-    publish(topic, payload, true);
+    publish(topic, payload, retain);
 }
 
 void Mqtt::publish(const String &topic, const String &payload, bool retain)
@@ -161,10 +160,6 @@ void Mqtt::onMqttConnect()
         publish_with_prefix(reg.path, reg.config->to_string_except(reg.keys_to_censor));
     }
 
-    for (auto *consumer : this->consumers) {
-        consumer->onMqttConnect();
-    }
-
     const String &prefix = config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/#";
     esp_mqtt_client_unsubscribe(client, topic.c_str());
@@ -201,12 +196,6 @@ void Mqtt::onMqttDisconnect()
 
 void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
 {
-    for (auto *consumer : this->consumers) {
-        if (consumer->onMqttMessage(topic, topic_len, data, data_len, retain)) {
-            return;
-        }
-    }
-
     for (auto &c : commands) {
         if (!matchTopicFilter(topic, topic_len, c.topic.c_str(), c.topic.length()))
             continue;
@@ -364,10 +353,6 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         default:
             break;
     }
-}
-
-void Mqtt::register_consumer(IMqttConsumer *consumer) {
-    this->consumers.push_back(consumer);
 }
 
 void Mqtt::setup()

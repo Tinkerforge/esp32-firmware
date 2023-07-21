@@ -24,18 +24,14 @@
 #include "module.h"
 #include "mqtt_discovery_topics.h"
 #include "tools.h"
-#include "modules/mqtt/consumer.h"
 
-class MqttAutoDiscovery final : public IModule, public IMqttConsumer
+class MqttAutoDiscovery final : public IModule
 {
 public:
     MqttAutoDiscovery(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-
-    void onMqttConnect() override;
-    bool onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain) override;
 
     ConfigRoot config;
     ConfigRoot config_in_use;
@@ -53,8 +49,4 @@ private:
     void prepare_topics();
     void subscribe_to_own();
     void check_discovery_topic(const char *topic, size_t topic_len, size_t data_len);
-
-    size_t subscribed_topics_difference_at;
-    char subscribed_topics_difference_commands;
-    char subscribed_topics_difference_discovery;
 };

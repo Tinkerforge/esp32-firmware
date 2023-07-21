@@ -24,9 +24,8 @@
 
 #include "config.h"
 #include "module.h"
-#include "modules/mqtt/consumer.h"
 
-class MqttMeter final : public IModule, public IMqttConsumer
+class MqttMeter final : public IModule
 {
 public:
     MqttMeter(){}
@@ -34,12 +33,11 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void onMqttConnect() override;
-    bool onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain) override;
-
     ConfigRoot config;
 
 private:
+    void onMessage(const char *topic, size_t topic_len, char *data, size_t data_len, void (MqttMeter::*message_handler)(const JsonDocument &doc));
+
     void handle_mqtt_values(const JsonDocument &doc);
     void handle_mqtt_all_values(const JsonDocument &doc);
 

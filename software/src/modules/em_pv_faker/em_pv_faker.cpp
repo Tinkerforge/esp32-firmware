@@ -62,8 +62,6 @@ void EmPvFaker::pre_setup()
 
 void EmPvFaker::setup()
 {
-    mqtt.register_consumer(this);
-
     api.restorePersistentConfig("em_pv_faker/config", &config);
 
     int32_t target_power = 0;
@@ -81,6 +79,48 @@ void EmPvFaker::setup()
     runtime_config.get("manual_power")->updateInt(target_power);
 
     initialized = true;
+
+    // Always subscribe to illuminance topic even when auto_fake is not on
+    // because it can be turned on at runtime.
+    const String &topic = config.get("topic")->asString();
+    if (topic.length() < 3)
+        return;
+
+    mqtt.subscribe(
+        topic,
+        [this](const char *_topic, size_t _topic_len, char *data, size_t data_len) {
+            StaticJsonDocument<JSON_OBJECT_SIZE(10)> doc;
+            DeserializationError error = deserializeJson(doc, data, data_len);
+            if (error) {
+                logger.printfln("em_pv_faker: Failed to deserialize MQTT payload: %s", error.c_str());
+                return;
+            }
+
+            uint32_t illuminance = doc["illuminance"].as<uint32_t>();
+            state.get("illuminance")->updateUint(illuminance);
+
+            if (!config.get("auto_fake")->asBool())
+                return;
+
+            uint64_t peak_power          = config.get("peak_power" )->asUint();
+            uint32_t zero_at_lux         = config.get("zero_at_lux")->asUint();
+            uint32_t peak_at_lux         = config.get("peak_at_lux")->asUint();
+            uint64_t peak_at_lux_shifted = peak_at_lux - zero_at_lux;
+
+            if (illuminance < zero_at_lux) {
+                illuminance = zero_at_lux;
+            } else if (illuminance > peak_at_lux) {
+                illuminance = peak_at_lux;
+            }
+
+            uint64_t illuminance_shifted = illuminance - zero_at_lux;
+
+            int32_t fake_power_w = static_cast<int32_t>(peak_power * illuminance_shifted / peak_at_lux_shifted);
+            state.get("fake_power")->updateInt(fake_power_w);
+
+            return;
+        },
+        false);
 }
 
 void EmPvFaker::register_urls()
@@ -97,57 +137,4 @@ void EmPvFaker::register_urls()
         if (!config.get("auto_fake")->asBool())
             state.get("fake_power")->updateInt(new_power);
     }, false);
-}
-
-void EmPvFaker::onMqttConnect()
-{
-    // Always subscribe to illuminance topic even when auto_fake is not on
-    // because it can be turned on at runtime.
-
-    const String &topic = config.get("topic")->asString();
-
-    if (topic.length() < 3)
-        return;
-
-    esp_mqtt_client_subscribe(mqtt.client, topic.c_str(), 0);
-}
-
-bool EmPvFaker::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
-{
-    const String &illuminance_topic = config.get("topic")->asString();
-    if (illuminance_topic.length() != topic_len || memcmp(illuminance_topic.c_str(), topic, topic_len) != 0) {
-        // Not our topic
-        return false;
-    }
-
-    StaticJsonDocument<JSON_OBJECT_SIZE(10)> doc;
-    DeserializationError error = deserializeJson(doc, data, data_len);
-    if (error) {
-        logger.printfln("em_pv_faker: Failed to deserialize MQTT payload: %s", error.c_str());
-        return true;
-    }
-
-    uint32_t illuminance = doc["illuminance"].as<uint32_t>();
-    state.get("illuminance")->updateUint(illuminance);
-
-    if (!config.get("auto_fake")->asBool())
-        return true;
-
-    uint64_t peak_power          = config.get("peak_power" )->asUint();
-    uint32_t zero_at_lux         = config.get("zero_at_lux")->asUint();
-    uint32_t peak_at_lux         = config.get("peak_at_lux")->asUint();
-    uint64_t peak_at_lux_shifted = peak_at_lux - zero_at_lux;
-
-    if (illuminance < zero_at_lux) {
-        illuminance = zero_at_lux;
-    } else if (illuminance > peak_at_lux) {
-        illuminance = peak_at_lux;
-    }
-
-    uint64_t illuminance_shifted = illuminance - zero_at_lux;
-
-    int32_t fake_power_w = static_cast<int32_t>(peak_power * illuminance_shifted / peak_at_lux_shifted);
-    state.get("fake_power")->updateInt(fake_power_w);
-
-    return true;
 }
