@@ -30,6 +30,7 @@ interface ItemModalProps extends ModalProps {
     show: boolean
 
     title: string
+    // Don't use ComponentChildren here: We want to pass in the idContext. This only works on VNodes.
     children: VNode | VNode[]
     no_variant: string
     no_text: string

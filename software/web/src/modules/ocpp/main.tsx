@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
-import { h, render, Component, Fragment, VNode} from "preact";
+import { h, render, Component, Fragment} from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 
 import { Switch } from "../../ts/components/switch";

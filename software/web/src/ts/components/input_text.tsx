@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Context, Fragment, VNode, toChildArray } from "preact";
+import { h, Context, Fragment, ComponentChildren} from "preact";
 import {useContext} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { __ } from "../translation";
@@ -28,7 +28,7 @@ interface InputTextProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
     idContext?: Context<string>
     onValue?: (value: string) => void
     class?: string
-    children?: VNode | VNode[]
+    children?: ComponentChildren
 }
 
 interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "className"> {
@@ -36,7 +36,7 @@ interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<H
     onValue?: (value: string) => void
     invalidFeedback: string
     class?: string
-    children?: VNode | VNode[]
+    children?: ComponentChildren
 }
 
 export function InputText<T extends (InputTextProps | InputTextWithValidationProps)>(props: util.NoExtraProperties<InputTextProps, T> | InputTextWithValidationProps) {

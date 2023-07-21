@@ -18,7 +18,7 @@
  */
 
 import { __ } from "../translation";
-import { h, Component, Fragment, VNode } from "preact";
+import { h, Component, Fragment, VNode, ComponentChild } from "preact";
 import { Card, Button } from "react-bootstrap";
 import { Plus, Edit3, Trash2 } from "react-feather";
 import { FormGroup } from "./form_group";
@@ -26,12 +26,13 @@ import { ItemModal } from "./item_modal";
 
 export interface TableModalRow {
     name: string
+    // FormRow only accepts VNodes, not other ComponentChild variants.
     value: VNode
     valueClassList?: string
 }
 
 export interface TableRow {
-    columnValues: VNode[]
+    columnValues: ComponentChild[]
     editTitle?: string
     onEditStart?: () => Promise<void>
     onEditGetRows?: () => TableModalRow[]

@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
-import { h, render, createRef, Fragment, Component, ComponentChild, RefObject, VNode } from "preact";
+import { h, render, createRef, Fragment, Component, ComponentChild, RefObject, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 import { InputDate } from "../../ts/components/input_date";
@@ -208,7 +208,7 @@ const em_relay_fills: {[id: number]: string} = {
 interface UplotLoaderProps {
     show: boolean;
     marker_class: 'h3'|'h4';
-    children: VNode | VNode[];
+    children: ComponentChildren;
 };
 
 class UplotLoader extends Component<UplotLoaderProps, {}> {

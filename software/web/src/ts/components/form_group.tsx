@@ -22,6 +22,7 @@ import { h, Component, createContext, Context, VNode, cloneElement, toChildArray
 export interface FormGroupProps {
     label: string
     label_muted?: string
+    // Don't use ComponentChildren here: We want to pass in the idContext. This only works on VNodes.
     children: VNode | VNode[]
     valueClassList?: string
 }

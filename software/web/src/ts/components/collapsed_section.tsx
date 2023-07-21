@@ -17,13 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, VNode, Fragment, toChildArray} from "preact";
+import { h, Component, Fragment, ComponentChildren} from "preact";
 import { Button, Collapse } from "react-bootstrap";
 import { __ } from "../../ts/translation";
 
 interface CollapsedSectionProps {
     label: string
-    children: VNode | VNode[]
+    children: ComponentChildren
 }
 
 interface CollapsedSectionState {
@@ -50,7 +50,7 @@ export class CollapsedSection extends Component<CollapsedSectionProps, Collapsed
             </div>
             <Collapse in={state.show}>
                 <div>
-                    {toChildArray(props.children)}
+                    {props.children}
                 </div>
             </Collapse>
             </>

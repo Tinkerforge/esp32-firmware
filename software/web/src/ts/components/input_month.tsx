@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Context, VNode, Fragment } from "preact";
+import { h, Context, ComponentChildren, Fragment } from "preact";
 import { useContext, useRef } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
@@ -30,7 +30,7 @@ interface InputMonthProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputEleme
     date: Date
     onDate?: (value: Date) => void
     buttons?: "year"|"month"
-    children?: VNode | VNode[]
+    children?: ComponentChildren
     style?: string
 }
 

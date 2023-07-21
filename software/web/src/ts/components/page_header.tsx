@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, VNode } from "preact";
+import { h, Component, ComponentChildren } from "preact";
 
 export interface PageHeaderProps {
     title: string
-    children?: VNode | VNode[]
+    children?: ComponentChildren
 }
 
 export class PageHeader extends Component<PageHeaderProps, any> {

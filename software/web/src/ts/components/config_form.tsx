@@ -19,7 +19,7 @@
 
 import * as util from "../../ts/util";
 
-import { h, Component, VNode, Fragment, JSX } from "preact";
+import { h, Component, Fragment, JSX, ComponentChildren } from "preact";
 import { __ } from "../translation";
 
 interface ConfigFormState {
@@ -29,7 +29,7 @@ interface ConfigFormState {
 }
 
 interface ConfigFormProps {
-    children: VNode | VNode[]
+    children: ComponentChildren
     id: string
     title: string
     isModified: boolean
