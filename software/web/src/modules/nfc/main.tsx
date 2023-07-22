@@ -183,7 +183,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                     }
                                 }})
                             }
-                            maxRowCount={MAX_AUTHORIZED_TAGS}
+                            addEnabled={state.authorized_tags.length < MAX_AUTHORIZED_TAGS}
                             addTitle={__("nfc.content.add_tag_title")}
                             addMessage={__("nfc.content.add_tag_prefix") + state.authorized_tags.length + __("nfc.content.add_tag_infix") + MAX_AUTHORIZED_TAGS + __("nfc.content.add_tag_suffix")}
                             onAddStart={async () => this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}})}

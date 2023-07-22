@@ -442,10 +442,10 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                     }}
                                 })
                             }
-                            // One user slot is always taken by the unknown user, so display MAX_ACTIVE_USERS - 1 as the maximum number of users that can be added.
-                            maxRowCount={MAX_ACTIVE_USERS - 1}
+                            addEnabled={API.get('users/config').next_user_id != 0 && state.users.length < MAX_ACTIVE_USERS}
                             addTitle={__("users.content.add_user_title")}
-                            addMessage={__("users.content.add_user_prefix") + (state.users.length - 1) + __("users.content.add_user_infix") + (MAX_ACTIVE_USERS - 1) + __("users.content.add_user_suffix")}
+                            // One user slot is always taken by the unknown user, so display MAX_ACTIVE_USERS - 1 as the maximum number of users that can be added.
+                            addMessage={API.get('users/config').next_user_id == 0 ? __("users.content.add_user_user_ids_exhausted") : __("users.content.add_user_prefix") + (state.users.length - 1) + __("users.content.add_user_infix") + (MAX_ACTIVE_USERS - 1) + __("users.content.add_user_suffix")}
                             onAddStart={async () => this.setState({addUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}})}
                             onAddGetRows={() => [
                                 {

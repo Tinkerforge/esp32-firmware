@@ -45,7 +45,7 @@ export interface TableRow {
 export interface TableProps {
     columnNames: string[]
     rows: TableRow[]
-    maxRowCount?: number
+    addEnabled?: boolean
     addMessage?: string
     addTitle?: string
     onAddStart?: () => Promise<void>
@@ -126,7 +126,7 @@ export class Table extends Component<TableProps, TableState> {
                                             await props.onAddStart();
                                             this.setState({showAddModal: true});
                                         }}
-                                        disabled={props.maxRowCount !== undefined && props.rows.length >= props.maxRowCount}>
+                                        disabled={!props.addEnabled}>
                                     <Plus/>
                                 </Button>
                             </td>
@@ -178,7 +178,7 @@ export class Table extends Component<TableProps, TableState> {
                                         await props.onAddStart();
                                         this.setState({showAddModal: true});
                                     }}
-                                    disabled={props.maxRowCount !== undefined && props.rows.length >= props.maxRowCount}>
+                                    disabled={!props.addEnabled}>
                                 <Plus/>
                             </Button>
                             </div>

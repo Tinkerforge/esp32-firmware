@@ -32,7 +32,7 @@
             "add_user_prefix": "",
             "add_user_infix": " of ",
             "add_user_suffix": " users configured",
-            "add_user_disabled_user_ids_exhausted": "The maximum number of users has tracked charges. To be able to add a new user, tracked charges or a user without tracked charges have to be removed.",
+            "add_user_user_ids_exhausted": "The maximum number of users has tracked charges. To be able to add a new user, tracked charges or a user without tracked charges have to be removed.",
 
             "edit_user_title": "Edit user",
             "edit_user_username": "Username",

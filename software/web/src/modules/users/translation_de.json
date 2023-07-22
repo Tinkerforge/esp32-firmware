@@ -32,7 +32,7 @@
             "add_user_prefix": "",
             "add_user_infix": " von ",
             "add_user_suffix": " Benutzern konfiguriert",
-            "add_user_disabled_user_ids_exhausted": "Die maximale Anzahl an Benutzern hat Ladevorgänge aufgezeichnet. Damit ein neuer Benutzer angelegt werden kann, müssen aufgezeichnete Ladevorgänge oder ein existierender Benutzer ohne aufgezeichnete Ladevorgänge gelöscht werden.",
+            "add_user_user_ids_exhausted": "Die maximale Anzahl an Benutzern hat Ladevorgänge aufgezeichnet. Damit ein neuer Benutzer angelegt werden kann, müssen aufgezeichnete Ladevorgänge oder ein existierender Benutzer ohne aufgezeichnete Ladevorgänge gelöscht werden.",
 
             "edit_user_title": "Benutzer bearbeiten",
             "edit_user_username": "Benutzername",
