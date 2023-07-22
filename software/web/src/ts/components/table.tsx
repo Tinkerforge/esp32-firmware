@@ -119,7 +119,7 @@ export class Table extends Component<TableProps, TableState> {
                             <td colSpan={props.columnNames.length} style="vertical-align: middle; width: 100%;">
                                 {props.addMessage}
                             </td>
-                            <td style="text-align: right;">
+                            <td style="text-align: right; vertical-align: middle;">
                                 <Button variant="primary"
                                         size="sm"
                                         onClick={async () => {
