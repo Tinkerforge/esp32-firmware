@@ -117,7 +117,7 @@
             "expl16": "The charged energy since manufacturing of the energy meter",
             "feat16": "meter",
             "register17": "2006",
-            "name17": "Relative energy  (kWh)",
+            "name17": "Relative energy (kWh)",
             "type17": "float32",
             "expl17": "The charged energy since the last reset (see Holding Reg 2000)",
             "feat17": "meter",
