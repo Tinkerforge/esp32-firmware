@@ -124,7 +124,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                     <div class="mb-3">
                         <Table
                             tableTill="md"
-                            columnNames={[__("nfc.script.tag_id"), __("nfc.script.tag_type"), __("nfc.script.user_id"), __("nfc.script.last_seen_title")]}
+                            columnNames={[__("nfc.content.table_tag_id"), __("nfc.content.table_tag_type"), __("nfc.content.table_user_id"), __("nfc.content.table_last_seen")]}
                             rows={state.authorized_tags.map((tag, i) =>
                                 { return {
                                     columnValues: [
@@ -185,7 +185,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                             }
                             maxRowCount={MAX_AUTHORIZED_TAGS}
                             addTitle={__("nfc.content.add_tag_title")}
-                            addMessage={__("nfc.script.add_tag_prefix") + state.authorized_tags.length + __("nfc.script.add_tag_infix") + MAX_AUTHORIZED_TAGS + __("nfc.script.add_tag_suffix")}
+                            addMessage={__("nfc.content.add_tag_prefix") + state.authorized_tags.length + __("nfc.content.add_tag_infix") + MAX_AUTHORIZED_TAGS + __("nfc.content.add_tag_suffix")}
                             onAddStart={async () => this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}})}
                             onAddGetRows={() => [
                                 {
@@ -213,7 +213,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                             required/>
                                 },
                                 {
-                                    name: __("nfc.content.edit_tag_tag_type"),
+                                    name: __("nfc.content.add_tag_tag_type"),
                                     value:
                                         <InputSelect items={[
                                                 ["0",__("nfc.content.type_0")],

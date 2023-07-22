@@ -407,22 +407,22 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
         let chargers = <FormRow label={__("charge_manager.content.managed_boxes")}>
                     <Table
-                        columnNames={[__("charge_manager.script.display_name"), __("charge_manager.content.add_charger_modal_host")]}
+                        columnNames={[__("charge_manager.content.table_charger_name"), __("charge_manager.content.table_charger_host")]}
                         rows={state.chargers.map((charger, i) =>
                             { return {
                                 columnValues: [charger.name, <a target="_blank" rel="noopener noreferrer" href={(charger.host == '127.0.0.1' || charger.host == 'localhost') ? '/' : "http://" + charger.host}>{charger.host}</a>],
-                                editTitle: __("charge_manager.content.edit_charger_modal_title"),
+                                editTitle: __("charge_manager.content.edit_charger_title"),
                                 onEditStart: async () => this.setState({editCharger: {name: charger.name.trim(), host: charger.host.trim()}}),
                                 onEditGetRows: () => [
                                     {
-                                        name: __("charge_manager.content.edit_charger_modal_name"),
+                                        name: __("charge_manager.content.edit_charger_name"),
                                         value: <InputText value={state.editCharger.name}
                                                         onValue={(v) => this.setState({editCharger: {...state.editCharger, name: v}})}
                                                         maxLength={32}
                                                         required/>
                                     },
                                     {
-                                        name: __("charge_manager.content.edit_charger_modal_host"),
+                                        name: __("charge_manager.content.edit_charger_host"),
                                         value: <InputText value={state.editCharger.host}
                                                         onValue={(v) => this.setState({editCharger: {...state.editCharger, host: v}})}
                                                         maxLength={64}
@@ -449,19 +449,19 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                             }})
                         }
                         maxRowCount={MAX_CONTROLLED_CHARGERS}
-                        addTitle={__("charge_manager.content.add_charger_modal_title")}
-                        addMessage={__("charge_manager.script.add_charger_prefix") + state.chargers.length + __("charge_manager.script.add_charger_infix") + MAX_CONTROLLED_CHARGERS + __("charge_manager.script.add_charger_suffix")}
+                        addTitle={__("charge_manager.content.add_charger_title")}
+                        addMessage={__("charge_manager.content.add_charger_prefix") + state.chargers.length + __("charge_manager.content.add_charger_infix") + MAX_CONTROLLED_CHARGERS + __("charge_manager.content.add_charger_suffix")}
                         onAddStart={async () => this.setState({addCharger: {name: "", host: ""}})}
                         onAddGetRows={() => [
                             {
-                                name: __("charge_manager.content.add_charger_modal_name"),
+                                name: __("charge_manager.content.add_charger_name"),
                                 value: <InputText value={state.addCharger.name}
                                                 onValue={(v) => this.setState({addCharger: {...state.addCharger, name: v}})}
                                                 maxLength={32}
                                                 required/>
                             },
                             {
-                                name: __("charge_manager.content.add_charger_modal_host"),
+                                name: __("charge_manager.content.add_charger_host"),
                                 value: <InputText value={state.addCharger.host}
                                                 onValue={(v) => this.setState({addCharger: {...state.addCharger, host: v}})}
                                                 maxLength={64}
@@ -471,7 +471,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                                 invalidFeedback={check_host(state.addCharger.host, -1)}/>
                             },
                             {
-                                name: __("charge_manager.content.add_charger_modal_found"),
+                                name: __("charge_manager.content.add_charger_found"),
                                 value:
                                     <ListGroup>
                                     {

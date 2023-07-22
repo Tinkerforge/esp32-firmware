@@ -45,14 +45,20 @@
             "configuration_mode": "Experteneinstellungen",
             "configuration_mode_muted": "",
 
-            "add_charger_modal_title": "Wallbox hinzufügen",
-            "add_charger_modal_name": "Anzeigename",
-            "add_charger_modal_host": "IP-Adresse oder Hostname",
-            "add_charger_modal_found": "Gefundene Wallboxen",
+            "table_charger_name": "Anzeigename",
+            "table_charger_host": "Host",
 
-            "edit_charger_modal_title": "Wallbox bearbeiten",
-            "edit_charger_modal_name": "Anzeigename",
-            "edit_charger_modal_host": "IP-Adresse oder Hostname",
+            "add_charger_title": "Wallbox hinzufügen",
+            "add_charger_name": "Anzeigename",
+            "add_charger_host": "IP-Adresse oder Hostname",
+            "add_charger_found": "Gefundene Wallboxen",
+            "add_charger_prefix": "",
+            "add_charger_infix": " von ",
+            "add_charger_suffix": " Wallboxen konfiguriert",
+
+            "edit_charger_title": "Wallbox bearbeiten",
+            "edit_charger_name": "Anzeigename",
+            "edit_charger_host": "IP-Adresse oder Hostname",
 
             "multi_broadcast_modal_title": "Reservierte, Multi- oder Broadcast IP-Adresse(n) gefunden",
             "multi_broadcast_modal_body": "Folgende reservierte, Multi- oder Broadcast-IP-Adressen wurden gefunden: ",
@@ -102,19 +108,13 @@
 
             "ampere_allocated": "A zugeteilt",
             "ampere_supported": "A unterstützt",
-            "delete": "Löschen",
+
             "last_update_prefix": "Gestört seit ",
             "last_update_suffix": "",
             "save_failed": "Speichern der Lastmanager-Konfiguration fehlgeschlagen",
             "set_available_current_failed": "Setzen des verfügbaren Stroms fehlgeschlagen",
-            "add_charger_prefix": "",
-            "add_charger_infix": " von ",
-            "add_charger_suffix": " Wallboxen konfiguriert",
 
             "reboot_content_changed": "Lastmanagement-Einstellungen",
-
-            "display_name": "Anzeigename",
-            "host": "Host",
 
             "scan_failed": "Scan fehlgeschlagen",
 

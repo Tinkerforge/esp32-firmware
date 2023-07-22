@@ -369,7 +369,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
                     <FormRow label={__("users.content.authorized_users")}>
 
-                        <Table columnNames={[__("users.script.username"), __("users.script.display_name"), __("users.script.current"), __("users.script.password")]}
+                        <Table columnNames={[__("users.content.table_username"), __("users.content.table_display_name"), __("users.content.table_current"), __("users.content.table_password")]}
                             rows={state.users.slice(1).map((user, i) =>
                                 { return {
                                     columnValues: [
@@ -382,7 +382,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                     onEditStart: async () => this.setState({editUser: {id: user.id, roles: user.roles, username: user.username, display_name: user.display_name, current: user.current, digest_hash: user.digest_hash, password: user.password, is_invalid: user.is_invalid}}),
                                     onEditGetRows: () => [
                                         {
-                                            name: __("users.script.username"),
+                                            name: __("users.content.edit_user_username"),
                                             value: <InputText
                                                         value={state.editUser.username}
                                                         onValue={(v) => this.setState({editUser: {...state.editUser, username: v}})}
@@ -393,7 +393,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                                         invalidFeedback={this.errorMessage(state.editUser)}/>
                                         },
                                         {
-                                            name: __("users.script.display_name"),
+                                            name: __("users.content.edit_user_display_name"),
                                             value: <InputText
                                                         value={state.editUser.display_name}
                                                         onValue={(v) => this.setState({editUser: {...state.editUser, display_name: v}})}
@@ -402,7 +402,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                                         required/>
                                         },
                                         {
-                                            name: __("users.script.current"),
+                                            name: __("users.content.edit_user_current"),
                                             value: <InputFloat
                                                         unit="A"
                                                         value={state.editUser.current}
@@ -412,7 +412,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                                         max={32000}/>
                                         },
                                         {
-                                            name: __("users.script.password"),
+                                            name: __("users.content.edit_user_password"),
                                             value: <InputPassword
                                                         required={this.require_password(state.editUser)}
                                                         maxLength={64}
@@ -445,7 +445,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                             // One user slot is always taken by the unknown user, so display MAX_ACTIVE_USERS - 1 as the maximum number of users that can be added.
                             maxRowCount={MAX_ACTIVE_USERS - 1}
                             addTitle={__("users.content.add_user_title")}
-                            addMessage={__("users.script.add_user_prefix") + (state.users.length - 1) + __("users.script.add_user_infix") + (MAX_ACTIVE_USERS - 1) + __("users.script.add_user_suffix")}
+                            addMessage={__("users.content.add_user_prefix") + (state.users.length - 1) + __("users.content.add_user_infix") + (MAX_ACTIVE_USERS - 1) + __("users.content.add_user_suffix")}
                             onAddStart={async () => this.setState({addUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}})}
                             onAddGetRows={() => [
                                 {

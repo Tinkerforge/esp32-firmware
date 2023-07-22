@@ -45,14 +45,20 @@
             "configuration_mode": "Expert settings",
             "configuration_mode_muted": "",
 
-            "add_charger_modal_title": "Add charger",
-            "add_charger_modal_name": "Display name",
-            "add_charger_modal_host": "IP address or hostname",
-            "add_charger_modal_found": "Discovered chargers",
+            "table_charger_name": "Display name",
+            "table_charger_host": "Host",
 
-            "edit_charger_modal_title": "Edit charger",
-            "edit_charger_modal_name": "Display name",
-            "edit_charger_modal_host": "IP address or hostname",
+            "add_charger_title": "Add charger",
+            "add_charger_name": "Display name",
+            "add_charger_host": "IP address or hostname",
+            "add_charger_found": "Discovered chargers",
+            "add_charger_prefix": "",
+            "add_charger_infix": " of ",
+            "add_charger_suffix": " chargers configured",
+
+            "edit_charger_title": "Edit charger",
+            "edit_charger_name": "Display name",
+            "edit_charger_host": "IP address or hostname",
 
             "multi_broadcast_modal_title": "Reserved, multi- or broadcast ip addresses found",
             "multi_broadcast_modal_body": "These reserved, multi- or broadcast ip addresses were detected: ",
@@ -103,18 +109,12 @@
             "ampere_allocated": "A allocated",
             "ampere_supported": "A supported",
 
-            "delete": "Delete",
             "last_update_prefix": "Unavailable for",
             "last_update_suffix": "",
             "save_failed": "Failed to save the charge manager configuration",
             "set_available_current_failed": "Failed to set the available current",
-            "add_charger_prefix": "",
-            "add_charger_infix": " of ",
-            "add_charger_suffix": " chargers configured",
 
             "reboot_content_changed": "charge manager configuration",
-            "display_name": "Display name",
-            "host": "Host",
 
             "scan_failed": "Scan failed",
 
