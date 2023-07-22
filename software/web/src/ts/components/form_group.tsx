@@ -24,6 +24,7 @@ export interface FormGroupProps {
     label_muted?: string
     // Don't use ComponentChildren here: We want to pass in the idContext. This only works on VNodes.
     children: VNode | VNode[]
+    classList?: string
     valueClassList?: string
 }
 
@@ -42,7 +43,7 @@ export class FormGroup extends Component<FormGroupProps, any> {
 
     render(props: FormGroupProps) {
         return (
-            <div class="form-group">
+            <div class={"form-group " + (props.classList ? props.classList : "")}>
                 <label for={this.id}>
                     <span class={"form-label" + (props.label_muted ? " pr-2" : "")} dangerouslySetInnerHTML={{__html: props.label}}></span>
                     {props.label_muted ? <span class="text-muted" dangerouslySetInnerHTML={{__html: props.label_muted}}></span> : ""}

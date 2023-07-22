@@ -138,7 +138,7 @@ export class Table extends Component<TableProps, TableState> {
 
                 <div class={`d-block d-${props.tableTill ? props.tableTill : 'sm'}-none`}>
                     {props.rows.map((row, i) => <Card className="mb-3">
-                        <div class="card-header d-flex justify-content-between align-items-center">
+                        <div class="card-header d-flex justify-content-between align-items-center" style="padding: 1rem;">
                             <h5 class="text-break" style="margin-bottom: 0;">{row.columnValues[0]}</h5>
                             <div style="white-space: nowrap; vertical-align: middle;">
                                 <Button variant="primary"
@@ -160,15 +160,15 @@ export class Table extends Component<TableProps, TableState> {
                                 </Button>
                             </div>
                         </div>
-                        <Card.Body style="padding-bottom: 0.5rem;">
-                        {props.columnNames.slice(1).map((columnName, i) =>
-                        <FormGroup label={columnName}>
+                        <Card.Body style="padding: 1rem;">
+                        {props.columnNames.slice(1).map((columnName, i, array) =>
+                        <FormGroup label={columnName} classList={i == array.length - 1 ? " mb-0" : ""}>
                             <span class="form-control" style="height: unset;" readonly>{row.columnValues[1 + i] ? row.columnValues[1 + i] : <>&nbsp;</>}</span>
                         </FormGroup>)}
                     </Card.Body></Card>)}
                     {props.onAddStart ?
                     <Card className="mb-0">
-                        <div class="card-body d-flex justify-content-between align-items-center">
+                        <div class="card-body d-flex justify-content-between align-items-center" style="padding: 1rem;">
                             <span class="text-break" style="font-size: 1rem;">{props.addMessage}</span>
                             <div style="white-space: nowrap; vertical-align: middle;">
                             <Button variant="primary"
@@ -216,8 +216,8 @@ export class Table extends Component<TableProps, TableState> {
                     no_text={__("component.table.abort")}
                     yes_text={__("component.table.add")}>
                     {state.showAddModal && props.onAddGetRows ?
-                        props.onAddGetRows().map((addRow) =>
-                        <FormGroup label={addRow.name} valueClassList={addRow.valueClassList}>
+                        props.onAddGetRows().map((addRow, i, array) =>
+                        <FormGroup label={addRow.name} classList={i == array.length - 1 ? " mb-0" : ""} valueClassList={addRow.valueClassList}>
                             {addRow.value}
                         </FormGroup>) : undefined}
                 </ItemModal>
@@ -251,8 +251,8 @@ export class Table extends Component<TableProps, TableState> {
                     no_text={__("component.table.abort")}
                     yes_text={__("component.table.apply")}>
                     {state.showEditModal !== null && props.rows[state.showEditModal].onEditGetRows ?
-                        props.rows[state.showEditModal].onEditGetRows().map((editRow) =>
-                        <FormGroup label={editRow.name} valueClassList={editRow.valueClassList}>
+                        props.rows[state.showEditModal].onEditGetRows().map((editRow, i, array) =>
+                        <FormGroup label={editRow.name} classList={i == array.length - 1 ? " mb-0" : ""} valueClassList={editRow.valueClassList}>
                             {editRow.value}
                         </FormGroup>) : undefined}
                 </ItemModal>
