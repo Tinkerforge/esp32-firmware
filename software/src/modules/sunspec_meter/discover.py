@@ -95,6 +95,22 @@ class Reader:
 
         return result
 
+    def read_acc32(self):
+        result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
+
+        if isinstance(result, (ExceptionResponse, ModbusException)):
+            raise ReaderError(result)
+
+        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
+        result = decoder.decode_32bit_uint()
+
+        if result == 0:
+            result = None
+
+        self.address += 2
+
+        return result
+
     def read_float32(self):
         result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
 
@@ -347,14 +363,14 @@ def read_ac_meter_model(reader):
         print('    AC Power Factor C [%]:', scale(ac_power_factor_c, ac_power_factor_sf))
         print('    AC Power Factor Scale Factor:', ac_power_factor_sf)
 
-        ac_real_energy_exported = reader.read_uint32()
-        ac_real_energy_exported_a = reader.read_uint32()
-        ac_real_energy_exported_b = reader.read_uint32()
-        ac_real_energy_exported_c = reader.read_uint32()
-        ac_real_energy_imported = reader.read_uint32()
-        ac_real_energy_imported_a = reader.read_uint32()
-        ac_real_energy_imported_b = reader.read_uint32()
-        ac_real_energy_imported_c = reader.read_uint32()
+        ac_real_energy_exported = reader.read_acc32()
+        ac_real_energy_exported_a = reader.read_acc32()
+        ac_real_energy_exported_b = reader.read_acc32()
+        ac_real_energy_exported_c = reader.read_acc32()
+        ac_real_energy_imported = reader.read_acc32()
+        ac_real_energy_imported_a = reader.read_acc32()
+        ac_real_energy_imported_b = reader.read_acc32()
+        ac_real_energy_imported_c = reader.read_acc32()
         ac_real_energy_sf = reader.read_int16()
 
         print('    AC Real Energy Exported [Wh]:', scale(ac_real_energy_exported, ac_real_energy_sf))
@@ -367,14 +383,14 @@ def read_ac_meter_model(reader):
         print('    AC Real Energy Imported C [Wh]:', scale(ac_real_energy_imported_c, ac_real_energy_sf))
         print('    AC Real Energy Scale Factor:', ac_real_energy_sf)
 
-        ac_apparent_energy_exported = reader.read_uint32()
-        ac_apparent_energy_exported_a = reader.read_uint32()
-        ac_apparent_energy_exported_b = reader.read_uint32()
-        ac_apparent_energy_exported_c = reader.read_uint32()
-        ac_apparent_energy_imported = reader.read_uint32()
-        ac_apparent_energy_imported_a = reader.read_uint32()
-        ac_apparent_energy_imported_b = reader.read_uint32()
-        ac_apparent_energy_imported_c = reader.read_uint32()
+        ac_apparent_energy_exported = reader.read_acc32()
+        ac_apparent_energy_exported_a = reader.read_acc32()
+        ac_apparent_energy_exported_b = reader.read_acc32()
+        ac_apparent_energy_exported_c = reader.read_acc32()
+        ac_apparent_energy_imported = reader.read_acc32()
+        ac_apparent_energy_imported_a = reader.read_acc32()
+        ac_apparent_energy_imported_b = reader.read_acc32()
+        ac_apparent_energy_imported_c = reader.read_acc32()
         ac_apparent_energy_sf = reader.read_int16()
 
         print('    AC Apparent Energy Exported [VAh]:', scale(ac_apparent_energy_exported, ac_apparent_energy_sf))
@@ -387,22 +403,22 @@ def read_ac_meter_model(reader):
         print('    AC Apparent Energy Imported C [VAh]:', scale(ac_apparent_energy_imported_c, ac_apparent_energy_sf))
         print('    AC Apparent Energy Scale Factor:', ac_apparent_energy_sf)
 
-        ac_reactive_energy_imported_q1 = reader.read_uint32()
-        ac_reactive_energy_imported_q1_a = reader.read_uint32()
-        ac_reactive_energy_imported_q1_b = reader.read_uint32()
-        ac_reactive_energy_imported_q1_c = reader.read_uint32()
-        ac_reactive_energy_imported_q2 = reader.read_uint32()
-        ac_reactive_energy_imported_q2_a = reader.read_uint32()
-        ac_reactive_energy_imported_q2_b = reader.read_uint32()
-        ac_reactive_energy_imported_q2_c = reader.read_uint32()
-        ac_reactive_energy_exported_q3 = reader.read_uint32()
-        ac_reactive_energy_exported_q3_a = reader.read_uint32()
-        ac_reactive_energy_exported_q3_b = reader.read_uint32()
-        ac_reactive_energy_exported_q3_c = reader.read_uint32()
-        ac_reactive_energy_exported_q4 = reader.read_uint32()
-        ac_reactive_energy_exported_q4_a = reader.read_uint32()
-        ac_reactive_energy_exported_q4_b = reader.read_uint32()
-        ac_reactive_energy_exported_q4_c = reader.read_uint32()
+        ac_reactive_energy_imported_q1 = reader.read_acc32()
+        ac_reactive_energy_imported_q1_a = reader.read_acc32()
+        ac_reactive_energy_imported_q1_b = reader.read_acc32()
+        ac_reactive_energy_imported_q1_c = reader.read_acc32()
+        ac_reactive_energy_imported_q2 = reader.read_acc32()
+        ac_reactive_energy_imported_q2_a = reader.read_acc32()
+        ac_reactive_energy_imported_q2_b = reader.read_acc32()
+        ac_reactive_energy_imported_q2_c = reader.read_acc32()
+        ac_reactive_energy_exported_q3 = reader.read_acc32()
+        ac_reactive_energy_exported_q3_a = reader.read_acc32()
+        ac_reactive_energy_exported_q3_b = reader.read_acc32()
+        ac_reactive_energy_exported_q3_c = reader.read_acc32()
+        ac_reactive_energy_exported_q4 = reader.read_acc32()
+        ac_reactive_energy_exported_q4_a = reader.read_acc32()
+        ac_reactive_energy_exported_q4_b = reader.read_acc32()
+        ac_reactive_energy_exported_q4_c = reader.read_acc32()
         ac_reactive_energy_sf = reader.read_int16()
 
         print('    AC Reactive Energy Imported Q1 [varh]:', scale(ac_reactive_energy_imported_q1, ac_reactive_energy_sf))
