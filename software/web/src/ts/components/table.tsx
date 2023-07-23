@@ -32,7 +32,7 @@ export interface TableModalRow {
 }
 
 export interface TableRow {
-    columnValues: ComponentChild[]
+    columnValues: ComponentChild[][]
     editTitle?: string
     onEditStart?: () => Promise<void>
     onEditGetRows?: () => TableModalRow[]
@@ -60,6 +60,14 @@ interface TableState {
     showAddModal: boolean
     showEditModal: number
 }
+
+const get_column_value = (value: ComponentChild[], i: number): ComponentChild => {
+    if (i < value.length) {
+        return value[i];
+    }
+
+    return value[0];
+};
 
 export class Table extends Component<TableProps, TableState> {
     constructor() {
@@ -93,7 +101,7 @@ export class Table extends Component<TableProps, TableState> {
                         {props.rows.map((row, i) =>
                             <tr>
                                 {row.columnValues.map((value) => (
-                                    <td class="text-break" style="vertical-align: middle;">{value}</td>
+                                    <td class="text-break" style="vertical-align: middle;">{get_column_value(value, 0)}</td>
                                 ))}
                                 <td style="width: 1%; white-space: nowrap; vertical-align: middle;">
                                     <Button variant="primary"
@@ -139,7 +147,7 @@ export class Table extends Component<TableProps, TableState> {
                 <div class={`d-block d-${props.tableTill ? props.tableTill : 'sm'}-none`}>
                     {props.rows.map((row, i) => <Card className="mb-3">
                         <div class="card-header d-flex justify-content-between align-items-center" style="padding: 1rem;">
-                            <h5 class="text-break" style="margin-bottom: 0;">{row.columnValues[0]}</h5>
+                            <h5 class="text-break" style="margin-bottom: 0;">{get_column_value(row.columnValues[0], 1)}</h5>
                             <div style="white-space: nowrap; vertical-align: middle;">
                                 <Button variant="primary"
                                         size="sm"
@@ -163,7 +171,7 @@ export class Table extends Component<TableProps, TableState> {
                         <Card.Body style="padding: 1rem;">
                         {props.columnNames.slice(1).map((columnName, i, array) =>
                         <FormGroup label={columnName} classList={i == array.length - 1 ? " mb-0" : ""}>
-                            <span class="form-control" style="height: unset;" readonly>{row.columnValues[1 + i] ? row.columnValues[1 + i] : <>&nbsp;</>}</span>
+                            <span class="form-control" style="height: unset;" readonly>{get_column_value(row.columnValues[1 + i], 1) ? get_column_value(row.columnValues[1 + i], 1) : <>&nbsp;</>}</span>
                         </FormGroup>)}
                     </Card.Body></Card>)}
                     {props.onAddStart ?

@@ -42,6 +42,7 @@ import { EVSE_SLOT_USER } from "../evse_common/api";
 import { ItemModal } from "src/ts/components/item_modal";
 import { SubPage } from "src/ts/components/sub_page";
 import { Table } from "../../ts/components/table";
+import { Check } from "react-feather";
 
 const MAX_ACTIVE_USERS = 17;
 
@@ -190,6 +191,18 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                 u.password !== undefined &&
                 u.password !== null &&      // password will be changed/set
                 u.password !== "")          // password will not be removed, an empty string as password would mean to remove the password
+    }
+
+    get_password_replacement(u: User) {
+        if (!this.user_has_password(u)) {
+            return '';
+        }
+
+        if (u.password !== undefined && u.password !== null) {
+            return '\u2022'.repeat(u.password.length);
+        }
+
+        return <span style="color: rgb(85,85,85);">{__("component.input_password.unchanged")}</span>;
     }
 
     http_auth_allowed() {
@@ -373,10 +386,10 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                             rows={state.users.slice(1).map((user, i) =>
                                 { return {
                                     columnValues: [
-                                        user.username,
-                                        user.display_name,
-                                        util.toLocaleFixed(user.current / 1000, 3) + ' A',
-                                        this.user_has_password(user) ? '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' : ''
+                                        [user.username],
+                                        [user.display_name],
+                                        [util.toLocaleFixed(user.current / 1000, 3) + ' A'],
+                                        this.user_has_password(user) ? [<Check/>, this.get_password_replacement(user)] : ['', <span style="color: rgb(85,85,85);">{__("users.script.login_disabled")}</span>]
                                     ],
                                     editTitle: __("users.content.edit_user_title"),
                                     onEditStart: async () => this.setState({editUser: {id: user.id, roles: user.roles, username: user.username, display_name: user.display_name, current: user.current, digest_hash: user.digest_hash, password: user.password, is_invalid: user.is_invalid}}),
