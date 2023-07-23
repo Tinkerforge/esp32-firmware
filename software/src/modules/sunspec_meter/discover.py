@@ -17,15 +17,16 @@ SUN_SPEC_ID = 0x53756e53
 COMMON_MODEL_ID = 1
 
 class Reader:
-    def __init__(self, client, address):
+    def __init__(self, client, address, device_id):
         self.client = client
         self.address = address
+        self.device_id = device_id
 
     def skip(self, length_registers):
         self.address += length_registers
 
     def read_int16(self):
-        result = self.client.read_holding_registers(self.address, 1)
+        result = self.client.read_holding_registers(self.address, 1, slave=self.device_id)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -41,7 +42,7 @@ class Reader:
         return result
 
     def read_uint16(self):
-        result = self.client.read_holding_registers(self.address, 1)
+        result = self.client.read_holding_registers(self.address, 1, slave=self.device_id)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -57,7 +58,7 @@ class Reader:
         return result
 
     def read_int32(self):
-        result = self.client.read_holding_registers(self.address, 2)
+        result = self.client.read_holding_registers(self.address, 2, slave=self.device_id)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -73,7 +74,7 @@ class Reader:
         return result
 
     def read_uint32(self):
-        result = self.client.read_holding_registers(self.address, 2)
+        result = self.client.read_holding_registers(self.address, 2, slave=self.device_id)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -90,7 +91,7 @@ class Reader:
 
     def read_string(self, length_bytes):
         length_registers = int(math.ceil(length_bytes / 2))
-        result = self.client.read_holding_registers(self.address, length_registers)
+        result = self.client.read_holding_registers(self.address, length_registers, slave=self.device_id)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -366,8 +367,8 @@ def read_standard_model(reader):
 
     return True
 
-def discover(client, base_address):
-    reader = Reader(client, base_address)
+def discover(client, base_address, device_address):
+    reader = Reader(client, base_address, device_address)
 
     print('Using base address:', base_address)
 
@@ -402,18 +403,18 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-H', '--host', default='192.168.0.64')
     parser.add_argument('-p', '--port', type=int, default=502)
-    parser.add_argument('-d', '--device-address', type=int, default=1)
+    parser.add_argument('-d', '--device-id', type=int, default=1)
 
     args = parser.parse_args()
 
     print('Using host:', args.host)
     print('Using port:', args.port)
-    print('Using device address:', args.device_address)
+    print('Using device ID:', args.device_id)
 
-    client = ModbusClient(host=args.host, port=args.port, unit_id=args.device_address)
+    client = ModbusClient(host=args.host, port=args.port)
 
     for base_address in BASE_ADDRESSES:
-        if discover(client, base_address):
+        if discover(client, base_address, args.device_id):
             break
 
 if __name__ == '__main__':
