@@ -7,6 +7,7 @@ from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.pdu import ExceptionResponse
+from pymodbus.exceptions import ModbusException
 
 class ReaderError(Exception):
     pass
@@ -26,7 +27,7 @@ class Reader:
     def read_int16(self):
         result = self.client.read_holding_registers(self.address, 1)
 
-        if isinstance(result, ExceptionResponse):
+        if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
 
         decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
@@ -42,7 +43,7 @@ class Reader:
     def read_uint16(self):
         result = self.client.read_holding_registers(self.address, 1)
 
-        if isinstance(result, ExceptionResponse):
+        if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
 
         decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
@@ -58,7 +59,7 @@ class Reader:
     def read_int32(self):
         result = self.client.read_holding_registers(self.address, 2)
 
-        if isinstance(result, ExceptionResponse):
+        if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
 
         decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
@@ -74,7 +75,7 @@ class Reader:
     def read_uint32(self):
         result = self.client.read_holding_registers(self.address, 2)
 
-        if isinstance(result, ExceptionResponse):
+        if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
 
         decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
@@ -91,7 +92,7 @@ class Reader:
         length_registers = int(math.ceil(length_bytes / 2))
         result = self.client.read_holding_registers(self.address, length_registers)
 
-        if isinstance(result, ExceptionResponse):
+        if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
 
         decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
