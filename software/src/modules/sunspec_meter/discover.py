@@ -400,13 +400,17 @@ def discover(client, base_address):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('host', nargs='?', default='192.168.0.64')
+    parser.add_argument('-H', '--host', default='192.168.0.64')
+    parser.add_argument('-p', '--port', type=int, default=502)
+    parser.add_argument('-d', '--device-address', type=int, default=1)
 
     args = parser.parse_args()
 
     print('Using host:', args.host)
+    print('Using port:', args.port)
+    print('Using device address:', args.device_address)
 
-    client = ModbusClient(host=args.host, port=502)
+    client = ModbusClient(host=args.host, port=args.port, unit_id=args.device_address)
 
     for base_address in BASE_ADDRESSES:
         if discover(client, base_address):
