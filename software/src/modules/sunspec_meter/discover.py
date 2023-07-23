@@ -1,5 +1,7 @@
 #!/usr/bin/python3 -u
 
+# https://github.com/sunspec/models/blob/master/json
+
 import time
 import math
 import argparse
@@ -7,7 +9,7 @@ import pymodbus
 
 print('Using pymodbus version:', pymodbus.__version__)
 
-from pymodbus.client import ModbusTcpClient as ModbusClient
+from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.pdu import ExceptionResponse
@@ -30,7 +32,7 @@ class Reader:
         self.address += length_registers
 
     def read_int16(self):
-        result = self.client.read_holding_registers(self.address, 1, slave=self.device_address)
+        result = self.client.read_holding_registers(self.address, count=1, slave=self.device_address)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -46,7 +48,7 @@ class Reader:
         return result
 
     def read_uint16(self):
-        result = self.client.read_holding_registers(self.address, 1, slave=self.device_address)
+        result = self.client.read_holding_registers(self.address, count=1, slave=self.device_address)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -62,7 +64,7 @@ class Reader:
         return result
 
     def read_int32(self):
-        result = self.client.read_holding_registers(self.address, 2, slave=self.device_address)
+        result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -78,7 +80,7 @@ class Reader:
         return result
 
     def read_uint32(self):
-        result = self.client.read_holding_registers(self.address, 2, slave=self.device_address)
+        result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -93,9 +95,25 @@ class Reader:
 
         return result
 
+    def read_float32(self):
+        result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
+
+        if isinstance(result, (ExceptionResponse, ModbusException)):
+            raise ReaderError(result)
+
+        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
+        result = decoder.decode_32bit_float()
+
+        if math.isnan(result):
+            result = None
+
+        self.address += 2
+
+        return result
+
     def read_string(self, length_bytes):
         length_registers = int(math.ceil(length_bytes / 2))
-        result = self.client.read_holding_registers(self.address, length_registers, slave=self.device_address)
+        result = self.client.read_holding_registers(self.address, count=length_registers, slave=self.device_address)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -164,8 +182,83 @@ def scale(value, factor):
 
     return result
 
-def read_meter_model(reader):
-    print('  Trying to read Meter Model')
+def read_inverter_model(reader):
+    print('  Trying to read Inverter Model')
+
+    try:
+        ac_current = reader.read_float32()
+        ac_current_a = reader.read_float32()
+        ac_current_b = reader.read_float32()
+        ac_current_c = reader.read_float32()
+
+        print('    AC Current [A]:', ac_current)
+        print('    AC Current A [A]:', ac_current_a)
+        print('    AC Current B [A]:', ac_current_b)
+        print('    AC Current C [A]:', ac_current_c)
+
+        ac_voltage_a_b = reader.read_float32()
+        ac_voltage_b_c = reader.read_float32()
+        ac_voltage_c_a = reader.read_float32()
+        ac_voltage_a_n = reader.read_float32()
+        ac_voltage_b_n = reader.read_float32()
+        ac_voltage_c_n = reader.read_float32()
+
+        print('    AC Voltage A B [V]:', ac_voltage_a_b)
+        print('    AC Voltage B C [V]:', ac_voltage_b_c)
+        print('    AC Voltage C A [V]:', ac_voltage_c_a)
+        print('    AC Voltage A N [V]:', ac_voltage_a_n)
+        print('    AC Voltage B N [V]:', ac_voltage_b_n)
+        print('    AC Voltage C N [V]:', ac_voltage_c_n)
+
+        ac_real_power = reader.read_float32()
+
+        print('    AC Real Power [W]:', ac_real_power)
+
+        ac_frequency = reader.read_float32()
+
+        print('    AC Frequency [Hz]:', ac_frequency)
+
+        ac_apparent_power = reader.read_float32()
+
+        print('    AC Apparent Power [VA]:', ac_apparent_power)
+
+        ac_reactive_power = reader.read_float32()
+
+        print('    AC Reactive Power [var]:', ac_reactive_power)
+
+        ac_power_factor = reader.read_float32()
+
+        print('    AC Power Factor [%]:', ac_power_factor)
+
+        ac_real_energy = reader.read_float32()
+
+        print('    AC Real Energy [Wh]:', ac_real_energy)
+
+        dc_current = reader.read_float32()
+
+        print('    DC Current [A]:', dc_current)
+
+        dc_voltage = reader.read_float32()
+
+        print('    DC Voltage [V]:', dc_voltage)
+
+        dc_power = reader.read_float32()
+
+        print('    DC Power [W]:', dc_power)
+
+        reader.skip(22)
+
+        print('    Skipping 22 registers')
+
+        print('    Done')
+    except Exception as e:
+        print('    Error:', e)
+        return False
+
+    return True
+
+def read_ac_meter_model(reader):
+    print('  Trying to read AC Meter Model')
 
     try:
         ac_current = reader.read_int16()
@@ -354,13 +447,16 @@ def read_standard_model(reader):
         print('  Standard Model ID found:', model_id)
 
         length = reader.read_uint16()
-        print('  Standard Model Model length:', length)
+        print('  Standard Model length:', length)
 
-        if model_id in [201, 202, 203, 204]:
-            if not read_meter_model(reader):
+        if model_id == 113:
+            if not read_inverter_model(reader):
+                return False
+        elif model_id in [201, 202, 203, 204]:
+            if not read_ac_meter_model(reader):
                 return False
         else:
-            print('  Skipping')
+            print('  Skipping Standard Model')
             reader.skip(length)
 
         print('  Done')
@@ -414,7 +510,7 @@ def main():
     print('Using port:', args.port)
     print('Using device address:', args.device_address)
 
-    client = ModbusClient(host=args.host, port=args.port)
+    client = ModbusTcpClient(host=args.host, port=args.port)
     client.connect()
 
     for base_address in BASE_ADDRESSES:
