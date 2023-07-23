@@ -3,7 +3,11 @@
 import time
 import math
 import argparse
-from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+import pymodbus
+
+print('Using pymodbus version:', pymodbus.__version__)
+
+from pymodbus.client import ModbusTcpClient as ModbusClient
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.pdu import ExceptionResponse
@@ -17,16 +21,16 @@ SUN_SPEC_ID = 0x53756e53
 COMMON_MODEL_ID = 1
 
 class Reader:
-    def __init__(self, client, address, device_id):
+    def __init__(self, client, address, device_address):
         self.client = client
         self.address = address
-        self.device_id = device_id
+        self.device_address = device_address
 
     def skip(self, length_registers):
         self.address += length_registers
 
     def read_int16(self):
-        result = self.client.read_holding_registers(self.address, 1, slave=self.device_id)
+        result = self.client.read_holding_registers(self.address, 1, slave=self.device_address)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -42,7 +46,7 @@ class Reader:
         return result
 
     def read_uint16(self):
-        result = self.client.read_holding_registers(self.address, 1, slave=self.device_id)
+        result = self.client.read_holding_registers(self.address, 1, slave=self.device_address)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -58,7 +62,7 @@ class Reader:
         return result
 
     def read_int32(self):
-        result = self.client.read_holding_registers(self.address, 2, slave=self.device_id)
+        result = self.client.read_holding_registers(self.address, 2, slave=self.device_address)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -74,7 +78,7 @@ class Reader:
         return result
 
     def read_uint32(self):
-        result = self.client.read_holding_registers(self.address, 2, slave=self.device_id)
+        result = self.client.read_holding_registers(self.address, 2, slave=self.device_address)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -91,7 +95,7 @@ class Reader:
 
     def read_string(self, length_bytes):
         length_registers = int(math.ceil(length_bytes / 2))
-        result = self.client.read_holding_registers(self.address, length_registers, slave=self.device_id)
+        result = self.client.read_holding_registers(self.address, length_registers, slave=self.device_address)
 
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
@@ -403,18 +407,19 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-H', '--host', default='192.168.0.64')
     parser.add_argument('-p', '--port', type=int, default=502)
-    parser.add_argument('-d', '--device-id', type=int, default=1)
+    parser.add_argument('-d', '--device-address', type=int, default=1)
 
     args = parser.parse_args()
 
     print('Using host:', args.host)
     print('Using port:', args.port)
-    print('Using device ID:', args.device_id)
+    print('Using device address:', args.device_address)
 
     client = ModbusClient(host=args.host, port=args.port)
+    client.connect()
 
     for base_address in BASE_ADDRESSES:
-        if discover(client, base_address, args.device_id):
+        if discover(client, base_address, args.device_address):
             break
 
 if __name__ == '__main__':
