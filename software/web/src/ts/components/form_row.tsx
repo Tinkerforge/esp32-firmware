@@ -17,7 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, createContext, Context, VNode, cloneElement, toChildArray, Fragment } from "preact";
+import { h, Component, createContext, Context, VNode, cloneElement, toChildArray, Fragment, ComponentChildren } from "preact";
+import { Button, Collapse } from "react-bootstrap";
+import { HelpCircle } from "react-feather";
 
 export interface FormRowProps {
     label: string
@@ -30,11 +32,12 @@ export interface FormRowProps {
     label_prefix ?: VNode
     label_infix ?: VNode
     label_suffix ?: VNode
+    help?: ComponentChildren
 }
 
 let id_counter = 0;
 
-export class FormRow extends Component<FormRowProps, any> {
+export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
     idContext: Context<string>;
     id: string;
 
@@ -45,22 +48,35 @@ export class FormRow extends Component<FormRowProps, any> {
         ++id_counter;
     }
 
-    render(props: FormRowProps) {
+    render(props: FormRowProps, state: {help_expanded: boolean}) {
         let inner = <>{(toChildArray(props.children) as VNode[]).map(c => cloneElement(c, {idContext: this.idContext}))}</>;
         if (props.contentColClasses === undefined || props.contentColClasses !== "")
             inner = <div class={props.contentColClasses === undefined ? "col-lg-9" : props.contentColClasses}>
                 {inner}
+                {props.help ? <Collapse in={state.help_expanded}>
+                                <div>{/*Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse*/}
+                                    <div class="alert alert-secondary">
+                                        {props.help}
+                                    </div>
+                                </div>
+                              </Collapse>
+                            : <></>}
             </div>
 
 
         return (
             <div class="form-group row" hidden={props.hidden == undefined ? false : props.hidden}>
                 <label for={this.id} class={"col-form-label " + (props.labelColClasses === undefined ? "col-lg-3" : props.labelColClasses)}>
+                    <div class="row mx-lg-0">
+                        <div class="col-auto col-lg px-lg-0">
                     {props.label_prefix ? props.label_prefix : <></>}
                     {props.label ? <span class={"form-label" + (props.label_muted && !props.label_infix ? " pr-2" : "")} dangerouslySetInnerHTML={{__html: props.label}}></span> : ""}
                     {props.label_infix ? props.label_infix : <></>}
                     {props.label_muted ? <span class="text-muted" dangerouslySetInnerHTML={{__html: props.label_muted}}></span> : ""}
                     {props.label_suffix ? props.label_suffix : <></>}
+                    </div>
+                    {props.help ? <span class="col col-lg-auto px-lg-0" onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:"btn-outline-secondary", style:"border-radius: 50%;"} as any}/></span> : <></>}
+                    </div>
                 </label>
                 {inner}
             </div>
