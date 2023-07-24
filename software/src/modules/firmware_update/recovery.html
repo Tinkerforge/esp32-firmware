@@ -134,7 +134,7 @@ function call_api() {
 
     if (payload["method"] != "GET") {
         opts["headers"] = {'Content-Type': 'application/json; charset=utf-8'};
-        opts["body"] = payload["payload"];
+        opts["body"] = JSON.stringify(payload["payload"]);
     }
 
     fetch(url, opts)
