@@ -23,9 +23,9 @@
 #include "task_scheduler.h"
 
 #include "api.h"
-#include "modules.h"
 #include "task_scheduler.h"
 #include "tools.h"
+#include "module_dependencies.h"
 
 #include "digest_auth.h"
 #include <cmath>
