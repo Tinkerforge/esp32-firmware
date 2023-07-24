@@ -23,13 +23,11 @@ extern TF_HAL hal;
 #define BLUE_LED 15
 
 void evse_v2_button_recovery_handler() {
-    int result = tf_hal_create(&hal);
-    if (result != TF_E_OK)
+    if (!esp32_ethernet_brick.initHAL())
         return;
-    tf_hal_set_timeout(&hal, 100000);
 
     TF_EVSEV2 evse;
-    result = tf_evse_v2_create(&evse, nullptr, &hal);
+    int result = tf_evse_v2_create(&evse, nullptr, &hal);
     if (result != TF_E_OK)
         return;
 

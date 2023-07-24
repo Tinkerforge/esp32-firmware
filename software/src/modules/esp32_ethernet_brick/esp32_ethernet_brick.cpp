@@ -21,12 +21,15 @@
 #include "module_dependencies.h"
 
 #include <Arduino.h>
+#include "driver/i2c.h"
 
 #include "build.h"
 #include "tools.h"
 #include "hal_arduino_esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick.h"
+#include "bindings/errors.h"
 #include "event_log.h"
 #include "task_scheduler.h"
+
 
 #if TF_LOCAL_ENABLE != 0
 
@@ -39,8 +42,16 @@
 #endif
 
 #define GREEN_LED 2
-#define BLUE_LED 15
+#define BLUE_LED 2
 #define BUTTON 0
+
+#define I2C_MASTER_SCL_IO 4
+#define I2C_MASTER_SDA_IO 15
+#define I2C_MASTER_NUM 0
+#define I2C_MASTER_TIMEOUT_MS 1000
+#define I2C_TMP1075N_ADDR 0b1001001
+#define I2C_RTC_ADDRESS 0b1101000
+#define I2C_TMP1075N_TIMEOUT_MS 1000
 
 TF_HAL hal;
 extern uint32_t local_uid_num;
@@ -122,6 +133,32 @@ static void check_for_factory_reset() {
 }
 #endif
 
+void ESP32EthernetBrick::initI2C() {
+    i2c_config_t conf;
+    memset(&conf, 0, sizeof(i2c_config_t));
+    conf.mode = I2C_MODE_MASTER;
+    conf.sda_io_num = I2C_MASTER_SDA_IO;
+    conf.scl_io_num = I2C_MASTER_SCL_IO;
+    conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
+    conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
+    conf.master.clk_speed = 100000;
+
+    i2c_param_config(I2C_MASTER_NUM, &conf);
+    i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
+}
+
+
+bool ESP32EthernetBrick::initHAL() {
+    int result = tf_hal_create(&hal, this->is_warp_esp_ethernet_brick ? 4 : 6);
+    if (result != TF_E_OK)
+        return false;
+    tf_hal_set_timeout(&hal, 100000);
+    return true;
+}
+
+static uint8_t tmp_cmd_buf[I2C_LINK_RECOMMENDED_SIZE(2)] = {};
+static uint8_t tmp_read_buf[2] = {};
+
 void ESP32EthernetBrick::setup()
 {
     read_efuses(&local_uid_num, local_uid_str, passphrase);
@@ -138,9 +175,16 @@ void ESP32EthernetBrick::setup()
 #if defined(BUILD_NAME_ENERGY_MANAGER) && MODULE_FIRMWARE_UPDATE_AVAILABLE()
     check_for_factory_reset();
 #endif
+    initI2C();
 
-    check(tf_hal_create(&hal), "hal create");
-    tf_hal_set_timeout(&hal, 100000);
+    auto tmp_cmd_handle = i2c_master_prepare_write_read_device(I2C_TMP1075N_ADDR,
+                                         tmp_cmd_buf, ARRAY_SIZE(tmp_cmd_buf),
+                                         nullptr, 0,
+                                         tmp_read_buf, ARRAY_SIZE(tmp_read_buf));
+    int ret = i2c_master_cmd_begin(I2C_NUM_0, tmp_cmd_handle, I2C_TMP1075N_TIMEOUT_MS  / portTICK_PERIOD_MS);
+    this->is_warp_esp_ethernet_brick = ret == ESP_OK;
+
+    initHAL();
 
 #if TF_LOCAL_ENABLE != 0
     uint8_t hw_version[3] = {1, 0, 0};
