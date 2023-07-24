@@ -45,7 +45,7 @@ void EmRtc::set_time(const timeval &tv)
 bool EmRtc::update_system_time()
 {
     // We have to make sure, we don't try to update the system clock
-    // while Energy Manager also sets the clock.
+    // while NTP also sets the clock.
     // To prevent this, we skip updating the system clock if NTP
     // did update it while we were fetching the current time from the EM.
 
