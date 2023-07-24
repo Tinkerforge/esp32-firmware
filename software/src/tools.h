@@ -29,6 +29,7 @@
 #include "bindings/hal_common.h"
 
 #include "esp_log.h"
+#include "driver/i2c.h"
 
 #include "strong_typedef.h"
 
@@ -267,3 +268,13 @@ constexpr const T& as_const(T& t) noexcept
 {
     return t;
 }
+
+// This supports reading, writing and writing then reading a buffer from/to
+// an I2C device. Call with a big enough command buffer (I2C_LINK_RECOMMENDED_SIZE(2))
+// and use the returned handle with i2c_master_cmd_begin to actually send/receive data.
+// The handle can be used multiple times to call i2c_master_cmd_begin.
+// Free the handle with i2c_cmd_link_delete_static.
+i2c_cmd_handle_t i2c_master_prepare_write_read_device(uint8_t device_address,
+                                                      uint8_t *command_buffer, size_t command_buffer_size,
+                                                      const uint8_t* write_buffer, size_t write_size,
+                                                      uint8_t* read_buffer, size_t read_size);

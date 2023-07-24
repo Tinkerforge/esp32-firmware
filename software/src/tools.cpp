@@ -899,3 +899,63 @@ int strncmp_with_same_len(const char *left, const char *right, size_t right_len)
         return -1;
     return strncmp(left, right, right_len);
 }
+
+i2c_cmd_handle_t i2c_master_prepare_write_read_device(uint8_t device_address,
+                                                      uint8_t *command_buffer, size_t command_buffer_size,
+                                                      const uint8_t* write_buffer, size_t write_size,
+                                                      uint8_t* read_buffer, size_t read_size) {
+    bool write = write_buffer != nullptr && write_size > 0;
+    bool read = read_buffer != nullptr && read_size > 0;
+    if (!write && !read)
+        return nullptr;
+
+    esp_err_t err = ESP_OK;
+
+    i2c_cmd_handle_t handle = i2c_cmd_link_create_static(command_buffer, command_buffer_size);
+    assert (handle != NULL);
+
+    if (write) {
+        err = i2c_master_start(handle);
+        if (err != ESP_OK) {
+            goto error;
+        }
+
+        err = i2c_master_write_byte(handle, device_address << 1 | I2C_MASTER_WRITE, true);
+        if (err != ESP_OK) {
+            goto error;
+        }
+
+        err = i2c_master_write(handle, write_buffer, write_size, true);
+        if (err != ESP_OK) {
+            goto error;
+        }
+    }
+
+    if (read) {
+        err = i2c_master_start(handle);
+        if (err != ESP_OK) {
+            goto error;
+        }
+
+        err = i2c_master_write_byte(handle, device_address << 1 | I2C_MASTER_READ, true);
+        if (err != ESP_OK) {
+            goto error;
+        }
+
+        err = i2c_master_read(handle, read_buffer, read_size, I2C_MASTER_LAST_NACK);
+        if (err != ESP_OK) {
+            goto error;
+        }
+    }
+
+    err = i2c_master_stop(handle);
+    if (err != ESP_OK) {
+        goto error;
+    }
+
+    return handle;
+
+error:
+    i2c_cmd_link_delete_static(handle);
+    return nullptr;
+}
