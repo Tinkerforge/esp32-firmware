@@ -25,7 +25,7 @@
 #include "task_scheduler.h"
 #include "tools.h"
 
-#include "modules.h"
+#include "module_dependencies.h"
 
 void ChargeLimits::pre_setup()
 {
