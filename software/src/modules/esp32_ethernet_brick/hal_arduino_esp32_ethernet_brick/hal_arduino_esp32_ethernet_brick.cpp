@@ -21,16 +21,7 @@ typedef struct TF_Port {
 
 #define TF_PORT(port_name) {port_name, {._to_init = 0}}
 
-TF_Port ports[6] = {
-    TF_PORT('A'),
-    TF_PORT('B'),
-    TF_PORT('C'),
-    TF_PORT('D'),
-    TF_PORT('E'),
-    TF_PORT('F')
-};
-
-#define PORT_COUNT (sizeof(ports) / sizeof(ports[0]))
+TF_Port *ports;
 
 static const int CS_PIN_0 = 12;
 static const int CS_PIN_1 = 13;
@@ -53,12 +44,17 @@ static void deselect_demux() {
     REG_WRITE(GPIO_OUT_W1TS_REG, 0x07 << CS_PIN_0);
 }
 
-int tf_hal_create(TF_HAL *hal) {
+int tf_hal_create(TF_HAL *hal, uint8_t max_ports) {
     int rc = tf_hal_common_create(hal);
 
     if (rc != TF_E_OK) {
         return rc;
     }
+
+    ports = new TF_Port[max_ports];
+    for(size_t i = 0; i < max_ports; ++i) {
+        ports[i] = TF_Port{'A' + i, {._to_init = 0}};
+    };
 
     hal->spi_settings = SPISettings(1400000, SPI_MSBFIRST, SPI_MODE3);
     hal->hspi = new SPIClass(HSPI);
@@ -69,11 +65,13 @@ int tf_hal_create(TF_HAL *hal) {
     pinMode(CS_PIN_2, OUTPUT);
     deselect_demux();
 
-    return tf_hal_common_prepare(hal, PORT_COUNT, 50000);
+    return tf_hal_common_prepare(hal, max_ports, 50000);
 }
 
 int tf_hal_destroy(TF_HAL *hal) {
     hal->hspi->end();
+
+    delete[] ports;
 
     return TF_E_OK;
 }

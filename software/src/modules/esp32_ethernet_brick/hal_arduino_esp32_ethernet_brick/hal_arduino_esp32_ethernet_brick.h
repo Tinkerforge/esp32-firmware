@@ -22,7 +22,7 @@ struct TF_HAL {
     TF_HALCommon hal_common;
 };
 
-int tf_hal_create(TF_HAL *hal) TF_ATTRIBUTE_NONNULL_ALL;
+int tf_hal_create(TF_HAL *hal, uint8_t max_ports=6) TF_ATTRIBUTE_NONNULL_ALL;
 int tf_hal_destroy(TF_HAL *hal) TF_ATTRIBUTE_NONNULL_ALL;
 
 #endif
