@@ -18,8 +18,8 @@
  */
 
 #include "require_meter.h"
-#include "modules.h"
 #include "tools.h"
+#include "module_dependencies.h"
 
 #define METER_TIMEOUT micros_t{24ll * 60 * 60 * 1000 * 1000}
 // #define METER_TIMEOUT micros_t{10 * 1000 * 1000}
@@ -81,8 +81,10 @@ void RequireMeter::start_task() {
 
         evse_common.set_require_meter_blocking(meter_timeout);
 
+#if MODULE_USERS_AVAILABLE()
         if (meter_timeout)
             users.stop_charging(0, true, 0);
+#endif
 
     }, 0, 1000);
     is_running = true;
