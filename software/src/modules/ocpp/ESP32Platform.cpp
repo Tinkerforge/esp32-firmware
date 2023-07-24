@@ -57,10 +57,6 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         if (data->op_code != WS_TRANSPORT_OPCODES_TEXT)
             return;
 
-        ESP_LOGI(TAG, "WEBSOCKET_EVENT_DATA");
-        // ESP_LOGI(TAG, "Received opcode=%d", data->op_code);
-        // ESP_LOGW(TAG, "Received=%.*s", data->data_len, (char *)data->data_ptr);
-        ESP_LOGW(TAG, "Total payload length=%d, data_len=%d, current payload offset=%d\r\n", data->payload_len, data->data_len, data->payload_offset);
         // const cast is safe here:
         // - data->data_ptr is only set in esp_websocket_client_dispatch_event to the const char *data param
         // - const char *data is either null or (in esp_websocket_client_recv) set to client->rx_buffer
@@ -68,7 +64,6 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         recv_cb(const_cast<char *>(data->data_ptr), data->data_len, recv_cb_userdata);
         break;
     case WEBSOCKET_EVENT_ERROR:
-        ESP_LOGI(TAG, "WEBSOCKET_EVENT_ERROR");
         break;
     }
 }
