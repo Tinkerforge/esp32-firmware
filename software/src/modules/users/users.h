@@ -23,6 +23,11 @@
 
 #include "module.h"
 
+#define USERS_AUTH_TYPE_NONE 0
+#define USERS_AUTH_TYPE_LOST 1
+#define USERS_AUTH_TYPE_NFC 2
+#define USERS_AUTH_TYPE_NFC_INJECTION 3
+
 #define IND_ACK 1001
 #define IND_NACK 1002
 #define IND_NAG 1003
