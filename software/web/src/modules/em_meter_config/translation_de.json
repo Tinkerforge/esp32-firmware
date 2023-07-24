@@ -12,11 +12,11 @@
             "meter_source_muted": "zur Messung der Energiebilanz am Hausanschluss",
             "type_none": "Kein Stromzähler",
             "type_sdm": "SDM630*/SDM72* am WARP Energy Manager",
-            "type_sunspec": "SunSpec-kompatibler Stromzähler per Modbus-TCP",
+            "type_sun_spec": "SunSpec-kompatibler Stromzähler per Modbus-TCP",
             "type_modbus_tcp": "Generischer Stromzähler per Modbus-TCP",
             "type_custom": "Benutzerdefinierter Zähler (MQTT/HTTP)",
             "conf_sdm": "SDM630*/SDM72* am WARP Energy Manager",
-            "conf_sunspec": "SunSpec-Konfiguration",
+            "conf_sun_spec": "SunSpec-Konfiguration",
             "conf_modbus_tcp": "Modbus-TCP-Konfiguration",
 
             "sdm_none": "Kein Zähler",

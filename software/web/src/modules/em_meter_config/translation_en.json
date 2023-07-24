@@ -12,11 +12,11 @@
             "meter_source_muted": "to measure the energy balance at the building's grid connection",
             "type_none": "No meter",
             "type_sdm": "SDM630*/SDM72* connected to WARP Energy Manager",
-            "type_sunspec": "SunSpec-compatible energy meter via Modbus-TCP",
+            "type_sun_spec": "SunSpec-compatible energy meter via Modbus-TCP",
             "type_modbus_tcp": "Generic energy meter via Modbus TCP",
             "type_custom": "Custom meter (MQTT/HTTP)",
             "conf_sdm": "SDM630*/SDM72* connected to WARP Energy Manager",
-            "conf_sunspec": "SunSpec configuration",
+            "conf_sun_spec": "SunSpec configuration",
             "conf_modbus_tcp": "Modbus TCP configuration",
 
             "sdm_none": "No meter",

@@ -71,7 +71,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
                             items={[
                                     ["0", __("em_meter_config.content.type_none")],
                                     ["1", __("em_meter_config.content.type_sdm")],
-                                    //["2", __("em_meter_config.content.type_sunspec")],
+                                    //["2", __("em_meter_config.content.type_sun_spec")],
                                     //["3", __("em_meter_config.content.type_modbus_tcp")],
                                     ["100", __("em_meter_config.content.type_custom")],
                                 ]}
@@ -110,7 +110,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
 
                     <Collapse in={state.meter_source == 2}>
                         <div>
-                            <FormSeparator heading={__("em_meter_config.content.conf_sunspec")}/>
+                            <FormSeparator heading={__("em_meter_config.content.conf_sun_spec")}/>
                             <div>TBD</div>
                         </div>
                     </Collapse>
