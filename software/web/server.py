@@ -111,6 +111,6 @@ host = args.host
 thread = threading.Thread(target=ws_thread_fn, args=[ws_thread_queue])
 thread.start()
 
-app.run(host="0.0.0.0")
+app.run(host="::")
 
 ws_thread_queue.put(None)
