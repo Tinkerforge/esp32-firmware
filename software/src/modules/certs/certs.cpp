@@ -39,7 +39,12 @@ void Certs::pre_setup() {
     });
 
     remove = Config::Object({
-        {"cert_id", Config::Uint(0, 0, 8)}
+        {"id", Config::Uint(0, 0, MAX_CERTS)}
+    });
+
+    add = Config::Object({
+        {"id", Config::Uint(0, 0, MAX_CERTS)},
+        {"cert", Config::Str("", 0, MAX_CERT_SIZE)}
     });
 }
 
@@ -72,37 +77,21 @@ void Certs::register_urls()
     api.addState("certs/state", &state, {}, 1000);
     api.addPersistentConfig("certs/config", &config, {}, 1000);
 
-    api.addRawCommand("certs/add", [this](char *payload, size_t size) {
-        if (size < 3)
-            return "Too short";
+    api.addCommand("certs/add", &add, {}, [this](){
+        uint8_t cert_id = add.get("id")->asUint();
 
-        if (size > MAX_CERT_SIZE + 2)
-            return "Too long";
-
-        if (payload[1] != ';' || !isdigit(payload[0]))
-            return "Wrong format";
-
-        uint8_t cert_num = payload[0] - '0';
-
-        if (cert_num >= MAX_CERTS)
-            return "cert_id too high";
-
-        File f = LittleFS.open(String("/certs/") + payload[0], "w");
-
-        // Skip header
-        payload += 2;
-        size -= 2;
+        File f = LittleFS.open(String("/certs/") + cert_id, "w");
 
         // TODO: more robust writing
-        size_t written = f.write((const uint8_t *)payload, size);
-        logger.printfln("Written %u; size %u", written, size);
+        size_t written = f.write((const uint8_t *)add.get("cert")->asEphemeralCStr(), add.get("cert")->asString().length());
+        logger.printfln("Written %u; size %u", written, add.get("cert")->asString().length());
 
         this->update_state();
         return "";
     }, true);
 
     api.addCommand("certs/remove", &remove, {}, [this](){
-        String path = String("/certs/") + remove.get("cert_id")->asUint();
+        String path = String("/certs/") + remove.get("id")->asUint();
         logger.printfln("Removing %s", path.c_str());
 
         if (!LittleFS.exists(path))
@@ -114,8 +103,8 @@ void Certs::register_urls()
     }, true);
 }
 
-std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t cert_id, size_t *out_cert_len) {
-    String path = String("/certs/") + cert_id;
+std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t id, size_t *out_cert_len) {
+    String path = String("/certs/") + id;
 
     if (!LittleFS.exists(path))
         return nullptr;

@@ -42,5 +42,6 @@ private:
 
     ConfigRoot config, config_in_use;
     ConfigRoot state;
+    ConfigRoot add;
     ConfigRoot remove;
 };
