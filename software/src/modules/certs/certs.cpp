@@ -70,6 +70,8 @@ void Certs::setup() {
 
     LittleFS.mkdir("/certs");
     update_state();
+
+    initialized = true;
 }
 
 void Certs::register_urls()
