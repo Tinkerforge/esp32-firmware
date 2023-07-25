@@ -44,6 +44,7 @@ void Certs::pre_setup() {
 
     add = Config::Object({
         {"id", Config::Uint(0, 0, MAX_CERTS)},
+        {"name", Config::Str("", 0, 32)},
         {"cert", Config::Str("", 0, MAX_CERT_SIZE)}
     });
 }
@@ -79,7 +80,8 @@ void Certs::register_urls()
     api.addState("certs/state", &state, {}, 1000);
     api.addPersistentConfig("certs/config", &config, {}, 1000);
 
-    api.addCommand("certs/add", &add, {}, [this](){
+    api.addCommand("certs/add", &add, {}, [this]() {
+        // TODO: fail if already exists.
         uint8_t cert_id = add.get("id")->asUint();
 
         {
@@ -99,7 +101,30 @@ void Certs::register_urls()
         return "";
     }, true);
 
-    api.addCommand("certs/remove", &remove, {}, [this](){
+    api.addCommand("certs/modify", &add, {}, [this]() {
+        // TODO: fail if not already existing.
+
+        uint8_t cert_id = add.get("id")->asUint();
+
+        {
+            File f = LittleFS.open(String("/certs/") + cert_id, "w");
+
+            auto &cert = add.get("cert")->asString();
+
+            // TODO: more robust writing
+            size_t written = f.write((const uint8_t *) cert.c_str(), cert.length());
+            logger.printfln("Written %u; size %u", written, cert.length());
+        }
+
+        // Cert is written into flash. Drop from config to free memory.
+        add.get("cert")->clearString();
+
+        this->update_state();
+        return "";
+    }, true);
+
+    api.addCommand("certs/remove", &remove, {}, [this]() {
+        //TODO: signal cert users that cert was deleted.
         String path = String("/certs/") + remove.get("id")->asUint();
         logger.printfln("Removing %s", path.c_str());
 
