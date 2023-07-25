@@ -53,7 +53,7 @@ int tf_hal_create(TF_HAL *hal, uint8_t max_ports) {
 
     ports = new TF_Port[max_ports];
     for(size_t i = 0; i < max_ports; ++i) {
-        ports[i] = TF_Port{'A' + i, {._to_init = 0}};
+        ports[i] = TF_Port{(char)('A' + i), {._to_init = 0}};
     };
 
     hal->spi_settings = SPISettings(1400000, SPI_MSBFIRST, SPI_MODE3);
