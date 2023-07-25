@@ -23,7 +23,7 @@
 
 #include "module.h"
 #include "mqtt_discovery_topics.h"
-#include "tools.h"
+#include "cool_string.h"
 
 class MqttAutoDiscovery final : public IModule
 {

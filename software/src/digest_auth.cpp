@@ -27,7 +27,7 @@
 #include "mbedtls/md5.h"
 #include "event_log.h"
 #include "build.h"
-#include "tools.h"
+#include "cool_string.h"
 
 #define MD5_LEN 32
 

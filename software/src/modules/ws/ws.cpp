@@ -24,7 +24,7 @@
 #include "api.h"
 #include "task_scheduler.h"
 #include "web_server.h"
-#include "tools.h"
+#include "cool_string.h"
 
 void WS::pre_setup()
 {

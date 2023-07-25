@@ -25,7 +25,7 @@
 #include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
-#include "tools.h"
+#include "cool_string.h"
 #include "web_server.h"
 
 #include <ESPmDNS.h>
