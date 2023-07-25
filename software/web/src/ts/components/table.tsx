@@ -61,7 +61,7 @@ export interface TableProps {
     onAddCheck?: () => Promise<boolean>
     onAddCommit?: () => Promise<void>
     onAddHide?: () => Promise<void>
-    tableTill?: string
+    tableTill?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 }
 
 interface TableState {
