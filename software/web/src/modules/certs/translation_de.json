@@ -1,0 +1,33 @@
+{
+    "certs": {
+        "status": {
+        },
+        "navbar": {
+            "certs": "Zertifikate"
+        },
+        "content": {
+            "certs": "TLS-Zertifikate",
+            "enable_certs": "WireGuard aktiviert",
+            "enable_certs_desc": "Verbindung wird automatisch aufgebaut, sobald eine Zeitsynchronisierung besteht.",
+            "default_if": "Als Default-Interface verwenden",
+            "default_if_desc": "Bei aktiver WireGuard-Verbindung wird sämtlicher nicht-lokaler Netzwerkverkehr über das VPN geschickt.",
+            "internal_ip": "IP-Adresse im WireGuard-Netz",
+            "internal_subnet": "Subnetzmaske des WireGuard-Netzes",
+            "internal_gateway": "Gateway des WireGuard-Netzes",
+            "remote_host": "Peer-Hostname oder -IP-Adresse",
+            "port": "Peer-Port",
+            "private_key": "Eigener privater Schlüssel",
+            "remote_public_key": "Öffentlicher Schlüssel des Peers",
+            "preshared_key": "Preshared-Key",
+            "preshared_key_muted": "optional",
+            "allowed_ip": "Erlaubte Quell-IP-Adresse empfangener Pakete",
+            "allowed_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2",
+            "allowed_subnet": "Erlaubte Subnetzmaske empfangener Pakete"
+        },
+        "script": {
+            "save_failed": "Speichern der Zertifikatseinstellungen fehlgeschlagen",
+            "reboot_content_changed": "Zertifikatseinstellungen",
+            "preshared_key_unused": "PSK wird nicht verwendet"
+        }
+    }
+}
