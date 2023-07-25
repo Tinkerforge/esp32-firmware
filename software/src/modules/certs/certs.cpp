@@ -80,11 +80,16 @@ void Certs::register_urls()
     api.addCommand("certs/add", &add, {}, [this](){
         uint8_t cert_id = add.get("id")->asUint();
 
-        File f = LittleFS.open(String("/certs/") + cert_id, "w");
+        {
+            File f = LittleFS.open(String("/certs/") + cert_id, "w");
 
-        // TODO: more robust writing
-        size_t written = f.write((const uint8_t *)add.get("cert")->asEphemeralCStr(), add.get("cert")->asString().length());
-        logger.printfln("Written %u; size %u", written, add.get("cert")->asString().length());
+            auto &cert = add.get("cert")->asString();
+
+            // TODO: more robust writing
+            size_t written = f.write((const uint8_t *) cert.c_str(), cert.length());
+            logger.printfln("Written %u; size %u", written, cert.length());
+        }
+
 
         this->update_state();
         return "";
