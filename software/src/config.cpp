@@ -28,7 +28,7 @@
 #define SLOT_HEADROOM 20
 
 struct ConfStringSlot {
-    String val = "";
+    CoolString val = "";
     uint16_t minChars = 0;
     uint16_t maxChars = 0;
     bool inUse = false;
@@ -388,7 +388,7 @@ struct from_json {
 
         if (!json_node.is<String>())
             return "JSON node was not a string.";
-        *x.getVal() = json_node.as<String>();
+        *x.getVal() = json_node.as<CoolString>();
         return "";
     }
     String operator()(Config::ConfFloat &x)
@@ -581,9 +581,9 @@ struct from_update {
         if (Config::containsNull(update))
             return "";
 
-        if (update->get<String>() == nullptr)
+        if (update->get<CoolString>() == nullptr)
             return "ConfUpdate node was not a string.";
-        *x.getVal() = *(update->get<String>());
+        *x.getVal() = *(update->get<CoolString>());
         return "";
     }
     String operator()(Config::ConfFloat &x)
@@ -900,13 +900,13 @@ bool Config::ConfString::slotEmpty(size_t i) {
     return !string_buf[i].inUse;
 }
 
-String* Config::ConfString::getVal() { return &string_buf[idx].val; }
-const String* Config::ConfString::getVal() const { return &string_buf[idx].val; }
+CoolString* Config::ConfString::getVal() { return &string_buf[idx].val; }
+const CoolString* Config::ConfString::getVal() const { return &string_buf[idx].val; }
 
 const Config::ConfString::Slot* Config::ConfString::getSlot() const { return &string_buf[idx]; }
 Config::ConfString::Slot* Config::ConfString::getSlot() { return &string_buf[idx]; }
 
-Config::ConfString::ConfString(const String &val, uint16_t minChars, uint16_t maxChars)
+Config::ConfString::ConfString(const CoolString &val, uint16_t minChars, uint16_t maxChars)
 {
     idx = nextSlot<Config::ConfString>(string_buf, string_buf_size);
     this->getSlot()->inUse = true;
@@ -935,6 +935,7 @@ Config::ConfString::~ConfString()
     string_buf[idx].inUse = false;
 
     this->getSlot()->val.clear();
+    this->getSlot()->val.shrinkToFit();
     this->getSlot()->minChars = 0;
     this->getSlot()->maxChars = 0;
 }
@@ -1229,7 +1230,7 @@ Config Config::Str(const String &s, uint16_t minChars, uint16_t maxChars)
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
-    return Config{ConfString{s, minChars, maxChars}};
+    return Config{ConfString{CoolString(s), minChars, maxChars}};
 }
 
 Config Config::Float(float d, float min, float max)
@@ -1400,7 +1401,7 @@ const Config::ConstWrap Config::get(uint16_t i) const
     return wrap;
 }
 
-const String &Config::asString() const
+const CoolString &Config::asString() const
 {
     return *this->get<ConfString>()->getVal();
 }

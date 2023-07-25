@@ -25,6 +25,7 @@
 #include "FS.h"
 
 #include "event_log.h"
+#include "cool_string.h"
 
 #define STRICT_VARIANT_ASSUME_MOVE_NOTHROW true
 #include "strict_variant/variant.hpp"
@@ -55,11 +56,11 @@ struct Config {
         static bool slotEmpty(size_t i);
         static constexpr const char *variantName = "ConfString";
 
-        String *getVal();
-        const String *getVal() const;
+        CoolString *getVal();
+        const CoolString *getVal() const;
         const Slot *getSlot() const;
 
-        ConfString(const String &val, uint16_t min, uint16_t max);
+        ConfString(const CoolString &val, uint16_t min, uint16_t max);
         ConfString(const ConfString &cpy);
         ~ConfString();
 
@@ -214,7 +215,7 @@ struct Config {
 
     typedef strict_variant::variant<
         std::nullptr_t, // DON'T MOVE THIS!
-        String,
+        CoolString,
         float,
         uint32_t,
         int32_t,
@@ -709,7 +710,7 @@ struct Config {
         return reinterpret_cast<const ConfigT *>(&value.val);
     }
 
-    const String &asString() const;
+    const CoolString &asString() const;
 
     const char *asEphemeralCStr() const;
     const char *asUnsafeCStr() const;
