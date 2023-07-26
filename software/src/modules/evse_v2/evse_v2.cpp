@@ -170,6 +170,20 @@ void EVSEV2::pre_setup()
         {"button_pressed", Config::Bool(false)}
     });
     cron.register_trigger(proto);
+
+    proto.tag = CRON_TRIGGER_EVSE_GP_INPUT;
+    proto.config = Config::Object({
+        {"high", Config::Bool(false)}
+    });
+    cron.register_trigger(proto);
+
+    proto.tag = CRON_TRIGGER_EVSE_SHUTDOWN_INPUT;
+    cron.register_trigger(proto);
+
+    proto.tag = CRON_ACTION_EVSE_GP_OUTPUT;
+    cron.register_action(proto, [this](const Config *config) {
+        is_in_bootloader(tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()));
+    });
 #endif
 }
 
@@ -850,6 +864,14 @@ void EVSEV2::update_all_data()
     for (int i = 0; i < sizeof(resistances) / sizeof(resistances[0]); ++i)
         evse_common.low_level_state.get("resistances")->get(i)->updateUint(resistances[i]);
 
+#if MODULE_CRON_AVAILABLE()
+    if (evse_common.low_level_state.get("gpio")->get(5)->asBool() != gpio[5])
+        cron.trigger_action(this, CRON_TRIGGER_EVSE_SHUTDOWN_INPUT, nullptr);
+
+    if (evse_common.low_level_state.get("gpio")->get(16)->asBool() != gpio[16])
+        cron.trigger_action(this, CRON_TRIGGER_EVSE_GP_INPUT, nullptr);
+#endif
+
     for (int i = 0; i < sizeof(gpio) / sizeof(gpio[0]); ++i)
         evse_common.low_level_state.get("gpio")->get(i)->updateBool(gpio[i]);
 
@@ -971,6 +993,16 @@ bool EVSEV2::action_triggered(Config *config, void *data) {
         // This check happens before the new state is written to the config.
         // Because of this we need to check if the current state in config is different than our desired state.
         if (evse_common.button_state.get("button_pressed")->asBool() != cfg->get("button_pressed")->asBool())
+            return true;
+        break;
+
+    case CRON_TRIGGER_EVSE_GP_INPUT:
+        if (evse_common.low_level_state.get("gpio")->get(16)->asBool() != cfg->get("high")->asBool())
+            return true;
+        break;
+
+    case CRON_TRIGGER_EVSE_SHUTDOWN_INPUT:
+        if (evse_common.low_level_state.get("gpio")->get(5)->asBool() != cfg->get("high")->asBool())
             return true;
         break;
 
