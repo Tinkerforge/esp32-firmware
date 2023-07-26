@@ -21,15 +21,22 @@
 
 #include "config.h"
 
+class ChargeLimits;
 #include "module.h"
+#include "module_dependencies.h"
 
 class ChargeLimits final : public IModule
+#if MODULE_CRON_AVAILABLE()
+, public ICronModule
+#endif
 {
 public:
     ChargeLimits(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+
+    bool action_triggered(Config *config, void *data);
 
     ConfigRoot config;
     ConfigRoot config_in_use;
