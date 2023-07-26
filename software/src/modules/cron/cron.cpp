@@ -85,7 +85,6 @@ void Cron::register_urls() {
 void Cron::register_action(const ConfUnionPrototype &proto, ActionCb action) {
     action_vec.push_back(proto);
     action_map[proto.tag] = action;
-    logger.printfln("registered action nr. %u", proto.tag);
 }
 
 void Cron::register_trigger(const ConfUnionPrototype &proto) {

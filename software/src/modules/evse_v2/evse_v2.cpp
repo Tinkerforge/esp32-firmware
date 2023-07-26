@@ -162,6 +162,15 @@ void EVSEV2::pre_setup()
     });
 
     gp_output_update = gp_output;
+
+#if MODULE_CRON_AVAILABLE()
+    ConfUnionPrototype proto;
+    proto.tag = CRON_TRIGGER_EVSE_BUTTON;
+    proto.config = Config::Object({
+        {"button_pressed", Config::Bool(false)}
+    });
+    cron.register_trigger(proto);
+#endif
 }
 
 void EVSEV2::post_setup() {
@@ -888,6 +897,11 @@ void EVSEV2::update_all_data()
     // get_button_configuration
     button_configuration.get("button")->updateUint(button_cfg);
 
+#if MODULE_CRON_AVAILABLE()
+    if (evse_common.button_state.get("button_pressed")->asBool() != button_pressed)
+        cron.trigger_action(this, CRON_TRIGGER_EVSE_BUTTON, nullptr);
+#endif
+
     // get_button_state
     evse_common.button_state.get("button_press_time")->updateUint(button_press_time);
     evse_common.button_state.get("button_release_time")->updateUint(button_release_time);
@@ -947,4 +961,21 @@ void EVSEV2::reset_energy_meter_relative_energy()
 uint8_t EVSEV2::get_energy_meter_type()
 {
     return evse_common.hardware_configuration.get("energy_meter_type")->asUint();
+}
+
+bool EVSEV2::action_triggered(Config *config, void *data) {
+    auto cfg = config->get();
+    switch (config->getTag())
+    {
+    case CRON_TRIGGER_EVSE_BUTTON:
+        // This check happens before the new state is written to the config.
+        // Because of this we need to check if the current state in config is different than our desired state.
+        if (evse_common.button_state.get("button_pressed")->asBool() != cfg->get("button_pressed")->asBool())
+            return true;
+        break;
+
+    default:
+        break;
+    }
+    return false;
 }
