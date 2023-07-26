@@ -211,6 +211,19 @@ void ChargeManager::pre_setup()
     control_pilot_disconnect = ConfigRoot{Config::Object({
         {"disconnect", Config::Bool(false)},
     })};
+
+#if MODULE_CRON_AVAILABLE()
+    ConfUnionPrototype proto;
+    proto.tag = CRON_ACTION_SET_MANAGER_CURRENT;
+    proto.config = Config::Object({
+        {"current", Config::Uint(0)}
+    });
+
+    cron.register_action(proto, [this](Config *config) {
+        this->available_current.get("current")->updateUint(config->get("current")->asUint());
+        this->last_available_current_update = millis();
+    });
+#endif
 }
 
 static uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t charging_time, uint16_t target_allocated_current)

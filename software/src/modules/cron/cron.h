@@ -34,6 +34,7 @@
 #define CRON_ACTION_SET_CURRENT 3
 #define CRON_ACTION_LED 4
 #define CRON_ACTION_METER_RESET 5
+#define CRON_ACTION_SET_MANAGER_CURRENT 6
 
 class ICronModule {
 public:
