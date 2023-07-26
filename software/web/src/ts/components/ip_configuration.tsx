@@ -110,7 +110,7 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                         onValue={(v) => this.onUpdate("subnet", v)}
                         placeholder={__("component.ip_configuration.subnet_placeholder")}
                     />
-                <div class="invalid-feedback">{__("component.ip_configuration.subnet_captures_prefix") + captured_subnet_name + " (" + captured_subnet_ip + ") " + __("component.ip_configuration.subnet_captures_suffix")}</div>
+                {captured_subnet_name != "" ? <div class="invalid-feedback">{__("component.ip_configuration.subnet_captures_prefix") + captured_subnet_name + " (" + captured_subnet_ip + ") " + __("component.ip_configuration.subnet_captures_suffix")}</div> : <></>}
             </FormRow>
 
         </>);
