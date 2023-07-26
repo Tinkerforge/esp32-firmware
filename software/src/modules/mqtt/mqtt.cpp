@@ -458,7 +458,7 @@ void Mqtt::register_urls()
                     msg.topic = String(tpic).substring(0, tpic_len);
                     msg.payload = String(data).substring(0, data_len);
                     msg.retained = false;
-                    if (cron.trigger_specific_action(this, idx, &msg))
+                    if (cron.trigger_action(this, CRON_TRIGGER_MQTT, &msg))
                         return;
                 }, false);
                 subscribed_topics.push_back(conf.second->get("topic")->asString());
