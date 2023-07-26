@@ -144,6 +144,15 @@ void EvseCommon::pre_setup() {
     });
 
     cron.register_trigger(proto);
+
+    proto.tag = CRON_ACTION_SET_CURRENT;
+    proto.config = Config::Object({
+        {"current", Config::Uint(0, 0, 32000)}
+    });
+
+    cron.register_action(proto, [this](Config *config) {
+        backend->set_charging_slot(CHARGING_SLOT_CRON, config->get("current")->asUint(), true, false);
+    });
 #endif
 }
 

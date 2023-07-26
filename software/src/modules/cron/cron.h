@@ -30,6 +30,7 @@
 
 #define CRON_ACTION_PRINT 1
 #define CRON_ACTION_MQTT 2
+#define CRON_ACTION_SET_CURRENT 3
 
 class ICronModule {
 public:
