@@ -232,7 +232,6 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         c.callback(topic, topic_len, data, data_len);
         return;
     }
-
     const String &prefix = this->config_in_use.get("global_topic_prefix")->asString();
     if (topic_len < prefix.length() + 1) // + 1 because we will check for the / between the prefix and the topic.
         return;
@@ -447,6 +446,32 @@ void Mqtt::register_urls()
 {
     api.addPersistentConfig("mqtt/config", &config, {"broker_password"}, 1000);
     api.addState("mqtt/state", &state, {}, 1000);
+
+#if MODULE_CRON_AVAILABLE()
+    if (cron.is_trigger_active(CRON_TRIGGER_MQTT)) {
+        ConfigVec trigger_config = cron.get_configured_triggers(CRON_TRIGGER_MQTT);
+        std::vector<String> subscribed_topics;
+        for (auto &conf: trigger_config) {
+            bool already_subscribed = false;
+            for (auto &new_topic: subscribed_topics) {
+                if (conf.second->get("topic")->asString() == new_topic)
+                    already_subscribed = true;
+            }
+            const size_t idx = conf.first;
+            if (!already_subscribed) {
+                subscribe(conf.second->get("topic")->asString(), [this, idx](const char *tpic, size_t tpic_len, char * data, size_t data_len) {
+                    MqttMessage msg;
+                    msg.topic = String(tpic).substring(0, tpic_len);
+                    msg.payload = String(data).substring(0, data_len);
+                    msg.retained = false;
+                    if (cron.trigger_specific_action(this, idx, &msg))
+                        return;
+                }, false);
+                subscribed_topics.push_back(conf.second->get("topic")->asString());
+            }
+        }
+    }
+#endif
 }
 
 void Mqtt::register_events() {
@@ -477,7 +502,7 @@ bool Mqtt::action_triggered(Config *config, void *data) {
     switch (config->getTag())
     {
     case CRON_TRIGGER_MQTT:
-        if (cfg->get("topic")->asString() == msg->topic && cfg->get("payload")->asString() == msg->payload)
+        if (cfg->get("payload")->asString() == msg->payload)
             return true;
         break;
 
