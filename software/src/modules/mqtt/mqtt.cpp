@@ -82,11 +82,6 @@ void Mqtt::pre_setup()
     cron.register_trigger(proto);
 
     proto.tag = CRON_ACTION_MQTT;
-    proto.config = Config::Object({
-            {"topic", Config::Str("", 0, 64)},
-            {"payload", Config::Str("", 0, 64)},
-            {"retain", Config::Bool(false)}
-        });
 
     cron.register_action(proto, [this](Config *cfg) {
         logger.printfln("Publishing message to %s", cfg->get("topic")->asString().c_str());
