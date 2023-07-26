@@ -82,13 +82,13 @@ void Cron::register_urls() {
     api.addPersistentConfig("cron/timed_config", &enabled, {}, 1000);
 }
 
-void Cron::register_action(ConfUnionPrototype &proto, ActionCb action) {
+void Cron::register_action(const ConfUnionPrototype &proto, ActionCb action) {
     action_vec.push_back(proto);
     action_map[proto.tag] = action;
     logger.printfln("registered action nr. %u", proto.tag);
 }
 
-void Cron::register_trigger(ConfUnionPrototype &proto) {
+void Cron::register_trigger(const ConfUnionPrototype &proto) {
     trigger_vec.push_back(proto);
 }
 

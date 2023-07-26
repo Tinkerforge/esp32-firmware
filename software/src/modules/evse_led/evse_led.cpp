@@ -32,6 +32,19 @@ void EvseLed::pre_setup()
         {"indication", Config::Int(-1, -1, Blink::ErrorEnd)},
         {"duration", Config::Uint16(0)}
     });
+
+#if MODULE_CRON_AVAILABLE()
+    ConfUnionPrototype proto;
+    proto.tag = CRON_ACTION_LED;
+    proto.config = Config::Object({
+        {"state", Config::Int(-1)},
+        {"duration", Config::Uint16(0)}
+    });
+
+    cron.register_action(proto, [this](Config *config) {
+        set_api(config->get("state")->asEnum<Blink>(), config->get("duration")->asUint());
+    });
+#endif
 }
 
 void EvseLed::setup()

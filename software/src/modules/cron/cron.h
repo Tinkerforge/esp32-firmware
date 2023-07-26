@@ -31,6 +31,7 @@
 #define CRON_ACTION_PRINT 1
 #define CRON_ACTION_MQTT 2
 #define CRON_ACTION_SET_CURRENT 3
+#define CRON_ACTION_LED 4
 
 class ICronModule {
 public:
@@ -58,8 +59,8 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void register_action(ConfUnionPrototype &proto, ActionCb callback);
-    void register_trigger(ConfUnionPrototype &proto);
+    void register_action(const ConfUnionPrototype &proto, ActionCb callback);
+    void register_trigger(const ConfUnionPrototype &proto);
 
     bool trigger_action(ICronModule *module, uint8_t number, void *data);
     bool trigger_specific_action(ICronModule *module, size_t idx, void *data);
