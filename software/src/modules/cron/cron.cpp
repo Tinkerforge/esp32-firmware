@@ -38,7 +38,7 @@ void Cron::pre_setup() {
         })
     };
 
-    register_action(proto, [this](Config *cfg) {
+    register_action(proto, [this](const Config *cfg) {
         logger.printfln("Got message: %s", cfg->get("message")->asString().c_str());
     });
     Config trigger_prototype = Config::Union(

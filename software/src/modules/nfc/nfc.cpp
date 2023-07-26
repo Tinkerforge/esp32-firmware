@@ -110,7 +110,7 @@ void NFC::pre_setup()
         {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
         {"tag_action", Config::Uint(0, 0, 2)}
     });
-    cron.register_action(proto, [this](Config *config) {
+    cron.register_action(proto, [this](const Config *config) {
         inject_tag.get("tag_type")->updateUint(config->get("tag_type")->asUint());
         inject_tag.get("tag_id")->updateString(config->get("tag_id")->asString());
         last_tag_injection = millis();

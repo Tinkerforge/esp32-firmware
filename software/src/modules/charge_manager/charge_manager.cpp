@@ -219,7 +219,7 @@ void ChargeManager::pre_setup()
         {"current", Config::Uint(0)}
     });
 
-    cron.register_action(proto, [this](Config *config) {
+    cron.register_action(proto, [this](const Config *config) {
         this->available_current.get("current")->updateUint(config->get("current")->asUint());
         this->last_available_current_update = millis();
     });

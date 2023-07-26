@@ -150,7 +150,7 @@ void EvseCommon::pre_setup() {
         {"current", Config::Uint(0, 0, 32000)}
     });
 
-    cron.register_action(proto, [this](Config *config) {
+    cron.register_action(proto, [this](const Config *config) {
         backend->set_charging_slot(CHARGING_SLOT_CRON, config->get("current")->asUint(), true, false);
     });
 #endif

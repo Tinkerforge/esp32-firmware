@@ -83,7 +83,7 @@ void Mqtt::pre_setup()
 
     proto.tag = CRON_ACTION_MQTT;
 
-    cron.register_action(proto, [this](Config *cfg) {
+    cron.register_action(proto, [this](const Config *cfg) {
         publish(cfg->get("topic")->asString(), cfg->get("payload")->asString(), cfg->get("retain")->asBool());
     });
 #endif

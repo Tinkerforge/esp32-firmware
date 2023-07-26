@@ -61,7 +61,7 @@ void Meter::pre_setup()
     proto.tag = CRON_ACTION_METER_RESET;
     proto.config = *Config::Null();
 
-    cron.register_action(proto, [this](Config *config) {
+    cron.register_action(proto, [this](const Config *config) {
         resetMeters();
     });
 #endif

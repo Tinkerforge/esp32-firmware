@@ -37,13 +37,14 @@
 #define CRON_ACTION_METER_RESET 5
 #define CRON_ACTION_SET_MANAGER_CURRENT 6
 #define CRON_ACTION_NFC_INJECT_TAG 7
+#define CRON_ACTION_CHARGE_LIMITS 8
 
 class ICronModule {
 public:
     virtual bool action_triggered(Config *config, void *data) = 0;
 };
 
-typedef std::function<void(Config *)>               ActionCb;
+typedef std::function<void(const Config *)>               ActionCb;
 typedef std::map<uint32_t, ActionCb>                ActionMap;
 typedef std::vector<std::pair<size_t, Config *>>                       ConfigVec;
 

@@ -41,7 +41,7 @@ void EvseLed::pre_setup()
         {"duration", Config::Uint16(0)}
     });
 
-    cron.register_action(proto, [this](Config *config) {
+    cron.register_action(proto, [this](const Config *config) {
         set_api(config->get("state")->asEnum<Blink>(), config->get("duration")->asUint());
     });
 #endif
