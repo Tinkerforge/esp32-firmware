@@ -27,6 +27,9 @@
 
 class Meter final : public IModule
 {
+private:
+    void resetMeters();
+    
 public:
     Meter(){}
     void pre_setup() override;

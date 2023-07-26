@@ -23,6 +23,7 @@
 #include "event_log.h"
 #include "tools.h"
 #include "task_scheduler.h"
+#include "module_dependencies.h"
 
 
 void Meter::pre_setup()
@@ -54,6 +55,16 @@ void Meter::pre_setup()
     last_reset = Config::Object({
         {"last_reset", Config::Uint32(0)}
     });
+
+#if MODULE_CRON_AVAILABLE()
+    ConfUnionPrototype proto;
+    proto.tag = CRON_ACTION_METER_RESET;
+    proto.config = *Config::Null();
+
+    cron.register_action(proto, [this](Config *config) {
+        resetMeters();
+    });
+#endif
 }
 
 void Meter::updateMeterState(uint8_t new_state, uint8_t new_type)
@@ -193,18 +204,22 @@ void Meter::register_urls()
     api.addState("meter/last_reset", &last_reset, {}, 1000);
 
     api.addCommand("meter/reset", Config::Null(), {}, [this](){
-        for (auto &cb : this->reset_callbacks)
-            cb();
-
-        struct timeval tv_now;
-
-        if (clock_synced(&tv_now)) {
-            last_reset.get("last_reset")->updateUint(tv_now.tv_sec);
-        } else {
-            last_reset.get("last_reset")->updateUint(0);
-        }
-        api.writeConfig("meter/last_reset", &last_reset);
+        resetMeters();
     }, true);
 
     power_hist.register_urls("meter");
+}
+
+void Meter::resetMeters() {
+    for (auto &cb : this->reset_callbacks)
+        cb();
+
+    struct timeval tv_now;
+
+    if (clock_synced(&tv_now)) {
+        last_reset.get("last_reset")->updateUint(tv_now.tv_sec);
+    } else {
+        last_reset.get("last_reset")->updateUint(0);
+    }
+    api.writeConfig("meter/last_reset", &last_reset);
 }
