@@ -94,6 +94,33 @@ void NFC::pre_setup()
 
         return "";
     });
+
+#if MODULE_CRON_AVAILABLE()
+    ConfUnionPrototype proto;
+    proto.tag = CRON_TRIGGER_NFC;
+    proto.config = Config::Object({
+        {"tag_type", Config::Uint(0, 0, 4)},
+        {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
+    });
+    cron.register_trigger(proto);
+
+    proto.tag = CRON_ACTION_NFC_INJECT_TAG;
+    proto.config = Config::Object({
+        {"tag_type", Config::Uint(0, 0, 4)},
+        {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
+        {"tag_action", Config::Uint(0, 0, 2)}
+    });
+    cron.register_action(proto, [this](Config *config) {
+        inject_tag.get("tag_type")->updateUint(config->get("tag_type")->asUint());
+        inject_tag.get("tag_id")->updateString(config->get("tag_id")->asString());
+        last_tag_injection = millis();
+        tag_injection_action = config->get("tag_action")->asUint();
+        // 0 is the marker that no injection happened or the last one was handled.
+        // Fake that we were one ms faster.
+        if (last_tag_injection == 0)
+            last_tag_injection -= 1;
+    });
+#endif
 }
 
 void NFC::setup_nfc()
@@ -179,6 +206,10 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
         evse_led.set_module(EvseLed::Blink::Nack, 2000);
 #endif
     }
+
+#if MODULE_CRON_AVAILABLE()
+    cron.trigger_action(this, CRON_TRIGGER_NFC, tag);
+#endif
 }
 
 const char *lookup = "0123456789ABCDEF";
@@ -349,3 +380,21 @@ void NFC::loop()
 {
     this->DeviceModule::loop();
 }
+
+#if MODULE_CRON_AVAILABLE()
+bool NFC::action_triggered(Config *config, void *data) {
+    auto cfg = config->get();
+    tag_info_t *tag = (tag_info_t *)data;
+    switch (config->getTag()) {
+    case CRON_TRIGGER_NFC:
+        if (cfg->get("tag_type")->asUint() == tag->tag_type && cfg->get("tag_id")->asString() == tag->tag_id) {
+            return true;
+        }
+        break;
+
+    default:
+        break;
+    }
+    return false;
+}
+#endif
