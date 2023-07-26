@@ -534,16 +534,18 @@ void EvseCommon::register_urls() {
     backend->post_register_urls();
 
 #if MODULE_CRON_AVAILABLE()
-    event.registerEvent("evse/state", {}, [this](Config *cfg) {
+    if (cron.is_trigger_active(CRON_TRIGGER_IEC_CHANGE)) {
+        event.registerEvent("evse/state", {}, [this](Config *cfg) {
 
-        // we need this since not only iec state changes trigger this api event.
-        static uint32_t last_state = 0;
-        uint32_t state_now = cfg->get("charger_state")->asUint();
-        if (last_state != state_now) {
-            cron.trigger_action(this, CRON_TRIGGER_IEC_CHANGE, 0);
-            last_state = state_now;
-        }
-    });
+            // we need this since not only iec state changes trigger this api event.
+            static uint32_t last_state = 0;
+            uint32_t state_now = cfg->get("charger_state")->asUint();
+            if (last_state != state_now) {
+                cron.trigger_action(this, CRON_TRIGGER_IEC_CHANGE, 0);
+                last_state = state_now;
+            }
+        });
+    }
 #endif
 
 }

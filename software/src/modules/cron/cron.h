@@ -36,9 +36,9 @@ public:
     virtual bool action_triggered(Config *config, void *data) = 0;
 };
 
-
 typedef std::function<void(Config *)>               ActionCb;
 typedef std::map<uint32_t, ActionCb>                ActionMap;
+typedef std::vector<std::pair<size_t, Config *>>                       ConfigVec;
 
 class Cron : public IModule {
     ConfigRoot config;
@@ -61,4 +61,8 @@ public:
     void register_trigger(ConfUnionPrototype &proto);
 
     bool trigger_action(ICronModule *module, uint8_t number, void *data);
+    bool trigger_specific_action(ICronModule *module, size_t idx, void *data);
+    bool is_trigger_active(uint8_t number);
+
+    ConfigVec get_configured_triggers(uint8_t number);
 };

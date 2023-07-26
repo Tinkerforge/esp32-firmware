@@ -103,9 +103,11 @@ void Rtc::register_backend(IRtcBackend *_backend)
         gmtime_r(&tv.tv_sec, &tm);
 
 #if MODULE_CRON_AVAILABLE()
-        uint32_t last_minute = time.get("minute")->asUint();
-        if (last_minute < tm.tm_min)
-            cron.trigger_action(this, CRON_TRIGGER_CRON, &tm);
+        if (cron.is_trigger_active(CRON_TRIGGER_CRON)) {
+            uint32_t last_minute = time.get("minute")->asUint();
+            if (last_minute < tm.tm_min)
+                cron.trigger_action(this, CRON_TRIGGER_CRON, &tm);
+        }
 #endif
 
         time.get("year")->updateUint(tm.tm_year + 1900);

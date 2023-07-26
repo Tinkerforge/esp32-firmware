@@ -69,7 +69,7 @@ void Cron::pre_setup() {
 
 void Cron::setup() {
     api.restorePersistentConfig("cron/config", &config);
-    api.restorePersistentConfig("cron/timed_config", &enabled);
+    api.restorePersistentConfig("cron/enabled", &enabled);
 
     config_in_use = config;
     enabled_in_use = enabled;
@@ -94,7 +94,7 @@ void Cron::register_trigger(ConfUnionPrototype &proto) {
 
 bool Cron::trigger_action(ICronModule *module, uint8_t number, void *data) {
     bool triggered = false;
-    for (auto conf: config) {
+    for (auto &conf: config) {
         if (conf.get("trigger")->getTag() == number && module->action_triggered((Config*)conf.get("trigger"), data)) {
             triggered = true;
             uint8_t action_ident = conf.get("action")->getTag();
@@ -105,4 +105,36 @@ bool Cron::trigger_action(ICronModule *module, uint8_t number, void *data) {
         }
     }
     return triggered;
+}
+
+bool Cron::trigger_specific_action(ICronModule *module, size_t idx, void *data) {
+    auto cfg = config.get(idx);
+    if (module->action_triggered((Config*)cfg->get("trigger"), data)) {
+        uint8_t action_ident = cfg->get("action")->getTag();
+        if (action_map.find(action_ident) != action_map.end())
+            action_map[action_ident]((Config *)cfg->get("action")->get());
+        else
+            logger.printfln("There is no action with ident-nr %u!", action_ident);
+        return true;
+    }
+    return false;
+}
+
+bool Cron::is_trigger_active(uint8_t number) {
+    for (auto &conf: config) {
+        if (conf.get("trigger")->getTag() == number) {
+            return true;
+        }
+    }
+    return false;
+}
+
+ConfigVec Cron::get_configured_triggers(uint8_t number) {
+    ConfigVec vec;
+    for (size_t idx = 0; idx < config.count(); idx++) {
+        auto trigger = config.get(idx)->get("trigger");
+        if (trigger->getTag() == number)
+            vec.push_back({idx, (Config *)trigger->get()});
+    }
+    return vec;
 }
