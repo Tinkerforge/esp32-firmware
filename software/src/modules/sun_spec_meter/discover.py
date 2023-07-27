@@ -678,20 +678,22 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-H', '--host', default='192.168.0.64')
     parser.add_argument('-p', '--port', type=int, default=502)
-    parser.add_argument('-d', '--device-address', type=int, default=1)
+    parser.add_argument('-d', '--device-address', type=int)
 
     args = parser.parse_args()
 
     print('Using host:', args.host)
     print('Using port:', args.port)
-    print('Using device address:', args.device_address)
 
     client = ModbusTcpClient(host=args.host, port=args.port)
     client.connect()
 
-    for base_address in BASE_ADDRESSES:
-        if discover(client, base_address, args.device_address):
-            break
+    for device_address in range(1, 248) if args.device_address == None else [args.device_address]:
+        print('Using device address:', device_address)
+
+        for base_address in BASE_ADDRESSES:
+            if discover(client, base_address, device_address):
+                break
 
 if __name__ == '__main__':
     main()
