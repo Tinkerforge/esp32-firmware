@@ -273,8 +273,8 @@ def read_inverter_model(reader):
 
     return True
 
-def read_ac_meter_model(reader):
-    print('  Trying to read AC Meter Model')
+def read_ac_meter_int_model(reader):
+    print('  Trying to read AC Meter (integer) Model')
 
     try:
         ac_current = reader.read_int16()
@@ -450,6 +450,163 @@ def read_ac_meter_model(reader):
 
     return True
 
+def read_ac_meter_float_model(reader):
+    print('  Trying to read AC Meter (float) Model')
+
+    try:
+        ac_current = reader.read_float32()
+        ac_current_a = reader.read_float32()
+        ac_current_b = reader.read_float32()
+        ac_current_c = reader.read_float32()
+
+        print('    AC Current [A]:', ac_current)
+        print('    AC Current A [A]:', ac_current_a)
+        print('    AC Current B [A]:', ac_current_b)
+        print('    AC Current C [A]:', ac_current_c)
+
+        ac_voltage_l_n = reader.read_float32()
+        ac_voltage_a_n = reader.read_float32()
+        ac_voltage_b_n = reader.read_float32()
+        ac_voltage_c_n = reader.read_float32()
+        ac_voltage_l_l = reader.read_float32()
+        ac_voltage_a_b = reader.read_float32()
+        ac_voltage_b_c = reader.read_float32()
+        ac_voltage_c_a = reader.read_float32()
+
+        print('    AC Voltage L N [V]:', ac_voltage_l_n)
+        print('    AC Voltage A N [V]:', ac_voltage_a_n)
+        print('    AC Voltage B N [V]:', ac_voltage_b_n)
+        print('    AC Voltage C N [V]:', ac_voltage_c_n)
+        print('    AC Voltage L L [V]:', ac_voltage_l_l)
+        print('    AC Voltage A B [V]:', ac_voltage_a_b)
+        print('    AC Voltage B C [V]:', ac_voltage_b_c)
+        print('    AC Voltage C A [V]:', ac_voltage_c_a)
+
+        ac_frequency = reader.read_float32()
+
+        print('    AC Frequency [Hz]:', ac_frequency)
+
+        ac_real_power = reader.read_float32()
+        ac_real_power_a = reader.read_float32()
+        ac_real_power_b = reader.read_float32()
+        ac_real_power_c = reader.read_float32()
+
+        print('    AC Real Power [W]:', ac_real_power)
+        print('    AC Real Power A [W]:', ac_real_power_a)
+        print('    AC Real Power B [W]:', ac_real_power_b)
+        print('    AC Real Power C [W]:', ac_real_power_c)
+
+        ac_apparent_power = reader.read_float32()
+        ac_apparent_power_a = reader.read_float32()
+        ac_apparent_power_b = reader.read_float32()
+        ac_apparent_power_c = reader.read_float32()
+
+        print('    AC Apparent Power [VA]:', ac_apparent_power)
+        print('    AC Apparent Power A [VA]:', ac_apparent_power_a)
+        print('    AC Apparent Power B [VA]:', ac_apparent_power_b)
+        print('    AC Apparent Power C [VA]:', ac_apparent_power_c)
+
+        ac_reactive_power = reader.read_float32()
+        ac_reactive_power_a = reader.read_float32()
+        ac_reactive_power_b = reader.read_float32()
+        ac_reactive_power_c = reader.read_float32()
+
+        print('    AC Reactive Power [var]:', ac_reactive_power)
+        print('    AC Reactive Power A [var]:', ac_reactive_power_a)
+        print('    AC Reactive Power B [var]:', ac_reactive_power_b)
+        print('    AC Reactive Power C [var]:', ac_reactive_power_c)
+
+        ac_power_factor = reader.read_float32()
+        ac_power_factor_a = reader.read_float32()
+        ac_power_factor_b = reader.read_float32()
+        ac_power_factor_c = reader.read_float32()
+
+        print('    AC Power Factor [%]:', ac_power_factor)
+        print('    AC Power Factor A [%]:', ac_power_factor_a)
+        print('    AC Power Factor B [%]:', ac_power_factor_b)
+        print('    AC Power Factor C [%]:', ac_power_factor_c)
+
+        ac_real_energy_exported = reader.read_float32()
+        ac_real_energy_exported_a = reader.read_float32()
+        ac_real_energy_exported_b = reader.read_float32()
+        ac_real_energy_exported_c = reader.read_float32()
+        ac_real_energy_imported = reader.read_float32()
+        ac_real_energy_imported_a = reader.read_float32()
+        ac_real_energy_imported_b = reader.read_float32()
+        ac_real_energy_imported_c = reader.read_float32()
+
+        print('    AC Real Energy Exported [Wh]:', ac_real_energy_exported)
+        print('    AC Real Energy Exported A [Wh]:', ac_real_energy_exported_a)
+        print('    AC Real Energy Exported B [Wh]:', ac_real_energy_exported_b)
+        print('    AC Real Energy Exported C [Wh]:', ac_real_energy_exported_c)
+        print('    AC Real Energy Imported [Wh]:', ac_real_energy_imported)
+        print('    AC Real Energy Imported A [Wh]:', ac_real_energy_imported_a)
+        print('    AC Real Energy Imported B [Wh]:', ac_real_energy_imported_b)
+        print('    AC Real Energy Imported C [Wh]:', ac_real_energy_imported_c)
+
+        ac_apparent_energy_exported = reader.read_float32()
+        ac_apparent_energy_exported_a = reader.read_float32()
+        ac_apparent_energy_exported_b = reader.read_float32()
+        ac_apparent_energy_exported_c = reader.read_float32()
+        ac_apparent_energy_imported = reader.read_float32()
+        ac_apparent_energy_imported_a = reader.read_float32()
+        ac_apparent_energy_imported_b = reader.read_float32()
+        ac_apparent_energy_imported_c = reader.read_float32()
+
+        print('    AC Apparent Energy Exported [VAh]:', ac_apparent_energy_exported)
+        print('    AC Apparent Energy Exported A [VAh]:', ac_apparent_energy_exported_a)
+        print('    AC Apparent Energy Exported B [VAh]:', ac_apparent_energy_exported_b)
+        print('    AC Apparent Energy Exported C [VAh]:', ac_apparent_energy_exported_c)
+        print('    AC Apparent Energy Imported [VAh]:', ac_apparent_energy_imported)
+        print('    AC Apparent Energy Imported A [VAh]:', ac_apparent_energy_imported_a)
+        print('    AC Apparent Energy Imported B [VAh]:', ac_apparent_energy_imported_b)
+        print('    AC Apparent Energy Imported C [VAh]:', ac_apparent_energy_imported_c)
+
+        ac_reactive_energy_imported_q1 = reader.read_float32()
+        ac_reactive_energy_imported_q1_a = reader.read_float32()
+        ac_reactive_energy_imported_q1_b = reader.read_float32()
+        ac_reactive_energy_imported_q1_c = reader.read_float32()
+        ac_reactive_energy_imported_q2 = reader.read_float32()
+        ac_reactive_energy_imported_q2_a = reader.read_float32()
+        ac_reactive_energy_imported_q2_b = reader.read_float32()
+        ac_reactive_energy_imported_q2_c = reader.read_float32()
+        ac_reactive_energy_exported_q3 = reader.read_float32()
+        ac_reactive_energy_exported_q3_a = reader.read_float32()
+        ac_reactive_energy_exported_q3_b = reader.read_float32()
+        ac_reactive_energy_exported_q3_c = reader.read_float32()
+        ac_reactive_energy_exported_q4 = reader.read_float32()
+        ac_reactive_energy_exported_q4_a = reader.read_float32()
+        ac_reactive_energy_exported_q4_b = reader.read_float32()
+        ac_reactive_energy_exported_q4_c = reader.read_float32()
+
+        print('    AC Reactive Energy Imported Q1 [varh]:', ac_reactive_energy_imported_q1)
+        print('    AC Reactive Energy Imported Q1 A [varh]:', ac_reactive_energy_imported_q1_a)
+        print('    AC Reactive Energy Imported Q1 B [varh]:', ac_reactive_energy_imported_q1_b)
+        print('    AC Reactive Energy Imported Q1 C [varh]:', ac_reactive_energy_imported_q1_c)
+        print('    AC Reactive Energy Imported Q2 [varh]:', ac_reactive_energy_imported_q2)
+        print('    AC Reactive Energy Imported Q2 A [varh]:', ac_reactive_energy_imported_q2_a)
+        print('    AC Reactive Energy Imported Q2 B [varh]:', ac_reactive_energy_imported_q2_b)
+        print('    AC Reactive Energy Imported Q2 C [varh]:', ac_reactive_energy_imported_q2_c)
+        print('    AC Reactive Energy Exported Q3 [varh]:', ac_reactive_energy_exported_q3)
+        print('    AC Reactive Energy Exported Q3 A [varh]:', ac_reactive_energy_exported_q3_a)
+        print('    AC Reactive Energy Exported Q3 B [varh]:', ac_reactive_energy_exported_q3_b)
+        print('    AC Reactive Energy Exported Q3 C [varh]:', ac_reactive_energy_exported_q3_c)
+        print('    AC Reactive Energy Exported Q4 [varh]:', ac_reactive_energy_exported_q4)
+        print('    AC Reactive Energy Exported Q4 A [varh]:', ac_reactive_energy_exported_q4_a)
+        print('    AC Reactive Energy Exported Q4 B [varh]:', ac_reactive_energy_exported_q4_b)
+        print('    AC Reactive Energy Exported Q4 C [varh]:', ac_reactive_energy_exported_q4_c)
+
+        events = reader.read_uint32()
+
+        print('    Events:', events)
+
+        print('    Done')
+    except Exception as e:
+        print('    Error:', e)
+        return False
+
+    return True
+
 def read_standard_model(reader):
     print('Trying to read Standard Model')
 
@@ -469,7 +626,10 @@ def read_standard_model(reader):
             if not read_inverter_model(reader):
                 return False
         elif model_id in [201, 202, 203, 204]:
-            if not read_ac_meter_model(reader):
+            if not read_ac_meter_int_model(reader):
+                return False
+        elif model_id in [211, 212, 213, 214]:
+            if not read_ac_meter_float_model(reader):
                 return False
         else:
             print('  Skipping Standard Model')
