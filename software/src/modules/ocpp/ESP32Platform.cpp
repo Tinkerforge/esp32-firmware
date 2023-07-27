@@ -276,6 +276,68 @@ bool platform_get_signed_meter_value(int32_t connectorId, SampledValueMeasurand 
 }
 
 
+#define SUPPORTED_MEASURANDS_COMMON                                                         \
+    /*POWER_ACTIVE_EXPORT*/                                                                 \
+    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+                                                                                            \
+    /*POWER_ACTIVE_IMPORT*/                                                                 \
+    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+                                                                                            \
+    /*POWER_OFFERED*/                                                                       \
+    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+                                                                                            \
+    /*POWER_REACTIVE_EXPORT*/                                                               \
+    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+                                                                                            \
+    /*POWER_REACTIVE_IMPORT*/                                                               \
+    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},      \
+                                                                                            \
+    /*POWER_FACTOR*/                                                                        \
+    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::NONE, false},   \
+    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::NONE, false},   \
+    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::NONE, false},   \
+                                                                                            \
+    /*CURRENT_IMPORT*/                                                                      \
+    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::A, false},      \
+    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::A, false},      \
+    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::A, false},      \
+    {SampledValuePhase::N,  SampledValueLocation::OUTLET, SampledValueUnit::A, false},      \
+                                                                                            \
+    /*CURRENT_EXPORT*/                                                                      \
+    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::A, false},      \
+    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::A, false},      \
+    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::A, false},      \
+    {SampledValuePhase::N,  SampledValueLocation::OUTLET, SampledValueUnit::A, false},      \
+                                                                                            \
+    /*CURRENT_OFFERED*/                                                                     \
+    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::A, false},      \
+    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::A, false},      \
+    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::A, false},      \
+                                                                                            \
+    /*VOLTAGE*/                                                                             \
+    {SampledValuePhase::L1_N, SampledValueLocation::OUTLET, SampledValueUnit::V, false},    \
+    {SampledValuePhase::L2_N, SampledValueLocation::OUTLET, SampledValueUnit::V, false},    \
+    {SampledValuePhase::L3_N, SampledValueLocation::OUTLET, SampledValueUnit::V, false},    \
+    {SampledValuePhase::L1_L2, SampledValueLocation::OUTLET, SampledValueUnit::V, false},   \
+    {SampledValuePhase::L2_L3, SampledValueLocation::OUTLET, SampledValueUnit::V, false},   \
+    {SampledValuePhase::L3_L1, SampledValueLocation::OUTLET, SampledValueUnit::V, false},   \
+                                                                                            \
+    /*FREQUENCY*/                                                                           \
+    /*                                                                                      \
+    NOTE: OCPP 1.6 does not have a UnitOfMeasure for                                        \
+    frequency, the UnitOfMeasure for any SampledValue with measurand: Frequency is Hertz.   \
+    */                                                                                      \
+    {SampledValuePhase::NONE, SampledValueLocation::OUTLET, SampledValueUnit::NONE, false},
 
 
 const static SupportedMeasurand supported_measurands_sdm630[] = {
@@ -299,52 +361,7 @@ const static SupportedMeasurand supported_measurands_sdm630[] = {
     {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::KVARH, false},
     {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::KVARH, false},
 
-    //POWER_ACTIVE_EXPORT
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-
-    //POWER_ACTIVE_IMPORT
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-
-    //POWER_REACTIVE_EXPORT
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-
-    //POWER_REACTIVE_IMPORT
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-
-    //POWER_FACTOR
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::NONE, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::NONE, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::NONE, false},
-
-    // We can measure this with 1. the offered current and 2. the connected phases
-
-    //CURRENT_OFFERED
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-
-    //VOLTAGE
-    {SampledValuePhase::L1_N, SampledValueLocation::OUTLET, SampledValueUnit::V, false},
-    {SampledValuePhase::L2_N, SampledValueLocation::OUTLET, SampledValueUnit::V, false},
-    {SampledValuePhase::L3_N, SampledValueLocation::OUTLET, SampledValueUnit::V, false},
-    {SampledValuePhase::L1_L2, SampledValueLocation::OUTLET, SampledValueUnit::V, false},
-    {SampledValuePhase::L2_L3, SampledValueLocation::OUTLET, SampledValueUnit::V, false},
-    {SampledValuePhase::L3_L1, SampledValueLocation::OUTLET, SampledValueUnit::V, false},
-
-    //FREQUENCY
-    /*
-    NOTE: OCPP 1.6 does not have a UnitOfMeasure for
-    frequency, the UnitOfMeasure for any SampledValue with measurand: Frequency is Hertz.
-    */
-    {SampledValuePhase::NONE, SampledValueLocation::OUTLET, SampledValueUnit::NONE, false},
+    SUPPORTED_MEASURANDS_COMMON
 };
 
 const size_t supported_measurand_offsets_sdm630[] = {
@@ -359,18 +376,18 @@ const size_t supported_measurand_offsets_sdm630[] = {
     12, /*POWER_ACTIVE_EXPORT*/
     15, /*POWER_ACTIVE_IMPORT*/
     18, /*POWER_OFFERED*/
-    18, /*POWER_REACTIVE_EXPORT*/
-    21, /*POWER_REACTIVE_IMPORT*/
-    24, /*POWER_FACTOR*/
-    27, /*CURRENT_IMPORT*/
-    27, /*CURRENT_EXPORT*/
-    27, /*CURRENT_OFFERED*/
-    30, /*VOLTAGE*/
-    36, /*FREQUENCY*/
-    37, /*TEMPERATURE*/
-    37, /*SO_C*/
-    37, /*RPM*/
-    37  /*NONE*/
+    21, /*POWER_REACTIVE_EXPORT*/
+    24, /*POWER_REACTIVE_IMPORT*/
+    27, /*POWER_FACTOR*/
+    30, /*CURRENT_IMPORT*/
+    34, /*CURRENT_EXPORT*/
+    38, /*CURRENT_OFFERED*/
+    41, /*VOLTAGE*/
+    47, /*FREQUENCY*/
+    48, /*TEMPERATURE*/
+    48, /*SO_C*/
+    48, /*RPM*/
+    48  /*NONE*/
 };
 
 const static SupportedMeasurand supported_measurands_sdm72v2[] = {
@@ -383,67 +400,7 @@ const static SupportedMeasurand supported_measurands_sdm72v2[] = {
     //ENERGY_REACTIVE_EXPORT_REGISTER
     //ENERGY_REACTIVE_IMPORT_REGISTER
 
-    //POWER_ACTIVE_EXPORT
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-
-    //POWER_ACTIVE_IMPORT
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-
-    //POWER_OFFERED
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-
-    //POWER_REACTIVE_EXPORT
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-
-    //POWER_REACTIVE_IMPORT
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::W, false},
-
-    //POWER_FACTOR
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::NONE, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::NONE, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::NONE, false},
-
-    //CURRENT_IMPORT
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-    {SampledValuePhase::N,  SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-
-    //CURRENT_EXPORT
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-    {SampledValuePhase::N,  SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-
-    //CURRENT_OFFERED
-    {SampledValuePhase::L1, SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-    {SampledValuePhase::L2, SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-    {SampledValuePhase::L3, SampledValueLocation::OUTLET, SampledValueUnit::A, false},
-
-    //VOLTAGE
-    {SampledValuePhase::L1_N, SampledValueLocation::OUTLET, SampledValueUnit::V, false},
-    {SampledValuePhase::L2_N, SampledValueLocation::OUTLET, SampledValueUnit::V, false},
-    {SampledValuePhase::L3_N, SampledValueLocation::OUTLET, SampledValueUnit::V, false},
-    {SampledValuePhase::L1_L2, SampledValueLocation::OUTLET, SampledValueUnit::V, false},
-    {SampledValuePhase::L2_L3, SampledValueLocation::OUTLET, SampledValueUnit::V, false},
-    {SampledValuePhase::L3_L1, SampledValueLocation::OUTLET, SampledValueUnit::V, false},
-
-    //FREQUENCY
-    /*
-    NOTE: OCPP 1.6 does not have a UnitOfMeasure for
-    frequency, the UnitOfMeasure for any SampledValue with measurand: Frequency is Hertz.
-    */
-    {SampledValuePhase::NONE, SampledValueLocation::OUTLET, SampledValueUnit::NONE, false},
+    SUPPORTED_MEASURANDS_COMMON
 };
 
 const size_t supported_measurand_offsets_sdm72v2[] = {
@@ -526,113 +483,18 @@ const SupportedMeasurand *platform_get_supported_measurands(int32_t connector_id
     return supported_measurands + supported_measurand_offsets[(size_t)measurand];
 }
 
-
-float platform_get_raw_meter_value_sdm630(int32_t connectorId, SampledValueMeasurand measurand, SampledValuePhase phase, SampledValueLocation location) {
-    if (connectorId != 1)
-        return 0.0f;
-
-    REQUIRE_FEATURE(meter_all_values, 0);
-
-    Config *meter_all_values = api.getState("meter/all_values");
-
+float platform_get_raw_meter_value_common(Config *meter_all_values, int32_t connectorId, SampledValueMeasurand measurand, SampledValuePhase phase, SampledValueLocation location) {
     switch(measurand) {
-        case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_REGISTER:
-            return meter_all_values->get(METER_ALL_VALUES_EXPORT_KWH_L1 + (size_t) phase)->asFloat();
-        case SampledValueMeasurand::ENERGY_ACTIVE_IMPORT_REGISTER:
-            return meter_all_values->get(METER_ALL_VALUES_IMPORT_KWH_L1 + (size_t) phase)->asFloat();
-        case SampledValueMeasurand::ENERGY_REACTIVE_EXPORT_REGISTER:
-            return meter_all_values->get(METER_ALL_VALUES_EXPORT_KVARH_L1 + (size_t) phase)->asFloat();
-        case SampledValueMeasurand::ENERGY_REACTIVE_IMPORT_REGISTER:
-            return meter_all_values->get(METER_ALL_VALUES_IMPORT_KVARH_L1 + (size_t) phase)->asFloat();
-
         case SampledValueMeasurand::POWER_ACTIVE_EXPORT:
             // The power factor's sign indicates the direction of the current flow.
+            // Positive = energy flow from grid to vehicle = import
+            // The active power itself is negative if the power factor's sign is negative.
+            // Report a positive value instead.
             return meter_all_values->get(METER_ALL_VALUES_POWER_FACTOR_L1 + (size_t) phase)->asFloat() < 0 ?
-                   meter_all_values->get(METER_ALL_VALUES_POWER_L1_W + (size_t) phase)->asFloat() :
-                   0.0f;
-        case SampledValueMeasurand::POWER_ACTIVE_IMPORT:
-            return meter_all_values->get(METER_ALL_VALUES_POWER_FACTOR_L1 + (size_t) phase)->asFloat() >= 0 ?
-                   meter_all_values->get(METER_ALL_VALUES_POWER_L1_W + (size_t) phase)->asFloat() :
-                   0.0f;
-        case SampledValueMeasurand::POWER_REACTIVE_EXPORT:
-            return meter_all_values->get(METER_ALL_VALUES_POWER_FACTOR_L1 + (size_t) phase)->asFloat() >= 0 ?
-                   meter_all_values->get(METER_ALL_VALUES_VOLT_AMPS_REACTIVE_L1 + (size_t) phase)->asFloat() :
-                   0.0f;
-        case SampledValueMeasurand::POWER_REACTIVE_IMPORT:
-            return meter_all_values->get(METER_ALL_VALUES_POWER_FACTOR_L1 + (size_t) phase)->asFloat() >= 0 ?
-                   meter_all_values->get(METER_ALL_VALUES_VOLT_AMPS_REACTIVE_L1 + (size_t) phase)->asFloat() :
-                   0.0f;
-
-        case SampledValueMeasurand::POWER_FACTOR:
-            return fabs(meter_all_values->get(METER_ALL_VALUES_POWER_FACTOR_L1 + (size_t) phase)->asFloat());
-
-        case SampledValueMeasurand::CURRENT_OFFERED:
-            REQUIRE_FEATURE(meter_phases, 0);
-            REQUIRE_FEATURE(evse, 0);
-            return api.getState("meter/phases")->get("phases_connected")->get((size_t) phase)->asBool() ?
-                   ((float)api.getState("evse/state")->get("allowed_charging_current")->asUint()) / 1000.0f :
-                   0.0f;
-        case SampledValueMeasurand::VOLTAGE:
-            switch (phase) {
-                case SampledValuePhase::L1_N:
-                case SampledValuePhase::L2_N:
-                case SampledValuePhase::L3_N:
-                    return meter_all_values->get(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1 + ((size_t) phase - (size_t) SampledValuePhase::L1_N))->asFloat();
-
-                case SampledValuePhase::L1_L2:
-                case SampledValuePhase::L2_L3:
-                case SampledValuePhase::L3_L1:
-                    return meter_all_values->get(METER_ALL_VALUES_LINE1_TO_LINE2_VOLTS + ((size_t) phase - (size_t) SampledValuePhase::L1_L2))->asFloat();
-
-                case SampledValuePhase::L1:
-                case SampledValuePhase::L2:
-                case SampledValuePhase::L3:
-                case SampledValuePhase::N:
-                case SampledValuePhase::NONE:
-                    return 0.0f;
-            }
-            return 0.0f;
-
-        case SampledValueMeasurand::FREQUENCY:
-            return meter_all_values->get(METER_ALL_VALUES_FREQUENCY_OF_SUPPLY_VOLTAGES_HERTZ)->asFloat();
-
-        case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_INTERVAL:
-        case SampledValueMeasurand::ENERGY_ACTIVE_IMPORT_INTERVAL:
-        case SampledValueMeasurand::ENERGY_REACTIVE_EXPORT_INTERVAL:
-        case SampledValueMeasurand::ENERGY_REACTIVE_IMPORT_INTERVAL:
-        case SampledValueMeasurand::POWER_OFFERED:
-        case SampledValueMeasurand::CURRENT_IMPORT:
-        case SampledValueMeasurand::CURRENT_EXPORT:
-        case SampledValueMeasurand::TEMPERATURE:
-        case SampledValueMeasurand::SO_C:
-        case SampledValueMeasurand::RPM:
-        case SampledValueMeasurand::NONE:
-            return 0.0f;
-    }
-    return 0.0f;
-}
-
-float platform_get_raw_meter_value_sdm72v2(int32_t connectorId, SampledValueMeasurand measurand, SampledValuePhase phase, SampledValueLocation location) {
-    if (connectorId != 1)
-        return 0.0f;
-
-    REQUIRE_FEATURE(meter_all_values, 0);
-
-    Config *meter_all_values = api.getState("meter/all_values");
-
-    switch(measurand) {
-        case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_REGISTER:
-            return meter_all_values->get(METER_ALL_VALUES_TOTAL_EXPORT_KWH)->asFloat();
-        case SampledValueMeasurand::ENERGY_ACTIVE_IMPORT_REGISTER:
-            return meter_all_values->get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat();
-
-        case SampledValueMeasurand::POWER_ACTIVE_EXPORT:
-            // The power's sign indicates the direction of the current flow. Positive = energy flow from grid to vehicle = import
-            return meter_all_values->get(METER_ALL_VALUES_POWER_L1_W + (size_t) phase)->asFloat() < 0 ?
                    -meter_all_values->get(METER_ALL_VALUES_POWER_L1_W + (size_t) phase)->asFloat() :
                    0.0f;
         case SampledValueMeasurand::POWER_ACTIVE_IMPORT:
-            return meter_all_values->get(METER_ALL_VALUES_POWER_L1_W + (size_t) phase)->asFloat() >= 0 ?
+            return meter_all_values->get(METER_ALL_VALUES_POWER_FACTOR_L1 + (size_t) phase)->asFloat() >= 0 ?
                    meter_all_values->get(METER_ALL_VALUES_POWER_L1_W + (size_t) phase)->asFloat() :
                    0.0f;
 
@@ -656,7 +518,8 @@ float platform_get_raw_meter_value_sdm72v2(int32_t connectorId, SampledValueMeas
                    0.0f;
 
         case SampledValueMeasurand::POWER_REACTIVE_EXPORT:
-            // Reactive is always positive. Use power factor sign to determine current flow direction.
+            // Reactive power sign indicates capatitive/inductive load.
+            // Use power factor sign to determine current flow direction.
             return meter_all_values->get(METER_ALL_VALUES_POWER_FACTOR_L1 + (size_t) phase)->asFloat() < 0 ?
                    meter_all_values->get(METER_ALL_VALUES_VOLT_AMPS_REACTIVE_L1 + (size_t) phase)->asFloat() :
                    0.0f;
@@ -670,10 +533,12 @@ float platform_get_raw_meter_value_sdm72v2(int32_t connectorId, SampledValueMeas
 
         case SampledValueMeasurand::CURRENT_EXPORT:
             // Current is always positive. Use power factor sign to determine current flow direction.
-            // Note that the neutral current is inverted in the import/export logic.
+            // Note that the neutral current is inverted in the import/export logic: If the power factor
+            // is positive, current is flowing into the vehicle (this is an import), thus the neutral current
+            // is exported.
             if (phase == SampledValuePhase::N)
-                return meter_all_values->get(METER_ALL_VALUES_POWER_FACTOR_L1 + (size_t) phase)->asFloat() >= 0 ?
-                       meter_all_values->get(METER_ALL_VALUES_NEUTRAL_CURRENT_A + (size_t) phase)->asFloat() :
+                return meter_all_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_FACTOR)->asFloat() >= 0 ?
+                       meter_all_values->get(METER_ALL_VALUES_NEUTRAL_CURRENT_A)->asFloat() :
                        0.0f;
 
             return meter_all_values->get(METER_ALL_VALUES_POWER_FACTOR_L1 + (size_t) phase)->asFloat() < 0 ?
@@ -682,8 +547,8 @@ float platform_get_raw_meter_value_sdm72v2(int32_t connectorId, SampledValueMeas
 
         case SampledValueMeasurand::CURRENT_IMPORT:
             if (phase == SampledValuePhase::N)
-                return meter_all_values->get(METER_ALL_VALUES_POWER_FACTOR_L1 + (size_t) phase)->asFloat() < 0 ?
-                       meter_all_values->get(METER_ALL_VALUES_NEUTRAL_CURRENT_A + (size_t) phase)->asFloat() :
+                return meter_all_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_FACTOR)->asFloat() < 0 ?
+                       meter_all_values->get(METER_ALL_VALUES_NEUTRAL_CURRENT_A)->asFloat() :
                        0.0f;
 
             // Current is always positive. Use power factor sign to determine current flow direction.
@@ -697,7 +562,6 @@ float platform_get_raw_meter_value_sdm72v2(int32_t connectorId, SampledValueMeas
             return api.getState("meter/phases")->get("phases_connected")->get((size_t) phase)->asBool() ?
                    ((float)api.getState("evse/state")->get("allowed_charging_current")->asUint()) / 1000.0f :
                    0.0f;
-
         case SampledValueMeasurand::VOLTAGE:
             switch (phase) {
                 case SampledValuePhase::L1_N:
@@ -722,14 +586,102 @@ float platform_get_raw_meter_value_sdm72v2(int32_t connectorId, SampledValueMeas
         case SampledValueMeasurand::FREQUENCY:
             return meter_all_values->get(METER_ALL_VALUES_FREQUENCY_OF_SUPPLY_VOLTAGES_HERTZ)->asFloat();
 
+        case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_REGISTER:
+        case SampledValueMeasurand::ENERGY_ACTIVE_IMPORT_REGISTER:
         case SampledValueMeasurand::ENERGY_REACTIVE_EXPORT_REGISTER:
         case SampledValueMeasurand::ENERGY_REACTIVE_IMPORT_REGISTER:
+        case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_INTERVAL:
+        case SampledValueMeasurand::ENERGY_ACTIVE_IMPORT_INTERVAL:
+        case SampledValueMeasurand::ENERGY_REACTIVE_EXPORT_INTERVAL:
+        case SampledValueMeasurand::ENERGY_REACTIVE_IMPORT_INTERVAL:
+        case SampledValueMeasurand::TEMPERATURE:
+        case SampledValueMeasurand::SO_C:
+        case SampledValueMeasurand::RPM:
+        case SampledValueMeasurand::NONE:
+            return 0.0f;
+    }
+    return 0.0f;
+}
+
+float platform_get_raw_meter_value_sdm630(int32_t connectorId, SampledValueMeasurand measurand, SampledValuePhase phase, SampledValueLocation location) {
+    if (connectorId != 1)
+        return 0.0f;
+
+    REQUIRE_FEATURE(meter_all_values, 0);
+
+    Config *meter_all_values = api.getState("meter/all_values");
+
+    switch(measurand) {
+        case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_REGISTER:
+            return meter_all_values->get(METER_ALL_VALUES_EXPORT_KWH_L1 + (size_t) phase)->asFloat();
+        case SampledValueMeasurand::ENERGY_ACTIVE_IMPORT_REGISTER:
+            return meter_all_values->get(METER_ALL_VALUES_IMPORT_KWH_L1 + (size_t) phase)->asFloat();
+        case SampledValueMeasurand::ENERGY_REACTIVE_EXPORT_REGISTER:
+            return meter_all_values->get(METER_ALL_VALUES_EXPORT_KVARH_L1 + (size_t) phase)->asFloat();
+        case SampledValueMeasurand::ENERGY_REACTIVE_IMPORT_REGISTER:
+            return meter_all_values->get(METER_ALL_VALUES_IMPORT_KVARH_L1 + (size_t) phase)->asFloat();
+
+        case SampledValueMeasurand::POWER_ACTIVE_EXPORT:
+        case SampledValueMeasurand::POWER_ACTIVE_IMPORT:
+        case SampledValueMeasurand::POWER_OFFERED:
+        case SampledValueMeasurand::POWER_REACTIVE_EXPORT:
+        case SampledValueMeasurand::POWER_REACTIVE_IMPORT:
+        case SampledValueMeasurand::POWER_FACTOR:
+        case SampledValueMeasurand::CURRENT_EXPORT:
+        case SampledValueMeasurand::CURRENT_IMPORT:
+        case SampledValueMeasurand::CURRENT_OFFERED:
+        case SampledValueMeasurand::VOLTAGE:
+        case SampledValueMeasurand::FREQUENCY:
+            return platform_get_raw_meter_value_common(meter_all_values, connectorId, measurand, phase, location);
 
         case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_INTERVAL:
         case SampledValueMeasurand::ENERGY_ACTIVE_IMPORT_INTERVAL:
         case SampledValueMeasurand::ENERGY_REACTIVE_EXPORT_INTERVAL:
         case SampledValueMeasurand::ENERGY_REACTIVE_IMPORT_INTERVAL:
+        case SampledValueMeasurand::TEMPERATURE:
+        case SampledValueMeasurand::SO_C:
+        case SampledValueMeasurand::RPM:
+        case SampledValueMeasurand::NONE:
+            return 0.0f;
+    }
+    return 0.0f;
+}
 
+float platform_get_raw_meter_value_sdm72v2(int32_t connectorId, SampledValueMeasurand measurand, SampledValuePhase phase, SampledValueLocation location) {
+    if (connectorId != 1)
+        return 0.0f;
+
+    REQUIRE_FEATURE(meter_all_values, 0);
+
+    Config *meter_all_values = api.getState("meter/all_values");
+
+    switch(measurand) {
+        case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_REGISTER:
+            return meter_all_values->get(METER_ALL_VALUES_TOTAL_EXPORT_KWH)->asFloat();
+        case SampledValueMeasurand::ENERGY_ACTIVE_IMPORT_REGISTER:
+            return meter_all_values->get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat();
+
+        case SampledValueMeasurand::ENERGY_REACTIVE_EXPORT_REGISTER:
+        case SampledValueMeasurand::ENERGY_REACTIVE_IMPORT_REGISTER:
+            return 0.0f;
+
+        case SampledValueMeasurand::POWER_ACTIVE_EXPORT:
+        case SampledValueMeasurand::POWER_ACTIVE_IMPORT:
+        case SampledValueMeasurand::POWER_OFFERED:
+        case SampledValueMeasurand::POWER_REACTIVE_EXPORT:
+        case SampledValueMeasurand::POWER_REACTIVE_IMPORT:
+        case SampledValueMeasurand::POWER_FACTOR:
+        case SampledValueMeasurand::CURRENT_EXPORT:
+        case SampledValueMeasurand::CURRENT_IMPORT:
+        case SampledValueMeasurand::CURRENT_OFFERED:
+        case SampledValueMeasurand::VOLTAGE:
+        case SampledValueMeasurand::FREQUENCY:
+            return platform_get_raw_meter_value_common(meter_all_values, connectorId, measurand, phase, location);
+
+        case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_INTERVAL:
+        case SampledValueMeasurand::ENERGY_ACTIVE_IMPORT_INTERVAL:
+        case SampledValueMeasurand::ENERGY_REACTIVE_EXPORT_INTERVAL:
+        case SampledValueMeasurand::ENERGY_REACTIVE_IMPORT_INTERVAL:
         case SampledValueMeasurand::TEMPERATURE:
         case SampledValueMeasurand::SO_C:
         case SampledValueMeasurand::RPM:
