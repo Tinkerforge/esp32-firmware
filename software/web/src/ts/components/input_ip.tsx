@@ -17,14 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Context, Fragment } from "preact";
+import { h, Context, Fragment, ComponentChildren } from "preact";
 import {useContext} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 
 interface InputIPProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "minLength" | "maxLength" | "size" | "pattern" | "onInput"> {
     idContext?: Context<string>
     onValue: (value: string) => void
-    invalidFeedback: string
+    invalidFeedback: ComponentChildren
     moreClasses?: string[]
 }
 
@@ -40,6 +40,6 @@ export function InputIP(props: InputIPProps) {
                pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
                onInput={(e) => props.onValue((e.target as HTMLInputElement).value)}
                {...props}/>
-        <div class="invalid-feedback" dangerouslySetInnerHTML={{__html: props.invalidFeedback}}></div>
+        <div class="invalid-feedback">{props.invalidFeedback}</div>
     </>);
 }

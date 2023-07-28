@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "em_sdcard": {
         "navbar": {
             "em_sdcard": "SD Card"
@@ -18,7 +20,7 @@
 
             "format_sdcard": "Format SD card",
             "format_sdcard_desc": "set up card and remove all contained data",
-            "format_sdcard_modal_text": "Formatting the SD card will make it usable for the Energy Manager. <b>All data currently stored on the SD card will be lost.</b> Are you sure?",
+            "format_sdcard_modal_text": <>Formatting the SD card will make it usable for the Energy Manager. <b>All data currently stored on the SD card will be lost.</b> Are you sure?</>,
             "abort_format": "Abort",
             "confirm_format": "Format",
             "formatting": "Formatting...",

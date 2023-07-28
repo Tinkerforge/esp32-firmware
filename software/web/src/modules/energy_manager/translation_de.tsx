@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "energy_manager": {
         "status": {
             "mode": "Lademodus",
@@ -54,7 +56,7 @@
 
             "header_excess_charging": "Photovoltaik-Überschussladen",
             "enable_excess_charging": "Überschussladen aktiviert",
-            "enable_excess_charging_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "enable_excess_charging_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
             "enable_excess_charging_desc": "Der Energiemanager regelt die verwalteten Wallboxen abhängig vom gemessenen Überschuss einer Photovoltaikanlage und vom Lademodus.",
             "default_mode": "Standardlademodus",
             "default_mode_muted": "wird nach Neustart des Energiemanagers verwendet",
@@ -66,7 +68,7 @@
             "target_power_from_grid": "Soll-Netzbezug",
             "target_power_from_grid_muted": "Sollwert für Überschussregelung",
             "control_behavior": "Regelverhalten",
-            "control_behavior_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "control_behavior_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
             "target_power_n200": "Sehr konservativ (- 200 W)",
             "target_power_n100": "Konservativ (- 100 W)",
             "target_power_n50": "Leicht konservativ (- 50 W) – lädt Batteriespeicher zuerst",

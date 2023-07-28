@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "users": {
         "status": {
         },
@@ -41,7 +43,7 @@
             "edit_user_password": "Password",
 
             "evse_user_description": "Charge release",
-            "evse_user_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
+            "evse_user_description_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
 
             "evse_user_enable": "Requires a user authorization (via NFC card) to charge",
             "evse_user_enable_invalid": "At least one user is required for the charge_release."

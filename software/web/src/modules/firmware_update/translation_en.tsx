@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "firmware_update": {
         "status": {
 
@@ -10,7 +12,7 @@
             "current_firmware": "Firmware version",
             "firmware_update": "Firmware Update",
             "firmware_update_label": "Firmware update",
-            "firmware_update_desc": "<a href=\"{{{firmware_url}}}\">firmware download</a>",
+            "firmware_update_desc": <><a href="{{{firmware_url}}}">firmware download</a></>,
             "browse": "Browse",
             "select_file": "Firmware file",
             "update": "Upload",

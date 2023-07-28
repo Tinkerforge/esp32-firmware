@@ -22,8 +22,8 @@ import { Button, Collapse } from "react-bootstrap";
 import { HelpCircle } from "react-feather";
 
 export interface FormRowProps {
-    label: string
-    label_muted?: string
+    label: ComponentChildren
+    label_muted?: ComponentChildren
     // Don't use ComponentChildren here: We want to pass in the idContext. This only works on VNodes.
     children: VNode | VNode[]
     labelColClasses?: string
@@ -70,9 +70,9 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
                     <div class="row mx-lg-0">
                         <div class="col-auto col-lg px-lg-0">
                     {props.label_prefix ? props.label_prefix : <></>}
-                    {props.label ? <span class={"form-label" + (props.label_muted && !props.label_infix ? " pr-2" : "")} dangerouslySetInnerHTML={{__html: props.label}}></span> : ""}
+                    {props.label ? <span class={"form-label" + (props.label_muted && !props.label_infix ? " pr-2" : "")}>{props.label}</span> : ""}
                     {props.label_infix ? props.label_infix : <></>}
-                    {props.label_muted ? <span class="text-muted" dangerouslySetInnerHTML={{__html: props.label_muted}}></span> : ""}
+                    {props.label_muted ? <span class="text-muted">{props.label_muted}</span> : ""}
                     {props.label_suffix ? props.label_suffix : <></>}
                     </div>
                     {props.help ? <span class="col col-lg-auto px-lg-0" onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:"btn-outline-secondary", style:"border-radius: 50%;"} as any}/></span> : <></>}

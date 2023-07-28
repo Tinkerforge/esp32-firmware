@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "evse": {
         "status": {
             "evse": "Fahrzeugstatus",
@@ -34,7 +36,7 @@
             "contactor_error": "Fehler",
             "allowed_charging_current": "Erlaubter Ladestrom",
             "error_state": "Fehlerzustand",
-            "error_state_desc": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "error_state_desc": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
             "error_ok": "OK",
             "error_switch": "Schalter",
             "error_contactor": "Schütz",
@@ -84,15 +86,15 @@
             "debug_description_muted": "zur Diagnose bei Ladeproblemen",
 
             "auto_start_description": "Manuelle Ladefreigabe",
-            "auto_start_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "auto_start_description_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
             "auto_start_enable": "Erzwingt dass Ladevorgänge immer über das Webinterface, die API oder (je nach Tastereinstellung) den Taster manuell gestartet werden müssen.",
 
             "external_description": "Externe Steuerung",
-            "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">siehe Einrichtungs-Tutorial für Details</a>",
-            "external_enable": "Erlaubt einer externen Steuerung (z.B. <a href=\"https://evcc.io/\">EVCC</a>) diese Wallbox zu steuern",
+            "external_description_muted": <><a href="https://www.warp-charger.com/evcc.html?v=2">siehe Einrichtungs-Tutorial für Details</a></>,
+            "external_enable": <>Erlaubt einer externen Steuerung (z.B. <a href="https://evcc.io/">EVCC</a>) diese Wallbox zu steuern</>,
 
             "boost_mode_desc": "Boost-Modus",
-            "boost_mode_desc_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "boost_mode_desc_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
             "boost_mode": "Gibt der Ladeelektronik des Fahrzeugs einen leicht höheren Ladestrom vor (+ 0,24 A) um Messfehler der Ladeelektronik zu kompensieren. Nur Verwenden, falls ein Fahrzeug mit einem kleineren als dem erlaubten Ladestrom lädt!",
 
             "reset_description": "Aktionen",

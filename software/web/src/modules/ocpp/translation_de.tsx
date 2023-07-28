@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "ocpp": {
         "status": {
             "ocpp": "OCPP-Verbindung",
@@ -24,7 +26,7 @@
             "reset": "Zurücksetzen",
             "reset_muted": "Setzt den gesamten OCPP-Zustand zurück",
             "reset_title": "OCPP-Zustand zurücksetzen?",
-            "reset_title_text": "Hiermit wird der gesamte OCPP-Zustand zurückgesetzt. <strong>Bisher nicht erfolgreich übertragene Transaktionsdaten gehen verloren</strong>.",
+            "reset_title_text": <>Hiermit wird der gesamte OCPP-Zustand zurückgesetzt. <strong>Bisher nicht erfolgreich übertragene Transaktionsdaten gehen verloren</strong>.</>,
             "abort_reset": "Abbrechen",
             "confirm_reset": "Zurücksetzen",
             "reset_failed": "Zurücksetzen des OCPP-Zustands fehlgeschlagen",

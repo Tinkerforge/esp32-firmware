@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "users": {
         "status": {
         },
@@ -41,7 +43,7 @@
             "edit_user_password": "Passwort",
 
             "evse_user_description": "Ladefreigabe",
-            "evse_user_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "evse_user_description_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
 
             "evse_user_enable": "Verlangt eine Freigabe des Ladevorgangs durch einen Benutzer zum Laden (z.B. per NFC-Tag)",
             "evse_user_enable_invalid": "Für die Ladefreigabe ist mindestens ein Benutzer notwendig."

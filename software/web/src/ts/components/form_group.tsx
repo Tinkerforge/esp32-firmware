@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, createContext, Context, VNode, cloneElement, toChildArray } from "preact";
+import { h, Component, createContext, Context, VNode, cloneElement, toChildArray, ComponentChildren } from "preact";
 
 export interface FormGroupProps {
-    label: string
-    label_muted?: string
+    label: ComponentChildren
+    label_muted?: ComponentChildren
     // Don't use ComponentChildren here: We want to pass in the idContext. This only works on VNodes.
     children: VNode | VNode[]
     classList?: string
@@ -45,8 +45,8 @@ export class FormGroup extends Component<FormGroupProps, any> {
         return (
             <div class={"form-group " + (props.classList ? props.classList : "")}>
                 <label for={this.id}>
-                    <span class={"form-label" + (props.label_muted ? " pr-2" : "")} dangerouslySetInnerHTML={{__html: props.label}}></span>
-                    {props.label_muted ? <span class="text-muted" dangerouslySetInnerHTML={{__html: props.label_muted}}></span> : ""}
+                    <span class={"form-label" + (props.label_muted ? " pr-2" : "")}>{props.label}</span>
+                    {props.label_muted ? <span class="text-muted">{props.label_muted}</span> : ""}
                 </label>
                 <div class={props.valueClassList}>
                     {(toChildArray(props.children) as VNode[]).map(c => cloneElement(c, {idContext: this.idContext}))}

@@ -1,9 +1,11 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "evse": {
         "content": {
             "error_calibration": "Kalibrierung",
             "adc_names": "CP/PE, PP/PE",
-            "voltage_names": "CP/PE, PP/PE,<br/> CP/PE (high)",
+            "voltage_names": <>CP/PE, PP/PE,<br/> CP/PE (high)</>,
             "gpio_names": "Eingang, Ausgang, Motoreingangsschalter, Relais, Motorfehler",
             "user_calibration": "Kalibrierungsstatus",
             "user_calibration_state_disabled": "Werkseinstellungen",

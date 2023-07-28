@@ -17,13 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, JSX, Context } from "preact";
+import { h, JSX, Context, ComponentChildren } from "preact";
 import {useContext} from "preact/hooks";
 
 export interface SwitchProps {
     idContext?: Context<string>
     checked: boolean
-    desc: string
+    desc: ComponentChildren
     onClick: JSX.MouseEventHandler<HTMLInputElement>
     disabled?: boolean
     className?: string
@@ -34,7 +34,7 @@ export function Switch(props: SwitchProps) {
 
     let inner = <div class={"borderless-form-control custom-control custom-switch "}>
             <input type="checkbox" class="custom-control-input" id={id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
-            <label class="custom-control-label" for={id} dangerouslySetInnerHTML={{__html: props.desc}}></label>
+            <label class="custom-control-label" for={id}>{props.desc}</label>
         </div>;
 
     if (props.className !== undefined && props.className != "")

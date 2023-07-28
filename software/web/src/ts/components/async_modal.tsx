@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, render } from "preact";
+import { h, Component, render, ComponentChildren } from "preact";
 import { Button, Modal } from "react-bootstrap";
 import { __ } from "../translation";
 
@@ -29,7 +29,7 @@ interface AsyncModalProps {
 
 interface AsyncModalStrings {
     title: string
-    body: string
+    body: ComponentChildren
     no_variant: string
     no_text: string
 
@@ -72,7 +72,7 @@ export class AsyncModal extends Component<AsyncModalProps, AsyncModalState> {
                 <Modal.Header closeButton>
                     <label class="modal-title form-label">{state.title}</label>
                 </Modal.Header>
-                <Modal.Body dangerouslySetInnerHTML={{__html: state.body}}></Modal.Body>
+                <Modal.Body>{state.body}</Modal.Body>
                 <Modal.Footer>
                     <Button variant={state.no_variant} onClick={() => {this.hide(false)}}>
                         {state.no_text}

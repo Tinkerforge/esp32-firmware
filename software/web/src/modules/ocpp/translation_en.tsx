@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "ocpp": {
         "status": {
             "ocpp": "OCPP connection",
@@ -24,7 +26,7 @@
             "reset": "Reset OCPP state",
             "reset_muted": "",
             "reset_title": "Reset OCPP state?",
-            "reset_title_text": "This resets the OCPP state completely. <strong>Transaction information not transmitted up to now will be lost!</strong>.",
+            "reset_title_text": <>This resets the OCPP state completely. <strong>Transaction information not transmitted up to now will be lost!</strong>.</>,
             "abort_reset": "Abort",
             "confirm_reset": "Reset",
             "reset_failed": "Failed to reset OCPP state",

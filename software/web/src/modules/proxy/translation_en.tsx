@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "proxy": {
         "status": {
 
@@ -19,7 +21,7 @@
             "tfp_unexpected": "TFP Unexpected",
 
             "auth_secret": "Authentication secret",
-            "auth_secret_muted": "See <a href=\"https://www.tinkerforge.com/en/doc/Tutorials/Tutorial_Authentication/Tutorial.html\">Tutorial - Authentication</a>",
+            "auth_secret_muted": <>See <a href="https://www.tinkerforge.com/en/doc/Tutorials/Tutorial_Authentication/Tutorial.html">Tutorial - Authentication</a></>,
             "auth_disabled": "Authentication disabled",
             "listen_address": "Listen address",
             "listen_address_muted": "",

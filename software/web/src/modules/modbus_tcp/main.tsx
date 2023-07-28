@@ -75,80 +75,13 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
         return super.getIsModified(t);
     }
 
-    trow(register: string, name: string, type: string, feature :string, explanation: string)
-    {
-        return  <tr>
-                    <td dangerouslySetInnerHTML={{__html: register}}></td>
-                    <td dangerouslySetInnerHTML={{__html: name}}></td>
-                    <td dangerouslySetInnerHTML={{__html: type}}></td>
-                    <td dangerouslySetInnerHTML={{__html: feature}}></td>
-                    <td dangerouslySetInnerHTML={{__html: explanation}}></td>
-                </tr>;
-    }
-
     render(props: {}, state: ModbusTCPConfig & config) {
         if (!util.render_allowed())
             return (<></>);
 
         let docu = <CollapsedSection label={__("modbus_tcp.content.table_docu")}>
             <table class="table table-bordered table-sm">
-                <thead class="thead-light">
-                    <tr>
-                        <th scope="col">{__("modbus_tcp.docu.register")}</th>
-                        <th scope="col">{__("modbus_tcp.docu.name")}</th>
-                        <th scope="col">{__("modbus_tcp.docu.type")}</th>
-                        <th scope="col">{__("modbus_tcp.docu.feature")}</th>
-                        <th scope="col">{__("modbus_tcp.docu.explanation")}</th>
-                    </tr>
-                </thead>
-                <thead>
-                    <tr>
-                        <th colSpan={5} >{__("modbus_tcp.docu.input_register")}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {util.range(input_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
-                                                                translate_unchecked(`modbus_tcp.docu.name${i}`),
-                                                                translate_unchecked(`modbus_tcp.docu.type${i}`),
-                                                                translate_unchecked(`modbus_tcp.docu.feat${i}`),
-                                                                translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
-                </tbody>
-                <thead>
-                    <tr>
-                        <th colSpan={5}>{__("modbus_tcp.docu.holding_register")}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {util.range(input_count, holding_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
-                                                                                translate_unchecked(`modbus_tcp.docu.name${i}`),
-                                                                                translate_unchecked(`modbus_tcp.docu.type${i}`),
-                                                                                translate_unchecked(`modbus_tcp.docu.feat${i}`),
-                                                                                translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
-                </tbody>
-                <thead>
-                    <tr>
-                        <th colSpan={5}>{__("modbus_tcp.docu.discrete_input")}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {util.range(holding_count, discrete_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
-                                                                                    translate_unchecked(`modbus_tcp.docu.name${i}`),
-                                                                                    translate_unchecked(`modbus_tcp.docu.type${i}`),
-                                                                                    translate_unchecked(`modbus_tcp.docu.feat${i}`),
-                                                                                    translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
-                </tbody>
-                <thead>
-                    <tr>
-                        <th colSpan={5}>{__("modbus_tcp.docu.coil")}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {util.range(discrete_count, coil_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
-                                                                                    translate_unchecked(`modbus_tcp.docu.name${i}`),
-                                                                                    translate_unchecked(`modbus_tcp.docu.type${i}`),
-                                                                                    translate_unchecked(`modbus_tcp.docu.feat${i}`),
-                                                                                    translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
-                </tbody>
+                {__("modbus_tcp.content.table_content")}
             </table>
         </CollapsedSection>
 

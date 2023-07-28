@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "charge_manager": {
         "status": {
             "charge_manager": "Charge management"
@@ -44,7 +46,7 @@
     "wifi": {
         "content": {
             "ap_hide_ssid_desc_pre": "The energy manager is reachable under the BSSID ",
-            "confirm_content": "Are you sure you want to disable the WiFi Access Point? If no connection to a configured network can be established in the future, <b>it is not possible to access the energy manager anymore</b>.The energy manager then has to be reset to factory defaults. <a href=\"{{{manual_url}}}\">See manual for details.</a>"
+            "confirm_content": <>Are you sure you want to disable the WiFi Access Point? If no connection to a configured network can be established in the future, <b>it is not possible to access the energy manager anymore</b>.The energy manager then has to be reset to factory defaults. <a href="{{{manual_url}}}">See manual for details.</a></>
         }
     },
     "charge_tracker": {

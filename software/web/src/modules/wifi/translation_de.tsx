@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "wifi": {
         "status": {
             "wifi_connection": "WLAN-Verbindung",
@@ -31,7 +33,7 @@
 
             "ap_settings": "WLAN-Access-Point",
             "ap_enable": "Access Point",
-            "ap_enable_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "ap_enable_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
             "ap_enabled": "Aktiviert",
             "ap_fallback_only": "Nur als Fallback",
             "ap_disabled": "Deaktiviert",

@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "charge_manager": {
         "status": {
             "charge_manager": "Lastmanagement"
@@ -50,7 +52,7 @@
         "content": {
             "sta_enable_sta_desc": "Der Energy Manager verbindet sich beim Start automatisch zum konfigurierten Netzwerk",
             "ap_hide_ssid_desc_pre": "Der Energy Manager ist unter der BSSID ",
-            "confirm_content": "Soll der WLAN-Access-Point wirklich komplett deaktiviert werden? Falls zukünftig keine Verbindung zu einem konfigurierten Netzwerk möglich ist, <b>kann nicht mehr auf den Energy Manager zugegriffen werden</b>. Der Energy Manager muss dann auf den Werkszustand zurückgesetzt werden. <a href=\"{{{manual_url}}}\">Siehe Betriebsanleitung für Details.</a>"
+            "confirm_content": <>Soll der WLAN-Access-Point wirklich komplett deaktiviert werden? Falls zukünftig keine Verbindung zu einem konfigurierten Netzwerk möglich ist, <b>kann nicht mehr auf den Energy Manager zugegriffen werden</b>. Der Energy Manager muss dann auf den Werkszustand zurückgesetzt werden. <a href="{{{manual_url}}}">Siehe Betriebsanleitung für Details.</a></>
         }
     },
     "charge_tracker": {

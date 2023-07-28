@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "energy_manager": {
         "status": {
             "mode": "Charging mode",
@@ -54,7 +56,7 @@
 
             "header_excess_charging": "Photovoltaic excess charging",
             "enable_excess_charging": "Excess charging enabled",
-            "enable_excess_charging_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
+            "enable_excess_charging_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
             "enable_excess_charging_desc": "The energy manager will adjust the power consumption of controlled chargers, depending on the power generation of a photovoltaic system and the charge mode.",
             "default_mode": "Default charging mode",
             "default_mode_muted": "will be used after energy manager reboot",
@@ -66,7 +68,7 @@
             "target_power_from_grid": "Target grid power draw",
             "target_power_from_grid_muted": "target grid draw for excess charging",
             "control_behavior": "Control behavior",
-            "control_behavior_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
+            "control_behavior_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
             "target_power_n200": "Very conservative (- 200 W)",
             "target_power_n100": "Conservative (- 100 W)",
             "target_power_n50": "Slightly conservative (- 50 W) – charges battery bank first",
