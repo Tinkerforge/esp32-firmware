@@ -136,7 +136,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                     </FormRow>
 
                     <FormRow label={__("evse.content.contactor_state")} label_muted={__("evse.content.contactor_names")}>
-                        <div class="row form-group mx-n1">
+                        <div class="row mx-n1">
                             <IndicatorGroup
                                 class="mb-1 col px-1"
                                 value={(state.contactor_state & 1) == 1 ? 1 : 0}
@@ -162,7 +162,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                     </FormRow>
 
                     <FormRow label={__("evse.content.dc_fault_current_state")} label_muted={__("evse.content.dc_fault_current_state_desc")}>
-                        <div class="row form-group mx-n1">
+                        <div class="row mx-n1">
                             <IndicatorGroup
                                 class="mb-1 col px-1 flex-wrap"
                                 value={state.dc_fault_current_state}
