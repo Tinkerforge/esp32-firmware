@@ -55,8 +55,10 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
                 {inner}
                 {props.help ? <Collapse in={state.help_expanded}>
                                 <div>{/*Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse*/}
-                                    <div class="alert alert-secondary">
-                                        {props.help}
+                                    <div class="card">
+                                        <div class="card-body p-3">
+                                            {props.help}
+                                        </div>
                                     </div>
                                 </div>
                               </Collapse>
@@ -68,14 +70,14 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
             <div class="form-group row" hidden={props.hidden == undefined ? false : props.hidden}>
                 <label for={this.id} class={"col-form-label " + (props.labelColClasses === undefined ? "col-lg-3" : props.labelColClasses)}>
                     <div class="row mx-lg-0">
-                        <div class="col-auto col-lg px-lg-0">
+                        <div class="col px-lg-0">
                     {props.label_prefix ? props.label_prefix : <></>}
                     {props.label ? <span class={"form-label" + (props.label_muted && !props.label_infix ? " pr-2" : "")}>{props.label}</span> : ""}
                     {props.label_infix ? props.label_infix : <></>}
                     {props.label_muted ? <span class="text-muted">{props.label_muted}</span> : ""}
                     {props.label_suffix ? props.label_suffix : <></>}
                     </div>
-                    {props.help ? <span class="col col-lg-auto px-lg-0" onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:"btn-outline-secondary", style:"border-radius: 50%;"} as any}/></span> : <></>}
+                    {props.help ? <span class="col-auto px-lg-0" onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:"btn-outline-secondary", style:"border-radius: 50%;"} as any}/></span> : <></>}
                     </div>
                 </label>
                 {inner}
