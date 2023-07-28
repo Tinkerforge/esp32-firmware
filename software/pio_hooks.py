@@ -298,7 +298,7 @@ TSX_HEADER = """/** @jsxImportSource preact */
 import { h } from "preact";
 let x = """
 
-TSX_FRAGMENT_PATTERN = re.compile(r'<>.*</>', re.MULTILINE | re.DOTALL)
+TSX_FRAGMENT_PATTERN = re.compile(r'<>.*?</>', re.MULTILINE | re.DOTALL)
 TSX_FUNCTION_PATTERN = re.compile(r'/\*[SF]FN\*/.*?/\*NF\*/', re.MULTILINE | re.DOTALL)
 
 TSX_FUNCTION_ARGS_PATTERN = re.compile(r'FN\*/\s*\(([^\)]*)\)', re.MULTILINE | re.DOTALL)
