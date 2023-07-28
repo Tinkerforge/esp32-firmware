@@ -294,20 +294,64 @@ def update_translation(translation, update, override=False, parent_key=None):
         else:
             update_translation(translation[key], value, override=override, parent_key=parent_key + [key])
 
+TSX_HEADER = """/** @jsxImportSource preact */
+import { h } from "preact";
+let x = """
+
+TSX_FRAGMENT_PATTERN = re.compile(r'<>.*</>', re.MULTILINE | re.DOTALL)
+TSX_FUNCTION_PATTERN = re.compile(r'/\*[SF]FN\*/.*?/\*NF\*/', re.MULTILINE | re.DOTALL)
+
+TSX_FUNCTION_ARGS_PATTERN = re.compile(r'FN\*/\s*\(([^\)]*)\)', re.MULTILINE | re.DOTALL)
+
+TSX_JSON_REPLACEMENTS = [
+    ('"', '\\"'),
+    ('\t', '\\t'),
+    ('\n', '\\n'),
+    ('\r', '\\r'),
+    # Escape nested fragments in functions
+    ('<>', '___START_FRAGMENT___'),
+    ('</>', '___END_FRAGMENT___'),
+]
+
+def tsx_to_json(match):
+    s = match.group(0)
+
+    for old, new in TSX_JSON_REPLACEMENTS:
+        s = s.replace(old, new)
+
+    return '"' + s + '"'
+
+def json_to_tsx(s):
+    for old, new in TSX_JSON_REPLACEMENTS:
+        s = s.replace(new, old)
+
+    return s
+
 def collect_translation(path, override=False):
     translation = {}
 
-    for translation_path in glob.glob(os.path.join(path, 'translation_*.json')):
-        m = re.match(r'translation_([a-z]+){0}\.json'.format('_override' if override else ''), os.path.split(translation_path)[-1])
+    for translation_path in glob.glob(os.path.join(path, 'translation_*.tsx')) + glob.glob(os.path.join(path, 'translation_*.json')):
+        m = re.match(r'translation_([a-z]+){0}\.(tsx|json)'.format('_override' if override else ''), os.path.split(translation_path)[-1])
 
         if m == None:
             continue
 
         language = m.group(1)
+        is_tsx = m.group(2) == "tsx"
 
         with open(translation_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            if is_tsx:
+                content = content.replace(TSX_HEADER, "", 1)
+                content = re.sub(TSX_FUNCTION_PATTERN,
+                                 tsx_to_json,
+                                 content)
+
+                content = re.sub(TSX_FRAGMENT_PATTERN,
+                                 tsx_to_json,
+                                 content)
             try:
-                translation[language] = json.loads(f.read())
+                translation[language] = json.loads(content)
             except:
                 print('JSON error in', translation_path)
                 raise
@@ -705,6 +749,7 @@ def main():
 
     global missing_hyphenations
     missing_hyphenations = sorted(set(missing_hyphenations) - allowed_missing)
+    missing_hyphenations = [x for x in missing_hyphenations if not x.startswith("___START_FRAGMENT___") and x != "___END_FRAGMENT___"]
     if len(missing_hyphenations) > 0:
         print("Missing hyphenations detected. Add those to hyphenations.py!")
         for x in missing_hyphenations:
@@ -783,18 +828,36 @@ def main():
 
             if isinstance(value, dict):
                 output += format_translation(value, type_only, indent + '    ')
-            elif type_only:
-                output += ['string,\n']
             else:
-                string = '"{0}"'.format(value.replace('"', '\\"'))
+                is_fragment = value.startswith("___START_FRAGMENT___") and value.endswith("___END_FRAGMENT___")
+                is_string_function = value.startswith("/*SFN*/") and value.endswith("/*NF*/")
+                is_fragment_function = value.startswith("/*FFN*/") and value.endswith("/*NF*/")
 
-                if '{{{' in string:
-                    string = string.replace('{{{display_name}}}', display_name)
-                    string = string.replace('{{{manual_url}}}', manual_url)
-                    string = string.replace('{{{apidoc_url}}}', apidoc_url)
-                    string = string.replace('{{{firmware_url}}}', firmware_url)
+                if type_only:
+                    if is_fragment:
+                        output += ['VNode,\n']
+                    elif is_string_function or is_fragment_function:
+                        args = re.search(TSX_FUNCTION_ARGS_PATTERN, value).group(1)
+                        result = "string" if is_string_function else "VNode"
+                        output += ['({}) => {},\n'.format(args, result)]
+                    else:
+                        output += ['string,\n']
+                else:
+                    if is_fragment:
+                        string = json_to_tsx(value)
+                    elif is_string_function or is_fragment_function:
+                        # removeprefix/suffix are new in Python 3.9. We have to support 3.8.
+                        string = json_to_tsx(value)[len("/*SFN*/"):-len("/*NF*/")]
+                    else:
+                        string = '"{0}"'.format(value.replace('"', '\\"'))
 
-                output += [string, ',\n']
+                    if '{{{' in string:
+                        string = string.replace('{{{display_name}}}', display_name)
+                        string = string.replace('{{{manual_url}}}', manual_url)
+                        string = string.replace('{{{apidoc_url}}}', apidoc_url)
+                        string = string.replace('{{{firmware_url}}}', firmware_url)
+
+                    output += [string, ',\n']
 
         output += [indent, '}']
 
