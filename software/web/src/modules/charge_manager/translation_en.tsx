@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "charge_manager": {
         "status": {
             "charge_manager": null,
@@ -52,9 +54,7 @@
             "add_charger_name": "Display name",
             "add_charger_host": "IP address or hostname",
             "add_charger_found": "Discovered chargers",
-            "add_charger_prefix": "",
-            "add_charger_infix": " of ",
-            "add_charger_suffix": " chargers configured",
+            "add_charger_count": /*SFN*/(x: number, max: number) => x + " of " + max + " chargers configured"/*NF*/,
 
             "edit_charger_title": "Edit charger",
             "edit_charger_name": "Display name",

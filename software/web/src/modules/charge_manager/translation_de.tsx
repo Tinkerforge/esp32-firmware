@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "charge_manager": {
         "status": {
             "charge_manager": null,
@@ -52,9 +54,7 @@
             "add_charger_name": "Anzeigename",
             "add_charger_host": "IP-Adresse oder Hostname",
             "add_charger_found": "Gefundene Wallboxen",
-            "add_charger_prefix": "",
-            "add_charger_infix": " von ",
-            "add_charger_suffix": " Wallboxen konfiguriert",
+            "add_charger_count": /*SFN*/(x: number, max: number) => x + " von " + max + " Wallboxen konfiguriert"/*NF*/,
 
             "edit_charger_title": "Wallbox bearbeiten",
             "edit_charger_name": "Anzeigename",

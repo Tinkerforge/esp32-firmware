@@ -450,7 +450,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                         }
                         addEnabled={state.chargers.length < MAX_CONTROLLED_CHARGERS}
                         addTitle={__("charge_manager.content.add_charger_title")}
-                        addMessage={__("charge_manager.content.add_charger_prefix") + state.chargers.length + __("charge_manager.content.add_charger_infix") + MAX_CONTROLLED_CHARGERS + __("charge_manager.content.add_charger_suffix")}
+                        addMessage={__("charge_manager.content.add_charger_count")(state.chargers.length, MAX_CONTROLLED_CHARGERS)}
                         onAddStart={async () => this.setState({addCharger: {name: "", host: ""}})}
                         onAddGetRows={() => [
                             {
