@@ -24,7 +24,7 @@ let x = {
     },
     "firmware_update": {
         "content": {
-            "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Energy Manager öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
+            "factory_reset_modal_text": <>Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Energy Manager öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?</>,
             "reboot_desc": "",
             "config_reset_modal_text": "",
             "factory_reset_desc": "löscht die gesamte Konfiguration",
@@ -42,7 +42,7 @@ let x = {
     },
     "mqtt": {
         "content": {
-            "enable_mqtt_desc": "Hierdurch kann der Energy Manager über den konfigurierten MQTT-Broker kontrolliert werden. <a href=\"{{{apidoc_url}}}\">MQTT-API-Dokumentation</a>"
+            "enable_mqtt_desc": <>Hierdurch kann der Energy Manager über den konfigurierten MQTT-Broker kontrolliert werden. <a href="{{{apidoc_url}}}">MQTT-API-Dokumentation</a></>
         }
     },
     "util": {
@@ -57,7 +57,7 @@ let x = {
     },
     "charge_tracker": {
         "content": {
-            "charge_tracker_remove_modal_text": "Alle aufgezeichneten Ladevorgänge und der Benutzernamen-Verlauf werden gelöscht. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Danach wird der Energy Manager neugestartet."
+            "charge_tracker_remove_modal_text": <>Alle aufgezeichneten Ladevorgänge und der Benutzernamen-Verlauf werden gelöscht. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Danach wird der Energy Manager neugestartet.</>
         }
     },
     "meter": {

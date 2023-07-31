@@ -19,7 +19,7 @@ let x = {
     },
     "firmware_update": {
         "content": {
-            "factory_reset_modal_text": "A factory reset will reset all configuration to their default values. <b>This action cannot be undone!</b> The energy manager will re-open the WiFi access point with the default SSID and passphrase from the manual. Are you sure?",
+            "factory_reset_modal_text": <>A factory reset will reset all configuration to their default values. <b>This action cannot be undone!</b> The energy manager will re-open the WiFi access point with the default SSID and passphrase from the manual. Are you sure?</>,
             "reboot_desc": "",
             "config_reset_modal_text": "",
             "factory_reset_desc": "removes all configuration",
@@ -32,7 +32,7 @@ let x = {
     },
     "mqtt": {
         "content": {
-            "enable_mqtt_desc": "This allows controlling the energy manager over the configured MQTT broker. <a href=\"{{{apidoc_url}}}\">MQTT API documentation</a>"
+            "enable_mqtt_desc": <>This allows controlling the energy manager over the configured MQTT broker. <a href="{{{apidoc_url}}}">MQTT API documentation</a></>
         }
     },
     "network": {
@@ -51,7 +51,7 @@ let x = {
     },
     "charge_tracker": {
         "content": {
-            "charge_tracker_remove_modal_text": "All tracked charges and the username history will be removed. <b>This action cannot be undone!</b> The energy manager then will restart."
+            "charge_tracker_remove_modal_text": <>All tracked charges and the username history will be removed. <b>This action cannot be undone!</b> The energy manager then will restart.</>
         }
     },
     "meter": {

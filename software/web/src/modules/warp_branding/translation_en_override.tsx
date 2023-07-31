@@ -19,8 +19,8 @@ let x = {
     },
     "firmware_update": {
         "content": {
-            "factory_reset_modal_text": "A factory reset will reset all configuration to their default values. All tracked charges are lost. <b>This action cannot be undone!</b> The charger will re-open the WiFi access point with the default SSID and passphrase from the manual. Continue?",
-            "config_reset_modal_text": "Resets only the configuration to default values. Tracked charges will be preserved. <b>This action cannot be undone!</b> The charger will re-open the WiFi access point with the default SSID and passphrase from the manual. Continue?",
+            "factory_reset_modal_text": <>A factory reset will reset all configuration to their default values. All tracked charges are lost. <b>This action cannot be undone!</b> The charger will re-open the WiFi access point with the default SSID and passphrase from the manual. Continue?</>,
+            "config_reset_modal_text": <>Resets only the configuration to default values. Tracked charges will be preserved. <b>This action cannot be undone!</b> The charger will re-open the WiFi access point with the default SSID and passphrase from the manual. Continue?</>,
             "reboot_desc": "charging will not be interrupted",
             "factory_reset_desc": "removes the configuration and all tracked charges",
             "config_reset_desc": "tracked charges will be preserved"
@@ -32,7 +32,7 @@ let x = {
     },
     "mqtt": {
         "content": {
-            "enable_mqtt_desc": "This allows controlling the charger over the configured MQTT broker. <a href=\"{{{apidoc_url}}}\">MQTT API documentation</a>"
+            "enable_mqtt_desc": <>This allows controlling the charger over the configured MQTT broker. <a href="{{{apidoc_url}}}">MQTT API documentation</a></>
         }
     },
     "network": {
@@ -51,7 +51,7 @@ let x = {
     },
     "charge_tracker": {
         "content": {
-            "charge_tracker_remove_modal_text": "All tracked charges and the username history will be removed. <b>This action cannot be undone!</b> The charger then will restart."
+            "charge_tracker_remove_modal_text": <>All tracked charges and the username history will be removed. <b>This action cannot be undone!</b> The charger then will restart.</>
         }
     },
     "meter": {

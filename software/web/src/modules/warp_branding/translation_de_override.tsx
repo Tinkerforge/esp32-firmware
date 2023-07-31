@@ -24,8 +24,8 @@ let x = {
     },
     "firmware_update": {
         "content": {
-            "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. Alle aufgezeichneten Ladevorgänge gehen verloren. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
-            "config_reset_modal_text": "Hiermit wird nur die Konfiguration auf den Werkszustand zurückgesetzt. Aufgezeichnete Ladevorgänge bleiben erhalten. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
+            "factory_reset_modal_text": <>Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. Alle aufgezeichneten Ladevorgänge gehen verloren. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren</>,
+            "config_reset_modal_text": <>Hiermit wird nur die Konfiguration auf den Werkszustand zurückgesetzt. Aufgezeichnete Ladevorgänge bleiben erhalten. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren</>,
             "reboot_desc": "ein laufender Ladevorgang wird nicht unterbrochen",
             "factory_reset_desc": "löscht die Konfiguration und alle aufgezeichneten Ladevorgänge",
             "config_reset_desc": "aufgezeichnete Ladevorgänge bleiben erhalten"
@@ -42,7 +42,7 @@ let x = {
     },
     "mqtt": {
         "content": {
-            "enable_mqtt_desc": "Hierdurch kann die Wallbox über den konfigurierten MQTT-Broker kontrolliert werden. <a href=\"{{{apidoc_url}}}\">MQTT-API-Dokumentation</a>"
+            "enable_mqtt_desc": <>Hierdurch kann die Wallbox über den konfigurierten MQTT-Broker kontrolliert werden. <a href="{{{apidoc_url}}}">MQTT-API-Dokumentation</a></>
         }
     },
     "util": {
@@ -57,7 +57,7 @@ let x = {
     },
     "charge_tracker": {
         "content": {
-            "charge_tracker_remove_modal_text": "Alle aufgezeichneten Ladevorgänge und der Benutzernamen-Verlauf werden gelöscht. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Danach wird die Wallbox neugestartet."
+            "charge_tracker_remove_modal_text": <>Alle aufgezeichneten Ladevorgänge und der Benutzernamen-Verlauf werden gelöscht. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Danach wird die Wallbox neugestartet.</>
         }
     },
     "meter": {

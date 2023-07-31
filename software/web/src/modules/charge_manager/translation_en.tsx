@@ -16,7 +16,7 @@ let x = {
         "content": {
             "charge_manager": null,
             "enable_charge_manager": "Charge management mode",
-            "enable_charge_manager_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
+            "enable_charge_manager_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
             "enable_watchdog": "Watchdog enabled",
             "enable_watchdog_muted": "only enable if using the API (not required for normal charge manager use!)",
             "enable_watchdog_desc": "Sets the available current to the default value if it is not updated every 30 seconds",
