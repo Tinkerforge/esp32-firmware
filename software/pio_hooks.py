@@ -832,6 +832,7 @@ def main():
                 is_fragment = value.startswith("___START_FRAGMENT___") and value.endswith("___END_FRAGMENT___")
                 is_string_function = value.startswith("/*SFN*/") and value.endswith("/*NF*/")
                 is_fragment_function = value.startswith("/*FFN*/") and value.endswith("/*NF*/")
+                is_string = not is_fragment and not is_string_function and not is_fragment_function
 
                 if type_only:
                     if is_fragment:
@@ -850,6 +851,10 @@ def main():
                         string = json_to_tsx(value)[len("/*SFN*/"):-len("/*NF*/")]
                     else:
                         string = '"{0}"'.format(value.replace('"', '\\"'))
+
+                    if is_string or is_string_function:
+                        if match := re.search(r"<[^>]*>", value):
+                            print("Found HTML tag {} in non-fragment value {}".format(match.group(0), value))
 
                     if '{{{' in string:
                         string = string.replace('{{{display_name}}}', display_name)
