@@ -33,14 +33,22 @@
 
 struct Task {
     std::function<void(void)> fn;
+    uint64_t task_id;
     uint32_t next_deadline_ms;
     uint32_t delay_ms;
     bool once;
 
-    Task(std::function<void(void)> fn, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once);
+    Task(std::function<void(void)> fn, uint64_t task_id, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once);
 };
 
 bool compare(const Task *a, const Task *b);
+
+class TaskQueue : public std::priority_queue<Task *, std::vector<Task *>, decltype(&compare)>
+{
+    using std::priority_queue<Task *, std::vector<Task *>, decltype(&compare)>::priority_queue;
+public:
+    bool removeByTaskID(uint64_t task_id);
+};
 
 class TaskScheduler
 {
@@ -52,15 +60,19 @@ public:
     void setup();
     void register_urls();
     void loop();
+    uint64_t currentTask();
 
     bool initialized = false;
 
-    void scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms);
-    void scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms);
+    bool cancel(uint64_t task_id);
+    uint64_t scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms);
+    uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms);
 
 private:
     std::mutex task_mutex;
-    std::priority_queue<Task *, std::vector<Task *>, decltype(&compare)> tasks;
+    TaskQueue tasks;
+    uint64_t current_task = 0;
+    TaskHandle_t mainTaskHandle;
 };
 
 // Make global variable available everywhere because it is not declared in modules.h.
