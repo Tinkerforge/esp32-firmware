@@ -25,6 +25,8 @@
 #include "time.h"
 #include "module_dependencies.h"
 
+extern Rtc rtc;
+
 void Rtc::pre_setup()
 {
     time = Config::Object({
@@ -67,6 +69,12 @@ void Rtc::pre_setup()
 
 void Rtc::setup() {}
 
+#if MODULE_CRON_AVAILABLE()
+static bool trigger_action(Config *cfg, void *data) {
+    return rtc.action_triggered(cfg, data);
+}
+#endif
+
 void Rtc::register_backend(IRtcBackend *_backend)
 {
     if (backend || !_backend)
@@ -106,7 +114,7 @@ void Rtc::register_backend(IRtcBackend *_backend)
         if (cron.is_trigger_active(CRON_TRIGGER_CRON)) {
             uint32_t last_minute = time.get("minute")->asUint();
             if (last_minute < tm.tm_min)
-                cron.trigger_action(this, CRON_TRIGGER_CRON, &tm);
+                cron.trigger_action(CRON_TRIGGER_CRON, &tm, &trigger_action);
         }
 #endif
 

@@ -91,10 +91,10 @@ void Cron::register_trigger(const ConfUnionPrototype &proto) {
     trigger_vec.push_back(proto);
 }
 
-bool Cron::trigger_action(ICronModule *module, uint8_t number, void *data) {
+bool Cron::trigger_action(uint8_t number, void *data, bool(*cb)(Config *,void *)) {
     bool triggered = false;
     for (auto &conf: config) {
-        if (conf.get("trigger")->getTag() == number && module->action_triggered((Config*)conf.get("trigger"), data)) {
+        if (conf.get("trigger")->getTag() == number && cb((Config *)conf.get("trigger"), data)) {
             triggered = true;
             uint8_t action_ident = conf.get("action")->getTag();
             if (action_map.find(action_ident) != action_map.end())
@@ -104,19 +104,6 @@ bool Cron::trigger_action(ICronModule *module, uint8_t number, void *data) {
         }
     }
     return triggered;
-}
-
-bool Cron::trigger_specific_action(ICronModule *module, size_t idx, void *data) {
-    auto cfg = config.get(idx);
-    if (module->action_triggered((Config*)cfg->get("trigger"), data)) {
-        uint8_t action_ident = cfg->get("action")->getTag();
-        if (action_map.find(action_ident) != action_map.end())
-            action_map[action_ident]((Config *)cfg->get("action")->get());
-        else
-            logger.printfln("There is no action with ident-nr %u!", action_ident);
-        return true;
-    }
-    return false;
 }
 
 bool Cron::is_trigger_active(uint8_t number) {

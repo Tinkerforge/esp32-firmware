@@ -26,10 +26,6 @@
 #include "evse_v2_bricklet_firmware_bin.embedded.h"
 #include "../evse_common/evse_common.h"
 
-class EVSEV2;
-
-#include "module_dependencies.h"
-
 class EVSEV2 final : public DeviceModule<TF_EVSEV2,
                                          evse_v2_bricklet_firmware_bin_data,
                                          evse_v2_bricklet_firmware_bin_length,
@@ -37,9 +33,6 @@ class EVSEV2 final : public DeviceModule<TF_EVSEV2,
                                          tf_evse_v2_get_bootloader_mode,
                                          tf_evse_v2_reset,
                                          tf_evse_v2_destroy>, public IEvseBackend
-#if MODULE_CRON_AVAILABLE()
-, public ICronModule
-#endif
 {
 public:
     EVSEV2();
@@ -85,16 +78,13 @@ protected:
 
 // To allow the evse_v2_meter module to get/set energy meter values
 public:
+    bool action_triggered(Config *config, void *data);
     void update_all_data() override;
     // End IEvseBackend implementation
 
     uint16_t get_all_energy_meter_values(float *ret_values);
     void reset_energy_meter_relative_energy();
     uint8_t get_energy_meter_type();
-
-#if MODULE_CRON_AVAILABLE()
-    bool action_triggered(Config *config, void *data);
-#endif
 
     ConfigRoot energy_meter_values;
     ConfigRoot energy_meter_errors;

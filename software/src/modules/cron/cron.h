@@ -43,11 +43,6 @@
 #define CRON_ACTION_CHARGE_LIMITS 8
 #define CRON_ACTION_EVSE_GP_OUTPUT 9
 
-class ICronModule {
-public:
-    virtual bool action_triggered(Config *config, void *data) = 0;
-};
-
 typedef std::function<void(const Config *)>               ActionCb;
 typedef std::map<uint32_t, ActionCb>                ActionMap;
 typedef std::vector<std::pair<size_t, Config *>>                       ConfigVec;
@@ -72,8 +67,7 @@ public:
     void register_action(const ConfUnionPrototype &proto, ActionCb callback);
     void register_trigger(const ConfUnionPrototype &proto);
 
-    bool trigger_action(ICronModule *module, uint8_t number, void *data);
-    bool trigger_specific_action(ICronModule *module, size_t idx, void *data);
+    bool trigger_action(uint8_t number, void *data, bool (*cb)(Config *, void *));
     bool is_trigger_active(uint8_t number);
 
     ConfigVec get_configured_triggers(uint8_t number);

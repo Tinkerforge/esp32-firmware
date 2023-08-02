@@ -27,6 +27,8 @@
 
 #include "module_dependencies.h"
 
+extern ChargeLimits charge_limits;
+
 static uint32_t map_duration(uint32_t val)
 {
     switch (val)
@@ -107,6 +109,12 @@ void ChargeLimits::setup()
     initialized = true;
 }
 
+#if MODULE_CRON_AVAILABLE()
+static bool trigger_action(Config *cfg, void *data) {
+    return charge_limits.action_triggered(cfg, data);
+}
+#endif
+
 void ChargeLimits::register_urls()
 {
     api.addPersistentConfig("charge_limits/default_limits", &config, {}, 1000);
@@ -185,7 +193,7 @@ void ChargeLimits::register_urls()
 #if MODULE_CRON_AVAILABLE()
         static bool was_triggered = false;
         if (target_current == 0 && !was_triggered) {
-            cron.trigger_action(this, CRON_TRIGGER_CHARGE_LIMITS, nullptr);
+            cron.trigger_action(CRON_TRIGGER_CHARGE_LIMITS, nullptr, &trigger_action);
             was_triggered = true;
         } else if (!charging) {
             was_triggered = false;

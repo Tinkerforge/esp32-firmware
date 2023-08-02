@@ -20,6 +20,7 @@
 #include "evse_common.h"
 #include "module_dependencies.h"
 
+extern EvseCommon evse_common;
 extern uint32_t local_uid_num;
 
 EvseCommon::EvseCommon() {
@@ -293,6 +294,12 @@ void EvseCommon::setup_evse()
     backend->initialized = true;
 }
 
+#if MODULE_CRON_AVAILABLE()
+    bool trigger_action(Config *cfg, void *data) {
+        return evse_common.action_triggered(cfg, data);
+    }
+#endif
+
 void EvseCommon::register_urls() {
 #if MODULE_CM_NETWORKING_AVAILABLE()
     cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested) {
@@ -551,7 +558,7 @@ void EvseCommon::register_urls() {
             static uint32_t last_state = 0;
             uint32_t state_now = cfg->get("charger_state")->asUint();
             if (last_state != state_now) {
-                cron.trigger_action(this, CRON_TRIGGER_IEC_CHANGE, 0);
+                cron.trigger_action(CRON_TRIGGER_IEC_CHANGE, nullptr, &trigger_action);
                 last_state = state_now;
             }
         });

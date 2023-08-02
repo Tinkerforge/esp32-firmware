@@ -30,6 +30,7 @@
 
 #include "matchTopicFilter.h"
 
+extern Mqtt mqtt;
 extern char local_uid_str[32];
 
 #if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
@@ -212,6 +213,12 @@ void Mqtt::onMqttDisconnect()
     }
 }
 
+#if MODULE_CRON_AVAILABLE()
+static bool trigger_action(Config *cfg, void *data) {
+    return mqtt.action_triggered(cfg, data);
+}
+#endif
+
 void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
 {
     for (auto &c : commands) {
@@ -284,7 +291,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     msg.topic = String(topic).substring(0, topic_len);
     msg.payload = String(data).substring(0, data_len);
     msg.retained = retain;
-    if (cron.trigger_action(this, CRON_TRIGGER_MQTT, &msg))
+    if (cron.trigger_action(CRON_TRIGGER_MQTT, &msg, &trigger_action))
         return;
 #endif
 
@@ -458,7 +465,7 @@ void Mqtt::register_urls()
                     msg.topic = String(tpic).substring(0, tpic_len);
                     msg.payload = String(data).substring(0, data_len);
                     msg.retained = false;
-                    if (cron.trigger_action(this, CRON_TRIGGER_MQTT, &msg))
+                    if (cron.trigger_action(CRON_TRIGGER_MQTT, &msg, &trigger_action))
                         return;
                 }, false);
                 subscribed_topics.push_back(conf.second->get("topic")->asString());

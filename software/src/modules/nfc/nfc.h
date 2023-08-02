@@ -26,8 +26,6 @@
 #include "device_module.h"
 #include "nfc_bricklet_firmware_bin.embedded.h"
 
-class NFC;
-#include "module_dependencies.h"
 
 // in bytes
 #define NFC_TAG_ID_LENGTH 10
@@ -50,9 +48,6 @@ class NFC : public DeviceModule<TF_NFC,
 #endif
 
                                 >
-#if MODULE_CRON_AVAILABLE()
-, public ICronModule
-#endif
 {
 public:
     NFC() : DeviceModule("nfc", "NFC", "NFC", [this](){this->setup_nfc();}) {}
@@ -73,9 +68,7 @@ public:
     void check_nfc_state();
     uint8_t get_user_id(tag_info_t *tag, uint8_t *tag_idx);
 
-#if MODULE_CRON_AVAILABLE()
 bool action_triggered(Config *config, void *data);
-#endif
 
     ConfigRoot config;
     ConfigRoot config_in_use;

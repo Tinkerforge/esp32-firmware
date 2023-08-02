@@ -23,12 +23,8 @@
 
 class ChargeLimits;
 #include "module.h"
-#include "module_dependencies.h"
 
 class ChargeLimits final : public IModule
-#if MODULE_CRON_AVAILABLE()
-, public ICronModule
-#endif
 {
 public:
     ChargeLimits(){}

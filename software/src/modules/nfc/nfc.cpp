@@ -27,6 +27,8 @@
 #include "task_scheduler.h"
 #include "module_dependencies.h"
 
+extern NFC nfc;
+
 #define AUTHORIZED_TAG_LIST_LENGTH 16
 
 #define DETECTION_THRESHOLD_MS 2000
@@ -181,6 +183,12 @@ uint8_t NFC::get_user_id(tag_info_t *tag, uint8_t *tag_idx)
     return 0;
 }
 
+#if MODULE_CRON_AVAILABLE()
+static bool trigger_action(Config *cfg, void *data) {
+    return nfc.action_triggered(cfg, data);
+}
+#endif
+
 void NFC::tag_seen(tag_info_t *tag, bool injected)
 {
     uint8_t idx = 0;
@@ -208,7 +216,7 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
     }
 
 #if MODULE_CRON_AVAILABLE()
-    cron.trigger_action(this, CRON_TRIGGER_NFC, tag);
+    cron.trigger_action(CRON_TRIGGER_NFC, tag, &trigger_action);
 #endif
 }
 
