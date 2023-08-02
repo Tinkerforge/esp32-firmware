@@ -181,8 +181,12 @@ void EVSEV2::pre_setup()
     cron.register_trigger(proto);
 
     proto.tag = CRON_ACTION_EVSE_GP_OUTPUT;
+
+    proto.config = Config::Object({
+        {"state", Config::Uint(0, 0, 1)}
+    });
     cron.register_action(proto, [this](const Config *config) {
-        is_in_bootloader(tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()));
+        is_in_bootloader(tf_evse_v2_set_gp_output(&device, config->get("state")->asUint()));
     });
 #endif
 }
