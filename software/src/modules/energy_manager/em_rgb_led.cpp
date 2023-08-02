@@ -19,8 +19,11 @@
 
 #include "em_rgb_led.h"
 #include "module_dependencies.h"
+#include "energy_manager.h"
 
 #include "gcc_warnings.h"
+
+extern EnergyManager energy_manager;
 
 void EmRgbLed::update_led()
 {

@@ -167,8 +167,6 @@ def generate_module_dependencies_header(info_path, header_path, backend_module, 
 
             requires = config['Dependencies'].get('Requires', "")
             requires = requires.splitlines()
-            if backend_module:
-                requires.append(backend_module.space)
             old_len = len(requires)
             requires = list(dict.fromkeys(requires))
             if len(requires) != old_len:

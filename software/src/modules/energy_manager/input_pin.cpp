@@ -23,8 +23,11 @@
 #include "input_pin.h"
 #include "module_dependencies.h"
 #include "tools.h"
+#include "energy_manager.h"
 
 #include "gcc_warnings.h"
+
+extern EnergyManager energy_manager;
 
 InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf, bool level_init) : prev_level(level_init)
 {

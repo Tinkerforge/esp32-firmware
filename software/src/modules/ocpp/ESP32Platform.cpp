@@ -17,6 +17,7 @@
 #include "build.h"
 #include "task_scheduler.h"
 #include "module_dependencies.h"
+#include "ocpp.h"
 
 static bool feature_evse = false;
 static bool feature_meter = false;
@@ -206,7 +207,7 @@ void platform_printfln(int level, const char *fmt, ...)
     va_end(args);
 }
 
-
+extern Ocpp ocpp;
 
 void platform_register_tag_seen_callback(void *ctx, void(*cb)(int32_t, const char *, void *), void *user_data) {
     ocpp.tag_seen_cb = cb;

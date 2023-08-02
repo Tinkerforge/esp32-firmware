@@ -789,7 +789,7 @@ void ChargeTracker::register_urls()
 
         std::lock_guard<std::mutex> lock{records_mutex};
 
-        uint32_t electricity_price = charge_tracker.config.get("electricity_price")->asUint();
+        uint32_t electricity_price = this->config.get("electricity_price")->asUint();
 
         {
             char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];

@@ -22,8 +22,11 @@
 #include "event_log.h"
 #include "output_relay.h"
 #include "module_dependencies.h"
+#include "energy_manager.h"
 
 #include "gcc_warnings.h"
+
+extern EnergyManager energy_manager;
 
 static bool cmp_gt(int32_t a, int32_t b) { return a >  b; }
 static bool cmp_le(int32_t a, int32_t b) { return a <= b; }

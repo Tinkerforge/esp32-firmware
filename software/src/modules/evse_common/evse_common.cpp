@@ -256,7 +256,7 @@ void EvseCommon::setup_evse()
         return;
     }
 
-    evse_common.apply_defaults();
+    this->apply_defaults();
     backend->initialized = true;
 }
 

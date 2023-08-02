@@ -36,6 +36,8 @@
 
 #include "TFJson.h"
 
+extern CMNetworking cm_networking;
+
 void CMNetworking::setup()
 {
     mdns_init();
