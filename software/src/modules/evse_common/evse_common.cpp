@@ -268,6 +268,7 @@ void EvseCommon::setup() {
     initialized = true;
 }
 
+#if MODULE_CRON_AVAILABLE()
 bool EvseCommon::action_triggered(Config *config, void *data) {
     Config *cfg = (Config*)config->get();
     switch (config->getTag()) {
@@ -281,7 +282,7 @@ bool EvseCommon::action_triggered(Config *config, void *data) {
     }
     return false;
 }
-
+#endif
 void EvseCommon::setup_evse()
 {
     if (!backend->setup_device()) {

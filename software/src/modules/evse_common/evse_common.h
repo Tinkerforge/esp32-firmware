@@ -20,8 +20,10 @@
 #pragma once
 
 #include "config.h"
+
+class EvseCommon;
 #include "module.h"
-#include "../cron/cron.h"
+#include "module_dependencies.h"
 
 #define CHARGING_SLOT_COUNT 15
 #define CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE 20
@@ -101,7 +103,11 @@ protected:
     virtual void update_all_data() = 0;
 };
 
-class EvseCommon final : public IModule, public ICronModule {
+class EvseCommon final : public IModule
+#if MODULE_CRON_AVAILABLE()
+, public ICronModule
+#endif
+{
     // TODO: It's a bit ugly that we have to declare all specific EVSE modules as friends here.
     // But this allows us to make the configs private, to enforce all access happens via the public methods below.
     friend class EVSE;
@@ -152,7 +158,9 @@ public:
     ConfigRoot& get_low_level_state();
     bool get_management_enabled();
 
+#if MODULE_CRON_AVAILABLE()
     bool action_triggered(Config *config, void *data);
+#endif
 
     void check_debug();
 
