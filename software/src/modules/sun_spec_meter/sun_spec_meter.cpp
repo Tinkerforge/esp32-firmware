@@ -26,6 +26,8 @@
 #include "module_dependencies.h"
 
 #define LAST_DEVICE_ADDRESS 247
+#define SUN_SPEC_ID 0x53756e53
+#define COMMON_MODEL_ID 1
 
 static const uint16_t base_addresses[] {
     40000,
@@ -185,38 +187,21 @@ void SunSpecMeter::loop()
 
         break;
 
-    case DiscoveryState::ReadSunSpecID: {
-            discovery_printfln("Using device address %u", discovery_device_address);
-            discovery_printfln("Using base address %u", base_addresses[discovery_base_address_index]);
-            discovery_printfln("Reading SunSpec ID");
-
+    case DiscoveryState::Read: {
             uint32_t cookie = discovery_cookie;
 
-            discovery_state = DiscoveryState::ReadingSunSpecID;
+            discovery_state = DiscoveryState::Reading;
 
-            modbus.readHreg(discovery_host, base_addresses[discovery_base_address_index], discovery_buffer, 2,
+            modbus.readHreg(discovery_host, discovery_read_address, discovery_read_buffer, discovery_read_size,
             [this, cookie](Modbus::ResultCode event, uint16_t transactionId, void *data) -> bool {
-                if (discovery_state != DiscoveryState::ReadingSunSpecID || cookie != discovery_cookie) {
+                if (discovery_state != DiscoveryState::Reading || cookie != discovery_cookie) {
                     return true;
                 }
 
-                if (event == Modbus::ResultCode::EX_SUCCESS) {
-                    uint32_t sun_spec_id = ((uint32_t)discovery_buffer[0] << 16) | discovery_buffer[1];
-
-                    discovery_printfln("Found SunSpec ID: 0x%x", sun_spec_id);
-
-                    discovery_state = DiscoveryState::ReadCommonModel;
-                }
-                else {
-                    discovery_printfln("Could not read SunSpec ID: %s (%d)", get_modbus_event_name(event), event);
-
-                    if (event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
-                        discovery_state = DiscoveryState::NextDeviceAddress;
-                    }
-                    else {
-                        discovery_state = DiscoveryState::NextBaseAddress;
-                    }
-                }
+                discovery_read_address += discovery_read_size;
+                discovery_read_event = event;
+                discovery_read_index = 0;
+                discovery_state = discovery_read_state;
 
                 return true;
             }, discovery_device_address);
@@ -224,18 +209,171 @@ void SunSpecMeter::loop()
 
         break;
 
-    case DiscoveryState::ReadingSunSpecID:
+    case DiscoveryState::Reading:
         break;
 
-    case DiscoveryState::ReadCommonModel:
-        discovery_printfln("Reading Common Model (FIXME)");
+    case DiscoveryState::ReadSunSpecID:
+        discovery_printfln("Using device address %u", discovery_device_address);
+        discovery_printfln("Using base address %u", base_addresses[discovery_base_address_index]);
+        discovery_printfln("Reading SunSpec ID");
 
-        discovery_state = DiscoveryState::NextDeviceAddress; // FIXME
+        discovery_read_address = base_addresses[discovery_base_address_index];
+        discovery_read_size = 2;
+        discovery_read_state = DiscoveryState::ReadSunSpecIDDone;
+        discovery_state = DiscoveryState::Read;
+
         break;
 
+    case DiscoveryState::ReadSunSpecIDDone:
+        if (discovery_read_event == Modbus::ResultCode::EX_SUCCESS) {
+            uint32_t sun_spec_id = discovery_read_uint32();
+
+            if (sun_spec_id == SUN_SPEC_ID) {
+                discovery_printfln("SunSpec ID found");
+
+                discovery_state = DiscoveryState::ReadCommonModelHeader;
+            }
+            else {
+                discovery_printfln("No SunSpec ID found: %08x", sun_spec_id);
+
+                discovery_state = DiscoveryState::NextBaseAddress;
+            }
+        }
+        else {
+            discovery_printfln("Could not read SunSpec ID: %s (%d)", get_modbus_event_name(discovery_read_event), discovery_read_event);
+
+            if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+                discovery_state = DiscoveryState::NextDeviceAddress;
+            }
+            else {
+                discovery_state = DiscoveryState::NextBaseAddress;
+            }
+        }
+
+        break;
+
+    case DiscoveryState::ReadCommonModelHeader:
+        discovery_printfln("Reading Common Model header");
+
+        discovery_read_size = 2;
+        discovery_read_state = DiscoveryState::ReadCommonModelHeaderDone;
+        discovery_state = DiscoveryState::Read;
+
+        break;
+
+    case DiscoveryState::ReadCommonModelHeaderDone:
+        if (discovery_read_event == Modbus::ResultCode::EX_SUCCESS) {
+            uint16_t model_id = discovery_read_uint16();
+            uint16_t model_length = discovery_read_uint16();
+
+            if (model_id == COMMON_MODEL_ID && (model_length == 65 || model_length == 66)) {
+                discovery_printfln("Common Model header found");
+
+                discovery_common_model_length = model_length;
+                discovery_state = DiscoveryState::ReadCommonModelBlock;
+            }
+            else {
+                discovery_printfln("No Common Model header found: %04x %04x", model_id, model_length);
+
+                discovery_state = DiscoveryState::NextBaseAddress;
+            }
+        }
+        else {
+            discovery_printfln("Could not read Common Model header: %s (%d)", get_modbus_event_name(discovery_read_event), discovery_read_event);
+
+            if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+                discovery_state = DiscoveryState::NextDeviceAddress;
+            }
+            else {
+                discovery_state = DiscoveryState::NextBaseAddress;
+            }
+        }
+
+        break;
+
+    case DiscoveryState::ReadCommonModelBlock:
+        discovery_read_size = discovery_common_model_length;
+        discovery_read_state = DiscoveryState::ReadCommonModelBlockDone;
+        discovery_state = DiscoveryState::Read;
+
+        break;
+
+    case DiscoveryState::ReadCommonModelBlockDone:
+        if (discovery_read_event == Modbus::ResultCode::EX_SUCCESS) {
+            char manufacturer_name[32 + 1];
+            char model_name[32 + 1];
+            char options[16 + 1];
+            char version[16 + 1];
+            char serial_number[32 + 1];
+            uint16_t device_address;
+
+            discovery_read_string(manufacturer_name, sizeof(manufacturer_name));
+            discovery_read_string(model_name, sizeof(model_name));
+            discovery_read_string(options, sizeof(options));
+            discovery_read_string(version, sizeof(version));
+            discovery_read_string(serial_number, sizeof(serial_number));
+            device_address = discovery_read_uint16();
+
+            discovery_printfln("Manufacturer Name: %s", manufacturer_name);
+            discovery_printfln("Model Name: %s", model_name);
+            discovery_printfln("Options: %s", options);
+            discovery_printfln("Version: %s", version);
+            discovery_printfln("Serial Number: %s", serial_number);
+            discovery_printfln("Device Address: %u", device_address);
+
+            if (discovery_common_model_length == 66) {
+                discovery_read_uint16(); // skip padding
+            }
+
+            discovery_state = DiscoveryState::NextDeviceAddress;// FIXME
+        }
+        else {
+            discovery_printfln("Could not read Common Model block: %s (%d)", get_modbus_event_name(discovery_read_event), discovery_read_event);
+
+            if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+                discovery_state = DiscoveryState::NextDeviceAddress;
+            }
+            else {
+                discovery_state = DiscoveryState::NextBaseAddress;
+            }
+        }
+
+        break;
     }
 
     modbus.task();
+}
+
+uint16_t SunSpecMeter::discovery_read_uint16()
+{
+    uint16_t result = discovery_read_buffer[discovery_read_index];
+
+    discovery_read_index += 1;
+
+    return result;
+}
+
+uint32_t SunSpecMeter::discovery_read_uint32()
+{
+    uint32_t result = ((uint32_t)discovery_read_buffer[discovery_read_index] << 16) | discovery_read_buffer[discovery_read_index + 1];
+
+    discovery_read_index += 2;
+
+    return result;
+}
+
+// length must be one longer than the expected string length for NUL termination
+void SunSpecMeter::discovery_read_string(char *buffer, size_t length)
+{
+    for (size_t i = 0; i < length - 1; i += 2, ++discovery_read_index) {
+        buffer[i] = (discovery_read_buffer[discovery_read_index] >> 8) & 0xFF;
+
+        if (i + 1 < length) {
+            buffer[i + 1] = discovery_read_buffer[discovery_read_index] & 0xFF;
+        }
+    }
+
+    buffer[length - 1] = '\0';
 }
 
 void SunSpecMeter::discovery_printfln(const char *fmt, ...)
