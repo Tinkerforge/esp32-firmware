@@ -20,8 +20,6 @@
 #pragma once
 
 #include "config.h"
-
-class ChargeLimits;
 #include "module.h"
 
 class ChargeLimits final : public IModule
