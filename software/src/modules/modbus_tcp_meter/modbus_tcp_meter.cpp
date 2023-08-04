@@ -117,7 +117,7 @@ bool ModbusTcpMeter::check_event_read(Modbus::ResultCode event)
     if(event != Modbus::ResultCode::EX_SUCCESS) {
         logger.printfln("Modbus TCP Meter Error %d: %s", event, get_modbus_result_code_name(event));
         return false;
-    } 
+    }
 
     return true;
 }
@@ -138,7 +138,7 @@ void ModbusTcpMeter::next_meter()
         current_meter = 0;
 
         // Start new read deadline after we read all registers from all meters once
-        read_deadline = millis(); 
+        read_deadline = millis();
         //kostal_test_print();
     }
 }
@@ -169,7 +169,7 @@ void ModbusTcpMeter::read_register(const char *host, Config *register_config, ui
     in_progress = true;
 
     const uint8_t  register_type    = register_config->get("register_type")->asUint();
-    const uint32_t register_address = register_config->get("register")->asUint(); 
+    const uint32_t register_address = register_config->get("register")->asUint();
     const uint8_t  value_type       = register_config->get("value_type")->asUint();
     const uint8_t  register_length  = get_length_from_type(value_type);
 
@@ -270,7 +270,7 @@ float ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t register_
     if(register_num >= MODBUS_TCP_METER_REGISTER_COUNT_MAX) {
         return 0;
     }
-    
+
     Config *register_config = (Config*)config_in_use.get(current_meter)->get("register_set")->get(current_register);
     const uint8_t  value_type = register_config->get("value_type")->asUint();
     const float    scale      = register_config->get("scale")->asFloat();
