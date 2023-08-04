@@ -6,6 +6,8 @@
 #include <stdarg.h>
 #include <inttypes.h>
 
+#include <limits>
+
 struct TFJsonSerializer {
     char * const buf;
     const size_t buf_size;
@@ -31,7 +33,7 @@ struct TFJsonSerializer {
     void addArray(const char *key);
     void addObject(const char *key);
 
-    // Array
+    // Array or top level
     void add(uint64_t u, bool enquote = false);
     void add(uint32_t u);
     void add(int64_t i);
@@ -39,7 +41,8 @@ struct TFJsonSerializer {
     void add(float f);
     void add(bool b);
     void addNull();
-    void add(const char *c);
+    #define TFJSON_USE_STRLEN std::numeric_limits<size_t>::max()
+    void add(const char *c, size_t len = TFJSON_USE_STRLEN, bool enquote = true);
     void addArray();
     void addObject();
 
@@ -50,7 +53,7 @@ struct TFJsonSerializer {
 
 private:
     void addKey(const char *key);
-    void write(const char *c);
+    void write(const char *c, size_t len = TFJSON_USE_STRLEN);
     void write(char c);
     void writeUnescaped(const char *c, size_t len);
     void writeFmt(const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
@@ -191,15 +194,19 @@ void TFJsonSerializer::addNull() {
     WRITE_LITERAL("null");
 }
 
-void TFJsonSerializer::add(const char *c) {
+void TFJsonSerializer::add(const char *c, size_t len, bool enquote) {
     if (!in_empty_container)
         this->write(',');
 
     in_empty_container = false;
 
-    WRITE_LITERAL("\"");
-    this->write(c);
-    WRITE_LITERAL("\"");
+    if (enquote)
+        this->write('\"');
+
+    this->write(c, len);
+
+    if (enquote)
+        this->write('\"');
 }
 
 void TFJsonSerializer::addArray() {
@@ -256,8 +263,10 @@ void TFJsonSerializer::addKey(const char *key) {
     be placed within the quotation marks except for the code points that must be escaped: quotation mark
     (U+0022), reverse solidus (U+005C), and the control characters U+0000 to U+001F.
 */
-void TFJsonSerializer::write(const char *c) {
-    while(*c != '\0') {
+void TFJsonSerializer::write(const char *c, size_t len) {
+    const char *end = c + (len == TFJSON_USE_STRLEN ? strlen(c) : len);
+
+    while(c != end) {
         switch (*c) {
             case '\\':
                 write('\\');
@@ -288,15 +297,21 @@ void TFJsonSerializer::write(const char *c) {
                 write('t');
                 break;
             default:
-                if (*c < 0x1F) {
+                if (*c <= 0x1F && *c >= 0/*UTF-8 compatibility*/) {
+                    char x = *c;
+
                     write('\\');
                     write('u');
                     write('0');
                     write('0');
-                    if (*c > 10)
-                        write('A' + (*c - 10));
+                    write(x & 0x10 ? '1' : '0');
+
+                    x &= 0x0F;
+
+                    if (x >= 10)
+                        write('A' + (x - 10));
                     else
-                        write('0' + (*c));
+                        write('0' + (x));
                 }
                 else
                     write(*c);
