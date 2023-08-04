@@ -747,7 +747,7 @@ def main():
 
     global missing_hyphenations
     missing_hyphenations = sorted(set(missing_hyphenations) - allowed_missing)
-    missing_hyphenations = [x for x in missing_hyphenations if not x.startswith("___START_FRAGMENT___") and x != "___END_FRAGMENT___"]
+    missing_hyphenations = [x for x in missing_hyphenations if not x.startswith("___START_FRAGMENT___") and not x.endswith("___END_FRAGMENT___")]
     if len(missing_hyphenations) > 0:
         print("Missing hyphenations detected. Add those to hyphenations.py!")
         for x in missing_hyphenations:
