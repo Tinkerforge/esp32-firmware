@@ -228,6 +228,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--interactive", action='store_true', help="Don't exit gdb immediately")
+    parser.add_argument("-l", "--local-source", action='store_true', help="Don't checkout firmware git, use local copy")
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("path", nargs='?', default=None)
@@ -263,47 +264,56 @@ if __name__ == '__main__':
         if not os.path.exists(firmware_path):
             firmware_path = os.path.join(script_path, "..", "..", "warp-charger", "firmwares", elf_name)
 
+
+        def run_gdb(repo_dir="../"):
+            coredump_py_gdb_cmds = ""
+            if os.path.exists("coredump_py_gdb_cmds"):
+                with open("coredump_py_gdb_cmds") as f:
+                    coredump_py_gdb_cmds = f.read().replace("\n", " ")
+
+            os.system(f"{gdb} " +
+                        ("-q --batch " if not args.interactive else "") +
+                        "-iex 'set pagination off' " +
+                        f"-iex 'directory {repo_dir}' " +
+                        f"-iex 'set substitute-path src/ {repo_dir}/software/src' " +
+                        f"-iex 'set substitute-path /home/erik/ {os.path.expanduser('~')}' " +
+                        "-iex 'set style enabled on' " +
+                        "-iex 'set print frame-info source-and-location' " +
+                        coredump_py_gdb_cmds +
+                        ("-ex 'shell clear' " if args.interactive else "") +
+                        "-ex 'echo ================================================================================\n' " +
+                        "-ex 'echo In interactive mode:\n' " +
+                        "-ex 'echo     - Run \"disassemble /s\" to analyze assembly.\n' " +
+                        "-ex 'echo     - Run \"thread apply all bt full\" to print traces of all threads.\n' " +
+                        "-ex 'echo\n' " +
+                        f"-ex 'echo Crashed firmware {tf_coredump_data['firmware_file_name']}\n' " +
+                        (f"-ex 'echo {extra_data}\n' " if extra_data is not None else "")+
+                        "-ex 'echo ================================================================================\n' " +
+                        "-ex 'echo ============================= Registers at crash ===============================\n' " +
+                        "-ex 'echo ================================================================================\n' " +
+                        "-ex 'info registers pc ps a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 sar lbeg lend lcount' " +
+                        "-ex 'echo ================================================================================\n' " +
+                        "-ex 'echo ============================= Backtrace starts here ============================\n' " +
+                        "-ex 'echo ================================================================================\n' " +
+                        "-ex 'bt full' " +
+                        f"{firmware_path} {core_dump_path}")
+
         if os.path.exists(firmware_path):
-            with tempfile.TemporaryDirectory(prefix="coredump-git-") as d:
-                os.system(f"git clone --shared --no-checkout {script_path}/.. {d}")
-                with ChangedDirectory(d):
-                    os.system(f"git checkout --quiet {tf_coredump_data['firmware_commit_id']}")
-                    commit_time = int(subprocess.check_output(['git', 'log', '-1', '--pretty=%at', tf_coredump_data['firmware_commit_id']]))
-                    for (dirpath, dirnames, filenames) in os.walk('software/src'):
-                        for filename in filenames:
-                            os.utime(os.sep.join([dirpath, filename]), (commit_time, commit_time))
+            if args.local_source:
+                run_gdb()
+            else:
+                with tempfile.TemporaryDirectory(prefix="coredump-git-") as d:
+                    os.system(f"git clone --shared --no-checkout {script_path}/.. {d}")
+                    with ChangedDirectory(d):
+                        os.system(f"git checkout --quiet {tf_coredump_data['firmware_commit_id']}")
+                        commit_time = int(subprocess.check_output(['git', 'log', '-1', '--pretty=%at', tf_coredump_data['firmware_commit_id']]))
+                        for (dirpath, dirnames, filenames) in os.walk('software/src'):
+                            for filename in filenames:
+                                os.utime(os.sep.join([dirpath, filename]), (commit_time, commit_time))
 
-                coredump_py_gdb_cmds = ""
-                if os.path.exists("coredump_py_gdb_cmds"):
-                    with open("coredump_py_gdb_cmds") as f:
-                        coredump_py_gdb_cmds = f.read().replace("\n", " ")
+                    run_gdb(d)
 
-                os.system(f"{gdb} " +
-                          ("-q --batch " if not args.interactive else "") +
-                           "-iex 'set pagination off' " +
-                          f"-iex 'directory {d}' " +
-                          f"-iex 'set substitute-path src/ {d}/software/src' " +
-                          f"-iex 'set substitute-path /home/erik/ {os.path.expanduser('~')}' " +
-                           "-iex 'set style enabled on' " +
-                           "-iex 'set print frame-info source-and-location' " +
-                            coredump_py_gdb_cmds +
-                          ("-ex 'shell clear' " if args.interactive else "") +
-                           "-ex 'echo ================================================================================\n' " +
-                           "-ex 'echo In interactive mode:\n' " +
-                           "-ex 'echo     - Run \"disassemble /s\" to analyze assembly.\n' " +
-                           "-ex 'echo     - Run \"thread apply all bt full\" to print traces of all threads.\n' " +
-                           "-ex 'echo\n' " +
-                          f"-ex 'echo Crashed firmware {tf_coredump_data['firmware_file_name']}\n' " +
-                          (f"-ex 'echo {extra_data}\n' " if extra_data is not None else "")+
-                           "-ex 'echo ================================================================================\n' " +
-                           "-ex 'echo ============================= Registers at crash ===============================\n' " +
-                           "-ex 'echo ================================================================================\n' " +
-                           "-ex 'info registers pc ps a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 sar lbeg lend lcount' " +
-                           "-ex 'echo ================================================================================\n' " +
-                           "-ex 'echo ============================= Backtrace starts here ============================\n' " +
-                           "-ex 'echo ================================================================================\n' " +
-                           "-ex 'bt full' " +
-                          f"{firmware_path} {core_dump_path}")
+
         else:
             print("Firmware {} not found".format(elf_name))
     finally:
