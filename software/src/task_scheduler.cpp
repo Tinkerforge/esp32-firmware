@@ -46,7 +46,7 @@ That is, the front of the queue contains the "last" element
 according to the weak ordering imposed by Compare.
 (https://en.cppreference.com/w/cpp/container/priority_queue)
 */
-bool compare(const Task *a, const Task *b)
+bool compare(const std::unique_ptr<Task> &a, const std::unique_ptr<Task> &b)
 {
     if (millis() > 0x7FFFFFFF) {
         // We are close to a timer overflow
@@ -63,7 +63,7 @@ bool compare(const Task *a, const Task *b)
 
 // https://stackoverflow.com/a/36711682
 bool TaskQueue::removeByTaskID(uint64_t task_id)  {
-    auto it = std::find_if(this->c.begin(), this->c.end(), [task_id](const Task *t){return t->task_id == task_id;});
+    auto it = std::find_if(this->c.begin(), this->c.end(), [task_id](const std::unique_ptr<Task> &t){return t->task_id == task_id;});
 
     if (it == this->c.end()) {
         // not found
@@ -72,7 +72,7 @@ bool TaskQueue::removeByTaskID(uint64_t task_id)  {
 
     if (it == this->c.begin()) {
         // Mark top element as invalid. This allows cancelling a repeated task even if it is currently executed.
-        (*it)->task_id = 0;
+        this->pop();
         return true;
     }
 
@@ -98,7 +98,9 @@ void TaskScheduler::register_urls()
 
 void TaskScheduler::loop()
 {
-    std::unique_ptr<Task> task;
+    // We can't use defer to clean up currenTask on function level,
+    // because we have to make sure currentTask is only written
+    // while the task_mutex is locked.
 
     {
         std::lock_guard<std::mutex> l{this->task_mutex};
@@ -110,46 +112,41 @@ void TaskScheduler::loop()
             return;
         }
 
-        task = std::unique_ptr<Task>(tasks.top());
-        // Don't remove the task from the queue yet:
-        // We want to be able to cancel a task while it is being executed.
+        this->currentTask = tasks.top_and_pop();
 
-        bool cancelled = task->task_id == 0;
+        bool cancelled = this->currentTask->task_id == 0;
         if (cancelled) {
-            tasks.pop();
+            this->currentTask = nullptr;
             return;
         }
-        this->current_task = task->task_id;
     }
 
     // Run task without holding the lock.
     // This allows a task to schedule tasks (could also be done with a recursive mutex)
     // and also allows other threads to schedule tasks while one is executed.
-    if (!task->fn) {
+    if (!this->currentTask->fn) {
         logger.printfln("Invalid task");
     } else {
-        task->fn();
+        this->currentTask->fn();
     }
 
     {
         std::lock_guard<std::mutex> l{this->task_mutex};
-        this->current_task = 0;
+        defer {this->currentTask = nullptr;};
 
-        tasks.pop();
-
-        if (task->once) {
+        if (this->currentTask->once) {
             return;
         }
 
-        // Check whether a repeated task was cancelled while it was executed.
-        bool cancelled = task->task_id == 0;
+        // Check whether a repeated task was cancelled while it was being executed.
+        bool cancelled = this->currentTask->task_id == 0;
         if (cancelled) {
             return;
         }
 
-        task->next_deadline_ms = millis() + task->delay_ms;
+        this->currentTask->next_deadline_ms = millis() + this->currentTask->delay_ms;
 
-        tasks.push(task.release());
+        tasks.push(std::move(this->currentTask));
     }
 }
 
@@ -174,11 +171,16 @@ bool TaskScheduler::cancel(uint64_t task_id) {
         return false;
 
     std::lock_guard<std::mutex> l{this->task_mutex};
-    return tasks.removeByTaskID(task_id);
+    if (this->currentTask->task_id == task_id) {
+        this->currentTask->task_id = 0;
+        return true;
+    }
+    else
+        return tasks.removeByTaskID(task_id);
 }
 
-uint64_t TaskScheduler::currentTask() {
-    // currentTask is intended to write a self-canceling task.
+uint64_t TaskScheduler::currentTaskId() {
+    // currentTaskId is intended to write a self-canceling task.
     // Don't allow other threads to cancel tasks without knowing their ID.
     if (this->mainTaskHandle != xTaskGetCurrentTaskHandle()) {
         logger.printfln("Calling TaskScheduler::currentTask is only allowed in the main thread!");
@@ -186,5 +188,7 @@ uint64_t TaskScheduler::currentTask() {
     }
 
     std::lock_guard<std::mutex> l{this->task_mutex};
-    return this->current_task;
+    if (this->currentTask != nullptr)
+        return this->currentTask->task_id;
+    return 0;
 }

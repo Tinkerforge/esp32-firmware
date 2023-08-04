@@ -41,13 +41,20 @@ struct Task {
     Task(std::function<void(void)> fn, uint64_t task_id, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once);
 };
 
-bool compare(const Task *a, const Task *b);
+bool compare(const std::unique_ptr<Task> &a, const std::unique_ptr<Task> &b);
 
-class TaskQueue : public std::priority_queue<Task *, std::vector<Task *>, decltype(&compare)>
+class TaskQueue : public std::priority_queue<std::unique_ptr<Task>, std::vector<std::unique_ptr<Task>>, decltype(&compare)>
 {
-    using std::priority_queue<Task *, std::vector<Task *>, decltype(&compare)>::priority_queue;
+    using std::priority_queue<std::unique_ptr<Task>, std::vector<std::unique_ptr<Task>>, decltype(&compare)>::priority_queue;
 public:
     bool removeByTaskID(uint64_t task_id);
+
+    std::unique_ptr<Task> top_and_pop() {
+        std::pop_heap(c.begin(), c.end(), comp);
+        std::unique_ptr<Task> value = std::move(c.back());
+        c.pop_back();
+        return value;
+    }
 };
 
 class TaskScheduler
@@ -60,7 +67,7 @@ public:
     void setup();
     void register_urls();
     void loop();
-    uint64_t currentTask();
+    uint64_t currentTaskId();
 
     bool initialized = false;
 
@@ -71,8 +78,8 @@ public:
 private:
     std::mutex task_mutex;
     TaskQueue tasks;
-    uint64_t current_task = 0;
     TaskHandle_t mainTaskHandle;
+    std::unique_ptr<Task> currentTask = nullptr;
 };
 
 // Make global variable available everywhere because it is not declared in modules.h.
