@@ -60,9 +60,7 @@ void Debug::register_urls()
     api.addState("debug/state", &state, {}, 1000);
 
     server.on("/debug/crash", HTTP_GET, [this](WebServerRequest req) {
-        task_scheduler.scheduleOnce([]() {
-            assert(0);
-        }, 1000);
+        assert(0);
         return req.send(200, "text/plain", "ok");
     });
 #ifdef DEBUG_FS_ENABLE
