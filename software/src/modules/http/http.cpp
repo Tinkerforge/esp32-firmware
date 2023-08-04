@@ -321,6 +321,7 @@ bool Http::pushStateUpdate(size_t stateIdx, const String &payload, const String 
     return true;
 }
 
-void Http::pushRawStateUpdate(const String &payload, const String &path)
+bool Http::pushRawStateUpdate(const String &payload, const String &path)
 {
+    return true;
 }

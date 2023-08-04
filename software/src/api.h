@@ -69,7 +69,7 @@ public:
     virtual void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg) = 0;
     virtual void addResponse(size_t responseIdx, const ResponseRegistration &reg) = 0;
     virtual bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) = 0;
-    virtual void pushRawStateUpdate(const String &payload, const String &path) = 0;
+    virtual bool pushRawStateUpdate(const String &payload, const String &path) = 0;
 };
 
 class API

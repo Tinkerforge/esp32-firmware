@@ -130,16 +130,16 @@ void Mqtt::addResponse(size_t responseIdx, const ResponseRegistration &reg)
 {
 }
 
-void Mqtt::publish_with_prefix(const String &path, const String &payload, bool retain)
+bool Mqtt::publish_with_prefix(const String &path, const String &payload, bool retain)
 {
     const String &prefix = config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
-    publish(topic, payload, retain);
+    return publish(topic, payload, retain);
 }
 
-void Mqtt::publish(const String &topic, const String &payload, bool retain)
+bool Mqtt::publish(const String &topic, const String &payload, bool retain)
 {
-    esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain);
+    return esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain) >= 0;
 }
 
 bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
@@ -149,14 +149,18 @@ bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String 
     if (!deadline_elapsed(state.last_send_ms + config_in_use.get("interval")->asUint() * 1000))
         return false;
 
-    this->publish_with_prefix(path, payload);
-    state.last_send_ms = millis();
-    return true;
+    bool success = this->publish_with_prefix(path, payload);
+
+    if (success) {
+        state.last_send_ms = millis();
+    }
+
+    return success;
 }
 
-void Mqtt::pushRawStateUpdate(const String &payload, const String &path)
+bool Mqtt::pushRawStateUpdate(const String &payload, const String &path)
 {
-    this->publish_with_prefix(path, payload);
+    return this->publish_with_prefix(path, payload);
 }
 
 void Mqtt::onMqttConnect()

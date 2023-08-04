@@ -60,9 +60,9 @@ public:
     void connect();
 
     // Retain messages by default because we only send on change.
-    void publish_with_prefix(const String &path, const String &payload, bool retain=true);
+    bool publish_with_prefix(const String &path, const String &payload, bool retain=true);
     void subscribe_with_prefix(const String &path, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained);
-    void publish(const String &topic, const String &payload, bool retain);
+    bool publish(const String &topic, const String &payload, bool retain);
     void subscribe(const String &topic, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained);
 
     // IAPIBackend implementation
@@ -71,7 +71,7 @@ public:
     void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg) override;
     void addResponse(size_t responseIdx, const ResponseRegistration &reg) override;
     bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
-    void pushRawStateUpdate(const String &payload, const String &path) override;
+    bool pushRawStateUpdate(const String &payload, const String &path) override;
 
     void onMqttConnect();
     void onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain);

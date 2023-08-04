@@ -88,6 +88,7 @@ bool Event::pushStateUpdate(size_t stateIdx, const String &payload, const String
     return true;
 }
 
-void Event::pushRawStateUpdate(const String &payload, const String &path)
+bool Event::pushRawStateUpdate(const String &payload, const String &path)
 {
+    return true;
 }
