@@ -316,14 +316,14 @@ void ChargeManager::start_manager_task()
                 for (int i = 0; i < 3; i++) {
                     if (isnan(v1->line_currents[i])) {
                         // Don't trust the line currents if one is missing.
-                        max_phase_current = -1;
+                        max_phase_current = 32000;
                         break;
                     }
 
                     max_phase_current = max(max_phase_current, (int32_t)(v1->line_currents[i] * 1000.0f));
                 }
-
-                if (max_phase_current == -1)
+                // The CM protocol sends 0 instead of nan.
+                if (max_phase_current == 0)
                     max_phase_current = 32000;
 
                 max_phase_current += config_in_use.get("requested_current_margin")->asUint();
