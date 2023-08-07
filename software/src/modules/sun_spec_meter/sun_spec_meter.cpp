@@ -104,13 +104,18 @@ void SunSpecMeter::loop()
     switch (discovery_state) {
     case DiscoveryState::Idle:
         if (!discovery_log_idle) {
-            ws.pushRawStateUpdate("", "sun_spec_meter/discovery_log");
+            if (!ws.pushRawStateUpdate("", "sun_spec_meter/discovery_log")) {
+                break; // need to idle the log before doing something else
+            }
 
             discovery_log_idle = true;
         }
 
         if (discovery_new) {
-            ws.pushRawStateUpdate("\"<<<clear_discovery_log>>>\"", "sun_spec_meter/discovery_log");
+            if (!ws.pushRawStateUpdate("\"<<<clear_discovery_log>>>\"", "sun_spec_meter/discovery_log")) {
+                break; // need to clear the log before doing something else
+            }
+
             discovery_printfln("Starting discovery");
 
             discovery_state = DiscoveryState::Connect;
