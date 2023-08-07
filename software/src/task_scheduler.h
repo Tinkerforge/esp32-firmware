@@ -71,7 +71,21 @@ public:
 
     bool initialized = false;
 
-    bool cancel(uint64_t task_id);
+    enum class CancelResult {
+        // Task not found in task queue
+        NotFound,
+        // Task found in and removed from task queue
+        Cancelled,
+        // Task is currently being executed. Flagged to cancel
+        // before being inserted into task queue again.
+        // Don't remove task resources yet!
+        // A well-written single shot task will remove its resources
+        // To remove a repeated task's resources, schedule a task
+        // (that will be executed after the currently executed task in any case)
+        WillBeCancelled
+    };
+
+    CancelResult cancel(uint64_t task_id);
     uint64_t scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms);
     uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms);
 

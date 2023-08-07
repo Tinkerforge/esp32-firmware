@@ -63,6 +63,8 @@ bool compare(const std::unique_ptr<Task> &a, const std::unique_ptr<Task> &b)
 
 // https://stackoverflow.com/a/36711682
 bool TaskQueue::removeByTaskID(uint64_t task_id)  {
+    // The queue is locked if this function is called.
+
     auto it = std::find_if(this->c.begin(), this->c.end(), [task_id](const std::unique_ptr<Task> &t){return t->task_id == task_id;});
 
     if (it == this->c.end()) {
@@ -71,7 +73,6 @@ bool TaskQueue::removeByTaskID(uint64_t task_id)  {
     }
 
     if (it == this->c.begin()) {
-        // Mark top element as invalid. This allows cancelling a repeated task even if it is currently executed.
         this->pop();
         return true;
     }
@@ -166,17 +167,17 @@ uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, u
     return task_id;
 }
 
-bool TaskScheduler::cancel(uint64_t task_id) {
+TaskScheduler::CancelResult TaskScheduler::cancel(uint64_t task_id) {
     if (task_id == 0)
-        return false;
+        return TaskScheduler::CancelResult::NotFound;
 
     std::lock_guard<std::mutex> l{this->task_mutex};
-    if (this->currentTask->task_id == task_id) {
+    if (this->currentTask && this->currentTask->task_id == task_id) {
         this->currentTask->task_id = 0;
-        return true;
+        return TaskScheduler::CancelResult::WillBeCancelled;
     }
     else
-        return tasks.removeByTaskID(task_id);
+        return tasks.removeByTaskID(task_id) ? TaskScheduler::CancelResult::Cancelled : TaskScheduler::CancelResult::NotFound;
 }
 
 uint64_t TaskScheduler::currentTaskId() {
