@@ -1,0 +1,107 @@
+From 3bc1ec8dd2b5e9ab79be71132c14635efbbfe962 Mon Sep 17 00:00:00 2001
+From: Erik Fleckstein <erik@tinkerforge.com>
+Date: Mon, 7 Aug 2023 12:17:15 +0200
+Subject: [PATCH] Add esp_mqtt_client_en/disable_receive.
+
+Calling _disable_receive stops receiving new MQTT messages to allow
+processing the last one. The passed delay in milliseconds is the
+delay time per MQTT task loop.
+
+Call _enable_receive to continue receiving MQTT messages after one
+was processed.
+---
+ include/mqtt_client.h |  6 +++++-
+ mqtt_client.c         | 29 ++++++++++++++++++++++++++---
+ 2 files changed, 31 insertions(+), 4 deletions(-)
+
+diff --git a/include/mqtt_client.h b/include/mqtt_client.h
+index 07feed3..f42552d 100644
+--- a/include/mqtt_client.h
++++ b/include/mqtt_client.h
+@@ -43,7 +43,7 @@ typedef enum {
+                                         - msg_id               message id
+                                         - data                 pointer to the received data
+                                         - data_len             length of the data for this event
+-                                        */ 
++                                        */
+     MQTT_EVENT_UNSUBSCRIBED,       /*!< unsubscribed event */
+     MQTT_EVENT_PUBLISHED,          /*!< published event, additional context:  msg_id */
+     MQTT_EVENT_DATA,               /*!< data event, additional context:
+@@ -416,6 +416,10 @@ esp_err_t esp_mqtt_client_register_event(esp_mqtt_client_handle_t client, esp_mq
+  */
+ int esp_mqtt_client_get_outbox_size(esp_mqtt_client_handle_t client);
+ 
++void esp_mqtt_client_disable_receive(esp_mqtt_client_handle_t client, int delay_ms);
++
++void esp_mqtt_client_enable_receive(esp_mqtt_client_handle_t client);
++
+ #ifdef __cplusplus
+ }
+ #endif //__cplusplus
+diff --git a/mqtt_client.c b/mqtt_client.c
+index 98c27b2..0369aa3 100644
+--- a/mqtt_client.c
++++ b/mqtt_client.c
+@@ -1,5 +1,6 @@
+ #include <stdio.h>
+ #include "platform.h"
++#include <stdatomic.h>
+ 
+ #include "esp_event.h"
+ #include "mqtt_client.h"
+@@ -113,6 +114,7 @@ struct esp_mqtt_client {
+     esp_mqtt_event_t event;
+     bool run;
+     bool wait_for_ping_resp;
++    atomic_int disable_receive;
+     outbox_handle_t outbox;
+     EventGroupHandle_t status_bits;
+     SemaphoreHandle_t  api_lock;
+@@ -1436,6 +1438,7 @@ static void esp_mqtt_task(void *pv)
+     uint64_t last_retransmit = 0;
+     outbox_tick_t msg_tick = 0;
+     client->run = true;
++    client->disable_receive = 0;
+ 
+     //get transport by scheme
+     client->transport = esp_transport_list_get_transport(client->transport_list, client->config->scheme);
+@@ -1500,9 +1503,15 @@ static void esp_mqtt_task(void *pv)
+                 break;
+             }
+             // receive and process data
+-            if (mqtt_process_receive(client) == ESP_FAIL) {
+-                esp_mqtt_abort_connection(client);
+-                break;
++            if (client->disable_receive == 0) {
++                if (mqtt_process_receive(client) == ESP_FAIL) {
++                    esp_mqtt_abort_connection(client);
++                    break;
++                }
++            } else {
++                MQTT_API_UNLOCK(client);
++                vTaskDelay(client->disable_receive / portTICK_PERIOD_MS);
++                MQTT_API_LOCK(client);
+             }
+ 
+             // delete long pending messages
+@@ -1999,3 +2008,17 @@ int esp_mqtt_client_get_outbox_size(esp_mqtt_client_handle_t client)
+ 
+     return outbox_size;
+ }
++
++void esp_mqtt_client_disable_receive(esp_mqtt_client_handle_t client, int delay_ms) {
++    if (client == NULL)
++        return;
++
++    client->disable_receive = delay_ms;
++}
++
++void esp_mqtt_client_enable_receive(esp_mqtt_client_handle_t client) {
++    if (client == NULL)
++        return;
++
++    client->disable_receive = 0;
++}
+-- 
+2.41.0
+
