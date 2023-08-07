@@ -304,13 +304,13 @@ String CMNetworking::get_scan_results()
     if (scan_results == nullptr)
         return "In progress or not started";
 
-    size_t payload_size = build_scan_result_json(scan_results, nullptr, 0);
+    size_t payload_size = build_scan_result_json(scan_results, nullptr, 0) + 1; // null terminator
 
     CoolString result;
     result.reserve(payload_size);
 
     build_scan_result_json(scan_results, result.begin(), payload_size);
-    result.setLength(payload_size);
+    result.setLength(payload_size - 1);
 
     return result;
 }
