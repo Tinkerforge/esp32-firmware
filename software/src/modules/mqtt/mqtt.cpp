@@ -526,3 +526,9 @@ bool Mqtt::action_triggered(Config *config, void *data) {
     return false;
 }
 #endif
+void Mqtt::disableReceive() {
+    esp_mqtt_client_disable_receive(client, 100);
+};
+void Mqtt::enableReceive() {
+    esp_mqtt_client_enable_receive(client);
+};

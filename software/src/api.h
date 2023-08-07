@@ -46,6 +46,8 @@ struct CommandRegistration {
     std::function<void(void)> callback;
     std::vector<String> keys_to_censor_in_debug_report;
     bool is_action;
+    uint64_t task_id;
+    Config *config_in_flight;
 };
 
 struct RawCommandRegistration {
@@ -70,6 +72,8 @@ public:
     virtual void addResponse(size_t responseIdx, const ResponseRegistration &reg) = 0;
     virtual bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) = 0;
     virtual bool pushRawStateUpdate(const String &payload, const String &path) = 0;
+    virtual void disableReceive() {};
+    virtual void enableReceive() {};
 };
 
 class API
@@ -81,7 +85,7 @@ public:
     void setup();
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
-    String callCommand(const CommandRegistration &reg, char *payload, size_t len);
+    String callCommand(CommandRegistration &reg, char *payload, size_t len);
 
     String callCommand(const char *path, Config::ConfUpdate payload);
 
@@ -117,9 +121,9 @@ public:
     ConfigRoot features;
     ConfigRoot version;
 
-    SemaphoreHandle_t commandRunning = nullptr;
-    StaticSemaphore_t cmdRunBuffer;
     TaskHandle_t mainTaskHandle;
+
+    std::mutex command_mutex;
 
 private:
     bool already_registered(const String &path, const char *api_type);

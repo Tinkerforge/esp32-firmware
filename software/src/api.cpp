@@ -34,8 +34,7 @@ extern TF_HAL hal;
 API api;
 
 API::API() {
-    this->commandRunning = xSemaphoreCreateBinaryStatic(&this->cmdRunBuffer);
-    xSemaphoreGive(this->commandRunning);
+
 }
 
 void API::pre_setup()
@@ -111,7 +110,7 @@ void API::addCommand(const String &path, ConfigRoot *config, std::initializer_li
     if (already_registered(path, "command"))
         return;
 
-    commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action});
+    commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action, 0, nullptr});
     auto commandIdx = commands.size() - 1;
 
     for (auto *backend : this->backends) {
@@ -373,56 +372,48 @@ size_t API::registerBackend(IAPIBackend *backend)
     return backendIdx;
 }
 
-String API::callCommand(const CommandRegistration &reg, char *payload, size_t len) {
+String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
     if (this->mainTaskHandle == xTaskGetCurrentTaskHandle()) {
         return "Use ConfUpdate overload of callCommand in main thread!";
     }
 
+    std::lock_guard<std::mutex> l{command_mutex};
+
     if (payload == nullptr && !reg.config->is_null())
         return "empty payload only allowed for null configs";
 
-    // It is okay to block here forever: If the main task does not execute
-    // tasks any more, we have bigger problems and the watchdog will
-    // restart soon.
-    if (!xSemaphoreTake(this->commandRunning, portMAX_DELAY)) {
-        return "Failed to get command semaphore!";
+    for (auto *backend : backends)
+        backend->disableReceive();
+
+    if (task_scheduler.cancel(reg.task_id) == TaskScheduler::CancelResult::Cancelled) {
+        delete reg.config_in_flight;
+        reg.config_in_flight = nullptr;
     }
 
     if (payload != nullptr) {
-        String error = reg.config->update_from_cstr(payload, len);
+        reg.config_in_flight = new Config();
+        String error = reg.config->get_updated_copy(payload, len, reg.config_in_flight);
         if(error != "") {
-            xSemaphoreGive(this->commandRunning);
+            delete reg.config_in_flight;
+            reg.config_in_flight = nullptr;
+
+            for (auto *backend : backends)
+                backend->enableReceive();
             return error;
         }
     }
 
-    task_scheduler.scheduleOnce([this, reg](){reg.callback(); xSemaphoreGive(this->commandRunning);}, 0);
+    reg.task_id = task_scheduler.scheduleOnce([this, reg]() mutable {
+        std::lock_guard<std::mutex> l2{command_mutex};
+        if (reg.config_in_flight != nullptr)
+            reg.config->update_from_copy(reg.config_in_flight);
+        reg.callback();
+        delete reg.config_in_flight;
+        reg.config_in_flight = nullptr;
+        for (auto *backend : backends)
+            backend->enableReceive();
+    }, 0);
     return "";
-}
-
-void API::executeCommand(const CommandRegistration &reg, Config::ConfUpdate payload) {
-    // We are in the main thread, and other command callbacks are executed
-    // in the main thread, so if we block on taking the semaphore,
-    // those callbacks are never executed and we dead lock.
-    // Only take the semaphore non-blocking and if this fails,
-    // (because another command callback is enqueued or will be shortly)
-    // create a new task to push this command execution behind other command callback tasks.
-
-    if (!xSemaphoreTake(this->commandRunning, 0)) {
-        task_scheduler.scheduleOnce([this, reg, payload](){this->executeCommand(reg, payload);}, 1);
-        return;
-    }
-
-    String error = reg.config->update(&payload);
-
-    if (error != "") {
-        logger.printfln("Failed to API::callCommand %s: %s", reg.path.c_str(), error.c_str());
-        xSemaphoreGive(this->commandRunning);
-        return;
-    }
-
-    reg.callback();
-    xSemaphoreGive(this->commandRunning);
 }
 
 String API::callCommand(const char *path, Config::ConfUpdate payload)
@@ -436,7 +427,12 @@ String API::callCommand(const char *path, Config::ConfUpdate payload)
             continue;
         }
 
-        task_scheduler.scheduleOnce([this, reg, payload](){this->executeCommand(reg, payload);}, 1);
+        String error = reg.config->update(&payload);
+
+        if (error != "") {
+            return error;
+        }
+        reg.callback();
         return "";
     }
 
