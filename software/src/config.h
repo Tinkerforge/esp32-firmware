@@ -878,13 +878,17 @@ public:
     std::function<String(Config &)> validator;
     bool permit_null_updates = true;
 
+    void update_from_copy(Config *copy);
+
     String update_from_file(File &file);
 
     // Intentionally take a non-const char * here:
     // This allows ArduinoJson to deserialize in zero-copy mode
     String update_from_cstr(char *c, size_t payload_len);
+    String get_updated_copy(char *c, size_t payload_len, Config *out_config);
 
     String update_from_json(JsonVariant root, bool force_same_keys);
+    String get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config);
 
     String update(const Config::ConfUpdate *val);
 
@@ -893,6 +897,9 @@ public:
 private:
     template<typename T>
     String update_from_visitor(T visitor);
+
+    template<typename T>
+    String get_updated_copy(T visitor, Config *out_config);
 };
 
 struct ConfUnionPrototype {

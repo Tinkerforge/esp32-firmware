@@ -1556,6 +1556,14 @@ void Config::set_update_handled(uint8_t api_backend_flag)
     Config::apply_visitor(set_updated_false{api_backend_flag}, value);
 }
 
+static std::recursive_mutex update_mutex;
+
+void ConfigRoot::update_from_copy(Config *copy) {
+    std::lock_guard<std::recursive_mutex> l{update_mutex};
+    this->value = copy->value;
+    this->value.updated = true;
+}
+
 String ConfigRoot::update_from_file(File &file)
 {
     DynamicJsonDocument doc(this->json_size(false));
@@ -1570,12 +1578,22 @@ String ConfigRoot::update_from_file(File &file)
 // This allows ArduinoJson to deserialize in zero-copy mode
 String ConfigRoot::update_from_cstr(char *c, size_t len)
 {
+    Config copy;
+    String err = this->get_updated_copy(c, len, &copy);
+    if (err != "")
+        return err;
+
+    this->update_from_copy(&copy);
+    return "";
+}
+
+String ConfigRoot::get_updated_copy(char *c, size_t payload_len, Config *out_config) {
     DynamicJsonDocument doc(this->json_size(true));
-    DeserializationError error = deserializeJson(doc, c, len);
+    DeserializationError error = deserializeJson(doc, c, payload_len);
 
     switch (error.code()) {
         case DeserializationError::Ok:
-            return this->update_from_json(doc.as<JsonVariant>(), true);
+            return this->get_updated_copy(doc.as<JsonVariant>(), true, out_config);
         case DeserializationError::NoMemory:
             return String("Failed to deserialize: JSON payload was longer than expected and possibly contained unknown keys.");
         case DeserializationError::EmptyInput:
@@ -1591,37 +1609,55 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
     }
 }
 
-static std::recursive_mutex update_mutex;
+String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys)
+{
+    Config copy;
+    String err = this->get_updated_copy(root, force_same_keys, &copy);
+    if (err != "")
+        return err;
+
+    this->update_from_copy(&copy);
+    return "";
+}
+
+String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config)
+{
+    return this->get_updated_copy(from_json{root, force_same_keys, this->permit_null_updates, true}, out_config);
+}
+
 
 template<typename T>
-String ConfigRoot::update_from_visitor(T visitor) {
+String ConfigRoot::get_updated_copy(T visitor, Config *out_config) {
     std::lock_guard<std::recursive_mutex> l{update_mutex};
-    Config copy = *this;
-    String err = Config::apply_visitor(visitor, copy.value);
+    *out_config = *this;
+    String err = Config::apply_visitor(visitor, out_config->value);
 
     if (err != "")
         return err;
 
-    err = Config::apply_visitor(default_validator{}, copy.value);
+    err = Config::apply_visitor(default_validator{}, out_config->value);
 
     if (err != "")
         return err;
 
     if (this->validator != nullptr) {
-        err = this->validator(copy);
+        err = this->validator(*out_config);
         if (err != "")
             return err;
     }
-
-    this->value = copy.value;
-    this->value.updated = true;
-
-    return err;
+    return "";
 }
 
-String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys)
-{
-    return this->update_from_visitor(from_json{root, force_same_keys, this->permit_null_updates, true});
+template<typename T>
+String ConfigRoot::update_from_visitor(T visitor) {
+    Config copy;
+
+    String err = this->get_updated_copy(visitor, &copy);
+    if (err != "")
+        return err;
+
+    this->update_from_copy(&copy);
+    return "";
 }
 
 String ConfigRoot::update(const Config::ConfUpdate *val)
