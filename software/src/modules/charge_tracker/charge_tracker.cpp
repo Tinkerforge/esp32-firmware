@@ -437,6 +437,9 @@ void ChargeTracker::setup()
         return;
     }
 
+    if (!LittleFS.exists(chargeRecordFilename(this->last_charge_record)))
+        LittleFS.open(chargeRecordFilename(this->last_charge_record), "w", true);
+
     repair_charges();
 
     api.restorePersistentConfig("charge_tracker/config", &config);
