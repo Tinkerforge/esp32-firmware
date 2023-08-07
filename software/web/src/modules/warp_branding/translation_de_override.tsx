@@ -6,10 +6,10 @@ let x = {
             "charge_manager": "Lastmanager"
         },
         "navbar": {
-            "charge_manager": "Last&shy;management"
+            "charge_manager": "Lastmanagement"
         },
         "content": {
-            "charge_manager": "Last&shy;management"
+            "charge_manager": "Lastmanagement"
         }
     },
     "ethernet": {
