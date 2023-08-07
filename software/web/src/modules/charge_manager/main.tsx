@@ -451,7 +451,9 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                         addEnabled={state.chargers.length < MAX_CONTROLLED_CHARGERS}
                         addTitle={__("charge_manager.content.add_charger_title")}
                         addMessage={__("charge_manager.content.add_charger_count")(state.chargers.length, MAX_CONTROLLED_CHARGERS)}
-                        onAddStart={async () => this.setState({addCharger: {name: "", host: ""}})}
+                        onAddStart={async () => {this.setState({addCharger: {name: "", host: ""}});
+                                                 this.scan_services();
+                                                 this.intervalID = window.setInterval(this.scan_services, 3000)}}
                         onAddGetRows={() => [
                             {
                                 name: __("charge_manager.content.add_charger_name"),
@@ -499,6 +501,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                             }
                         ]}
                         onAddCommit={async () => {
+                            window.clearInterval(this.intervalID);
+
                             this.setState({
                                 chargers: state.chargers.concat({name: state.addCharger.name.trim(), host: state.addCharger.host.trim()}),
                                 addCharger: {name: "", host: ""}
