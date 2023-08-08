@@ -26,9 +26,28 @@
 #include "module_dependencies.h"
 #include "TFJson.h"
 
+#define MAX_READ_CHUNK_SIZE 10
 #define LAST_DEVICE_ADDRESS 247
-#define SUN_SPEC_ID 0x53756e53
+#define SUN_SPEC_ID 0x53756E53
 #define COMMON_MODEL_ID 1
+//#define INVERTER_1P_INT_MODEL_ID 101
+//#define INVERTER_SP_INT_MODEL_ID 102
+//#define INVERTER_3P_INT_MODEL_ID 103
+//#define INVERTER_1P_FLOAT_MODEL_ID 111
+//#define INVERTER_SP_FLOAT_MODEL_ID 112
+#define INVERTER_3P_FLOAT_MODEL_ID 113
+#define INVERTER_3P_FLOAT_BLOCK_LENGTH 60
+//#define AC_METER_1P_INT_MODEL_ID 201
+//#define AC_METER_SP_INT_MODEL_ID 202
+//#define AC_METER_W3P_INT_MODEL_ID 203
+//#define AC_METER_D3P_INT_MODEL_ID 204
+//#define AC_METER_1P_FLOAT_MODEL_ID 211
+//#define AC_METER_SP_FLOAT_MODEL_ID 212
+#define AC_METER_W3P_FLOAT_MODEL_ID 213
+#define AC_METER_W3P_FLOAT_BLOCK_LENGTH 124
+//#define AC_METER_D3P_FLOAT_MODEL_ID 214
+#define NON_IMPLEMENTED_UINT16 0xFFFF
+#define NON_IMPLEMENTED_UINT32 0xFFFFFFFF
 
 static const uint16_t base_addresses[] {
     40000,
@@ -125,7 +144,7 @@ void SunSpecMeter::loop()
             discovery_device_address = discovery_new_device_address;
             discovery_device_address_next = discovery_new_device_address_next;
             discovery_base_address_index = 0;
-            ++discovery_cookie;
+            ++discovery_read_cookie;
 
             discovery_new = false;
             discovery_new_host = "";
@@ -143,7 +162,7 @@ void SunSpecMeter::loop()
             discovery_printfln("Could not connect to %s:%u", discovery_host.c_str(), discovery_port);
 
             discovery_state = DiscoveryState::Idle;
-            ++discovery_cookie;
+            ++discovery_read_cookie;
         }
         else {
             discovery_state = DiscoveryState::ReadSunSpecID;
@@ -159,7 +178,7 @@ void SunSpecMeter::loop()
         }
 
         discovery_state = DiscoveryState::Idle;
-        ++discovery_cookie;
+        ++discovery_read_cookie;
 
         break;
 
@@ -193,21 +212,36 @@ void SunSpecMeter::loop()
 
         break;
 
-    case DiscoveryState::Read: {
-            uint32_t cookie = discovery_cookie;
+    case DiscoveryState::Read:
+        ++discovery_read_cookie;
+        discovery_read_index = 0;
+        discovery_state = DiscoveryState::ReadNext;
+
+        break;
+
+    case DiscoveryState::ReadNext: {
+            uint32_t cookie = discovery_read_cookie;
+            size_t read_chunk_size = MIN(discovery_read_size - discovery_read_index, MAX_READ_CHUNK_SIZE);
 
             discovery_state = DiscoveryState::Reading;
 
-            modbus.readHreg(discovery_host, discovery_read_address, discovery_read_buffer, discovery_read_size,
-            [this, cookie](Modbus::ResultCode event, uint16_t transactionId, void *data) -> bool {
-                if (discovery_state != DiscoveryState::Reading || cookie != discovery_cookie) {
+            modbus.readHreg(discovery_host, discovery_read_address, &discovery_read_buffer[discovery_read_index], read_chunk_size,
+            [this, cookie, read_chunk_size](Modbus::ResultCode event, uint16_t transactionId, void *data) -> bool {
+                if (discovery_state != DiscoveryState::Reading || cookie != discovery_read_cookie) {
                     return true;
                 }
 
-                discovery_read_address += discovery_read_size;
+                discovery_read_address += read_chunk_size;
+                discovery_read_index += read_chunk_size;
                 discovery_read_event = event;
-                discovery_read_index = 0;
-                discovery_state = discovery_read_state;
+
+                if (discovery_read_event != Modbus::ResultCode::EX_SUCCESS || discovery_read_index >= discovery_read_size) {
+                    discovery_read_index = 0;
+                    discovery_state = discovery_read_state;
+                }
+                else {
+                    discovery_state = DiscoveryState::ReadNext;
+                }
 
                 return true;
             }, discovery_device_address);
@@ -333,14 +367,187 @@ void SunSpecMeter::loop()
                                serial_number,
                                device_address);
 
-            if (discovery_common_model_length == 66) {
-                discovery_read_uint16(); // skip padding
-            }
-
-            discovery_state = DiscoveryState::NextDeviceAddress;// FIXME
+            discovery_state = DiscoveryState::ReadStandardModelHeader;
         }
         else {
             discovery_printfln("Could not read Common Model block: %s (%d)", get_modbus_event_name(discovery_read_event), discovery_read_event);
+
+            if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+                discovery_state = DiscoveryState::NextDeviceAddress;
+            }
+            else {
+                discovery_state = DiscoveryState::NextBaseAddress;
+            }
+        }
+
+        break;
+
+    case DiscoveryState::ReadStandardModelHeader:
+        discovery_printfln("Reading Standard Model");
+
+        discovery_read_size = 2;
+        discovery_read_state = DiscoveryState::ReadStandardModelHeaderDone;
+        discovery_state = DiscoveryState::Read;
+
+        break;
+
+    case DiscoveryState::ReadStandardModelHeaderDone:
+        if (discovery_read_event == Modbus::ResultCode::EX_SUCCESS) {
+            uint16_t model_id = discovery_read_uint16();
+            uint16_t model_length = discovery_read_uint16();
+
+            if (model_id == NON_IMPLEMENTED_UINT16 && model_length == 0) {
+                discovery_printfln("Zero Model found");
+
+                discovery_state = DiscoveryState::NextDeviceAddress;
+            }
+            else if (model_id == INVERTER_3P_FLOAT_MODEL_ID && model_length == INVERTER_3P_FLOAT_BLOCK_LENGTH) {
+                discovery_printfln("Inverter 3P (Float) Model found");
+
+                discovery_standard_model_length = model_length;
+                discovery_state = DiscoveryState::ReadInverter3PFloatModelBlock;
+            }
+            else if (model_id == AC_METER_W3P_FLOAT_MODEL_ID && model_length == AC_METER_W3P_FLOAT_BLOCK_LENGTH) {
+                discovery_printfln("AC Meter W3P (Float) Model found");
+
+                discovery_standard_model_length = model_length;
+                discovery_state = DiscoveryState::ReadACMeterW3PFloatModelBlock;
+            }
+            else {
+                discovery_printfln("Skipping Unknown Model: %u %u", model_id, model_length);
+
+                discovery_read_address += model_length;
+                discovery_state = DiscoveryState::ReadStandardModelHeader;
+            }
+        }
+        else {
+            discovery_printfln("Could not read Standard Model header: %s (%d)", get_modbus_event_name(discovery_read_event), discovery_read_event);
+
+            if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+                discovery_state = DiscoveryState::NextDeviceAddress;
+            }
+            else {
+                discovery_state = DiscoveryState::NextBaseAddress;
+            }
+        }
+
+        break;
+
+    case DiscoveryState::ReadInverter3PFloatModelBlock:
+        discovery_read_size = discovery_standard_model_length;
+        discovery_read_state = DiscoveryState::ReadInverter3PFloatModelBlockDone;
+        discovery_state = DiscoveryState::Read;
+
+        break;
+
+    case DiscoveryState::ReadInverter3PFloatModelBlockDone:
+        if (discovery_read_event == Modbus::ResultCode::EX_SUCCESS) {
+            float ac_current = discovery_read_float32();
+            float ac_current_a = discovery_read_float32();
+            float ac_current_b = discovery_read_float32();
+            float ac_current_c = discovery_read_float32();
+
+            discovery_printfln("AC Current [A]: %f\n"
+                               "AC Current A [A]: %f\n"
+                               "AC Current B [A]: %f\n"
+                               "AC Current C [A]: %f",
+                               ac_current,
+                               ac_current_a,
+                               ac_current_b,
+                               ac_current_c);
+
+            float ac_voltage_a_b = discovery_read_float32();
+            float ac_voltage_b_c = discovery_read_float32();
+            float ac_voltage_c_a = discovery_read_float32();
+            float ac_voltage_a_n = discovery_read_float32();
+            float ac_voltage_b_n = discovery_read_float32();
+            float ac_voltage_c_n = discovery_read_float32();
+
+            discovery_printfln("AC Voltage A B [V]: %f\n"
+                               "AC Voltage B C [V]: %f\n"
+                               "AC Voltage C A [V]: %f\n"
+                               "AC Voltage A N [V]: %f\n"
+                               "AC Voltage B N [V]: %f\n"
+                               "AC Voltage C N [V]: %f",
+                               ac_voltage_a_b,
+                               ac_voltage_b_c,
+                               ac_voltage_c_a,
+                               ac_voltage_a_n,
+                               ac_voltage_b_n,
+                               ac_voltage_c_n);
+
+            // FIXME
+
+            discovery_state = DiscoveryState::ReadStandardModelHeader;
+        }
+        else {
+            discovery_printfln("Could not read Inverter 3P (Float) Model block: %s (%d)", get_modbus_event_name(discovery_read_event), discovery_read_event);
+
+            if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+                discovery_state = DiscoveryState::NextDeviceAddress;
+            }
+            else {
+                discovery_state = DiscoveryState::NextBaseAddress;
+            }
+        }
+
+        break;
+
+    case DiscoveryState::ReadACMeterW3PFloatModelBlock:
+        discovery_read_size = discovery_standard_model_length;
+        discovery_read_state = DiscoveryState::ReadACMeterW3PFloatModelBlockDone;
+        discovery_state = DiscoveryState::Read;
+
+        break;
+
+    case DiscoveryState::ReadACMeterW3PFloatModelBlockDone:
+        if (discovery_read_event == Modbus::ResultCode::EX_SUCCESS) {
+            float ac_current = discovery_read_float32();
+            float ac_current_a = discovery_read_float32();
+            float ac_current_b = discovery_read_float32();
+            float ac_current_c = discovery_read_float32();
+
+            discovery_printfln("AC Current [A]: %f\n"
+                               "AC Current A [A]: %f\n"
+                               "AC Current B [A]: %f\n"
+                               "AC Current C [A]: %f",
+                               ac_current,
+                               ac_current_a,
+                               ac_current_b,
+                               ac_current_c);
+
+            float ac_voltage_l_n = discovery_read_float32();
+            float ac_voltage_a_n = discovery_read_float32();
+            float ac_voltage_b_n = discovery_read_float32();
+            float ac_voltage_c_n = discovery_read_float32();
+            float ac_voltage_l_l = discovery_read_float32();
+            float ac_voltage_a_b = discovery_read_float32();
+            float ac_voltage_b_c = discovery_read_float32();
+            float ac_voltage_c_a = discovery_read_float32();
+
+            discovery_printfln("AC Voltage L N [V]: %f\n"
+                               "AC Voltage A N [V]: %f\n"
+                               "AC Voltage B N [V]: %f\n"
+                               "AC Voltage C N [V]: %f\n"
+                               "AC Voltage L L [V]: %f\n"
+                               "AC Voltage A B [V]: %f\n"
+                               "AC Voltage B C [V]: %f\n"
+                               "AC Voltage C A [V]: %f",
+                               ac_voltage_l_n,
+                               ac_voltage_a_n,
+                               ac_voltage_b_n,
+                               ac_voltage_c_n,
+                               ac_voltage_l_l,
+                               ac_voltage_a_b,
+                               ac_voltage_b_c,
+                               ac_voltage_c_a);
+
+            // FIXME
+
+            discovery_state = DiscoveryState::ReadStandardModelHeader;
+        }
+        else {
+            discovery_printfln("Could not read AC Meter W3P (Float) Model block: %s (%d)", get_modbus_event_name(discovery_read_event), discovery_read_event);
 
             if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
                 discovery_state = DiscoveryState::NextDeviceAddress;
@@ -368,6 +575,19 @@ uint16_t SunSpecMeter::discovery_read_uint16()
 uint32_t SunSpecMeter::discovery_read_uint32()
 {
     uint32_t result = ((uint32_t)discovery_read_buffer[discovery_read_index] << 16) | discovery_read_buffer[discovery_read_index + 1];
+
+    discovery_read_index += 2;
+
+    return result;
+}
+
+float SunSpecMeter::discovery_read_float32()
+{
+    float result;
+    uint16_t *p = (uint16_t *)&result;
+
+    *p = discovery_read_buffer[discovery_read_index + 1];
+    *(p + 1) = discovery_read_buffer[discovery_read_index];
 
     discovery_read_index += 2;
 

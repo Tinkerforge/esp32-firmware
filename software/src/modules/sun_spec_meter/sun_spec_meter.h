@@ -36,12 +36,19 @@ enum class DiscoveryState {
     NextBaseAddress,
     Read,
     Reading,
+    ReadNext,
     ReadSunSpecID,
     ReadSunSpecIDDone,
     ReadCommonModelHeader,
     ReadCommonModelHeaderDone,
     ReadCommonModelBlock,
     ReadCommonModelBlockDone,
+    ReadStandardModelHeader,
+    ReadStandardModelHeaderDone,
+    ReadInverter3PFloatModelBlock,
+    ReadInverter3PFloatModelBlockDone,
+    ReadACMeterW3PFloatModelBlock,
+    ReadACMeterW3PFloatModelBlockDone,
 };
 
 class SunSpecMeter final : public IModule
@@ -56,6 +63,7 @@ public:
 private:
     uint16_t discovery_read_uint16();
     uint32_t discovery_read_uint32();
+    float discovery_read_float32();
     void discovery_read_string(char *buffer, size_t length);
     void discovery_printfln(const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
 
@@ -75,12 +83,13 @@ private:
     uint8_t discovery_device_address = 0;
     uint8_t discovery_device_address_next = 0;
     size_t discovery_base_address_index = 0;
-    uint32_t discovery_cookie = 0;
     uint16_t discovery_read_address;
     size_t discovery_read_size;
-    uint16_t discovery_read_buffer[66];
+    uint16_t discovery_read_buffer[124];
+    uint32_t discovery_read_cookie = 0;
     size_t discovery_read_index;
     Modbus::ResultCode discovery_read_event;
     DiscoveryState discovery_read_state;
     uint16_t discovery_common_model_length;
+    uint16_t discovery_standard_model_length;
 };
