@@ -258,7 +258,7 @@ void SunSpecMeter::loop()
         break;
 
     case DiscoveryState::ReadCommonModelHeader:
-        discovery_printfln("Reading Common Model header");
+        discovery_printfln("Reading Common Model");
 
         discovery_read_size = 2;
         discovery_read_state = DiscoveryState::ReadCommonModelHeaderDone;
@@ -272,13 +272,13 @@ void SunSpecMeter::loop()
             uint16_t model_length = discovery_read_uint16();
 
             if (model_id == COMMON_MODEL_ID && (model_length == 65 || model_length == 66)) {
-                discovery_printfln("Common Model header found");
+                discovery_printfln("Common Model found");
 
                 discovery_common_model_length = model_length;
                 discovery_state = DiscoveryState::ReadCommonModelBlock;
             }
             else {
-                discovery_printfln("No Common Model header found: %04x %04x", model_id, model_length);
+                discovery_printfln("No Common Model found: %u %u", model_id, model_length);
 
                 discovery_state = DiscoveryState::NextBaseAddress;
             }
