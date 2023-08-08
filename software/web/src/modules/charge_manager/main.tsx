@@ -513,7 +513,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                         onAddAbort={async () => {
                             window.clearInterval(this.intervalID);
                             this.setState({addCharger: {name: "", host: ""}});
-                        } />
+                        }} />
             </FormRow>
 
         return (
