@@ -124,7 +124,7 @@ def main():
 
         print(f'Modified package {old_package_name}')
         print()
-        print('Next (for a git clone):')
+        print('Next:')
         print(' Commit software/packages/config.json')
 
         if old_package_name != new_package_name:
@@ -145,7 +145,7 @@ def main():
 
         print(f'Removed package {package_name}')
         print()
-        print('Next (for a git clone):')
+        print('Next:')
         print(' Commit software/packages/config.json')
         print(' Modify platform_packages option in platformio.ini')
 
