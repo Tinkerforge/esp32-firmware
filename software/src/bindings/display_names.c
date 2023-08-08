@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-25.      *
+ * This file was automatically generated on 2023-06-21.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -42,6 +42,7 @@ const char *tf_get_device_display_name(uint16_t device_id) {
         case 2100: return "Industrial Digital In 4 Bricklet 2.0";
         case 2124: return "Industrial Digital Out 4 Bricklet 2.0";
         case 2120: return "Industrial Dual 0-20mA Bricklet 2.0";
+        case 2174: return "Industrial Dual AC In Bricklet";
         case 2162: return "Industrial Dual AC Relay Bricklet";
         case 2121: return "Industrial Dual Analog In Bricklet 2.0";
         case  284: return "Industrial Dual Relay Bricklet";
