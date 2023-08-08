@@ -24,6 +24,7 @@
 #include "task_scheduler.h"
 #include "tools.h"
 #include "module_dependencies.h"
+#include "TFJson.h"
 
 #define LAST_DEVICE_ADDRESS 247
 #define SUN_SPEC_ID 0x53756e53
@@ -319,12 +320,18 @@ void SunSpecMeter::loop()
             discovery_read_string(serial_number, sizeof(serial_number));
             device_address = discovery_read_uint16();
 
-            discovery_printfln("Manufacturer Name: %s", manufacturer_name);
-            discovery_printfln("Model Name: %s", model_name);
-            discovery_printfln("Options: %s", options);
-            discovery_printfln("Version: %s", version);
-            discovery_printfln("Serial Number: %s", serial_number);
-            discovery_printfln("Device Address: %u", device_address);
+            discovery_printfln("Manufacturer Name: %s\n"
+                               "Model Name: %s\n"
+                               "Options: %s\n"
+                               "Version: %s\n"
+                               "Serial Number: %s\n"
+                               "Device Address: %u",
+                               manufacturer_name,
+                               model_name,
+                               options,
+                               version,
+                               serial_number,
+                               device_address);
 
             if (discovery_common_model_length == 66) {
                 discovery_read_uint16(); // skip padding
@@ -384,23 +391,38 @@ void SunSpecMeter::discovery_read_string(char *buffer, size_t length)
 void SunSpecMeter::discovery_printfln(const char *fmt, ...)
 {
     va_list args;
-    char buf[256];
-    auto buf_size = sizeof(buf) / sizeof(buf[0]);
+    char buf[512];
 
     va_start(args, fmt);
-    memset(buf, 0, buf_size);
-    auto written = vsnprintf(buf + 1, buf_size - 2, fmt, args);
+    vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
 
-    written = MIN(written, buf_size - 2);
+    char buf_json[512];
+    TFJsonSerializer json{buf_json, sizeof(buf_json)};
 
-    logger.printfln("SunSpec: %s", buf + 1);
-
-    buf[0] = '\"';
-    buf[written + 1] = '\"';
-    buf[written + 2] = '\0';
+    json.add(buf);
+    json.end();
 
     discovery_log_idle = false;
 
-    ws.pushRawStateUpdate(buf, "sun_spec_meter/discovery_log");
+    ws.pushRawStateUpdate(buf_json, "sun_spec_meter/discovery_log"); // FIXME: error handling
+
+    char *p = buf;
+    char *q;
+
+    while (*p != '\0') {
+        q = strchr(p, '\n');
+
+        if (q != NULL) {
+            *q = '\0';
+        }
+
+        logger.printfln("SunSpec: %s", p);
+
+        if (q == NULL) {
+            break;
+        }
+
+        p = q + 1;
+    }
 }
