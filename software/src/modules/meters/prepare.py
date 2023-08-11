@@ -21,7 +21,7 @@ from software import util
 
 enum_values = []
 
-with open('meter_value_ids.csv', newline='') as f:
+with open('meter_value_id.csv', newline='') as f:
     for row in csv.reader(f):
         if row[0] == 'id':
             # skip header
@@ -33,12 +33,19 @@ with open('meter_value_ids.csv', newline='') as f:
 
         id_ = row[0]
         name = ''.join(row[1:6]).replace(' ', '')
+        unit = row[6]
 
-        enum_values.append(f'    {name} = {id_},\n')
+        enum_values.append(f'    {name} = {id_}, // {unit}\n')
 
-with open('meter_value_enum.h', 'w') as f:
+with open('meter_value_id.h', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('#pragma once\n\n')
-    f.write('enum class MeterValue {\n')
+    f.write('enum class MeterValueID {\n')
     f.write(''.join(enum_values))
     f.write('};\n')
+
+with open('../../../web/src/modules/meters/meter_value_id.ts', 'w') as f:
+    f.write('// WARNING: This file is generated.\n\n')
+    f.write('export enum MeterValueID {\n')
+    f.write(''.join(enum_values))
+    f.write('}\n')
