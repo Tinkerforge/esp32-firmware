@@ -45,7 +45,7 @@
 43,"Current",,"L Sum","Export","Interval Avg","A",,,,,
 44,"Current",,"L Sum","Export","Interval Max","A",,,,,
 45,"Current",,"DC",,,"A",,,,,"Für Inverter/Batterie"
-46,"Power","Active","L Sum","Im Ex Sum","Register","W",,,,,"Kompatibel zu TotalSystemPower vom SDM72"
+46,"Power","Active","L Sum","Im Ex Diff","Register","W",,,,,"Kompatibel zu TotalSystemPower vom SDM72"
 47,"Power","Active","L1","Import","Register","W",,,,,
 48,"Power","Active","L1","Import","Interval Avg","W",,,,,
 49,"Power","Active","L1","Import","Interval Max","W",,,,,
