@@ -229,7 +229,7 @@ def send():
     if resp_block_uptime.isChecked():
         uptime = int(resp_uptime.text().split(" ")[0])
     else:
-        uptime = int((time.time() - start) * 1000)
+        uptime = int((time.time() - start) * 1000) % (1 << 32)
     resp_uptime.setText("{} ms".format(uptime))
 
     if charging_time_start == 0 and resp_iec61851_state.currentIndex() == 2:
