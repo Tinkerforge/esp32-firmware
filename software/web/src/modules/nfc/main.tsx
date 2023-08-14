@@ -130,7 +130,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                     columnValues: [
                                         [tag.tag_id],
                                         [translate_unchecked(`nfc.content.type_${tag.tag_type}`)],
-                                        [tag.user_id == 0 ? __("nfc.script.not_assigned") : state.userCfg.users[tag.user_id].display_name],
+                                        [tag.user_id == 0 ? __("nfc.script.not_assigned") : state.userCfg.users.filter((user) => user.id == tag.user_id)[0].display_name],
                                         [auth_seen_ids.indexOf(i) >= 0 ? __("nfc.content.last_seen") + util.format_timespan(Math.floor(auth_seen_tags[auth_seen_ids.indexOf(i)].last_seen / 1000)) + __("nfc.content.last_seen_suffix") : __("nfc.script.not_seen")]
                                     ],
                                     editTitle: __("nfc.content.edit_tag_title"),
