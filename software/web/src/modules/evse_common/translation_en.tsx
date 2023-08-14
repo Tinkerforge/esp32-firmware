@@ -122,7 +122,8 @@ let x = {
             "slot_10": "Modbus TCP clearance",
             "slot_11": "OCPP",
             "slot_12": "Energy/Time limit",
-            "slot_13": "Meter monitoring"
+            "slot_13": "Meter monitoring",
+            "slot_14": "Cron"
         },
         "script": {
             "error_code": "Error code",
