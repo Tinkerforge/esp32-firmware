@@ -1512,7 +1512,12 @@ void Config::save_to_file(File &file)
 
 void Config::write_to_stream(Print &output)
 {
-    auto doc = this->to_json({});
+    write_to_stream_except(output, {});
+}
+
+void Config::write_to_stream_except(Print &output, const std::vector<String> &keys_to_censor)
+{
+    auto doc = this->to_json(keys_to_censor);
 
     if (doc.overflowed())
         logger.printfln("JSON doc overflow!");
@@ -1534,15 +1539,6 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) const
     String result;
     serializeJson(doc, result);
     return result;
-}
-
-void Config::write_to_stream_except(Print &output, const std::vector<String> &keys_to_censor)
-{
-    auto doc = this->to_json(keys_to_censor);
-
-    if (doc.overflowed())
-        logger.printfln("JSON doc overflow!");
-    serializeJson(doc, output);
 }
 
 bool Config::was_updated(uint8_t api_backend_flag)
