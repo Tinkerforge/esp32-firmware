@@ -40,14 +40,14 @@ uint32_t MetersEM::get_class() const
     return METER_CLASS_LOCAL_EM;
 }
 
-IMeter * MetersEM::new_meter(Config *state, const Config *config)
+IMeter * MetersEM::new_meter(uint32_t slot, Config *state, const Config *config)
 {
     if (generated_meters >= 1) {
         logger.printfln("meters_em: Cannot create more than meter of type LOCAL_EM.");
         return nullptr;
     }
     generated_meters++;
-    return new MeterEM(state);
+    return new MeterEM(slot, state);
 }
 
 const Config * MetersEM::get_config_prototype()
