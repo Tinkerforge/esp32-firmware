@@ -24,7 +24,7 @@
 
 // for MeterGenerator
 _ATTRIBUTE((const))
-IMeter * MeterGeneratorNone::new_meter(Config *state, const Config *config)
+IMeter * MeterGeneratorNone::new_meter(uint32_t slot, Config *state, const Config *config)
 {
     return this;
 }

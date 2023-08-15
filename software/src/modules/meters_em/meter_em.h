@@ -35,14 +35,13 @@
 class MeterEM final : public IMeter
 {
 public:
-    MeterEM(Config *state_) : state(state_) {}
+    MeterEM(uint32_t slot_, Config *state_) : slot(slot_), state(state_) {}
 
     uint32_t get_class() const override;
     void setup() override;
     void register_urls(String base_url) override;
 
     bool supports_power() override {return true;}
-    bool get_power(float *power_w) override;
 
     bool supports_import_export() override {return true;}
     bool get_import_export(float *energy_import_kwh, float *energy_export_kwh) override;
@@ -54,12 +53,14 @@ public:
 private:
     void update_all_values();
 
+    uint32_t slot;
     Config *state;
     ConfigRoot errors;
-    ConfigRoot all_values_conf;
-    ConfigRoot all_values_names;
-    float all_values_float[METER_ALL_VALUES_COUNT] = {NAN};
-    bool all_values_task_started = false;
+
+    bool first_values_seen = false;
+    uint32_t value_index_power  = UINT32_MAX;
+    uint32_t value_index_import = UINT32_MAX;
+    uint32_t value_index_export = UINT32_MAX;
 };
 
 #if defined(__GNUC__)

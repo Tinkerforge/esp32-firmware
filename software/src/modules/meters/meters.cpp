@@ -32,6 +32,20 @@ void Meters::pre_setup()
 {
     generators.reserve(METER_CLASSES);
     register_meter_generator(METER_CLASS_NONE, &meter_generator_none);
+
+    config_float_nan_prototype = Config::Float(NAN);
+    config_uint_max_prototype  = Config::Uint32(UINT32_MAX);
+
+    for (uint32_t slot = 0; slot < METER_SLOTS; slot++) {
+        slots_value_ids[slot] = Config::Array({},
+            &config_uint_max_prototype,
+            0, UINT16_MAX, Config::type_id<Config::ConfUint>()
+        );
+        slots_values[slot] = Config::Array({},
+            &config_float_nan_prototype,
+            0, UINT16_MAX, Config::type_id<Config::ConfFloat>()
+        );
+    }
 }
 
 void Meters::setup()
@@ -49,9 +63,9 @@ void Meters::setup()
         config_prototypes[i] = {meter_class, *meter_generator->get_config_prototype()};
     }
 
-    for (uint32_t i = 0; i < METER_SLOTS; i++) {
+    for (uint32_t slot = 0; slot < METER_SLOTS; slot++) {
         // Initialize config.
-        config_unions[i] = Config::Union(
+        config_unions[slot] = Config::Union(
             *get_generator_for_class(METER_CLASS_NONE)->get_config_prototype(),
             METER_CLASS_NONE,
             config_prototypes,
@@ -60,28 +74,28 @@ void Meters::setup()
 
         // Load config.
         char path_buf[32];
-        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/%u/config", i);
-        api.restorePersistentConfig(path_buf, &config_unions[i]);
+        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_config", slot);
+        api.restorePersistentConfig(path_buf, &config_unions[slot]);
 
-        uint32_t configured_meter_class = config_unions[i].getTag();
+        uint32_t configured_meter_class = config_unions[slot].getTag();
 
         // Generator might be a NONE class generator if the requested class is not available.
         MeterGenerator *generator = get_generator_for_class(configured_meter_class);
 
         // Initialize state to match (loaded) config.
-        states[i] = *generator->get_state_prototype();
+        states[slot] = *generator->get_state_prototype();
 
         // Create meter from config.
-        const Config *meter_conf = static_cast<const Config *>(config_unions[i].get());
-        Config *meter_state = &states[i];
+        const Config *meter_conf = static_cast<const Config *>(config_unions[slot].get());
+        Config *meter_state = &states[slot];
 
-        IMeter *meter = new_meter_of_class(configured_meter_class, meter_state, meter_conf);
+        IMeter *meter = new_meter_of_class(configured_meter_class, slot, meter_state, meter_conf);
         if (!meter) {
             logger.printfln("meters: Failed to create meter of class %u.", configured_meter_class);
             continue;
         }
         meter->setup();
-        meters[i] = meter;
+        meters[slot] = meter;
     }
 
     initialized = true;
@@ -91,16 +105,22 @@ void Meters::register_urls()
 {
     char path_buf[32];
 
-    for (uint32_t i = 0; i < ARRAY_SIZE(states); i++) {
-        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/%u/state", i);
-        api.addState(path_buf, &states[i], {}, 1000);
+    for (uint32_t slot = 0; slot < METER_SLOTS; slot++) {
+        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_config", slot);
+        api.addPersistentConfig(path_buf, &config_unions[slot], {}, 1000);
 
-        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/%u/config", i);
-        api.addPersistentConfig(path_buf, &config_unions[i], {}, 1000);
+        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_state", slot);
+        api.addState(path_buf, &states[slot], {}, 1000);
 
-        if (meters[i]) {
-            snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/%u", i);
-            meters[i]->register_urls(path_buf);
+        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_value_ids", slot);
+        api.addState(path_buf, &slots_value_ids[slot], {}, 1000);
+
+        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_values", slot);
+        api.addState(path_buf, &slots_values[slot], {}, 1000);
+
+        if (meters[slot]) {
+            snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u", slot);
+            meters[slot]->register_urls(path_buf);
         }
     }
 }
@@ -136,14 +156,14 @@ MeterGenerator *Meters::get_generator_for_class(uint32_t meter_class)
     return get_generator_for_class(METER_CLASS_NONE);
 }
 
-IMeter *Meters::new_meter_of_class(uint32_t meter_class, Config *state, const Config *config)
+IMeter *Meters::new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, const Config *config)
 {
     MeterGenerator *generator = get_generator_for_class(meter_class);
 
     if (!generator)
         return nullptr;
 
-    return generator->new_meter(state, config);
+    return generator->new_meter(slot, state, config);
 }
 
 IMeter *Meters::get_meter(uint32_t slot)
@@ -166,4 +186,45 @@ uint32_t Meters::get_meters(uint32_t meter_class, IMeter **found_meters, uint32_
         }
     }
     return found_count;
+}
+
+void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
+{
+    slots_values[slot].get(static_cast<uint16_t>(index))->updateFloat(new_value);
+    //TODO: Update value age.
+}
+
+void Meters::update_all_values(uint32_t slot, const float new_values[])
+{
+    Config &values = slots_values[slot];
+    auto value_count = values.count();
+
+    for (uint16_t i = 0; i < value_count; i++) {
+        if (!isnan(new_values[i])) {
+            auto wrap = values.get(i);
+            auto old_value = wrap->asFloat();
+            bool changed = wrap->updateFloat(new_values[i]) && !isnan(old_value);
+            (void)changed;
+            //TODO: Update value age.
+        }
+    }
+    logger.printfln("meters: Updated values for meter in slot %u.", slot);
+}
+
+void Meters::declare_value_ids(uint32_t slot, const uint32_t new_value_ids[], uint32_t value_count)
+{
+    Config &value_ids = slots_value_ids[slot];
+    Config &values    = slots_values[slot];
+
+    if (value_ids.count() != 0) {
+        logger.printfln("meters: Meter in slot %u already declared %i values. Refusing to re-declare %u values.", slot, value_ids.count(), value_count);
+        return;
+    }
+
+    for (uint16_t i = 0; i < static_cast<uint16_t>(value_count); i++) {
+        value_ids.add();
+        value_ids.get(i)->updateUint(new_value_ids[i]);
+        values.add();
+    }
+    logger.printfln("meters: Meter in slot %u declared %u values.", slot, value_count);
 }

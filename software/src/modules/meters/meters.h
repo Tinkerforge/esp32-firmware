@@ -48,12 +48,22 @@ public:
     IMeter *get_meter(uint32_t slot);
     uint32_t get_meters(uint32_t meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
 
+    void update_value(uint32_t slot, uint32_t index, float new_value);
+    void update_all_values(uint32_t slot, const float new_values[]);
+    void declare_value_ids(uint32_t slot, const uint32_t value_ids[], uint32_t value_count);
+
 private:
     MeterGenerator *get_generator_for_class(uint32_t meter_class);
-    IMeter *new_meter_of_class(uint32_t meter_class, Config *state, const Config *config);
+    IMeter *new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, const Config *config);
 
     ConfigRoot config_unions[METER_SLOTS];
     ConfigRoot states[METER_SLOTS];
+
+    ConfigRoot slots_value_ids[METER_SLOTS];
+    ConfigRoot slots_values[METER_SLOTS];
+
+    ConfigRoot config_float_nan_prototype;
+    ConfigRoot config_uint_max_prototype;
 
     std::vector<std::tuple<uint32_t, MeterGenerator *>> generators;
     IMeter *meters[METER_SLOTS];
