@@ -698,7 +698,7 @@ export class Meters extends Component<{}, MetersState> {
                         </div>
                     </div>
                     <CollapsedSection label={__("meters.content.detailed_values")}>
-                        {METER_VALUE_IDS.filter((id) => this.state.values_by_id[id] !== undefined).map((id) => <FormRow label={translate_unchecked(`meters.content.detailed_${id}`)} label_muted="?">
+                        {METER_VALUE_IDS.filter((id) => util.hasValue(this.state.values_by_id[id])).map((id) => <FormRow label={translate_unchecked(`meters.content.detailed_${id}`)} label_muted="?">
                             <div class="row"><div class="col-sm-4"><OutputFloat value={this.state.values_by_id[id]} digits={METER_VALUE_INFOS[id].digits} scale={0} unit={METER_VALUE_INFOS[id].unit}/></div></div>
                         </FormRow>)}
                     </CollapsedSection>
