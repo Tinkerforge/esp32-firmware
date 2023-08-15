@@ -260,9 +260,16 @@ if __name__ == '__main__':
         elf_name = tf_coredump_data['firmware_file_name'] + ".elf"
         script_path = os.path.dirname(os.path.realpath(__file__))
 
-        firmware_path = os.path.join(script_path, "build", elf_name)
-        if not os.path.exists(firmware_path):
-            firmware_path = os.path.join(script_path, "..", "..", "warp-charger", "firmwares", elf_name)
+        possible_firmware_paths = [
+            os.path.join(script_path, "build", elf_name),
+            os.path.join(script_path, "..", "..", "warp-charger", "firmwares", elf_name),
+            os.path.join(".", elf_name),
+        ]
+
+        firmware_path = None
+        for path in possible_firmware_paths:
+            if os.path.exists(path):
+                firmware_path = path
 
 
         def run_gdb(repo_dir="../"):
@@ -298,7 +305,7 @@ if __name__ == '__main__':
                         "-ex 'bt full' " +
                         f"{firmware_path} {core_dump_path}")
 
-        if os.path.exists(firmware_path):
+        if firmware_path:
             if args.local_source:
                 run_gdb()
             else:
@@ -315,7 +322,9 @@ if __name__ == '__main__':
 
 
         else:
-            print("Firmware {} not found".format(elf_name))
+            print(f"Firmware {elf_name} not found in any of these places:\n")
+            for path in possible_firmware_paths:
+                print(f"    {path}")
     finally:
         if os.path.exists(core_dump_path):
             os.remove(core_dump_path)
