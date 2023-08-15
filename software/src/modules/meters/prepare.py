@@ -20,6 +20,9 @@ if 'software' not in sys.modules:
 from software import util
 
 enum_values = []
+enum_names = []
+enum_infos = []
+detailed_values = {'en': [], 'de': []}
 
 with open('meter_value_id.csv', newline='') as f:
     for row in csv.reader(f):
@@ -32,10 +35,16 @@ with open('meter_value_id.csv', newline='') as f:
             continue
 
         id_ = row[0]
-        name = ''.join(row[1:6]).replace(' ', '')
+        name = ' '.join([part for part in row[1:6] if len(part) > 0])
+        identifier = name.replace(' ', '')
         unit = row[6]
+        digits = row[7]
 
-        enum_values.append(f'    {name} = {id_}, // {unit}\n')
+        enum_values.append(f'    {identifier} = {id_}, // {unit}\n')
+        enum_names.append(f'    MeterValueID.{identifier},\n')
+        enum_infos.append(f'    /* {identifier} */ {id_}: {{unit: "{unit}", digits: {digits}}},\n')
+        detailed_values['en'].append(f'"detailed_{id_}": "{name}"')
+        detailed_values['de'].append(f'"detailed_{id_}": "{name}"')
 
 with open('meter_value_id.h', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
@@ -46,6 +55,17 @@ with open('meter_value_id.h', 'w') as f:
 
 with open('../../../web/src/modules/meters/meter_value_id.ts', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
-    f.write('export enum MeterValueID {\n')
+    f.write('export const enum MeterValueID {\n')
     f.write(''.join(enum_values))
-    f.write('}\n')
+    f.write('}\n\n')
+    f.write('export const METER_VALUE_IDS: MeterValueID[] = [\n')
+    f.write(''.join(enum_names))
+    f.write('];\n\n')
+    f.write('export const METER_VALUE_INFOS: {[id: number]: {unit: string, digits: 0|1|2|3}} = {\n')
+    f.write(''.join(enum_infos))
+    f.write('};\n')
+
+for lang in detailed_values:
+    util.specialize_template(f'../../../web/src/modules/meters/translation_{lang}.json.template', f'../../../web/src/modules/meters/translation_{lang}.json', {
+        '{{{detailed_values}}}': ',\n            '.join(detailed_values[lang]),
+    })
