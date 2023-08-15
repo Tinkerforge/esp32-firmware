@@ -98,6 +98,7 @@ void Meters::setup()
         meters[slot] = meter;
     }
 
+    api.addFeature("meters");
     initialized = true;
 }
 
