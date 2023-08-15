@@ -1,0 +1,40 @@
+{
+    "meters": {
+        "status": {
+            "charge_history": null,
+            "current_power": "Power draw"
+        },
+        "navbar": {
+            "energy_meter": "Energy Meter"
+        },
+        "content": {
+            "energy_meter": "Energy Meter",
+            "history": "History (48 h)",
+            "live": "Live",
+            "statistics": "Statistics",
+            "reset_statistics": "Reset",
+            "power": "Power draw",
+            "energy": "Energy consumption",
+            "energy_since_reset": "since last reset",
+            "energy_lifetime": "since manufacturing of the energy meter",
+
+            "reset_modal": "Reset energy comsumption?",
+            "reset_modal_body": "Really reset the energy comsumption measurement?",
+            "reset_modal_abort": "Abort",
+            "reset_modal_confirm": "Reset",
+            "reset_failed": "Failed to reset energy consumption measurement",
+
+            "phases_active": "Active phases",
+            "phases_active_desc": "L1, L2, L3",
+            "phases_connected": "Connected phases",
+            "phases_connected_desc": "L1, L2, L3",
+            "detailed_values": "Details",
+
+            {{{detailed_values}}}
+        },
+        "script": {
+            "time": "Time of day",
+            "power": "Power"
+        }
+    }
+}

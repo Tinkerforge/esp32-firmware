@@ -64,5 +64,10 @@ let x = {
         "status": {
             "charge_history": "Ladeverlauf"
         }
+    },
+    "meters": {
+        "status": {
+            "charge_history": "Ladeverlauf"
+        }
     }
 }

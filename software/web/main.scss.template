@@ -523,6 +523,23 @@ body {
     aspect-ratio: 1.5;
 }
 
+.status-meters-chart {
+    position: relative;
+    aspect-ratio: 1.33333;
+}
+
+@include media-breakpoint-up(md) {
+    .status-meters-chart {
+        position: relative;
+        aspect-ratio: 2.5;
+    }
+}
+
+.meters-chart {
+    position: relative;
+    aspect-ratio: 1.5;
+}
+
 .em-energy-analysis-status-chart {
     position: relative;
     aspect-ratio: 1.33333;
