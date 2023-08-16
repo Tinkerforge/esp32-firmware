@@ -50,7 +50,7 @@ void MeterEM::register_urls(String base_url)
 {
     IMeter::register_urls(base_url);
 
-    api.addState(base_url + "/error_counters", &errors, {}, 1000);
+    api.addState(base_url + "error_counters", &errors, {}, 1000);
 }
 
 void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)

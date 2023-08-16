@@ -222,7 +222,7 @@ void Meter::register_urls()
         resetMeters();
     }, true);
 
-    power_hist.register_urls("meter");
+    power_hist.register_urls("meter/");
 }
 
 void Meter::resetMeters() {
