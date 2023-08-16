@@ -48,6 +48,7 @@ interface UplotWrapperProps {
     sidebar_id: string;
     show: boolean;
     legend_time_with_seconds: boolean;
+    aspect_ratio: number;
     x_height: number;
     x_include_date: boolean;
     y_min?: number;
@@ -97,7 +98,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             let aspect_ratio = parseFloat(getComputedStyle(div).aspectRatio);
 
             if (isNaN(aspect_ratio)) {
-                aspect_ratio = 2;
+                aspect_ratio = this.props.aspect_ratio;
             }
 
             return {
@@ -589,119 +590,57 @@ export class Meters extends Component<{}, MetersState> {
 
         return (
             <SubPage colClasses="col-xl-10">
-                <PageHeader title={__("meters.content.energy_meter")}/>
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <FormSeparator heading={__("meters.status.charge_history")} first={true} colClasses={"justify-content-between align-items-center col"} extraClasses={"pr-0 pr-lg-3"} >
-                                <div class="mb-2">
-                                    <InputSelect value={this.state.chart_selected} onValue={(v) => {
-                                        let chart_selected: "live"|"history" = v as any;
+                <PageHeader title={__("meters.content.energy_meter")}>
+                    <div>
+                        <InputSelect value={this.state.chart_selected} onValue={(v) => {
+                            let chart_selected: "live"|"history" = v as any;
 
-                                        this.setState({chart_selected: chart_selected}, () => {
-                                            if (chart_selected == 'live') {
-                                                this.uplot_wrapper_live_ref.current.set_show(true);
-                                                this.uplot_wrapper_history_ref.current.set_show(false);
-                                            }
-                                            else {
-                                                this.uplot_wrapper_history_ref.current.set_show(true);
-                                                this.uplot_wrapper_live_ref.current.set_show(false);
-                                            }
+                            this.setState({chart_selected: chart_selected}, () => {
+                                if (chart_selected == 'live') {
+                                    this.uplot_wrapper_live_ref.current.set_show(true);
+                                    this.uplot_wrapper_history_ref.current.set_show(false);
+                                }
+                                else {
+                                    this.uplot_wrapper_history_ref.current.set_show(true);
+                                    this.uplot_wrapper_live_ref.current.set_show(false);
+                                }
 
-                                            this.update_uplot();
-                                        });
-                                    }}
-                                        items={[
-                                            ["history", __("meters.content.history")],
-                                            ["live", __("meters.content.live")],
-                                        ]}/>
-                                </div>
-                            </FormSeparator>
-                            <UplotWrapper ref={this.uplot_wrapper_live_ref}
-                                          id="meters_chart_live"
-                                          class="meters-chart"
-                                          sidebar_id="meters"
-                                          show={false}
-                                          legend_time_with_seconds={true}
-                                          x_height={30}
-                                          x_include_date={false}
-                                          y_diff_min={100} />
-                            <UplotWrapper ref={this.uplot_wrapper_history_ref}
-                                          id="meters_chart_history"
-                                          class="meters-chart"
-                                          sidebar_id="meters"
-                                          show={true}
-                                          legend_time_with_seconds={false}
-                                          x_height={50}
-                                          x_include_date={true}
-                                          y_min={0}
-                                          y_max={1500} />
-                        </div>
-                        <div class="col-lg-6">
-                            <FormSeparator heading={__("meters.content.statistics")} first={true} colClasses={"justify-content-between align-items-center col"} >
-                                <div class="mb-2" style="visibility: hidden;">
-                                    <InputSelect items={[["a", "a"]]} />
-                                </div>
-                            </FormSeparator>
-                            <FormRow label={__("meters.content.power")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
-                                <OutputFloat value={this.state.values_by_id[MeterValueID.PowerActiveLSumImExDiff]} digits={0} scale={0} unit="W"/>
-                            </FormRow>
-                            <FormRow label={__("meters.content.energy")} label_muted={__("meters.content.energy_since_reset")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
-                                <OutputFloat value={this.state.values_by_id[MeterValueID.EnergyActiveLSumImExDiffResettable]} digits={3} scale={0} unit="kWh"/>
-                                <Button className="form-control mt-2" onClick={async () => {
-                                     const modal = util.async_modal_ref.current;
-                                     if (!await modal.show({
-                                             title: __("meters.content.reset_modal"),
-                                             body: __("meters.content.reset_modal_body"),
-                                             no_text: __("meters.content.reset_modal_abort"),
-                                             yes_text: __("meters.content.reset_modal_confirm"),
-                                             no_variant: "secondary",
-                                             yes_variant: "danger"
-                                         }))
-                                    return;
-
-                                    API.call("meters/_0_reset", {}, __("meters.content.reset_failed"));
-                                }}>{__("meters.content.reset_statistics")}</Button>
-
-                            </FormRow>
-                            <FormRow label={__("meters.content.energy")} label_muted={__("meters.content.energy_lifetime")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
-                                <OutputFloat value={this.state.values_by_id[MeterValueID.EnergyActiveLSumImExDiff]} digits={3} scale={0} unit="kWh"/>
-                            </FormRow>
-
-                            {API.hasFeature("meters_phases") ?
-                            <>
-                                <FormRow label={__("meters.content.phases_connected")} label_muted={__("meters.content.phases_connected_desc")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
-                                    <div class="row mx-n1">
-                                        {this.state.phases.phases_connected.map((x, j) => (
-                                            <IndicatorGroup vertical key={j} class="mb-1 px-1 flex-wrap col-4"
-                                                value={x ? 0 : 1} //intentionally inverted: the high button is the first
-                                                items={[
-                                                    ["primary", <Zap/>],
-                                                    ["dark", <ZapOff/>]
-                                                ]}/>
-                                        ))}
-                                    </div>
-                                </FormRow>
-
-                                <FormRow label={ __("meters.content.phases_active")} label_muted={__("meters.content.phases_active_desc")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
-                                    <div class="row mx-n1">
-                                        {this.state.phases.phases_active.map((x, j) => (
-                                            <IndicatorGroup vertical key={j} class="mb-1 px-1 flex-wrap col-4"
-                                                value={x ? 0 : 1} //intentionally inverted: the high button is the first
-                                                items={[
-                                                    ["primary", <Zap/>],
-                                                    ["dark", <ZapOff/>]
-                                                ]}/>
-                                        ))}
-                                    </div>
-                                </FormRow>
-                            </>: undefined}
-                        </div>
+                                this.update_uplot();
+                            });
+                        }}
+                            items={[
+                                ["history", __("meters.content.history")],
+                                ["live", __("meters.content.live")],
+                            ]}/>
                     </div>
-                    <CollapsedSection label={__("meters.content.detailed_values")}>
-                        {METER_VALUE_IDS.filter((id) => util.hasValue(this.state.values_by_id[id])).map((id) => <FormRow label={translate_unchecked(`meters.content.detailed_${id}`)} label_muted="?">
-                            <div class="row"><div class="col-sm-4"><OutputFloat value={this.state.values_by_id[id]} digits={METER_VALUE_INFOS[id].digits} scale={0} unit={METER_VALUE_INFOS[id].unit}/></div></div>
-                        </FormRow>)}
-                    </CollapsedSection>
+                </PageHeader>
+                <UplotWrapper ref={this.uplot_wrapper_live_ref}
+                                id="meters_chart_live"
+                                class="meters-chart"
+                                sidebar_id="meters"
+                                show={false}
+                                legend_time_with_seconds={true}
+                                aspect_ratio={3}
+                                x_height={30}
+                                x_include_date={false}
+                                y_diff_min={100} />
+                <UplotWrapper ref={this.uplot_wrapper_history_ref}
+                                id="meters_chart_history"
+                                class="meters-chart"
+                                sidebar_id="meters"
+                                show={true}
+                                legend_time_with_seconds={false}
+                                aspect_ratio={3}
+                                x_height={50}
+                                x_include_date={true}
+                                y_min={0}
+                                y_max={1500} />
+
+                <CollapsedSection label={__("meters.content.detailed_values")}>
+                    {METER_VALUE_IDS.filter((id) => util.hasValue(this.state.values_by_id[id])).map((id) => <FormRow label={translate_unchecked(`meters.content.detailed_${id}`)} label_muted="?">
+                        <div class="row"><div class="col-sm-4"><OutputFloat value={this.state.values_by_id[id]} digits={METER_VALUE_INFOS[id].digits} scale={0} unit={METER_VALUE_INFOS[id].unit}/></div></div>
+                    </FormRow>)}
+                </CollapsedSection>
             </SubPage>
         )
     }
@@ -773,6 +712,7 @@ export class MetersStatus extends Component<{}, {}> {
                                       sidebar_id="status"
                                       show={true}
                                       legend_time_with_seconds={false}
+                                      aspect_ratio={2.5}
                                       x_height={50}
                                       x_include_date={true}
                                       y_min={0}
