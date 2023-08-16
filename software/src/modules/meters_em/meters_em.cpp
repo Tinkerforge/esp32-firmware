@@ -18,7 +18,6 @@
  */
 
 #include "meters_em.h"
-#include "meter_em.h"
 #include "module_dependencies.h"
 
 #include "modules/meters/meter_class_defs.h"
@@ -42,12 +41,12 @@ uint32_t MetersEM::get_class() const
 
 IMeter * MetersEM::new_meter(uint32_t slot, Config *state, const Config *config)
 {
-    if (generated_meters >= 1) {
-        logger.printfln("meters_em: Cannot create more than meter of type LOCAL_EM.");
+    if (meter_instance) {
+        logger.printfln("meters_em: Cannot create more than one meter of class LOCAL_EM.");
         return nullptr;
     }
-    generated_meters++;
-    return new MeterEM(slot, state);
+    meter_instance = new MeterEM(slot, state);
+    return meter_instance;
 }
 
 const Config * MetersEM::get_config_prototype()
@@ -59,4 +58,12 @@ _ATTRIBUTE((const))
 const Config * MetersEM::get_state_prototype()
 {
     return &state_prototype;
+}
+
+void MetersEM::update_from_em_all_data(EnergyManagerAllData &all_data)
+{
+    if (!meter_instance)
+        return;
+
+    meter_instance->update_from_em_all_data(all_data);
 }

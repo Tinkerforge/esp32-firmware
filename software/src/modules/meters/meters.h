@@ -48,6 +48,14 @@ public:
     IMeter *get_meter(uint32_t slot);
     uint32_t get_meters(uint32_t meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
 
+    bool meter_supports_power(uint32_t slot);
+    //bool meter_supports_import_export(uint32_t slot);
+    //bool meter_supports_line_currents(uint32_t slot);
+
+    bool get_power(uint32_t slot, float *power_w);
+    //bool get_import_export(uint32_t slot, ???);
+    //bool get_line_currents(uint32_t slot, ???);
+
     void update_value(uint32_t slot, uint32_t index, float new_value);
     void update_all_values(uint32_t slot, const float new_values[]);
     void declare_value_ids(uint32_t slot, const uint32_t value_ids[], uint32_t value_count);
@@ -67,6 +75,10 @@ private:
 
     std::vector<std::tuple<uint32_t, MeterGenerator *>> generators;
     IMeter *meters[METER_SLOTS];
+
+    uint32_t index_cache_power[METER_SLOTS] = {UINT32_MAX};
+    //uint32_t index_cache_import_export[METER_SLOTS][?];
+    //uint32_t index_cache_line_currents[METER_SLOTS][?];
 };
 
 #if defined(__GNUC__)

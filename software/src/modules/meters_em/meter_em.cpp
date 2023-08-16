@@ -53,18 +53,6 @@ void MeterEM::register_urls(String base_url)
     api.addState(base_url + "/error_counters", &errors, {}, 1000);
 }
 
-bool have_values = false;
-
-bool MeterEM::get_import_export(float *energy_import_kwh, float *energy_export_kwh)
-{
-    return have_values;
-}
-
-bool MeterEM::get_line_currents(float *l1_current_ma, float *l2_current_ma, float *l3_current_ma)
-{
-    return have_values;
-}
-
 void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
 {
     if (all_data.energy_meter_type == METER_TYPE_NONE)
