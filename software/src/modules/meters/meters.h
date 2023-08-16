@@ -34,8 +34,6 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-#define METERS_SLOTS 7
-
 class Meters final : public IModule
 {
 public:
