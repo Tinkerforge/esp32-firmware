@@ -20,6 +20,7 @@ src/web_dependencies.h
 web/**/*.digest
 web/node_modules/
 web/build/
+web/src/build.ts
 web/src/main.ts
 web/src/main.scss
 web/src/index.html
