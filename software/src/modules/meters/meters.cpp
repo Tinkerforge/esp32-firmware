@@ -37,7 +37,7 @@ void Meters::pre_setup()
     config_float_nan_prototype = Config::Float(NAN);
     config_uint_max_prototype  = Config::Uint32(UINT32_MAX);
 
-    for (uint32_t slot = 0; slot < METER_SLOTS; slot++) {
+    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
         slots_value_ids[slot] = Config::Array({},
             &config_uint_max_prototype,
             0, UINT16_MAX - 1, Config::type_id<Config::ConfUint>()
@@ -64,7 +64,7 @@ void Meters::setup()
         config_prototypes[i] = {meter_class, *meter_generator->get_config_prototype()};
     }
 
-    for (uint32_t slot = 0; slot < METER_SLOTS; slot++) {
+    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
         // Initialize config.
         config_unions[slot] = Config::Union(
             *get_generator_for_class(METER_CLASS_NONE)->get_config_prototype(),
@@ -107,7 +107,7 @@ void Meters::register_urls()
 {
     char path_buf[32];
 
-    for (uint32_t slot = 0; slot < METER_SLOTS; slot++) {
+    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
         snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_config", slot);
         api.addPersistentConfig(path_buf, &config_unions[slot], {}, 1000);
 
@@ -170,7 +170,7 @@ IMeter *Meters::new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *
 
 IMeter *Meters::get_meter(uint32_t slot)
 {
-    if (slot >= METER_SLOTS)
+    if (slot >= METERS_SLOTS)
         return nullptr;
 
     return meters[slot];
@@ -192,7 +192,7 @@ uint32_t Meters::get_meters(uint32_t meter_class, IMeter **found_meters, uint32_
 
 bool Meters::meter_supports_power(uint32_t slot)
 {
-    if (slot >= METER_SLOTS)
+    if (slot >= METERS_SLOTS)
         return false;
 
     return meters[slot]->supports_power();
@@ -200,7 +200,7 @@ bool Meters::meter_supports_power(uint32_t slot)
 
 bool Meters::get_power(uint32_t slot, float *power)
 {
-    if (slot >= METER_SLOTS)
+    if (slot >= METERS_SLOTS)
         return false;
 
     uint32_t power_index = index_cache_power[slot];
@@ -215,7 +215,7 @@ bool Meters::get_power(uint32_t slot, float *power)
 
 void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 {
-    if (slot >= METER_SLOTS) {
+    if (slot >= METERS_SLOTS) {
         logger.printfln("meters: Tried to update value %u for meter in non-existent slot %u.", index, slot);
         return;
     }
@@ -226,7 +226,7 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 
 void Meters::update_all_values(uint32_t slot, const float new_values[])
 {
-    if (slot >= METER_SLOTS) {
+    if (slot >= METERS_SLOTS) {
         logger.printfln("meters: Tried to update all values for meter in non-existent slot %u.", slot);
         return;
     }

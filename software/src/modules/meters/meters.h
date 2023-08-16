@@ -34,7 +34,7 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-#define METER_SLOTS 7
+#define METERS_SLOTS 7
 
 class Meters final : public IModule
 {
@@ -64,21 +64,21 @@ private:
     MeterGenerator *get_generator_for_class(uint32_t meter_class);
     IMeter *new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, const Config *config);
 
-    ConfigRoot config_unions[METER_SLOTS];
-    ConfigRoot states[METER_SLOTS];
+    ConfigRoot config_unions[METERS_SLOTS];
+    ConfigRoot states[METERS_SLOTS];
 
-    ConfigRoot slots_value_ids[METER_SLOTS];
-    ConfigRoot slots_values[METER_SLOTS];
+    ConfigRoot slots_value_ids[METERS_SLOTS];
+    ConfigRoot slots_values[METERS_SLOTS];
 
     ConfigRoot config_float_nan_prototype;
     ConfigRoot config_uint_max_prototype;
 
     std::vector<std::tuple<uint32_t, MeterGenerator *>> generators;
-    IMeter *meters[METER_SLOTS];
+    IMeter *meters[METERS_SLOTS];
 
-    uint32_t index_cache_power[METER_SLOTS] = {UINT32_MAX};
-    //uint32_t index_cache_import_export[METER_SLOTS][?];
-    //uint32_t index_cache_line_currents[METER_SLOTS][?];
+    uint32_t index_cache_power[METERS_SLOTS] = {UINT32_MAX};
+    //uint32_t index_cache_import_export[METERS_SLOTS][?];
+    //uint32_t index_cache_line_currents[METERS_SLOTS][?];
 };
 
 #if defined(__GNUC__)
