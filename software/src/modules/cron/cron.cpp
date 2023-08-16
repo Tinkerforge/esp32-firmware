@@ -62,6 +62,11 @@ void Cron::pre_setup() {
             })
         }, 0, 20, Config::type_id<Config::ConfObject>());
 
+    config = Config::Object({
+        {"tasks", config}
+    });
+
+
     enabled = Config::Object({
         {"enabled", Config::Bool(false)}
     });
@@ -93,7 +98,7 @@ void Cron::register_trigger(const ConfUnionPrototype &proto) {
 
 bool Cron::trigger_action(uint8_t number, void *data, bool(*cb)(Config *,void *)) {
     bool triggered = false;
-    for (auto &conf: config) {
+    for (auto &conf: config.get("tasks")) {
         if (conf.get("trigger")->getTag() == number && cb((Config *)conf.get("trigger"), data)) {
             triggered = true;
             uint8_t action_ident = conf.get("action")->getTag();
@@ -107,7 +112,7 @@ bool Cron::trigger_action(uint8_t number, void *data, bool(*cb)(Config *,void *)
 }
 
 bool Cron::is_trigger_active(uint8_t number) {
-    for (auto &conf: config) {
+    for (auto &conf: config.get("tasks")) {
         if (conf.get("trigger")->getTag() == number) {
             return true;
         }
@@ -117,8 +122,8 @@ bool Cron::is_trigger_active(uint8_t number) {
 
 ConfigVec Cron::get_configured_triggers(uint8_t number) {
     ConfigVec vec;
-    for (size_t idx = 0; idx < config.count(); idx++) {
-        auto trigger = config.get(idx)->get("trigger");
+    for (size_t idx = 0; idx < config.get("tasks")->count(); idx++) {
+        auto trigger = config.get("tasks")->get(idx)->get("trigger");
         if (trigger->getTag() == number)
             vec.push_back({idx, (Config *)trigger->get()});
     }

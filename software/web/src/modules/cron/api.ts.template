@@ -1,0 +1,18 @@
+{{{imports}}}
+
+export interface config {
+    tasks: task[]
+}
+
+interface task {
+    trigger: cron_trigger,
+    action: cron_action
+}
+
+export interface cron_trigger {
+    0: [0, {}] | {{{trigger}}}
+}
+
+export interface cron_action {
+    0: {{{action}}}
+}
