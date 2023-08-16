@@ -121,7 +121,7 @@ void Meters::register_urls()
         api.addState(path_buf, &slots_values[slot], {}, 1000);
 
         if (meters[slot]) {
-            snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u", slot);
+            snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_", slot);
             meters[slot]->register_urls(path_buf);
         }
     }

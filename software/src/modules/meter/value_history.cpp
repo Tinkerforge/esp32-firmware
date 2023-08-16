@@ -70,7 +70,7 @@ void ValueHistory::setup()
         if (buf == nullptr)
             return;
 
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"topic\":\"%s/live\",\"payload\":", base_url.c_str());
+        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"topic\":\"%slive\",\"payload\":", base_url.c_str());
         buf_written += format_live(buf + buf_written, buf_size - buf_written);
         buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "}\n");
 
@@ -83,7 +83,7 @@ void ValueHistory::setup()
         if (buf == nullptr)
             return;
 
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"topic\":\"%s/history\",\"payload\":", base_url.c_str());
+        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"topic\":\"%shistory\",\"payload\":", base_url.c_str());
         buf_written += format_history(buf + buf_written, buf_size - buf_written);
         buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "}\n");
 
@@ -133,7 +133,7 @@ void ValueHistory::add_sample(float sample)
 #if MODULE_WS_AVAILABLE()
     {
         char *buf;
-        int buf_written = asprintf(&buf, "{\"topic\":\"%s/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[%d]}}\n", base_url.c_str(), static_cast<double>(samples_per_second()), static_cast<int>(val));
+        int buf_written = asprintf(&buf, "{\"topic\":\"%slive_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[%d]}}\n", base_url.c_str(), static_cast<double>(samples_per_second()), static_cast<int>(val));
 
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, static_cast<size_t>(buf_written));
@@ -170,9 +170,9 @@ void ValueHistory::add_sample(float sample)
             int buf_written;
 
             if (history_val == val_min) {
-                buf_written = asprintf(&buf, "{\"topic\":\"%s/history_samples\",\"payload\":{\"samples\":[null]}}\n", base_url.c_str());
+                buf_written = asprintf(&buf, "{\"topic\":\"%shistory_samples\",\"payload\":{\"samples\":[null]}}\n", base_url.c_str());
             } else {
-                buf_written = asprintf(&buf, "{\"topic\":\"%s/history_samples\",\"payload\":{\"samples\":[%d]}}\n", base_url.c_str(), static_cast<int>(history_val));
+                buf_written = asprintf(&buf, "{\"topic\":\"%shistory_samples\",\"payload\":{\"samples\":[%d]}}\n", base_url.c_str(), static_cast<int>(history_val));
             }
 
             if (buf_written > 0) {
