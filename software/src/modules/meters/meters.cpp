@@ -22,6 +22,7 @@
 
 #include "api.h"
 #include "event_log.h"
+#include "modules/meters/meter_value_id.h"
 #include "tools.h"
 
 #include "gcc_warnings.h"
@@ -39,11 +40,11 @@ void Meters::pre_setup()
     for (uint32_t slot = 0; slot < METER_SLOTS; slot++) {
         slots_value_ids[slot] = Config::Array({},
             &config_uint_max_prototype,
-            0, UINT16_MAX, Config::type_id<Config::ConfUint>()
+            0, UINT16_MAX - 1, Config::type_id<Config::ConfUint>()
         );
         slots_values[slot] = Config::Array({},
             &config_float_nan_prototype,
-            0, UINT16_MAX, Config::type_id<Config::ConfFloat>()
+            0, UINT16_MAX - 1, Config::type_id<Config::ConfFloat>()
         );
     }
 }
@@ -189,14 +190,47 @@ uint32_t Meters::get_meters(uint32_t meter_class, IMeter **found_meters, uint32_
     return found_count;
 }
 
+bool Meters::meter_supports_power(uint32_t slot)
+{
+    if (slot >= METER_SLOTS)
+        return false;
+
+    return meters[slot]->supports_power();
+}
+
+bool Meters::get_power(uint32_t slot, float *power)
+{
+    if (slot >= METER_SLOTS)
+        return false;
+
+    uint32_t power_index = index_cache_power[slot];
+    Config *val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(power_index)));
+
+    if (!val)
+        return false;
+
+    *power = val->asFloat();
+    return true;
+}
+
 void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 {
+    if (slot >= METER_SLOTS) {
+        logger.printfln("meters: Tried to update value %u for meter in non-existent slot %u.", index, slot);
+        return;
+    }
+
     slots_values[slot].get(static_cast<uint16_t>(index))->updateFloat(new_value);
     //TODO: Update value age.
 }
 
 void Meters::update_all_values(uint32_t slot, const float new_values[])
 {
+    if (slot >= METER_SLOTS) {
+        logger.printfln("meters: Tried to update all values for meter in non-existent slot %u.", slot);
+        return;
+    }
+
     Config &values = slots_values[slot];
     auto value_count = values.count();
 
@@ -209,7 +243,15 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
             //TODO: Update value age.
         }
     }
-    logger.printfln("meters: Updated values for meter in slot %u.", slot);
+}
+
+static uint32_t find_id_index(MeterValueID id, const uint32_t value_ids[], uint32_t value_count)
+{
+    for (uint32_t i = 0; i < value_count; i++) {
+        if (value_ids[i] == static_cast<uint32_t>(id))
+            return i;
+    }
+    return UINT32_MAX;
 }
 
 void Meters::declare_value_ids(uint32_t slot, const uint32_t new_value_ids[], uint32_t value_count)
@@ -223,9 +265,13 @@ void Meters::declare_value_ids(uint32_t slot, const uint32_t new_value_ids[], ui
     }
 
     for (uint16_t i = 0; i < static_cast<uint16_t>(value_count); i++) {
-        value_ids.add();
-        value_ids.get(i)->updateUint(new_value_ids[i]);
+        auto val = value_ids.add();
+        val->updateUint(new_value_ids[i]);
+
         values.add();
     }
+
+    index_cache_power[slot] = find_id_index(MeterValueID::PowerActiveLSumImExDiff, new_value_ids, value_count);
+
     logger.printfln("meters: Meter in slot %u declared %u values.", slot, value_count);
 }

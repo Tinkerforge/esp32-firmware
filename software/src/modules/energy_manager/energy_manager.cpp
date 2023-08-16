@@ -241,23 +241,12 @@ void EnergyManager::setup()
         charge_manager_allocated_current_ma = current_ma;
     });
 
-#if MODULE_METERS_AVAILABLE() && MODULE_METERS_EM_AVAILABLE()
-    IMeter *found_meter;
-    uint32_t found_count = meters.get_meters(METER_CLASS_LOCAL_EM, &found_meter, 1);
-    if (found_count > 0) {
-        if (found_meter->get_class() == METER_CLASS_LOCAL_EM) {
-            local_meter = static_cast<MeterEM *>(found_meter);
-        }
-    }
-#endif
-
 #if MODULE_METERS_AVAILABLE()
-    uint32_t meter_slot = 1; // make a font-end setting for this
-    source_meter = meters.get_meter(meter_slot);
+    meter_slot_power = 0; // make a front-end setting for this
 
-    if (!source_meter->supports_power()) {
-        logger.printfln("energy_manager: Configured source meter in slot %u isn't usable because it doesn't provide power.", meter_slot);
-        source_meter = nullptr;
+    if (!meters.meter_supports_power(meter_slot_power)) {
+        logger.printfln("energy_manager: Configured source meter in slot %u isn't usable because it doesn't provide power.", meter_slot_power);
+        meter_slot_power = UINT32_MAX;
     }
 #endif
 
@@ -532,9 +521,7 @@ void EnergyManager::update_all_data()
     }
 
 #if MODULE_METERS_EM_AVAILABLE()
-    if (local_meter) {
-        local_meter->update_from_em_all_data(all_data);
-    }
+    meters_em.update_from_em_all_data(all_data);
 #endif
 
     // Update states derived from all_data
@@ -544,7 +531,7 @@ void EnergyManager::update_all_data()
     state.get("phases_switched")->updateUint(have_phases);
 
 #if MODULE_METERS_AVAILABLE()
-    if (!source_meter || !source_meter->get_power(&power_at_meter_raw_w))
+    if (!meters.get_power(meter_slot_power, &power_at_meter_raw_w))
         power_at_meter_raw_w = NAN;
 #else
     power_at_meter_raw_w = NAN;

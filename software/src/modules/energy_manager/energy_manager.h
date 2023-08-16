@@ -25,8 +25,6 @@
 #include "config.h"
 
 #include "bindings/bricklet_warp_energy_manager.h"
-#include "modules/meters/imeter.h"
-#include "modules/meters_em/meter_em.h"
 
 #include "device_module.h"
 #include "em_rgb_led.h"
@@ -214,9 +212,6 @@ private:
     void check_debug();
     String prepare_fmtstr();
 
-    MeterEM *local_meter = nullptr;
-    IMeter *source_meter = nullptr;
-
     EmRgbLed rgb_led;
     OutputRelay *output;
     InputPin *input3;
@@ -263,6 +258,7 @@ private:
     uint32_t auto_reset_hour          = 0;
     uint32_t auto_reset_minute        = 0;
     bool     excess_charging_enable   = false;
+    uint32_t meter_slot_power         = UINT32_MAX;
     int32_t  target_power_from_grid_w = 0;
     uint32_t guaranteed_power_w       = 0;
     bool     contactor_installed      = false;

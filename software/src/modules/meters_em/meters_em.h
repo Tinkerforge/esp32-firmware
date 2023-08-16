@@ -19,9 +19,12 @@
 
 #pragma once
 
+#include "meter_em.h"
+
 #include <stdint.h>
 
 #include "config.h"
+#include "modules/energy_manager/structs.h"
 #include "modules/meters/imeter.h"
 #include "modules/meters/meter_generator.h"
 #include "module.h"
@@ -44,11 +47,13 @@ public:
     virtual const Config *get_config_prototype() override;
     virtual const Config *get_state_prototype() override _ATTRIBUTE((const));
 
+    void update_from_em_all_data(EnergyManagerAllData &all_data);
+
 private:
     const Config * const config_prototype = Config::Null();
     Config state_prototype;
 
-    uint32_t generated_meters = 0;
+    MeterEM *meter_instance = nullptr;
 };
 
 #if defined(__GNUC__)
