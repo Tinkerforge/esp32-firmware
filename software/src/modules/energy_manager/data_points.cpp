@@ -125,7 +125,7 @@ void EnergyManager::collect_data_points()
                     charger.get("power_total_sum")->updateFloat(0);
                     charger.get("power_total_count")->updateUint(0);
 
-                    if (power_total_count > 0 && !isnan(power_total_sum)) {
+                    if (power_total_count > 0) {
                         power = clamp<uint64_t>(0,
                                                 roundf(power_total_sum / power_total_count),
                                                 UINT16_MAX - 1); // W

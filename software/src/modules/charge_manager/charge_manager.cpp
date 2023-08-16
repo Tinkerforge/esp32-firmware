@@ -334,9 +334,13 @@ void ChargeManager::start_manager_task()
             target->get("requested_current")->updateUint(requested_current);
 
             target->get("meter_supported")->updateBool(CM_FEATURE_FLAGS_METER_IS_SET(v1->feature_flags));
-            target->get("power_total_sum")->updateFloat(target->get("power_total_sum")->asFloat() + v1->power_total);
-            target->get("power_total_count")->updateUint(target->get("power_total_count")->asUint() + 1);
-            target->get("energy_abs")->updateFloat(v1->energy_abs);
+            if (!isnan(v1->power_total)) {
+                target->get("power_total_sum")->updateFloat(target->get("power_total_sum")->asFloat() + v1->power_total);
+                target->get("power_total_count")->updateUint(target->get("power_total_count")->asUint() + 1);
+            }
+            if (!isnan(v1->energy_abs)) {
+                target->get("energy_abs")->updateFloat(v1->energy_abs);
+            }
 
             if (v1->error_state != 0) {
                 target->get("error")->updateUint(CHARGE_MANAGER_CLIENT_ERROR_START + static_cast<uint32_t>(v1->error_state));
