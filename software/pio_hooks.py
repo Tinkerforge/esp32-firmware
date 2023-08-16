@@ -450,6 +450,7 @@ def main():
     build_flags = env.GetProjectOption("build_flags")
     frontend_debug = env.GetProjectOption("custom_frontend_debug") == "true"
     web_only = env.GetProjectOption("custom_web_only") == "true"
+    web_build_flags = env.GetProjectOption("custom_web_build_flags")
     monitor_speed = env.GetProjectOption("monitor_speed")
     nightly = "-DNIGHTLY" in build_flags
 
@@ -598,6 +599,12 @@ def main():
     metadata = json.dumps({
         'frontend_modules': [frontend_module.under for frontend_module in frontend_modules]
     }, separators=(',', ':'))
+
+    web_build_lines = []
+    for web_build_flag in web_build_flags.split('\n'):
+        web_build_lines.append(f'export const {web_build_flag};')
+
+    util.write_file_if_different(os.path.join('web', 'src', 'build.ts'), '\n'.join(web_build_lines))
 
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
