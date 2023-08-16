@@ -540,6 +540,13 @@ body {
     aspect-ratio: 1.5;
 }
 
+@include media-breakpoint-up(md) {
+    .meters-chart {
+        position: relative;
+        aspect-ratio: 3;
+    }
+}
+
 .em-energy-analysis-status-chart {
     position: relative;
     aspect-ratio: 1.33333;
