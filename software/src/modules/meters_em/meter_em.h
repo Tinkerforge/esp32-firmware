@@ -53,7 +53,7 @@ private:
     Config *state;
     ConfigRoot errors;
 
-    bool first_values_seen = false;
+    uint32_t meter_type = METER_TYPE_NONE;
     uint32_t value_index_power  = UINT32_MAX;
     uint32_t value_index_import = UINT32_MAX;
     uint32_t value_index_export = UINT32_MAX;

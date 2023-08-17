@@ -22,7 +22,6 @@
 
 #include "api.h"
 #include "event_log.h"
-#include "modules/meters/meter_value_id.h"
 #include "tools.h"
 
 #include "gcc_warnings.h"
@@ -245,33 +244,33 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
     }
 }
 
-static uint32_t find_id_index(MeterValueID id, const uint32_t value_ids[], uint32_t value_count)
-{
-    for (uint32_t i = 0; i < value_count; i++) {
-        if (value_ids[i] == static_cast<uint32_t>(id))
-            return i;
-    }
-    return UINT32_MAX;
-}
-
-void Meters::declare_value_ids(uint32_t slot, const uint32_t new_value_ids[], uint32_t value_count)
+void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[], uint32_t value_id_count)
 {
     Config &value_ids = slots_value_ids[slot];
     Config &values    = slots_values[slot];
 
     if (value_ids.count() != 0) {
-        logger.printfln("meters: Meter in slot %u already declared %i values. Refusing to re-declare %u values.", slot, value_ids.count(), value_count);
+        logger.printfln("meters: Meter in slot %u already declared %i values. Refusing to re-declare %u values.", slot, value_ids.count(), value_id_count);
         return;
     }
 
-    for (uint16_t i = 0; i < static_cast<uint16_t>(value_count); i++) {
+    for (uint16_t i = 0; i < static_cast<uint16_t>(value_id_count); i++) {
         auto val = value_ids.add();
-        val->updateUint(new_value_ids[i]);
+        val->updateUint(static_cast<uint32_t>(new_value_ids[i]));
 
         values.add();
     }
 
-    index_cache_power[slot] = find_id_index(MeterValueID::PowerActiveLSumImExDiff, new_value_ids, value_count);
+    index_cache_power[slot] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiff);
 
-    logger.printfln("meters: Meter in slot %u declared %u values.", slot, value_count);
+    logger.printfln("meters: Meter in slot %u declared %u values.", slot, value_id_count);
+}
+
+uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, MeterValueID id)
+{
+    for (uint32_t i = 0; i < value_id_count; i++) {
+        if (value_ids[i] == id)
+            return i;
+    }
+    return UINT32_MAX;
 }
