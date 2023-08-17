@@ -22,7 +22,9 @@
 
 #include "modules/meters/meter_class_defs.h"
 #include "modules/meters/meter_value_id.h"
+#include "modules/meters/sdm_helpers.h"
 #include "task_scheduler.h"
+#include "tools.h"
 
 #include "gcc_warnings.h"
 
@@ -58,26 +60,26 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
     if (all_data.energy_meter_type == METER_TYPE_NONE)
         return;
 
-    if (!first_values_seen) {
-        uint32_t ids[] = {
-            static_cast<uint32_t>(MeterValueID::VoltageL1N),
-            static_cast<uint32_t>(MeterValueID::VoltageL2N),
-            static_cast<uint32_t>(MeterValueID::VoltageL3N),
-            static_cast<uint32_t>(MeterValueID::PowerActiveLSumImExDiff),
-            static_cast<uint32_t>(MeterValueID::EnergyActiveLSumImport),
-            static_cast<uint32_t>(MeterValueID::EnergyActiveLSumExport),
-        };
-        meters.declare_value_ids(slot, ids, ARRAY_SIZE(ids));
+    if (meter_type != all_data.energy_meter_type) {
+        if (meter_type != METER_TYPE_NONE) {
+            logger.printfln("meter_em: Meter change detected. This is not supported.");
+            return;
+        }
 
-        value_index_power  = 3;
-        value_index_import = 4;
-        value_index_export = 5;
+        meter_type = all_data.energy_meter_type;
+
+        MeterValueID ids[METER_ALL_VALUES_COUNT];
+        uint32_t id_count = METER_ALL_VALUES_COUNT;
+        sdm_helper_get_value_ids(meter_type, ids, &id_count);
+        meters.declare_value_ids(slot, ids, id_count);
+
+        value_index_power  = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
+        value_index_import = meters_find_id_index(ids, id_count, MeterValueID::EnergyActiveLSumImport);
+        value_index_export = meters_find_id_index(ids, id_count, MeterValueID::EnergyActiveLSumExport);
 
         task_scheduler.scheduleWithFixedDelay([this](){
             update_all_values();
         }, 0, 5000);
-
-        first_values_seen = true;
     }
 
     state->get("type")->updateUint(all_data.energy_meter_type);
@@ -104,18 +106,16 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
 
 void MeterEM::update_all_values()
 {
-    float new_values[METER_ALL_VALUES_COUNT] = {NAN};
-    if (energy_manager.get_energy_meter_detailed_values(new_values) != METER_ALL_VALUES_COUNT)
+    float values[METER_ALL_VALUES_COUNT] = {NAN};
+    if (energy_manager.get_energy_meter_detailed_values(values) != METER_ALL_VALUES_COUNT)
         return;
 
-    float all_values_update[] = {
-        new_values[METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1],
-        new_values[METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L2],
-        new_values[METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L3],
-        new_values[METER_ALL_VALUES_TOTAL_SYSTEM_POWER_W],
-        new_values[METER_ALL_VALUES_TOTAL_IMPORT_KWH],
-        new_values[METER_ALL_VALUES_TOTAL_EXPORT_KWH],
-    };
+    uint32_t values_len = ARRAY_SIZE(values);
+    sdm_helper_pack_all_values(meter_type, values, &values_len);
 
-    meters.update_all_values(slot, all_values_update);
+    if (values_len == 0) {
+        logger.printfln("meter_em: Cannot pack values into array of size %u.", ARRAY_SIZE(values));
+    } else {
+        meters.update_all_values(slot, values);
+    }
 }

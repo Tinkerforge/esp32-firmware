@@ -27,6 +27,7 @@
 
 #include "config.h"
 #include "module.h"
+#include "modules/meters/meter_value_id.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -56,7 +57,7 @@ public:
 
     void update_value(uint32_t slot, uint32_t index, float new_value);
     void update_all_values(uint32_t slot, const float new_values[]);
-    void declare_value_ids(uint32_t slot, const uint32_t value_ids[], uint32_t value_count);
+    void declare_value_ids(uint32_t slot, const MeterValueID value_ids[], uint32_t value_id_count);
 
 private:
     MeterGenerator *get_generator_for_class(uint32_t meter_class);
@@ -78,6 +79,8 @@ private:
     //uint32_t index_cache_import_export[METERS_SLOTS][?];
     //uint32_t index_cache_line_currents[METERS_SLOTS][?];
 };
+
+extern uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, MeterValueID id);
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
