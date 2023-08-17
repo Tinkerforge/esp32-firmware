@@ -27,8 +27,13 @@ import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { __, translate_unchecked } from "../../ts/translation"
 import { FormRow } from "../../ts/components/form_row";
 import { Button } from "react-bootstrap";
-import { InputFloat } from "../../ts/components/input_float";
-import { InputText } from "../../ts/components/input_text";
+import { InputFloat } from "src/ts/components/input_float";
+import { InputText } from "src/ts/components/input_text";
+import { cron_trigger_dict, cron_trigger, cron_trigger_configs, cron_trigger_defaults } from "../cron/api";
+import { EvseCronAction } from "./cron_action";
+import { EvseStateCronTrigger } from "./cron_trigger";
+import { InputSelect } from "src/ts/components/input_select";
+import { Cron } from "../cron/main";
 
 interface EVSEStatusState {
     state: API.getType['evse/state']
@@ -164,3 +169,50 @@ render(<EVSEStatus/>, $('#status-evse')[0]);
 export function init(){}
 export function add_event_listeners(){}
 export function update_sidebar_state(module_init: any) {}
+
+
+type EvseStateCronComponentProps = {cron: cron_trigger, children: any}
+export function EvseStateCronComponent(props: EvseStateCronComponentProps) {
+    let trigger_props = props.cron as any as EvseStateCronTrigger;
+    if (trigger_props[1] == undefined) {
+        const tmp: EvseStateCronTrigger = [
+            2,
+            {
+                charger_state: 0
+            }
+        ];
+        trigger_props = tmp;
+
+    }
+    console.log(trigger_props)
+    return <p>State: {trigger_props[1].charger_state}</p>
+}
+
+cron_trigger_dict[2] = EvseStateCronComponent;
+
+export function EvseStateCronConfig(cron_object: Cron, state: cron_trigger) {
+    let props = state as any as EvseStateCronTrigger;
+    if (props[1] == undefined) {
+        props = cron_trigger_defaults[2] as any;
+    }
+    return [{
+        name: "State",
+        value: <InputSelect
+                    items={[
+                        ["0", __("evse.status.not_connected")],
+                        ["1", __("evse.status.waiting_for_charge_release")],
+                        ["2",    __("evse.status.ready_to_charge")],
+                        ["3", __("evse.status.charging")],
+                        ["4",  __("evse.status.error")]
+                    ]}
+                    value={props[1].charger_state.toString()}
+                    onValue={(v) => {
+                        console.log("onValue:", props);
+                        props[1].charger_state = Number(v);
+                        cron_object.setTriggerFromComponent(props as any as cron_trigger);
+                    }}/>
+    }]
+}
+
+cron_trigger_configs[2] = EvseStateCronConfig;
+cron_trigger_defaults[2] = [2 as any, {charger_state: 0}]
