@@ -28,8 +28,23 @@
 
 static MeterGeneratorNone meter_generator_none;
 
+static void init_uint32_array(uint32_t *arr, size_t len, uint32_t val)
+{
+    if (len <= 0)
+        return;
+
+    uint32_t *arr_end = arr + len;
+    do {
+        *arr++ = val;
+    } while (arr < arr_end);
+}
+
 void Meters::pre_setup()
 {
+    init_uint32_array(index_cache_power, sizeof(index_cache_power) / sizeof(index_cache_power[0]), UINT32_MAX);
+    init_uint32_array(reinterpret_cast<uint32_t *>(index_cache_energy), sizeof(index_cache_energy) / sizeof(index_cache_energy[0][0]), UINT32_MAX);
+    init_uint32_array(reinterpret_cast<uint32_t *>(index_cache_currents), sizeof(index_cache_currents) / sizeof(index_cache_currents[0][0]), UINT32_MAX);
+
     generators.reserve(METER_CLASSES);
     register_meter_generator(METER_CLASS_NONE, &meter_generator_none);
 
@@ -197,6 +212,22 @@ bool Meters::meter_supports_power(uint32_t slot)
     return meters[slot]->supports_power();
 }
 
+bool Meters::meter_supports_energy(uint32_t slot)
+{
+    if (slot >= METERS_SLOTS)
+        return false;
+
+    return meters[slot]->supports_energy();
+}
+
+bool Meters::meter_supports_currents(uint32_t slot)
+{
+    if (slot >= METERS_SLOTS)
+        return false;
+
+    return meters[slot]->supports_currents();
+}
+
 bool Meters::get_power(uint32_t slot, float *power)
 {
     if (slot >= METERS_SLOTS)
@@ -210,6 +241,65 @@ bool Meters::get_power(uint32_t slot, float *power)
 
     *power = val->asFloat();
     return true;
+}
+
+uint32_t Meters::get_energy(uint32_t slot, float energy[INDEX_CACHE_ENERGY_COUNT])
+{
+    if (slot >= METERS_SLOTS)
+        return 0;
+
+    uint32_t found_values = 0;
+    for (uint32_t i = 0; i < INDEX_CACHE_ENERGY_COUNT; i++) {
+        uint32_t energy_index = index_cache_energy[slot][i];
+        Config *val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(energy_index)));
+
+        if (val) {
+            energy[i] = val->asFloat();
+            found_values++;
+        } else {
+            energy[i] = NAN;
+        }
+    }
+
+    return found_values;
+}
+
+uint32_t Meters::get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT])
+{
+    if (slot >= METERS_SLOTS)
+        return 0;
+
+    uint32_t found_N_values = 0;
+    uint32_t found_L_values = 0;
+    for (uint32_t i = 0; i < INDEX_CACHE_CURRENT_COUNT; i++) {
+        uint32_t current_index = index_cache_currents[slot][i];
+        Config *val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(current_index)));
+
+        if (val) {
+            currents[i] = val->asFloat();
+            if (i == INDEX_CACHE_CURRENT_N) {
+                found_N_values++;
+            } else {
+                found_L_values++;
+            }
+        } else {
+            currents[i] = NAN;
+        }
+    }
+
+    if (found_L_values == 3) {
+        if (found_N_values == 1) {
+            return 4;
+        } else {
+            return 3;
+        }
+    } else {
+        if (found_N_values == 1) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 }
 
 void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
@@ -261,7 +351,13 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         values.add();
     }
 
-    index_cache_power[slot] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiff);
+    index_cache_power[slot]                             = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiff);
+    index_cache_energy[slot][INDEX_CACHE_ENERGY_IMPORT] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumImport);
+    index_cache_energy[slot][INDEX_CACHE_ENERGY_EXPORT] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumExport);
+    index_cache_currents[slot][INDEX_CACHE_CURRENT_N  ] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentNImport);
+    index_cache_currents[slot][INDEX_CACHE_CURRENT_L1 ] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL1Import);
+    index_cache_currents[slot][INDEX_CACHE_CURRENT_L2 ] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL2Import);
+    index_cache_currents[slot][INDEX_CACHE_CURRENT_L3 ] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL3Import);
 
     logger.printfln("meters: Meter in slot %u declared %u values.", slot, value_id_count);
 }

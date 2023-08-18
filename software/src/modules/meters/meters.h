@@ -35,6 +35,16 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
+#define INDEX_CACHE_ENERGY_IMPORT 0
+#define INDEX_CACHE_ENERGY_EXPORT 1
+#define INDEX_CACHE_ENERGY_COUNT 2
+
+#define INDEX_CACHE_CURRENT_N  0
+#define INDEX_CACHE_CURRENT_L1 1
+#define INDEX_CACHE_CURRENT_L2 2
+#define INDEX_CACHE_CURRENT_L3 3
+#define INDEX_CACHE_CURRENT_COUNT 4
+
 class Meters final : public IModule
 {
 public:
@@ -48,12 +58,12 @@ public:
     uint32_t get_meters(uint32_t meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
 
     bool meter_supports_power(uint32_t slot);
-    //bool meter_supports_import_export(uint32_t slot);
-    //bool meter_supports_line_currents(uint32_t slot);
+    bool meter_supports_energy(uint32_t slot);
+    bool meter_supports_currents(uint32_t slot);
 
     bool get_power(uint32_t slot, float *power_w);
-    //bool get_import_export(uint32_t slot, ???);
-    //bool get_line_currents(uint32_t slot, ???);
+    uint32_t get_energy(uint32_t slot, float energy[INDEX_CACHE_ENERGY_COUNT]);
+    uint32_t get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT]);
 
     void update_value(uint32_t slot, uint32_t index, float new_value);
     void update_all_values(uint32_t slot, const float new_values[]);
@@ -75,9 +85,10 @@ private:
     std::vector<std::tuple<uint32_t, MeterGenerator *>> generators;
     IMeter *meters[METERS_SLOTS];
 
-    uint32_t index_cache_power[METERS_SLOTS] = {UINT32_MAX};
-    //uint32_t index_cache_import_export[METERS_SLOTS][?];
-    //uint32_t index_cache_line_currents[METERS_SLOTS][?];
+    // Caches must be initialized to UINT32_MAX in setup().
+    uint32_t index_cache_power[METERS_SLOTS];
+    uint32_t index_cache_energy[METERS_SLOTS][INDEX_CACHE_ENERGY_COUNT];
+    uint32_t index_cache_currents[METERS_SLOTS][INDEX_CACHE_CURRENT_COUNT];
 };
 
 extern uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, MeterValueID id);
