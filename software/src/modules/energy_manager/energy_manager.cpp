@@ -241,15 +241,6 @@ void EnergyManager::setup()
         charge_manager_allocated_current_ma = current_ma;
     });
 
-#if MODULE_METERS_AVAILABLE()
-    meter_slot_power = 0; // make a front-end setting for this
-
-    if (!meters.meter_supports_power(meter_slot_power)) {
-        logger.printfln("energy_manager: Configured source meter in slot %u isn't usable because it doesn't provide power.", meter_slot_power);
-        meter_slot_power = UINT32_MAX;
-    }
-#endif
-
     // Cache config for energy update
     default_mode                = config_in_use.get("default_mode")->asUint();
     excess_charging_enable      = config_in_use.get("excess_charging_enable")->asBool();
@@ -343,6 +334,21 @@ void EnergyManager::setup()
         return;
     }
 
+    bool power_meter_available = false;
+#if MODULE_METERS_AVAILABLE()
+    meter_slot_power = 0; // TODO: Make a front-end setting for this.
+
+    if (meters.meter_supports_power(meter_slot_power)) {
+        power_meter_available = true;
+    } else {
+        meter_slot_power = UINT32_MAX;
+    }
+#endif
+    if (excess_charging_enable && !power_meter_available) {
+        set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
+        logger.printfln("energy_manager: Excess charging enabled but configured meter can't provide power values.");
+    }
+
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_all_data();
     }, 0, EM_TASK_DELAY_MS);
@@ -384,13 +390,6 @@ void EnergyManager::setup()
 
     if (config_in_use.get("auto_reset_mode")->asBool())
         start_auto_reset_task();
-
-    task_scheduler.scheduleOnce([this](){
-        if (excess_charging_enable && em_meter_config.config_in_use.get("meter_source")->asUint() == 0) {
-            set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
-            logger.printfln("energy_manager: Excess charging enabled but no meter configured.");
-        }
-    }, 0);
 
     task_scheduler.scheduleWithFixedDelay([this](){collect_data_points();}, 15000, 10000);
     task_scheduler.scheduleWithFixedDelay([this](){set_pending_data_points();}, 15000, 100);
