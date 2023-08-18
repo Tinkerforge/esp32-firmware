@@ -106,7 +106,8 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
 
 void MeterEM::update_all_values()
 {
-    float values[METER_ALL_VALUES_COUNT] = {NAN};
+    // No need to initialize the array because either all values are written or it is rejected entirely.
+    float values[METER_ALL_VALUES_COUNT];
     if (energy_manager.get_energy_meter_detailed_values(values) != METER_ALL_VALUES_COUNT)
         return;
 
