@@ -33,8 +33,8 @@ public:
     virtual void register_urls(String base_url) {power_hist.register_urls(base_url);}
 
     virtual bool supports_power() {return false;}
-    virtual bool supports_import_export() {return false;}
-    virtual bool supports_line_currents() {return false;}
+    virtual bool supports_energy() {return false;}
+    virtual bool supports_currents() {return false;}
     //virtual bool supports_phases() {return false;}
 
 protected:
