@@ -136,7 +136,17 @@ void Meter::updateMeterAllValues(int idx, float val)
     if (!meter_setup_done)
         return;
 
-    all_values.get(idx)->updateFloat(val);
+    bool changed = false;
+
+    if (!isnan(val)) {
+        auto wrap = all_values.get(idx);
+        auto old_value = wrap->asFloat();
+        changed |= wrap->updateFloat(val) && !isnan(old_value);
+    }
+
+    if (changed) {
+        last_value_change = now_us();
+    }
 }
 
 void Meter::updateMeterAllValues(float values[METER_ALL_VALUES_COUNT])
