@@ -34,12 +34,22 @@
 
 void EnergyManager::register_events()
 {
-    event.registerEvent("meter/state", {"state"}, [this](Config *config){
-        history_meter_available = config->asUint() == 2;
-    });
+    char path_ids[32];
+    snprintf(path_ids, ARRAY_SIZE(path_ids), "meters/_%u_value_ids", meter_slot_grid);
 
-    event.registerEvent("meter/values", {"power"}, [this](Config *config){
-        update_history_meter_power(config->asFloat());
+    // Passing no values will register on the ConfigRoot.
+    event.registerEvent(path_ids, {}, [this](Config * /*unused*/){
+        uint32_t power_index;
+        if (meters.get_cached_power_index(meter_slot_grid, &power_index)) {
+            char path_values[32];
+            snprintf(path_values, ARRAY_SIZE(path_ids), "meters/_%u_values", meter_slot_grid);
+
+            event.registerEvent(path_values, {static_cast<uint16_t>(power_index)}, [this](Config *config){
+                update_history_meter_power(config->asFloat());
+            });
+        } else {
+            logger.printfln("data_points: Meter in slot %u doesn't provide power.", meter_slot_grid);
+        }
     });
 }
 
@@ -160,7 +170,7 @@ void EnergyManager::collect_data_points()
             flags |= all_data.relay    ? 0b1000 : 0;
 
             // FIXME: how to tell if meter data is stale?
-            if (history_meter_available) {
+            if (!isnan(history_meter_power_value)) {
                 update_history_meter_power(history_meter_power_value);
 
                 if (history_meter_power_duration > 0) {
@@ -234,14 +244,13 @@ void EnergyManager::collect_data_points()
             uint32_t energy_general_in[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
             uint32_t energy_general_out[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
 
+            float total_import; // kWh
+            float total_export; // kWh
             // FIXME: how to tell if meter data is stale?
-            if (meter.state.get("state")->asUint() == 2) {
+            if (meters.get_energy(meter_slot_grid, &total_import, &total_export) > 0) {
                 have_data = true;
 
-                float total_import = meter.all_values.get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat(); // kWh
-                float total_export = meter.all_values.get(METER_ALL_VALUES_TOTAL_EXPORT_KWH)->asFloat(); // kWh
-
-                if (api.hasFeature("meter_all_values") && !isnan(total_import)) {
+                if (!isnan(total_import)) {
                     energy_grid_in = clamp<uint64_t>(0,
                                                      roundf(total_import * 100.0), // kWh -> dWh
                                                      UINT32_MAX - 1);
@@ -250,7 +259,7 @@ void EnergyManager::collect_data_points()
                     energy_grid_in = clamp<uint64_t>(0, roundf(history_meter_energy_import), UINT32_MAX - 1);
                 }
 
-                if (api.hasFeature("meter_all_values") && !isnan(total_export)) {
+                if (!isnan(total_export)) {
                     energy_grid_out = clamp<uint64_t>(0,
                                                       roundf(total_export * 100.0), // kWh -> dWh
                                                       UINT32_MAX - 1);
