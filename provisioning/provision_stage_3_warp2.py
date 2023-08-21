@@ -264,7 +264,10 @@ class Stage3:
             fatal_error('Action did not complete in time')
 
     # internal
-    def change_cp_pe_state(self, state):
+    def change_cp_pe_state(self, state, quite=False):
+        if not quite:
+            print('Changing CP-PE state to {0}'.format(state))
+
         if state == 'A':
             value = [False, False, False, False]
         elif state == 'B':
@@ -553,7 +556,7 @@ class Stage3:
         self.connect_voltage_monitors(False)
         self.connect_front_panel(False)
         self.connect_type2_pe(True)
-        self.change_cp_pe_state('A')
+        self.change_cp_pe_state('A', quite=True)
         self.change_meter_state('Type2-L1')
 
         time.sleep(RELAY_SETTLE_DURATION)
@@ -572,7 +575,7 @@ class Stage3:
         self.connect_voltage_monitors(False)
         self.connect_front_panel(False)
         self.connect_type2_pe(True)
-        self.change_cp_pe_state('A')
+        self.change_cp_pe_state('A', quite=True)
         self.change_meter_state('Type2-L1')
 
         time.sleep(RELAY_SETTLE_DURATION)
@@ -710,8 +713,6 @@ class Stage3:
 
         # step 01: test IEC states
         for state in ['A', 'B', 'C', 'B', 'C', 'B', 'C', 'D']:
-            print('Changing CP-PE state to {0}'.format(state))
-
             self.change_cp_pe_state(state)
 
             time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
@@ -746,9 +747,6 @@ class Stage3:
         print('Connecting power to L1 and L2')
 
         self.connect_warp_power(['L1', 'L2'])
-
-        print('Changing CP-PE state to C')
-
         self.change_cp_pe_state('C')
 
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
@@ -842,7 +840,6 @@ class Stage3:
 
         # step 02: test voltage L1
         print('Testing wallbox, step 02/15, test voltage L1')
-        print('Changing CP-PE state to C')
 
         self.change_cp_pe_state('C')
 
@@ -984,7 +981,6 @@ class Stage3:
 
         # step 10: test R iso L1
         print('Testing wallbox, step 10/15, test R iso L1')
-        print('Changing CP-PE state to A')
 
         self.change_cp_pe_state('A')
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
@@ -1092,6 +1088,18 @@ def main():
 
     button_power_off = tk.Button(root, text='Power Off', width=50, command=lambda: stage3.power_off())
     button_power_off.grid(row=3, column=0, padx=10, pady=10)
+
+    button_cp_pe_state_a = tk.Button(root, text='CP/PE State A', width=50, command=lambda: stage3.change_cp_pe_state('A'))
+    button_cp_pe_state_a.grid(row=4, column=0, padx=10, pady=10)
+
+    button_cp_pe_state_b = tk.Button(root, text='CP/PE State B', width=50, command=lambda: stage3.change_cp_pe_state('B'))
+    button_cp_pe_state_b.grid(row=5, column=0, padx=10, pady=10)
+
+    button_cp_pe_state_c = tk.Button(root, text='CP/PE State C', width=50, command=lambda: stage3.change_cp_pe_state('C'))
+    button_cp_pe_state_c.grid(row=6, column=0, padx=10, pady=10)
+
+    button_cp_pe_state_d = tk.Button(root, text='CP/PE State D', width=50, command=lambda: stage3.change_cp_pe_state('D'))
+    button_cp_pe_state_d.grid(row=7, column=0, padx=10, pady=10)
 
     root.mainloop()
 
