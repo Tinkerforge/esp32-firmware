@@ -243,23 +243,30 @@ bool Meters::get_power(uint32_t slot, float *power)
     return true;
 }
 
-uint32_t Meters::get_energy(uint32_t slot, float energy[INDEX_CACHE_ENERGY_COUNT])
+uint32_t Meters::get_single_energy(uint32_t slot, uint32_t kind, float *energy)
+{
+    // No parameter checks for slot and kind because this function is private.
+
+    uint32_t energy_index = index_cache_energy[slot][kind];
+    Config *val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(energy_index)));
+
+    if (val) {
+        *energy = val->asFloat();
+        return 1;
+    } else {
+        *energy = NAN;
+        return 0;
+    }
+}
+
+uint32_t Meters::get_energy(uint32_t slot, float *total_import, float *total_export)
 {
     if (slot >= METERS_SLOTS)
         return 0;
 
     uint32_t found_values = 0;
-    for (uint32_t i = 0; i < INDEX_CACHE_ENERGY_COUNT; i++) {
-        uint32_t energy_index = index_cache_energy[slot][i];
-        Config *val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(energy_index)));
-
-        if (val) {
-            energy[i] = val->asFloat();
-            found_values++;
-        } else {
-            energy[i] = NAN;
-        }
-    }
+    found_values += get_single_energy(slot, INDEX_CACHE_ENERGY_IMPORT, total_import);
+    found_values += get_single_energy(slot, INDEX_CACHE_ENERGY_EXPORT, total_export);
 
     return found_values;
 }
@@ -360,6 +367,12 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     index_cache_currents[slot][INDEX_CACHE_CURRENT_L3 ] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL3Import);
 
     logger.printfln("meters: Meter in slot %u declared %u values.", slot, value_id_count);
+}
+
+bool Meters::get_cached_power_index(uint32_t slot, uint32_t *index)
+{
+    *index = index_cache_power[slot];
+    return index_cache_power[slot] != UINT32_MAX;
 }
 
 uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, MeterValueID id)
