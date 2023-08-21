@@ -28,6 +28,7 @@
 #include "config.h"
 #include "module.h"
 #include "modules/meters/meter_value_id.h"
+#include "tools.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -61,9 +62,9 @@ public:
     bool meter_supports_energy(uint32_t slot);
     bool meter_supports_currents(uint32_t slot);
 
-    bool get_power(uint32_t slot, float *power_w);
-    uint32_t get_energy(uint32_t slot, float *total_import, float *total_export);
-    uint32_t get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT]);
+    bool get_power(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
+    uint32_t get_energy(uint32_t slot, float *total_import, float *total_export, micros_t max_age = 0_usec);
+    uint32_t get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age = 0_usec);
 
     void update_value(uint32_t slot, uint32_t index, float new_value);
     void update_all_values(uint32_t slot, const float new_values[]);
@@ -88,6 +89,8 @@ private:
 
     std::vector<std::tuple<uint32_t, MeterGenerator *>> generators;
     IMeter *meters[METERS_SLOTS];
+
+    micros_t slots_last_updated_at[METERS_SLOTS];
 
     // Caches must be initialized to UINT32_MAX in setup().
     uint32_t index_cache_power[METERS_SLOTS];
