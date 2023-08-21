@@ -52,6 +52,10 @@ void Meters::pre_setup()
     config_uint_max_prototype  = Config::Uint32(UINT32_MAX);
 
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+        slots_last_updated_at[slot] = INT64_MIN;
+    }
+
+    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
         slots_value_ids[slot] = Config::Array({},
             &config_uint_max_prototype,
             0, UINT16_MAX - 1, Config::type_id<Config::ConfUint>()
@@ -228,7 +232,7 @@ bool Meters::meter_supports_currents(uint32_t slot)
     return meters[slot]->supports_currents();
 }
 
-bool Meters::get_power(uint32_t slot, float *power)
+bool Meters::get_power(uint32_t slot, float *power, micros_t max_age)
 {
     if (slot >= METERS_SLOTS)
         return false;
@@ -240,6 +244,11 @@ bool Meters::get_power(uint32_t slot, float *power)
         return false;
 
     *power = val->asFloat();
+
+    if (max_age != 0_usec && deadline_elapsed(slots_last_updated_at[slot] + max_age)) {
+        return false;
+    }
+
     return true;
 }
 
@@ -259,7 +268,7 @@ uint32_t Meters::get_single_energy(uint32_t slot, uint32_t kind, float *energy)
     }
 }
 
-uint32_t Meters::get_energy(uint32_t slot, float *total_import, float *total_export)
+uint32_t Meters::get_energy(uint32_t slot, float *total_import, float *total_export, micros_t max_age)
 {
     if (slot >= METERS_SLOTS)
         return 0;
@@ -268,10 +277,14 @@ uint32_t Meters::get_energy(uint32_t slot, float *total_import, float *total_exp
     found_values += get_single_energy(slot, INDEX_CACHE_ENERGY_IMPORT, total_import);
     found_values += get_single_energy(slot, INDEX_CACHE_ENERGY_EXPORT, total_export);
 
+    if (max_age != 0_usec && deadline_elapsed(slots_last_updated_at[slot] + max_age)) {
+        return 0;
+    }
+
     return found_values;
 }
 
-uint32_t Meters::get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT])
+uint32_t Meters::get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age)
 {
     if (slot >= METERS_SLOTS)
         return 0;
@@ -292,6 +305,10 @@ uint32_t Meters::get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_
         } else {
             currents[i] = NAN;
         }
+    }
+
+    if (max_age != 0_usec && deadline_elapsed(slots_last_updated_at[slot] + max_age)) {
+        return 0;
     }
 
     if (found_L_values == 3) {
@@ -317,7 +334,8 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
     }
 
     slots_values[slot].get(static_cast<uint16_t>(index))->updateFloat(new_value);
-    //TODO: Update value age.
+
+    slots_last_updated_at[slot] = now_us();
 }
 
 void Meters::update_all_values(uint32_t slot, const float new_values[])
@@ -329,15 +347,21 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
 
     Config &values = slots_values[slot];
     auto value_count = values.count();
+    bool updated_any_value = false;
 
     for (uint16_t i = 0; i < value_count; i++) {
         if (!isnan(new_values[i])) {
-            auto wrap = values.get(i);
-            auto old_value = wrap->asFloat();
-            bool changed = wrap->updateFloat(new_values[i]) && !isnan(old_value);
-            (void)changed;
-            //TODO: Update value age.
+            //auto wrap = values.get(i);
+            //auto old_value = wrap->asFloat();
+            //bool changed = wrap->updateFloat(new_values[i]) && !isnan(old_value);
+            //(void)changed;
+            values.get(i)->updateFloat(new_values[i]);
+            updated_any_value = true;
         }
+    }
+
+    if (updated_any_value) {
+        slots_last_updated_at[slot] = now_us();
     }
 }
 
