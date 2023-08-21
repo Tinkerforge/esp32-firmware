@@ -57,6 +57,11 @@ void MeterEM::register_urls(String base_url)
 
 void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
 {
+    // Reject stale data older than five seconds.
+    if (deadline_elapsed(all_data.last_update + 5 * 1000))
+        return;
+
+    // Do nothing if no meter was detected.
     if (all_data.energy_meter_type == METER_TYPE_NONE)
         return;
 
