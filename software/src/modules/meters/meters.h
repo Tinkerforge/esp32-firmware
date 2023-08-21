@@ -62,16 +62,20 @@ public:
     bool meter_supports_currents(uint32_t slot);
 
     bool get_power(uint32_t slot, float *power_w);
-    uint32_t get_energy(uint32_t slot, float energy[INDEX_CACHE_ENERGY_COUNT]);
+    uint32_t get_energy(uint32_t slot, float *total_import, float *total_export);
     uint32_t get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT]);
 
     void update_value(uint32_t slot, uint32_t index, float new_value);
     void update_all_values(uint32_t slot, const float new_values[]);
     void declare_value_ids(uint32_t slot, const MeterValueID value_ids[], uint32_t value_id_count);
 
+    bool get_cached_power_index(uint32_t slot, uint32_t *index);
+
 private:
     MeterGenerator *get_generator_for_class(uint32_t meter_class);
     IMeter *new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, const Config *config);
+
+    uint32_t get_single_energy(uint32_t slot, uint32_t kind, float *energy);
 
     ConfigRoot config_unions[METERS_SLOTS];
     ConfigRoot states[METERS_SLOTS];
