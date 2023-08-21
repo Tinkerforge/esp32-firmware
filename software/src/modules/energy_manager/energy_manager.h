@@ -259,6 +259,7 @@ private:
     uint32_t auto_reset_minute        = 0;
     bool     excess_charging_enable   = false;
     uint32_t meter_slot_power         = UINT32_MAX;
+    uint32_t meter_slot_grid          = 0; // TODO: Make this a config.
     int32_t  target_power_from_grid_w = 0;
     uint32_t guaranteed_power_w       = 0;
     bool     contactor_installed      = false;
@@ -296,7 +297,6 @@ private:
     ConfigRoot history_wallbox_daily;
     ConfigRoot history_energy_manager_5min;
     ConfigRoot history_energy_manager_daily;
-    bool history_meter_available = false;
     float history_meter_power_value = NAN; // W
     uint32_t history_meter_power_timestamp;
     double history_meter_power_sum = 0; // watt seconds
