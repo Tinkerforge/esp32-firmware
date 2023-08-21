@@ -49,7 +49,7 @@
 - Allow firmware update if vehicle state is error
 - Make web interface usable for screens with 320 to 360 px width
 - Warn when activating authentication that a password reset can only be done by resetting to factory defaults
-- Improve web UI of authentication, event log, WiFI and MQTT configuration
+- Improve web UI of authentication, event log, WiFi and MQTT configuration
 - Link to correct manual
 - Fix web server hang if a client can not be reached anymore
 - Hide unfinished control pilot configuration for now
@@ -71,7 +71,7 @@
 - Fix browser caching
 - Fix firmware compilation on Windows and macOS
 - Log WiFi MAC address
-- Add greyed out bars and RSSI alt text to WiFI reception icon.
+- Add greyed out bars and RSSI alt text to WiFi reception icon
 - Log reboot reason
 - Allow passing integer values for float API values
 - Use strings in APIs for NFC tag ids and IP addresses
@@ -81,7 +81,7 @@
 - Optimize user modification
 - Add features API
 - Add delay to prevent accidental charge stops immediately after a start via NFC
-- Allow passing the value of single-member commands directly.
+- Allow passing the value of single-member commands directly
 - Accept falsy values for null configs
 - Fix handling of missing meter on charge start and end
 - Add configurable send interval to MQTT
@@ -109,7 +109,7 @@
 - Refine new API
 - Add configuration migration
 - Add warning when disabling the WiFi AP
-- Fix websocket connections through SSL proxy
+- Fix WebSocket connections through SSL proxy
 - Fix charge tracker edge cases
 - Fix web interface error message hide logic
 - Fix MQTT payload length limit calculation
@@ -147,7 +147,7 @@
 - Fix sub-page scroll to top in Chrome
 - Fix downloading an empty charge log
 - Fix boolean values in charge log
-- Fix bootloop if ethernet and WiFi are completely disabled
+- Fix bootloop if Ethernet and WiFi are completely disabled
 
 2022-05-02: 2.0.3 (9725085b)
 - Fix visibility of WiFi scan results
@@ -191,7 +191,7 @@
 - Allow HTTP GET/POST for payload-less commands
 - Support config updates without "_update" suffix (only via HTTP)
 - Check static IP configuration for common mistakes
-- Fix energy meter x-axis lables on really small screens
+- Fix energy meter x-axis labels on really small screens
 - Fix WebSockets blocking the web server if a connection stays active over weeks
 - Fix duplicated NFC tag detections
 - Add reboot hint when removing all charges
@@ -201,7 +201,7 @@
 - Add uptime tracker for debug purposes
 - Fix user ID overflow
 - Block creating new users if all IDs are in use
-- Reflash bricklets stuck in bootloader mode
+- Reflash Bricklets stuck in bootloader mode
 - Fix status page showing up before the correct sub-page when reloading the web interface
 - Update timezone database
 - Fix manual and firmware URLs
@@ -213,7 +213,7 @@
 
 2022-11-17: 2.0.91 (c8d2c30f)
 - OCPP Beta 2
-- Add OCPP debug infos
+- Add OCPP debug info
 - Add OCPP smart charging profile
 - Fix OCPP bugs
 - Fix error message if firmware update is too small
@@ -309,7 +309,7 @@
 - Add watchdog protecting against firmware lock-ups
 - Fix WiFi not allowing configuration to be saved if only the selected network has changed
 - Fix float configuration values being dropped if configuration is saved by pressing enter in float input
-- Fix charge manager, nfc and users modal form submission
+- Fix charge manager, NFC and users modal form submission
 - Add check for reserved, broadcast and multicast IP addresses in charge manager configuration
 - Fix charge manager error duration not increasing if all chargers don't send packets anymore
 - Fix start/end date selection of charge tracker log export not considering the user's timezone
@@ -330,8 +330,8 @@
 - Fix charged sum calculation being wrong if charges without start date were tracked before the selected interval
 - Fix charge tracking values if power-cycled
 - Fix error feedback of text inputs
-- Fix WiFi station passphase placeholder text
-- Fix deletion of WiFI station passphrase
+- Fix WiFi station passphrase placeholder text
+- Fix deletion of WiFi station passphrase
 - Fix negative and large energy plot values
 - Fix length check of text and password inputs
 - Make Bricklet flashing more robust
@@ -354,12 +354,12 @@
 - Improve WiFi reception by disabling HT40 mode and 11b
 - Make energy meter initialization more robust
 - Fix charge manager distribution log access if verbose not requested
-- Make static IP configuration of ethernet interface more reliable
+- Make static IP configuration of Ethernet interface more reliable
 - Fix removal of controlled charger in charge manager sub-page
 - Improve translations
 - Fix charge limit blocking a charge forever
 - Update timezone database
-- Log connection duration when ethernet, WiFi, MQTT or WireGuard connection is lost
+- Log connection duration when Ethernet, WiFi, MQTT or WireGuard connection is lost
 - Fix OCPP not reconnecting if a TLS connection was closed by the server immediately after establishing it
 - Reset energy meter only once if requested via Modbus TCP
 - Make sure action requests are never ignored if requested via Modbus TCP
@@ -371,9 +371,9 @@
 
 2023-06-23: 2.1.3 (0771049a)
 - Add PWA-style bookmark support
-- Add option to require up-to-date meter value when starting a charge. Automatically enabled the first time a meter is found.
+- Add option to require up-to-date meter value when starting a charge; automatically enabled the first time a meter is found
 - Add automatic DC fault protector test after each charging session and at least every 24 hours (EVSE 2.0 Bricklet firmware 2.1.13)
-- Make sure active cp disconnect can not be turned off again through API from external (EVSE 2.0 Bricklet firmware 2.1.13)
+- Make sure active CP disconnect can not be turned off again through API from external (EVSE 2.0 Bricklet firmware 2.1.13)
 - Make sure meter type is only reconfigured once per complete read of register set (EVSE 2.0 Bricklet firmware 2.1.13)
 - Reset local timeout counter when meter is found for the first time (EVSE 2.0 Bricklet firmware 2.1.13)
 - Improve charge management efficiency by using line currents if available
@@ -389,11 +389,11 @@
 - Increase DNS cache size
 - Re-resolve controlled charger hostnames when unresponsive
 - Improve charge manager performance when controlling ten chargers
-- Fix ethernet log messages
+- Fix Ethernet log messages
 - MQTT auto discovery: Add availability flag to current limit
 - Improve Modbus TCP type documentation
 - Fix localization of float numbers in web interface
-- Improve IP configuration robustness on 10MBit ethernet connections
+- Improve IP configuration robustness on 10MBit Ethernet connections
 - Show EVSE firmware and hardware version
 - Make sure downgrades (to at least this firmware) will work if new charging slots are added in the future
 - Fix charge management scan list order changing and containing duplicated entries
@@ -401,17 +401,17 @@
 - Fix user authentication being lost if ESP restarts while charge is paused
 - Repair charge records with either the start or end meter value missing
 - Fix crash if NFC logic is blocked for more than one second
-- Increase NFC detection threshold to two seconds. Should make duplicated detection less likely.
+- Increase NFC detection threshold to two seconds; should make duplicated detection less likely
 - Make local charger link clickable
-- Check for overlapping networks between ethernet, WiFi or WireGuard IPs
+- Check for overlapping networks between Ethernet, WiFi or WireGuard IPs
 - Improve translations
-- Immediately start WiFI AP if no WiFi configured and ethernet disabled or not plugged in
+- Immediately start WiFi AP if no WiFi configured and Ethernet disabled or not plugged in
 - Improve zero line visibility
 - Consistently scale all 48h graphs to at least 1500 W
 - Don't log if optional devices are missing
 - Clarify event log messages
 - Fix race condition in web server initialization
-- Fix charge manager handling of low priority chargers.
+- Fix charge manager handling of low priority chargers
 - Handle chargers that only support less than the minimum current as low priority
 - Fix ESP crash when accessing API concurrently
 - Fix web interface errors caused by wrong web socket message order

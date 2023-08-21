@@ -21,8 +21,8 @@
 - Fix length check of text and password inputs
 - Fix event log spam
 - Fix error feedback of text inputs
-- Fix WiFi station passphase placeholder text
-- Fix deletion of WiFI station passphrase
+- Fix WiFi station passphrase placeholder text
+- Fix deletion of WiFi station passphrase
 - Fix missing meter values on UI
 
 2023-05-16: 1.0.2 (48162334)
@@ -34,35 +34,35 @@
 - Add statistics to energy analysis
 - Add separate minimum current for one- and three-phase-charging
 - Add vehicle type specific minimum current setting
-- Use energy manager bricklet's RTC
+- Use energy manager Bricklet's RTC
 - Improve WiFi reception by disabling HT40 mode and 11b
 - Make web interface listen port configurable
 - Make energy meter initialization more robust
-- Make static IP configuration of ethernet interface more reliable
+- Make static IP configuration of Ethernet interface more reliable
 - Improve translations
-- Log connection duration when ethernet, WiFi, MQTT or WireGuard connection is lost
+- Log connection duration when Ethernet, WiFi, MQTT or WireGuard connection is lost
 - Relax MQTT message timeout
 - Remove NetBIOS support
 - Update timezone database
 - Increase DNS cache size
 - Re-resolve controlled charger hostnames when unresponsive
 - Improve charge manager performance when controlling ten chargers
-- Improve ethernet/WiFi robustness
+- Improve Ethernet/WiFi robustness
 - Fix charge manager distribution log access if verbose not requested
 - Fix removal of controlled charger in charge manager sub-page
 - Fix broken status page links if charge manager config is changed but not applied
-- Fix ethernet log messages
+- Fix Ethernet log messages
 - Fix authentication sub-page UI
 - Fix charge manager scan modal UI
-- Fix switching on/off too often right after start-up.
+- Fix switching on/off too often right after start-up
 - Add "external control" phase switching mode
 
 2023-06-05: 1.0.3 (928294b2)
 - Add single-phase PV/three-phase fast charge mode
 - Show phase switching state if externally controlled
-- Check for overlapping networks between ethernet, WiFi or WireGuard IPs
+- Check for overlapping networks between Ethernet, WiFi or WireGuard IPs
 - Improve translations
-- Immediately start WiFI AP if no WiFi configured and ethernet disabled or not plugged in
+- Immediately start WiFi AP if no WiFi configured and Ethernet disabled or not plugged in
 - Improve zero line visibility
 - Consistently scale all 48h graphs to at least 1500 W
 - Reduce minimal height of month overview to 10 kWh
@@ -82,13 +82,13 @@
 - Fix race condition in web server initialization
 
 2023-06-07: 1.0.5 (52d9fc1a)
-- Fix infinitly growing energy analysis graph on status page in Safari browser
+- Fix infinitely growing energy analysis graph on status page in Safari browser
 - Fix zero height energy analysis graph in older browsers
 
 2023-06-23: 1.0.6 (0771049a)
 - Log device found/not found message at most once
 - Improve translations
-- Fix charge manager handling of low priority chargers.
+- Fix charge manager handling of low priority chargers
 - Handle chargers that only support less than the minimum current as low priority
 - Fix ESP crash when accessing API concurrently
 - Fix web interface errors caused by wrong web socket message order
