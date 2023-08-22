@@ -124,6 +124,21 @@ def main():
     if len(unused) > 0:
         unused_filtered = []
         invisible = [
+            '.em_debug.content.debug_description',
+            '.em_debug.content.debug_description_muted',
+            '.em_debug.content.debug_start',
+            '.em_debug.content.debug_stop',
+            '.em_debug.script.debug_done',
+            '.em_debug.script.debug_running',
+            '.em_debug.script.debug_stop_failed',
+            '.em_debug.script.debug_stopped',
+            '.em_debug.script.loading_debug_report',
+            '.em_debug.script.loading_debug_report_failed',
+            '.em_debug.script.loading_event_log',
+            '.em_debug.script.loading_event_log_failed',
+            '.em_debug.script.starting_debug',
+            '.em_debug.script.starting_debug_failed',
+            '.em_debug.script.tab_close_warning',
             '.evse.content.debug_description',
             '.evse.content.debug_description_muted',
             '.evse.content.debug_start',
