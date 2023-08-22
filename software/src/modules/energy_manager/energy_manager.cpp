@@ -80,7 +80,7 @@ void EnergyManager::pre_setup()
         },
         {"uptime", Config::Uint32(0)},
     });
-    meter_state = Config::Object({
+    meter_state = Config::Object({ // TODO: Remove?
         {"energy_meter_type", Config::Uint8(0)},
         {"energy_meter_power", Config::Float(0)}, // watt
         {"energy_meter_energy_import", Config::Float(0)}, // kWh
@@ -866,8 +866,16 @@ void EnergyManager::update_energy()
             p_error_filtered_w = 0;
         } else {
             if (power_at_meter_smooth_w == INT32_MAX) {
-                logger.printfln("energy_manager: Skipping energy update because meter value is not available yet.");
+                if (!printed_skipping_energy_update) {
+                    logger.printfln("energy_manager: Pausing energy updates because power value is not available yet.");
+                    printed_skipping_energy_update = true;
+                }
                 return;
+            } else {
+                if (printed_skipping_energy_update) {
+                    logger.printfln("energy_manager: Resuming energy updates because power value is now available.");
+                    printed_skipping_energy_update = false;
+                }
             }
             p_error_w          = target_power_from_grid_w - power_at_meter_smooth_w;
             p_error_filtered_w = target_power_from_grid_w - power_at_meter_filtered_w;
