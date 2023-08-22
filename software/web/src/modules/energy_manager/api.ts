@@ -51,6 +51,7 @@ export interface config {
     auto_reset_mode: boolean,
     auto_reset_time: number,
     excess_charging_enable: boolean,
+    meter_slot_grid_power: number,
     target_power_from_grid: number,
     guaranteed_power: number,
     cloud_filter_mode: number,
