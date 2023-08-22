@@ -600,10 +600,17 @@ def main(stage3):
         ipcon = IPConnection()
         ipcon.connect("localhost", 4223)
 
-        run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_wiring, stage3)
+        enumerations = enumerate_devices(ipcon)
+        evse_enum = next((e for e in enumerations if e.device_identifier == 2167), None)
+
+        if evse_enum is None:
+            fatal_error("No EVSE Bricklet found!")
+
         print("Flashing EVSE")
-        run(["python3", "comcu_flasher.py", result["evse_uid"], evse_path])
+        run(["python3", "comcu_flasher.py", evse_enum.uid, evse_path])
         result["evse_firmware"] = evse_path.split("/")[-1]
+
+        run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_wiring, None, stage3)
 
     print("Checking if EVSE was tested...")
     if not exists_evse_test_report(result["evse_uid"]):
