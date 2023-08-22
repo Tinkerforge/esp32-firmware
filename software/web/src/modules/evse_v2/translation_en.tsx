@@ -43,9 +43,6 @@ let x = {
             "ev_wakeup_desc": "EV Wakeup",
             "ev_wakeup_desc_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
             "ev_wakeup": "Attempts to wake up the charge controller of the connected vehicle by fake-un and -re-plugging the charge cable.",
-            "control_pilot_disconnect_desc": "Control Pilot Disconnect",
-            "control_pilot_disconnect_desc_muted": "",
-            "control_pilot_disconnect": "Control Pilot Disconnect",
 
             "dc_fault_current_state": "DC fault protector state",
             "dc_fault_current_state_desc": "",
@@ -64,7 +61,6 @@ let x = {
             "time_since_dc_fault_check": "Time since last DC fault protector test"
         },
         "script": {
-            "control_pilot_configuration_failed": "Updating the control pilot configuration failed",
             "reset_dc_fault_current_failed": "Reset of the DC fault protector failed",
             "gpio_configuration_failed": "Updating the GPIO configuration failed",
 

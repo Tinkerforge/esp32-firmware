@@ -43,9 +43,6 @@ let x = {
             "ev_wakeup_desc": "Fahrzeug-Weckruf",
             "ev_wakeup_desc_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
             "ev_wakeup": "Versucht die Ladeelektronik des Fahrzeugs aus einem Energiesparmodus zu wecken, indem ein Abziehen und Anstecken des Ladekabels vorgetäuscht wird.",
-            "control_pilot_disconnect_desc": "Control Pilot Disconnect",
-            "control_pilot_disconnect_desc_muted": "",
-            "control_pilot_disconnect": "Control Pilot Disconnect",
 
             "dc_fault_current_state": "DC-Fehlerstromzustand",
             "dc_fault_current_state_desc": "",
@@ -64,7 +61,6 @@ let x = {
             "time_since_dc_fault_check": "Zeit seit dem letzten DC-Fehlerschutztest"
         },
         "script": {
-            "control_pilot_configuration_failed": "Speichern der Control-Pilot-Konfiguration fehlgeschlagen",
             "reset_dc_fault_current_failed": "Zurücksetzen des DC-Fehlerstromschutzmoduls fehlgeschlagen",
             "gpio_configuration_failed": "Speichern der GPIO-Konfiguration fehlgeschlagen",
 

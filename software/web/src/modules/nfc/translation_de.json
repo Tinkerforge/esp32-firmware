@@ -8,8 +8,6 @@
         "content": {
             "nfc": "NFC-Tags",
 
-            "authorized_tags": "Berechtigte Tags",
-
             "table_tag_id": "Tag-ID",
             "table_user_id": "Zugeordneter Benutzer",
             "table_tag_type": "Tag-Typ",
