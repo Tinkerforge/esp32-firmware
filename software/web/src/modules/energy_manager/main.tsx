@@ -22,6 +22,7 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
+import { METERS_SLOTS } from "../../build";
 
 import { h, render, Fragment, Component } from "preact";
 import { Button, ButtonGroup, Collapse } from "react-bootstrap";
@@ -37,7 +38,7 @@ import { InputSelect     } from "../../ts/components/input_select";
 import { InputTime       } from "../../ts/components/input_time";
 import { InputText       } from "../../ts/components/input_text";
 import { Switch          } from "../../ts/components/switch";
-import { SubPage } from "../../ts/components/sub_page";
+import { SubPage         } from "../../ts/components/sub_page";
 
 type StringStringTuple = [string, string];
 
@@ -265,6 +266,12 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         }
         mode_list_for_inputs.push(["255", __("energy_manager.content.input_mode_nothing")]);
 
+        let meter_slots: StringStringTuple[] = [];
+        for (let i = 0; i < METERS_SLOTS; i++) {
+            meter_slots.push([i.toString(), "Slot " + i]);
+        }
+        meter_slots.push([(2**32-1).toString(), __("energy_manager.content.meter_slot_no_meter")]);
+
         // Remember previous input4_rule_then setting so that it can be restored after toggling the contactor installed setting multiple times.
         if (this.old_input4_rule_then < 0)
             this.old_input4_rule_then = this.state.input4_rule_then == 1 ? 0 : this.state.input4_rule_then;
@@ -363,6 +370,15 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
                     <Collapse in={s.excess_charging_enable}>
                         <div>
+                            <FormRow label={__("energy_manager.content.meter_slot_grid_power")} label_muted={__("energy_manager.content.meter_slot_grid_power_muted")}>
+                                <InputSelect
+                                    required
+                                    items={meter_slots}
+                                    value={s.meter_slot_grid_power}
+                                    onValue={(v) => this.setState({meter_slot_grid_power: parseInt(v)})}
+                                />
+                            </FormRow>
+
                             <FormRow label={__("energy_manager.content.guaranteed_power")} label_muted={__("energy_manager.content.guaranteed_power_muted")}>
                                 <InputFloat
                                     unit="kW"

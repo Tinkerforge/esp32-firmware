@@ -97,6 +97,7 @@ void EnergyManager::pre_setup()
         {"default_mode", Config::Uint(0, 0, 3)},
         {"auto_reset_mode", Config::Bool(false)},
         {"auto_reset_time", Config::Uint(0, 0, 1439)},
+        {"meter_slot_grid_power", Config::Uint32(0)},
         {"target_power_from_grid", Config::Int32(0)}, // in watt
         {"guaranteed_power", Config::Uint(1380, 0, 22080)}, // in watt
         {"cloud_filter_mode", Config::Uint(CLOUD_FILTER_MEDIUM, CLOUD_FILTER_OFF, CLOUD_FILTER_STRONG)},
@@ -138,6 +139,11 @@ void EnergyManager::pre_setup()
                 return "Can't enable external control when input 3 is configured to change charging mode.";
             if (cfg.get("input4_rule_then")->asUint() == INPUT_CONFIG_SWITCH_MODE)
                 return "Can't enable external control when input 4 is configured to change charging mode.";
+        }
+
+        uint32_t meter_slot_grid_power = cfg.get("meter_slot_grid_power")->asUint();
+        if (meter_slot_grid_power != UINT32_MAX && meter_slot_grid_power >= METERS_SLOTS) {
+            return "Invalid meter slot for grid power.";
         }
 
         return "";
@@ -244,6 +250,7 @@ void EnergyManager::setup()
     // Cache config for energy update
     default_mode                = config_in_use.get("default_mode")->asUint();
     excess_charging_enable      = config_in_use.get("excess_charging_enable")->asBool();
+    meter_slot_power            = config_in_use.get("meter_slot_grid_power")->asUint();
     target_power_from_grid_w    = config_in_use.get("target_power_from_grid")->asInt();          // watt
     guaranteed_power_w          = config_in_use.get("guaranteed_power")->asUint();               // watt
     contactor_installed         = config_in_use.get("contactor_installed")->asBool();
@@ -336,8 +343,6 @@ void EnergyManager::setup()
 
     bool power_meter_available = false;
 #if MODULE_METERS_AVAILABLE()
-    meter_slot_power = 0; // TODO: Make a front-end setting for this.
-
     if (meters.meter_supports_power(meter_slot_power)) {
         power_meter_available = true;
     } else {
