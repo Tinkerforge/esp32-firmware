@@ -31,12 +31,29 @@ export interface InputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSe
 }
 
 export function InputSelect(props: InputSelectProps) {
-    let {idContext, items, onValue, placeholder, classList, style, ...p} = props;
+    let {idContext, items, value, onValue, placeholder, classList, style, ...p} = props;
+
+    if (placeholder) {
+        let found = false;
+
+        for (let i = 0; i < items.length; ++i) {
+            if (items[i][0] === value) {
+                found = true;
+            }
+        }
+
+        if (!found) {
+            // if value is not found make sure to show the
+            // placeholder instead of an empty input field
+            value = "";
+        }
+    }
 
     return (
         <select
                readOnly={onValue === undefined}
                disabled={onValue === undefined}
+               value={value}
                {...p}
                class={(classList ?? "") + " custom-select"}
                style={style ?? ""}
