@@ -743,6 +743,17 @@ class Stage3:
                     if voltages[i] > VOLTAGE_OFF_THRESHOLD:
                         fatal_error('Unexpected voltage on {0}'.format(phase))
 
+        # since EVSE 2.0 firmware 2.1.14 the contactor stays off for 30 seconds
+        # after state D. the previous test ends with state D, so we need to leave
+        # state D and then wait here for at least 30 seconds
+        self.change_cp_pe_state('A')
+
+        time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+
+        print('Waiting for 30 second state D deadtime')
+
+        time.sleep(30)
+
         # step 01: test phase separation
         print('Connecting power to L1 and L2')
 
