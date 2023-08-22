@@ -279,13 +279,13 @@
 
 2022-11-25: 2.0.8 (9dbdd9f5)
 - Add WireGuard
-- Add RTC support (via Real Time Clock 2.0 Bricklet)
+- Add RTC support (via Real-Time Clock 2.0 Bricklet)
 - Add "are you sure"-dialog to meter reset
 - Add config reset API
 - Add reset button to configuration pages
 - Add electricity price configuration; show cost of charge in web interface and charge log
 - Add meter/type_override
-- Add EVSE communication watchdog (through EVSE 2.0 Bricklet firmware 2.1.5)
+- Add EVSE communication watchdog (through EVSE Bricklet firmware 2.1.5)
 - Fix error message if firmware update is too small
 - Fix EVSE low level value labels
 - Fix HTTP GET for payload-less commands
