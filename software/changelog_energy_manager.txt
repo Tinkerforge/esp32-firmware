@@ -102,3 +102,21 @@
 - Limit debug protocol to last 20000 lines
 - Fix Y axis jump on double click in graphs
 - Auto-scale graph Y axis based on tick text width
+
+<unknown>: 1.0.7 (<unknown>)
+- Add y axis label to energy analysis and meter plots
+- Merge identical legend entries in energy analysis plot
+- Fix loading of RTC time on Sundays
+- Fix wrong size of energy analysis plot
+- Show firmware build time in human readable format
+- Don't allow to submit invalid config changes
+- Add subnet mask to WiFi and network state
+- Allow full subnet mask (/0 to /32) for WireGuard
+- Switch from cards to table in charge manager UI
+- Don't lose MQTT command subscriptions on disconnect
+- Fix recovery API call payloads
+- Fix invalid feedback if no subnet mask is selected
+- Fix potential deadlock when calling API commands
+- Fix handling of missing line currents in charge manager resulting in too low charging currents
+- Fix 64k spike in energy analysis when a controlled wallbox with an API meter restarts
+- Fix API meter not updating last_value_change
