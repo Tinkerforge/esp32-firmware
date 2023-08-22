@@ -122,8 +122,38 @@ def main():
         unused = [x for x in unused if not x in to_remove]
 
     if len(unused) > 0:
-        print("Unused placeholders:")
+        unused_filtered = []
+        invisible = [
+            '.evse.content.debug_description',
+            '.evse.content.debug_description_muted',
+            '.evse.content.debug_start',
+            '.evse.content.debug_stop',
+            '.evse.script.debug_done',
+            '.evse.script.debug_running',
+            '.evse.script.debug_stop_failed',
+            '.evse.script.debug_stopped',
+            '.evse.script.loading_debug_report',
+            '.evse.script.loading_debug_report_failed',
+            '.evse.script.loading_event_log',
+            '.evse.script.loading_event_log_failed',
+            '.evse.script.starting_debug',
+            '.evse.script.starting_debug_failed',
+            '.evse.script.tab_close_warning',
+            '.firmware_update.script.downgrade',
+            '.firmware_update.script.info_page_corrupted',
+            '.firmware_update.script.no_info_page',
+            '.firmware_update.script.wrong_firmware_type',
+        ]
+
         for x in sorted(unused):
+            for y in invisible:
+                if x.endswith(y):
+                    break
+            else:
+                unused_filtered.append(x)
+
+        print("Unused placeholders:")
+        for x in sorted(unused_filtered):
             print("\t" + x)
 
 if __name__ == "__main__":
