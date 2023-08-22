@@ -27,7 +27,6 @@
             "gpios": "Inputs/Outputs",
             "gpio_names_0": "Input 3, Input 4, Output",
             "state_input_voltage": "Input voltage",
-            "meter": "Energy meter",
 
             "low": "Low",
             "high": "High"

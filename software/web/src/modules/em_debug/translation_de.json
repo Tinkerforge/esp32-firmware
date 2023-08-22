@@ -27,7 +27,6 @@
             "gpios": "Ein-/Ausgänge",
             "gpio_names_0": "Eingang 3, Eingang 4, Ausgang",
             "state_input_voltage": "Eingangsspannung",
-            "meter": "Stromzähler",
 
             "low": "Low",
             "high": "High"
