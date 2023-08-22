@@ -238,8 +238,10 @@ bool Meters::get_power(uint32_t slot, float *power, micros_t max_age)
         return false;
 
     uint32_t power_index = index_cache_power[slot];
-    Config *val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(power_index)));
+    if (power_index == UINT32_MAX)
+        return false;
 
+    Config *val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(power_index)));
     if (!val)
         return false;
 
@@ -257,7 +259,13 @@ uint32_t Meters::get_single_energy(uint32_t slot, uint32_t kind, float *energy)
     // No parameter checks for slot and kind because this function is private.
 
     uint32_t energy_index = index_cache_energy[slot][kind];
-    Config *val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(energy_index)));
+    Config *val;
+
+    if (energy_index == UINT32_MAX) {
+        val = nullptr;
+    } else {
+        val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(energy_index)));
+    }
 
     if (val) {
         *energy = val->asFloat();
@@ -293,7 +301,13 @@ uint32_t Meters::get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_
     uint32_t found_L_values = 0;
     for (uint32_t i = 0; i < INDEX_CACHE_CURRENT_COUNT; i++) {
         uint32_t current_index = index_cache_currents[slot][i];
-        Config *val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(current_index)));
+        Config *val;
+
+        if (current_index == UINT32_MAX) {
+            val = nullptr;
+        } else {
+            val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(current_index)));
+        }
 
         if (val) {
             currents[i] = val->asFloat();
