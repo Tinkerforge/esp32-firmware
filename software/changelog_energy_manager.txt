@@ -100,11 +100,11 @@
 - Fix stacked series order in day view
 - Fix wrong meter history calculation if samples arrive faster than every 500 ms
 - Limit debug protocol to last 20000 lines
-- Fix Y axis jump on double click in graphs
-- Auto-scale graph Y axis based on tick text width
+- Fix y-axis jump on double click in graphs
+- Auto-scale graph y-axis based on tick text width
 
 <unknown>: 1.0.7 (<unknown>)
-- Add y axis label to energy analysis and meter plots
+- Add y-axis label to energy analysis and meter plots
 - Merge identical legend entries in energy analysis plot
 - Fix loading of RTC time on Sundays
 - Fix wrong size of energy analysis plot

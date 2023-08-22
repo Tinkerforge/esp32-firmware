@@ -419,11 +419,11 @@
 - Fix non-UTF-8 web socket payload by clamping sampled meter values into expected range
 - Fix wrong meter history calculation if samples arrive faster than every 500 ms
 - Limit debug protocol to last 20000 lines
-- Fix Y axis jump on double click in graphs
-- Auto-scale graph Y axis based on tick text width
+- Fix y-axis jump on double click in graphs
+- Auto-scale graph y-axis based on tick text width
 
 <unknown>: 2.1.4 (<unknown>)
-- Add y axis label to meter plot
+- Add y-axis label to meter plot
 - Fix loading of RTC time on Sundays
 - Add subnet mask to WiFi and network state
 - Allow full subnet mask (/0 to /32) for WireGuard
