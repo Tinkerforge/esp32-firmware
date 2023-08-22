@@ -24,7 +24,6 @@ import * as util from "../../ts/util";
 
 import { h, render, Fragment} from "preact";
 import { __ } from "../../ts/translation";
-import { PageHeader } from "../../ts/components/page_header";
 
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";

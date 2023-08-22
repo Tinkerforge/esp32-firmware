@@ -32,7 +32,6 @@ import { CollapsedSection } from "src/ts/components/collapsed_section";
 import { OutputFloat } from "src/ts/components/output_float";
 import { Zap, ZapOff } from "react-feather";
 import uPlot from 'uplot';
-import { InputText } from "src/ts/components/input_text";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { SubPage } from "src/ts/components/sub_page";
 

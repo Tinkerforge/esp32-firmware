@@ -32,7 +32,6 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { Button } from "react-bootstrap";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
-import { state } from "./api";
 import { InputPassword } from "src/ts/components/input_password";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
 import { SubPage } from "src/ts/components/sub_page";

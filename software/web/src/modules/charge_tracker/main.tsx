@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render, Fragment, Component } from "preact";
+import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 
 import { FormRow } from "../../ts/components/form_row";

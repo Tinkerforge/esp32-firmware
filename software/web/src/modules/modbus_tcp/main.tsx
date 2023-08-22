@@ -23,7 +23,7 @@ import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
 import { h, render, Fragment } from "preact";
-import { translate_unchecked, __ } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";

@@ -36,10 +36,9 @@ import { Switch } from "../../ts/components/switch";
 import { Button} from "react-bootstrap";
 import { InputSelect } from "src/ts/components/input_select";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
-import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_GLOBAL } from "../evse_common/api";
+import { EVSE_SLOT_EXTERNAL } from "../evse_common/api";
 import { DebugLogger } from "../../ts/components/debug_logger";
 import { ConfigForm } from "src/ts/components/config_form";
-import { InputFloat } from "src/ts/components/input_float";
 import { SubPage } from "src/ts/components/sub_page";
 
 interface EVSEState {

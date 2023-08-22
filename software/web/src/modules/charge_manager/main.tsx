@@ -22,13 +22,12 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render, Fragment, Component, Attributes, ComponentChild, ComponentChildren, Ref } from "preact";
+import { h, render, Fragment, Component } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import { FormGroup } from "../../ts/components/form_group";
 import { InputText } from "../../ts/components/input_text";
 import { Button, Card, Collapse, ListGroup, Modal } from "react-bootstrap";
 import { InputSelect } from "src/ts/components/input_select";
