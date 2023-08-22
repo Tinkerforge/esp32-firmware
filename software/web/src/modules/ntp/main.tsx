@@ -26,16 +26,16 @@ import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 
 import { Switch } from "../../ts/components/switch";
-import { ConfigComponent } from "src/ts/components/config_component";
-import { ConfigForm } from "src/ts/components/config_form";
-import { FormRow } from "src/ts/components/form_row";
+import { ConfigComponent } from "../../ts/components/config_component";
+import { ConfigForm } from "../../ts/components/config_form";
+import { FormRow } from "../../ts/components/form_row";
 
 import timezones from "./timezones";
-import { InputSelect } from "src/ts/components/input_select";
+import { InputSelect } from "../../ts/components/input_select";
 import { Button } from "react-bootstrap";
-import { InputText } from "src/ts/components/input_text";
-import { IndicatorGroup } from "src/ts/components/indicator_group";
-import { SubPage } from "src/ts/components/sub_page";
+import { InputText } from "../../ts/components/input_text";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
+import { SubPage } from "../../ts/components/sub_page";
 
 type NTPConfig = API.getType['ntp/config'];
 

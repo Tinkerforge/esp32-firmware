@@ -29,10 +29,10 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputNumber } from "../../ts/components/input_number";
-import { InputSelect } from "src/ts/components/input_select";
-import { SubPage } from "src/ts/components/sub_page";
+import { InputSelect } from "../../ts/components/input_select";
+import { SubPage } from "../../ts/components/sub_page";
 import { EVSE_SLOT_MODBUS_TCP } from "../evse_common/api";
-import { CollapsedSection } from "src/ts/components/collapsed_section";
+import { CollapsedSection } from "../../ts/components/collapsed_section";
 
 type ModbusTCPConfig = API.getType['modbus_tcp/config'];
 

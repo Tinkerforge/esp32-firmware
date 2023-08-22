@@ -31,7 +31,7 @@ import { Button, Modal } from "react-bootstrap";
 import { InputText } from "../../ts/components/input_text";
 import { InputPassword } from "../../ts/components/input_password";
 import { InputSelect } from "../../ts/components/input_select";
-import { SubPage } from "src/ts/components/sub_page";
+import { SubPage } from "../../ts/components/sub_page";
 
 type APConfig = API.getType['wifi/ap_config'];
 

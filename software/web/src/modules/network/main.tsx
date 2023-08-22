@@ -26,12 +26,12 @@ import * as API from "../../ts/api";
 import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
-import { ConfigComponent } from "src/ts/components/config_component";
-import { ConfigForm } from "src/ts/components/config_form";
-import { FormRow } from "src/ts/components/form_row";
-import { InputText } from "src/ts/components/input_text";
-import { InputNumber } from "src/ts/components/input_number";
-import { SubPage } from "src/ts/components/sub_page";
+import { ConfigComponent } from "../../ts/components/config_component";
+import { ConfigForm } from "../../ts/components/config_form";
+import { FormRow } from "../../ts/components/form_row";
+import { InputText } from "../../ts/components/input_text";
+import { InputNumber } from "../../ts/components/input_number";
+import { SubPage } from "../../ts/components/sub_page";
 
 type NetworkConfig = API.getType['network/config'];
 

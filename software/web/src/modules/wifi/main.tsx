@@ -27,8 +27,8 @@ import { __ } from "../../ts/translation";
 
 import { WifiAP } from "./wifi_ap";
 import { WifiSTA, wifi_symbol } from "./wifi_sta";
-import { FormRow } from "src/ts/components/form_row";
-import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { FormRow } from "../../ts/components/form_row";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
 
 render(<WifiAP/>, $('#wifi-ap')[0])
 render(<WifiSTA/>, $('#wifi-sta')[0])

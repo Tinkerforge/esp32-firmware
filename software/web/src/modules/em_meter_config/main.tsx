@@ -24,15 +24,15 @@ import * as API from "../../ts/api";
 
 import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigComponent } from "src/ts/components/config_component";
-import { ConfigForm } from "src/ts/components/config_form";
-import { FormRow } from "src/ts/components/form_row";
-import { InputSelect } from "src/ts/components/input_select";
+import { ConfigComponent } from "../../ts/components/config_component";
+import { ConfigForm } from "../../ts/components/config_form";
+import { FormRow } from "../../ts/components/form_row";
+import { InputSelect } from "../../ts/components/input_select";
 import { Collapse } from "react-bootstrap";
-import { FormSeparator } from "src/ts/components/form_separator";
-import { IndicatorGroup } from "src/ts/components/indicator_group";
-import { OutputFloat } from "src/ts/components/output_float";
-import { SubPage } from "src/ts/components/sub_page";
+import { FormSeparator } from "../../ts/components/form_separator";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
+import { OutputFloat } from "../../ts/components/output_float";
+import { SubPage } from "../../ts/components/sub_page";
 
 interface EMMeterConfigState {
     meter_state: API.getType['energy_manager/meter_state']

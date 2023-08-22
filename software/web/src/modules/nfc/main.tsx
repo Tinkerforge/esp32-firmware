@@ -29,8 +29,8 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { InputText } from "../../ts/components/input_text";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
-import { InputSelect } from "src/ts/components/input_select";
-import { SubPage } from "src/ts/components/sub_page";
+import { InputSelect } from "../../ts/components/input_select";
+import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 
 const MAX_AUTHORIZED_TAGS = 16;

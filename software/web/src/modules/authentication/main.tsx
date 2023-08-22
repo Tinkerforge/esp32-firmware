@@ -31,10 +31,10 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
-import { InputPassword } from "src/ts/components/input_password";
+import { InputPassword } from "../../ts/components/input_password";
 import { Button } from "react-bootstrap";
-import { Switch } from "src/ts/components/switch";
-import { SubPage } from "src/ts/components/sub_page";
+import { Switch } from "../../ts/components/switch";
+import { SubPage } from "../../ts/components/sub_page";
 
 type AuthenticationState = API.getType['authentication/config'] & {password: string};
 

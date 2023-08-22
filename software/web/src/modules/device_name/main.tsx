@@ -28,7 +28,7 @@ import { h, render, Fragment, } from "preact";
 import { InputText } from "../../ts/components/input_text";
 import { Button } from "react-bootstrap";
 import { Save } from "react-feather";
-import { ConfigComponent } from "src/ts/components/config_component";
+import { ConfigComponent } from "../../ts/components/config_component";
 
 
 export class DeviceName extends ConfigComponent<'info/display_name'> {

@@ -30,13 +30,13 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import { InputText } from "../../ts/components/input_text";
 import { InputDate } from "../../ts/components/input_date";
 import { Button, Collapse, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
-import { InputSelect } from "src/ts/components/input_select";
+import { InputSelect } from "../../ts/components/input_select";
 import { BatteryCharging, Calendar, Clock, Download, User } from "react-feather";
 import { getAllUsernames } from "../users/main";
-import { ConfigComponent } from "src/ts/components/config_component";
-import { ConfigForm } from "src/ts/components/config_form";
-import { InputFloat } from "src/ts/components/input_float";
-import { SubPage } from "src/ts/components/sub_page";
+import { ConfigComponent } from "../../ts/components/config_component";
+import { ConfigForm } from "../../ts/components/config_form";
+import { InputFloat } from "../../ts/components/input_float";
+import { SubPage } from "../../ts/components/sub_page";
 import { useMemo } from "preact/hooks";
 
 type Charge = API.getType['charge_tracker/last_charges'][0];

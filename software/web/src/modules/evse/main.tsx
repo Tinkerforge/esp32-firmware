@@ -34,14 +34,14 @@ import { InputText } from "../../ts/components/input_text";
 import { InputIndicator } from "../../ts/components/input_indicator";
 import { Switch } from "../../ts/components/switch";
 import { Button } from "react-bootstrap";
-import { CollapsedSection } from "src/ts/components/collapsed_section";
-import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_GLOBAL, EVSE_SLOT_GP_INPUT, EVSE_SLOT_OCPP, EVSE_SLOT_SHUTDOWN_INPUT } from "../evse_common/api";
-import { InputFile } from "src/ts/components/input_file";
+import { CollapsedSection } from "../../ts/components/collapsed_section";
+import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_GP_INPUT, EVSE_SLOT_OCPP, EVSE_SLOT_SHUTDOWN_INPUT } from "../evse_common/api";
+import { InputFile } from "../../ts/components/input_file";
 import { DebugLogger } from "../../ts/components/debug_logger";
-import { ConfigComponent } from "src/ts/components/config_component";
-import { InputSelect } from "src/ts/components/input_select";
-import { ConfigForm } from "src/ts/components/config_form";
-import { SubPage } from "src/ts/components/sub_page";
+import { ConfigComponent } from "../../ts/components/config_component";
+import { InputSelect } from "../../ts/components/input_select";
+import { ConfigForm } from "../../ts/components/config_form";
+import { SubPage } from "../../ts/components/sub_page";
 
 interface EVSEState {
     state: API.getType['evse/state'];

@@ -32,12 +32,12 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
-import { InputFloat } from "src/ts/components/input_float";
-import { Switch } from "src/ts/components/switch";
-import { InputPassword } from "src/ts/components/input_password";
-import { Slash, User, UserPlus, UserX } from "react-feather";
+import { InputFloat } from "../../ts/components/input_float";
+import { Switch } from "../../ts/components/switch";
+import { InputPassword } from "../../ts/components/input_password";
+import { Slash, User } from "react-feather";
 import { EVSE_SLOT_USER } from "../evse_common/api";
-import { SubPage } from "src/ts/components/sub_page";
+import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 import { Check } from "react-feather";
 

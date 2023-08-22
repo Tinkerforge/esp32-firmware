@@ -27,13 +27,13 @@ import { PageHeader } from "../../ts/components/page_header";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { FormRow } from "../../ts/components/form_row";
 import { Button } from "react-bootstrap";
-import { InputSelect } from "src/ts/components/input_select";
-import { CollapsedSection } from "src/ts/components/collapsed_section";
-import { OutputFloat } from "src/ts/components/output_float";
+import { InputSelect } from "../../ts/components/input_select";
+import { CollapsedSection } from "../../ts/components/collapsed_section";
+import { OutputFloat } from "../../ts/components/output_float";
 import { Zap, ZapOff } from "react-feather";
 import uPlot from 'uplot';
 import { FormSeparator } from "../../ts/components/form_separator";
-import { SubPage } from "src/ts/components/sub_page";
+import { SubPage } from "../../ts/components/sub_page";
 
 interface DetailedViewEntry {
     i: number,

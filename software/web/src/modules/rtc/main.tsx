@@ -26,11 +26,11 @@ import { h, render, Fragment} from "preact";
 
 import { ConfigComponent } from "../../ts/components/config_component";
 import { OutputDatetime } from "../../ts/components/output_datetime";
-import { FormRow } from "src/ts/components/form_row";
+import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
-import { __ } from "src/ts/translation";
-import { ConfigForm } from "src/ts/components/config_form";
-import { SubPage } from "src/ts/components/sub_page";
+import { __ } from "../../ts/translation";
+import { ConfigForm } from "../../ts/components/config_form";
+import { SubPage } from "../../ts/components/sub_page";
 
 
 type RTCTime = API.getType['rtc/time'];

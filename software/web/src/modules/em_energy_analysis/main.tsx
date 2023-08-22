@@ -29,10 +29,10 @@ import { InputDate } from "../../ts/components/input_date";
 import { InputMonth } from "../../ts/components/input_month";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
-import { OutputFloat } from "src/ts/components/output_float";
-import { SubPage } from "src/ts/components/sub_page";
+import { OutputFloat } from "../../ts/components/output_float";
+import { SubPage } from "../../ts/components/sub_page";
 import uPlot from 'uplot';
-import { InputText } from "src/ts/components/input_text";
+import { InputText } from "../../ts/components/input_text";
 import { uPlotTimelinePlugin } from "../../ts/uplot-plugins";
 
 interface CachedData {

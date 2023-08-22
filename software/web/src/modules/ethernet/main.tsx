@@ -30,7 +30,7 @@ import { FormRow         } from "../../ts/components/form_row";
 import { IndicatorGroup  } from "../../ts/components/indicator_group";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
 import { Switch          } from "../../ts/components/switch";
-import { SubPage } from "src/ts/components/sub_page";
+import { SubPage } from "../../ts/components/sub_page";
 
 type EthernetConfig = API.getType['ethernet/config'];
 

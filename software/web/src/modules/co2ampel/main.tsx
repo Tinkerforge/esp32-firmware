@@ -29,9 +29,9 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputFloat } from "../../ts/components/input_float";
-import { IndicatorGroup } from "src/ts/components/indicator_group";
-import { OutputFloat } from "src/ts/components/output_float";
-import { SubPage } from "src/ts/components/sub_page";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
+import { OutputFloat } from "../../ts/components/output_float";
+import { SubPage } from "../../ts/components/sub_page";
 
 type Co2Config = API.getType['co2/config'];
 

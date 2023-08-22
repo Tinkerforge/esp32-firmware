@@ -23,12 +23,12 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, Component, Fragment, render } from "preact"
-import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { __, translate_unchecked } from "../../ts/translation"
-import { FormRow } from "src/ts/components/form_row";
+import { FormRow } from "../../ts/components/form_row";
 import { Button } from "react-bootstrap";
-import { InputFloat } from "src/ts/components/input_float";
-import { InputText } from "src/ts/components/input_text";
+import { InputFloat } from "../../ts/components/input_float";
+import { InputText } from "../../ts/components/input_text";
 
 interface EVSEStatusState {
     state: API.getType['evse/state']

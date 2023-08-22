@@ -26,7 +26,7 @@ import { h, render, Fragment, Component} from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 
-import { ConfigComponent } from "src/ts/components/config_component";
+import { ConfigComponent } from "../../ts/components/config_component";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
@@ -34,12 +34,12 @@ import { InputText } from "../../ts/components/input_text";
 import { InputIndicator } from "../../ts/components/input_indicator";
 import { Switch } from "../../ts/components/switch";
 import { Button} from "react-bootstrap";
-import { InputSelect } from "src/ts/components/input_select";
-import { CollapsedSection } from "src/ts/components/collapsed_section";
+import { InputSelect } from "../../ts/components/input_select";
+import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { EVSE_SLOT_EXTERNAL } from "../evse_common/api";
 import { DebugLogger } from "../../ts/components/debug_logger";
-import { ConfigForm } from "src/ts/components/config_form";
-import { SubPage } from "src/ts/components/sub_page";
+import { ConfigForm } from "../../ts/components/config_form";
+import { SubPage } from "../../ts/components/sub_page";
 
 interface EVSEState {
     state: API.getType['evse/state'];

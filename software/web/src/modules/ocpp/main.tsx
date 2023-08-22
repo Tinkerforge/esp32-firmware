@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
-import { h, render, Component, Fragment} from "preact";
+import { h, render, Component, Fragment } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 
 import { Switch } from "../../ts/components/switch";
@@ -31,10 +31,10 @@ import { InputText } from "../../ts/components/input_text";
 import { ConfigForm } from "../../ts/components/config_form";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { Button } from "react-bootstrap";
-import { CollapsedSection } from "src/ts/components/collapsed_section";
-import { InputPassword } from "src/ts/components/input_password";
-import { IndicatorGroup } from "src/ts/components/indicator_group";
-import { SubPage } from "src/ts/components/sub_page";
+import { CollapsedSection } from "../../ts/components/collapsed_section";
+import { InputPassword } from "../../ts/components/input_password";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
+import { SubPage } from "../../ts/components/sub_page";
 
 type OcppConfig = API.getType['ocpp/config']
 
