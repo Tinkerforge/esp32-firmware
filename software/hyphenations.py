@@ -1,4 +1,6 @@
 de_hyph = [
+    '0xFFFFFFFF',
+    '1663143715',
     'abge-brochen',
     'Abge-schlossen',
     'ab-ge-schlos-sen',
@@ -35,7 +37,8 @@ de_hyph = [
     'Auto-ma-tisch',
     'auto-matisch',
     'auto-matische',
-    "Auto-matische",
+    'Auto-matische',
+    'be-arbeiten',
     'bei-lie-genden',
     'be-inhalten',
     'be-inhaltet',
