@@ -106,25 +106,26 @@ void Rtc::register_backend(IRtcBackend *_backend)
             return;
 
         timeval tv = backend->get_time();
+        if (tv.tv_sec == 0)
+            return;
 
         tm tm;
         gmtime_r(&tv.tv_sec, &tm);
-
-#if MODULE_CRON_AVAILABLE()
-        if (cron.is_trigger_active(CRON_TRIGGER_CRON)) {
-            uint32_t last_minute = time.get("minute")->asUint();
-            if (last_minute < tm.tm_min)
-                cron.trigger_action(CRON_TRIGGER_CRON, &tm, &trigger_action);
-        }
-#endif
 
         time.get("year")->updateUint(tm.tm_year + 1900);
         time.get("month")->updateUint(tm.tm_mon + 1);
         time.get("day")->updateUint(tm.tm_mday);
         time.get("hour")->updateUint(tm.tm_hour);
-        time.get("minute")->updateUint(tm.tm_min);
+        bool minute_changed = time.get("minute")->updateUint(tm.tm_min);
         time.get("second")->updateUint(tm.tm_sec);
         time.get("weekday")->updateUint(tm.tm_wday);
+
+#if MODULE_CRON_AVAILABLE()
+        if (minute_changed && cron.is_trigger_active(CRON_TRIGGER_CRON))
+            cron.trigger_action(CRON_TRIGGER_CRON, &tm, &trigger_action);
+#else
+        (void)minute_changed;
+#endif
     }, 0, 200);
 
     api.addFeature("rtc");
