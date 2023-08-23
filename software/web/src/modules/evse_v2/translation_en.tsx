@@ -39,6 +39,8 @@ let x = {
             "button_configuration_start_charging": "Start charging",
             "button_configuration_stop_charging": "Stop charging",
             "button_configuration_start_and_stop_charging": "Start or stop charging",
+            "button_pressed": "At button press",
+            "button_released": "At button release",
 
             "ev_wakeup_desc": "EV Wakeup",
             "ev_wakeup_desc_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,

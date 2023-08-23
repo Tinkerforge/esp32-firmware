@@ -38,8 +38,12 @@ import { InputSelect } from "../../ts/components/input_select";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { EVSE_SLOT_EXTERNAL } from "../evse_common/api";
 import { DebugLogger } from "../../ts/components/debug_logger";
-import { ConfigForm } from "../../ts/components/config_form";
-import { SubPage } from "../../ts/components/sub_page";
+import { ConfigForm } from "src/ts/components/config_form";
+import { InputFloat } from "src/ts/components/input_float";
+import { SubPage } from "src/ts/components/sub_page";
+import { cron_trigger, cron_trigger_configs, cron_trigger_defaults, cron_trigger_dict, cron_trigger_names } from "../cron/api";
+import { EvseButtonCronTrigger } from "./cron_trigger";
+import { Cron } from "../cron/main";
 
 interface EVSEState {
     state: API.getType['evse/state'];
@@ -675,3 +679,35 @@ export function update_sidebar_state(module_init: any) {
     $('#sidebar-evse-settings').prop('hidden', !module_init.evse_v2);
     $('#status-evse').prop('hidden', !module_init.evse_v2);
 }
+
+export function EvseButtonCronTriggerComponent(cron: cron_trigger) {
+    const props = (cron as any as EvseButtonCronTrigger)[1];
+    return props.button_pressed ? __("evse.content.button_pressed") : __("evse.content.button_released");
+}
+
+export function EvseButtonCronTriggerConfig(cron_object: Cron, props: cron_trigger) {
+    let state = props as any as EvseButtonCronTrigger;
+    if (state[1] == undefined) {
+        state = cron_trigger_defaults[4] as any;
+    }
+    return [
+        {
+            name: __("evse.content.button_configuration"),
+            value: <InputSelect
+                items={[
+                    ["0", __("evse.content.button_released")],
+                    ["1", __("evse.content.button_pressed")]
+                ]}
+            value={state[1].button_pressed ? "1": "0"}
+            onValue={(v) => {
+                state[1].button_pressed = v == "1";
+                cron_object.setTriggerFromComponent(state as any);
+            }}/>
+        }
+    ]
+}
+
+cron_trigger_defaults[4] = [4 as any, {button_pressed: true}];
+cron_trigger_dict[4] = EvseButtonCronTriggerComponent;
+cron_trigger_configs[4] = EvseButtonCronTriggerConfig;
+cron_trigger_names[4] = __("evse.content.button_configuration");

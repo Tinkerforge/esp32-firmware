@@ -39,6 +39,8 @@ let x = {
             "button_configuration_start_charging": "Ladestart",
             "button_configuration_stop_charging": "Ladestop",
             "button_configuration_start_and_stop_charging": "Ladestart bzw. Ladestop",
+            "button_pressed": "Drücken des Tasters",
+            "button_released": "Loslassen des Tasters",
 
             "ev_wakeup_desc": "Fahrzeug-Weckruf",
             "ev_wakeup_desc_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
