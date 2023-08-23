@@ -451,7 +451,6 @@
 - Stop using disabled items in InputSelect as placeholder
 - Don't blink LED if user slot is not active
 - Switch from cards to table in charge manager, NFC and users UI
-- Don't lose MQTT command subscriptions on disconnect
 - Fix recovery API call payloads
 - Fix invalid feedback if no subnet mask is selected
 - Fix potential deadlock when calling API commands
