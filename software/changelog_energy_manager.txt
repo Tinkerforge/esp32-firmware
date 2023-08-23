@@ -103,7 +103,7 @@
 - Fix y-axis jump on double click in graphs
 - Auto-scale graph y-axis based on tick text width
 
-<unknown>: 1.0.7 (<unknown>)
+2023-08-23: 1.0.7 (2efbe7c5)
 - Add y-axis label to energy analysis and meter plots
 - Merge identical legend entries in energy analysis plot
 - Fix wrong size of energy analysis plot
