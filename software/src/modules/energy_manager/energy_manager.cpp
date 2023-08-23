@@ -1238,7 +1238,11 @@ void EnergyManager::set_rgb_led(uint8_t pattern, uint16_t hue)
 
 void EnergyManager::set_time(const tm &date_time)
 {
-    int rc = tf_warp_energy_manager_set_date_time(&device,
+    uint32_t retries = 3;
+    int rc;
+
+    do {
+        rc = tf_warp_energy_manager_set_date_time(&device,
                                                   static_cast<uint8_t >(date_time.tm_sec),
                                                   static_cast<uint8_t >(date_time.tm_min),
                                                   static_cast<uint8_t >(date_time.tm_hour),
@@ -1246,9 +1250,11 @@ void EnergyManager::set_time(const tm &date_time)
                                                   static_cast<uint8_t >(date_time.tm_wday),
                                                   static_cast<uint8_t >(date_time.tm_mon),
                                                   static_cast<uint16_t>(date_time.tm_year - 100));
+        if (rc == TF_E_OK)
+            return;
+    } while (retries-- > 0);
 
-    if (rc != TF_E_OK)
-        logger.printfln("energy_manager: Failed to set datetime: error %i", rc);
+    logger.printfln("energy_manager: Failed to set datetime: error %i", rc);
 }
 
 struct timeval EnergyManager::get_time()
@@ -1265,30 +1271,36 @@ struct timeval EnergyManager::get_time()
     uint8_t tm_mon;
     uint16_t tm_year;
 
-    int rc = tf_warp_energy_manager_get_date_time(&device, &tm_sec, &tm_min, &tm_hour, &tm_mday, &tm_wday, &tm_mon, &tm_year);
+    uint32_t retries = 1;
+    int rc;
 
-    check_bricklet_reachable(rc, "get_time");
+    do {
+        rc = tf_warp_energy_manager_get_date_time(&device, &tm_sec, &tm_min, &tm_hour, &tm_mday, &tm_wday, &tm_mon, &tm_year);
 
-    if (rc != TF_E_OK) {
-        logger.printfln("energy_manager: Failed to get datetime: error %i", rc);
-        time.tv_sec = 0;
+        check_bricklet_reachable(rc, "get_time");
+
+        if (rc != TF_E_OK)
+            continue;
+
+        date_time.tm_sec  = tm_sec;
+        date_time.tm_min  = tm_min;
+        date_time.tm_hour = tm_hour;
+        date_time.tm_mday = tm_mday + 1;
+        date_time.tm_wday = tm_wday;
+        date_time.tm_mon  = tm_mon;
+        date_time.tm_year = tm_year + 100;
+
+        time.tv_sec = timegm(&date_time);
+
+        //FIXME not Y2038-safe
+        if (time.tv_sec < static_cast<time_t>(build_timestamp() - 24 * 3600))
+            time.tv_sec = 0;
+
         return time;
-    }
+    } while (retries-- > 0);
 
-    date_time.tm_sec  = tm_sec;
-    date_time.tm_min  = tm_min;
-    date_time.tm_hour = tm_hour;
-    date_time.tm_mday = tm_mday + 1;
-    date_time.tm_wday = tm_wday;
-    date_time.tm_mon  = tm_mon;
-    date_time.tm_year = tm_year + 100;
-
-    time.tv_sec = timegm(&date_time);
-
-    //FIXME not Y2038-safe
-    if (time.tv_sec < static_cast<time_t>(build_timestamp() - 24 * 3600))
-        time.tv_sec = 0;
-
+    logger.printfln("energy_manager: Failed to get datetime: error %i", rc);
+    time.tv_sec = 0;
     return time;
 }
 
