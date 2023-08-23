@@ -33,8 +33,11 @@ import { InputSelect } from "../../ts/components/input_select";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputPassword } from "../../ts/components/input_password";
 import { Switch } from "../../ts/components/switch";
-import { IndicatorGroup } from "../../ts/components/indicator_group";
-import { SubPage } from "../../ts/components/sub_page";
+import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { SubPage } from "src/ts/components/sub_page";
+import { cron_trigger, cron_trigger_configs, cron_trigger_defaults, cron_trigger_dict, cron_trigger_names } from "../cron/api";
+import { MqttCronTrigger } from "./cron_trigger";
+import { Cron } from "../cron/main";
 
 type MqttConfig = API.getType['mqtt/config'];
 
@@ -208,3 +211,53 @@ export function init() {}
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-mqtt').prop('hidden', !module_init.mqtt);
 }
+
+export function MqttCronTriggerComponent(cron: cron_trigger) {
+    const props = (cron as any as MqttCronTrigger)[1];
+    let ret = "Topic: \"" + props.topic + "\"\n";
+    ret += "Payload: \"" + props.payload + "\"\n";
+    ret += "Retain: " + props.retain;
+    return ret
+}
+
+export function MqttCronTriggerConfig(cron_object: Cron, state: cron_trigger) {
+    let props = state as any as MqttCronTrigger;
+    if (props[1] === undefined) {
+        props = cron_trigger_defaults[3] as any;
+    }
+    console.log(props);
+    return [
+        {
+            name: "Topic",
+            value: <InputText
+                value={props[1].topic}
+                onValue={(v) => {
+                    props[1].topic = v;
+                    cron_object.setTriggerFromComponent(props as any as cron_trigger);
+                }}/>
+        },
+        {
+            name: "Payload",
+            value: <InputText
+                value={props[1].payload}
+                onValue={(v) => {
+                    props[1].payload = v;
+                    cron_object.setTriggerFromComponent(props as any as cron_trigger);
+                }}/>
+        },
+        {
+            name: "Retain",
+            value: <Switch
+                checked={props[1].retain}
+                onClick={() => {
+                    props[1].retain = !props[1].retain;
+                    cron_object.setTriggerFromComponent(props as any as cron_trigger);
+                }}/>
+        }
+    ]
+}
+
+cron_trigger_dict[3] = MqttCronTriggerComponent;
+cron_trigger_configs[3] = MqttCronTriggerConfig;
+cron_trigger_defaults[3] = [3 as any, {payload: "", topic: "", retain: false}]
+cron_trigger_names[3] = __("mqtt.content.mqtt");
