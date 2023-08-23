@@ -38,7 +38,7 @@ import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
-import { cron_action, cron_action_dict, cron_trigger, cron_action_configs, cron_action_defaults } from "../cron/api";
+import { cron_action, cron_action_dict, cron_trigger, cron_action_configs, cron_action_defaults, cron_action_names } from "../cron/api";
 import { ChargeManagerCronAction } from "./cron_action";
 import { Cron } from "../cron/main";
 
@@ -739,4 +739,5 @@ export function ChargeManagerCronConfigComponent(cron_object: Cron, state: cron_
 }
 
 cron_action_configs[6] = ChargeManagerCronConfigComponent;
-cron_action_defaults[6] = [6 as any, {current: 0}]
+cron_action_defaults[6] = [6 as any, {current: 0}];
+cron_action_names[6] = "Charge manager action";
