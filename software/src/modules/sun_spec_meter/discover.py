@@ -2,12 +2,16 @@
 
 # https://github.com/sunspec/models/blob/master/json
 
-import time
+import sys
 import math
 import argparse
 import pymodbus
 
 print('Using pymodbus version:', pymodbus.__version__)
+
+if not pymodbus.__version__.startswith('3.'):
+    print('Error: Available pymodbus version is too old, version 3.x.y required')
+    sys.exit(1)
 
 from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
