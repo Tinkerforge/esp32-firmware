@@ -27,7 +27,7 @@ import { ConfigComponent } from "src/ts/components/config_component";
 import { SubPage } from "src/ts/components/sub_page";
 import { ConfigForm } from "src/ts/components/config_form";
 import { Table, TableRow } from "src/ts/components/table";
-import { cron_action, cron_action_configs, cron_action_defaults, cron_action_dict, cron_trigger, cron_trigger_configs, cron_trigger_defaults, cron_trigger_dict, task } from "./api";
+import { cron_action, cron_action_configs, cron_action_defaults, cron_action_dict, cron_action_names, cron_trigger, cron_trigger_configs, cron_trigger_defaults, cron_trigger_dict, cron_trigger_names, task } from "./api";
 import { InputSelect } from "src/ts/components/input_select";
 import { __ } from "src/ts/translation";
 
@@ -96,7 +96,14 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             name: "Trigger",
             value: <InputSelect
                         items={trigger}
-                        onValue={(v) => this.setState({displayed_trigger: Number(v), edit_task: {trigger: cron_trigger_defaults[Number(v)], action: this.state.edit_task.action}})}
+                        onValue={(v) => this.setState(
+                            {
+                                displayed_trigger: Number(v),
+                                edit_task: {
+                                    trigger: cron_trigger_defaults[Number(v)],
+                                    action: this.state.edit_task.action
+                                }
+                            })}
                         value={this.state.displayed_trigger}/>
         }]
         if (this.state.displayed_trigger != 0) {
@@ -108,7 +115,14 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             name: "Action",
             value: <InputSelect
                         items={action}
-                        onValue={(v) => this.setState({displayed_action: Number(v), edit_task: {action: cron_action_defaults[Number(v)], trigger: this.state.edit_task.trigger}})}
+                        onValue={(v) => this.setState(
+                            {
+                                displayed_action: Number(v),
+                                edit_task: {
+                                    action: cron_action_defaults[Number(v)],
+                                    trigger: this.state.edit_task.trigger
+                                }
+                            })}
                         value={this.state.displayed_action}/>
         }]
 
@@ -116,7 +130,6 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             const action_config = cron_action_configs[this.state.displayed_action](this, this.state.edit_task.action);
             actionSelector = actionSelector.concat(action_config);
         }
-        console.log("edit task after create selectors:", this.state.edit_task);
 
         return triggerSelector.concat(actionSelector);
     }
@@ -124,7 +137,6 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
     assembleTable() {
         let rows: TableRow[] = [];
         this.state.tasks.forEach((task, idx) => {
-            console.log("creating table elemen no", idx, "with action", task.action[0], "and trigger", task.trigger[0]);
             let action: number;
             let trigger: number;
             if (isNaN(Number(task.action[0]))) {
@@ -138,15 +150,28 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             } else {
                 trigger = Number(task.trigger[0]);
             }
-            console.log("creating table elemen no", idx, "with action", action, "and trigger", trigger);
             const ActionComponent = cron_action_dict[action];
             const TriggerComponent = cron_trigger_dict[trigger];
 
             const task_copy = JSON.parse(JSON.stringify(task)) as task;
             let row: TableRow = {
-                columnValues: [[<TriggerComponent cron={task.trigger} children={null}/>], [<ActionComponent cron={task.action} children={null}/>]],
+                columnValues: [
+                    [idx],
+                    [cron_trigger_names[trigger]],
+                    [<TriggerComponent cron={task.trigger} children={null}/>],
+                    [cron_action_names[action]],
+                    [<ActionComponent cron={task.action} children={null}/>]
+                ],
                 onEditStart: async () => {
-                    this.setState({edit_task: {action: task_copy.action, trigger: task_copy.trigger}, displayed_trigger: task.trigger[0] as any as number, displayed_action: task.action[0] as any as number})
+                    this.setState(
+                        {
+                            edit_task: {
+                                action: task_copy.action,
+                                trigger: task_copy.trigger
+                            },
+                            displayed_trigger: task.trigger[0] as any as number,
+                            displayed_action: task.action[0] as any as number
+                        })
                 },
                 onEditGetRows: () => {
                     return this.createSelectors();
@@ -171,10 +196,18 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             return <></>;
 
         return <SubPage>
-            <ConfigForm id="cron-config-form" title="Cron config" isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+            <ConfigForm
+                id="cron-config-form"
+                title="Cron config"
+                isModified={this.isModified()}
+                onSave={this.save}
+                onReset={this.reset}
+                onDirtyChange={(d) => this.ignore_updates = d}
+                >
+
                 <div class="mb-3">
                     <Table tableTill="md"
-                        columnNames={["trigger", "action"]}
+                        columnNames={["number", "trigger name", "trigger", "action name", "action"]}
                         rows={this.assembleTable()}
                         addEnabled={true}
                         addTitle="Add Rule"

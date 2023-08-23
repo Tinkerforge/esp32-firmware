@@ -26,3 +26,5 @@ export const cron_action_configs: {[key: number]: (cron_object: Cron, state: cro
 export const cron_trigger_configs: {[key: number]: (cron_object: Cron, state: cron_trigger) => {name: string, value: h.JSX.Element}[]} = {0: null};
 export const cron_trigger_defaults: {[key: number]: cron_trigger} = {0: null};
 export const cron_action_defaults: {[key: number]: cron_action} = {0: null};
+export const cron_action_names: {[key: number]: string} = [];
+export const cron_trigger_names: {[key: number]: string} = [];
