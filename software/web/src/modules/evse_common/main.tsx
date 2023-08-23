@@ -202,7 +202,6 @@ export function EvseStateCronConfig(cron_object: Cron, state: cron_trigger) {
                     ]}
                     value={props[1].charger_state.toString()}
                     onValue={(v) => {
-                        console.log("onValue:", props);
                         props[1].charger_state = Number(v);
                         cron_object.setTriggerFromComponent(props as any as cron_trigger);
                     }}/>
