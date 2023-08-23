@@ -701,23 +701,10 @@ export function update_sidebar_state(module_init: any) {
     $('#sidebar-charge_manager').prop('hidden', !module_init.charge_manager);
 }
 
-type ChargeManagerCronComponentProps = {cron: cron_action, children: any};
-
-export function ChargeManagerCronComponent(props: ChargeManagerCronComponentProps) {
-    let action_props = props.cron as any as ChargeManagerCronAction;
-    if (action_props[1] === undefined) {
-        const tmp: ChargeManagerCronAction = [
-            6,
-            {
-                current: 0
-            }
-        ];
-        action_props = tmp;
-    }
-    return <p>Current: {action_props[1].current}</p>
+export function ChargeManagerCronComponent(cron: cron_action) {
+    let action_props = cron as any as ChargeManagerCronAction;
+    return __("charge_manager.content.maximum_available_current") + ": " + action_props[1].current / 1000 + " A";
 }
-
-cron_action_dict[6] = ChargeManagerCronComponent;
 
 export function ChargeManagerCronConfigComponent(cron_object: Cron, state: cron_action) {
     let props = state as any as ChargeManagerCronAction;
@@ -732,12 +719,12 @@ export function ChargeManagerCronConfigComponent(cron_object: Cron, state: cron_
                         cron_object.setActionFromComponent(props as any as cron_action);
                     }}
                     min={0}
-                    max={32000}
                     unit="A"
                     digits={3}/>
     }]
 }
 
+cron_action_dict[6] = ChargeManagerCronComponent;
 cron_action_configs[6] = ChargeManagerCronConfigComponent;
 cron_action_defaults[6] = [6 as any, {current: 0}];
-cron_action_names[6] = "Charge manager action";
+cron_action_names[6] = __("charge_manager.content.set_charge_manager");

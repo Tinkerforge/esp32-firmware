@@ -171,10 +171,16 @@ export function add_event_listeners(){}
 export function update_sidebar_state(module_init: any) {}
 
 
-type EvseStateCronComponentProps = {cron: cron_trigger, children: any}
-export function EvseStateCronComponent(props: EvseStateCronComponentProps) {
-    let trigger_props = props.cron as any as EvseStateCronTrigger;
-    return <p>{__("evse.content.status")}: {trigger_props[1].charger_state}</p>
+export function EvseStateCronComponent(cron: cron_trigger) {
+    let trigger_props = cron as any as EvseStateCronTrigger;
+    const names = [
+        [ __("evse.status.not_connected")],
+        [__("evse.status.waiting_for_charge_release")],
+        [__("evse.status.ready_to_charge")],
+        [__("evse.status.charging")],
+        [__("evse.status.error")]
+    ]
+    return __("evse.content.status") + ": " + names[trigger_props[1].charger_state]
 }
 
 cron_trigger_dict[2] = EvseStateCronComponent;
@@ -204,4 +210,5 @@ export function EvseStateCronConfig(cron_object: Cron, state: cron_trigger) {
 }
 
 cron_trigger_configs[2] = EvseStateCronConfig;
-cron_trigger_defaults[2] = [2 as any, {charger_state: 0}]
+cron_trigger_defaults[2] = [2 as any, {charger_state: 0}];
+cron_trigger_names[2] = "Evse Trigger";

@@ -49,6 +49,7 @@ let x = {
             "lock_opening": "Opening",
             "lock_error": "Error",
             "time_since_state_change": "Time since state change",
+            "state_change": "State change",
             "uptime": "Uptime",
             "configuration": "Hardware configuration",
             "has_lock_switch": "Cable lock available",

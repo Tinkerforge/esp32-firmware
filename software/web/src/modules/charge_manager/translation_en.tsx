@@ -75,7 +75,9 @@ let x = {
 
             "managed_boxes": "Managed chargers",
 
-            "host_exists": "Host already exists"
+            "host_exists": "Host already exists",
+
+            "set_charge_manager": "Charge Manager"
         },
         "script": {
             "charge_state_0": "No vehicle connected",

@@ -49,6 +49,7 @@ let x = {
             "lock_opening": "Öffnend",
             "lock_error": "Fehler",
             "time_since_state_change": "Zeit seit Zustandswechsel",
+            "state_change": "Zustandswechsel",
             "uptime": "Laufzeit",
             "configuration": "Hardware-Konfiguration",
             "has_lock_switch": "Kabelverriegelung vorhanden",

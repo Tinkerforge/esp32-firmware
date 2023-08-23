@@ -31,7 +31,6 @@ import { cron_action, cron_action_configs, cron_action_defaults, cron_action_dic
 import { InputSelect } from "src/ts/components/input_select";
 import { __ } from "src/ts/translation";
 
-type CronConfig = API.getType['cron/config'];
 type CronState = {
     edit_task: task,
     displayed_trigger: number,
@@ -80,20 +79,20 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
 
     createSelectors() {
         console.log("create selectors was called");
-        let trigger: [string, string][] = [];
-        for (let i in cron_trigger_configs) {
+        let trigger: [string, string][] = [["0", __("cron.content.select")]];
+        for (let i in cron_trigger_names) {
             const entry: [string, string] = [i, i]
             trigger.push(entry);
         }
 
-        let action: [string, string][] = [];
-        for (let i in cron_action_configs) {
+        let action: [string, string][] = [["0", __("cron.content.select")]];
+        for (let i in cron_action_names) {
             const entry: [string, string] = [i, i];
             action.push(entry);
         }
 
         let triggerSelector = [{
-            name: "Trigger",
+            name: __("cron.content.condition_category"),
             value: <InputSelect
                         items={trigger}
                         onValue={(v) => this.setState(
@@ -112,7 +111,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
         }
 
         let actionSelector = [{
-            name: "Action",
+            name: __("cron.content.action_category"),
             value: <InputSelect
                         items={action}
                         onValue={(v) => this.setState(
@@ -158,9 +157,9 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                 columnValues: [
                     [idx],
                     [cron_trigger_names[trigger]],
-                    [<TriggerComponent cron={task.trigger} children={null}/>],
+                    [TriggerComponent(task.trigger)],
                     [cron_action_names[action]],
-                    [<ActionComponent cron={task.action} children={null}/>]
+                    [ActionComponent(task.action)]
                 ],
                 onEditStart: async () => {
                     this.setState(
@@ -177,7 +176,12 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                     return this.createSelectors();
                 },
                 onEditCommit: async () => {
-                    this.setState({tasks: this.state.tasks.map((task, k) => k === idx ? this.state.edit_task : task)});
+                    if (this.state.displayed_action == 0 || this.state.displayed_trigger == 0) {
+                        return;
+                    }
+
+                    this.setState({tasks: this.state.tasks.map((task, k) => k === idx ? this.state.edit_task : task),
+                        edit_task: {action: [[0, {}]], trigger: [[0, {}]]}});
                     this.hackToAllowSave();
                 },
                 onEditAbort: async () => {},
@@ -195,8 +199,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
         if (!util.render_allowed())
             return <></>;
 
-        return <SubPage>
-            <ConfigForm
+        return <ConfigForm
                 id="cron-config-form"
                 title="Cron config"
                 isModified={this.isModified()}
@@ -204,27 +207,38 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                 onReset={this.reset}
                 onDirtyChange={(d) => this.ignore_updates = d}
                 >
-
-                <div class="mb-3">
+                    <div class="col-xl-12">
                     <Table tableTill="md"
-                        columnNames={["number", "trigger name", "trigger", "action name", "action"]}
+                        columnNames={[
+                            "#",
+                            __("cron.content.category"),
+                            __("cron.content.condition"),
+                            __("cron.content.category"),
+                             __("cron.content.action")]}
                         rows={this.assembleTable()}
                         addEnabled={true}
-                        addTitle="Add Rule"
-                        addMessage="Add another rule"
-                        onAddStart={async () => this.setState({edit_task: {trigger: [[0, {}]], action: [[0, {}]]}})}
-                        onAddGetRows={() => this.createSelectors()}
+                        addTitle={__("cron.content.add_rule")}
+                        addMessage={__("cron.content.add_rule")}
+                        onAddStart={async () => this.setState(
+                            {
+                                edit_task: {trigger: [[0, {}]], action: [[0, {}]]},
+                                displayed_action: 0,
+                                displayed_trigger: 0
+                            })}
+                        onAddGetRows={() => {
+                            return this.createSelectors()
+                        }}
                         onAddCommit={async () => {
-                            console.log("edit task at submit:", this.state.edit_task);
+                            if (this.state.displayed_action == 0 || this.state.displayed_trigger == 0) {
+                                return;
+                            }
                             this.setState({tasks: this.state.tasks.concat([this.state.edit_task])});
                             this.hackToAllowSave();
                         }}
 
                         />
-                </div>
-
+                    </div>
             </ConfigForm>
-        </SubPage>
     }
 }
 
@@ -238,4 +252,11 @@ export function add_event_listeners(source: API.APIEventTarget) {
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-cron').prop('hidden', !module_init.cron);
+}
+
+cron_trigger_dict[0] = (_: cron_trigger) => {
+    return "";
+}
+cron_action_dict[0] = (_:cron_action) => {
+    return "";
 }

@@ -75,7 +75,9 @@ let x = {
 
             "managed_boxes": "Kontrollierte Wallboxen",
 
-            "host_exists": "Host existiert bereits"
+            "host_exists": "Host existiert bereits",
+
+            "set_charge_manager": "Lastmanagement"
         },
         "script": {
             "charge_state_0": "Kein Fahrzeug angeschlossen",
