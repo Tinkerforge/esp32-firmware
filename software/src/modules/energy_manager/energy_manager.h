@@ -153,8 +153,6 @@ public:
     String get_energy_manager_debug_header();
     String get_energy_manager_debug_line();
 
-    void apply_defaults();
-
     bool get_sdcard_info(struct sdcard_info *data);
     bool format_sdcard();
     uint16_t get_energy_meter_detailed_values(float *ret_values);

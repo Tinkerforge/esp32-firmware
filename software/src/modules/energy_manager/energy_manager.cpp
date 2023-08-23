@@ -186,11 +186,6 @@ void EnergyManager::pre_setup()
     });
 }
 
-void EnergyManager::apply_defaults()
-{
-    // TODO: Configure Energy Manager
-}
-
 void EnergyManager::setup_energy_manager()
 {
     if (!this->DeviceModule::setup_device()) {
@@ -202,7 +197,6 @@ void EnergyManager::setup_energy_manager()
         return;
     }
 
-    this->apply_defaults();
     initialized = true;
 }
 
