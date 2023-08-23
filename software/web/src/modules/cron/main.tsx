@@ -78,13 +78,13 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
     createSelectors() {
         let trigger: [string, string][] = [["0", __("cron.content.select")]];
         for (let i in cron_trigger_names) {
-            const entry: [string, string] = [i, i]
+            const entry: [string, string] = [i, cron_trigger_names[i]]
             trigger.push(entry);
         }
 
         let action: [string, string][] = [["0", __("cron.content.select")]];
         for (let i in cron_action_names) {
-            const entry: [string, string] = [i, i];
+            const entry: [string, string] = [i, cron_action_names[i]];
             action.push(entry);
         }
 
