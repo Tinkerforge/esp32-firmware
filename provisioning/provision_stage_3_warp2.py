@@ -264,8 +264,8 @@ class Stage3:
             fatal_error('Action did not complete in time')
 
     # internal
-    def change_cp_pe_state(self, state, quite=False):
-        if not quite:
+    def change_cp_pe_state(self, state, quiet=False):
+        if not quiet:
             print('Changing CP-PE state to {0}'.format(state))
 
         if state == 'A':
@@ -556,7 +556,7 @@ class Stage3:
         self.connect_voltage_monitors(False)
         self.connect_front_panel(False)
         self.connect_type2_pe(True)
-        self.change_cp_pe_state('A', quite=True)
+        self.change_cp_pe_state('A', quiet=True)
         self.change_meter_state('Type2-L1')
 
         time.sleep(RELAY_SETTLE_DURATION)
@@ -575,7 +575,7 @@ class Stage3:
         self.connect_voltage_monitors(False)
         self.connect_front_panel(False)
         self.connect_type2_pe(True)
-        self.change_cp_pe_state('A', quite=True)
+        self.change_cp_pe_state('A', quiet=True)
         self.change_meter_state('Type2-L1')
 
         time.sleep(RELAY_SETTLE_DURATION)
