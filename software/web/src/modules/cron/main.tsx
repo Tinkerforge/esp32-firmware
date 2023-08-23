@@ -54,11 +54,9 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
     }
 
     setTriggerFromComponent(update: cron_trigger) {
-        console.log("setting trigger to", update);
         let edit_task = this.state.edit_task;
         edit_task.trigger = update;
         this.setState({edit_task: edit_task});
-        console.log("edit task after setting trigger", update);
     }
 
     setActionFromComponent(update: cron_action) {
@@ -78,7 +76,6 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
     }
 
     createSelectors() {
-        console.log("create selectors was called");
         let trigger: [string, string][] = [["0", __("cron.content.select")]];
         for (let i in cron_trigger_names) {
             const entry: [string, string] = [i, i]
