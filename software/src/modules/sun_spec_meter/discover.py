@@ -143,7 +143,7 @@ class Reader:
 
         return decoder.decode_string(length_bytes).rstrip(b'\x00').decode('utf-8')
 
-def read_common_model(reader):
+def read_common_model(reader, device_address_ref):
     print('Trying to read Common Model')
 
     try:
@@ -180,6 +180,8 @@ def read_common_model(reader):
 
         device_address = reader.read_uint16()
         print('  Device Address:', device_address)
+
+        device_address_ref[0] = device_address
 
         if length == 66:
             reader.skip(1)
@@ -646,7 +648,7 @@ def read_standard_model(reader):
 
     return True
 
-def discover(client, base_address, device_address):
+def discover(client, base_address, device_address, device_address_ref):
     reader = Reader(client, base_address, device_address)
 
     print('Using base address:', base_address)
@@ -660,7 +662,7 @@ def discover(client, base_address, device_address):
 
         print('Sun Spec ID found:', hex(sun_spec_id))
 
-        if not read_common_model(reader):
+        if not read_common_model(reader, device_address_ref):
             return False
 
         result = read_standard_model(reader)
@@ -692,12 +694,23 @@ def main():
     client = ModbusTcpClient(host=args.host, port=args.port)
     client.connect()
 
-    for device_address in range(1, 248) if args.device_address == None else [args.device_address]:
+    valid_device_addresses = list(range(1, 248))
+
+    for device_address in valid_device_addresses if args.device_address == None else [args.device_address]:
+        print('============================================================')
         print('Using device address:', device_address)
 
+        device_address_ref = [None]
+
         for base_address in BASE_ADDRESSES:
-            if discover(client, base_address, device_address):
+            print('------------------------------------------------------------')
+
+            if discover(client, base_address, device_address, device_address_ref):
                 break
+
+        if device_address_ref[0] != None and device_address_ref[0] not in valid_device_addresses:
+            print('Stopping discovery due to invalid device address')
+            break
 
 if __name__ == '__main__':
     main()
