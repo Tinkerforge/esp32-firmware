@@ -542,14 +542,8 @@ void EnergyManager::update_all_data()
 #endif
 
     if (!isnan(power_at_meter_raw_w)) {
+        low_level_state.get("power_at_meter")->updateFloat(power_at_meter_raw_w);
         int32_t raw_power_w = static_cast<int32_t>(power_at_meter_raw_w);
-
-#if MODULE_EM_PV_FAKER_AVAILABLE()
-        // PV faker must influence meter value before doing anything with it.
-        raw_power_w -= em_pv_faker.state.get("fake_power")->asInt(); // watt
-#endif
-
-        low_level_state.get("power_at_meter")->updateFloat(static_cast<float>(raw_power_w)); //TODO Maybe keep as float until here?
 
         // Filtered/smoothed values must not be modified anywhere else.
 
