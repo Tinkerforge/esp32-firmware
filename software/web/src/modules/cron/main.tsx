@@ -157,7 +157,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                 },
                 onEditAbort: async () => {},
                 onRemoveClick: async () => {
-                    this.setState({tasks: this.state.tasks.filter((_, k) => idx == k)})
+                    this.setState({tasks: this.state.tasks.filter((_, k) => idx != k)})
                     this.hackToAllowSave();
                 }
             };
