@@ -23,7 +23,7 @@ import {useContext} from "preact/hooks";
 export interface SwitchProps {
     idContext?: Context<string>
     checked: boolean
-    desc: ComponentChildren
+    desc?: ComponentChildren
     onClick: JSX.MouseEventHandler<HTMLInputElement>
     disabled?: boolean
     className?: string
