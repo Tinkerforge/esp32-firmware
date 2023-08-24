@@ -37,4 +37,4 @@
 - Fix firmware hanging after 2^32 ms (~ 49 days 17 hours)
 
 <unknown>: 2.0.3 (<unknown>)
-- Correctly mark WiFi DNS server as optional
+- Correctly mark WiFi DNS server and alternative NTP server as optional
