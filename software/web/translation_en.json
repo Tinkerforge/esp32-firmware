@@ -34,6 +34,7 @@
             "subnet_placeholder": "Select subnet mask...",
             "gateway": "Gateway",
             "dns": "DNS server",
+            "dns_muted": "optional",
             "dns2": "Alternative DNS server",
             "dns2_muted": "optional",
             "static_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",

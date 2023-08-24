@@ -447,3 +447,4 @@
 
 <unknown>: 2.1.5 (<unknown>)
 - Fix Ethernet and WiFi alternative DNS server config
+- Correctly mark Ethernet and WiFi DNS server as optional

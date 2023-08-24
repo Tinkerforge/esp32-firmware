@@ -35,3 +35,6 @@
 - Improve firmware update error handling in web interface
 - Improve network timeout handing in web interface
 - Fix firmware hanging after 2^32 ms (~ 49 days 17 hours)
+
+<unknown>: 2.0.3 (<unknown>)
+- Correctly mark WiFi DNS server as optional

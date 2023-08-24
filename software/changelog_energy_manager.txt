@@ -123,3 +123,4 @@
 
 <unknown>: 1.0.8 (<unknown>)
 - Fix Ethernet and WiFi alternative DNS server config
+- Correctly mark Ethernet and WiFi DNS server as optional

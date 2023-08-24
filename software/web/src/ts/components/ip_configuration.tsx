@@ -50,7 +50,6 @@ interface IPConfigurationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInput
     forbidNetwork?: {ip: number, subnet: number, name: string}[]
 }
 
-
 export class IPConfiguration extends Component<IPConfigurationProps, {}> {
     constructor() {
         super();
@@ -60,8 +59,6 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
         this.props.value[k] = v;
         this.props.onValue(this.props.value);
     }
-
-
 
     render(props: IPConfigurationProps, state: Readonly<{}>) {
         let dhcp = props.value.ip == "0.0.0.0";
@@ -112,13 +109,12 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                     />
                 {captured_subnet_name != "" ? <div class="invalid-feedback">{__("component.ip_configuration.subnet_captures_prefix") + captured_subnet_name + " (" + captured_subnet_ip + ") " + __("component.ip_configuration.subnet_captures_suffix")}</div> : <></>}
             </FormRow>
-
         </>);
 
         if (props.showDns) {
             inner = (<>
                 {inner}
-                <FormRow label={__("component.ip_configuration.dns")}>
+                <FormRow label={__("component.ip_configuration.dns")} label_muted={__("component.ip_configuration.dns_muted")}>
                     <InputIP invalidFeedback={__("component.ip_configuration.dns_invalid")}
                              value={props.value.dns}
                              onValue={(v) => this.onUpdate("dns", v)}/>
