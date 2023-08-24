@@ -1,6 +1,5 @@
 {{{imports}}}
 import { h } from 'preact'
-import { FunctionComponent } from 'preact'
 import { Cron } from './main'
 
 export interface config {
@@ -20,11 +19,19 @@ export interface cron_action {
     0: [0, {}] | {{{action}}}
 }
 
-export const cron_action_dict: {[key: number]: (cron: cron_action) => string} = [];
-export const cron_trigger_dict: {[key: number]: (cron: cron_trigger) => string} = [];
-export const cron_action_configs: {[key: number]: (cron_object: Cron, state: cron_action) => {name: string, value: h.JSX.Element}[]} = {0: null};
-export const cron_trigger_configs: {[key: number]: (cron_object: Cron, state: cron_trigger) => {name: string, value: h.JSX.Element}[]} = {0: null};
-export const cron_trigger_defaults: {[key: number]: () => cron_trigger} = [];
-export const cron_action_defaults: {[key: number]: () => cron_action} = [];
-export const cron_action_names: {[key: number]: string} = [];
-export const cron_trigger_names: {[key: number]: string} = [];
+interface CronTriggerComponent {
+    table_row: (cron: cron_trigger) => string,
+    config_component: (cron_object: Cron, state: cron_trigger) => {name: string, value: h.JSX.Element}[],
+    config_builder: () => cron_trigger,
+    name: string
+}
+
+interface CronActionComponent {
+    table_row: (cron: cron_action) => string,
+    config_component: (cron_object: Cron, state: cron_action) => {name: string, value: h.JSX.Element}[],
+    config_builder: () => cron_action,
+    name: string
+}
+
+export const cron_trigger_components: {[key: number]: CronTriggerComponent} = [];
+export const cron_action_components: {[key: number]: CronActionComponent} = [];

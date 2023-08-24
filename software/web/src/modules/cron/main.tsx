@@ -27,7 +27,7 @@ import { ConfigComponent } from "src/ts/components/config_component";
 import { SubPage } from "src/ts/components/sub_page";
 import { ConfigForm } from "src/ts/components/config_form";
 import { Table, TableRow } from "src/ts/components/table";
-import { cron_action, cron_action_configs, cron_action_defaults, cron_action_dict, cron_action_names, cron_trigger, cron_trigger_configs, cron_trigger_defaults, cron_trigger_dict, cron_trigger_names, task } from "./api";
+import { cron_action, cron_action_components, cron_trigger, cron_trigger_components, task } from "./api";
 import { InputSelect } from "src/ts/components/input_select";
 import { __ } from "src/ts/translation";
 
@@ -76,15 +76,15 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
     }
 
     createSelectors() {
-        let trigger: [string, string][] = [["0", __("cron.content.select")]];
-        for (let i in cron_trigger_names) {
-            const entry: [string, string] = [i, cron_trigger_names[i]]
+        let trigger: [string, string][] = [];
+        for (let i in cron_trigger_components) {
+            const entry: [string, string] = [i, cron_trigger_components[i].name]
             trigger.push(entry);
         }
 
-        let action: [string, string][] = [["0", __("cron.content.select")]];
-        for (let i in cron_action_names) {
-            const entry: [string, string] = [i, cron_action_names[i]];
+        let action: [string, string][] = [];
+        for (let i in cron_action_components) {
+            const entry: [string, string] = [i, cron_action_components[i].name];
             action.push(entry);
         }
 
@@ -101,7 +101,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                             {
                                 displayed_trigger: Number(v),
                                 edit_task: {
-                                    trigger: cron_trigger_defaults[Number(v)](),
+                                    trigger: cron_trigger_components[Number(v)].config_builder(),
                                     action: this.state.edit_task.action
                                 }
                             })
@@ -109,7 +109,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                         value={this.state.displayed_trigger}/>
         }]
         if (this.state.displayed_trigger != 0) {
-            const trigger_config = cron_trigger_configs[this.state.displayed_trigger](this, this.state.edit_task.trigger);
+            const trigger_config = cron_trigger_components[this.state.displayed_trigger].config_component(this, this.state.edit_task.trigger);
             triggerSelector = triggerSelector.concat(trigger_config);
         }
 
@@ -126,7 +126,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                             {
                                 displayed_action: Number(v),
                                 edit_task: {
-                                    action: cron_action_defaults[Number(v)](),
+                                    action: cron_action_components[Number(v)].config_builder(),
                                     trigger: this.state.edit_task.trigger
                                 }
                             });
@@ -135,7 +135,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
         }]
 
         if (this.state.displayed_action != 0) {
-            const action_config = cron_action_configs[this.state.displayed_action](this, this.state.edit_task.action);
+            const action_config = cron_action_components[this.state.displayed_action].config_component(this, this.state.edit_task.action);
             actionSelector = actionSelector.concat(action_config);
         }
 
@@ -158,17 +158,19 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             } else {
                 trigger = Number(task.trigger[0]);
             }
-            const ActionComponent = cron_action_dict[action];
-            const TriggerComponent = cron_trigger_dict[trigger];
+
+
+            const ActionComponent = cron_action_components[action];
+            const TriggerComponent = cron_trigger_components[trigger];
 
             const task_copy = JSON.parse(JSON.stringify(task)) as task;
             let row: TableRow = {
                 columnValues: [
                     [idx],
-                    [cron_trigger_names[trigger]],
-                    [TriggerComponent(task.trigger)],
-                    [cron_action_names[action]],
-                    [ActionComponent(task.action)]
+                    [TriggerComponent.name],
+                    [TriggerComponent.table_row(task.trigger)],
+                    [ActionComponent.name],
+                    [ActionComponent.table_row(task.action)]
                 ],
                 onEditStart: async () => {
                     this.setState(
@@ -263,9 +265,16 @@ export function update_sidebar_state(module_init: any) {
     $('#sidebar-cron').prop('hidden', !module_init.cron);
 }
 
-cron_trigger_dict[0] = (_: cron_trigger) => {
-    return "";
-}
-cron_action_dict[0] = (_:cron_action) => {
-    return "";
+cron_trigger_components[0] = {
+    config_builder: () => [0 as any, {}],
+    config_component: () => [],
+    table_row: () => "",
+    name: __("cron.content.select")
+};
+
+cron_action_components[0] = {
+    config_builder: () => [0 as any, {}],
+    config_component: () => [],
+    table_row: () => "",
+    name: __("cron.content.select")
 }

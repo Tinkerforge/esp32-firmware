@@ -27,7 +27,7 @@ import { __ } from "../../ts/translation";
 
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "src/ts/components/input_select";
-import { cron_action, cron_action_configs, cron_action_defaults, cron_action_dict, cron_action_names, cron_trigger, cron_trigger_configs, cron_trigger_defaults, cron_trigger_dict, cron_trigger_names } from "../cron/api";
+import { cron_action, cron_action_components, cron_trigger, cron_trigger_components } from "../cron/api";
 import { ChargeLimitsCronTrigger } from "./cron_trigger";
 import { Cron } from "../cron/main";
 import { ChargeLimitsCronAction } from "./cron_action";
@@ -207,10 +207,12 @@ function ChargeLimitsCronTriggerFactory(): cron_trigger {
     return [6 as any, {}];
 }
 
-cron_trigger_configs[6] = ChargeLimitsCronTriggerConfig;
-cron_trigger_dict[6] = ChargeLimitsCronTriggerComponent;
-cron_trigger_defaults[6] = ChargeLimitsCronTriggerFactory;
-cron_trigger_names[6] = __("charge_limits.content.charge_limits");
+cron_trigger_components[6] = {
+    config_builder: ChargeLimitsCronTriggerFactory,
+    config_component: ChargeLimitsCronTriggerConfig,
+    table_row: ChargeLimitsCronTriggerComponent,
+    name: __("charge_limits.content.charge_limits")
+};
 
 function ChargeLimitsCronActionComponent(cron: cron_action) {
     const props = (cron as any as ChargeLimitsCronAction)[1];
@@ -299,7 +301,9 @@ function ChargeLimitsCronActionFactory(): cron_action {
     ];
 }
 
-cron_action_configs[8] = ChargeLimitsCronActionConfig;
-cron_action_dict[8] = ChargeLimitsCronActionComponent;
-cron_action_defaults[8] = ChargeLimitsCronActionFactory;
-cron_action_names[8] = __("charge_limits.content.charge_limits");
+cron_action_components[8] = {
+    config_builder: ChargeLimitsCronActionFactory,
+    config_component: ChargeLimitsCronActionConfig,
+    table_row: ChargeLimitsCronActionComponent,
+    name: __("charge_limits.content.charge_limits")
+};

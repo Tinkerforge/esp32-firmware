@@ -29,7 +29,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { Button } from "react-bootstrap";
 import { InputFloat } from "src/ts/components/input_float";
 import { InputText } from "src/ts/components/input_text";
-import { cron_trigger_dict, cron_trigger, cron_trigger_configs, cron_trigger_defaults, cron_trigger_names } from "../cron/api";
+import { cron_trigger, cron_trigger_components } from "../cron/api";
 import { EvseCronAction } from "./cron_action";
 import { EvseStateCronTrigger } from "./cron_trigger";
 import { InputSelect } from "src/ts/components/input_select";
@@ -183,8 +183,6 @@ export function EvseStateCronComponent(cron: cron_trigger) {
     return __("evse.content.status") + ": " + names[trigger_props[1].charger_state]
 }
 
-cron_trigger_dict[2] = EvseStateCronComponent;
-
 function EvseStateCronFactory(): cron_trigger {
     return [
         2 as any,
@@ -218,5 +216,5 @@ export function EvseStateCronConfig(cron_object: Cron, state: cron_trigger) {
 }
 
 cron_trigger_configs[2] = EvseStateCronConfig;
-cron_trigger_defaults[2] = [2 as any, {charger_state: 0}];
+cron_trigger_defaults[2] = EvseStateCronFactory;
 cron_trigger_names[2] = __("evse.content.state_change");

@@ -32,7 +32,7 @@ import { ListGroup, ListGroupItem } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
-import { cron_action, cron_action_configs, cron_action_defaults, cron_action_dict, cron_action_names, cron_trigger, cron_trigger_configs, cron_trigger_defaults, cron_trigger_dict, cron_trigger_names } from "../cron/api";
+import { cron_action, cron_action_components, cron_trigger, cron_trigger_components } from "../cron/api";
 import { NfcCronTrigger } from "./cron_trigger";
 import { Cron } from "../cron/main";
 import { NfcCronAction } from "./cron_action";
@@ -323,10 +323,13 @@ export function NFCCronTriggerConfig(cron_object: Cron, props: cron_trigger) {
     ]
 }
 
-cron_trigger_dict[5] = NFCCronTriggerComponent;
-cron_trigger_configs[5] = NFCCronTriggerConfig;
-cron_trigger_names[5] = __("nfc.content.nfc");
-cron_trigger_defaults[5] = NfcCronTriggerFactory;
+cron_trigger_components[5] = {
+    config_builder: NfcCronTriggerFactory,
+    config_component: NFCCronTriggerConfig,
+    table_row: NFCCronTriggerComponent,
+    name: __("nfc.content.nfc")
+};
+
 
 const TRIGGER_CHARGE_ANY = 0;
 const TRIGGER_CHARGE_START = 1;
@@ -408,7 +411,9 @@ function NfCTagInjectCronActionFactory(): cron_action {
     ]
 }
 
-cron_action_configs[7] = NFCTagInjectCronActionConfig;
-cron_action_dict[7] = NFCTagInjectCronActionComponent;
-cron_action_defaults[7] = NfCTagInjectCronActionFactory;
-cron_action_names[7] = __("nfc.content.nfc")
+cron_action_components[7] = {
+    table_row: NFCTagInjectCronActionComponent,
+    config_builder: NfCTagInjectCronActionFactory,
+    config_component: NFCTagInjectCronActionConfig,
+    name: __("nfc.content.nfc")
+}

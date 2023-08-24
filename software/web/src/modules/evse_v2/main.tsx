@@ -41,8 +41,8 @@ import { DebugLogger } from "../../ts/components/debug_logger";
 import { ConfigForm } from "src/ts/components/config_form";
 import { InputFloat } from "src/ts/components/input_float";
 import { SubPage } from "src/ts/components/sub_page";
-import { cron_trigger, cron_trigger_configs, cron_trigger_defaults, cron_trigger_dict, cron_trigger_names } from "../cron/api";
-import { EvseButtonCronTrigger } from "./cron_trigger";
+import { cron_trigger, cron_trigger_components } from "../cron/api";
+import { EvseButtonCronTrigger, EvseSdCronTrigger } from "./cron_trigger";
 import { Cron } from "../cron/main";
 
 interface EVSEState {

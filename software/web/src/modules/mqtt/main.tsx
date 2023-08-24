@@ -35,7 +35,7 @@ import { InputPassword } from "../../ts/components/input_password";
 import { Switch } from "../../ts/components/switch";
 import { IndicatorGroup } from "src/ts/components/indicator_group";
 import { SubPage } from "src/ts/components/sub_page";
-import { cron_action, cron_action_configs, cron_action_defaults, cron_action_dict, cron_action_names, cron_trigger, cron_trigger_configs, cron_trigger_defaults, cron_trigger_dict, cron_trigger_names } from "../cron/api";
+import { cron_action, cron_action_components, cron_trigger, cron_trigger_components } from "../cron/api";
 import { MqttCronTrigger } from "./cron_trigger";
 import { Cron } from "../cron/main";
 import { MqttCronAction } from "./cron_action";
@@ -268,11 +268,12 @@ function MqttCronTriggerFactory(): cron_trigger {
     ]
 }
 
-cron_trigger_dict[3] = MqttCronTriggerComponent;
-cron_trigger_configs[3] = MqttCronTriggerConfig;
-cron_trigger_defaults[3] = MqttCronTriggerFactory;
-cron_trigger_names[3] = __("mqtt.content.mqtt");
-
+cron_trigger_components[3] = {
+    table_row: MqttCronTriggerComponent,
+    config_builder: MqttCronTriggerFactory,
+    config_component: MqttCronTriggerConfig,
+    name: __("mqtt.content.mqtt")
+};
 
 export function MqttCronActionComponent(cron: cron_action) {
     const props = (cron as any as MqttCronAction)[1];
@@ -329,7 +330,9 @@ function MqttCronActionFactory(): cron_action {
     ]
 }
 
-cron_action_defaults[2] = MqttCronActionFactory;
-cron_action_dict[2] = MqttCronActionComponent;
-cron_action_configs[2] = MqttCronActionConfig;
-cron_action_names[2] = __("mqtt.content.mqtt");
+cron_action_components[2] = {
+    config_builder: MqttCronActionFactory,
+    config_component: MqttCronActionConfig,
+    table_row: MqttCronActionComponent,
+    name: __("mqtt.content.mqtt")
+};
