@@ -444,3 +444,6 @@
 - Fix boost mode after startup (through EVSE 2.0 Bricklet firmware 2.1.14)
 - Wait for at least 30 seconds until contactor is turned on again after leaving state D (through EVSE 2.0 Bricklet firmware 2.1.14)
 - Wait for at least 5 seconds until contactor is turned on again after charging was stopped (through EVSE 2.0 Bricklet firmware 2.1.14)
+
+<unknown>: 2.1.5 (<unknown>)
+- Fix Ethernet and WiFi alternative DNS server config

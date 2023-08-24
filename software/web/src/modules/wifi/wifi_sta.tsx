@@ -92,7 +92,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
 
     override async transformSave(cfg: STAConfig) {
         cfg.dns = cfg.dns == "" ? "0.0.0.0" : cfg.dns;
-        cfg.dns2 = cfg.dns2 == "" ? "0.0.0.0" : cfg.dns;
+        cfg.dns2 = cfg.dns2 == "" ? "0.0.0.0" : cfg.dns2;
         return cfg;
     }
 

@@ -120,3 +120,6 @@
 - Fix handling of missing line currents in charge manager resulting in too low charging currents
 - Fix 64k spike in energy analysis when a controlled wallbox with an API meter restarts
 - Fix API meter not updating last_value_change
+
+<unknown>: 1.0.8 (<unknown>)
+- Fix Ethernet and WiFi alternative DNS server config

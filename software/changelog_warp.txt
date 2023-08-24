@@ -460,3 +460,6 @@
 - Make ID.3 mode work for state changes that go from C directly to A (through EVSE Bricklet firmware 2.1.6)
 - Wait for at least 30 seconds until contactor is turned on again after leaving state D (through EVSE Bricklet firmware 2.1.6)
 - Wait for at least 5 seconds until contactor is turned on again after charging was stopped (through EVSE Bricklet firmware 2.1.6)
+
+<unknown>: 2.1.5 (<unknown>)
+- Fix WiFi alternative DNS server config
