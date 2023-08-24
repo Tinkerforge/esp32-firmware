@@ -225,7 +225,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                             __("cron.content.category"),
                              __("cron.content.action")]}
                         rows={this.assembleTable()}
-                        addEnabled={true}
+                        addEnabled={this.state.tasks.length < 20}
                         addTitle={__("cron.content.add_rule")}
                         addMessage={__("cron.content.add_rule")}
                         onAddStart={async () => this.setState(
