@@ -67,7 +67,10 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
 
     if (meter_type != all_data.energy_meter_type) {
         if (meter_type != METER_TYPE_NONE) {
-            logger.printfln("meter_em: Meter change detected. This is not supported.");
+            if (!meter_change_warning_printed) {
+                logger.printfln("meter_em: Meter change detected. This is not supported.");
+                meter_change_warning_printed = true;
+            }
             return;
         }
 
