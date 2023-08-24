@@ -29,7 +29,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { Button } from "react-bootstrap";
 import { InputFloat } from "src/ts/components/input_float";
 import { InputText } from "src/ts/components/input_text";
-import { cron_trigger, cron_trigger_components } from "../cron/api";
+import { cron_action, cron_action_components, cron_trigger, cron_trigger_components } from "../cron/api";
 import { EvseCronAction } from "./cron_action";
 import { EvseStateCronTrigger } from "./cron_trigger";
 import { InputSelect } from "src/ts/components/input_select";
@@ -215,6 +215,50 @@ export function EvseStateCronConfig(cron_object: Cron, state: cron_trigger) {
     }]
 }
 
-cron_trigger_configs[2] = EvseStateCronConfig;
-cron_trigger_defaults[2] = EvseStateCronFactory;
-cron_trigger_names[2] = __("evse.content.state_change");
+cron_trigger_components[2] = {
+    config_builder: EvseStateCronFactory,
+    config_component: EvseStateCronConfig,
+    table_row: EvseStateCronComponent,
+    name: __("evse.content.state_change")
+};
+
+
+function EvseSetCurrentCronActionComponent(cron: cron_action) {
+    const props = (cron as any as EvseCronAction)[1];
+    return __("evse.content.allowed_charging_current") + ": " + props.current / 1000 + " A";
+}
+
+function EvseSetCurrentCronActionConfigComponent(cron_object: Cron, props: cron_action) {
+    const state = props as any as EvseCronAction;
+    return [
+        {
+            name: __("evse.content.allowed_charging_current"),
+            value: <InputFloat
+                digits={3}
+                min={0}
+                max={32000}
+                unit="A"
+                value={state[1].current}
+                onValue={(v) => {
+                    state[1].current = v;
+                    cron_object.setActionFromComponent(state as any);
+                }}/>
+        }
+    ]
+}
+
+function EvseSetCurrentCronActionConfigFactory(): cron_action {
+    return [
+        3 as any,
+        {
+            current: 0
+        }
+    ]
+}
+
+cron_action_components[3] = {
+    config_builder: EvseSetCurrentCronActionConfigFactory,
+    config_component: EvseSetCurrentCronActionConfigComponent,
+    table_row: EvseSetCurrentCronActionComponent,
+    name: __("evse.content.allowed_charging_current")
+}
