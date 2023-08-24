@@ -39,7 +39,7 @@ uint32_t MetersEM::get_class() const
     return METER_CLASS_LOCAL_EM;
 }
 
-IMeter * MetersEM::new_meter(uint32_t slot, Config *state, const Config *config)
+IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config *config)
 {
     if (meter_instance) {
         logger.printfln("meters_em: Cannot create more than one meter of class LOCAL_EM.");

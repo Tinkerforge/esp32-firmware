@@ -35,7 +35,7 @@ class MeterGeneratorNone final : public MeterGenerator, public IMeter
 {
 public:
     // for MeterGenerator
-    virtual IMeter *new_meter(uint32_t slot, Config *state, const Config *config) override;
+    virtual IMeter *new_meter(uint32_t slot, Config *state, Config *config) override;
     virtual const Config *get_config_prototype() override;
     virtual const Config *get_state_prototype() override;
 
