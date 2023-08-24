@@ -57,6 +57,8 @@ private:
     uint32_t value_index_power  = UINT32_MAX;
     uint32_t value_index_import = UINT32_MAX;
     uint32_t value_index_export = UINT32_MAX;
+
+    bool meter_change_warning_printed = false;
 };
 
 #if defined(__GNUC__)
