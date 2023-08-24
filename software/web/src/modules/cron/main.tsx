@@ -92,14 +92,20 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             name: __("cron.content.condition_category"),
             value: <InputSelect
                         items={trigger}
-                        onValue={(v) => this.setState(
+                        onValue={(v) => {
+                            if (v == "0") {
+                                this.setState({displayed_trigger: this.state.displayed_trigger})
+                                return;
+                            }
+                            this.setState(
                             {
                                 displayed_trigger: Number(v),
                                 edit_task: {
                                     trigger: cron_trigger_defaults[Number(v)](),
                                     action: this.state.edit_task.action
                                 }
-                            })}
+                            })
+                        }}
                         value={this.state.displayed_trigger}/>
         }]
         if (this.state.displayed_trigger != 0) {
@@ -111,14 +117,20 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             name: __("cron.content.action_category"),
             value: <InputSelect
                         items={action}
-                        onValue={(v) => this.setState(
+                        onValue={(v) => {
+                            if (v == "0") {
+                                this.setState({displayed_action: this.state.displayed_action});
+                                return;
+                            }
+                            this.setState(
                             {
                                 displayed_action: Number(v),
                                 edit_task: {
                                     action: cron_action_defaults[Number(v)](),
                                     trigger: this.state.edit_task.trigger
                                 }
-                            })}
+                            });
+                        }}
                         value={this.state.displayed_action}/>
         }]
 
