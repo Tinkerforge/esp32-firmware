@@ -96,7 +96,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                             {
                                 displayed_trigger: Number(v),
                                 edit_task: {
-                                    trigger: cron_trigger_defaults[Number(v)],
+                                    trigger: cron_trigger_defaults[Number(v)](),
                                     action: this.state.edit_task.action
                                 }
                             })}
@@ -115,7 +115,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                             {
                                 displayed_action: Number(v),
                                 edit_task: {
-                                    action: cron_action_defaults[Number(v)],
+                                    action: cron_action_defaults[Number(v)](),
                                     trigger: this.state.edit_task.trigger
                                 }
                             })}

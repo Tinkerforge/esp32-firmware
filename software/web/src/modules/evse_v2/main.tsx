@@ -688,7 +688,7 @@ export function EvseButtonCronTriggerComponent(cron: cron_trigger) {
 export function EvseButtonCronTriggerConfig(cron_object: Cron, props: cron_trigger) {
     let state = props as any as EvseButtonCronTrigger;
     if (state[1] == undefined) {
-        state = cron_trigger_defaults[4] as any;
+        state = EvseButtonCronTriggerFactory() as any;
     }
     return [
         {
@@ -707,7 +707,16 @@ export function EvseButtonCronTriggerConfig(cron_object: Cron, props: cron_trigg
     ]
 }
 
-cron_trigger_defaults[4] = [4 as any, {button_pressed: true}];
+function EvseButtonCronTriggerFactory(): cron_trigger {
+    return [
+        4 as any,
+        {
+            button_pressed: true
+        }
+    ]
+}
+
+cron_trigger_defaults[4] = EvseButtonCronTriggerFactory;
 cron_trigger_dict[4] = EvseButtonCronTriggerComponent;
 cron_trigger_configs[4] = EvseButtonCronTriggerConfig;
 cron_trigger_names[4] = __("evse.content.button_configuration");

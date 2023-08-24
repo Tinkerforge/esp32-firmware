@@ -224,7 +224,7 @@ export function MqttCronTriggerComponent(cron: cron_trigger) {
 export function MqttCronTriggerConfig(cron_object: Cron, state: cron_trigger) {
     let props = state as any as MqttCronTrigger;
     if (props[1] === undefined) {
-        props = cron_trigger_defaults[3] as any;
+        props = MqttCronTriggerFactory() as any;
     }
     return [
         {
@@ -257,9 +257,20 @@ export function MqttCronTriggerConfig(cron_object: Cron, state: cron_trigger) {
     ]
 }
 
+function MqttCronTriggerFactory(): cron_trigger {
+    return [
+        3 as any,
+        {
+            topic: "",
+            payload: "",
+            retain: false
+        }
+    ]
+}
+
 cron_trigger_dict[3] = MqttCronTriggerComponent;
 cron_trigger_configs[3] = MqttCronTriggerConfig;
-cron_trigger_defaults[3] = [3 as any, {payload: "", topic: "", retain: false}]
+cron_trigger_defaults[3] = MqttCronTriggerFactory;
 cron_trigger_names[3] = __("mqtt.content.mqtt");
 
 
@@ -274,7 +285,7 @@ export function MqttCronActionComponent(cron: cron_action) {
 export function MqttCronActionConfig(cron_object: Cron, state: cron_action) {
     let props = state as any as MqttCronAction;
     if (props[1] === undefined) {
-        props = cron_action_defaults[2] as any;
+        props = MqttCronActionFactory() as any;
     }
     return [
         {
@@ -307,7 +318,18 @@ export function MqttCronActionConfig(cron_object: Cron, state: cron_action) {
     ]
 }
 
-cron_action_defaults[2] = [2 as any, {payload: "", topic: "", retain: false}];
+function MqttCronActionFactory(): cron_action {
+    return [
+        2 as any,
+        {
+            topic: "",
+            payload: "",
+            retain: false
+        }
+    ]
+}
+
+cron_action_defaults[2] = MqttCronActionFactory;
 cron_action_dict[2] = MqttCronActionComponent;
 cron_action_configs[2] = MqttCronActionConfig;
 cron_action_names[2] = __("mqtt.content.mqtt");

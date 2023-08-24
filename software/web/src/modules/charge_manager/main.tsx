@@ -709,7 +709,7 @@ export function ChargeManagerCronComponent(cron: cron_action) {
 export function ChargeManagerCronConfigComponent(cron_object: Cron, state: cron_action) {
     let props = state as any as ChargeManagerCronAction;
     if (props[1] === undefined) {
-        props = cron_action_defaults[6] as any;
+        props = ChargeManagerCronActionFactory() as any;
     }
     return [{
         name: "Maximaler Strom",
@@ -724,7 +724,16 @@ export function ChargeManagerCronConfigComponent(cron_object: Cron, state: cron_
     }]
 }
 
+function ChargeManagerCronActionFactory(): cron_action {
+    return [
+        6 as any,
+        {
+            current: 0
+        }
+    ]
+}
+
 cron_action_dict[6] = ChargeManagerCronComponent;
 cron_action_configs[6] = ChargeManagerCronConfigComponent;
-cron_action_defaults[6] = [6 as any, {current: 0}];
+cron_action_defaults[6] = ChargeManagerCronActionFactory;
 cron_action_names[6] = __("charge_manager.content.set_charge_manager");

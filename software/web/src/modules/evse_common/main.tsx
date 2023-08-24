@@ -185,10 +185,19 @@ export function EvseStateCronComponent(cron: cron_trigger) {
 
 cron_trigger_dict[2] = EvseStateCronComponent;
 
+function EvseStateCronFactory(): cron_trigger {
+    return [
+        2 as any,
+        {
+            charger_state: 0
+        }
+    ]
+}
+
 export function EvseStateCronConfig(cron_object: Cron, state: cron_trigger) {
     let props = state as any as EvseStateCronTrigger;
     if (props[1] == undefined) {
-        props = cron_trigger_defaults[2] as any;
+        props = EvseStateCronFactory() as any;
     }
     return [{
         name: "State",
@@ -210,4 +219,4 @@ export function EvseStateCronConfig(cron_object: Cron, state: cron_trigger) {
 
 cron_trigger_configs[2] = EvseStateCronConfig;
 cron_trigger_defaults[2] = [2 as any, {charger_state: 0}];
-cron_trigger_names[2] = "Evse Trigger";
+cron_trigger_names[2] = __("evse.content.state_change");
