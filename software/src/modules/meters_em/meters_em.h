@@ -43,7 +43,7 @@ public:
 
     // for MeterGenerator
     uint32_t get_class() const override _ATTRIBUTE((const));
-    virtual IMeter *new_meter(uint32_t slot, Config *state, const Config *config) override;
+    virtual IMeter *new_meter(uint32_t slot, Config *state, Config *config) override;
     virtual const Config *get_config_prototype() override;
     virtual const Config *get_state_prototype() override _ATTRIBUTE((const));
 

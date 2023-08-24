@@ -74,7 +74,7 @@ public:
 
 private:
     MeterGenerator *get_generator_for_class(uint32_t meter_class);
-    IMeter *new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, const Config *config);
+    IMeter *new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, Config *config);
 
     uint32_t get_single_energy(uint32_t slot, uint32_t kind, float *energy);
 

@@ -105,7 +105,7 @@ void Meters::setup()
         states[slot] = *generator->get_state_prototype();
 
         // Create meter from config.
-        const Config *meter_conf = static_cast<const Config *>(config_unions[slot].get());
+        Config *meter_conf = static_cast<Config *>(config_unions[slot].get());
         Config *meter_state = &states[slot];
 
         IMeter *meter = new_meter_of_class(configured_meter_class, slot, meter_state, meter_conf);
@@ -176,7 +176,7 @@ MeterGenerator *Meters::get_generator_for_class(uint32_t meter_class)
     return get_generator_for_class(METER_CLASS_NONE);
 }
 
-IMeter *Meters::new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, const Config *config)
+IMeter *Meters::new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, Config *config)
 {
     MeterGenerator *generator = get_generator_for_class(meter_class);
 
