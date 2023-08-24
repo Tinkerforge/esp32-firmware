@@ -32,6 +32,9 @@ import { ListGroup, ListGroupItem } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
+import { cron_trigger, cron_trigger_configs, cron_trigger_defaults, cron_trigger_dict, cron_trigger_names } from "../cron/api";
+import { NfcCronTrigger } from "./cron_trigger";
+import { Cron } from "../cron/main";
 
 const MAX_AUTHORIZED_TAGS = 16;
 
@@ -267,3 +270,63 @@ export function add_event_listeners(source: API.APIEventTarget) {
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-nfc').prop('hidden', !module_init.nfc);
 }
+
+export function NFCCronTriggerComponent(cron: cron_trigger) {
+    const props = (cron as any as NfcCronTrigger)[1];
+    let ret = __("nfc.content.table_tag_id") + ": " + props.tag_id + "\n";
+    ret += __("nfc.content.table_tag_type") + ": " + props.tag_type;
+    return ret;
+}
+
+function NfcCronTriggerFactory(): cron_trigger{
+    return [
+        5 as any,
+        {
+            tag_type: 0,
+            tag_id: ""
+        }
+    ]
+}
+
+export function NFCCronTriggerConfig(cron_object: Cron, props: cron_trigger) {
+    console.log(props);
+    let state = props as any as NfcCronTrigger;
+    console.log("State before before: " + state);
+    if (state[1] === undefined) {
+        console.log("State before: " + state);
+        state = NfcCronTriggerFactory() as any;
+        console.log("State after: ", + state);
+    }
+    return [
+        {
+            name: __("nfc.content.table_tag_id"),
+            value: <InputText
+                value={state[1].tag_id}
+                onValue={(v) => {
+                    state[1].tag_id = v;
+                    cron_object.setTriggerFromComponent(props);
+                }}/>
+        },
+        {
+            name: __("nfc.content.table_tag_type"),
+            value: <InputSelect
+                items={[
+                    ["0",__("nfc.content.type_0")],
+                    ["1",__("nfc.content.type_1")],
+                    ["2",__("nfc.content.type_2")],
+                    ["3",__("nfc.content.type_3")],
+                    ["4",__("nfc.content.type_4")],
+                ]}
+                value={state[1].tag_type.toString()}
+                onValue={(v) => {
+                    state[1].tag_type = parseInt(v);
+                    cron_object.setTriggerFromComponent(props);
+                }}/>
+        }
+    ]
+}
+
+cron_trigger_dict[5] = NFCCronTriggerComponent;
+cron_trigger_configs[5] = NFCCronTriggerConfig;
+cron_trigger_names[5] = __("nfc.content.nfc");
+cron_trigger_defaults[5] = NfcCronTriggerFactory;
