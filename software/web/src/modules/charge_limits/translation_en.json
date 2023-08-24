@@ -1,6 +1,8 @@
 {
     "charge_limits": {
         "content": {
+            "charge_limits": "Charge limits",
+            "charge_limits_expiration": "Charge limit expiration",
             "overridden": "(active)",
             "configured": "(configured)",
             "left": " left",

@@ -1,6 +1,8 @@
 {
     "charge_limits": {
         "content": {
+            "charge_limits": "Ladelimit",
+            "charge_limits_expiration": "Ablauf Ladelimit",
             "overridden": "(aktiv)",
             "configured": "(konfiguriert)",
             "left": " verbleibend",
