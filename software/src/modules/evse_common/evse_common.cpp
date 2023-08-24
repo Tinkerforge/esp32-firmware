@@ -274,7 +274,7 @@ bool EvseCommon::action_triggered(Config *config, void *data) {
     Config *cfg = (Config*)config->get();
     switch (config->getTag()) {
         case CRON_TRIGGER_IEC_CHANGE:
-                if (cfg->get("iec61851_state")->asUint() == state.get("iec61851_state")->asUint())
+                if (cfg->get("charger_state")->asUint() == state.get("charger_state")->asUint())
                     return true;
             break;
 
