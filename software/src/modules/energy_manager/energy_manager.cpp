@@ -536,7 +536,7 @@ void EnergyManager::update_all_data()
     state.get("phases_switched")->updateUint(have_phases);
 
 #if MODULE_METERS_AVAILABLE()
-    if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != Meters::ValueAvailability::Available)
+    if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != Meters::ValueAvailability::Fresh)
         power_at_meter_raw_w = NAN;
 #else
     power_at_meter_raw_w = NAN;

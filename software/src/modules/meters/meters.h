@@ -51,7 +51,7 @@ class Meters final : public IModule
 {
 public:
     enum class ValueAvailability {
-        Available,          // Meter declared requested value ID and value is fresh.
+        Fresh,              // Meter declared requested value ID and value is fresh.
         Stale,              // Meter declared requested value ID and value is stale or not yet set.
         Unavailable,        // (a) Meter declared its value IDs but requisted value ID was not among them. (b) Meter hasn't declared its values and meter config can't provide this value ID.
         CurrentlyUnknown,   // Meter hasn't declared its value IDs yet and the meter config doesn't know.

@@ -247,7 +247,7 @@ Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind,
     if (max_age != 0_usec && deadline_elapsed(meter_slot.values_last_updated_at + max_age)) {
         return Meters::ValueAvailability::Stale;
     } else {
-        return Meters::ValueAvailability::Available;
+        return Meters::ValueAvailability::Fresh;
     }
 }
 

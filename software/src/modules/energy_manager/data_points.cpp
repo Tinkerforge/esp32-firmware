@@ -251,7 +251,7 @@ void EnergyManager::collect_data_points()
 
             float total_import; // kWh
             availability = meters.get_energy_import(meter_slot_grid, &total_import, max_age);
-            if (availability == Meters::ValueAvailability::Available) {
+            if (availability == Meters::ValueAvailability::Fresh) {
                 if (isnan(total_import)) {
                     logger.printfln("data_points: Meter claims fresh 'import' value but returned NaN.");
                 } else {
@@ -269,7 +269,7 @@ void EnergyManager::collect_data_points()
 
             float total_export; // kWh
             availability = meters.get_energy_export(meter_slot_grid, &total_export, max_age);
-            if (availability == Meters::ValueAvailability::Available) {
+            if (availability == Meters::ValueAvailability::Fresh) {
                 if (isnan(total_export)) {
                     logger.printfln("data_points: Meter claims fresh 'export' value but returned NaN.");
                 } else {
