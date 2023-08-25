@@ -48,20 +48,17 @@ void Meters::pre_setup()
     generators.reserve(METER_CLASSES);
     register_meter_generator(METER_CLASS_NONE, &meter_generator_none);
 
-    config_float_nan_prototype = Config::Float(NAN);
-    config_uint_max_prototype  = Config::Uint32(UINT32_MAX);
-
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
         slots_last_updated_at[slot] = INT64_MIN;
     }
 
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
         slots_value_ids[slot] = Config::Array({},
-            &config_uint_max_prototype,
+            get_config_uint_max_prototype(),
             0, UINT16_MAX - 1, Config::type_id<Config::ConfUint>()
         );
         slots_values[slot] = Config::Array({},
-            &config_float_nan_prototype,
+            get_config_float_nan_prototype(),
             0, UINT16_MAX - 1, Config::type_id<Config::ConfFloat>()
         );
     }
@@ -411,6 +408,22 @@ bool Meters::get_cached_power_index(uint32_t slot, uint32_t *index)
 {
     *index = index_cache_power[slot];
     return index_cache_power[slot] != UINT32_MAX;
+}
+
+const ConfigRoot * Meters::get_config_float_nan_prototype()
+{
+    if (config_float_nan_prototype.is_null()) {
+        config_float_nan_prototype = Config::Float(NAN);
+    }
+    return &config_float_nan_prototype;
+}
+
+const ConfigRoot * Meters::get_config_uint_max_prototype()
+{
+    if (config_uint_max_prototype.is_null()) {
+        config_uint_max_prototype  = Config::Uint32(UINT32_MAX);
+    }
+    return &config_uint_max_prototype;
 }
 
 uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, MeterValueID id)
