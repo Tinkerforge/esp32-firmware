@@ -246,29 +246,43 @@ void EnergyManager::collect_data_points()
             uint32_t energy_general_in[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
             uint32_t energy_general_out[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
 
-            float total_import; // kWh
-            float total_export; // kWh
-            // FIXME: how to tell if meter data is stale?
-            if (meters.get_energy(meter_slot_grid, &total_import, &total_export) > 0) {
-                have_data = true;
+            micros_t max_age = micros_t{5 * 60 * 1000 * 1000};
+            Meters::ValueAvailability availability;
 
-                if (!isnan(total_import)) {
+            float total_import; // kWh
+            availability = meters.get_energy_import(meter_slot_grid, &total_import, max_age);
+            if (availability == Meters::ValueAvailability::Available) {
+                if (isnan(total_import)) {
+                    logger.printfln("data_points: Meter claims fresh 'import' value but returned NaN.");
+                } else {
+                    have_data = true;
                     energy_grid_in = clamp<uint64_t>(0,
                                                      roundf(total_import * 100.0), // kWh -> dWh
                                                      UINT32_MAX - 1);
                 }
-                else {
-                    energy_grid_in = clamp<uint64_t>(0, roundf(history_meter_energy_import), UINT32_MAX - 1);
-                }
+            } else if (availability == Meters::ValueAvailability::Unavailable) {
+                have_data = true;
+                energy_grid_in = clamp<uint64_t>(0, roundf(history_meter_energy_import), UINT32_MAX - 1);
+            } else {
+                // Value availability currently unknown or value is stale.
+            }
 
-                if (!isnan(total_export)) {
+            float total_export; // kWh
+            availability = meters.get_energy_export(meter_slot_grid, &total_export, max_age);
+            if (availability == Meters::ValueAvailability::Available) {
+                if (isnan(total_export)) {
+                    logger.printfln("data_points: Meter claims fresh 'export' value but returned NaN.");
+                } else {
+                    have_data = true;
                     energy_grid_out = clamp<uint64_t>(0,
                                                       roundf(total_export * 100.0), // kWh -> dWh
                                                       UINT32_MAX - 1);
                 }
-                else {
-                    energy_grid_out = clamp<uint64_t>(0, roundf(history_meter_energy_export), UINT32_MAX - 1);
-                }
+            } else if (availability == Meters::ValueAvailability::Unavailable) {
+                have_data = true;
+                energy_grid_out = clamp<uint64_t>(0, roundf(history_meter_energy_export), UINT32_MAX - 1);
+            } else {
+                // Value availability currently unknown or value is stale.
             }
 
             // FIXME: fill energy_general_in and energy_general_out

@@ -207,41 +207,15 @@ uint32_t Meters::get_meters(uint32_t meter_class, IMeter **found_meters, uint32_
     return found_count;
 }
 
-bool Meters::meter_supports_power(uint32_t slot)
-{
-    if (slot >= METERS_SLOTS)
-        return false;
-
-    return meter_slots[slot].meter->supports_power();
-}
-
-bool Meters::meter_supports_energy(uint32_t slot)
-{
-    if (slot >= METERS_SLOTS)
-        return false;
-
-    return meter_slots[slot].meter->supports_energy();
-}
-
-bool Meters::meter_supports_currents(uint32_t slot)
-{
-    if (slot >= METERS_SLOTS)
-        return false;
-
-    return meter_slots[slot].meter->supports_currents();
-}
-
 Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, float *value_out, micros_t max_age)
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("meters: Requested value %u from non-existent meter slot %u.", kind, slot);
         return Meters::ValueAvailability::Unavailable;
     }
 
     MeterSlot &meter_slot = meter_slots[slot];
 
     uint32_t cached_index = meter_slot.index_cache_single_values[kind];
-    Config *val;
 
     if (cached_index == UINT32_MAX) {
         *value_out = NAN;
@@ -251,7 +225,6 @@ Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind,
             return Meters::ValueAvailability::Unavailable;
 
         // Meter hasn't declared its values yet, ask the configured meter.
-        // TODO: Implement non-bool meter back-end responses.
         bool supported;
         switch (kind) {
             case INDEX_CACHE_POWER:         supported = meter_slot.meter->supports_power();  break;
@@ -266,7 +239,7 @@ Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind,
         }
     }
 
-    val = static_cast<Config *>(meter_slot.values.get(static_cast<uint16_t>(cached_index)));
+    Config *val = static_cast<Config *>(meter_slot.values.get(static_cast<uint16_t>(cached_index)));
     assert(val); // If an index is cached, it must be in values.
 
     *value_out = val->asFloat();
@@ -278,24 +251,21 @@ Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind,
     }
 }
 
-bool Meters::get_power(uint32_t slot, float *power, micros_t max_age)
+Meters::ValueAvailability Meters::get_power(uint32_t slot, float *power, micros_t max_age)
 {
-    return get_single_value(slot, INDEX_CACHE_POWER, power, max_age) == Meters::ValueAvailability::Available;
+    return get_single_value(slot, INDEX_CACHE_POWER, power, max_age);
 }
 
-uint32_t Meters::get_energy(uint32_t slot, float *total_import, float *total_export, micros_t max_age)
+Meters::ValueAvailability Meters::get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age)
 {
-    // TODO: Change return type.
-    uint32_t found_values = 0;
-    if (get_single_value(slot, INDEX_CACHE_ENERGY_IMPORT, total_import, max_age) == Meters::ValueAvailability::Available)
-        found_values++;
-
-    if (get_single_value(slot, INDEX_CACHE_ENERGY_EXPORT, total_export, max_age) == Meters::ValueAvailability::Available)
-        found_values++;
-
-    return found_values;
+    return get_single_value(slot, INDEX_CACHE_ENERGY_IMPORT, total_import_kwh, max_age);
 }
 
+Meters::ValueAvailability Meters::get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age)
+{
+    return get_single_value(slot, INDEX_CACHE_ENERGY_EXPORT, total_export_kwh, max_age);
+}
+/*
 uint32_t Meters::get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age)
 {
     if (slot >= METERS_SLOTS)
@@ -345,7 +315,7 @@ uint32_t Meters::get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_
         }
     }
 }
-
+*/
 void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 {
     if (slot >= METERS_SLOTS) {
