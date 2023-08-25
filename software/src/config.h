@@ -154,7 +154,7 @@ struct Config {
         const std::vector<Config> *getVal() const;
         const Slot *getSlot() const;
 
-        ConfArray(std::vector<Config> val, Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType);
+        ConfArray(std::vector<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType);
         ConfArray(const ConfArray &cpy);
         ~ConfArray();
 
@@ -516,7 +516,7 @@ struct Config {
     static Config Bool(bool b);
 
     static Config Array(std::initializer_list<Config> arr,
-                        Config *prototype,
+                        const Config *prototype,
                         uint16_t minElements,
                         uint16_t maxElements,
                         int variantType);

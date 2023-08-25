@@ -54,7 +54,7 @@ struct ConfUintSlot {
 
 struct ConfArraySlot {
     std::vector<Config> val;
-    Config *prototype;
+    const Config *prototype;
     uint32_t minElements : 12, maxElements : 12;
     int8_t variantType;
     bool inUse = false;
@@ -1109,7 +1109,7 @@ const std::vector<Config> *Config::ConfArray::getVal() const { return &array_buf
 const Config::ConfArray::Slot *Config::ConfArray::getSlot() const { return &array_buf[idx]; }
 Config::ConfArray::Slot *Config::ConfArray::getSlot() { return &array_buf[idx]; }
 
-Config::ConfArray::ConfArray(std::vector<Config> val, Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType)
+Config::ConfArray::ConfArray(std::vector<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType)
 {
     idx = nextSlot<Config::ConfArray>(array_buf, array_buf_size);
     this->getSlot()->inUse = true;
@@ -1265,7 +1265,7 @@ Config Config::Bool(bool b)
     return Config{ConfBool{b}};
 }
 
-Config Config::Array(std::initializer_list<Config> arr, Config *prototype, uint16_t minElements, uint16_t maxElements, int variantType)
+Config Config::Array(std::initializer_list<Config> arr, const Config *prototype, uint16_t minElements, uint16_t maxElements, int variantType)
 {
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
