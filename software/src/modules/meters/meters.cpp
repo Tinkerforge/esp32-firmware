@@ -41,27 +41,24 @@ static void init_uint32_array(uint32_t *arr, size_t len, uint32_t val)
 
 void Meters::pre_setup()
 {
-    init_uint32_array(index_cache_power, sizeof(index_cache_power) / sizeof(index_cache_power[0]), UINT32_MAX);
-    init_uint32_array(reinterpret_cast<uint32_t *>(index_cache_energy), sizeof(index_cache_energy) / sizeof(index_cache_energy[0][0]), UINT32_MAX);
-    init_uint32_array(reinterpret_cast<uint32_t *>(index_cache_currents), sizeof(index_cache_currents) / sizeof(index_cache_currents[0][0]), UINT32_MAX);
-
-    generators.reserve(METER_CLASSES);
-    register_meter_generator(METER_CLASS_NONE, &meter_generator_none);
-
-    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
-        slots_last_updated_at[slot] = INT64_MIN;
-    }
-
-    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
-        slots_value_ids[slot] = Config::Array({},
+    for (MeterSlot &meter_slot : meter_slots) {
+        meter_slot.value_ids = Config::Array({},
             get_config_uint_max_prototype(),
             0, UINT16_MAX - 1, Config::type_id<Config::ConfUint>()
         );
-        slots_values[slot] = Config::Array({},
+        meter_slot.values = Config::Array({},
             get_config_float_nan_prototype(),
             0, UINT16_MAX - 1, Config::type_id<Config::ConfFloat>()
         );
+
+        meter_slot.values_last_updated_at = INT64_MIN;
+
+        init_uint32_array(meter_slot.index_cache_single_values, INDEX_CACHE_SINGLE_VALUES_COUNT, UINT32_MAX);
+        init_uint32_array(meter_slot.index_cache_currents,      INDEX_CACHE_CURRENT_COUNT,       UINT32_MAX);
     }
+
+    generators.reserve(METER_CLASSES);
+    register_meter_generator(METER_CLASS_NONE, &meter_generator_none);
 }
 
 void Meters::setup()
@@ -80,8 +77,10 @@ void Meters::setup()
     }
 
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+        MeterSlot &meter_slot = meter_slots[slot];
+
         // Initialize config.
-        config_unions[slot] = Config::Union(
+        meter_slot.config_union = Config::Union(
             *get_generator_for_class(METER_CLASS_NONE)->get_config_prototype(),
             METER_CLASS_NONE,
             config_prototypes,
@@ -91,19 +90,19 @@ void Meters::setup()
         // Load config.
         char path_buf[32];
         snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_config", slot);
-        api.restorePersistentConfig(path_buf, &config_unions[slot]);
+        api.restorePersistentConfig(path_buf, &meter_slot.config_union);
 
-        uint32_t configured_meter_class = config_unions[slot].getTag();
+        uint32_t configured_meter_class = meter_slot.config_union.getTag();
 
         // Generator might be a NONE class generator if the requested class is not available.
         MeterGenerator *generator = get_generator_for_class(configured_meter_class);
 
         // Initialize state to match (loaded) config.
-        states[slot] = *generator->get_state_prototype();
+        meter_slot.state = *generator->get_state_prototype();
 
         // Create meter from config.
-        Config *meter_conf = static_cast<Config *>(config_unions[slot].get());
-        Config *meter_state = &states[slot];
+        Config *meter_conf = static_cast<Config *>(meter_slot.config_union.get());
+        Config *meter_state = &meter_slot.state;
 
         IMeter *meter = new_meter_of_class(configured_meter_class, slot, meter_state, meter_conf);
         if (!meter) {
@@ -111,7 +110,7 @@ void Meters::setup()
             continue;
         }
         meter->setup();
-        meters[slot] = meter;
+        meter_slot.meter = meter;
     }
 
     api.addFeature("meters");
@@ -123,21 +122,23 @@ void Meters::register_urls()
     char path_buf[32];
 
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+        MeterSlot &meter_slot = meter_slots[slot];
+
         snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_config", slot);
-        api.addPersistentConfig(path_buf, &config_unions[slot], {}, 1000);
+        api.addPersistentConfig(path_buf, &meter_slot.config_union, {}, 1000);
 
         snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_state", slot);
-        api.addState(path_buf, &states[slot], {}, 1000);
+        api.addState(path_buf, &meter_slot.state, {}, 1000);
 
         snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_value_ids", slot);
-        api.addState(path_buf, &slots_value_ids[slot], {}, 1000);
+        api.addState(path_buf, &meter_slot.value_ids, {}, 1000);
 
         snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_values", slot);
-        api.addState(path_buf, &slots_values[slot], {}, 1000);
+        api.addState(path_buf, &meter_slot.values, {}, 1000);
 
-        if (meters[slot]) {
+        if (meter_slot.meter) {
             snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_", slot);
-            meters[slot]->register_urls(path_buf);
+            meter_slot.meter->register_urls(path_buf);
         }
     }
 }
@@ -188,16 +189,17 @@ IMeter *Meters::get_meter(uint32_t slot)
     if (slot >= METERS_SLOTS)
         return nullptr;
 
-    return meters[slot];
+    return meter_slots[slot].meter;
 }
 
 uint32_t Meters::get_meters(uint32_t meter_class, IMeter **found_meters, uint32_t found_meters_capacity)
 {
     uint32_t found_count = 0;
-    for (uint32_t i = 0; i < ARRAY_SIZE(meters); i++) {
-        if (meters[i]->get_class() == meter_class) {
+    for (uint32_t i = 0; i < METERS_SLOTS; i++) {
+        IMeter *meter = meter_slots[i].meter;
+        if (meter->get_class() == meter_class) {
             if (found_count < found_meters_capacity) {
-                found_meters[found_count] = meters[i];
+                found_meters[found_count] = meter;
             }
             found_count++;
         }
@@ -210,7 +212,7 @@ bool Meters::meter_supports_power(uint32_t slot)
     if (slot >= METERS_SLOTS)
         return false;
 
-    return meters[slot]->supports_power();
+    return meter_slots[slot].meter->supports_power();
 }
 
 bool Meters::meter_supports_energy(uint32_t slot)
@@ -218,7 +220,7 @@ bool Meters::meter_supports_energy(uint32_t slot)
     if (slot >= METERS_SLOTS)
         return false;
 
-    return meters[slot]->supports_energy();
+    return meter_slots[slot].meter->supports_energy();
 }
 
 bool Meters::meter_supports_currents(uint32_t slot)
@@ -226,65 +228,70 @@ bool Meters::meter_supports_currents(uint32_t slot)
     if (slot >= METERS_SLOTS)
         return false;
 
-    return meters[slot]->supports_currents();
+    return meter_slots[slot].meter->supports_currents();
+}
+
+Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, float *value_out, micros_t max_age)
+{
+    if (slot >= METERS_SLOTS) {
+        logger.printfln("meters: Requested value %u from non-existent meter slot %u.", kind, slot);
+        return Meters::ValueAvailability::Unavailable;
+    }
+
+    MeterSlot &meter_slot = meter_slots[slot];
+
+    uint32_t cached_index = meter_slot.index_cache_single_values[kind];
+    Config *val;
+
+    if (cached_index == UINT32_MAX) {
+        *value_out = NAN;
+
+        // Meter declared its values but index isn't cached -> value is unavailable.
+        if (meter_slot.values_declared)
+            return Meters::ValueAvailability::Unavailable;
+
+        // Meter hasn't declared its values yet, ask the configured meter.
+        // TODO: Implement non-bool meter back-end responses.
+        bool supported;
+        switch (kind) {
+            case INDEX_CACHE_POWER:         supported = meter_slot.meter->supports_power();  break;
+            case INDEX_CACHE_ENERGY_IMPORT: supported = meter_slot.meter->supports_energy(); break;
+            case INDEX_CACHE_ENERGY_EXPORT: supported = meter_slot.meter->supports_energy(); break;
+            default: supported = false;
+        }
+        if (supported) {
+            return Meters::ValueAvailability::CurrentlyUnknown;
+        } else {
+            return Meters::ValueAvailability::Unavailable;
+        }
+    }
+
+    val = static_cast<Config *>(meter_slot.values.get(static_cast<uint16_t>(cached_index)));
+    assert(val); // If an index is cached, it must be in values.
+
+    *value_out = val->asFloat();
+
+    if (max_age != 0_usec && deadline_elapsed(meter_slot.values_last_updated_at + max_age)) {
+        return Meters::ValueAvailability::Stale;
+    } else {
+        return Meters::ValueAvailability::Available;
+    }
 }
 
 bool Meters::get_power(uint32_t slot, float *power, micros_t max_age)
 {
-    if (slot >= METERS_SLOTS)
-        return false;
-
-    uint32_t power_index = index_cache_power[slot];
-    if (power_index == UINT32_MAX)
-        return false;
-
-    Config *val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(power_index)));
-    if (!val)
-        return false;
-
-    *power = val->asFloat();
-
-    if (max_age != 0_usec && deadline_elapsed(slots_last_updated_at[slot] + max_age)) {
-        return false;
-    }
-
-    return true;
-}
-
-uint32_t Meters::get_single_energy(uint32_t slot, uint32_t kind, float *energy)
-{
-    // No parameter checks for slot and kind because this function is private.
-
-    uint32_t energy_index = index_cache_energy[slot][kind];
-    Config *val;
-
-    if (energy_index == UINT32_MAX) {
-        val = nullptr;
-    } else {
-        val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(energy_index)));
-    }
-
-    if (val) {
-        *energy = val->asFloat();
-        return 1;
-    } else {
-        *energy = NAN;
-        return 0;
-    }
+    return get_single_value(slot, INDEX_CACHE_POWER, power, max_age) == Meters::ValueAvailability::Available;
 }
 
 uint32_t Meters::get_energy(uint32_t slot, float *total_import, float *total_export, micros_t max_age)
 {
-    if (slot >= METERS_SLOTS)
-        return 0;
-
+    // TODO: Change return type.
     uint32_t found_values = 0;
-    found_values += get_single_energy(slot, INDEX_CACHE_ENERGY_IMPORT, total_import);
-    found_values += get_single_energy(slot, INDEX_CACHE_ENERGY_EXPORT, total_export);
+    if (get_single_value(slot, INDEX_CACHE_ENERGY_IMPORT, total_import, max_age) == Meters::ValueAvailability::Available)
+        found_values++;
 
-    if (max_age != 0_usec && deadline_elapsed(slots_last_updated_at[slot] + max_age)) {
-        return 0;
-    }
+    if (get_single_value(slot, INDEX_CACHE_ENERGY_EXPORT, total_export, max_age) == Meters::ValueAvailability::Available)
+        found_values++;
 
     return found_values;
 }
@@ -294,16 +301,18 @@ uint32_t Meters::get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_
     if (slot >= METERS_SLOTS)
         return 0;
 
+    MeterSlot &meter_slot = meter_slots[slot];
+
     uint32_t found_N_values = 0;
     uint32_t found_L_values = 0;
     for (uint32_t i = 0; i < INDEX_CACHE_CURRENT_COUNT; i++) {
-        uint32_t current_index = index_cache_currents[slot][i];
+        uint32_t current_index = meter_slot.index_cache_currents[i];
         Config *val;
 
         if (current_index == UINT32_MAX) {
             val = nullptr;
         } else {
-            val = static_cast<Config *>(slots_values[slot].get(static_cast<uint16_t>(current_index)));
+            val = static_cast<Config *>(meter_slot.values.get(static_cast<uint16_t>(current_index)));
         }
 
         if (val) {
@@ -318,7 +327,7 @@ uint32_t Meters::get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_
         }
     }
 
-    if (max_age != 0_usec && deadline_elapsed(slots_last_updated_at[slot] + max_age)) {
+    if (max_age != 0_usec && deadline_elapsed(meter_slot.values_last_updated_at + max_age)) {
         return 0;
     }
 
@@ -344,9 +353,10 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
         return;
     }
 
-    slots_values[slot].get(static_cast<uint16_t>(index))->updateFloat(new_value);
+    MeterSlot &meter_slot = meter_slots[slot];
 
-    slots_last_updated_at[slot] = now_us();
+    meter_slot.values.get(static_cast<uint16_t>(index))->updateFloat(new_value);
+    meter_slot.values_last_updated_at = now_us();
 }
 
 void Meters::update_all_values(uint32_t slot, const float new_values[])
@@ -356,7 +366,9 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
         return;
     }
 
-    Config &values = slots_values[slot];
+    MeterSlot &meter_slot = meter_slots[slot];
+
+    Config &values = meter_slot.values;
     auto value_count = values.count();
     bool updated_any_value = false;
 
@@ -372,14 +384,21 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
     }
 
     if (updated_any_value) {
-        slots_last_updated_at[slot] = now_us();
+        meter_slot.values_last_updated_at = now_us();
     }
 }
 
 void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[], uint32_t value_id_count)
 {
-    Config &value_ids = slots_value_ids[slot];
-    Config &values    = slots_values[slot];
+    if (slot >= METERS_SLOTS) {
+        logger.printfln("meters: Tried to declare value IDs for meter in non-existent slot %u.", slot);
+        return;
+    }
+
+    MeterSlot &meter_slot = meter_slots[slot];
+
+    Config &value_ids = meter_slot.value_ids;
+    Config &values    = meter_slot.values;
 
     if (value_ids.count() != 0) {
         logger.printfln("meters: Meter in slot %u already declared %i values. Refusing to re-declare %u values.", slot, value_ids.count(), value_id_count);
@@ -393,21 +412,21 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         values.add();
     }
 
-    index_cache_power[slot]                             = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiff);
-    index_cache_energy[slot][INDEX_CACHE_ENERGY_IMPORT] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumImport);
-    index_cache_energy[slot][INDEX_CACHE_ENERGY_EXPORT] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumExport);
-    index_cache_currents[slot][INDEX_CACHE_CURRENT_N  ] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentNImport);
-    index_cache_currents[slot][INDEX_CACHE_CURRENT_L1 ] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL1Import);
-    index_cache_currents[slot][INDEX_CACHE_CURRENT_L2 ] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL2Import);
-    index_cache_currents[slot][INDEX_CACHE_CURRENT_L3 ] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL3Import);
+    meter_slot.index_cache_single_values[INDEX_CACHE_POWER]         = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiff);
+    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_IMPORT] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumImport);
+    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_EXPORT] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumExport);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_N  ]        = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentNImport);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L1 ]        = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL1Import);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L2 ]        = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL2Import);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L3 ]        = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL3Import);
 
     logger.printfln("meters: Meter in slot %u declared %u values.", slot, value_id_count);
 }
 
 bool Meters::get_cached_power_index(uint32_t slot, uint32_t *index)
 {
-    *index = index_cache_power[slot];
-    return index_cache_power[slot] != UINT32_MAX;
+    *index = meter_slots[slot].index_cache_single_values[INDEX_CACHE_POWER];
+    return *index != UINT32_MAX;
 }
 
 const ConfigRoot * Meters::get_config_float_nan_prototype()

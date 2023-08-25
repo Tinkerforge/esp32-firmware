@@ -36,9 +36,10 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-#define INDEX_CACHE_ENERGY_IMPORT 0
-#define INDEX_CACHE_ENERGY_EXPORT 1
-#define INDEX_CACHE_ENERGY_COUNT 2
+#define INDEX_CACHE_POWER         0
+#define INDEX_CACHE_ENERGY_IMPORT 1
+#define INDEX_CACHE_ENERGY_EXPORT 2
+#define INDEX_CACHE_SINGLE_VALUES_COUNT 3
 
 #define INDEX_CACHE_CURRENT_N  0
 #define INDEX_CACHE_CURRENT_L1 1
@@ -49,6 +50,13 @@
 class Meters final : public IModule
 {
 public:
+    enum class ValueAvailability {
+        Available,          // Meter declared requested value ID and value is fresh.
+        Stale,              // Meter declared requested value ID and value is stale or not yet set.
+        Unavailable,        // (a) Meter declared its value IDs but requisted value ID was not among them. (b) Meter hasn't declared its values and meter config can't provide this value ID.
+        CurrentlyUnknown,   // Meter hasn't declared its value IDs yet and the meter config doesn't know.
+    };
+
     Meters(){}
     void pre_setup() override;
     void setup() override;
@@ -76,29 +84,36 @@ public:
     const ConfigRoot * get_config_uint_max_prototype();
 
 private:
+    class MeterSlot final
+    {
+    public:
+        ConfigRoot value_ids;
+        ConfigRoot values;
+
+        micros_t values_last_updated_at;
+        bool     values_declared;
+
+        IMeter *meter;
+
+        // Caches must be initialized to UINT32_MAX in setup().
+        uint32_t index_cache_single_values[INDEX_CACHE_SINGLE_VALUES_COUNT];
+        uint32_t index_cache_currents[INDEX_CACHE_CURRENT_COUNT];
+
+        ConfigRoot config_union;
+        ConfigRoot state;
+    };
+
     MeterGenerator *get_generator_for_class(uint32_t meter_class);
     IMeter *new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, Config *config);
 
-    uint32_t get_single_energy(uint32_t slot, uint32_t kind, float *energy);
+    ValueAvailability get_single_value(uint32_t slot, uint32_t kind, float *value, micros_t max_age_us);
 
-    ConfigRoot config_unions[METERS_SLOTS];
-    ConfigRoot states[METERS_SLOTS];
-
-    ConfigRoot slots_value_ids[METERS_SLOTS];
-    ConfigRoot slots_values[METERS_SLOTS];
+    MeterSlot meter_slots[METERS_SLOTS];
 
     ConfigRoot config_float_nan_prototype;
     ConfigRoot config_uint_max_prototype;
 
     std::vector<std::tuple<uint32_t, MeterGenerator *>> generators;
-    IMeter *meters[METERS_SLOTS];
-
-    micros_t slots_last_updated_at[METERS_SLOTS];
-
-    // Caches must be initialized to UINT32_MAX in setup().
-    uint32_t index_cache_power[METERS_SLOTS];
-    uint32_t index_cache_energy[METERS_SLOTS][INDEX_CACHE_ENERGY_COUNT];
-    uint32_t index_cache_currents[METERS_SLOTS][INDEX_CACHE_CURRENT_COUNT];
 };
 
 extern uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, MeterValueID id);
