@@ -341,10 +341,11 @@ void EnergyManager::setup()
 
     bool power_meter_available = false;
 #if MODULE_METERS_AVAILABLE()
-    if (meters.meter_supports_power(meter_slot_power)) {
-        power_meter_available = true;
-    } else {
+    float unused_power;
+    if (meters.get_power(meter_slot_power, &unused_power) == Meters::ValueAvailability::Unavailable) {
         meter_slot_power = UINT32_MAX;
+    } else {
+        power_meter_available = true;
     }
 #endif
     if (excess_charging_enable && !power_meter_available) {
@@ -533,7 +534,7 @@ void EnergyManager::update_all_data()
     state.get("phases_switched")->updateUint(have_phases);
 
 #if MODULE_METERS_AVAILABLE()
-    if (!meters.get_power(meter_slot_power, &power_at_meter_raw_w))
+    if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != Meters::ValueAvailability::Available)
         power_at_meter_raw_w = NAN;
 #else
     power_at_meter_raw_w = NAN;

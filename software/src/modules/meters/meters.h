@@ -66,13 +66,10 @@ public:
     IMeter *get_meter(uint32_t slot);
     uint32_t get_meters(uint32_t meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
 
-    bool meter_supports_power(uint32_t slot);
-    bool meter_supports_energy(uint32_t slot);
-    bool meter_supports_currents(uint32_t slot);
-
-    bool get_power(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
-    uint32_t get_energy(uint32_t slot, float *total_import, float *total_export, micros_t max_age = 0_usec);
-    uint32_t get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age = 0_usec);
+    ValueAvailability get_power(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
+    ValueAvailability get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age = 0_usec);
+    ValueAvailability get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age = 0_usec);
+    //uint32_t get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age = 0_usec);
 
     void update_value(uint32_t slot, uint32_t index, float new_value);
     void update_all_values(uint32_t slot, const float new_values[]);
