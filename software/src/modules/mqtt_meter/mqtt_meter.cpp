@@ -162,10 +162,6 @@ void MqttMeter::handle_mqtt_all_values(const JsonDocument &doc)
     all_values[METER_ALL_VALUES_CURRENT_L2_A] -= pv_phase_current;
     all_values[METER_ALL_VALUES_CURRENT_L3_A] -= pv_phase_current;
     all_values[METER_ALL_VALUES_TOTAL_SYSTEM_POWER_W] -= pv_power; // METER_ALL_VALUES_TOTAL_SYSTEM_POWER_DEMAND_W ?
-
-    // hide import/export energy to make the energy manager use its own energy calculation
-    all_values[METER_ALL_VALUES_TOTAL_IMPORT_KWH] = NAN;
-    all_values[METER_ALL_VALUES_TOTAL_EXPORT_KWH] = NAN;
 #endif
 
     meter.updateMeterAllValues(all_values);
