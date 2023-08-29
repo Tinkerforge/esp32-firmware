@@ -22,7 +22,7 @@
 #define METER_CLASS_NONE                0
 #define METER_CLASS_LOCAL_EVSE          1
 #define METER_CLASS_LOCAL_EM            2
-#define METER_CLASS_PASSIVE_API         3
+#define METER_CLASS_PUSH_API            3
 #define METER_CLASS_MODBUS_TCP          4
 #define METER_CLASS_MQTT_SUBSCRIPTION   5
 #define METER_CLASSES 6
