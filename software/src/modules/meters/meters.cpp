@@ -332,7 +332,7 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 void Meters::update_all_values(uint32_t slot, const float new_values[])
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("meters: Tried to update all values for meter in non-existent slot %u.", slot);
+        logger.printfln("meters: Tried to update all values from array for meter in non-existent slot %u.", slot);
         return;
     }
 
@@ -349,6 +349,37 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
             //bool changed = wrap->updateFloat(new_values[i]) && !isnan(old_value);
             //(void)changed;
             values.get(i)->updateFloat(new_values[i]);
+            updated_any_value = true;
+        }
+    }
+
+    if (updated_any_value) {
+        meter_slot.values_last_updated_at = now_us();
+    }
+}
+
+void Meters::update_all_values(uint32_t slot, Config *new_values)
+{
+    if (slot >= METERS_SLOTS) {
+        logger.printfln("meters: Tried to update all values from Config for meter in non-existent slot %u.", slot);
+        return;
+    }
+
+    MeterSlot &meter_slot = meter_slots[slot];
+
+    ConfigRoot &values = meter_slot.values;
+    auto value_count = values.count();
+    bool updated_any_value = false;
+
+    if (new_values->count() != value_count) {
+        logger.printfln("meters: Update all values element count mismatch: %i != %i", new_values->count(), value_count);
+        return;
+    }
+
+    for (uint16_t i = 0; i < value_count; i++) {
+        float val = new_values->get(i)->asFloat();
+        if (!isnan(val)) {
+            values.get(i)->updateFloat(val);
             updated_any_value = true;
         }
     }
