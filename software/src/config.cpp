@@ -55,7 +55,8 @@ struct ConfUintSlot {
 struct ConfArraySlot {
     std::vector<Config> val;
     const Config *prototype;
-    uint32_t minElements : 12, maxElements : 12;
+    uint16_t minElements;
+    uint16_t maxElements;
     int8_t variantType;
     bool inUse = false;
 };
@@ -1112,13 +1113,20 @@ Config::ConfArray::Slot *Config::ConfArray::getSlot() { return &array_buf[idx]; 
 Config::ConfArray::ConfArray(std::vector<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType)
 {
     idx = nextSlot<Config::ConfArray>(array_buf, array_buf_size);
-    this->getSlot()->inUse = true;
+    auto *slot = this->getSlot();
+    slot->inUse = true;
 
-    this->getSlot()->val = val;
-    this->getSlot()->prototype = prototype;
-    this->getSlot()->minElements = minElements;
-    this->getSlot()->maxElements = maxElements;
-    this->getSlot()->variantType = variantType;
+    slot->val = val;
+    slot->prototype = prototype;
+    slot->minElements = minElements;
+    slot->variantType = variantType;
+
+    if (maxElements < minElements) {
+        slot->maxElements = minElements;
+        logger.printfln("ConfArray of variantType %i: Requested maxElements of %u raised to fit minElements of %u.", variantType, maxElements, minElements);
+    } else {
+        slot->maxElements = maxElements;
+    }
 }
 
 Config::ConfArray::ConfArray(const ConfArray &cpy)
@@ -1136,13 +1144,14 @@ Config::ConfArray::ConfArray(const ConfArray &cpy)
 
 Config::ConfArray::~ConfArray()
 {
-    this->getSlot()->inUse = false;
+    auto *slot = this->getSlot();
+    slot->inUse = false;
 
-    this->getSlot()->val.clear();
-    this->getSlot()->prototype = nullptr;
-    this->getSlot()->minElements = 0;
-    this->getSlot()->maxElements = 0;
-    this->getSlot()->variantType = 0;
+    slot->val.clear();
+    slot->prototype = nullptr;
+    slot->minElements = 0;
+    slot->maxElements = 0;
+    slot->variantType = 0;
 }
 
 Config::ConfArray& Config::ConfArray::operator=(const ConfArray &cpy) {
