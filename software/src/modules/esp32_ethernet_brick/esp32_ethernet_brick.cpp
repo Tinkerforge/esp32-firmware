@@ -56,10 +56,9 @@ static TF_Local local;
 
 #endif
 
-#if MODULE_DEBUG_AVAILABLE()
-#define RESET_WAIT_SECS 2
-#else
-#define RESET_WAIT_SECS 8
+// Time in seconds.
+#ifndef WEM_FACTORY_RESET_WAIT_TIME
+#define WEM_FACTORY_RESET_WAIT_TIME 8
 #endif
 
 #if defined(BUILD_NAME_ENERGY_MANAGER) && MODULE_FIRMWARE_UPDATE_AVAILABLE()
@@ -88,7 +87,7 @@ static void check_for_factory_reset() {
     if (!seen_ethernet_clock) {
         // Flash LED for 8 seconds while waiting for button press.
         bool button_pressed = false;
-        for (uint32_t i = 0; i < (RESET_WAIT_SECS*10); i++) {
+        for (uint32_t i = 0; i < (WEM_FACTORY_RESET_WAIT_TIME*10); i++) {
             digitalWrite(blue_led_pin, i % 4 == 0 ? false : true);
             delay(100); // 8 * 10 * 100ms = 8s
             if (!digitalRead(BUTTON)) {
