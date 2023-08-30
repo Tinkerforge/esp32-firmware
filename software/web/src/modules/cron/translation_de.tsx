@@ -2,6 +2,9 @@
 import { h } from "preact";
 let x = {
     "cron": {
+        "navbar": {
+            "cron": "Cron"
+        },
         "content": {
             "category": "Kategorie",
             "condition_category": "Kategorie Bedingung",

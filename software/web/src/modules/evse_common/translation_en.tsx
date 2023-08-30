@@ -72,6 +72,7 @@ let x = {
             "led_state_flickering": "Flickering",
             "led_state_breathing": "Breathing",
             "led_state_api": "API",
+            "led_duration": "Duration",
             "cp_pwm_dc": "CP PWM duty cycle",
             "adc_values": "ADC values",
             "voltages": "Voltages",

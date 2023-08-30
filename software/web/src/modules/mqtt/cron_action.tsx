@@ -16,9 +16,9 @@ import { __ } from "src/ts/translation";
 
 export function MqttCronActionComponent(cron: cron_action) {
     const props = (cron as any as MqttCronAction)[1];
-    let ret = "Topic: \"" + props.topic + "\"\n";
-    ret += "Payload: \"" + props.payload + "\"\n";
-    ret += "Retain: " + props.retain;
+    let ret = __("mqtt.content.topic") + ": \"" + props.topic + "\"\n";
+    ret += __("mqtt.content.payload") + ": \"" + props.payload + "\"\n";
+    ret += __("mqtt.content.accept_retain") + ": " + props.retain;
     return ret;
 }
 
@@ -29,7 +29,7 @@ export function MqttCronActionConfig(cron_object: Cron, state: cron_action) {
     }
     return [
         {
-            name: "Topic",
+            name: __("mqtt.content.topic"),
             value: <InputText
                 value={props[1].topic}
                 onValue={(v) => {
@@ -38,7 +38,7 @@ export function MqttCronActionConfig(cron_object: Cron, state: cron_action) {
                 }}/>
         },
         {
-            name: "Payload",
+            name: __("mqtt.content.payload"),
             value: <InputText
                 value={props[1].payload}
                 onValue={(v) => {
@@ -47,7 +47,7 @@ export function MqttCronActionConfig(cron_object: Cron, state: cron_action) {
                 }}/>
         },
         {
-            name: "Retain",
+            name: __("mqtt.content.accept_retain"),
             value: <Switch
                 checked={props[1].retain}
                 onClick={() => {

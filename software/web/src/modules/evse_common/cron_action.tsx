@@ -85,7 +85,7 @@ function EvseLedCronActionComponent(cron: cron_action) {
             ret += __("evse.content.led_state_breathing");
             break;
     }
-    return ret;
+    return ret + "\n" + __("evse.content.led_duration") + ": " + props.duration + " ms";
 }
 
 function EvseLedCronActionConfigComponent(cron_object: Cron, props: cron_action) {
@@ -109,7 +109,7 @@ function EvseLedCronActionConfigComponent(cron_object: Cron, props: cron_action)
                 }}/>
         },
         {
-            name: "Duration",
+            name: __("evse.content.led_duration"),
             value: <InputNumber
                 value={state[1].duration}
                 unit="ms"
