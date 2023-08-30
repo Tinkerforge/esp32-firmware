@@ -71,12 +71,12 @@ void EnergyManager::update_history_meter_power(float power /* W */)
         }
 
         if (persistent_data_loaded && energy_ws != 0) {
-            double energy_dwh = energy_ws / 36000.0;
+            double energy_dawh = energy_ws / 36000.0;
 
-            if (energy_dwh >= 0) {
-                history_meter_energy_import += energy_dwh;
+            if (energy_dawh >= 0) {
+                history_meter_energy_import += energy_dawh;
             } else {
-                history_meter_energy_export += -energy_dwh;
+                history_meter_energy_export += -energy_dawh;
             }
 
             save_persistent_data();
@@ -202,7 +202,7 @@ void EnergyManager::collect_data_points()
                     have_data = true;
                     energy = clamp<uint64_t>(0,
                                              roundf(charger.get("energy_abs")->asFloat() * 100.0),
-                                             UINT32_MAX - 1); // kWh -> dWh
+                                             UINT32_MAX - 1); // kWh -> daWh
                 }
 
                 if (have_data) {
@@ -231,10 +231,10 @@ void EnergyManager::collect_data_points()
         }
 
         bool have_data = false;
-        uint32_t energy_grid_in = UINT32_MAX; // dWh
-        uint32_t energy_grid_out = UINT32_MAX; // dWh
-        uint32_t energy_general_in[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
-        uint32_t energy_general_out[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
+        uint32_t energy_grid_in = UINT32_MAX; // daWh
+        uint32_t energy_grid_out = UINT32_MAX; // daWh
+        uint32_t energy_general_in[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // daWh
+        uint32_t energy_general_out[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // daWh
 
         micros_t max_age = micros_t{5 * 60 * 1000 * 1000};
         Meters::ValueAvailability availability;
@@ -247,7 +247,7 @@ void EnergyManager::collect_data_points()
             } else {
                 have_data = true;
                 energy_grid_in = clamp<uint64_t>(0,
-                                                    roundf(total_import * 100.0), // kWh -> dWh
+                                                    roundf(total_import * 100.0), // kWh -> daWh
                                                     UINT32_MAX - 1);
             }
         } else if (availability == Meters::ValueAvailability::Unavailable) {
@@ -265,7 +265,7 @@ void EnergyManager::collect_data_points()
             } else {
                 have_data = true;
                 energy_grid_out = clamp<uint64_t>(0,
-                                                    roundf(total_export * 100.0), // kWh -> dWh
+                                                    roundf(total_export * 100.0), // kWh -> daWh
                                                     UINT32_MAX - 1);
             }
         } else if (availability == Meters::ValueAvailability::Unavailable) {
@@ -466,7 +466,7 @@ bool EnergyManager::set_wallbox_5min_data_point(const struct tm *utc, const stru
     }
 }
 
-bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_t uid, uint32_t energy /* dWh */)
+bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_t uid, uint32_t energy /* daWh */)
 {
     uint8_t status;
     uint8_t year = local->tm_year - 100;
@@ -503,7 +503,7 @@ bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_
         char energy_str[12] = "null";
 
         if (energy != UINT32_MAX) {
-            snprintf(energy_str, sizeof(energy_str), "%.2f", (double)energy / 100.0); // dWh -> kWh
+            snprintf(energy_str, sizeof(energy_str), "%.2f", (double)energy / 100.0); // daWh -> kWh
         }
 
         char *buf;
@@ -631,10 +631,10 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
 }
 
 bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
-                                                        uint32_t energy_grid_in /* dWh */,
-                                                        uint32_t energy_grid_out /* dWh */,
-                                                        const uint32_t energy_general_in[6] /* dWh */,
-                                                        const uint32_t energy_general_out[6] /* dWh */)
+                                                        uint32_t energy_grid_in /* daWh */,
+                                                        uint32_t energy_grid_out /* daWh */,
+                                                        const uint32_t energy_general_in[6] /* daWh */,
+                                                        const uint32_t energy_general_out[6] /* daWh */)
 {
     uint8_t status;
     uint8_t year = local->tm_year - 100;
@@ -685,20 +685,20 @@ bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
         char energy_general_out_str[6][13] = {"null", "null", "null", "null", "null", "null"};
 
         if (energy_grid_in != UINT32_MAX) {
-            snprintf(energy_grid_in_str, sizeof(energy_grid_in_str), "%.2f", (double)energy_grid_in / 100.0); // dWh -> kWh
+            snprintf(energy_grid_in_str, sizeof(energy_grid_in_str), "%.2f", (double)energy_grid_in / 100.0); // daWh -> kWh
         }
 
         if (energy_grid_out != UINT32_MAX) {
-            snprintf(energy_grid_out_str, sizeof(energy_grid_out_str), "%.2f", (double)energy_grid_out / 100.0); // dWh -> kWh
+            snprintf(energy_grid_out_str, sizeof(energy_grid_out_str), "%.2f", (double)energy_grid_out / 100.0); // daWh -> kWh
         }
 
         for (int i = 0; i < 6; ++i) {
             if (energy_general_in[i] != UINT32_MAX) {
-                snprintf(energy_general_in_str[i], sizeof(energy_general_in_str[i]), "%.2f", (double)energy_general_in[i] / 100.0); // dWh -> kWh
+                snprintf(energy_general_in_str[i], sizeof(energy_general_in_str[i]), "%.2f", (double)energy_general_in[i] / 100.0); // daWh -> kWh
             }
 
             if (energy_general_out[i] != UINT32_MAX) {
-                snprintf(energy_general_out_str[i], sizeof(energy_general_out_str[i]), "%.2f", (double)energy_general_out[i] / 100.0); // dWh -> kWh
+                snprintf(energy_general_out_str[i], sizeof(energy_general_out_str[i]), "%.2f", (double)energy_general_out[i] / 100.0); // daWh -> kWh
             }
         }
 
@@ -1070,7 +1070,7 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
 
     for (i = 0; i < actual_length && write_success; ++i) {
         if (data_chunk_data[i] != UINT32_MAX) {
-            write_success = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // dWh -> kWh
+            write_success = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // daWh -> kWh
         } else {
             write_success = response->write("null");
         }
@@ -1500,7 +1500,7 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
 
     for (i = 0; i < actual_length && write_success; ++i) {
         if (data_chunk_data[i] != UINT32_MAX) {
-            write_success = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // dWh -> kWh
+            write_success = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // daWh -> kWh
         } else {
             write_success = response->write("null");
         }

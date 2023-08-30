@@ -275,7 +275,7 @@ private:
     int32_t  threshold_3to1_w    = 0;
     int32_t  threshold_1to3_w    = 0;
 
-    void update_history_meter_power(float power);
+    void update_history_meter_power(float power /* W */);
     void collect_data_points();
     void set_pending_data_points();
     bool load_persistent_data();
@@ -285,10 +285,10 @@ private:
     void history_energy_manager_5min_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
     void history_energy_manager_daily_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
     bool set_wallbox_5min_data_point(const struct tm *utc, const struct tm *local, uint32_t uid, uint8_t flags, uint16_t power /* W */);
-    bool set_wallbox_daily_data_point(const struct tm *local, uint32_t uid, uint32_t energy /* dWh */);
+    bool set_wallbox_daily_data_point(const struct tm *local, uint32_t uid, uint32_t energy /* daWh */);
     bool set_energy_manager_5min_data_point(const struct tm *utc, const struct tm *local, uint8_t flags, int32_t power_grid /* W */, const int32_t power_general[6] /* W */);
-    bool set_energy_manager_daily_data_point(const struct tm *local, uint32_t energy_grid_in /* dWh */, uint32_t energy_grid_out /* dWh */,
-                                             const uint32_t energy_general_in[6] /* dWh */, const uint32_t energy_general_out[6] /* dWh */);
+    bool set_energy_manager_daily_data_point(const struct tm *local, uint32_t energy_grid_in /* daWh */, uint32_t energy_grid_out /* daWh */,
+                                             const uint32_t energy_general_in[6] /* daWh */, const uint32_t energy_general_out[6] /* daWh */);
 
     std::list<std::function<bool(void)>> pending_data_points;
     bool persistent_data_loaded = false;
@@ -301,6 +301,6 @@ private:
     uint32_t history_meter_power_timestamp;
     double history_meter_power_sum = 0; // watt seconds
     double history_meter_power_duration = 0; // seconds
-    double history_meter_energy_import = 0; // dWh
-    double history_meter_energy_export = 0; // dWh
+    double history_meter_energy_import = 0; // daWh
+    double history_meter_energy_export = 0; // daWh
 };
