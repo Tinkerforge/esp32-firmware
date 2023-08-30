@@ -34,8 +34,6 @@ import { Zap, ZapOff } from "react-feather";
 import uPlot from 'uplot';
 import { FormSeparator } from "../../ts/components/form_separator";
 import { SubPage } from "src/ts/components/sub_page";
-import { cron_action, cron_action_components } from "../cron/api";
-import { Cron } from "../cron/main";
 
 interface DetailedViewEntry {
     i: number,
@@ -846,25 +844,3 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {}
-
-function MeterResetCronActionComponent(_: cron_action) {
-    return "";
-}
-
-function MeterResetCronActionConfigComponent(_: Cron, __: cron_action): any {
-    return [];
-}
-
-function MeterResetCronActionConfigFactory(): cron_action {
-    return [
-        5 as any,
-        {}
-    ];
-}
-
-cron_action_components[5] = {
-    config_builder: MeterResetCronActionConfigFactory,
-    config_component: MeterResetCronActionConfigComponent,
-    table_row: MeterResetCronActionComponent,
-    name: __("meter.content.meter_reset")
-}

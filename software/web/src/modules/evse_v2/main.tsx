@@ -39,12 +39,7 @@ import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { EVSE_SLOT_EXTERNAL } from "../evse_common/api";
 import { DebugLogger } from "../../ts/components/debug_logger";
 import { ConfigForm } from "src/ts/components/config_form";
-import { InputFloat } from "src/ts/components/input_float";
 import { SubPage } from "src/ts/components/sub_page";
-import { cron_action, cron_action_components, cron_trigger, cron_trigger_components } from "../cron/api";
-import { EvseButtonCronTrigger, EvseGpioCronTrigger, EvseSdCronTrigger } from "./cron_trigger";
-import { Cron } from "../cron/main";
-import { EvseGpOutputCronAction } from "./cron_action";
 
 interface EVSEState {
     state: API.getType['evse/state'];
@@ -680,4 +675,3 @@ export function update_sidebar_state(module_init: any) {
     $('#sidebar-evse-settings').prop('hidden', !module_init.evse_v2);
     $('#status-evse').prop('hidden', !module_init.evse_v2);
 }
-

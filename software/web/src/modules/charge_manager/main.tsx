@@ -29,18 +29,15 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
-import { Button, Collapse, ListGroup } from "react-bootstrap";
-import { InputSelect } from "../../ts/components/input_select";
-import { InputFloat } from "../../ts/components/input_float";
-import { Switch } from "../../ts/components/switch";
+import { Button, Card, Collapse, ListGroup, Modal } from "react-bootstrap";
+import { InputSelect } from "src/ts/components/input_select";
+import { InputFloat } from "src/ts/components/input_float";
+import { Switch } from "src/ts/components/switch";
 import { config } from "./api";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
-import { cron_action, cron_action_components} from "../cron/api";
-import { ChargeManagerCronAction } from "./cron_action";
-import { Cron } from "../cron/main";
 
 type ChargeManagerConfig = API.getType['charge_manager/config'];
 type ChargerConfig = ChargeManagerConfig["chargers"][0];
@@ -700,42 +697,3 @@ export function add_event_listeners(source: API.APIEventTarget) {
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-charge_manager').prop('hidden', !module_init.charge_manager);
 }
-
-export function ChargeManagerCronComponent(cron: cron_action) {
-    let action_props = cron as any as ChargeManagerCronAction;
-    return __("charge_manager.content.maximum_available_current") + ": " + action_props[1].current / 1000 + " A";
-}
-
-export function ChargeManagerCronConfigComponent(cron_object: Cron, state: cron_action) {
-    let props = state as any as ChargeManagerCronAction;
-    if (props[1] === undefined) {
-        props = ChargeManagerCronActionFactory() as any;
-    }
-    return [{
-        name: "Maximaler Strom",
-        value: <InputFloat value={props[1].current}
-                    onValue={(v) => {
-                        props[1].current = v;
-                        cron_object.setActionFromComponent(props as any as cron_action);
-                    }}
-                    min={0}
-                    unit="A"
-                    digits={3}/>
-    }]
-}
-
-function ChargeManagerCronActionFactory(): cron_action {
-    return [
-        6 as any,
-        {
-            current: 0
-        }
-    ]
-}
-
-cron_action_components[6] = {
-    config_builder: ChargeManagerCronActionFactory,
-    config_component: ChargeManagerCronConfigComponent,
-    table_row: ChargeManagerCronComponent,
-    name: __("charge_manager.content.set_charge_manager")
-};
