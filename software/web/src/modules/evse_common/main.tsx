@@ -30,10 +30,11 @@ import { Button } from "react-bootstrap";
 import { InputFloat } from "src/ts/components/input_float";
 import { InputText } from "src/ts/components/input_text";
 import { cron_action, cron_action_components, cron_trigger, cron_trigger_components } from "../cron/api";
-import { EvseCronAction } from "./cron_action";
+import { EvseCronAction, EvseLedCronAction } from "./cron_action";
 import { EvseStateCronTrigger } from "./cron_trigger";
 import { InputSelect } from "src/ts/components/input_select";
 import { Cron } from "../cron/main";
+import { InputNumber } from "src/ts/components/input_number";
 
 interface EVSEStatusState {
     state: API.getType['evse/state']
@@ -262,3 +263,80 @@ cron_action_components[3] = {
     table_row: EvseSetCurrentCronActionComponent,
     name: __("evse.content.allowed_charging_current")
 }
+
+function EvseLedCronActionComponent(cron: cron_action) {
+    const props = (cron as any as EvseLedCronAction)[1];
+    let ret = __("evse.content.led_state") + ": ";
+    switch (props.state) {
+        case 0:
+            ret += __("evse.content.led_state_off");
+            break;
+
+        case 255:
+            ret += __("evse.content.led_state_on");
+            break;
+
+        case 1001:
+            ret += __("evse.content.led_state_blinking");
+            break;
+
+        case 1002:
+            ret += __("evse.content.led_state_flickering");
+            break;
+
+        case 1003:
+            ret += __("evse.content.led_state_breathing");
+            break;
+    }
+    return ret;
+}
+
+function EvseLedCronActionConfigComponent(cron_object: Cron, props: cron_action) {
+    const state = props as any as EvseLedCronAction;
+    return [
+        {
+            name: __("evse.content.led_state"),
+            value: <InputSelect
+                items={[
+                    // TODO: Add more led-states
+                    ["0", __("evse.content.led_state_off")],
+                    ["255", __("evse.content.led_state_on")],
+                    ["1001", __("evse.content.led_state_blinking")],
+                    ["1002", __("evse.content.led_state_flickering")],
+                    ["1003", __("evse.content.led_state_breathing")]
+                ]}
+                value={state[1].state.toString()}
+                onValue={(v) => {
+                    state[1].state = parseInt(v);
+                    cron_object.setActionFromComponent(state as any);
+                }}/>
+        },
+        {
+            name: "Duration",
+            value: <InputNumber
+                value={state[1].duration}
+                unit="ms"
+                onValue={(v) => {
+                    state[1].duration = v;
+                    cron_object.setActionFromComponent(state as any);
+                }} />
+        }
+    ]
+}
+
+function EvseLedCronActionConfigFactory(): cron_action {
+    return [
+        4 as any,
+        {
+            duration: 0,
+            state: 0
+        }
+    ]
+}
+
+cron_action_components[4] = {
+    config_builder: EvseLedCronActionConfigFactory,
+    config_component: EvseLedCronActionConfigComponent,
+    table_row: EvseLedCronActionComponent,
+    name: __("evse.content.led_state")
+};
