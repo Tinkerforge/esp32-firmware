@@ -1,6 +1,7 @@
 {{{imports}}}
 import { h } from 'preact'
 import { Cron } from './main'
+import { TableModalRow } from 'src/ts/components/table'
 
 export interface config {
     tasks: Task[]
@@ -21,14 +22,14 @@ export interface cron_action {
 
 interface CronTriggerComponent {
     table_row: (cron: cron_trigger) => string,
-    config_component: (cron_object: Cron, state: cron_trigger) => {name: string, value: h.JSX.Element}[],
+    config_component: (cron_object: Cron, state: cron_trigger) => TableModalRow[],
     config_builder: () => cron_trigger,
     name: string
 }
 
 interface CronActionComponent {
     table_row: (cron: cron_action) => string,
-    config_component: (cron_object: Cron, state: cron_action) => {name: string, value: h.JSX.Element}[],
+    config_component: (cron_object: Cron, state: cron_action) => TableModalRow[],
     config_builder: () => cron_action,
     name: string
 }

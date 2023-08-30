@@ -25,7 +25,7 @@ import * as API from "../../ts/api";
 import { Fragment, render, h } from "preact";
 import { ConfigComponent } from "src/ts/components/config_component";
 import { ConfigForm } from "src/ts/components/config_form";
-import { Table, TableRow } from "src/ts/components/table";
+import { Table, TableModalRow, TableRow } from "src/ts/components/table";
 import { cron_action, cron_action_components, cron_trigger, cron_trigger_components, Task } from "./api";
 import { InputSelect } from "src/ts/components/input_select";
 import { __ } from "src/ts/translation";
@@ -88,7 +88,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             action.push(entry);
         }
 
-        let triggerSelector = [{
+        let triggerSelector: TableModalRow[] = [{
             name: __("cron.content.condition_category"),
             value: <InputSelect
                         items={trigger}
@@ -107,15 +107,17 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                             })
                         }}
                         value={this.state.displayed_trigger}/>
-        }]
+        }];
         if (this.state.displayed_trigger != 0) {
             const trigger_config = cron_trigger_components[this.state.displayed_trigger].config_component(this, this.state.edit_task.trigger);
             triggerSelector = triggerSelector.concat(trigger_config);
         }
+        triggerSelector = triggerSelector.concat({name: "", value: <></>, valueClassList: "border-bottom"});
 
-        let actionSelector = [{
+        let actionSelector: TableModalRow[] = [{
             name: __("cron.content.action_category"),
-            value: <InputSelect
+            value: <>
+            <InputSelect
                         items={action}
                         onValue={(v) => {
                             if (v == "0") {
@@ -131,7 +133,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                                 }
                             });
                         }}
-                        value={this.state.displayed_action}/>
+                        value={this.state.displayed_action}/></>
         }]
 
         if (this.state.displayed_action != 0) {
