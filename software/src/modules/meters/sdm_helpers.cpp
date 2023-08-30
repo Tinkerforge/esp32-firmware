@@ -153,7 +153,8 @@ void sdm_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size
                 break;
             }
             for (size_t i = 0; i < id_count; i++) {
-                value_ids[i] = sdm_helper_all_ids[sdm_helper_72v2_all_value_indices[i]];
+                size_t src_i = sdm_helper_72v2_all_value_indices[i];
+                value_ids[i] = sdm_helper_all_ids[src_i];
             }
             *value_ids_len = id_count;
             break;
@@ -162,25 +163,6 @@ void sdm_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size
             logger.printfln("sdm_helpers: Value IDs unsupported for meter type %u.", meter_type);
             *value_ids_len = 0;
             break;
-    }
-}
-
-__attribute((noinline))
-static void pack_unchecked(float *values, size_t values_count)
-{
-    for (size_t i = 0; i < values_count; i++) {
-        size_t src_i = sdm_helper_72v2_all_value_indices[i];
-        values[i] = values[src_i];
-    }
-}
-
-__attribute((noinline))
-static void pack_checked(float *values, size_t values_count)
-{
-    for (size_t i = 0; i < values_count; i++) {
-        size_t src_i = sdm_helper_72v2_all_value_indices[i];
-        if (i != src_i)
-            values[i] = values[src_i];
     }
 }
 
@@ -199,9 +181,10 @@ void sdm_helper_pack_all_values(uint32_t meter_type, float *values, size_t *valu
                 *values_len = 0;
                 break;
             }
-            pack_unchecked(values, values_count);
-            float foo[85];
-            pack_checked(foo, values_count);
+            for (size_t i = 0; i < values_count; i++) {
+                size_t src_i = sdm_helper_72v2_all_value_indices[i];
+                values[i] = values[src_i];
+            }
             *values_len = values_count;
             break;
         }
