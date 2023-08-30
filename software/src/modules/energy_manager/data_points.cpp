@@ -232,64 +232,61 @@ void EnergyManager::collect_data_points()
 #endif
         }
 
-        // FIXME: should we even look at all-data validity if we don't use any of it?
-        if (all_data.is_valid && !deadline_elapsed(all_data.last_update + MAX_DATA_AGE)) {
-            bool have_data = false;
-            uint32_t energy_grid_in = UINT32_MAX; // dWh
-            uint32_t energy_grid_out = UINT32_MAX; // dWh
-            uint32_t energy_general_in[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
-            uint32_t energy_general_out[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
+        bool have_data = false;
+        uint32_t energy_grid_in = UINT32_MAX; // dWh
+        uint32_t energy_grid_out = UINT32_MAX; // dWh
+        uint32_t energy_general_in[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
+        uint32_t energy_general_out[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // dWh
 
-            micros_t max_age = micros_t{5 * 60 * 1000 * 1000};
-            Meters::ValueAvailability availability;
+        micros_t max_age = micros_t{5 * 60 * 1000 * 1000};
+        Meters::ValueAvailability availability;
 
-            float total_import; // kWh
-            availability = meters.get_energy_import(meter_slot_grid, &total_import, max_age);
-            if (availability == Meters::ValueAvailability::Fresh) {
-                if (isnan(total_import)) {
-                    logger.printfln("data_points: Meter claims fresh 'import' value but returned NaN.");
-                } else {
-                    have_data = true;
-                    energy_grid_in = clamp<uint64_t>(0,
-                                                     roundf(total_import * 100.0), // kWh -> dWh
-                                                     UINT32_MAX - 1);
-                }
-            } else if (availability == Meters::ValueAvailability::Unavailable) {
-                have_data = true;
-                energy_grid_in = clamp<uint64_t>(0, roundf(history_meter_energy_import), UINT32_MAX - 1);
+        float total_import; // kWh
+        availability = meters.get_energy_import(meter_slot_grid, &total_import, max_age);
+        if (availability == Meters::ValueAvailability::Fresh) {
+            if (isnan(total_import)) {
+                logger.printfln("data_points: Meter claims fresh 'import' value but returned NaN.");
             } else {
-                // Value availability currently unknown or value is stale.
-            }
-
-            float total_export; // kWh
-            availability = meters.get_energy_export(meter_slot_grid, &total_export, max_age);
-            if (availability == Meters::ValueAvailability::Fresh) {
-                if (isnan(total_export)) {
-                    logger.printfln("data_points: Meter claims fresh 'export' value but returned NaN.");
-                } else {
-                    have_data = true;
-                    energy_grid_out = clamp<uint64_t>(0,
-                                                      roundf(total_export * 100.0), // kWh -> dWh
-                                                      UINT32_MAX - 1);
-                }
-            } else if (availability == Meters::ValueAvailability::Unavailable) {
                 have_data = true;
-                energy_grid_out = clamp<uint64_t>(0, roundf(history_meter_energy_export), UINT32_MAX - 1);
-            } else {
-                // Value availability currently unknown or value is stale.
+                energy_grid_in = clamp<uint64_t>(0,
+                                                    roundf(total_import * 100.0), // kWh -> dWh
+                                                    UINT32_MAX - 1);
             }
+        } else if (availability == Meters::ValueAvailability::Unavailable) {
+            have_data = true;
+            energy_grid_in = clamp<uint64_t>(0, roundf(history_meter_energy_import), UINT32_MAX - 1);
+        } else {
+            // Value availability currently unknown or value is stale.
+        }
 
-            // FIXME: fill energy_general_in and energy_general_out
+        float total_export; // kWh
+        availability = meters.get_energy_export(meter_slot_grid, &total_export, max_age);
+        if (availability == Meters::ValueAvailability::Fresh) {
+            if (isnan(total_export)) {
+                logger.printfln("data_points: Meter claims fresh 'export' value but returned NaN.");
+            } else {
+                have_data = true;
+                energy_grid_out = clamp<uint64_t>(0,
+                                                    roundf(total_export * 100.0), // kWh -> dWh
+                                                    UINT32_MAX - 1);
+            }
+        } else if (availability == Meters::ValueAvailability::Unavailable) {
+            have_data = true;
+            energy_grid_out = clamp<uint64_t>(0, roundf(history_meter_energy_export), UINT32_MAX - 1);
+        } else {
+            // Value availability currently unknown or value is stale.
+        }
 
-            if (have_data) {
-                if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
-                    logger.printfln("energy_manager: Data point queue is full, dropping new data point");
-                }
-                else {
-                    pending_data_points.push_back([this, local, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out]{
-                        return set_energy_manager_daily_data_point(&local, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out);
-                    });
-                }
+        // FIXME: fill energy_general_in and energy_general_out
+
+        if (have_data) {
+            if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
+                logger.printfln("energy_manager: Data point queue is full, dropping new data point");
+            }
+            else {
+                pending_data_points.push_back([this, local, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out]{
+                    return set_energy_manager_daily_data_point(&local, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out);
+                });
             }
         }
 
