@@ -26,6 +26,9 @@ directory = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 imports = ""
 trigger = ""
 action = ""
+sideeffects_imports = ""
+
+already_imported = set({})
 
 for dir in os.listdir(directory):
     dir = os.path.realpath(os.path.join(directory, dir))
@@ -33,19 +36,31 @@ for dir in os.listdir(directory):
         if file.find("cron_trigger") != -1:
             file = os.path.realpath(os.path.join(dir, file))
             f = open(file, "r")
+            dot_index = file.find('.')
+            path_split = file.split('/')
+            module_name = path_split[path_split.__len__() - 2] + "_trigger"
+            if module_name not in already_imported:
+                imports += "import * as {0} from '{1}'\n".format(module_name, file[:dot_index])
+                sideeffects_imports += "import '{}'\n".format(file[:dot_index])
+                already_imported.add(module_name)
             for line in f:
-                if line.find("CronTrigger") != -1:
+                if line.find("CronTrigger {") != -1:
                     split = line.split(' ')
-                    imports += "import {{{0}}} from '{1}'\n".format(split[2], file[:-3])
-                    trigger += "             {} |\n".format(split[2])
+                    trigger += "             {0}.{1} |\n".format(module_name,split[2])
         elif file.find("cron_action") != -1:
             file = os.path.realpath(os.path.join(dir, file))
             f = open(file, "r")
+            dot_index = file.find('.')
+            path_split = file.split('/')
+            module_name = path_split[path_split.__len__() - 2] + "_actions"
+            if module_name not in already_imported:
+                imports += "import * as {0} from '{1}'\n".format(module_name, file[:dot_index])
+                sideeffects_imports += "import '{}'\n".format(file[:dot_index])
+                already_imported.add(module_name)
             for line in f:
-                if line.find("CronAction") != -1:
+                if line.find("CronAction {") != -1:
                     split = line.split(' ')
-                    imports += "import {{{0}}} from '{1}'\n".format(split[2], file[:-3])
-                    action += "            {} |\n".format(split[2])
+                    action += "             {0}.{1} |\n".format(module_name,split[2])
 
 
 
@@ -57,3 +72,7 @@ util.specialize_template("api.ts.template", "api.ts", {
     "{{{trigger}}}": trigger,
     "{{{action}}}": action,
     })
+
+util.specialize_template("sideeffects.tsx.template", "sideeffects.tsx", {
+    "{{{imports}}}": sideeffects_imports
+})

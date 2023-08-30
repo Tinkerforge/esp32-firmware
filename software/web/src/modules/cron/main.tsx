@@ -29,6 +29,7 @@ import { Table, TableRow } from "src/ts/components/table";
 import { cron_action, cron_action_components, cron_trigger, cron_trigger_components, Task } from "./api";
 import { InputSelect } from "src/ts/components/input_select";
 import { __ } from "src/ts/translation";
+import "./sideeffects"
 
 type CronState = {
     edit_task: Task,
