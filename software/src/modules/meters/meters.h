@@ -57,6 +57,15 @@ public:
         CurrentlyUnknown,   // Meter hasn't declared its value IDs yet and the meter config doesn't know.
     };
 
+    enum class PathType {
+        Base     = 0,
+        Config   = 1,
+        State    = 2,
+        ValueIDs = 3,
+        Values   = 4,
+        _max     = 4,
+    };
+
     Meters(){}
     void pre_setup() override;
     void setup() override;
@@ -77,6 +86,8 @@ public:
     void declare_value_ids(uint32_t slot, const MeterValueID value_ids[], uint32_t value_id_count);
 
     bool get_cached_power_index(uint32_t slot, uint32_t *index);
+
+    String get_path(uint32_t slot, PathType path_type);
 
     const ConfigRoot * get_config_float_nan_prototype();
     const ConfigRoot * get_config_uint_max_prototype();
