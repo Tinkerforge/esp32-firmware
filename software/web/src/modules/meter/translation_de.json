@@ -9,6 +9,7 @@
         },
         "content": {
             "energy_meter": "Stromzähler",
+            "meter_reset": "Stromzähler zurücksetzen",
             "history": "Verlauf (48 h)",
             "live": "Live",
             "statistics": "Statistiken",

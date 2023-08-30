@@ -9,6 +9,7 @@
         },
         "content": {
             "energy_meter": "Energy Meter",
+            "meter_reset": "Energy Meter reset",
             "history": "History (48 h)",
             "live": "Live",
             "statistics": "Statistics",
