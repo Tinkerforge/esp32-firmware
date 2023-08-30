@@ -41,9 +41,10 @@ import { DebugLogger } from "../../ts/components/debug_logger";
 import { ConfigForm } from "src/ts/components/config_form";
 import { InputFloat } from "src/ts/components/input_float";
 import { SubPage } from "src/ts/components/sub_page";
-import { cron_trigger, cron_trigger_components } from "../cron/api";
+import { cron_action, cron_action_components, cron_trigger, cron_trigger_components } from "../cron/api";
 import { EvseButtonCronTrigger, EvseGpioCronTrigger, EvseSdCronTrigger } from "./cron_trigger";
 import { Cron } from "../cron/main";
+import { EvseGpOutputCronAction } from "./cron_action";
 
 interface EVSEState {
     state: API.getType['evse/state'];
@@ -801,4 +802,44 @@ cron_trigger_components[8] = {
     config_component: EvseGpioInputCrontTriggerConfigComponent,
     table_row: EvseGpioInputCronTriggerComponent,
     name: __("evse.content.gpio_in")
+}
+
+function EvseGpioOutputCronActionComponent(cron: cron_action) {
+    const state = (cron as any as EvseGpOutputCronAction)[1];
+    return state.state ? __("evse.content.gpio_out_high") : __("evse.content.gpio_out_low");
+}
+
+function EvseGpioOutputCronActionConfigComponent(cron_object: Cron, props: cron_action) {
+    const state = props as any as EvseGpOutputCronAction;
+    return [
+        {
+            name: __("evse.content.gpio_out"),
+            value: <InputSelect
+                items={[
+                    ["0", __("evse.content.gpio_out_low")],
+                    ["1", __("evse.content.gpio_out_high")]
+                ]}
+                value={state[1].state}
+                onValue={(v) => {
+                    state[1].state = Number(v);
+                    cron_object.setActionFromComponent(state as any);
+                }}/>
+        }
+    ]
+}
+
+function EvseGpioOutputCronActionConfigFactory(): cron_action {
+    return [
+        9 as any,
+        {
+            state: 0
+        }
+    ];
+}
+
+cron_action_components[9] = {
+    config_builder: EvseGpioOutputCronActionConfigFactory,
+    config_component: EvseGpioOutputCronActionConfigComponent,
+    table_row: EvseGpioOutputCronActionComponent,
+    name: __("evse.content.gpio_out")
 }
