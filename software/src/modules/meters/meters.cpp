@@ -88,9 +88,7 @@ void Meters::setup()
         );
 
         // Load config.
-        char path_buf[32];
-        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_config", slot);
-        api.restorePersistentConfig(path_buf, &meter_slot.config_union);
+        api.restorePersistentConfig(get_path(slot, Meters::PathType::Config), &meter_slot.config_union);
 
         uint32_t configured_meter_class = meter_slot.config_union.getTag();
 
@@ -119,26 +117,16 @@ void Meters::setup()
 
 void Meters::register_urls()
 {
-    char path_buf[32];
-
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
         MeterSlot &meter_slot = meter_slots[slot];
 
-        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_config", slot);
-        api.addPersistentConfig(path_buf, &meter_slot.config_union, {}, 1000);
-
-        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_state", slot);
-        api.addState(path_buf, &meter_slot.state, {}, 1000);
-
-        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_value_ids", slot);
-        api.addState(path_buf, &meter_slot.value_ids, {}, 1000);
-
-        snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_values", slot);
-        api.addState(path_buf, &meter_slot.values, {}, 1000);
+        api.addPersistentConfig(get_path(slot, Meters::PathType::Config), &meter_slot.config_union, {}, 1000);
+        api.addState(get_path(slot, Meters::PathType::State),    &meter_slot.state,     {}, 1000);
+        api.addState(get_path(slot, Meters::PathType::ValueIDs), &meter_slot.value_ids, {}, 1000);
+        api.addState(get_path(slot, Meters::PathType::Values),   &meter_slot.values,    {}, 1000);
 
         if (meter_slot.meter) {
-            snprintf(path_buf, ARRAY_SIZE(path_buf), "meters/_%u_", slot);
-            meter_slot.meter->register_urls(path_buf);
+            meter_slot.meter->register_urls(get_path(slot, Meters::PathType::Base));
         }
     }
 }
@@ -428,6 +416,19 @@ bool Meters::get_cached_power_index(uint32_t slot, uint32_t *index)
 {
     *index = meter_slots[slot].index_cache_single_values[INDEX_CACHE_POWER];
     return *index != UINT32_MAX;
+}
+
+static const char *meters_path_postfixes[] = {"", "config", "state", "value_ids", "values"};
+static_assert(sizeof(ARRAY_SIZE(meters_path_postfixes)) == static_cast<uint32_t>(Meters::PathType::_max), "Path postfix length mismatch");
+
+String Meters::get_path(uint32_t slot, Meters::PathType path_type)
+{
+    String path = "meters/_";
+    path.concat(slot);
+    path.concat('_');
+    path.concat(meters_path_postfixes[static_cast<uint32_t>(path_type)]);
+
+    return path;
 }
 
 const ConfigRoot * Meters::get_config_float_nan_prototype()
