@@ -22,17 +22,16 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { Fragment, render, h, FunctionComponent, Component } from "preact";
+import { Fragment, render, h } from "preact";
 import { ConfigComponent } from "src/ts/components/config_component";
-import { SubPage } from "src/ts/components/sub_page";
 import { ConfigForm } from "src/ts/components/config_form";
 import { Table, TableRow } from "src/ts/components/table";
-import { cron_action, cron_action_components, cron_trigger, cron_trigger_components, task } from "./api";
+import { cron_action, cron_action_components, cron_trigger, cron_trigger_components, Task } from "./api";
 import { InputSelect } from "src/ts/components/input_select";
 import { __ } from "src/ts/translation";
 
 type CronState = {
-    edit_task: task,
+    edit_task: Task,
     displayed_trigger: number,
     displayed_action: number
 };
@@ -146,24 +145,33 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
         let rows: TableRow[] = [];
         this.state.tasks.forEach((task, idx) => {
             let action: number;
+            let action_obj: any;
             let trigger: number;
+            let trigger_obj: any;
             if (isNaN(Number(task.action[0]))) {
                 action = task.action[0][0];
+                action_obj = task.action[0][1];
             } else {
                 action = Number(task.action[0]);
+                action_obj = (task.action as any)[1];
             }
 
             if (isNaN(Number(task.trigger[0]))) {
                 trigger = task.trigger[0][0];
+                trigger_obj = task.trigger[0][1];
             } else {
                 trigger = Number(task.trigger[0]);
+                trigger_obj = (task.trigger as any)[1];
             }
 
 
             const ActionComponent = cron_action_components[action];
             const TriggerComponent = cron_trigger_components[trigger];
 
-            const task_copy = JSON.parse(JSON.stringify(task)) as task;
+            const task_copy = {
+                action: [action, {...action_obj}] as any as cron_action,
+                trigger: [trigger, {...trigger_obj}] as any as cron_trigger
+            };
             let row: TableRow = {
                 columnValues: [
                     [idx],
@@ -191,8 +199,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                         return;
                     }
 
-                    this.setState({tasks: this.state.tasks.map((task, k) => k === idx ? this.state.edit_task : task),
-                        edit_task: {action: [[0, {}]], trigger: [[0, {}]]}});
+                    this.setState({tasks: this.state.tasks.map((task, k) => k === idx ? this.state.edit_task : task)});
                     this.hackToAllowSave();
                 },
                 onEditAbort: async () => {},

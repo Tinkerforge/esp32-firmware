@@ -3,10 +3,10 @@ import { h } from 'preact'
 import { Cron } from './main'
 
 export interface config {
-    tasks: task[]
+    tasks: Task[]
 }
 
-export interface task {
+export interface Task {
     trigger: cron_trigger,
     action: cron_action
 }
