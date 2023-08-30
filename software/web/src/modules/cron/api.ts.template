@@ -24,14 +24,16 @@ interface CronTriggerComponent {
     table_row: (cron: cron_trigger) => string,
     config_component: (cron_object: Cron, state: cron_trigger) => TableModalRow[],
     config_builder: () => cron_trigger,
-    name: string
+    name: string,
+    require_feature?: string
 }
 
 interface CronActionComponent {
     table_row: (cron: cron_action) => string,
     config_component: (cron_object: Cron, state: cron_action) => TableModalRow[],
     config_builder: () => cron_action,
-    name: string
+    name: string,
+    require_feature?: string
 }
 
 export const cron_trigger_components: {[key: number]: CronTriggerComponent} = [];

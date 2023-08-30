@@ -85,6 +85,8 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
         let action: [string, string][] = [];
         for (let i in cron_action_components) {
             const entry: [string, string] = [i, cron_action_components[i].name];
+            if (cron_action_components[i].require_feature && !API.hasFeature(cron_action_components[i].require_feature))
+                continue;
             action.push(entry);
         }
 
