@@ -54,5 +54,6 @@ cron_action_components[9] = {
     config_builder: EvseGpioOutputCronActionConfigFactory,
     config_component: EvseGpioOutputCronActionConfigComponent,
     table_row: EvseGpioOutputCronActionComponent,
-    name: __("evse.content.gpio_out")
+    name: __("evse.content.gpio_out"),
+    require_feature: "button_configuration"
 }
