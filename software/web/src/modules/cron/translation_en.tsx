@@ -7,6 +7,7 @@ let x = {
         },
         "content": {
             "cron": "Events",
+            "task": "Task",
             "category": "Category",
             "condition_category": "Condition category",
             "action_category": "Action category",

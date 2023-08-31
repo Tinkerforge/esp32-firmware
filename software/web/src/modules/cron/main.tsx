@@ -183,6 +183,14 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             };
             const trigger_row = TriggerComponent.table_row(task.trigger);
             const action_row = ActionComponent.table_row(task.action);
+            trigger_row.fieldNames = [__("cron.content.condition")].concat(trigger_row.fieldNames);
+            trigger_row.fieldValues = [TriggerComponent.name as ComponentChild].concat(trigger_row.fieldValues);
+            trigger_row.fieldNames.push(null);
+            trigger_row.fieldValues.push(<hr/>);
+
+            trigger_row.fieldNames = [__("cron.content.action")].concat(trigger_row.fieldNames);
+            trigger_row.fieldValues = [ActionComponent.name as ComponentChild].concat(trigger_row.fieldValues);
+
             let row: TableRow = {
                 columnValues: [
                     [idx + 1],
@@ -192,7 +200,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                     [action_row.text]
                 ],
                 fieldNames: [""].concat(trigger_row.fieldNames.concat(action_row.fieldNames)),
-                fieldValues: ["" as ComponentChild].concat(trigger_row.fieldValues.concat(action_row.fieldValues)),
+                fieldValues: [__("cron.content.task") + " #" + (idx + 1) as ComponentChild].concat(trigger_row.fieldValues.concat(action_row.fieldValues)),
                 onEditStart: async () => {
                     this.setState(
                         {

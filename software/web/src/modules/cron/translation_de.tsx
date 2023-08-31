@@ -7,6 +7,7 @@ let x = {
         },
         "content": {
             "cron": "Events",
+            "task": "Aufgabe",
             "category": "Kategorie",
             "condition_category": "Kategorie Bedingung",
             "action_category": "Kategorie Aktion",
