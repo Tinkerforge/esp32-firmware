@@ -188,8 +188,8 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             trigger_row.fieldNames.push(null);
             trigger_row.fieldValues.push(<hr/>);
 
-            trigger_row.fieldNames = [__("cron.content.action")].concat(trigger_row.fieldNames);
-            trigger_row.fieldValues = [ActionComponent.name as ComponentChild].concat(trigger_row.fieldValues);
+            action_row.fieldNames = [__("cron.content.action")].concat(action_row.fieldNames);
+            action_row.fieldValues = [ActionComponent.name as ComponentChild].concat(action_row.fieldValues);
 
             let row: TableRow = {
                 columnValues: [
