@@ -383,10 +383,16 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                             rows={state.users.slice(1).map((user, i) =>
                                 { return {
                                     columnValues: [
-                                        [user.username],
-                                        [user.display_name],
-                                        [util.toLocaleFixed(user.current / 1000, 3) + ' A'],
-                                        this.user_has_password(user) ? [<Check/>, this.get_password_replacement(user)] : ['', <span style="color: rgb(85,85,85);">{__("users.script.login_disabled")}</span>]
+                                        user.username,
+                                        user.display_name,
+                                        util.toLocaleFixed(user.current / 1000, 3) + ' A',
+                                        this.user_has_password(user) ? <Check/> : ''
+                                    ],
+                                    fieldValues: [
+                                        user.username,
+                                        user.display_name,
+                                        util.toLocaleFixed(user.current / 1000, 3) + ' A',
+                                        this.user_has_password(user) ? this.get_password_replacement(user) : <span style="color: rgb(85,85,85);">{__("users.script.login_disabled")}</span>
                                     ],
                                     editTitle: __("users.content.edit_user_title"),
                                     onEditStart: async () => this.setState({editUser: {id: user.id, roles: user.roles, username: user.username, display_name: user.display_name, current: user.current, digest_hash: user.digest_hash, password: user.password, is_invalid: user.is_invalid}}),

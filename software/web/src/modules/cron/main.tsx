@@ -179,11 +179,11 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             };
             let row: TableRow = {
                 columnValues: [
-                    [idx],
-                    [TriggerComponent.name],
-                    [TriggerComponent.table_row(task.trigger)],
-                    [ActionComponent.name],
-                    [ActionComponent.table_row(task.action)]
+                    idx,
+                    TriggerComponent.name,
+                    TriggerComponent.table_row(task.trigger),
+                    ActionComponent.name,
+                    ActionComponent.table_row(task.action)
                 ],
                 onEditStart: async () => {
                     this.setState(

@@ -408,7 +408,10 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                         columnNames={[__("charge_manager.content.table_charger_name"), __("charge_manager.content.table_charger_host")]}
                         rows={state.chargers.map((charger, i) =>
                             { return {
-                                columnValues: [[charger.name], [<a target="_blank" rel="noopener noreferrer" href={(charger.host == '127.0.0.1' || charger.host == 'localhost') ? '/' : "http://" + charger.host}>{charger.host}</a>]],
+                                columnValues: [
+                                    charger.name,
+                                    <a target="_blank" rel="noopener noreferrer" href={(charger.host == '127.0.0.1' || charger.host == 'localhost') ? '/' : "http://" + charger.host}>{charger.host}</a>
+                                ],
                                 editTitle: __("charge_manager.content.edit_charger_title"),
                                 onEditStart: async () => this.setState({editCharger: {name: charger.name.trim(), host: charger.host.trim()}}),
                                 onEditGetRows: () => [

@@ -23,6 +23,7 @@ import { Card, Button } from "react-bootstrap";
 import { Plus, Edit3, Trash2 } from "react-feather";
 import { FormGroup } from "./form_group";
 import { ItemModal } from "./item_modal";
+import * as util from "../../ts/util";
 
 export interface TableModalRow {
     name: string
@@ -32,7 +33,9 @@ export interface TableModalRow {
 }
 
 export interface TableRow {
-    columnValues: ComponentChild[][]
+    columnValues: ComponentChild[]
+    fieldNames?: string[]
+    fieldValues?: ComponentChild[]
     editTitle?: string
     onEditStart?: () => Promise<void>
     onEditGetRows?: () => TableModalRow[]
@@ -61,12 +64,12 @@ interface TableState {
     showEditModal: number
 }
 
-const get_column_value = (value: ComponentChild[], i: number): ComponentChild => {
-    if (i < value.length) {
-        return value[i];
+const value_or_else = (value: ComponentChild, replacement: ComponentChild): ComponentChild => {
+    if (util.hasValue(value)) {
+        return value;
     }
 
-    return value[0];
+    return replacement;
 };
 
 export class Table extends Component<TableProps, TableState> {
@@ -101,7 +104,7 @@ export class Table extends Component<TableProps, TableState> {
                         {props.rows.map((row, i) =>
                             <tr>
                                 {row.columnValues.map((value) => (
-                                    <td class="text-break" style="vertical-align: middle;">{get_column_value(value, 0)}</td>
+                                    <td class="text-break" style="vertical-align: middle;">{value}</td>
                                 ))}
                                 <td style="width: 1%; white-space: nowrap; vertical-align: middle;">
                                     <Button variant="primary"
@@ -147,7 +150,7 @@ export class Table extends Component<TableProps, TableState> {
                 <div class={`d-block d-${props.tableTill ? props.tableTill : 'sm'}-none`}>
                     {props.rows.map((row, i) => <Card className="mb-3">
                         <div class="card-header d-flex justify-content-between align-items-center" style="padding: 1rem;">
-                            <h5 class="text-break" style="margin-bottom: 0;">{get_column_value(row.columnValues[0], 1)}</h5>
+                            <h5 class="text-break" style="margin-bottom: 0;">{util.hasValue(row.fieldValues) ? row.fieldValues[0] : row.columnValues[0]}</h5>
                             <div style="white-space: nowrap; vertical-align: middle;">
                                 <Button variant="primary"
                                         size="sm"
@@ -169,9 +172,9 @@ export class Table extends Component<TableProps, TableState> {
                             </div>
                         </div>
                         <Card.Body style="padding: 1rem;">
-                        {props.columnNames.slice(1).map((columnName, i, array) =>
-                        <FormGroup label={columnName} classList={i == array.length - 1 ? " mb-0" : ""}>
-                            <span class="form-control" style="height: unset;" readonly>{get_column_value(row.columnValues[1 + i], 1) ? get_column_value(row.columnValues[1 + i], 1) : <>&nbsp;</>}</span>
+                        {(util.hasValue(row.fieldNames) ? row.fieldNames : props.columnNames).slice(1).map((fieldOrColumnName, i, array) =>
+                        <FormGroup label={fieldOrColumnName} classList={i == array.length - 1 ? " mb-0" : ""}>
+                            <span class="form-control" style="height: unset;" readonly>{util.hasValue(row.fieldValues) ? value_or_else(row.fieldValues[1 + i], <>&nbsp;</>) : value_or_else(row.columnValues[1 + i], <>&nbsp;</>)}</span>
                         </FormGroup>)}
                     </Card.Body></Card>)}
                     {props.onAddStart ?
