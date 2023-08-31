@@ -5,11 +5,15 @@ export interface ChargeLimitsCronTrigger {
 
 import { __ } from "src/ts/translation";
 import { Cron } from "../cron/main";
-import { cron_trigger, cron_trigger_components } from "../cron/api";
+import { CronComponent, cron_trigger, cron_trigger_components } from "../cron/api";
 
 // TODO: Think about a nice explanation why this does not need a config
-function ChargeLimitsCronTriggerComponent(_: cron_trigger) {
-    return "";
+function ChargeLimitsCronTriggerComponent(_: cron_trigger): CronComponent {
+    return {
+        text: "",
+        fieldNames: [],
+        fieldValues: []
+    };
 }
 
 function ChargeLimitsCronTriggerConfig(_: Cron, __: cron_trigger): any[] {

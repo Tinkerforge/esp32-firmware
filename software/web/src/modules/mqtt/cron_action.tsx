@@ -8,18 +8,33 @@ export interface MqttCronAction {
 }
 
 import { Cron } from "../cron/main";
-import { cron_action, cron_action_components } from "../cron/api";
+import { CronComponent, cron_action, cron_action_components } from "../cron/api";
 import { InputText } from "src/ts/components/input_text";
 import { h } from "preact"
 import { Switch } from "src/ts/components/switch";
 import { __ } from "src/ts/translation";
 
-export function MqttCronActionComponent(cron: cron_action) {
+export function MqttCronActionComponent(cron: cron_action): CronComponent {
     const props = (cron as any as MqttCronAction)[1];
-    let ret = __("mqtt.content.topic") + ": \"" + props.topic + "\",\n";
-    ret += __("mqtt.content.payload") + ": \"" + props.payload + "\",\n";
-    ret += __("mqtt.content.accept_retain") + ": " + (props.retain ? __("mqtt.content.yes") : __("mqtt.content.no"));
-    return ret;
+    const fieldNames = [
+        __("mqtt.content.topic"),
+        __("mqtt.content.payload"),
+        __("mqtt.content.accept_retain")
+    ];
+    const fieldValues = [
+        props.topic,
+        props.payload,
+        props.retain ? __("mqtt.content.yes") : __("mqtt.content.no")
+    ]
+    let ret = "";
+    fieldNames.map((name, idx) => {
+        ret += name + ": \"" + fieldValues[idx] + "\"" + (idx != fieldNames.length - 1 ? ", " : "");
+    });
+    return {
+        text: ret,
+        fieldNames: fieldNames,
+        fieldValues: fieldValues
+    };
 }
 
 export function MqttCronActionConfig(cron_object: Cron, state: cron_action) {

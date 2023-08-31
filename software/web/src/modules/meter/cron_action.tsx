@@ -5,11 +5,15 @@ export interface MeterCronAction {
 
 import { __ } from "src/ts/translation";
 import { Cron } from "../cron/main";
-import { cron_action,cron_action_components } from "../cron/api";
+import { CronComponent, cron_action,cron_action_components } from "../cron/api";
 import * as API from "../../ts/api"
 
-function MeterResetCronActionComponent(_: cron_action) {
-    return "";
+function MeterResetCronActionComponent(_: cron_action): CronComponent {
+    return {
+        text: "",
+        fieldNames: [],
+        fieldValues: []
+    };
 }
 
 function MeterResetCronActionConfigComponent(_: Cron, __: cron_action): any {

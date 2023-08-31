@@ -6,14 +6,20 @@ export interface EvseGpOutputCronAction {
 }
 
 import { __ } from "src/ts/translation";
-import { cron_action, cron_action_components} from "../cron/api";
+import { CronComponent, cron_action, cron_action_components} from "../cron/api";
 import { h } from 'preact'
 import { InputSelect } from "src/ts/components/input_select";
 import { Cron } from "../cron/main";
 
-function EvseGpioOutputCronActionComponent(cron: cron_action) {
+function EvseGpioOutputCronActionComponent(cron: cron_action): CronComponent {
     const state = (cron as any as EvseGpOutputCronAction)[1];
-    return state.state ? __("evse.content.gpio_out_high") : __("evse.content.gpio_out_low");
+    return {
+        text: state.state ? __("evse.content.gpio_out_high") : __("evse.content.gpio_out_low"),
+        fieldNames: [],
+        fieldValues: [
+            state.state ? __("evse.content.gpio_out_high") : __("evse.content.gpio_out_low")
+        ]
+    }
 }
 
 function EvseGpioOutputCronActionConfigComponent(cron_object: Cron, props: cron_action) {

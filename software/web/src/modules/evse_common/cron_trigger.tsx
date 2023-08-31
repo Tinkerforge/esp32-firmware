@@ -7,11 +7,11 @@ export interface EvseStateCronTrigger {
 
 import { __ } from "src/ts/translation";
 import { Cron } from "../cron/main";
-import { cron_trigger, cron_trigger_components } from "../cron/api";
+import { CronComponent, cron_trigger, cron_trigger_components } from "../cron/api";
 import { InputSelect } from "src/ts/components/input_select";
 import { h } from "preact"
 
-export function EvseStateCronComponent(cron: cron_trigger) {
+export function EvseStateCronComponent(cron: cron_trigger): CronComponent {
     let trigger_props = cron as any as EvseStateCronTrigger;
     const names = [
         [ __("evse.status.not_connected")],
@@ -20,7 +20,19 @@ export function EvseStateCronComponent(cron: cron_trigger) {
         [__("evse.status.charging")],
         [__("evse.status.error")]
     ]
-    return __("evse.content.status") + ": " + names[trigger_props[1].charger_state]
+
+    const fieldNames = [
+        __("evse.content.status")
+    ];
+    const fieldValues = [
+        names[trigger_props[1].charger_state]
+    ];
+
+    return {
+        text: __("evse.content.status") + ": " + names[trigger_props[1].charger_state],
+        fieldNames,
+        fieldValues
+    }
 }
 
 function EvseStateCronFactory(): cron_trigger {

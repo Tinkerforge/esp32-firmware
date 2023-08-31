@@ -9,7 +9,7 @@ export interface NfcCronAction {
 
 import { h } from "preact"
 import { __, translate_unchecked } from "src/ts/translation";
-import { cron_action, cron_action_components } from "../cron/api";
+import { CronComponent, cron_action, cron_action_components } from "../cron/api";
 import { Cron } from "../cron/main";
 import { InputText } from "src/ts/components/input_text";
 import { InputSelect } from "src/ts/components/input_select";
@@ -18,24 +18,37 @@ const TRIGGER_CHARGE_ANY = 0;
 const TRIGGER_CHARGE_START = 1;
 const TRIGGER_CHARGE_STOP = 2;
 
-function NFCTagInjectCronActionComponent(cron: cron_action) {
+function NFCTagInjectCronActionComponent(cron: cron_action): CronComponent {
     const props = (cron as any as NfcCronAction)[1];
     let ret = __("nfc.content.table_tag_id") + ": \"" + props.tag_id + "\",\n";
     ret += __("nfc.content.table_tag_type") + ": " + translate_unchecked("nfc.content.type_" + props.tag_type) + ",\n";
     ret += __("nfc.content.tag_action") + ": ";
+    let tag_action = ""
     switch (props.tag_action) {
         case TRIGGER_CHARGE_ANY:
-            ret += __("nfc.content.trigger_charge_any");
+            tag_action = __("nfc.content.trigger_charge_any");
             break;
 
         case TRIGGER_CHARGE_START:
-            ret += __("nfc.content.trigger_charge_start");
+            tag_action = __("nfc.content.trigger_charge_start");
             break;
 
         case TRIGGER_CHARGE_STOP:
-            ret += __("nfc.content.trigger_charge_stop");
+            tag_action = __("nfc.content.trigger_charge_stop");
     }
-    return ret;
+    return {
+        text: ret + tag_action,
+        fieldNames: [
+            __("nfc.content.table_tag_id"),
+            __("nfc.content.table_tag_type"),
+            __("nfc.content.tag_action")
+        ],
+        fieldValues: [
+            props.tag_id,
+            translate_unchecked("nfc.content.type_" + props.tag_type),
+            tag_action
+        ]
+    };
 }
 
 function NFCTagInjectCronActionConfig(cron_object: Cron, props: cron_action) {

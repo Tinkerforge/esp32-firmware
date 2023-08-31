@@ -1,5 +1,5 @@
 {{{imports}}}
-import { h } from 'preact'
+import { h, ComponentChild } from 'preact'
 import { Cron } from './main'
 import { TableModalRow } from 'src/ts/components/table'
 
@@ -20,8 +20,14 @@ export interface cron_action {
     0: [0, {}] | {{{action}}}
 }
 
+export interface CronComponent {
+    fieldNames: string[],
+    fieldValues: ComponentChild[],
+    text: string
+}
+
 interface CronTriggerComponent {
-    table_row: (cron: cron_trigger) => string,
+    table_row: (cron: cron_trigger) => CronComponent,
     config_component: (cron_object: Cron, state: cron_trigger) => TableModalRow[],
     config_builder: () => cron_trigger,
     name: string,
@@ -29,7 +35,7 @@ interface CronTriggerComponent {
 }
 
 interface CronActionComponent {
-    table_row: (cron: cron_action) => string,
+    table_row: (cron: cron_action) => CronComponent,
     config_component: (cron_object: Cron, state: cron_action) => TableModalRow[],
     config_builder: () => cron_action,
     name: string,

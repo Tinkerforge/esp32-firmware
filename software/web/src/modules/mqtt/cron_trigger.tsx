@@ -9,17 +9,29 @@ export interface MqttCronTrigger {
 
 import { h } from "preact"
 import { __ } from "src/ts/translation";
-import { cron_trigger,cron_trigger_components } from "../cron/api";
+import { CronComponent, cron_trigger,cron_trigger_components } from "../cron/api";
 import { Cron } from "../cron/main";
 import { InputText } from "src/ts/components/input_text";
 import { Switch } from "src/ts/components/switch";
 
-export function MqttCronTriggerComponent(cron: cron_trigger) {
+export function MqttCronTriggerComponent(cron: cron_trigger): CronComponent {
     const props = (cron as any as MqttCronTrigger)[1];
     let ret = __("mqtt.content.topic") + ": \"" + props.topic + "\",\n";
     ret += __("mqtt.content.payload") + ": \"" + props.payload + "\",\n";
     ret += __("mqtt.content.retain") + ": " + (props.retain ? __("mqtt.content.yes") : __("mqtt.content.no"));
-    return ret
+    return {
+        text: ret,
+        fieldNames: [
+            __("mqtt.content.topic"),
+            __("mqtt.content.payload"),
+            __("mqtt.content.retain")
+        ],
+        fieldValues: [
+            props.topic,
+            props.payload,
+            (props.retain ? __("mqtt.content.yes") : __("mqtt.content.no"))
+        ]
+    };
 }
 
 export function MqttCronTriggerConfig(cron_object: Cron, state: cron_trigger) {

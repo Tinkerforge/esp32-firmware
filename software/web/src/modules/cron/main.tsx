@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { Fragment, render, h } from "preact";
+import { Fragment, render, h, ComponentChild } from "preact";
 import { ConfigComponent } from "src/ts/components/config_component";
 import { ConfigForm } from "src/ts/components/config_form";
 import { Table, TableModalRow, TableRow } from "src/ts/components/table";
@@ -115,7 +115,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             const trigger_config = cron_trigger_components[this.state.displayed_trigger].config_component(this, this.state.edit_task.trigger);
             triggerSelector = triggerSelector.concat(trigger_config);
         }
-        triggerSelector = triggerSelector.concat({name: "", value: <></>, valueClassList: "border-bottom"});
+        triggerSelector = triggerSelector.concat({name: null, value: <hr/>});
 
         let actionSelector: TableModalRow[] = [{
             name: __("cron.content.action_category"),
@@ -179,14 +179,18 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                 action: [action, {...action_obj}] as any as cron_action,
                 trigger: [trigger, {...trigger_obj}] as any as cron_trigger
             };
+            const trigger_row = TriggerComponent.table_row(task.trigger);
+            const action_row = ActionComponent.table_row(task.action);
             let row: TableRow = {
                 columnValues: [
                     [idx + 1],
                     [TriggerComponent.name],
-                    [TriggerComponent.table_row(task.trigger)],
+                    [trigger_row.text],
                     [ActionComponent.name],
-                    [ActionComponent.table_row(task.action)]
+                    [action_row.text]
                 ],
+                fieldNames: [""].concat(trigger_row.fieldNames.concat(action_row.fieldNames)),
+                fieldValues: ["" as ComponentChild].concat(trigger_row.fieldValues.concat(action_row.fieldValues)),
                 onEditStart: async () => {
                     this.setState(
                         {

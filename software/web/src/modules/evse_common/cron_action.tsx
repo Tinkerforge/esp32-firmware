@@ -14,16 +14,20 @@ export interface EvseLedCronAction {
 }
 
 import { __ } from "src/ts/translation"
-import { cron_action, cron_action_components } from "../cron/api"
+import { CronComponent, cron_action, cron_action_components } from "../cron/api"
 import { Cron } from "../cron/main"
 import { InputSelect } from "src/ts/components/input_select"
 import { InputFloat } from "src/ts/components/input_float"
 import { h } from 'preact'
 import { InputNumber } from "src/ts/components/input_number"
 
-function EvseSetCurrentCronActionComponent(cron: cron_action) {
+function EvseSetCurrentCronActionComponent(cron: cron_action): CronComponent {
     const props = (cron as any as EvseCronAction)[1];
-    return __("evse.content.allowed_charging_current") + ": " + props.current / 1000 + " A";
+    return {
+        text: __("evse.content.allowed_charging_current") + ": " + props.current / 1000 + " A",
+        fieldNames: [__("evse.content.allowed_charging_current")],
+        fieldValues: [props.current / 1000 + " A"]
+    };
 }
 
 function EvseSetCurrentCronActionConfigComponent(cron_object: Cron, props: cron_action) {
@@ -61,31 +65,46 @@ cron_action_components[3] = {
     name: __("evse.content.allowed_charging_current")
 }
 
-function EvseLedCronActionComponent(cron: cron_action) {
+function EvseLedCronActionComponent(cron: cron_action): CronComponent {
     const props = (cron as any as EvseLedCronAction)[1];
     let ret = __("evse.content.led_state") + ": ";
+    const fieldNames = [
+        __("evse.content.led_state"),
+        __("evse.content.led_duration"),
+    ];
+    let state = ""
     switch (props.state) {
         case 0:
-            ret += __("evse.content.led_state_off");
+            state = __("evse.content.led_state_off");
             break;
 
         case 255:
-            ret += __("evse.content.led_state_on");
+            state = __("evse.content.led_state_on");
             break;
 
         case 1001:
-            ret += __("evse.content.led_state_blinking");
+            state = __("evse.content.led_state_blinking");
             break;
 
         case 1002:
-            ret += __("evse.content.led_state_flickering");
+            state = __("evse.content.led_state_flickering");
             break;
 
         case 1003:
-            ret += __("evse.content.led_state_breathing");
+            state = __("evse.content.led_state_breathing");
             break;
     }
-    return ret + "\n" + __("evse.content.led_duration") + ": " + props.duration + " ms";
+
+    const fieldValues = [
+        props.duration + " ms",
+        state
+    ];
+    ret = ret + "\n" + __("evse.content.led_duration") + ": " + props.duration + " ms"
+    return {
+        text: ret,
+        fieldNames: fieldNames,
+        fieldValues: fieldValues
+    }
 }
 
 function EvseLedCronActionConfigComponent(cron_object: Cron, props: cron_action) {

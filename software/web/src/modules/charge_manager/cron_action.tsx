@@ -8,12 +8,16 @@ export interface ChargeManagerCronAction {
 import { h } from "preact"
 import { __ } from "src/ts/translation";
 import { Cron } from "../cron/main";
-import { cron_action, cron_action_components } from "../cron/api";
+import { CronComponent, cron_action, cron_action_components } from "../cron/api";
 import { InputFloat } from "src/ts/components/input_float";
 
-export function ChargeManagerCronComponent(cron: cron_action) {
+export function ChargeManagerCronComponent(cron: cron_action): CronComponent {
     let action_props = cron as any as ChargeManagerCronAction;
-    return __("charge_manager.content.maximum_available_current") + ": " + action_props[1].current / 1000 + " A";
+    return {
+        text: __("charge_manager.content.maximum_available_current") + ": " + action_props[1].current / 1000 + " A",
+        fieldNames: [__("charge_manager.content.maximum_available_current")],
+        fieldValues: [action_props[1].current / 1000 + " A"]
+    }
 }
 
 export function ChargeManagerCronConfigComponent(cron_object: Cron, state: cron_action) {

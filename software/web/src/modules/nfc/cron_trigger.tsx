@@ -8,16 +8,27 @@ export interface NfcCronTrigger {
 
 import { h } from "preact"
 import { __, translate_unchecked } from "src/ts/translation";
-import { cron_trigger, cron_trigger_components } from "../cron/api";
+import { CronComponent, cron_trigger, cron_trigger_components } from "../cron/api";
 import { Cron } from "../cron/main";
 import { InputText } from "src/ts/components/input_text";
 import { InputSelect } from "src/ts/components/input_select";
 
-export function NFCCronTriggerComponent(cron: cron_trigger) {
+export function NFCCronTriggerComponent(cron: cron_trigger): CronComponent {
     const props = (cron as any as NfcCronTrigger)[1];
+
     let ret = __("nfc.content.table_tag_id") + ": \"" + props.tag_id + "\",\n";
     ret += __("nfc.content.table_tag_type") + ": " + translate_unchecked("nfc.content.type_" + props.tag_type);
-    return ret;
+    return {
+        text: ret,
+        fieldNames: [
+            __("nfc.content.table_tag_id"),
+            __("nfc.content.table_tag_type")
+        ],
+        fieldValues: [
+            props.tag_id,
+            translate_unchecked("nfc.content.type_" + props.tag_type)
+        ]
+    }
 }
 
 function NfcCronTriggerFactory(): cron_trigger{
