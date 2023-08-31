@@ -16,9 +16,9 @@ import { __ } from "src/ts/translation";
 
 export function MqttCronActionComponent(cron: cron_action) {
     const props = (cron as any as MqttCronAction)[1];
-    let ret = __("mqtt.content.topic") + ": \"" + props.topic + "\"\n";
-    ret += __("mqtt.content.payload") + ": \"" + props.payload + "\"\n";
-    ret += __("mqtt.content.accept_retain") + ": " + props.retain;
+    let ret = __("mqtt.content.topic") + ": \"" + props.topic + "\",\n";
+    ret += __("mqtt.content.payload") + ": \"" + props.payload + "\",\n";
+    ret += __("mqtt.content.accept_retain") + ": " + (props.retain ? __("mqtt.content.yes") : __("mqtt.content.no"));
     return ret;
 }
 

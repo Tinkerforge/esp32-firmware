@@ -16,9 +16,9 @@ import { Switch } from "src/ts/components/switch";
 
 export function MqttCronTriggerComponent(cron: cron_trigger) {
     const props = (cron as any as MqttCronTrigger)[1];
-    let ret = __("mqtt.content.topic") + ": \"" + props.topic + "\"\n";
-    ret += __("mqtt.content.payload") + ": \"" + props.payload + "\"\n";
-    ret += __("mqtt.content.retain") + ": " + props.retain;
+    let ret = __("mqtt.content.topic") + ": \"" + props.topic + "\",\n";
+    ret += __("mqtt.content.payload") + ": \"" + props.payload + "\",\n";
+    ret += __("mqtt.content.retain") + ": " + (props.retain ? __("mqtt.content.yes") : __("mqtt.content.no"));
     return ret
 }
 

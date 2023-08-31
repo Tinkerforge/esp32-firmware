@@ -28,7 +28,7 @@ function ChargeLimitsCronActionComponent(cron: cron_action) {
         __("charge_limits.content.h8"),
         __("charge_limits.content.h12")
     ]
-    let ret = __("charge_limits.content.energy") + ": " + (props.energy_wh != 0 ? props.energy_wh / 1000 + " kWh\n" : __("charge_limits.content.unlimited")) +"\n";
+    let ret = __("charge_limits.content.energy") + ": " + (props.energy_wh != 0 ? props.energy_wh / 1000 + " kWh" : __("charge_limits.content.unlimited")) +",\n";
     ret += __("charge_limits.content.duration") + ": " + durations[props.duration];
     return ret;
 }

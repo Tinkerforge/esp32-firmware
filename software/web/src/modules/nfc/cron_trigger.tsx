@@ -15,7 +15,7 @@ import { InputSelect } from "src/ts/components/input_select";
 
 export function NFCCronTriggerComponent(cron: cron_trigger) {
     const props = (cron as any as NfcCronTrigger)[1];
-    let ret = __("nfc.content.table_tag_id") + ": \"" + props.tag_id + "\"\n";
+    let ret = __("nfc.content.table_tag_id") + ": \"" + props.tag_id + "\",\n";
     ret += __("nfc.content.table_tag_type") + ": " + translate_unchecked("nfc.content.type_" + props.tag_type);
     return ret;
 }
