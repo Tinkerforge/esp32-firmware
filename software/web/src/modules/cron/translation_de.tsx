@@ -14,7 +14,7 @@ let x = {
             "action": "Aktion",
             "add_rule": "Regel hinzufügen",
             "edit_rule": "Regel bearbeiten",
-            "select": "Auswählen"
+            "select": "Auswählen..."
         }
     }
 }

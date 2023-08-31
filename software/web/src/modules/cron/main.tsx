@@ -93,6 +93,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
         let triggerSelector: TableModalRow[] = [{
             name: __("cron.content.condition_category"),
             value: <InputSelect
+                        placeholder={__("cron.content.select")}
                         items={trigger}
                         onValue={(v) => {
                             if (v == "0") {
@@ -108,7 +109,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                                 }
                             })
                         }}
-                        value={this.state.displayed_trigger}/>
+                        value={this.state.displayed_trigger.toString()}/>
         }];
         if (this.state.displayed_trigger != 0) {
             const trigger_config = cron_trigger_components[this.state.displayed_trigger].config_component(this, this.state.edit_task.trigger);
@@ -121,6 +122,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             value: <>
             <InputSelect
                         items={action}
+                        placeholder={__("cron.content.select")}
                         onValue={(v) => {
                             if (v == "0") {
                                 this.setState({displayed_action: this.state.displayed_action});
@@ -135,7 +137,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                                 }
                             });
                         }}
-                        value={this.state.displayed_action}/></>
+                        value={this.state.displayed_action.toString()}/></>
         }]
 
         if (this.state.displayed_action != 0) {
@@ -278,16 +280,16 @@ export function update_sidebar_state(module_init: any) {
     $('#sidebar-cron').prop('hidden', !module_init.cron);
 }
 
-cron_trigger_components[0] = {
-    config_builder: () => [0 as any, {}],
-    config_component: () => [],
-    table_row: () => "",
-    name: __("cron.content.select")
-};
+// cron_trigger_components[0] = {
+//     config_builder: () => [0 as any, {}],
+//     config_component: () => [],
+//     table_row: () => "",
+//     name: __("cron.content.select")
+// };
 
-cron_action_components[0] = {
-    config_builder: () => [0 as any, {}],
-    config_component: () => [],
-    table_row: () => "",
-    name: __("cron.content.select")
-}
+// cron_action_components[0] = {
+//     config_builder: () => [0 as any, {}],
+//     config_component: () => [],
+//     table_row: () => "",
+//     name: __("cron.content.select")
+// }
