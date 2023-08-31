@@ -3,9 +3,10 @@ import { h } from "preact";
 let x = {
     "cron": {
         "navbar": {
-            "cron": "Cron"
+            "cron": "Events"
         },
         "content": {
+            "cron": "Events",
             "category": "Kategorie",
             "condition_category": "Kategorie Bedingung",
             "action_category": "Kategorie Aktion",

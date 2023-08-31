@@ -224,7 +224,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
 
         return <ConfigForm
                 id="cron-config-form"
-                title="Cron config"
+                title={__("cron.content.cron")}
                 isModified={this.isModified()}
                 onSave={this.save}
                 onReset={this.reset}
