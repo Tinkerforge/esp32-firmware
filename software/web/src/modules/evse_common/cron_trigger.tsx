@@ -38,7 +38,7 @@ export function EvseStateCronConfig(cron_object: Cron, state: cron_trigger) {
         props = EvseStateCronFactory() as any;
     }
     return [{
-        name: "State",
+        name: __("evse.content.status"),
         value: <InputSelect
                     items={[
                         ["0", __("evse.status.not_connected")],

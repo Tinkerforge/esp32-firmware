@@ -13,6 +13,7 @@ let x = {
             "condition": "Bedingung",
             "action": "Aktion",
             "add_rule": "Regel hinzufügen",
+            "edit_rule": "Regel bearbeiten",
             "select": "Auswählen"
         }
     }

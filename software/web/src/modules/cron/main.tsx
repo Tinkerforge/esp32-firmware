@@ -179,11 +179,11 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             };
             let row: TableRow = {
                 columnValues: [
-                    idx,
-                    TriggerComponent.name,
-                    TriggerComponent.table_row(task.trigger),
-                    ActionComponent.name,
-                    ActionComponent.table_row(task.action)
+                    [idx + 1],
+                    [TriggerComponent.name],
+                    [TriggerComponent.table_row(task.trigger)],
+                    [ActionComponent.name],
+                    [ActionComponent.table_row(task.action)]
                 ],
                 onEditStart: async () => {
                     this.setState(
@@ -211,7 +211,8 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                 onRemoveClick: async () => {
                     this.setState({tasks: this.state.tasks.filter((_, k) => idx != k)})
                     this.hackToAllowSave();
-                }
+                },
+                editTitle: __("cron.content.edit_rule")
             };
             rows.push(row);
         })
@@ -234,10 +235,10 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                     <Table tableTill="md"
                         columnNames={[
                             "#",
-                            __("cron.content.category"),
                             __("cron.content.condition"),
-                            __("cron.content.category"),
-                             __("cron.content.action")]}
+                            "",
+                            __("cron.content.action"),
+                            ""]}
                         rows={this.assembleTable()}
                         addEnabled={this.state.tasks.length < 20}
                         addTitle={__("cron.content.add_rule")}
