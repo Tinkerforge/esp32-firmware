@@ -173,9 +173,10 @@ export class Table extends Component<TableProps, TableState> {
                         </div>
                         <Card.Body style="padding: 1rem;">
                         {(util.hasValue(row.fieldNames) ? row.fieldNames : props.columnNames).slice(1).map((fieldOrColumnName, i, array) =>
+                            fieldOrColumnName ?
                         <FormGroup label={fieldOrColumnName} classList={i == array.length - 1 ? " mb-0" : ""}>
                             <span class="form-control" style="height: unset;" readonly>{util.hasValue(row.fieldValues) ? value_or_else(row.fieldValues[1 + i], <>&nbsp;</>) : value_or_else(row.columnValues[1 + i], <>&nbsp;</>)}</span>
-                        </FormGroup>)}
+                        </FormGroup> : (util.hasValue(row.fieldValues) ? value_or_else(row.fieldValues[1 + i], <>&nbsp;</>) : value_or_else(row.columnValues[1 + i], <>&nbsp;</>)))}
                     </Card.Body></Card>)}
                     {props.onAddStart ?
                     <Card className="mb-0">
