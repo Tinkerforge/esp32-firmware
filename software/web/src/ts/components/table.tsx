@@ -228,9 +228,10 @@ export class Table extends Component<TableProps, TableState> {
                     yes_text={__("component.table.add")}>
                     {state.showAddModal && props.onAddGetRows ?
                         props.onAddGetRows().map((addRow, i, array) =>
+                            addRow.name ?
                         <FormGroup label={addRow.name} classList={i == array.length - 1 ? " mb-0" : ""} valueClassList={addRow.valueClassList}>
                             {addRow.value}
-                        </FormGroup>) : undefined}
+                        </FormGroup> : addRow.value) : undefined}
                 </ItemModal>
 
                 <ItemModal
@@ -263,9 +264,10 @@ export class Table extends Component<TableProps, TableState> {
                     yes_text={__("component.table.apply")}>
                     {state.showEditModal !== null && props.rows[state.showEditModal].onEditGetRows ?
                         props.rows[state.showEditModal].onEditGetRows().map((editRow, i, array) =>
+                            editRow.name ?
                         <FormGroup label={editRow.name} classList={i == array.length - 1 ? " mb-0" : ""} valueClassList={editRow.valueClassList}>
                             {editRow.value}
-                        </FormGroup>) : undefined}
+                        </FormGroup> : editRow.value) : undefined}
                 </ItemModal>
             </>
         );

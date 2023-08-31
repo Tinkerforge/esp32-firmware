@@ -226,8 +226,11 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                             value={state.addTag.tag_type.toString()}
                                             onValue={(v) => this.setState({addTag: {...state.addTag, tag_type: parseInt(v)}})}
                                             required
-                                            />,
-                                    valueClassList:"border-bottom pb-3"
+                                            />
+                                },
+                                {
+                                    name: null,
+                                    value: <hr/>
                                 },
                                 {
                                     name: __("nfc.content.add_tag_user_id"),
