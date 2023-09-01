@@ -1450,6 +1450,11 @@ std::vector<Config> &Config::asArray()
     return *this->get<ConfArray>()->getVal();
 }
 
+const std::vector<Config> &Config::asArray() const
+{
+    return *this->get<ConfArray>()->getVal();
+}
+
 size_t Config::fillFloatArray(float *arr, size_t elements)
 {
     return fillArray<float, Config::ConfFloat>(arr, elements);

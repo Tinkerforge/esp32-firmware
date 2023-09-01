@@ -650,14 +650,14 @@ struct Config {
         return true;
     }
 
-    ssize_t count()
+    ssize_t count() const
     {
         if (!this->is<Config::ConfArray>()) {
             logger.printfln("Tried to get count of a node that is not an array!");
             delay(100);
             return -1;
         }
-        std::vector<Config> &children = this->asArray();
+        const std::vector<Config> &children = this->asArray();
         return children.size();
     }
 
@@ -740,6 +740,7 @@ private:
     // This is a gigantic footgun: The reference is invalidated after the module setup,
     // because of the ConfSlot array shrinkToFit calls.
     std::vector<Config> &asArray();
+    const std::vector<Config> &asArray() const;
 
 public:
     template<typename T, typename ConfigT>
