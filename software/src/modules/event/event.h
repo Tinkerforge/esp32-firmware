@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <vector>
 
 #include "api.h"
@@ -54,4 +55,5 @@ public:
 private:
     size_t backendIdx;
     std::vector<StateUpdateRegistration> state_updates;
+    std::atomic<bool> state_update_in_progress;
 };

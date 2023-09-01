@@ -31,6 +31,11 @@ void Event::setup()
 
 void Event::registerEvent(const String &path, const std::vector<ConfPath> values, std::function<void(Config *)> callback)
 {
+    if (state_update_in_progress.load(std::memory_order_consume)) {
+        logger.printfln("BUG: event: Tried to register an event handler for path '%s' from within an event handler.", path.c_str());
+        return;
+    }
+
     for (size_t i = 0; i < api.states.size(); i++) {
         if (api.states[i].path != path) {
             continue;
@@ -79,11 +84,15 @@ void Event::addResponse(size_t responseIdx, const ResponseRegistration &reg)
 
 bool Event::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
 {
+    state_update_in_progress.store(true, std::memory_order_release);
+
     for (const StateUpdateRegistration &reg : state_updates) {
         if (reg.stateIdx == stateIdx && reg.config->was_updated(1 << backendIdx)) {
             reg.callback(reg.config);
         }
     }
+
+    state_update_in_progress.store(false, std::memory_order_release);
 
     return true;
 }
