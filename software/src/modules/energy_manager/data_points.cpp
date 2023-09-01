@@ -25,6 +25,7 @@
 #include <time.h>
 
 #include "event_log.h"
+#include "task_scheduler.h"
 
 #define MAX_DATA_AGE 30000 // milliseconds
 #define DATA_INTERVAL_5MIN 5 // minutes
@@ -38,9 +39,11 @@ void EnergyManager::register_events()
     event.registerEvent(meters.get_path(meter_slot_grid, Meters::PathType::ValueIDs), {}, [this](Config * /*unused*/){
         uint32_t power_index;
         if (meters.get_cached_power_index(meter_slot_grid, &power_index)) {
-            event.registerEvent(meters.get_path(meter_slot_grid, Meters::PathType::Values), {static_cast<uint16_t>(power_index)}, [this](Config *config){
-                update_history_meter_power(config->asFloat());
-            });
+            task_scheduler.scheduleOnce([this, power_index](){
+                event.registerEvent(meters.get_path(meter_slot_grid, Meters::PathType::Values), {static_cast<uint16_t>(power_index)}, [this](Config *config){
+                    update_history_meter_power(config->asFloat());
+                });
+            }, 0);
         } else {
             logger.printfln("data_points: Meter in slot %u doesn't provide power.", meter_slot_grid);
         }
