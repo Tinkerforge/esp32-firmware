@@ -679,6 +679,10 @@ struct Config {
         return this->asArray().end();
     }
 
+    void swapArray(Config *other) {
+        this->asArray().swap(other->asArray());
+    }
+
     uint8_t getTag() const {
         if (!this->is<Config::ConfUnion>()) {
             logger.printfln("Tried to get tag of a node that is not a union!");
