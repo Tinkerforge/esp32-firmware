@@ -38,6 +38,5 @@ public:
     virtual bool supports_currents()      {return false;}
     //virtual bool supports_phases() {return false;}
 
-protected:
     ValueHistory power_hist;
 };

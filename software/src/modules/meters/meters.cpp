@@ -323,6 +323,10 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 
     meter_slot.values.get(static_cast<uint16_t>(index))->updateFloat(new_value);
     meter_slot.values_last_updated_at = now_us();
+
+    if (!isnan(new_value) && meter_slot.value_ids.get(static_cast<uint16_t>(index))->asUint() == static_cast<uint32_t>(MeterValueID::PowerActiveLSumImExDiff)) {
+        meter_slot.meter->power_hist.add_sample(new_value);
+    }
 }
 
 void Meters::update_all_values(uint32_t slot, const float new_values[])
@@ -351,6 +355,11 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
 
     if (updated_any_value) {
         meter_slot.values_last_updated_at = now_us();
+
+        float power;
+        if (get_power(slot, &power) == ValueAvailability::Fresh) {
+            meter_slot.meter->power_hist.add_sample(power);
+        }
     }
 }
 
@@ -382,6 +391,11 @@ void Meters::update_all_values(uint32_t slot, Config *new_values)
 
     if (updated_any_value) {
         meter_slot.values_last_updated_at = now_us();
+
+        float power;
+        if (get_power(slot, &power) == ValueAvailability::Fresh) {
+            meter_slot.meter->power_hist.add_sample(power);
+        }
     }
 }
 
