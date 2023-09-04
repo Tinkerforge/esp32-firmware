@@ -195,6 +195,14 @@ uint32_t Meters::get_meters(uint32_t meter_class, IMeter **found_meters, uint32_
     return found_count;
 }
 
+uint32_t Meters::get_meter_class(uint32_t slot)
+{
+    if (slot >= METERS_SLOTS)
+        return METER_CLASS_NONE;
+
+    return meter_slots[slot].meter->get_class();
+}
+
 Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, float *value_out, micros_t max_age)
 {
     if (slot >= METERS_SLOTS) {
@@ -431,7 +439,14 @@ String Meters::get_path(uint32_t slot, Meters::PathType path_type)
     return path;
 }
 
-const ConfigRoot * Meters::get_config_float_nan_prototype()
+_ATTRIBUTE((const))
+const Config * Meters::get_config_bool_false_prototype() const
+{
+    return &config_bool_false_prototype;
+}
+
+_ATTRIBUTE((const))
+const Config * Meters::get_config_float_nan_prototype()
 {
     if (config_float_nan_prototype.is_null()) {
         config_float_nan_prototype = Config::Float(NAN);
@@ -439,7 +454,8 @@ const ConfigRoot * Meters::get_config_float_nan_prototype()
     return &config_float_nan_prototype;
 }
 
-const ConfigRoot * Meters::get_config_uint_max_prototype()
+_ATTRIBUTE((const))
+const Config * Meters::get_config_uint_max_prototype()
 {
     if (config_uint_max_prototype.is_null()) {
         config_uint_max_prototype  = Config::Uint32(UINT32_MAX);

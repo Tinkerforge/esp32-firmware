@@ -74,6 +74,7 @@ public:
     void register_meter_generator(uint32_t meter_class, MeterGenerator *generator);
     IMeter *get_meter(uint32_t slot);
     uint32_t get_meters(uint32_t meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
+    uint32_t get_meter_class(uint32_t slot);
 
     ValueAvailability get_power(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
     ValueAvailability get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age = 0_usec);
@@ -89,8 +90,9 @@ public:
 
     String get_path(uint32_t slot, PathType path_type);
 
-    const ConfigRoot * get_config_float_nan_prototype();
-    const ConfigRoot * get_config_uint_max_prototype();
+    const Config * get_config_bool_false_prototype() const _ATTRIBUTE((const));
+    const Config * get_config_float_nan_prototype() _ATTRIBUTE((const));
+    const Config * get_config_uint_max_prototype() _ATTRIBUTE((const));
 
 private:
     class MeterSlot final
@@ -119,8 +121,9 @@ private:
 
     MeterSlot meter_slots[METERS_SLOTS];
 
-    ConfigRoot config_float_nan_prototype;
-    ConfigRoot config_uint_max_prototype;
+    Config config_bool_false_prototype = Config::Bool(false);
+    Config config_float_nan_prototype;
+    Config config_uint_max_prototype;
 
     std::vector<std::tuple<uint32_t, MeterGenerator *>> generators;
 };
