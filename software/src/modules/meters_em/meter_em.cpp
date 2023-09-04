@@ -108,8 +108,6 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
     //METER_ALL_VALUES_CURRENT_L1_A
     //METER_ALL_VALUES_CURRENT_L2_A
     //METER_ALL_VALUES_CURRENT_L3_A
-
-    power_hist.add_sample(power);
 }
 
 void MeterEM::update_all_values()
