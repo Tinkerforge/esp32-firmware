@@ -42,19 +42,16 @@ public:
     void setup() override;
     void register_urls(String base_url) override;
 
-    bool supports_power() override;
-    bool supports_energy() override;
-    bool supports_currents() override;
+    bool supports_power()         override {return true;}
+    bool supports_energy_import() override {return true;}
+    bool supports_energy_export() override {return true;}
+    bool supports_currents()      override {return true;}
 private:
     uint32_t slot;
     Config *config;
     ConfigRoot push_values;
 
     uint32_t value_count;
-
-    bool support_cache_power;
-    bool support_cache_energy;
-    bool support_cache_currents;
 };
 
 #if defined(__GNUC__)

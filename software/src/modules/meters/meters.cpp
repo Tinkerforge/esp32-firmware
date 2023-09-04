@@ -224,8 +224,8 @@ Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind,
         bool supported;
         switch (kind) {
             case INDEX_CACHE_POWER:         supported = meter_slot.meter->supports_power();  break;
-            case INDEX_CACHE_ENERGY_IMPORT: supported = meter_slot.meter->supports_energy(); break;
-            case INDEX_CACHE_ENERGY_EXPORT: supported = meter_slot.meter->supports_energy(); break;
+            case INDEX_CACHE_ENERGY_IMPORT: supported = meter_slot.meter->supports_energy_import(); break;
+            case INDEX_CACHE_ENERGY_EXPORT: supported = meter_slot.meter->supports_energy_export(); break;
             default: supported = false;
         }
         if (supported) {
@@ -417,6 +417,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L2 ]        = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL2Import);
     meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L3 ]        = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL3Import);
 
+    meter_slot.values_declared = true;
     logger.printfln("meters: Meter in slot %u declared %u values.", slot, value_id_count);
 }
 
