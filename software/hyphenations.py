@@ -1,6 +1,4 @@
 de_hyph = [
-    '0xFFFFFFFF',
-    '1663143715',
     'abge-brochen',
     'Abge-schlossen',
     'ab-ge-schlos-sen',
@@ -638,6 +636,8 @@ en_hyph = [
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
 
 allowed_missing = set([
+    '0xFFFFFFFF',
+    '1663143715',
     "0x012EB007",
     "0x3E12E5E7",
     "0x63218f23",
