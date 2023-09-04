@@ -41,9 +41,10 @@ public:
     void setup() override;
     void register_urls(String base_url) override;
 
-    bool supports_power() override {return true;}
-    bool supports_energy() override {return true;}
-    bool supports_currents() override {return true;}
+    bool supports_power()         override {return true;}
+    bool supports_energy_import() override {return true;}
+    bool supports_energy_export() override {return true;}
+    bool supports_currents()      override {return true;}
 
     void update_from_em_all_data(EnergyManagerAllData &all_data);
 private:

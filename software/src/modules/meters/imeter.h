@@ -32,9 +32,10 @@ public:
     virtual void setup() {power_hist.setup();}
     virtual void register_urls(String base_url) {power_hist.register_urls(base_url);}
 
-    virtual bool supports_power() {return false;}
-    virtual bool supports_energy() {return false;}
-    virtual bool supports_currents() {return false;}
+    virtual bool supports_power()         {return false;}
+    virtual bool supports_energy_import() {return false;}
+    virtual bool supports_energy_export() {return false;}
+    virtual bool supports_currents()      {return false;}
     //virtual bool supports_phases() {return false;}
 
 protected:

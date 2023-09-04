@@ -68,21 +68,6 @@ void MeterPushAPI::register_urls(String base_url)
     }, false);
 }
 
-bool MeterPushAPI::supports_power()
-{
-    return support_cache_power;
-}
-
-bool MeterPushAPI::supports_energy()
-{
-    return support_cache_energy;
-}
-
-bool MeterPushAPI::supports_currents()
-{
-    return support_cache_currents;
-}
-
 /*
 void MeterPushAPI::update_from_em_all_data(EnergyManagerAllData &all_data)
 {
