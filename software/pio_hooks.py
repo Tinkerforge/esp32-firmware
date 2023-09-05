@@ -159,7 +159,7 @@ def generate_module_dependencies_header(info_path, header_path, backend_module, 
 
             allow_nonexist = config['Dependencies'].getboolean('AllowNonexist', False)
 
-            known_keys = set(['requires', 'optional', 'after', 'before', 'modulelist'])
+            known_keys = set(['requires', 'optional', 'conflicts', 'after', 'before', 'modulelist'])
             unknown_keys = set(config['Dependencies'].keys()).difference(known_keys)
             if len(unknown_keys) > 0:
                 print(f"Error: '{backend_module.under}/module.ini contains unknown keys {unknown_keys}  ", file=sys.stderr)
@@ -201,6 +201,20 @@ def generate_module_dependencies_header(info_path, header_path, backend_module, 
                             sys.exit(1)
                         available_optional_mods.append(opt_module)
                     all_optional_mods_upper.append(opt_name_upper)
+
+            conflicts = config['Dependencies'].get('Conflicts')
+            if conflicts is not None:
+                conflicts = conflicts.splitlines()
+                old_len = len(conflicts)
+                conflicts = list(dict.fromkeys(conflicts))
+                if len(conflicts) != old_len:
+                    print(f"List of conflicting modules for module '{module_name}' contains duplicates.", file=sys.stderr)
+                for conflict_name in conflicts:
+                    conflict_module, _ = find_backend_module_space(backend_modules, conflict_name)
+                    if conflict_module:
+                        print(f"Error: Module '{module_name}' conflicts with module '{conflict_name}'.", file=sys.stderr)
+                        sys.exit(1)
+
 
             if backend_module:
                 cur_module_index = backend_modules.index(backend_module)
