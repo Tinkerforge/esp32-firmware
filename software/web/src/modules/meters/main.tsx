@@ -404,9 +404,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 type ValuesByID = {[id: number]: number};
 
 interface MetersState {
-    state: Readonly<API.getType['meters/0/state']>;
-    phases: Readonly<API.getType['meters/0/phases']>;
-    values_by_id: ValuesByID;
+    state: {[meter_slot: number]: Readonly<API.getType['meters/0/state']>};
+    values_by_id: {[meter_slot: number]: ValuesByID};
     chart_selected: "history"|"live";
 }
 
@@ -461,125 +460,139 @@ function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
 }
 
 export class Meters extends Component<{}, MetersState> {
-    live_data: UplotData;
-    pending_live_data: UplotData = {timestamps: [], samples: []};
-    history_data: UplotData;
+    live_data: {[meter_slot: number]: UplotData} = {};
+    pending_live_data: {[meter_slot: number]: UplotData} = {};
+    history_data: {[meter_slot: number]: UplotData} = {};
     uplot_wrapper_live_ref = createRef();
     uplot_wrapper_history_ref = createRef();
-    value_ids: Readonly<number[]> = [];
-    values: Readonly<number[]> = [];
+    value_ids: {[meter_slot: number]: Readonly<number[]>} = {};
+    values: {[meter_slot: number]: Readonly<number[]>} = {};
 
     constructor() {
         super();
 
         this.state = {
+            state: {},
             values_by_id: {},
             chart_selected: "history",
         } as any;
 
-        util.addApiEventListener("meters/0/state", () => {
-            this.setState({state: API.get("meters/0/state")});
-        });
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/state`, () => {
+                this.setState({state: API.get_maybe(`meters/${meter_slot}/state`)});
+            });
 
-        util.addApiEventListener("meters/0/value_ids", () => {
-            this.value_ids = API.get("meters/0/value_ids");
-            let values_by_id: ValuesByID = {};
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/value_ids`, () => {
+                this.value_ids[meter_slot] = API.get_maybe(`meters/${meter_slot}/value_ids`);
+                let values_by_id: ValuesByID = {};
 
-            if (this.values) {
-                for (let id of METER_VALUE_IDS) {
-                    let idx = this.value_ids.indexOf(id);
+                if (this.values[meter_slot]) {
+                    for (let id of METER_VALUE_IDS) {
+                        let idx = this.value_ids[meter_slot].indexOf(id);
 
-                    if (idx >= 0) {
-                        values_by_id[id] = this.values[idx];
+                        if (idx >= 0) {
+                            values_by_id[id] = this.values[meter_slot][idx];
+                        }
                     }
                 }
-            }
 
-            this.setState({values_by_id: values_by_id});
-        });
+                this.setState((prevState) => ({
+                    values_by_id: {
+                        ...prevState.values_by_id,
+                        [meter_slot]: values_by_id
+                    }
+                }));
+            });
 
-        util.addApiEventListener("meters/0/values", () => {
-            this.values = API.get("meters/0/values");
-            let values_by_id: ValuesByID = {};
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/values`, () => {
+                this.values[meter_slot] = API.get_maybe(`meters/${meter_slot}/values`);
+                let values_by_id: ValuesByID = {};
 
-            if (this.value_ids) {
-                for (let id of METER_VALUE_IDS) {
-                    let idx = this.value_ids.indexOf(id);
+                if (this.value_ids[meter_slot]) {
+                    for (let id of METER_VALUE_IDS) {
+                        let idx = this.value_ids[meter_slot].indexOf(id);
 
-                    if (idx >= 0) {
-                        values_by_id[id] = this.values[idx];
+                        if (idx >= 0) {
+                            values_by_id[id] = this.values[meter_slot][idx];
+                        }
                     }
                 }
-            }
 
-            this.setState({values_by_id: values_by_id});
-        });
+                this.setState((prevState) => ({
+                    values_by_id: {
+                        ...prevState.values_by_id,
+                        [meter_slot]: values_by_id
+                    }
+                }));
+            });
 
-        util.addApiEventListener("meters/0/phases", () => {
-            this.setState({phases: API.get("meters/0/phases")});
-        });
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/live`, () => {
+                let live = API.get_maybe(`meters/${meter_slot}/live`);
 
-        util.addApiEventListener("meters/0/live", () => {
-            let live = API.get("meters/0/live");
-
-            this.live_data = calculate_live_data(live.offset, live.samples_per_second, live.samples);
-            this.pending_live_data = {timestamps: [], samples: []};
-
-            if (this.state.chart_selected == "live") {
-                this.update_uplot();
-            }
-        });
-
-        util.addApiEventListener("meters/0/live_samples", () => {
-            let live = API.get("meters/0/live_samples");
-            let live_extra = calculate_live_data(0, live.samples_per_second, live.samples);
-
-            this.pending_live_data.timestamps.push(...live_extra.timestamps);
-            this.pending_live_data.samples.push(...live_extra.samples);
-
-            if (this.pending_live_data.samples.length >= 5) {
-                this.live_data.timestamps = array_append(this.live_data.timestamps, this.pending_live_data.timestamps, 720);
-                this.live_data.samples = array_append(this.live_data.samples, this.pending_live_data.samples, 720);
-
-                this.pending_live_data.timestamps = [];
-                this.pending_live_data.samples = [];
+                this.live_data[meter_slot] = calculate_live_data(live.offset, live.samples_per_second, live.samples);
+                this.pending_live_data[meter_slot] = {timestamps: [], samples: []};
 
                 if (this.state.chart_selected == "live") {
                     this.update_uplot();
                 }
-            }
-        });
+            });
 
-        util.addApiEventListener("meters/0/history", () => {
-            let history = API.get("meters/0/history");
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/live_samples`, () => {
+                let live = API.get_maybe(`meters/${meter_slot}/live_samples`);
+                let live_extra = calculate_live_data(0, live.samples_per_second, live.samples);
 
-            this.history_data = calculate_history_data(history.offset, history.samples);
+                if (!this.pending_live_data[meter_slot]) {
+                    console.log('Meters: Received live_samples before live message');
+                    this.pending_live_data[meter_slot] = {timestamps: [], samples: []};
+                }
 
-            if (this.state.chart_selected == "history") {
-                this.update_uplot();
-            }
-        });
+                this.pending_live_data[meter_slot].timestamps.push(...live_extra.timestamps);
+                this.pending_live_data[meter_slot].samples.push(...live_extra.samples);
 
-        util.addApiEventListener("meters/0/history_samples", () => {
-            let history = API.get("meters/0/history_samples");
+                if (this.pending_live_data[meter_slot].samples.length >= 5) {
+                    this.live_data[meter_slot].timestamps = array_append(this.live_data[meter_slot].timestamps, this.pending_live_data[meter_slot].timestamps, 720);
+                    this.live_data[meter_slot].samples = array_append(this.live_data[meter_slot].samples, this.pending_live_data[meter_slot].samples, 720);
 
-            this.history_data = calculate_history_data(0, array_append(this.history_data.samples, history.samples, 720));
+                    this.pending_live_data[meter_slot].timestamps = [];
+                    this.pending_live_data[meter_slot].samples = [];
 
-            if (this.state.chart_selected == "history") {
-                this.update_uplot();
-            }
-        });
+                    if (this.state.chart_selected == "live") {
+                        this.update_uplot();
+                    }
+                }
+            });
+
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/history`, () => {
+                let history = API.get_maybe(`meters/${meter_slot}/history`);
+
+                this.history_data[meter_slot] = calculate_history_data(history.offset, history.samples);
+
+                if (this.state.chart_selected == "history") {
+                    this.update_uplot();
+                }
+            });
+
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/history_samples`, () => {
+                let history = API.get_maybe(`meters/${meter_slot}/history_samples`);
+
+                this.history_data[meter_slot] = calculate_history_data(0, array_append(this.history_data[meter_slot].samples, history.samples, 720));
+
+                if (this.state.chart_selected == "history") {
+                    this.update_uplot();
+                }
+            });
+        }
     }
 
     update_uplot() {
         if (this.state.chart_selected == 'live') {
             if (this.uplot_wrapper_live_ref && this.uplot_wrapper_live_ref.current) {
-                this.uplot_wrapper_live_ref.current.set_data(this.live_data);
+                this.uplot_wrapper_live_ref.current.set_data(this.live_data[0/*FIXME*/]);
             }
         }
         else {
             if (this.uplot_wrapper_history_ref && this.uplot_wrapper_history_ref.current) {
-                this.uplot_wrapper_history_ref.current.set_data(this.history_data);
+                this.uplot_wrapper_history_ref.current.set_data(this.history_data[0/*FIXME*/]);
             }
         }
     }
@@ -637,11 +650,12 @@ export class Meters extends Component<{}, MetersState> {
                                 y_min={0}
                                 y_max={1500} />
 
+                {[...Array(METERS_SLOTS).keys()].map((meter_slot) =>
                 <CollapsedSection label={__("meters.content.detailed_values")}>
-                    {METER_VALUE_IDS.filter((id) => util.hasValue(this.state.values_by_id[id])).map((id) => <FormRow label={translate_unchecked(`meters.content.detailed_${id}`)} label_muted="?">
-                        <div class="row"><div class="col-sm-4"><OutputFloat value={this.state.values_by_id[id]} digits={METER_VALUE_INFOS[id].digits} scale={0} unit={METER_VALUE_INFOS[id].unit}/></div></div>
+                    {METER_VALUE_IDS.filter((id) => util.hasValue(this.state.values_by_id[meter_slot][id])).map((id) => <FormRow label={translate_unchecked(`meters.content.detailed_${id}`)} label_muted="?">
+                        <div class="row"><div class="col-sm-4"><OutputFloat value={this.state.values_by_id[meter_slot][id]} digits={METER_VALUE_INFOS[id].digits} scale={0} unit={METER_VALUE_INFOS[id].unit}/></div></div>
                     </FormRow>)}
-                </CollapsedSection>
+                </CollapsedSection>)}
             </SubPage>
         )
     }
