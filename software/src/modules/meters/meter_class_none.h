@@ -43,8 +43,7 @@ public:
     const Config * const state_prototype  = Config::Null();
 
     // for IMeter
-    void setup() override {}
-    void register_urls(String base_url) override {}
+    // (none)
 
     // for both
     uint32_t get_class() const override _ATTRIBUTE((const));

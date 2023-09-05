@@ -46,7 +46,7 @@ void MeterEM::setup()
     });
 }
 
-void MeterEM::register_urls(String base_url)
+void MeterEM::register_urls(const String &base_url)
 {
     api.addState(base_url + "error_counters", &errors, {}, 1000);
 }

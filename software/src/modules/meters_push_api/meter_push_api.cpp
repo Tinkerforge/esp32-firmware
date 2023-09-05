@@ -57,7 +57,7 @@ void MeterPushAPI::setup()
     );
 }
 
-void MeterPushAPI::register_urls(String base_url)
+void MeterPushAPI::register_urls(const String &base_url)
 {
     api.addCommand(base_url + "push_values", &push_values, {}, [this](){
         meters.update_all_values(this->slot, &push_values);
