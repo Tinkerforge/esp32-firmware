@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import importlib.util
 import importlib.machinery
 
@@ -18,12 +19,19 @@ if 'software' not in sys.modules:
 
 from software import util
 
-METER_COUNT = 7
+with open(os.path.join(software_dir, "web", "src", "build.ts")) as f:
+    content = f.read()
+    match = re.search(r"export const METERS_SLOTS = (\d+);", content)
+    if match is None:
+        print("Failed to find METERS_SLOTS in build.ts!")
+        sys.exit(1)
+
+    meter_count = int(match.group(1))
 
 with open('api.ts.template_fragment') as f:
     meter_api = f.read()
 
 with open('api.ts', 'w') as f:
-    for i in range(METER_COUNT):
+    for i in range(meter_count):
         f.write(meter_api.replace("{{{meter_id}}}", str(i)))
 
