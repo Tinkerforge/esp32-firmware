@@ -71,7 +71,7 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
             let subnet = parseIP(props.value.subnet);
             let gateway = parseIP(props.value.gateway);
 
-            if (!isNaN(ip) && !isNaN(subnet) && !isNaN(gateway)){
+            if (!isNaN(ip) && !isNaN(subnet) && !isNaN(gateway) && subnet != 0){
                 gateway_out_of_subnet = gateway != 0 && (ip & subnet) != (gateway & subnet);
 
                 if (props.forbidNetwork) {
