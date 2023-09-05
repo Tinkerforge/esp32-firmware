@@ -39,7 +39,7 @@ public:
 
     uint32_t get_class() const override;
     void setup() override;
-    void register_urls(String base_url) override;
+    void register_urls(const String &base_url) override;
 
     bool supports_power()         override {return true;}
     bool supports_energy_import() override {return true;}
