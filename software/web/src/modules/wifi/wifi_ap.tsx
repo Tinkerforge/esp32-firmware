@@ -132,6 +132,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                     </FormRow>
 
                     <IPConfiguration
+                        showAnyAddress
                         showDhcp={false}
                         showDns={false}
                         onValue={(v) => this.setState(v)}

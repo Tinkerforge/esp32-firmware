@@ -70,6 +70,7 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
                     </FormRow>
 
                     <IPConfiguration
+                        showAnyAddress={false}
                         onValue={(v) => this.setState({internal_ip: v.ip, internal_subnet: v.subnet, internal_gateway: v.gateway})}
                         value={{ip: state.internal_ip, subnet: state.internal_subnet, gateway: state.internal_gateway}}
                         setValid={(v) => this.ipconfig_valid = v}

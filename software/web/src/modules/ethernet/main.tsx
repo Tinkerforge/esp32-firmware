@@ -70,6 +70,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
                     </FormRow>
 
                     <IPConfiguration
+                        showAnyAddress
                         showDhcp
                         showDns
                         onValue={(v) => this.setState(v)}

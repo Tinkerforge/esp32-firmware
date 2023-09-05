@@ -37,6 +37,7 @@ export interface IPConfig {
 }
 
 interface IPConfigurationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "value" | "disabled"> {
+    showAnyAddress: boolean,
     showDhcp?: boolean,
     showDns?: boolean,
     value: IPConfig
@@ -90,15 +91,15 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
             <FormRow label={props.ip_label ? props.ip_label : __("component.ip_configuration.static_ip")}>
                 <InputIP invalidFeedback={__("component.ip_configuration.static_ip_invalid")}
                          required={!props.showDhcp || !dhcp}
-                         value={props.value.ip}
-                         onValue={(v) => this.onUpdate("ip", v)}/>
+                         value={!props.showAnyAddress && props.value.ip == "0.0.0.0" ? "" : props.value.ip}
+                         onValue={(v) => this.onUpdate("ip", !props.showAnyAddress && v == "" ? "0.0.0.0" : v)}/>
             </FormRow>
             <FormRow label={props.gateway_label ? props.gateway_label : __("component.ip_configuration.gateway")}>
                 <InputIP invalidFeedback={gateway_out_of_subnet ? __("component.ip_configuration.gateway_out_of_subnet") : __("component.ip_configuration.gateway_invalid")}
                          moreClasses={gateway_out_of_subnet ? ["is-invalid"] : [""]}
                          required={!props.showDhcp || !dhcp}
-                         value={props.value.gateway}
-                         onValue={(v) => this.onUpdate("gateway", v)}/>
+                         value={!props.showAnyAddress && props.value.gateway == "0.0.0.0" ? "" : props.value.gateway}
+                         onValue={(v) => this.onUpdate("gateway", !props.showAnyAddress && v == "" ? "0.0.0.0" : v)}/>
             </FormRow>
             <FormRow label={props.subnet_label ? props.subnet_label : __("component.ip_configuration.subnet")}>
                 <InputSubnet classList={captured_subnet_name != "" ? "is-invalid" : ""}

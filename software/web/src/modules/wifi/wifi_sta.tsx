@@ -255,6 +255,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     </FormRow>
 
                     <IPConfiguration
+                        showAnyAddress
                         showDhcp
                         showDns
                         onValue={(v) => this.setState(v)}
