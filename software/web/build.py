@@ -59,6 +59,7 @@ def main():
         'npx',
         'esbuild',
         'src/main.ts',
+        '--metafile={}'.format(os.path.join(BUILD_DIR, 'meta.json')),
         '--bundle',
         '--minify',
         '--outfile={0}'.format(os.path.join(BUILD_DIR, 'bundle.min.js'))
