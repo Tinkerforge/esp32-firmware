@@ -132,7 +132,10 @@ void Meters::register_urls()
 
         if (meter_slot.meter->get_class() != METER_CLASS_NONE) {
             meter_slot.power_hist.register_urls(base_path);
+        } else {
+            meter_slot.power_hist.register_urls_empty(base_path);
         }
+
         if (meter_slot.meter) {
             meter_slot.meter->register_urls(base_path);
         }

@@ -113,6 +113,23 @@ void ValueHistory::register_urls(String base_url_)
     });
 }
 
+void ValueHistory::register_urls_empty(String base_url_)
+{
+    base_url = base_url_;
+
+    const char *empty_history = "{\"offset\":0,\"samples\":[]}";
+    ssize_t empty_history_len = static_cast<ssize_t>(strlen(empty_history));
+    server.on(("/" + base_url + "history").c_str(), HTTP_GET, [this, empty_history, empty_history_len](WebServerRequest request) {
+        return request.send(200, "application/json; charset=utf-8", empty_history, empty_history_len);
+    });
+
+    const char *empty_live = "{\"offset\":0,\"samples_per_second\":0.0,\"samples\":[]}";
+    ssize_t empty_live_len = static_cast<ssize_t>(strlen(empty_live));
+    server.on(("/" + base_url + "live").c_str(), HTTP_GET, [this, empty_live, empty_live_len](WebServerRequest request) {
+        return request.send(200, "application/json; charset=utf-8", empty_live, empty_live_len);
+    });
+}
+
 void ValueHistory::add_sample(float sample)
 {
     METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
