@@ -69,23 +69,9 @@ def main():
         args += ['--analyze']
 
     if build_args.js_source_map:
-        args += ['--sourcemap']
+        args += ['--sourcemap=inline']
 
     subprocess.check_call(args, shell=sys.platform == 'win32')
-
-    if build_args.js_source_map:
-        with open(os.path.join(BUILD_DIR, 'bundle.min.js'), 'r', encoding='utf-8') as f:
-            js_src = f.read()
-
-        with open(os.path.join(BUILD_DIR, 'bundle.min.js.map'), 'rb') as f:
-            js_map = b64encode(f.read()).decode('ascii')
-
-        os.remove(os.path.join(BUILD_DIR, 'bundle.min.js.map'))
-
-        js_src = js_src.replace('sourceMappingURL=bundle.min.js.map', 'sourceMappingURL=data:text/json;base64,{0}'.format(js_map))
-
-        with open(os.path.join(BUILD_DIR, 'bundle.min.js'), 'w', encoding='utf-8') as f:
-            f.write(js_src)
 
     print('sass...')
     args = [
