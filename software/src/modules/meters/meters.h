@@ -27,6 +27,7 @@
 
 #include "config.h"
 #include "module.h"
+#include "modules/meter/value_history.h"
 #include "modules/meters/meter_value_id.h"
 #include "tools.h"
 
@@ -112,6 +113,8 @@ private:
 
         ConfigRoot config_union;
         ConfigRoot state;
+
+        ValueHistory power_hist;
     };
 
     MeterGenerator *get_generator_for_class(uint32_t meter_class);

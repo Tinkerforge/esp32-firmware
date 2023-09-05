@@ -34,8 +34,6 @@ uint32_t MeterPushAPI::get_class() const
 
 void MeterPushAPI::setup()
 {
-    IMeter::setup();
-
     Config *value_ids = static_cast<Config *>(config->get("value_ids"));
     ssize_t id_count = value_ids->count();
     if (id_count < 0) {
@@ -61,8 +59,6 @@ void MeterPushAPI::setup()
 
 void MeterPushAPI::register_urls(String base_url)
 {
-    IMeter::register_urls(base_url);
-
     api.addCommand(base_url + "push_values", &push_values, {}, [this](){
         meters.update_all_values(this->slot, &push_values);
     }, false);

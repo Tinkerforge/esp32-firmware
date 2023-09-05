@@ -20,8 +20,7 @@
 #pragma once
 
 #include <stdint.h>
-
-#include "modules/meter/value_history.h"
+#include "WString.h"
 
 class IMeter
 {
@@ -29,14 +28,12 @@ public:
     virtual ~IMeter() = default;
 
     virtual uint32_t get_class() const = 0;
-    virtual void setup() {power_hist.setup();}
-    virtual void register_urls(String base_url) {power_hist.register_urls(base_url);}
+    virtual void setup() {}
+    virtual void register_urls(String base_url) {}
 
     virtual bool supports_power()         {return false;}
     virtual bool supports_energy_import() {return false;}
     virtual bool supports_energy_export() {return false;}
     virtual bool supports_currents()      {return false;}
     //virtual bool supports_phases() {return false;}
-
-    ValueHistory power_hist;
 };
