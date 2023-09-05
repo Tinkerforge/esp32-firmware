@@ -332,7 +332,7 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
     meter_slot.values.get(static_cast<uint16_t>(index))->updateFloat(new_value);
     meter_slot.values_last_updated_at = now_us();
 
-    if (!isnan(new_value) && meter_slot.value_ids.get(static_cast<uint16_t>(index))->asUint() == static_cast<uint32_t>(MeterValueID::PowerActiveLSumImExDiff)) {
+    if (!isnan(new_value) && index == meter_slot.index_cache_single_values[INDEX_CACHE_POWER]) {
         meter_slot.power_hist.add_sample(new_value);
     }
 }
