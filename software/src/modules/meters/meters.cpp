@@ -107,6 +107,9 @@ void Meters::setup()
             logger.printfln("meters: Failed to create meter of class %u.", configured_meter_class);
             continue;
         }
+        if (configured_meter_class != METER_CLASS_NONE) {
+            meter_slot.power_hist.setup();
+        }
         meter->setup();
         meter_slot.meter = meter;
     }
@@ -125,8 +128,13 @@ void Meters::register_urls()
         api.addState(get_path(slot, Meters::PathType::ValueIDs), &meter_slot.value_ids, {}, 1000);
         api.addState(get_path(slot, Meters::PathType::Values),   &meter_slot.values,    {}, 1000);
 
+        const String base_path = get_path(slot, Meters::PathType::Base);
+
+        if (meter_slot.meter->get_class() != METER_CLASS_NONE) {
+            meter_slot.power_hist.register_urls(base_path);
+        }
         if (meter_slot.meter) {
-            meter_slot.meter->register_urls(get_path(slot, Meters::PathType::Base));
+            meter_slot.meter->register_urls(base_path);
         }
     }
 }
@@ -325,7 +333,7 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
     meter_slot.values_last_updated_at = now_us();
 
     if (!isnan(new_value) && meter_slot.value_ids.get(static_cast<uint16_t>(index))->asUint() == static_cast<uint32_t>(MeterValueID::PowerActiveLSumImExDiff)) {
-        meter_slot.meter->power_hist.add_sample(new_value);
+        meter_slot.power_hist.add_sample(new_value);
     }
 }
 
@@ -358,7 +366,7 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
 
         float power;
         if (get_power(slot, &power) == ValueAvailability::Fresh) {
-            meter_slot.meter->power_hist.add_sample(power);
+            meter_slot.power_hist.add_sample(power);
         }
     }
 }
@@ -394,7 +402,7 @@ void Meters::update_all_values(uint32_t slot, Config *new_values)
 
         float power;
         if (get_power(slot, &power) == ValueAvailability::Fresh) {
-            meter_slot.meter->power_hist.add_sample(power);
+            meter_slot.power_hist.add_sample(power);
         }
     }
 }

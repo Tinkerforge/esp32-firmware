@@ -36,8 +36,6 @@ uint32_t MeterEM::get_class() const
 
 void MeterEM::setup()
 {
-    IMeter::setup();
-
     errors = Config::Object({
         {"local_timeout",        Config::Uint32(0)},
         {"global_timeout",       Config::Uint32(0)},
@@ -50,8 +48,6 @@ void MeterEM::setup()
 
 void MeterEM::register_urls(String base_url)
 {
-    IMeter::register_urls(base_url);
-
     api.addState(base_url + "error_counters", &errors, {}, 1000);
 }
 
