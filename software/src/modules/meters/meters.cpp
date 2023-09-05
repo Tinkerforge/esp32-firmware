@@ -454,9 +454,9 @@ static_assert(sizeof(ARRAY_SIZE(meters_path_postfixes)) == static_cast<uint32_t>
 
 String Meters::get_path(uint32_t slot, Meters::PathType path_type)
 {
-    String path = "meters/_";
+    String path = "meters/";
     path.concat(slot);
-    path.concat('_');
+    path.concat('/');
     path.concat(meters_path_postfixes[static_cast<uint32_t>(path_type)]);
 
     return path;
