@@ -1,0 +1,37 @@
+//APIPath:meters/{{{meter_id}}}/
+export interface state___{{{meter_id}}} {
+    state: number,
+    type: number
+}
+
+export type value_ids___{{{meter_id}}} = number[];
+
+export type values___{{{meter_id}}} = number[];
+
+export interface phases___{{{meter_id}}} {
+    phases_active: boolean[],
+    phases_connected: boolean[]
+}
+
+export interface live___{{{meter_id}}} {
+    offset: number,
+    samples_per_second: number,
+    samples: number[],
+}
+
+export interface live_samples___{{{meter_id}}} {
+    samples_per_second: number,
+    samples: number[],
+}
+
+export interface history___{{{meter_id}}} {
+    offset: number,
+    samples: number[],
+}
+
+export interface history_samples___{{{meter_id}}} {
+    samples: number[],
+}
+
+export interface reset___{{{meter_id}}} {
+}

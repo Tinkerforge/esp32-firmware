@@ -404,8 +404,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 type ValuesByID = {[id: number]: number};
 
 interface MetersState {
-    state: Readonly<API.getType['meters/_0_state']>;
-    phases: Readonly<API.getType['meters/_0_phases']>;
+    state: Readonly<API.getType['meters/0/state']>;
+    phases: Readonly<API.getType['meters/0/phases']>;
     values_by_id: ValuesByID;
     chart_selected: "history"|"live";
 }
@@ -477,12 +477,12 @@ export class Meters extends Component<{}, MetersState> {
             chart_selected: "history",
         } as any;
 
-        util.addApiEventListener("meters/_0_state", () => {
-            this.setState({state: API.get("meters/_0_state")});
+        util.addApiEventListener("meters/0/state", () => {
+            this.setState({state: API.get("meters/0/state")});
         });
 
-        util.addApiEventListener("meters/_0_value_ids", () => {
-            this.value_ids = API.get("meters/_0_value_ids");
+        util.addApiEventListener("meters/0/value_ids", () => {
+            this.value_ids = API.get("meters/0/value_ids");
             let values_by_id: ValuesByID = {};
 
             if (this.values) {
@@ -498,8 +498,8 @@ export class Meters extends Component<{}, MetersState> {
             this.setState({values_by_id: values_by_id});
         });
 
-        util.addApiEventListener("meters/_0_values", () => {
-            this.values = API.get("meters/_0_values");
+        util.addApiEventListener("meters/0/values", () => {
+            this.values = API.get("meters/0/values");
             let values_by_id: ValuesByID = {};
 
             if (this.value_ids) {
@@ -515,12 +515,12 @@ export class Meters extends Component<{}, MetersState> {
             this.setState({values_by_id: values_by_id});
         });
 
-        util.addApiEventListener("meters/_0_phases", () => {
-            this.setState({phases: API.get("meters/_0_phases")});
+        util.addApiEventListener("meters/0/phases", () => {
+            this.setState({phases: API.get("meters/0/phases")});
         });
 
-        util.addApiEventListener("meters/_0_live", () => {
-            let live = API.get("meters/_0_live");
+        util.addApiEventListener("meters/0/live", () => {
+            let live = API.get("meters/0/live");
 
             this.live_data = calculate_live_data(live.offset, live.samples_per_second, live.samples);
             this.pending_live_data = {timestamps: [], samples: []};
@@ -530,8 +530,8 @@ export class Meters extends Component<{}, MetersState> {
             }
         });
 
-        util.addApiEventListener("meters/_0_live_samples", () => {
-            let live = API.get("meters/_0_live_samples");
+        util.addApiEventListener("meters/0/live_samples", () => {
+            let live = API.get("meters/0/live_samples");
             let live_extra = calculate_live_data(0, live.samples_per_second, live.samples);
 
             this.pending_live_data.timestamps.push(...live_extra.timestamps);
@@ -550,8 +550,8 @@ export class Meters extends Component<{}, MetersState> {
             }
         });
 
-        util.addApiEventListener("meters/_0_history", () => {
-            let history = API.get("meters/_0_history");
+        util.addApiEventListener("meters/0/history", () => {
+            let history = API.get("meters/0/history");
 
             this.history_data = calculate_history_data(history.offset, history.samples);
 
@@ -560,8 +560,8 @@ export class Meters extends Component<{}, MetersState> {
             }
         });
 
-        util.addApiEventListener("meters/_0_history_samples", () => {
-            let history = API.get("meters/_0_history_samples");
+        util.addApiEventListener("meters/0/history_samples", () => {
+            let history = API.get("meters/0/history_samples");
 
             this.history_data = calculate_history_data(0, array_append(this.history_data.samples, history.samples, 720));
 
@@ -656,16 +656,16 @@ export class MetersStatus extends Component<{}, {}> {
     constructor() {
         super();
 
-        util.addApiEventListener("meters/_0_history", () => {
-            let history = API.get("meters/_0_history");
+        util.addApiEventListener("meters/0/history", () => {
+            let history = API.get("meters/0/history");
 
             this.history_data = calculate_history_data(history.offset, history.samples);
 
             this.update_uplot();
         });
 
-        util.addApiEventListener("meters/_0_history_samples", () => {
-            let history = API.get("meters/_0_history_samples");
+        util.addApiEventListener("meters/0/history_samples", () => {
+            let history = API.get("meters/0/history_samples");
 
             this.history_data = calculate_history_data(0, array_append(this.history_data.samples, history.samples, 720));
 
@@ -691,8 +691,8 @@ export class MetersStatus extends Component<{}, {}> {
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
-        let value_ids_0 = API.get_maybe('meters/_0_value_ids');
-        let values_0 = API.get_maybe('meters/_0_values');
+        let value_ids_0 = API.get_maybe('meters/0/value_ids');
+        let values_0 = API.get_maybe('meters/0/values');
         let power = 0;
 
         if (value_ids_0 && values_0.length > 0 && values_0 && values_0.length > 0) {
