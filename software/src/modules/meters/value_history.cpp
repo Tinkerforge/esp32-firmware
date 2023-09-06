@@ -142,11 +142,34 @@ void ValueHistory::register_urls_empty(String base_url_)
 
 void ValueHistory::add_sample(float sample)
 {
+    ++sample_count;
+    sample_sum += sample;
+}
+
+void ValueHistory::tick()
+{
     METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
-    METER_VALUE_HISTORY_VALUE_TYPE val = clamp(static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(METER_VALUE_HISTORY_VALUE_MIN),
-                                               static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(roundf(sample)),
-                                               static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(METER_VALUE_HISTORY_VALUE_MAX));
-    live.push(val);
+    METER_VALUE_HISTORY_VALUE_TYPE live_val = val_min;
+
+    if (sample_count > 0) {
+        live_val = clamp(static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(METER_VALUE_HISTORY_VALUE_MIN),
+                         static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(roundf(sample_sum / static_cast<float>(sample_count))),
+                         static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(METER_VALUE_HISTORY_VALUE_MAX));
+
+        sample_count = 0;
+        sample_sum = 0;
+
+        last_live_val = live_val;
+        last_live_val_valid = true;
+    }
+    else if (last_live_val_valid) {
+        // reuse last value once to avoid gaps due to jitter if the
+        // samples are added with the same rate a they are used here
+        live_val = last_live_val;
+        last_live_val_valid = false;
+    }
+
+    live.push(live_val);
     live_last_update = millis();
     end_this_interval = live_last_update;
 
@@ -154,13 +177,21 @@ void ValueHistory::add_sample(float sample)
         begin_this_interval = live_last_update;
     }
 
-    ++samples_this_interval;
-    sum_this_interval += val;
+    if (live_val != val_min) {
+        ++samples_this_interval;
+        sum_this_interval += live_val;
+    }
 
 #if MODULE_WS_AVAILABLE()
     {
         char *buf;
-        int buf_written = asprintf(&buf, "{\"topic\":\"%slive_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[%d]}}\n", base_url.c_str(), static_cast<double>(samples_per_second()), static_cast<int>(val));
+        int buf_written;
+
+        if (live_val == val_min) {
+            buf_written = asprintf(&buf, "{\"topic\":\"%slive_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[null]}}\n", base_url.c_str(), static_cast<double>(samples_per_second()));
+        } else {
+            buf_written = asprintf(&buf, "{\"topic\":\"%slive_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[%d]}}\n", base_url.c_str(), static_cast<double>(samples_per_second()), static_cast<int>(live_val));
+        }
 
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, static_cast<size_t>(buf_written));
@@ -168,50 +199,51 @@ void ValueHistory::add_sample(float sample)
     }
 #endif
 
-    // start history task when first sample arrives. this adds the first sample to the
-    // history immediately to avoid and empty history for the first history period
-    if (live.used() == 1) {
-        task_scheduler.scheduleWithFixedDelay([this, val_min](){
-            METER_VALUE_HISTORY_VALUE_TYPE history_val;
+    uint32_t current_history_slot = millis() / (HISTORY_MINUTE_INTERVAL * 60 * 1000);
 
-            if (samples_this_interval == 0) {
-                history_val = val_min; // TODO push 0 or intxy_t min here? intxy_t min will be translated into null when sending as json. However we document that there is only at most one block of null values at the start of the array indicating a reboot
-            } else {
-                history_val = static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(sum_this_interval / samples_this_interval);
-            }
+    if (current_history_slot != last_history_slot) {
+        METER_VALUE_HISTORY_VALUE_TYPE history_val;
 
-            history.push(history_val);
-            history_last_update = millis();
+        if (samples_this_interval == 0) {
+            history_val = val_min; // TODO push 0 or intxy_t min here? intxy_t min will be translated into null when sending as json. However we document that there is only at most one block of null values at the start of the array indicating a reboot
+        } else {
+            history_val = static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(sum_this_interval / samples_this_interval);
+        }
 
-            samples_last_interval = samples_this_interval;
-            begin_last_interval = begin_this_interval;
-            end_last_interval = end_this_interval;
+        history.push(history_val);
+        history_last_update = millis();
 
-            sum_this_interval = 0;
-            samples_this_interval = 0;
-            begin_this_interval = 0;
-            end_this_interval = 0;
+        samples_last_interval = samples_this_interval;
+        begin_last_interval = begin_this_interval;
+        end_last_interval = end_this_interval;
+
+        sum_this_interval = 0;
+        samples_this_interval = 0;
+        begin_this_interval = 0;
+        end_this_interval = 0;
 
 #if MODULE_WS_AVAILABLE()
-            char *buf;
-            int buf_written;
+        char *buf;
+        int buf_written;
 
-            if (history_val == val_min) {
-                buf_written = asprintf(&buf, "{\"topic\":\"%shistory_samples\",\"payload\":{\"samples\":[null]}}\n", base_url.c_str());
-            } else {
-                buf_written = asprintf(&buf, "{\"topic\":\"%shistory_samples\",\"payload\":{\"samples\":[%d]}}\n", base_url.c_str(), static_cast<int>(history_val));
-            }
+        if (history_val == val_min) {
+            buf_written = asprintf(&buf, "{\"topic\":\"%shistory_samples\",\"payload\":{\"samples\":[null]}}\n", base_url.c_str());
+        } else {
+            buf_written = asprintf(&buf, "{\"topic\":\"%shistory_samples\",\"payload\":{\"samples\":[%d]}}\n", base_url.c_str(), static_cast<int>(history_val));
+        }
 
-            if (buf_written > 0) {
-                ws.web_sockets.sendToAllOwned(buf, static_cast<size_t>(buf_written));
-            }
+        if (buf_written > 0) {
+            ws.web_sockets.sendToAllOwned(buf, static_cast<size_t>(buf_written));
+        }
 #endif
-        }, 0, 1000 * 60 * HISTORY_MINUTE_INTERVAL);
+
+        last_history_slot = current_history_slot;
     }
 }
 
 size_t ValueHistory::format_live(char *buf, size_t buf_size)
 {
+    METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
     size_t buf_written = 0;
     uint32_t offset = millis() - live_last_update;
     METER_VALUE_HISTORY_VALUE_TYPE val;
@@ -220,12 +252,20 @@ size_t ValueHistory::format_live(char *buf, size_t buf_size)
         buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[]}", offset, static_cast<double>(samples_per_second()));
     }
     else {
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[%d", offset, static_cast<double>(samples_per_second()), static_cast<int>(val));
+        if (val == val_min) {
+            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[null", offset, static_cast<double>(samples_per_second()));
+        } else {
+            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[%d", offset, static_cast<double>(samples_per_second()), static_cast<int>(val));
+        }
 
         // This would underflow if live is empty, but it's guaranteed to have at least one entry by the peek() check above.
         size_t last_sample = live.used() - 1;
         for (size_t i = 1; i < last_sample && live.peek_offset(&val, i) && buf_written < buf_size; ++i) {
-            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, ",%d", static_cast<int>(val));
+            if (val == val_min) {
+                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", ",null");
+            } else {
+                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, ",%d", static_cast<int>(val));
+            }
         }
 
         if (buf_written < buf_size) {
@@ -249,7 +289,7 @@ size_t ValueHistory::format_history(char *buf, size_t buf_size)
     else {
         // intxy_t min values are prefilled, because the ESP was booted less than 48 hours ago.
         if (val == val_min) {
-            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[%s", offset, "null");
+            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[null", offset);
         } else {
             buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[%d", offset, static_cast<int>(val));
         }
