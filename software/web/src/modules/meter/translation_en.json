@@ -1,7 +1,7 @@
 {
     "meter": {
         "status": {
-            "charge_history": null,
+            "power_history": null,
             "current_power": "Power draw"
         },
         "navbar": {

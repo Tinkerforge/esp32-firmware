@@ -56,12 +56,12 @@ let x = {
     },
     "meter": {
         "status": {
-            "charge_history": "Charge history"
+            "power_history": "Charge history"
         }
     },
     "meters": {
         "status": {
-            "charge_history": "Charge history"
+            "power_history": "Charge history"
         }
     }
 }

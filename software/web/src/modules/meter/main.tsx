@@ -631,7 +631,7 @@ export class Meter extends Component<{}, MeterState> {
                 <PageHeader title={__("meter.content.energy_meter")}/>
                     <div class="row">
                         <div class="col-lg-6">
-                            <FormSeparator heading={__("meter.status.charge_history")} first={true} colClasses={"justify-content-between align-items-center col"} extraClasses={"pr-0 pr-lg-3"} >
+                            <FormSeparator heading={__("meter.status.power_history")} first={true} colClasses={"justify-content-between align-items-center col"} extraClasses={"pr-0 pr-lg-3"} >
                                 <div class="mb-2">
                                     <InputSelect value={this.state.chart_selected} onValue={(v) => {
                                         let chart_selected: "live"|"history" = v as any;
@@ -810,7 +810,7 @@ export class MeterStatus extends Component<{}, {}> {
 
         return (
             <>
-                <FormRow label={__("meter.status.charge_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("meter.status.power_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <div class="card pl-1 pb-1">
                         <UplotWrapper ref={this.uplot_wrapper_ref}
                                       id="status_meter_chart"
