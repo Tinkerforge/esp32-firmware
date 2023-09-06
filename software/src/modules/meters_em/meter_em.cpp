@@ -34,23 +34,6 @@ uint32_t MeterEM::get_class() const
     return METER_CLASS_LOCAL_EM;
 }
 
-void MeterEM::setup()
-{
-    errors = Config::Object({
-        {"local_timeout",        Config::Uint32(0)},
-        {"global_timeout",       Config::Uint32(0)},
-        {"illegal_function",     Config::Uint32(0)},
-        {"illegal_data_access",  Config::Uint32(0)},
-        {"illegal_data_value",   Config::Uint32(0)},
-        {"slave_device_failure", Config::Uint32(0)},
-    });
-}
-
-void MeterEM::register_urls(const String &base_url)
-{
-    api.addState(base_url + "error_counters", &errors, {}, 1000);
-}
-
 void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
 {
     // Reject stale data older than five seconds.
@@ -71,6 +54,7 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
         }
 
         meter_type = all_data.energy_meter_type;
+        state->get("type")->updateUint(meter_type);
 
         MeterValueID ids[METER_ALL_VALUES_COUNT];
         uint32_t id_count = METER_ALL_VALUES_COUNT;
@@ -86,17 +70,14 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
         }, 0, 5000);
     }
 
-    state->get("type")->updateUint(all_data.energy_meter_type);
+    errors->get("local_timeout"       )->updateUint(all_data.error_count[0]);
+    errors->get("global_timeout"      )->updateUint(all_data.error_count[1]);
+    errors->get("illegal_function"    )->updateUint(all_data.error_count[2]);
+    errors->get("illegal_data_access" )->updateUint(all_data.error_count[3]);
+    errors->get("illegal_data_value"  )->updateUint(all_data.error_count[4]);
+    errors->get("slave_device_failure")->updateUint(all_data.error_count[5]);
 
-    errors.get("local_timeout"       )->updateUint(all_data.error_count[0]);
-    errors.get("global_timeout"      )->updateUint(all_data.error_count[1]);
-    errors.get("illegal_function"    )->updateUint(all_data.error_count[2]);
-    errors.get("illegal_data_access" )->updateUint(all_data.error_count[3]);
-    errors.get("illegal_data_value"  )->updateUint(all_data.error_count[4]);
-    errors.get("slave_device_failure")->updateUint(all_data.error_count[5]);
-
-    float power = all_data.power;
-    meters.update_value(slot, value_index_power,  power);
+    meters.update_value(slot, value_index_power,  all_data.power);
     meters.update_value(slot, value_index_import, all_data.energy_import);
     meters.update_value(slot, value_index_export, all_data.energy_export);
 

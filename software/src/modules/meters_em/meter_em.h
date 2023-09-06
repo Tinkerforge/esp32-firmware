@@ -35,11 +35,11 @@
 class MeterEM final : public IMeter
 {
 public:
-    MeterEM(uint32_t slot_, Config *state_) : slot(slot_), state(state_) {}
+    MeterEM(uint32_t slot_, Config *state_, Config *errors_) : slot(slot_), state(state_), errors(errors_) {}
 
     uint32_t get_class() const override;
-    void setup() override;
-    void register_urls(const String &base_url) override;
+    //void setup() override;
+    //void register_urls(const String &base_url) override;
 
     bool supports_power()         override {return true;}
     bool supports_energy_import() override {return true;}
@@ -52,7 +52,7 @@ private:
 
     uint32_t slot;
     Config *state;
-    ConfigRoot errors;
+    Config *errors;
 
     uint32_t meter_type = METER_TYPE_NONE;
     uint32_t value_index_power  = UINT32_MAX;
