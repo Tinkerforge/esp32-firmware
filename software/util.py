@@ -161,9 +161,7 @@ def embed_data_with_digest(data, dst_dir, var_name, var_type, data_filter=lambda
 def patch_beta_firmware(data, beta_version):
     data = bytearray(data)
     data[-10] = 200 + beta_version
-
     new_checksum = struct.pack('<I', binascii.crc32(data[:-4]) & 0xFFFFFFFF)
-    print(new_checksum.hex())
     data = data[:-4] + new_checksum
     return data
 
