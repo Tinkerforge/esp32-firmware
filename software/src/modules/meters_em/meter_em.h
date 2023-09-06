@@ -23,7 +23,7 @@
 
 #include "config.h"
 #include "modules/energy_manager/structs.h"
-#include "modules/meter/meter_defs.h"
+#include "modules/meter/meter_defs.h" // FIXME: remove after port to meters module
 #include "modules/meters/imeter.h"
 
 #if defined(__GNUC__)

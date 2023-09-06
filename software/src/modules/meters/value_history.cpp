@@ -60,7 +60,7 @@ void ValueHistory::setup()
     ++chars_per_value;
 
 #if MODULE_WS_AVAILABLE()
-    ws.addOnConnectCallback_HTTPThread([this](WebSocketsClient client) {
+    ws.addOnConnectCallback([this](WebSocketsClient client) {
         const size_t buf_size = RING_BUF_SIZE * chars_per_value + 200;
 
         // live
@@ -74,7 +74,7 @@ void ValueHistory::setup()
         buf_written += format_live(buf + buf_written, buf_size - buf_written);
         buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "}\n");
 
-        client.sendOwnedBlocking_HTTPThread(buf, buf_written);
+        client.sendOwned(buf, buf_written);
 
         // history
         buf_written = 0;
@@ -87,7 +87,7 @@ void ValueHistory::setup()
         buf_written += format_history(buf + buf_written, buf_size - buf_written);
         buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "}\n");
 
-        client.sendOwnedBlocking_HTTPThread(buf, buf_written);
+        client.sendOwned(buf, buf_written);
     });
 #endif
 }
@@ -96,7 +96,12 @@ void ValueHistory::register_urls(String base_url_)
 {
     base_url = base_url_;
 
-    server.on(("/" + base_url + "/history").c_str(), HTTP_GET, [this](WebServerRequest request) {
+    server.on(("/" + base_url + "history").c_str(), HTTP_GET, [this](WebServerRequest request) {
+        /*if (!initialized) {
+            request.send(400, "text/html", "not initialized");
+            return;
+        }*/
+
         const size_t buf_size = RING_BUF_SIZE * chars_per_value + 100;
         std::unique_ptr<char[]> buf{new char[buf_size]};
         size_t buf_written = format_history(buf.get(), buf_size);
@@ -104,12 +109,34 @@ void ValueHistory::register_urls(String base_url_)
         return request.send(200, "application/json; charset=utf-8", buf.get(), static_cast<ssize_t>(buf_written));
     });
 
-    server.on(("/" + base_url + "/live").c_str(), HTTP_GET, [this](WebServerRequest request) {
+    server.on(("/" + base_url + "live").c_str(), HTTP_GET, [this](WebServerRequest request) {
+        /*if (!initialized) {
+            request.send(400, "text/html", "not initialized");
+            return;
+        }*/
+
         const size_t buf_size = RING_BUF_SIZE * chars_per_value + 100;
         std::unique_ptr<char[]> buf{new char[buf_size]};
         size_t buf_written = format_live(buf.get(), buf_size);
 
         return request.send(200, "application/json; charset=utf-8", buf.get(), static_cast<ssize_t>(buf_written));
+    });
+}
+
+void ValueHistory::register_urls_empty(String base_url_)
+{
+    base_url = base_url_;
+
+    const char *empty_history = "{\"offset\":0,\"samples\":[]}";
+    ssize_t empty_history_len = static_cast<ssize_t>(strlen(empty_history));
+    server.on(("/" + base_url + "history").c_str(), HTTP_GET, [this, empty_history, empty_history_len](WebServerRequest request) {
+        return request.send(200, "application/json; charset=utf-8", empty_history, empty_history_len);
+    });
+
+    const char *empty_live = "{\"offset\":0,\"samples_per_second\":0.0,\"samples\":[]}";
+    ssize_t empty_live_len = static_cast<ssize_t>(strlen(empty_live));
+    server.on(("/" + base_url + "live").c_str(), HTTP_GET, [this, empty_live, empty_live_len](WebServerRequest request) {
+        return request.send(200, "application/json; charset=utf-8", empty_live, empty_live_len);
     });
 }
 
@@ -142,7 +169,7 @@ void ValueHistory::add_sample(float sample)
 #endif
 
     // start history task when first sample arrives. this adds the first sample to the
-    // history immediately to avoid an empty history for the first history period
+    // history immediately to avoid and empty history for the first history period
     if (live.used() == 1) {
         task_scheduler.scheduleWithFixedDelay([this, val_min](){
             METER_VALUE_HISTORY_VALUE_TYPE history_val;
