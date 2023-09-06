@@ -73,6 +73,7 @@ public:
     void register_urls(String base_url);
     void register_urls_empty(String base_url);
     void add_sample(float sample);
+    void tick();
     size_t format_live(char *buf, size_t buf_size);
     size_t format_history(char *buf, size_t buf_size);
     float samples_per_second();
@@ -85,6 +86,14 @@ public:
     int samples_last_interval = 0;
     uint32_t begin_last_interval = 0;
     uint32_t end_last_interval = 0;
+
+    uint32_t sample_count = 0;
+    float sample_sum = 0;
+
+    METER_VALUE_HISTORY_VALUE_TYPE last_live_val;
+    bool last_live_val_valid = false;
+
+    uint32_t last_history_slot = UINT32_MAX;
 
     TF_Ringbuffer<METER_VALUE_HISTORY_VALUE_TYPE,
                   3 * 60 * HISTORY_MINUTE_INTERVAL,

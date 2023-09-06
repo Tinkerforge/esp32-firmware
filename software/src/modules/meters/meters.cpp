@@ -116,6 +116,16 @@ void Meters::setup()
         meter_slot.meter = meter;
     }
 
+    task_scheduler.scheduleWithFixedDelay([this](){
+        for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+            MeterSlot &meter_slot = this->meter_slots[slot];
+
+            if (meter_slot.meter->get_class() != METER_CLASS_NONE) {
+                meter_slot.power_hist.tick();
+            }
+        }
+    }, 0, 500);
+
     api.addFeature("meters");
     initialized = true;
 }
