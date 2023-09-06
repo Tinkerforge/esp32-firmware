@@ -35,12 +35,10 @@ class MeterGeneratorNone final : public MeterGenerator, public IMeter
 {
 public:
     // for MeterGenerator
-    virtual IMeter *new_meter(uint32_t slot, Config *state, Config *config) override;
+    virtual IMeter *new_meter(uint32_t slot, Config *state, Config *config, Config *errors) override;
     virtual const Config *get_config_prototype() override;
-    virtual const Config *get_state_prototype() override;
-
-    const Config * const config_prototype = Config::Null();
-    const Config * const state_prototype  = Config::Null();
+    virtual const Config *get_state_prototype()  override;
+    virtual const Config *get_errors_prototype() override;
 
     // for IMeter
     // (none)

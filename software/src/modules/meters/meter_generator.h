@@ -31,7 +31,8 @@ public:
     virtual ~MeterGenerator() = default;
 
     virtual uint32_t get_class() const = 0;
-    virtual IMeter *new_meter(uint32_t slot, Config *state, Config *config) = 0;
+    virtual IMeter *new_meter(uint32_t slot, Config *state, Config *config, Config *errors) = 0;
     virtual const Config *get_config_prototype() = 0;
-    virtual const Config *get_state_prototype() = 0;
+    virtual const Config *get_state_prototype()  = 0;
+    virtual const Config *get_errors_prototype() = 0;
 };

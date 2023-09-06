@@ -59,12 +59,15 @@ public:
     };
 
     enum class PathType {
-        Base     = 0,
-        Config   = 1,
-        State    = 2,
-        ValueIDs = 3,
-        Values   = 4,
-        _max     = 4,
+        Base        = 0,
+        Config      = 1,
+        State       = 2,
+        ValueIDs    = 3,
+        Values      = 4,
+        Errors      = 5,
+        Reset       = 6,
+        LastReset   = 7,
+        _max        = 7,
     };
 
     Meters(){}
@@ -113,12 +116,13 @@ private:
 
         ConfigRoot config_union;
         ConfigRoot state;
+        ConfigRoot errors;
 
         ValueHistory power_hist;
     };
 
     MeterGenerator *get_generator_for_class(uint32_t meter_class);
-    IMeter *new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, Config *config);
+    IMeter *new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, Config *config, Config *errors);
 
     ValueAvailability get_single_value(uint32_t slot, uint32_t kind, float *value, micros_t max_age_us);
 

@@ -39,13 +39,13 @@ public:
 
     // for MeterGenerator
     uint32_t get_class() const override _ATTRIBUTE((const));
-    virtual IMeter *new_meter(uint32_t slot, Config *state, Config *config) override;
+    virtual IMeter *new_meter(uint32_t slot, Config *state, Config *config, Config *errors) override;
     virtual const Config *get_config_prototype() override _ATTRIBUTE((const));
-    virtual const Config *get_state_prototype() override _ATTRIBUTE((const));
+    virtual const Config *get_state_prototype()  override _ATTRIBUTE((const));
+    virtual const Config *get_errors_prototype() override _ATTRIBUTE((const));
 
 private:
     Config config_prototype;
-    const Config * const state_prototype = Config::Null();
 };
 
 #if defined(__GNUC__)

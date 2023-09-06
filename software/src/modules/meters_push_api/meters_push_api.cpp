@@ -43,7 +43,7 @@ uint32_t MetersPushAPI::get_class() const
     return METER_CLASS_PUSH_API;
 }
 
-IMeter * MetersPushAPI::new_meter(uint32_t slot, Config *state, Config *config)
+IMeter * MetersPushAPI::new_meter(uint32_t slot, Config * /*state*/, Config *config, Config * /*errors*/)
 {
     return new MeterPushAPI(slot, config);
 }
@@ -57,5 +57,11 @@ const Config * MetersPushAPI::get_config_prototype()
 _ATTRIBUTE((const))
 const Config * MetersPushAPI::get_state_prototype()
 {
-    return state_prototype;
+    return Config::Null();
+}
+
+_ATTRIBUTE((const))
+const Config * MetersPushAPI::get_errors_prototype()
+{
+    return Config::Null();
 }

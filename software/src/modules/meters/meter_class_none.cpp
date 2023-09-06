@@ -24,19 +24,24 @@
 
 // for MeterGenerator
 _ATTRIBUTE((const))
-IMeter * MeterGeneratorNone::new_meter(uint32_t slot, Config *state, Config *config)
+IMeter * MeterGeneratorNone::new_meter(uint32_t slot, Config * /*state*/, Config * /*config*/, Config * /*errors*/)
 {
     return this;
 }
 
 const Config * MeterGeneratorNone::get_config_prototype()
 {
-    return config_prototype;
+    return Config::Null();
 }
 
 const Config * MeterGeneratorNone::get_state_prototype()
 {
-    return state_prototype;
+    return Config::Null();
+}
+
+const Config * MeterGeneratorNone::get_errors_prototype()
+{
+    return Config::Null();
 }
 
 // for both
