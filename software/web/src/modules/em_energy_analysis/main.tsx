@@ -33,6 +33,7 @@ import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
 import uPlot from "uplot";
 import { uPlotTimelinePlugin } from "../../ts/uplot-plugins";
+import { MeterValueID } from "../meters/meter_value_id";
 
 interface CachedData {
     update_timestamp: number;
@@ -1141,11 +1142,22 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
         // want to push them into the uplot graph immediately.
         // This only works if the wrapper component is already created.
         // Hide the form rows to fix any visual bugs instead.
-        let show = util.render_allowed() && API.hasFeature('meter') && API.hasFeature("energy_manager");
+        let show = util.render_allowed() && API.hasFeature('meters') && API.hasFeature("energy_manager");
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
-        let power = API.get_unchecked('meter/values')?.power ?? 0;
+        let meter_slot: number = 0; // FIXME: make this configurable
+        let value_ids = API.get_maybe(`meters/${meter_slot}/value_ids`);
+        let values = API.get_maybe(`meters/${meter_slot}/values`);
+        let power = 0;
+
+        if (value_ids && values.length > 0 && values && values.length > 0) {
+            let idx = value_ids.indexOf(MeterValueID.PowerActiveLSumImExDiff);
+
+            if (idx >= 0) {
+                power = values[idx];
+            }
+        }
 
         return (
             <>

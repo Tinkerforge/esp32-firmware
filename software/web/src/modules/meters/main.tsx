@@ -705,15 +705,16 @@ export class MetersStatus extends Component<{}, {}> {
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
-        let value_ids_0 = API.get_maybe('meters/0/value_ids');
-        let values_0 = API.get_maybe('meters/0/values');
+        let meter_slot: number = 0; // FIXME: make this configurable
+        let value_ids = API.get_maybe(`meters/${meter_slot}/value_ids`);
+        let values = API.get_maybe(`meters/${meter_slot}/values`);
         let power = 0;
 
-        if (value_ids_0 && values_0.length > 0 && values_0 && values_0.length > 0) {
-            let idx = value_ids_0.indexOf(MeterValueID.PowerActiveLSumImExDiff);
+        if (value_ids && values.length > 0 && values && values.length > 0) {
+            let idx = value_ids.indexOf(MeterValueID.PowerActiveLSumImExDiff);
 
             if (idx >= 0) {
-                power = values_0[idx];
+                power = values[idx];
             }
         }
 
