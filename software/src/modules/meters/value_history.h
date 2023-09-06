@@ -71,6 +71,7 @@ public:
 
     void setup();
     void register_urls(String base_url);
+    void register_urls_empty(String base_url);
     void add_sample(float sample);
     size_t format_live(char *buf, size_t buf_size);
     size_t format_history(char *buf, size_t buf_size);

@@ -27,8 +27,8 @@
 
 #include "config.h"
 #include "module.h"
-#include "modules/meter/value_history.h"
-#include "modules/meters/meter_value_id.h"
+#include "value_history.h"
+#include "meter_value_id.h"
 #include "tools.h"
 
 #if defined(__GNUC__)
