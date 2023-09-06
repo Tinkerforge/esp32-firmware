@@ -30,6 +30,15 @@ void MetersEM::pre_setup()
         {"type",  Config::Uint(0)}  // 0 - not available, 1 - sdm72, 2 - sdm630, 3 - sdm72v2, ... see meter.h
     });
 
+    errors_prototype = Config::Object({
+        {"local_timeout",        Config::Uint32(0)},
+        {"global_timeout",       Config::Uint32(0)},
+        {"illegal_function",     Config::Uint32(0)},
+        {"illegal_data_access",  Config::Uint32(0)},
+        {"illegal_data_value",   Config::Uint32(0)},
+        {"slave_device_failure", Config::Uint32(0)},
+    });
+
     meters.register_meter_generator(METER_CLASS_LOCAL_EM, this);
 }
 
@@ -39,13 +48,13 @@ uint32_t MetersEM::get_class() const
     return METER_CLASS_LOCAL_EM;
 }
 
-IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config * /*config*/, Config * /*errors*/)
+IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config * /*config*/, Config * errors)
 {
     if (meter_instance) {
         logger.printfln("meters_em: Cannot create more than one meter of class LOCAL_EM.");
         return nullptr;
     }
-    meter_instance = new MeterEM(slot, state);
+    meter_instance = new MeterEM(slot, state, errors);
     return meter_instance;
 }
 
@@ -62,7 +71,7 @@ const Config * MetersEM::get_state_prototype()
 
 const Config * MetersEM::get_errors_prototype()
 {
-    return Config::Null();
+    return &errors_prototype;
 }
 
 void MetersEM::update_from_em_all_data(EnergyManagerAllData &all_data)

@@ -52,6 +52,7 @@ public:
 
 private:
     Config state_prototype;
+    Config errors_prototype;
 
     MeterEM *meter_instance = nullptr;
 };
