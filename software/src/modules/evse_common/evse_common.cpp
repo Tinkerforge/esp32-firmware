@@ -207,7 +207,7 @@ void EvseCommon::apply_defaults()
         return;
     }
     // If this is the first start-up, this slot will not be active.
-    // In the old firmwares, the global current was not persistant
+    // In the old firmwares, the global current was not persistent
     // so setting it to 32000 is expected after start-up.
     if (!global_active)
         global_current = 32000;
