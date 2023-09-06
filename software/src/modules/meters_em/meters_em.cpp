@@ -39,7 +39,7 @@ uint32_t MetersEM::get_class() const
     return METER_CLASS_LOCAL_EM;
 }
 
-IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config *config)
+IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config * /*config*/, Config * /*errors*/)
 {
     if (meter_instance) {
         logger.printfln("meters_em: Cannot create more than one meter of class LOCAL_EM.");
@@ -51,13 +51,18 @@ IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config *config)
 
 const Config * MetersEM::get_config_prototype()
 {
-    return config_prototype;
+    return Config::Null();
 }
 
 _ATTRIBUTE((const))
 const Config * MetersEM::get_state_prototype()
 {
     return &state_prototype;
+}
+
+const Config * MetersEM::get_errors_prototype()
+{
+    return Config::Null();
 }
 
 void MetersEM::update_from_em_all_data(EnergyManagerAllData &all_data)

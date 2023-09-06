@@ -95,14 +95,16 @@ void Meters::setup()
         // Generator might be a NONE class generator if the requested class is not available.
         MeterGenerator *generator = get_generator_for_class(configured_meter_class);
 
-        // Initialize state to match (loaded) config.
-        meter_slot.state = *generator->get_state_prototype();
+        // Initialize state and errors to match (loaded) config.
+        meter_slot.state  = *generator->get_state_prototype();
+        meter_slot.errors = *generator->get_errors_prototype();
 
         // Create meter from config.
         Config *meter_conf = static_cast<Config *>(meter_slot.config_union.get());
         Config *meter_state = &meter_slot.state;
+        Config *meter_errors = &meter_slot.errors;
 
-        IMeter *meter = new_meter_of_class(configured_meter_class, slot, meter_state, meter_conf);
+        IMeter *meter = new_meter_of_class(configured_meter_class, slot, meter_state, meter_conf, meter_errors);
         if (!meter) {
             logger.printfln("meters: Failed to create meter of class %u.", configured_meter_class);
             continue;
@@ -125,6 +127,7 @@ void Meters::register_urls()
 
         api.addPersistentConfig(get_path(slot, Meters::PathType::Config), &meter_slot.config_union, {}, 1000);
         api.addState(get_path(slot, Meters::PathType::State),    &meter_slot.state,     {}, 1000);
+        api.addState(get_path(slot, Meters::PathType::Errors),   &meter_slot.errors,    {}, 1000);
         api.addState(get_path(slot, Meters::PathType::ValueIDs), &meter_slot.value_ids, {}, 1000);
         api.addState(get_path(slot, Meters::PathType::Values),   &meter_slot.values,    {}, 1000);
 
@@ -173,14 +176,14 @@ MeterGenerator *Meters::get_generator_for_class(uint32_t meter_class)
     return get_generator_for_class(METER_CLASS_NONE);
 }
 
-IMeter *Meters::new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, Config *config)
+IMeter *Meters::new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, Config *config, Config *errors)
 {
     MeterGenerator *generator = get_generator_for_class(meter_class);
 
     if (!generator)
         return nullptr;
 
-    return generator->new_meter(slot, state, config);
+    return generator->new_meter(slot, state, config, errors);
 }
 
 IMeter *Meters::get_meter(uint32_t slot)
@@ -452,8 +455,8 @@ bool Meters::get_cached_power_index(uint32_t slot, uint32_t *index)
     return *index != UINT32_MAX;
 }
 
-static const char *meters_path_postfixes[] = {"", "config", "state", "value_ids", "values"};
-static_assert(sizeof(ARRAY_SIZE(meters_path_postfixes)) == static_cast<uint32_t>(Meters::PathType::_max), "Path postfix length mismatch");
+static const char *meters_path_postfixes[] = {"", "config", "state", "value_ids", "values", "errors", "reset", "last_reset"};
+static_assert(ARRAY_SIZE(meters_path_postfixes) == static_cast<uint32_t>(Meters::PathType::_max) + 1, "Path postfix length mismatch");
 
 String Meters::get_path(uint32_t slot, Meters::PathType path_type)
 {
