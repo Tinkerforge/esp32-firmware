@@ -122,7 +122,6 @@ function debug_report() {
 
 function call_api() {
     let s = document.getElementById('api').value;
-    s = s.slice(s.indexOf("{"), s.lastIndexOf("}") + 1);
     let payload = JSON.parse(s);
 
     var url = payload["url"];
