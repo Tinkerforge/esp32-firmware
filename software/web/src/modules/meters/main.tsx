@@ -720,7 +720,7 @@ export class MetersStatus extends Component<{}, {}> {
 
         return (
             <>
-                <FormRow label={__("meters.status.charge_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("meters.status.power_history") + ` (Meter #${meter_slot})`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <div class="card pl-1 pb-1">
                         <UplotWrapper ref={this.uplot_wrapper_ref}
                                       id="status_meters_chart"
@@ -735,7 +735,7 @@ export class MetersStatus extends Component<{}, {}> {
                                       y_max={1500} />
                     </div>
                 </FormRow>
-                <FormRow label={__("meters.status.current_power")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("meters.status.current_power") + ` (Meter #${meter_slot}) `} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                 </FormRow>
             </>
