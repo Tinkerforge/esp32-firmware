@@ -124,3 +124,4 @@
 <unknown>: 1.0.8 (<unknown>)
 - Fix Ethernet and WiFi alternative DNS server config
 - Correctly mark Ethernet and WiFi DNS server and alternative NTP server as optional
+- Fix recovery page API call instructions

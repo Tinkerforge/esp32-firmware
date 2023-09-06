@@ -38,3 +38,4 @@
 
 <unknown>: 2.0.3 (<unknown>)
 - Correctly mark WiFi DNS server and alternative NTP server as optional
+- Fix recovery page API call instructions

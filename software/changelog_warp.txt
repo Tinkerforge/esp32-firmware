@@ -464,3 +464,4 @@
 <unknown>: 2.1.5 (<unknown>)
 - Fix WiFi alternative DNS server config
 - Correctly mark WiFi DNS server and alternative NTP server as optional
+- Fix recovery page API call instructions
