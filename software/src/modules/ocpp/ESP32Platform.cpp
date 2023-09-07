@@ -7,7 +7,7 @@
 #define URL_PARSER_IMPLEMENTATION_STATIC
 #include "lib/url.h"
 
-#include "esp_websocket_client.h"
+#include "tf_websocket_client.h"
 #include "esp_crt_bundle.h"
 #include "mbedtls/base64.h"
 #include "esp_transport_ws.h"
@@ -32,17 +32,17 @@ void *recv_cb_userdata = nullptr;
 // is closed (via TLS) immediately after the establishment. This happens
 // so fast that the ESP websocket client does not create a disconnected
 // event. In this case, we receive the connected event, but
-// esp_websocket_client_is_connected returns false forever.
+// tf_websocket_client_is_connected returns false forever.
 //
 // To fix this, explicitly disconnect and reconnect if we've seen the
-// connected event, but esp_websocket_client_is_connected returns false.
+// connected event, but tf_websocket_client_is_connected returns false.
 //
 // This can race on a "normal" connection close, but in this case calling
 // disconnect again should do nothing.
 static bool connected_by_event = false;
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
-    esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
+    tf_websocket_event_data_t *data = (tf_websocket_event_data_t *)event_data;
     switch (event_id) {
     case WEBSOCKET_EVENT_CONNECTED:
         logger.printfln("OCPP WEBSOCKET CONNECTED");
@@ -59,8 +59,8 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             return;
 
         // const cast is safe here:
-        // - data->data_ptr is only set in esp_websocket_client_dispatch_event to the const char *data param
-        // - const char *data is either null or (in esp_websocket_client_recv) set to client->rx_buffer
+        // - data->data_ptr is only set in tf_websocket_client_dispatch_event to the const char *data param
+        // - const char *data is either null or (in tf_websocket_client_recv) set to client->rx_buffer
         // - client->rx_buffer is char * (so not const)
         recv_cb(const_cast<char *>(data->data_ptr), data->data_len, recv_cb_userdata);
         break;
@@ -71,10 +71,10 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
-esp_websocket_client_handle_t client;
+tf_websocket_client_handle_t client;
 void* platform_init(const char *websocket_url, const char *basic_auth_user, const uint8_t *basic_auth_pass, size_t basic_auth_pass_length)
 {
-    esp_websocket_client_config_t websocket_cfg = {};
+    tf_websocket_client_config_t websocket_cfg = {};
     websocket_cfg.uri = websocket_url;
     websocket_cfg.subprotocol = "ocpp1.6";
     websocket_cfg.crt_bundle_attach = esp_crt_bundle_attach;
@@ -122,10 +122,10 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
         websocket_cfg.headers = header.c_str();
     }
 
-    client = esp_websocket_client_init(&websocket_cfg);
-    esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
+    client = tf_websocket_client_init(&websocket_cfg);
+    tf_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
 
-    esp_websocket_client_start(client);
+    tf_websocket_client_start(client);
 
     return client;
 }
@@ -135,16 +135,16 @@ bool platform_has_fixed_cable(int connectorId) {
 }
 
 void platform_disconnect(void *ctx) {
-    esp_websocket_client_close(client, pdMS_TO_TICKS(1000));
+    tf_websocket_client_close(client, pdMS_TO_TICKS(1000));
 }
 
 void platform_destroy(void *ctx) {
-    esp_websocket_client_destroy(client);
+    tf_websocket_client_destroy(client);
 }
 
 bool platform_ws_connected(void *ctx)
 {
-    bool is_connected = esp_websocket_client_is_connected(client);
+    bool is_connected = tf_websocket_client_is_connected(client);
 
     // Reset connected_by_event if we now see that the client is connected.
     if (is_connected)
@@ -156,7 +156,7 @@ bool platform_ws_connected(void *ctx)
         connected_by_event = false;
 
         platform_disconnect(ctx);
-        task_scheduler.scheduleOnce([ctx](){esp_websocket_client_start(client);}, 10000);
+        task_scheduler.scheduleOnce([ctx](){tf_websocket_client_start(client);}, 10000);
         return false;
     }
 
@@ -165,7 +165,7 @@ bool platform_ws_connected(void *ctx)
 
 void platform_ws_send(void *ctx, const char *buf, size_t buf_len)
 {
-    esp_websocket_client_send_text(client, buf, buf_len, pdMS_TO_TICKS(1000));
+    tf_websocket_client_send_text(client, buf, buf_len, pdMS_TO_TICKS(1000));
 }
 
 void platform_ws_send_ping(void *ctx) {
