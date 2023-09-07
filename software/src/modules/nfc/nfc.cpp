@@ -27,8 +27,6 @@
 #include "task_scheduler.h"
 #include "module_dependencies.h"
 
-extern NFC nfc;
-
 #define AUTHORIZED_TAG_LIST_LENGTH 16
 
 #define DETECTION_THRESHOLD_MS 2000

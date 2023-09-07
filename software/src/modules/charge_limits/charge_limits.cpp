@@ -27,8 +27,6 @@
 
 #include "module_dependencies.h"
 
-extern ChargeLimits charge_limits;
-
 static uint32_t map_duration(uint32_t val)
 {
     switch (val)

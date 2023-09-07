@@ -25,8 +25,6 @@
 #include "time.h"
 #include "module_dependencies.h"
 
-extern Rtc rtc;
-
 void Rtc::pre_setup()
 {
     time = Config::Object({

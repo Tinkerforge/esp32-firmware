@@ -30,7 +30,6 @@
 
 #include "matchTopicFilter.h"
 
-extern Mqtt mqtt;
 extern char local_uid_str[32];
 
 #if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
