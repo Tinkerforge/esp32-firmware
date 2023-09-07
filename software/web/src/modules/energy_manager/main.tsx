@@ -268,7 +268,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
         let meter_slots: StringStringTuple[] = [];
         for (let i = 0; i < METERS_SLOTS; i++) {
-            meter_slots.push([i.toString(), "Slot " + i]);
+            meter_slots.push([i.toString(), "Meter #" + i]); // FIXME: use meter display name instead
         }
         meter_slots.push([(2**32-1).toString(), __("energy_manager.content.meter_slot_no_meter")]);
 

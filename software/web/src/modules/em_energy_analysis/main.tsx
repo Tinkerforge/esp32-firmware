@@ -1161,7 +1161,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
 
         return (
             <>
-                <FormRow label={__("em_energy_analysis_status.status.power_history") + ` (Meter #${meter_slot})`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("em_energy_analysis_status.status.power_history")} label_muted={`Meter #${meter_slot}`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <div class="card pl-1 pb-1">
                         <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                             <UplotLoader ref={this.uplot_loader_ref}
@@ -1190,7 +1190,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
                         </div>
                     </div>
                 </FormRow>
-                <FormRow label={__("em_energy_analysis_status.status.current_power") + ` (Meter #${meter_slot})`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("em_energy_analysis_status.status.current_power")} label_muted={`Meter #${meter_slot}`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                 </FormRow>
             </>
