@@ -258,8 +258,7 @@ size_t ValueHistory::format_live(char *buf, size_t buf_size)
             buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[%d", offset, static_cast<double>(samples_per_second()), static_cast<int>(val));
         }
 
-        // This would underflow if live is empty, but it's guaranteed to have at least one entry by the peek() check above.
-        size_t last_sample = live.used() - 1;
+        size_t last_sample = live.used();
         for (size_t i = 1; i < last_sample && live.peek_offset(&val, i) && buf_written < buf_size; ++i) {
             if (val == val_min) {
                 buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", ",null");
@@ -294,7 +293,8 @@ size_t ValueHistory::format_history(char *buf, size_t buf_size)
             buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[%d", offset, static_cast<int>(val));
         }
 
-        for (size_t i = 1; i < history.used() && history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
+        size_t last_sample = history.used();
+        for (size_t i = 1; i < last_sample && history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
             // intxy_t min values are prefilled, because the ESP was booted less than 48 hours ago.
             if (val == val_min) {
                 buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", ",null");
