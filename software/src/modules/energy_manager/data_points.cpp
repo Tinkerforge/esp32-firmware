@@ -43,6 +43,16 @@ void EnergyManager::register_events()
             uint32_t power_index;
             if (meters.get_cached_power_index(slot, &power_index)) {
                 task_scheduler.scheduleOnce([this, slot, power_index](){
+                    // get initial power value in case the power value was already updated by the
+                    // meter before registering the event here. if the power value doesn't change
+                    // then no future event will be generated leaving the cached value here as NaN
+                    float power;
+                    if (meters.get_power(slot, &power) == Meters::ValueAvailability::Fresh) {
+                        if (!isnan(power)) {
+                            update_history_meter_power(slot, power);
+                        }
+                    }
+
                     event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {static_cast<uint16_t>(power_index)}, [this, slot](Config *config){
                         update_history_meter_power(slot, config->asFloat());
                     });
