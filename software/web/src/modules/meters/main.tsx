@@ -604,7 +604,7 @@ export class Meters extends Component<{}, MetersState> {
 
         return (
             <SubPage colClasses="col-xl-10">
-                <PageHeader title={__("meters.content.energy_meter")}>
+                <PageHeader title={__("meters.content.meters")}>
                     <div>
                         <InputSelect value={this.state.chart_selected} onValue={(v) => {
                             let chart_selected: "live"|"history" = v as any;

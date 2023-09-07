@@ -5,29 +5,12 @@
             "current_power": "Leistungsaufnahme"
         },
         "navbar": {
-            "energy_meter": "Stromzähler"
+            "meters": "Stromzähler"
         },
         "content": {
             "energy_meter": "Stromzähler",
             "history": "Verlauf (48 h)",
             "live": "Live",
-            "statistics": "Statistiken",
-            "reset_statistics": "Zurücksetzen",
-            "power": "Leistungsaufnahme",
-            "energy": "Stromverbrauch",
-            "energy_since_reset": "seit dem letzten Zurücksetzen",
-            "energy_lifetime": "seit Herstellung des Stromzählers",
-
-            "reset_modal": "Stromverbrauchswert zurücksetzen?",
-            "reset_modal_body": "Stromverbrauchswert des Stromzählers wirklich zurücksetzen?",
-            "reset_modal_abort": "Abbrechen",
-            "reset_modal_confirm": "Zurücksetzen",
-            "reset_failed": "Zurücksetzen des Stromverbrauchswerts fehlgeschlagen",
-
-            "phases_active": "Aktive Phasen",
-            "phases_active_desc": "L1, L2, L3",
-            "phases_connected": "Verbundene Phasen",
-            "phases_connected_desc": "L1, L2, L3",
             "detailed_values": "Details",
 
             {{{detailed_values}}}
