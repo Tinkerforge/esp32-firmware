@@ -107,39 +107,51 @@ static ConfigRoot nullconf = Config{Config::ConfVariant{}};
 struct default_validator {
     String operator()(const Config::ConfString &x) const
     {
-        if (x.getVal()->length() < x.getSlot()->minChars)
-            return String("String of minimum length ") + x.getSlot()->minChars + " was expected, but got " + x.getVal()->length();
+        const auto *slot = x.getSlot();
+        const auto length = x.getVal()->length();
 
-        if (x.getSlot()->maxChars == 0 || x.getVal()->length() <= x.getSlot()->maxChars)
+        if (length < slot->minChars)
+            return String("String of minimum length ") + slot->minChars + " was expected, but got " + length;
+
+        if (slot->maxChars == 0 || length <= slot->maxChars)
             return "";
 
-        return String("String of maximum length ") + x.getSlot()->maxChars + " was expected, but got " + x.getVal()->length();
+        return String("String of maximum length ") + slot->maxChars + " was expected, but got " + length;
     }
 
     String operator()(const Config::ConfFloat &x) const
     {
-        if (*x.getVal() < x.getSlot()->min)
-            return String("Float value ") + *x.getVal() + " was less than the allowed minimum of " + x.getSlot()->min;
-        if (*x.getVal() > x.getSlot()->max)
-            return String("Float value ") + *x.getVal() + " was more than the allowed maximum of " + x.getSlot()->max;
+        const auto *slot = x.getSlot();
+        const auto val = *x.getVal();
+
+        if (val < slot->min)
+            return String("Float value ") + val + " was less than the allowed minimum of " + slot->min;
+        if (val > slot->max)
+            return String("Float value ") + val + " was more than the allowed maximum of " + slot->max;
         return "";
     }
 
     String operator()(const Config::ConfInt &x) const
     {
-        if (*x.getVal() < x.getSlot()->min)
-            return String("Integer value ") + *x.getVal() + " was less than the allowed minimum of " + x.getSlot()->min;
-        if (*x.getVal() > x.getSlot()->max)
-            return String("Integer value ") + *x.getVal() + " was more than the allowed maximum of " + x.getSlot()->max;
+        const auto *slot = x.getSlot();
+        const auto val = *x.getVal();
+
+        if (val < slot->min)
+            return String("Integer value ") + val + " was less than the allowed minimum of " + slot->min;
+        if (val > slot->max)
+            return String("Integer value ") + val + " was more than the allowed maximum of " + slot->max;
         return "";
     }
 
     String operator()(const Config::ConfUint &x) const
     {
-        if (*x.getVal() < x.getSlot()->min)
-            return String("Unsigned integer value ") + *x.getVal() + " was less than the allowed minimum of " + x.getSlot()->min;
-        if (*x.getVal() > x.getSlot()->max)
-            return String("Unsigned integer value ") + *x.getVal() + " was more than the allowed maximum of " + x.getSlot()->max;
+        const auto *slot = x.getSlot();
+        const auto val = *x.getVal();
+
+        if (val < slot->min)
+            return String("Unsigned integer value ") + val + " was less than the allowed minimum of " + slot->min;
+        if (val > slot->max)
+            return String("Unsigned integer value ") + val + " was more than the allowed maximum of " + slot->max;
         return "";
     }
 
@@ -155,7 +167,9 @@ struct default_validator {
     String operator()(const Config::ConfArray &x) const
     {
         const auto *slot = x.getSlot();
-        const auto size = x.getVal()->size();
+        const auto *val = x.getVal();
+        const auto size = val->size();
+
         if (slot->maxElements > 0 && size > slot->maxElements)
             return String("Array had ") + size + " entries, but only " + slot->maxElements + " are allowed.";
         if (slot->minElements > 0 && size < slot->minElements)
@@ -167,7 +181,7 @@ struct default_validator {
                     return String("[") + i + "] has wrong type";
 
         size_t i = 0;
-        for (const Config &elem : *x.getVal()) {
+        for (const Config &elem : *val) {
             String err = Config::apply_visitor(default_validator{}, elem.value);
             if (err != "")
                 return String("[") + i + "] " + err;
@@ -223,9 +237,12 @@ struct to_json {
     }
     void operator()(const Config::ConfArray &x)
     {
+        const auto *val = x.getVal();
+        const auto size = val->size();
+
         JsonArray arr = insertHere.as<JsonArray>();
-        for (size_t i = 0; i < x.getVal()->size(); ++i) {
-            const Config *child = x.get(i);
+        for (size_t i = 0; i < size; ++i) {
+            const Config *child = &(*val)[i];
 
             if (child->is<Config::ConfObject>()) {
                 arr.createNestedObject();
@@ -240,10 +257,14 @@ struct to_json {
     }
     void operator()(const Config::ConfObject &x)
     {
+        const auto *val = x.getVal();
+        const auto size = val->size();
+
         JsonObject obj = insertHere.as<JsonObject>();
-        for (size_t i = 0; i < x.getVal()->size(); ++i) {
-            const String &key = x.getVal()->at(i).first;
-            const Config &child = x.getVal()->at(i).second;
+        for (size_t i = 0; i < size; ++i) {
+            const auto &val_pair = (*val)[i];
+            const String &key = val_pair.first;
+            const Config &child = val_pair.second;
 
             if (child.is<Config::ConfObject>()) {
                 obj.createNestedObject(key);
@@ -262,17 +283,19 @@ struct to_json {
     }
 
     void operator()(const Config::ConfUnion &x) {
+        const auto *val = x.getVal();
+
         JsonArray arr = insertHere.as<JsonArray>();
         arr.add(x.getSlot()->tag);
-        if (x.getVal()->is<Config::ConfObject>()) {
+        if (val->is<Config::ConfObject>()) {
             arr.createNestedObject();
-        } else if (x.getVal()->is<Config::ConfArray>() || x.getVal()->is<Config::ConfUnion>()) {
+        } else if (val->is<Config::ConfArray>() || val->is<Config::ConfUnion>()) {
             arr.createNestedArray();
         } else {
             arr.add();
         }
 
-        Config::apply_visitor(to_json{insertHere[1], keys_to_censor}, x.getVal()->value);
+        Config::apply_visitor(to_json{insertHere[1], keys_to_censor}, val->value);
     }
 
     JsonVariant insertHere;
@@ -307,23 +330,31 @@ struct string_length_visitor {
     }
     size_t operator()(const Config::ConfArray &x)
     {
-        return Config::apply_visitor(string_length_visitor{}, x.getSlot()->prototype->value) * x.getSlot()->maxElements +
-               (x.getSlot()->maxElements + 1); // [,] and n-1 ,
+        const auto *slot = x.getSlot();
+
+        return Config::apply_visitor(string_length_visitor{}, slot->prototype->value) * slot->maxElements +
+               (slot->maxElements + 1); // [,] and n-1 ,
     }
     size_t operator()(const Config::ConfObject &x)
     {
+        const auto *val = x.getVal();
+        const auto size = val->size();
+
         size_t sum = 2; // { and }
-        for (size_t i = 0; i < x.getVal()->size(); ++i) {
-            sum += x.getVal()->at(i).first.length() + 2; // ""
-            sum += Config::apply_visitor(string_length_visitor{}, x.getVal()->at(i).second.value);
+        for (size_t i = 0; i < size; ++i) {
+            const auto &val_pair = (*val)[i];
+            sum += val_pair.first.length() + 2; // ""
+            sum += Config::apply_visitor(string_length_visitor{}, val_pair.second.value);
         }
         return sum;
     }
 
     size_t operator()(const Config::ConfUnion &x) {
+        const auto *slot = x.getSlot();
+
         size_t max_len = Config::apply_visitor(string_length_visitor{}, x.getVal()->value);
-        for (size_t i = 0; i < as_const(x).getSlot()->prototypes_len; ++i) {
-            max_len = std::max(max_len, Config::apply_visitor(string_length_visitor{}, as_const(x).getSlot()->prototypes[i].config.value));
+        for (size_t i = 0; i < slot->prototypes_len; ++i) {
+            max_len = std::max(max_len, Config::apply_visitor(string_length_visitor{}, slot->prototypes[i].config.value));
         }
         return max_len + 6; // [255,]
     }
@@ -356,24 +387,32 @@ struct json_length_visitor {
     }
     size_t operator()(const Config::ConfArray &x)
     {
-        return Config::apply_visitor(json_length_visitor{zero_copy}, x.getSlot()->prototype->value) * x.getSlot()->maxElements + JSON_ARRAY_SIZE(x.getSlot()->maxElements);
+        const auto *slot = x.getSlot();
+
+        return Config::apply_visitor(json_length_visitor{zero_copy}, slot->prototype->value) * slot->maxElements + JSON_ARRAY_SIZE(slot->maxElements);
     }
     size_t operator()(const Config::ConfObject &x)
     {
-        size_t sum = 0;
-        for (size_t i = 0; i < x.getVal()->size(); ++i) {
-            if (!zero_copy)
-                sum += x.getVal()->at(i).first.length() + 1;
+        const auto *val = x.getVal();
+        const auto size = val->size();
 
-            sum += Config::apply_visitor(json_length_visitor{zero_copy}, x.getVal()->at(i).second.value);
+        size_t sum = 0;
+        for (size_t i = 0; i < size; ++i) {
+            const auto &val_pair = (*val)[i];
+            if (!zero_copy)
+                sum += val_pair.first.length() + 1;
+
+            sum += Config::apply_visitor(json_length_visitor{zero_copy}, val_pair.second.value);
         }
-        return sum + JSON_OBJECT_SIZE(x.getVal()->size());
+        return sum + JSON_OBJECT_SIZE(size);
     }
 
     size_t operator()(const Config::ConfUnion &x) {
+        const auto *slot = x.getSlot();
+
         size_t max_len = Config::apply_visitor(json_length_visitor{zero_copy}, x.getVal()->value);
-        for (size_t i = 0; i < as_const(x).getSlot()->prototypes_len; ++i) {
-            max_len = std::max(max_len, Config::apply_visitor(json_length_visitor{zero_copy}, as_const(x).getSlot()->prototypes[i].config.value));
+        for (size_t i = 0; i < slot->prototypes_len; ++i) {
+            max_len = std::max(max_len, Config::apply_visitor(json_length_visitor{zero_copy}, slot->prototypes[i].config.value));
         }
         return max_len + JSON_ARRAY_SIZE(2);
     }
@@ -453,13 +492,15 @@ struct from_json {
             return "JSON node was not an array.";
 
         JsonArray arr = json_node.as<JsonArray>();
+        auto arr_size = arr.size();
 
+        auto *val = x.getVal();
         const auto *prototype = as_const(x).getSlot()->prototype;
 
-        x.getVal()->clear();
-        for (size_t i = 0; i < arr.size(); ++i) {
-            x.getVal()->push_back(*prototype);
-            String inner_error = Config::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, x.get(i)->value);
+        val->clear();
+        for (size_t i = 0; i < arr_size; ++i) {
+            val->push_back(*prototype);
+            String inner_error = Config::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, (*val)[i].value);
             if (inner_error != "")
                 return String("[") + i + "] " + inner_error;
         }
@@ -471,13 +512,17 @@ struct from_json {
         if (json_node.isNull())
             return permit_null_updates ? "" : "Null updates not permitted.";
 
+        auto *val = x.getVal();
+        const auto size = val->size();
+
         // If a user passes a non-object to an API that expects an object with exactly one member
         // Try to use the non-object as value for the single member.
         // This allows calling for example evse/external_current_update with the payload 8000 instead of {"current": 8000}
-        if (!json_node.is<JsonObject>() && is_root && x.getVal()->size() == 1) {
-            String inner_error = Config::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, x.getVal()->at(0).second.value);
+        if (!json_node.is<JsonObject>() && is_root && size == 1) {
+            auto &val_pair = (*val)[0];
+            String inner_error = Config::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, val_pair.second.value);
             if (inner_error != "")
-                return String("(inferred) [\"") + x.getVal()->at(0).first + "\"] " + inner_error + "\n";
+                return String("(inferred) [\"") + val_pair.first + "\"] " + inner_error + "\n";
             else
                 return inner_error;
         }
@@ -490,25 +535,26 @@ struct from_json {
         String return_str = "";
         bool more_errors = false;
 
-        for (size_t i = 0; i < x.getVal()->size(); ++i) {
-            if (!obj.containsKey(x.getVal()->at(i).first))
+        for (size_t i = 0; i < size; ++i) {
+            auto &val_pair = (*val)[i];
+            if (!obj.containsKey(val_pair.first))
             {
                 if (!force_same_keys)
                     continue;
 
                 if (return_str.length() < 1000)
-                    return_str += String("JSON object is missing key '") + x.getVal()->at(i).first + "'\n";
+                    return_str += String("JSON object is missing key '") + val_pair.first + "'\n";
                 else
                     more_errors = true;
             }
 
-            String inner_error = Config::apply_visitor(from_json{obj[x.getVal()->at(i).first], force_same_keys, permit_null_updates, false}, x.getVal()->at(i).second.value);
+            String inner_error = Config::apply_visitor(from_json{obj[val_pair.first], force_same_keys, permit_null_updates, false}, val_pair.second.value);
             if(obj.size() > 0)
-                obj.remove(x.getVal()->at(i).first);
+                obj.remove(val_pair.first);
             if (inner_error != "")
             {
                 if (return_str.length() < 1000)
-                    return_str += String("[\"") + x.getVal()->at(i).first + "\"] " + inner_error + "\n";
+                    return_str += String("[\"") + val_pair.first + "\"] " + inner_error + "\n";
                 else
                     more_errors = true;
             }
@@ -549,20 +595,22 @@ struct from_json {
             return "JSON array had length != 2.";
         }
 
-        uint8_t new_tag = x.getTag();
+        uint8_t old_tag = x.getTag();
+        uint8_t new_tag = old_tag;
 
-        if (arr[0].isNull()) {
+        const auto &arr_first = arr[0];
+        if (arr_first.isNull()) {
             if (!permit_null_updates)
                 return "[0] Null updates not permitted";
         }
-        else if (arr[0].is<uint8_t>()) {
-            new_tag = arr[0].as<uint8_t>();
+        else if (arr_first.is<uint8_t>()) {
+            new_tag = arr_first.as<uint8_t>();
         } else {
             return "[0] JSON node was not an unsigned integer.";
         }
 
 
-        if (new_tag != x.getTag()) {
+        if (new_tag != old_tag) {
             if (!x.changeUnionVariant(new_tag))
                 return String("[0] Unknown union tag: ") + new_tag;
         }
@@ -582,9 +630,10 @@ struct from_update {
         if (Config::containsNull(update))
             return "";
 
-        if (update->get<CoolString>() == nullptr)
+        const auto *update_val = update->get<CoolString>();
+        if (update_val == nullptr)
             return "ConfUpdate node was not a string.";
-        *x.getVal() = *(update->get<CoolString>());
+        *x.getVal() = *update_val;
         return "";
     }
     String operator()(Config::ConfFloat &x)
@@ -592,10 +641,11 @@ struct from_update {
         if (Config::containsNull(update))
             return "";
 
-        if (update->get<float>() == nullptr)
+        const auto *update_val = update->get<float>();
+        if (update_val == nullptr)
             return "ConfUpdate node was not a float.";
 
-        *x.getVal() = *(update->get<float>());
+        *x.getVal() = *update_val;
         return "";
     }
     String operator()(Config::ConfInt &x)
@@ -603,9 +653,10 @@ struct from_update {
         if (Config::containsNull(update))
             return "";
 
-        if (update->get<int32_t>() == nullptr)
+        const auto *update_val = update->get<int32_t>();
+        if (update_val == nullptr)
             return "ConfUpdate node was not a signed integer.";
-        *x.getVal() = *(update->get<int32_t>());
+        *x.getVal() = *update_val;
         return "";
     }
     String operator()(Config::ConfUint &x)
@@ -614,13 +665,15 @@ struct from_update {
             return "";
 
         uint32_t new_val = 0;
-        if (update->get<uint32_t>() == nullptr) {
-            if (update->get<int32_t>() == nullptr || *(update->get<int32_t>()) < 0)
+        const auto *update_val_uint = update->get<uint32_t>();
+        if (update_val_uint == nullptr) {
+            const auto *update_val_int = update->get<int32_t>();
+            if (update_val_int == nullptr || *update_val_int < 0)
                 return "ConfUpdate node was not an unsigned integer.";
 
-            new_val = (uint32_t) *(update->get<int32_t>());
+            new_val = (uint32_t) *update_val_int;
         } else {
-            new_val = *(update->get<uint32_t>());
+            new_val = *update_val_uint;
         }
         *x.getVal() = new_val;
         return "";
@@ -630,9 +683,10 @@ struct from_update {
         if (Config::containsNull(update))
             return "";
 
-        if (update->get<bool>() == nullptr)
+        const auto *update_val = update->get<bool>();
+        if (update_val == nullptr)
             return "ConfUpdate node was not a boolean.";
-        x.value = *(update->get<bool>());
+        x.value = *update_val;
         return "";
     }
     String operator()(const Config::ConfVariant::Empty &x)
@@ -644,17 +698,18 @@ struct from_update {
         if (Config::containsNull(update))
             return "";
 
-        if (update->get<Config::ConfUpdateArray>() == nullptr)
+        const Config::ConfUpdateArray *arr = update->get<Config::ConfUpdateArray>();
+        if (arr == nullptr)
             return "ConfUpdate node was not an array.";
 
-        const Config::ConfUpdateArray *arr = update->get<Config::ConfUpdateArray>();
-
+        const auto arr_size = arr->elements.size();
         const auto *prototype = as_const(x).getSlot()->prototype;
+        auto *val = x.getVal();
 
-        x.getVal()->clear();
-        for (size_t i = 0; i < arr->elements.size(); ++i) {
-            x.getVal()->push_back(*prototype);
-            String inner_error = Config::apply_visitor(from_update{&arr->elements[i]}, x.get(i)->value);
+        val->clear();
+        for (size_t i = 0; i < arr_size; ++i) {
+            val->push_back(*prototype);
+            String inner_error = Config::apply_visitor(from_update{&arr->elements[i]}, (*val)[i].value);
             if (inner_error != "")
                 return String("[") + i + "] " + inner_error;
         }
@@ -666,30 +721,35 @@ struct from_update {
         if (Config::containsNull(update))
             return "";
 
-        if (update->get<Config::ConfUpdateObject>() == nullptr) {
+        const Config::ConfUpdateObject *obj = update->get<Config::ConfUpdateObject>();
+        if (obj == nullptr) {
             Serial.println(update->which());
             return "ConfUpdate node was not an object.";
         }
 
-        const Config::ConfUpdateObject *obj = update->get<Config::ConfUpdateObject>();
+        auto *val = x.getVal();
+        const auto size = val->size();
 
-        if (obj->elements.size() != x.getVal()->size())
-            return String("ConfUpdate object had ") + obj->elements.size() + " entries instead of the expected " + x.getVal()->size();
+        const auto &obj_elements = obj->elements;
+        const auto obj_size = obj_elements.size();
+        if (obj_size != size)
+            return String("ConfUpdate object had ") + obj_size + " entries instead of the expected " + size;
 
-        for (size_t i = 0; i < x.getVal()->size(); ++i) {
+        for (size_t i = 0; i < size; ++i) {
             size_t obj_idx = 0xFFFFFFFF;
-            for (size_t j = 0; j < x.getVal()->size(); ++j) {
-                if (obj->elements[j].first != x.getVal()->at(i).first)
+            auto &val_pair = (*val)[i];
+            for (size_t j = 0; j < size; ++j) {
+                if (obj_elements[j].first != val_pair.first)
                     continue;
                 obj_idx = j;
                 break;
             }
             if (obj_idx == 0xFFFFFFFF)
-                return String("Key ") + x.getVal()->at(i).first + String("not found in ConfUpdate object");
+                return String("Key ") + val_pair.first + String("not found in ConfUpdate object");
 
-            String inner_error = Config::apply_visitor(from_update{&obj->elements[obj_idx].second}, x.getVal()->at(i).second.value);
+            String inner_error = Config::apply_visitor(from_update{&obj_elements[obj_idx].second}, val_pair.second.value);
             if (inner_error != "")
-                return String("[\"") + x.getVal()->at(i).first + "\"] " + inner_error;
+                return String("[\"") + val_pair.first + "\"] " + inner_error;
         }
 
         return "";
@@ -698,12 +758,11 @@ struct from_update {
         if (Config::containsNull(update))
             return "";
 
-        if (update->get<Config::ConfUpdateUnion>() == nullptr) {
+        const Config::ConfUpdateUnion *un = update->get<Config::ConfUpdateUnion>();
+        if (un == nullptr) {
             Serial.println(update->which());
             return "ConfUpdate node was not a union.";
         }
-
-        const Config::ConfUpdateUnion *un = update->get<Config::ConfUpdateUnion>();
 
         if (un->tag != as_const(x).getSlot()->tag) {
             x.changeUnionVariant(un->tag);
@@ -759,7 +818,8 @@ struct is_updated {
     }
     bool operator()(const Config::ConfUnion &x) const
     {
-        return ((x.getVal()->value.updated & api_backend_flag) != 0) || Config::apply_visitor(is_updated{api_backend_flag}, x.getVal()->value);
+        const auto &value = x.getVal()->value;
+        return ((value.updated & api_backend_flag) != 0) || Config::apply_visitor(is_updated{api_backend_flag}, value);
     }
 
     uint8_t api_backend_flag;
@@ -800,8 +860,9 @@ struct set_updated_false {
     }
     void operator()(Config::ConfUnion &x)
     {
-        x.getVal()->value.updated &= ~api_backend_flag;
-        Config::apply_visitor(set_updated_false{api_backend_flag}, x.getVal()->value);
+        auto &value = x.getVal()->value;
+        value.updated &= ~api_backend_flag;
+        Config::apply_visitor(set_updated_false{api_backend_flag}, value);
     }
     uint8_t api_backend_flag;
 };
@@ -857,10 +918,11 @@ Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_
 {
     idx = nextSlot<Config::ConfUnion>(union_buf, union_buf_size);
 
-    this->getSlot()->val = val;
-    this->getSlot()->tag = tag;
-    this->getSlot()->prototypes_len = prototypes_len;
-    this->getSlot()->prototypes = prototypes;
+    auto *slot = this->getSlot();
+    slot->val = val;
+    slot->tag = tag;
+    slot->prototypes_len = prototypes_len;
+    slot->prototypes = prototypes;
 }
 
 Config::ConfUnion::ConfUnion(const ConfUnion &cpy)
@@ -879,10 +941,11 @@ Config::ConfUnion::ConfUnion(const ConfUnion &cpy)
 
 Config::ConfUnion::~ConfUnion()
 {
-    this->getSlot()->val = nullconf;
-    this->getSlot()->tag = 0;
-    this->getSlot()->prototypes_len = 0;
-    this->getSlot()->prototypes = nullptr;
+    auto *slot = this->getSlot();
+    slot->val = nullconf;
+    slot->tag = 0;
+    slot->prototypes_len = 0;
+    slot->prototypes = nullptr;
 }
 
 Config::ConfUnion& Config::ConfUnion::operator=(const ConfUnion &cpy)
@@ -910,11 +973,12 @@ Config::ConfString::Slot* Config::ConfString::getSlot() { return &string_buf[idx
 Config::ConfString::ConfString(const CoolString &val, uint16_t minChars, uint16_t maxChars)
 {
     idx = nextSlot<Config::ConfString>(string_buf, string_buf_size);
-    this->getSlot()->inUse = true;
+    auto *slot = this->getSlot();
+    slot->inUse = true;
 
-    this->getSlot()->val = val;
-    this->getSlot()->minChars = minChars;
-    this->getSlot()->maxChars = maxChars;
+    slot->val = val;
+    slot->minChars = minChars;
+    slot->maxChars = maxChars;
 }
 
 Config::ConfString::ConfString(const ConfString &cpy)
@@ -933,12 +997,13 @@ Config::ConfString::ConfString(const ConfString &cpy)
 
 Config::ConfString::~ConfString()
 {
+    auto *slot = this->getSlot();
     string_buf[idx].inUse = false;
 
-    this->getSlot()->val.clear();
-    this->getSlot()->val.shrinkToFit();
-    this->getSlot()->minChars = 0;
-    this->getSlot()->maxChars = 0;
+    slot->val.clear();
+    slot->val.shrinkToFit();
+    slot->minChars = 0;
+    slot->maxChars = 0;
 }
 
 Config::ConfString& Config::ConfString::operator=(const ConfString &cpy)
@@ -967,9 +1032,10 @@ Config::ConfFloat::Slot *Config::ConfFloat::getSlot() { return &float_buf[idx]; 
 Config::ConfFloat::ConfFloat(float val, float min, float max)
 {
     idx = nextSlot<Config::ConfFloat>(float_buf, float_buf_size);
-    this->getSlot()->val = val;
-    this->getSlot()->min = min;
-    this->getSlot()->max = max;
+    auto *slot = this->getSlot();
+    slot->val = val;
+    slot->min = min;
+    slot->max = max;
 }
 
 Config::ConfFloat::ConfFloat(const ConfFloat &cpy)
@@ -981,9 +1047,10 @@ Config::ConfFloat::ConfFloat(const ConfFloat &cpy)
 
 Config::ConfFloat::~ConfFloat()
 {
-    this->getSlot()->val = 0;
-    this->getSlot()->min = 0;
-    this->getSlot()->max = 0;
+    auto *slot = this->getSlot();
+    slot->val = 0;
+    slot->min = 0;
+    slot->max = 0;
 }
 
 Config::ConfFloat& Config::ConfFloat::operator=(const ConfFloat &cpy) {
@@ -1010,9 +1077,10 @@ Config::ConfInt::Slot *Config::ConfInt::getSlot() { return &int_buf[idx]; }
 Config::ConfInt::ConfInt(int32_t val, int32_t min, int32_t max)
 {
     idx = nextSlot<Config::ConfInt>(int_buf, int_buf_size);
-    this->getSlot()->val = val;
-    this->getSlot()->min = min;
-    this->getSlot()->max = max;
+    auto *slot = this->getSlot();
+    slot->val = val;
+    slot->min = min;
+    slot->max = max;
 }
 
 Config::ConfInt::ConfInt(const ConfInt &cpy)
@@ -1024,9 +1092,10 @@ Config::ConfInt::ConfInt(const ConfInt &cpy)
 
 Config::ConfInt::~ConfInt()
 {
-    this->getSlot()->val = 0;
-    this->getSlot()->min = 0;
-    this->getSlot()->max = 0;
+    auto *slot = this->getSlot();
+    slot->val = 0;
+    slot->min = 0;
+    slot->max = 0;
 }
 
 Config::ConfInt& Config::ConfInt::operator=(const ConfInt &cpy) {
@@ -1053,9 +1122,10 @@ Config::ConfUint::Slot *Config::ConfUint::getSlot() { return &uint_buf[idx]; }
 Config::ConfUint::ConfUint(uint32_t val, uint32_t min, uint32_t max)
 {
     idx = nextSlot<Config::ConfUint>(uint_buf, uint_buf_size);
-    this->getSlot()->val = val;
-    this->getSlot()->min = min;
-    this->getSlot()->max = max;
+    auto *slot = this->getSlot();
+    slot->val = val;
+    slot->min = min;
+    slot->max = max;
 }
 
 Config::ConfUint::ConfUint(const ConfUint &cpy)
@@ -1067,9 +1137,10 @@ Config::ConfUint::ConfUint(const ConfUint &cpy)
 
 Config::ConfUint::~ConfUint()
 {
-    this->getSlot()->val = 0;
-    this->getSlot()->min = 0;
-    this->getSlot()->max = 0;
+    auto *slot = this->getSlot();
+    slot->val = 0;
+    slot->min = 0;
+    slot->max = 0;
 }
 
 Config::ConfUint& Config::ConfUint::operator=(const ConfUint &cpy) {
@@ -1087,21 +1158,23 @@ bool Config::ConfArray::slotEmpty(size_t i) {
 
 Config *Config::ConfArray::get(uint16_t i)
 {
-    if (i >= this->getVal()->size()) {
+    auto *val = this->getVal();
+    if (i >= val->size()) {
         logger.printfln("Config index %u out of range!", i);
         delay(100);
         return nullptr;
     }
-    return &this->getVal()->at(i);
+    return &(*val)[i];
 }
 const Config *Config::ConfArray::get(uint16_t i) const
 {
-    if (i >= this->getVal()->size()) {
+    const auto *val = this->getVal();
+    if (i >= val->size()) {
         logger.printfln("Config index %u out of range!", i);
         delay(100);
         return nullptr;
     }
-    return &this->getVal()->at(i);
+    return &(*val)[i];
 }
 
 std::vector<Config> *Config::ConfArray::getVal() { return &array_buf[idx].val; }
@@ -1132,14 +1205,15 @@ Config::ConfArray::ConfArray(std::vector<Config> val, const Config *prototype, u
 Config::ConfArray::ConfArray(const ConfArray &cpy)
 {
     idx = nextSlot<Config::ConfArray>(array_buf, array_buf_size);
+    auto *slot = this->getSlot();
     // We have to mark this slot as in use here:
     // This array could contain a nested array that will be copied over
     // The inner array's copy constructor then takes the first free slot, i.e.
     // ours if we don't mark it as inUse first.
-    this->getSlot()->inUse = true;
+    slot->inUse = true;
 
     auto tmp = *cpy.getSlot();
-    *this->getSlot() = std::move(tmp);
+    *slot = std::move(tmp);
 }
 
 Config::ConfArray::~ConfArray()
@@ -1169,9 +1243,13 @@ bool Config::ConfObject::slotEmpty(size_t i) {
 
 Config *Config::ConfObject::get(const String &s)
 {
-    for (size_t i = 0; i < this->getVal()->size(); ++i) {
-        if (this->getVal()->at(i).first == s)
-            return &this->getVal()->at(i).second;
+    auto *val = this->getVal();
+    const auto size = val->size();
+
+    for (size_t i = 0; i < size; ++i) {
+        auto &val_pair = (*val)[i];
+        if (val_pair.first == s)
+            return &val_pair.second;
     }
 
     logger.printfln("Config key %s not found!", s.c_str());
@@ -1181,9 +1259,13 @@ Config *Config::ConfObject::get(const String &s)
 
 const Config *Config::ConfObject::get(const String &s) const
 {
-    for (size_t i = 0; i < this->getVal()->size(); ++i) {
-        if (this->getVal()->at(i).first == s)
-            return &this->getVal()->at(i).second;
+    const auto *val = this->getVal();
+    const auto size = val->size();
+
+    for (size_t i = 0; i < size; ++i) {
+        const auto &val_pair = (*val)[i];
+        if (val_pair.first == s)
+            return &val_pair.second;
     }
 
     logger.printfln("Config key %s not found!", s.c_str());
@@ -1200,29 +1282,32 @@ Config::ConfObject::Slot *Config::ConfObject::getSlot() { return &object_buf[idx
 Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> val)
 {
     idx = nextSlot<Config::ConfObject>(object_buf, object_buf_size);
-    this->getSlot()->inUse = true;
+    auto *slot = this->getSlot();
+    slot->inUse = true;
 
-    this->getSlot()->val = val;
+    slot->val = val;
 }
 
 Config::ConfObject::ConfObject(const ConfObject &cpy)
 {
     idx = nextSlot<Config::ConfObject>(object_buf, object_buf_size);
+    auto *slot = this->getSlot();
     // We have to mark this slot as in use here:
     // This object could contain a nested object that will be copied over
     // The inner object's copy constructor then takes the first free slot, i.e.
     // ours if we don't mark it as inUse first.
-    this->getSlot()->inUse = true;
+    slot->inUse = true;
 
     auto tmp = *cpy.getSlot();
-    *this->getSlot() = std::move(tmp);
+    *slot = std::move(tmp);
 }
 
 Config::ConfObject::~ConfObject()
 {
-    this->getSlot()->inUse = false;
+    auto *slot = this->getSlot();
+    slot->inUse = false;
 
-    this->getSlot()->val.clear();
+    slot->val.clear();
 }
 
 Config::ConfObject& Config::ConfObject::operator=(const ConfObject &cpy) {
@@ -1758,14 +1843,17 @@ Config::Wrap Config::add() {
     std::vector<Config> &children = this->asArray();
 
     const auto &arr = value.val.a;
+    const auto *slot = arr.getSlot();
 
-    const auto max_elements = arr.getSlot()->maxElements;
+    const auto max_elements = slot->maxElements;
     if (children.size() >= max_elements) {
         logger.printfln("Tried to add to an ConfArray that already has the max allowed number of elements (%u).", max_elements);
         delay(100);
         return Wrap(nullptr);
     }
 
-    children.push_back(*arr.getSlot()->prototype);
+    children.push_back(*slot->prototype);
     return Wrap(&children.back());
 }
+
+// 3h30m
