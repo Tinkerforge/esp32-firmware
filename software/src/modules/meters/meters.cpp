@@ -19,6 +19,7 @@
 
 #include "meters.h"
 #include "meter_class_none.h"
+#include "module_dependencies.h"
 
 #include "api.h"
 #include "event_log.h"
@@ -153,6 +154,12 @@ void Meters::register_urls()
             meter_slot.meter->register_urls(base_path);
         }
     }
+
+#if MODULE_METERS_LEGACY_API_AVAILABLE()
+    if (meters_legacy_api.get_linked_meter_slot() < METERS_SLOTS) {
+        api.addState("meter/error_counters", &meter_slots[meters_legacy_api.get_linked_meter_slot()].errors, {}, 1000);
+    }
+#endif
 }
 
 void Meters::register_meter_generator(uint32_t meter_class, MeterGenerator *generator)
