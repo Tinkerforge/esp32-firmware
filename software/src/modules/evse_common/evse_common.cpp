@@ -496,7 +496,7 @@ void EvseCommon::register_urls() {
         if (enabled == external_enabled.get("enabled")->asBool())
             return;
 
-        backend->set_charging_slot_active(CHARGING_SLOT_EXTERNAL, enabled);
+        backend->set_charging_slot(CHARGING_SLOT_EXTERNAL, 32000, enabled, false);
         apply_slot_default(CHARGING_SLOT_EXTERNAL, 32000, enabled, false);
     }, false);
 
