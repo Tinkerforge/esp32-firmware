@@ -168,7 +168,6 @@ public:
 
     ConfigRoot state;
     ConfigRoot low_level_state;
-    ConfigRoot meter_state;
     ConfigRoot config;
     ConfigRoot config_in_use;
     ConfigRoot debug_config;
