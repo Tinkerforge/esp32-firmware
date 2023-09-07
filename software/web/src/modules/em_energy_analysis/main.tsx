@@ -699,6 +699,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         3600 * 12,
                         3600 * 24,
                         3600 * 48,
+                        3600 * 72,
+                        3600 * 168,
                     ],
                     values: (self: uPlot, splits: number[]) => {
                         let values: string[] = new Array(splits.length);
