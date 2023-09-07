@@ -8,7 +8,7 @@
             "meters": "Energy Meter"
         },
         "content": {
-            "energy_meter": "Energy Meter",
+            "meters": "Energy Meter",
             "history": "History (48 h)",
             "live": "Live",
             "detailed_values": "Details",
