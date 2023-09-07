@@ -250,6 +250,17 @@ esp_err_t tf_websocket_client_close(tf_websocket_client_handle_t client, TickTyp
 esp_err_t tf_websocket_client_close_with_code(tf_websocket_client_handle_t client, int code, const char *data, int len, TickType_t timeout);
 
 /**
+ * @brief      Send websocket ping without payload (with WS OPCODE=09, i.e. ping)
+ *
+ * @param[in]  client  The client
+ * @param[in]  timeout Write data timeout in RTOS ticks
+ *
+ * @return
+ *     - (-1) if any errors
+ */
+esp_err_t tf_websocket_client_send_ping(tf_websocket_client_handle_t client, TickType_t timeout);
+
+/**
  * @brief      Check the WebSocket client connection state
  *
  * @param[in]  client  The client handle

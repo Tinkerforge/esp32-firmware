@@ -847,6 +847,10 @@ int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char
     return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_BINARY, (const uint8_t *)data, len, timeout);
 }
 
+int tf_websocket_client_send_ping(tf_websocket_client_handle_t client, TickType_t timeout) {
+    return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_PING | WS_TRANSPORT_OPCODES_FIN, NULL, 0, timeout);
+}
+
 static int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t timeout)
 {
     int need_write = len;
