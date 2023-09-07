@@ -666,20 +666,21 @@ render(<Meters />, $('#meters')[0]);
 export class MetersStatus extends Component<{}, {}> {
     history_data: UplotData;
     uplot_wrapper_ref = createRef();
+    meter_slot: number = 0; // FIXME: make this configurable
 
     constructor() {
         super();
 
-        util.addApiEventListener("meters/0/history", () => {
-            let history = API.get("meters/0/history");
+        util.addApiEventListener_unchecked(`meters/${this.meter_slot}/history`, () => {
+            let history = API.get_maybe(`meters/${this.meter_slot}/history`);
 
             this.history_data = calculate_history_data(history.offset, history.samples);
 
             this.update_uplot();
         });
 
-        util.addApiEventListener("meters/0/history_samples", () => {
-            let history = API.get("meters/0/history_samples");
+        util.addApiEventListener_unchecked(`meters/${this.meter_slot}/history_samples`, () => {
+            let history = API.get_maybe(`meters/${this.meter_slot}/history_samples`);
 
             this.history_data = calculate_history_data(0, array_append(this.history_data.samples, history.samples, 720));
 
@@ -705,9 +706,8 @@ export class MetersStatus extends Component<{}, {}> {
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
-        let meter_slot: number = 0; // FIXME: make this configurable
-        let value_ids = API.get_maybe(`meters/${meter_slot}/value_ids`);
-        let values = API.get_maybe(`meters/${meter_slot}/values`);
+        let value_ids = API.get_maybe(`meters/${this.meter_slot}/value_ids`);
+        let values = API.get_maybe(`meters/${this.meter_slot}/values`);
         let power = 0;
 
         if (value_ids && values.length > 0 && values && values.length > 0) {
@@ -720,7 +720,7 @@ export class MetersStatus extends Component<{}, {}> {
 
         return (
             <>
-                <FormRow label={__("meters.status.power_history") + ` (Meter #${meter_slot})`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("meters.status.power_history") + ` (Meter #${this.meter_slot})`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <div class="card pl-1 pb-1">
                         <UplotWrapper ref={this.uplot_wrapper_ref}
                                       id="status_meters_chart"
@@ -735,7 +735,7 @@ export class MetersStatus extends Component<{}, {}> {
                                       y_max={1500} />
                     </div>
                 </FormRow>
-                <FormRow label={__("meters.status.current_power") + ` (Meter #${meter_slot}) `} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("meters.status.current_power") + ` (Meter #${this.meter_slot}) `} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                 </FormRow>
             </>
