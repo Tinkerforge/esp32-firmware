@@ -33,41 +33,45 @@
 
 //#define DEBUG_LOGGING
 
+static_assert(METERS_SLOTS <= 7, "Too many meters slots");
+
 void EnergyManager::register_events()
 {
-    // Passing no values will register on the ConfigRoot.
-    event.registerEvent(meters.get_path(meter_slot_grid, Meters::PathType::ValueIDs), {}, [this](Config * /*unused*/){
-        uint32_t power_index;
-        if (meters.get_cached_power_index(meter_slot_grid, &power_index)) {
-            task_scheduler.scheduleOnce([this, power_index](){
-                event.registerEvent(meters.get_path(meter_slot_grid, Meters::PathType::Values), {static_cast<uint16_t>(power_index)}, [this](Config *config){
-                    update_history_meter_power(config->asFloat());
-                });
-            }, 0);
-        } else {
-            logger.printfln("data_points: Meter in slot %u doesn't provide power.", meter_slot_grid);
-        }
-    });
+    for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
+        // Passing no values will register on the ConfigRoot.
+        event.registerEvent(meters.get_path(slot, Meters::PathType::ValueIDs), {}, [this, slot](Config * /*unused*/){
+            uint32_t power_index;
+            if (meters.get_cached_power_index(slot, &power_index)) {
+                task_scheduler.scheduleOnce([this, slot, power_index](){
+                    event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {static_cast<uint16_t>(power_index)}, [this, slot](Config *config){
+                        update_history_meter_power(slot, config->asFloat());
+                    });
+                }, 0);
+            } else {
+                logger.printfln("data_points: Meter in slot %u doesn't provide power.", slot);
+            }
+        });
+    }
 }
 
-void EnergyManager::update_history_meter_power(float power /* W */)
+void EnergyManager::update_history_meter_power(uint32_t slot, float power /* W, must not be NaN */)
 {
     uint32_t now = millis();
 
-    if (!isnan(history_meter_power_value)) {
+    if (!isnan(history_meter_power_value[slot])) {
         uint32_t duration_ms;
 
-        if (now >= history_meter_power_timestamp) {
-            duration_ms = now - history_meter_power_timestamp;
+        if (now >= history_meter_power_timestamp[slot]) {
+            duration_ms = now - history_meter_power_timestamp[slot];
         } else {
-            duration_ms = UINT32_MAX - history_meter_power_timestamp + now;
+            duration_ms = UINT32_MAX - history_meter_power_timestamp[slot] + now;
         }
 
         double duration_s = (double)duration_ms / 1000.0;
-        double energy_ws = (double)history_meter_power_value * duration_s;
+        double energy_ws = history_meter_power_value[slot] * duration_s;
 
-        history_meter_power_sum += energy_ws;
-        history_meter_power_duration += duration_s;
+        history_meter_power_sum[slot] += energy_ws;
+        history_meter_power_duration[slot] += duration_s;
 
         if (!persistent_data_loaded) {
             persistent_data_loaded = load_persistent_data();
@@ -77,17 +81,17 @@ void EnergyManager::update_history_meter_power(float power /* W */)
             double energy_dawh = energy_ws / 36000.0;
 
             if (energy_dawh >= 0) {
-                history_meter_energy_import += energy_dawh;
+                history_meter_energy_import[slot] += energy_dawh;
             } else {
-                history_meter_energy_export += -energy_dawh;
+                history_meter_energy_export[slot] += -energy_dawh;
             }
 
             save_persistent_data();
         }
     }
 
-    history_meter_power_value = power;
-    history_meter_power_timestamp = now;
+    history_meter_power_value[slot] = power;
+    history_meter_power_timestamp[slot] = now;
 }
 
 void EnergyManager::collect_data_points()
@@ -159,36 +163,35 @@ void EnergyManager::collect_data_points()
 
         if (all_data.is_valid && !deadline_elapsed(all_data.last_update + MAX_DATA_AGE)) {
             uint8_t flags = 0; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data (read only)
-            int32_t power_grid = INT32_MAX; // W
-            int32_t power_general[6] = {INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX}; // W
+            int32_t power[7] = {INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX}; // W
 
             flags |= is_3phase         ? 0b0001 : 0;
             flags |= all_data.input[0] ? 0b0010 : 0;
             flags |= all_data.input[1] ? 0b0100 : 0;
             flags |= all_data.relay    ? 0b1000 : 0;
 
-            // FIXME: how to tell if meter data is stale?
-            if (!isnan(history_meter_power_value)) {
-                update_history_meter_power(history_meter_power_value);
+            for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
+                // FIXME: how to tell if meter data is stale?
+                if (!isnan(history_meter_power_value[slot])) {
+                    update_history_meter_power(slot, history_meter_power_value[slot]);
 
-                if (history_meter_power_duration > 0) {
-                    power_grid = clamp<int64_t>(INT32_MIN,
-                                                roundf(history_meter_power_sum / history_meter_power_duration),
-                                                INT32_MAX - 1); // W
+                    if (history_meter_power_duration[slot] > 0) {
+                        power[slot] = clamp<int64_t>(INT32_MIN,
+                                                     roundf(history_meter_power_sum[slot] / history_meter_power_duration[slot]),
+                                                     INT32_MAX - 1); // W
 
-                    history_meter_power_sum = 0;
-                    history_meter_power_duration = 0;
+                        history_meter_power_sum[slot] = 0;
+                        history_meter_power_duration[slot] = 0;
+                    }
                 }
             }
-
-            // FIXME: fill power_general
 
             if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
                 logger.printfln("energy_manager: Data point queue is full, dropping new data point");
             }
             else {
-                pending_data_points.push_back([this, utc, local, flags, power_grid, power_general]{
-                    return set_energy_manager_5min_data_point(&utc, &local, flags, power_grid, power_general);
+                pending_data_points.push_back([this, utc, local, flags, power]{
+                    return set_energy_manager_5min_data_point(&utc, &local, flags, power);
                 });
             }
         }
@@ -236,59 +239,61 @@ void EnergyManager::collect_data_points()
         }
 
         bool have_data = false;
-        uint32_t energy_grid_in = UINT32_MAX; // daWh
-        uint32_t energy_grid_out = UINT32_MAX; // daWh
-        uint32_t energy_general_in[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // daWh
-        uint32_t energy_general_out[6] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // daWh
+        uint32_t energy_import[7] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // daWh
+        uint32_t energy_export[7] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // daWh
 
         micros_t max_age = micros_t{5 * 60 * 1000 * 1000};
         Meters::ValueAvailability availability;
 
-        float total_import; // kWh
-        availability = meters.get_energy_import(meter_slot_grid, &total_import, max_age);
-        if (availability == Meters::ValueAvailability::Fresh) {
-            if (isnan(total_import)) {
-                logger.printfln("data_points: Meter claims fresh 'import' value but returned NaN.");
-            } else {
-                have_data = true;
-                energy_grid_in = clamp<uint64_t>(0,
-                                                    roundf(total_import * 100.0), // kWh -> daWh
-                                                    UINT32_MAX - 1);
+        for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
+            if (meters.get_meter_class(slot) == METER_CLASS_NONE) {
+                continue; // don't record integrated energy values for unconfigured meters
             }
-        } else if (availability == Meters::ValueAvailability::Unavailable) {
-            have_data = true;
-            energy_grid_in = clamp<uint64_t>(0, roundf(history_meter_energy_import), UINT32_MAX - 1);
-        } else {
-            // Value availability currently unknown or value is stale.
-        }
 
-        float total_export; // kWh
-        availability = meters.get_energy_export(meter_slot_grid, &total_export, max_age);
-        if (availability == Meters::ValueAvailability::Fresh) {
-            if (isnan(total_export)) {
-                logger.printfln("data_points: Meter claims fresh 'export' value but returned NaN.");
-            } else {
+            float total_import; // kWh
+            availability = meters.get_energy_import(slot, &total_import, max_age);
+            if (availability == Meters::ValueAvailability::Fresh) {
+                if (isnan(total_import)) {
+                    logger.printfln("data_points: Meter claims fresh 'import' value but returned NaN.");
+                } else {
+                    have_data = true;
+                    energy_import[slot] = clamp<uint64_t>(0,
+                                                          roundf(total_import * 100.0), // kWh -> daWh
+                                                          UINT32_MAX - 1);
+                }
+            } else if (availability == Meters::ValueAvailability::Unavailable) {
                 have_data = true;
-                energy_grid_out = clamp<uint64_t>(0,
-                                                    roundf(total_export * 100.0), // kWh -> daWh
-                                                    UINT32_MAX - 1);
+                energy_import[slot] = clamp<uint64_t>(0, roundf(history_meter_energy_import[slot]), UINT32_MAX - 1);
+            } else {
+                // Value availability currently unknown or value is stale.
             }
-        } else if (availability == Meters::ValueAvailability::Unavailable) {
-            have_data = true;
-            energy_grid_out = clamp<uint64_t>(0, roundf(history_meter_energy_export), UINT32_MAX - 1);
-        } else {
-            // Value availability currently unknown or value is stale.
-        }
 
-        // FIXME: fill energy_general_in and energy_general_out
+            float total_export; // kWh
+            availability = meters.get_energy_export(slot, &total_export, max_age);
+            if (availability == Meters::ValueAvailability::Fresh) {
+                if (isnan(total_export)) {
+                    logger.printfln("data_points: Meter claims fresh 'export' value but returned NaN.");
+                } else {
+                    have_data = true;
+                    energy_export[slot] = clamp<uint64_t>(0,
+                                                          roundf(total_export * 100.0), // kWh -> daWh
+                                                          UINT32_MAX - 1);
+                }
+            } else if (availability == Meters::ValueAvailability::Unavailable) {
+                have_data = true;
+                energy_export[slot] = clamp<uint64_t>(0, roundf(history_meter_energy_export[slot]), UINT32_MAX - 1);
+            } else {
+                // Value availability currently unknown or value is stale.
+            }
+        }
 
         if (have_data) {
             if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
                 logger.printfln("energy_manager: Data point queue is full, dropping new data point");
             }
             else {
-                pending_data_points.push_back([this, local, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out]{
-                    return set_energy_manager_daily_data_point(&local, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out);
+                pending_data_points.push_back([this, local, energy_import, energy_export]{
+                    return set_energy_manager_daily_data_point(&local, energy_import, energy_export);
                 });
             }
         }
@@ -312,78 +317,181 @@ void EnergyManager::set_pending_data_points()
     pending_data_points.pop_front();
 }
 
-struct PersistentData {
+#define DATA_STORAGE_PAGE_SIZE 63
+#define DATA_STORAGE_PAGE_COUNT 3
+
+// this struct is 8 byte larger than initially expected, because the 8 byte
+// alignment requirement for the double values was missed. but explicitly
+// adding the extra padding now and making the struct packed results in
+// "packed attribute causes inefficient alignment" warnings for every struct
+// member after padding0. therefore, keeping the struct as is, because it
+// has been like this in released versions and the memory layout of the
+// struct cannot be changed anymore.
+struct PersistentDataV1 {
     uint8_t version;
     uint8_t padding0[3];
     uint32_t last_history_5min_slot;
     uint32_t last_history_daily_slot; // unused
+    // 4 byte of padding here for 8 byte alignment of the double values
     double history_meter_energy_import;
     double history_meter_energy_export;
     uint16_t padding1;
     uint16_t checksum;
+    // 4 byte of padding here for 8 byte alignment of the double values
 };
+
+struct PersistentDataV2 {
+    double history_meter_energy_import[6];
+    double history_meter_energy_export[6];
+    uint8_t version;
+    uint8_t padding0;
+    uint16_t checksum;
+    uint32_t padding1;
+};
+
+static_assert(sizeof(PersistentDataV1) == 40);
+static_assert(sizeof(PersistentDataV2) == 104);
 
 bool EnergyManager::load_persistent_data()
 {
-    uint8_t buf[63] = {0};
-    if (tf_warp_energy_manager_get_data_storage(&device, 0, buf) != TF_E_OK) {
-        return false;
+    uint8_t buf[DATA_STORAGE_PAGE_SIZE * DATA_STORAGE_PAGE_COUNT] = {0};
+    for (uint8_t page = 0; page < DATA_STORAGE_PAGE_COUNT; ++page) {
+        if (tf_warp_energy_manager_get_data_storage(&device, page, buf + (DATA_STORAGE_PAGE_SIZE * page)) != TF_E_OK) {
+            return false;
+        }
     }
 
-    uint8_t zero[63] = {0};
-    if (memcmp(buf, zero, sizeof(buf)) == 0) {
-        return true; // all zero, first start
-    }
-
-    if (internet_checksum(buf, sizeof(PersistentData)) != 0) {
-        logger.printfln("energy_manager: Checksum mismatch while reading persistent data");
-        return true;
-    }
-
-    PersistentData data;
-    memcpy(&data, buf, sizeof(data));
-
-    if (data.version != 1) {
-        logger.printfln("energy_manager: Unexpected version %u while reading persistent data", data.version);
-        return true;
-    }
-
-    last_history_5min_slot = data.last_history_5min_slot;
-    history_meter_energy_import = data.history_meter_energy_import;
-    history_meter_energy_export = data.history_meter_energy_export;
+    load_persistent_data_v1(buf);
+    load_persistent_data_v2(buf + sizeof(PersistentDataV1));
 
 #ifdef DEBUG_LOGGING
-    logger.printfln("load_persistent_data: slot %u, energy %f %f",
+    logger.printfln("load_persistent_data: 5min slot %u, energy %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f",
                     last_history_5min_slot,
-                    history_meter_energy_import,
-                    history_meter_energy_export);
+                    history_meter_energy_import[0],
+                    history_meter_energy_export[0],
+                    history_meter_energy_import[1],
+                    history_meter_energy_export[1],
+                    history_meter_energy_import[2],
+                    history_meter_energy_export[2],
+                    history_meter_energy_import[3],
+                    history_meter_energy_export[3],
+                    history_meter_energy_import[4],
+                    history_meter_energy_export[4],
+                    history_meter_energy_import[5],
+                    history_meter_energy_export[5],
+                    history_meter_energy_import[6],
+                    history_meter_energy_export[6]);
 #endif
 
     return true;
 }
 
+void EnergyManager::load_persistent_data_v1(uint8_t *buf)
+{
+    PersistentDataV1 data_v1;
+    memcpy(&data_v1, buf, sizeof(data_v1));
+
+    PersistentDataV1 zero_v1;
+    memset(&zero_v1, 0, sizeof(zero_v1));
+
+    if (memcmp(&data_v1, &zero_v1, sizeof(data_v1)) == 0) {
+        logger.printfln("energy_manager: Persistent data v1 missing, first boot?");
+        return; // all zero, first boot
+    }
+
+    if (internet_checksum((uint8_t *)&data_v1, sizeof(data_v1)) != 0) {
+        logger.printfln("energy_manager: Checksum mismatch while reading persistent data v1");
+        return;
+    }
+
+    if (data_v1.version != 1) {
+        logger.printfln("energy_manager: Unexpected version %u while reading persistent data v1", data_v1.version);
+        return;
+    }
+
+    last_history_5min_slot = data_v1.last_history_5min_slot;
+    history_meter_energy_import[0] = data_v1.history_meter_energy_import;
+    history_meter_energy_export[0] = data_v1.history_meter_energy_export;
+}
+
+void EnergyManager::load_persistent_data_v2(uint8_t *buf)
+{
+    PersistentDataV2 data_v2;
+    memcpy(&data_v2, buf, sizeof(data_v2));
+
+    PersistentDataV2 zero_v2;
+    memset(&zero_v2, 0, sizeof(zero_v2));
+
+    if (memcmp(&data_v2, &zero_v2, sizeof(data_v2)) == 0) {
+        logger.printfln("energy_manager: Persistent data v2 missing, first boot?");
+        return; // all zero, first boot with v2 firmware
+    }
+
+    if (internet_checksum((uint8_t *)&data_v2, sizeof(data_v2)) != 0) {
+        logger.printfln("energy_manager: Checksum mismatch while reading persistent data v2");
+        return;
+    }
+
+    if (data_v2.version != 2) {
+        logger.printfln("energy_manager: Unexpected version %u while reading persistent data v2", data_v2.version);
+        return;
+    }
+
+    for (uint32_t slot = 1; slot < METERS_SLOTS; ++slot) {
+        history_meter_energy_import[slot] = data_v2.history_meter_energy_import[slot - 1];
+        history_meter_energy_export[slot] = data_v2.history_meter_energy_export[slot - 1];
+    }
+}
+
 void EnergyManager::save_persistent_data()
 {
-    PersistentData data;
-    memset(&data, 0, sizeof(data));
+    PersistentDataV1 data_v1;
+    memset(&data_v1, 0, sizeof(data_v1));
+
+    PersistentDataV2 data_v2;
+    memset(&data_v2, 0, sizeof(data_v2));
 
 #ifdef DEBUG_LOGGING
-    logger.printfln("save_persistent_data: slot %u, energy %f %f",
+    logger.printfln("save_persistent_data: 5min slot %u, energy %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f",
                     last_history_5min_slot,
-                    history_meter_energy_import,
-                    history_meter_energy_export);
+                    history_meter_energy_import[0],
+                    history_meter_energy_export[0],
+                    history_meter_energy_import[1],
+                    history_meter_energy_export[1],
+                    history_meter_energy_import[2],
+                    history_meter_energy_export[2],
+                    history_meter_energy_import[3],
+                    history_meter_energy_export[3],
+                    history_meter_energy_import[4],
+                    history_meter_energy_export[4],
+                    history_meter_energy_import[5],
+                    history_meter_energy_export[5],
+                    history_meter_energy_import[6],
+                    history_meter_energy_export[6]);
 #endif
 
-    data.version = 1;
-    data.last_history_5min_slot = last_history_5min_slot;
-    data.last_history_daily_slot = 0; // unused
-    data.history_meter_energy_import = history_meter_energy_import;
-    data.history_meter_energy_export = history_meter_energy_export;
-    data.checksum = internet_checksum((uint8_t *)&data, sizeof(data));
+    data_v1.version = 1;
+    data_v1.last_history_5min_slot = last_history_5min_slot;
+    data_v1.last_history_daily_slot = 0; // unused
+    data_v1.history_meter_energy_import = history_meter_energy_import[0];
+    data_v1.history_meter_energy_export = history_meter_energy_export[0];
+    data_v1.checksum = internet_checksum((uint8_t *)&data_v1, sizeof(data_v1));
 
-    uint8_t buf[63] = {0};
-    memcpy(buf, &data, sizeof(data));
-    tf_warp_energy_manager_set_data_storage(&device, 0, buf);
+    for (uint32_t slot = 1; slot < METERS_SLOTS; ++slot) {
+        data_v2.history_meter_energy_import[slot - 1] = history_meter_energy_import[slot];
+        data_v2.history_meter_energy_export[slot - 1] = history_meter_energy_export[slot];
+    }
+
+    data_v2.version = 2;
+    data_v2.checksum = internet_checksum((uint8_t *)&data_v2, sizeof(data_v2));
+
+    uint8_t buf[DATA_STORAGE_PAGE_SIZE * DATA_STORAGE_PAGE_COUNT] = {0};
+    memcpy(buf, &data_v1, sizeof(data_v1));
+    memcpy(buf + sizeof(data_v1), &data_v2, sizeof(data_v2));
+
+    for (uint8_t page = 0; page < DATA_STORAGE_PAGE_COUNT; ++page) {
+        tf_warp_energy_manager_set_data_storage(&device, page, buf + (DATA_STORAGE_PAGE_SIZE * page));
+    }
 }
 
 bool EnergyManager::set_wallbox_5min_data_point(const struct tm *utc, const struct tm *local, uint32_t uid, uint8_t flags, uint16_t power /* W */)
@@ -537,8 +645,7 @@ bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_
 bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
                                                        const struct tm *local,
                                                        uint8_t flags,
-                                                       int32_t power_grid /* W */,
-                                                       const int32_t power_general[6] /* W */)
+                                                       const int32_t power[7] /* W */)
 {
     uint8_t status;
     uint8_t utc_year = utc->tm_year - 100;
@@ -553,15 +660,15 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
                                                                      utc_hour,
                                                                      utc_minute,
                                                                      flags,
-                                                                     power_grid,
-                                                                     power_general,
+                                                                     power[0],
+                                                                     &power[1],
                                                                      &status);
 
     check_bricklet_reachable(rc, "set_energy_manager_5min_data_point");
 
 #ifdef DEBUG_LOGGING
-    logger.printfln("set_energy_manager_5min_data_point: %d-%02d-%02d %02d:%02d f%u gr%d ge%d,%d,%d,%d,%d,%d",
-                    2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power_grid, power_general[0], power_general[1], power_general[2], power_general[3], power_general[4], power_general[5]);
+    logger.printfln("set_energy_manager_5min_data_point: %d-%02d-%02d %02d:%02d f%u p%d,%d,%d,%d,%d,%d,%d",
+                    2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power[0], power[1], power[2], power[3], power[4], power[5], power[6]);
 #endif
 
     if (rc != TF_E_OK) {
@@ -583,16 +690,11 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
         }
     }
     else {
-        char power_grid_str[12] = "null";
-        char power_general_str[6][12] = {"null", "null", "null", "null", "null", "null"};
+        char power_str[7][12] = {"null", "null", "null", "null", "null", "null", "null"};
 
-        if (power_grid != INT32_MAX) {
-            snprintf(power_grid_str, sizeof(power_grid_str), "%d", power_grid);
-        }
-
-        for (int i = 0; i < 6; ++i) {
-            if (power_general[i] != INT32_MAX) {
-                snprintf(power_general_str[i], sizeof(power_general_str[i]), "%d", power_general[i]);
+        for (int i = 0; i < 7; ++i) {
+            if (power[i] != INT32_MAX) {
+                snprintf(power_str[i], sizeof(power_str[i]), "%d", power[i]);
             }
         }
 
@@ -611,21 +713,20 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
                                     "\"hour\":%u,"
                                     "\"minute\":%u,"
                                     "\"flags\":%u,"
-                                    "\"power_grid\":%s,"
-                                    "\"power_general\":[%s,%s,%s,%s,%s,%s]}}\n",
+                                    "\"power\":[%s,%s,%s,%s,%s,%s,%s]}}\n",
                                    2000U + local_year,
                                    local_month,
                                    local_day,
                                    local_hour,
                                    local_minute,
                                    flags,
-                                   power_grid_str,
-                                   power_general_str[0],
-                                   power_general_str[1],
-                                   power_general_str[2],
-                                   power_general_str[3],
-                                   power_general_str[4],
-                                   power_general_str[5]);
+                                   power_str[0],
+                                   power_str[1],
+                                   power_str[2],
+                                   power_str[3],
+                                   power_str[4],
+                                   power_str[5],
+                                   power_str[6]);
 
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, buf_written);
@@ -636,10 +737,8 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
 }
 
 bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
-                                                        uint32_t energy_grid_in /* daWh */,
-                                                        uint32_t energy_grid_out /* daWh */,
-                                                        const uint32_t energy_general_in[6] /* daWh */,
-                                                        const uint32_t energy_general_out[6] /* daWh */)
+                                                        const uint32_t energy_import[7] /* daWh */,
+                                                        const uint32_t energy_export[7] /* daWh */)
 {
     uint8_t status;
     uint8_t year = local->tm_year - 100;
@@ -649,20 +748,19 @@ bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
                                                                            year,
                                                                            month,
                                                                            day,
-                                                                           energy_grid_in,
-                                                                           energy_grid_out,
-                                                                           energy_general_in,
-                                                                           energy_general_out,
+                                                                           energy_import[0],
+                                                                           energy_export[0],
+                                                                           &energy_import[1],
+                                                                           &energy_export[1],
                                                                            &status);
 
     check_bricklet_reachable(rc, "set_energy_manager_daily_data_point");
 
 #ifdef DEBUG_LOGGING
-    logger.printfln("set_energy_manager_daily_data_point: %d-%02d-%02d gri%u gro%u gei%u,%u,%u,%u,%u,%u geo%u,%u,%u,%u,%u,%u",
+    logger.printfln("set_energy_manager_daily_data_point: %d-%02d-%02d ei%u,%u,%u,%u,%u,%u,%u ee%u,%u,%u,%u,%u,%u,%u",
                     2000 + year, month, day,
-                    energy_grid_in, energy_grid_out,
-                    energy_general_in[0], energy_general_in[1], energy_general_in[2], energy_general_in[3], energy_general_in[4], energy_general_in[5],
-                    energy_general_out[0], energy_general_out[1], energy_general_out[2], energy_general_out[3], energy_general_out[4], energy_general_out[5]);
+                    energy_import[0], energy_import[1], energy_import[2], energy_import[3], energy_import[4], energy_import[5], energy_import[6],
+                    energy_export[0], energy_export[1], energy_export[2], energy_export[3], energy_export[4], energy_export[5], energy_export[6]);
 #endif
 
     if (rc != TF_E_OK) {
@@ -684,26 +782,16 @@ bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
         }
     }
     else {
-        char energy_grid_in_str[13] = "null";
-        char energy_grid_out_str[13] = "null";
-        char energy_general_in_str[6][13] = {"null", "null", "null", "null", "null", "null"};
-        char energy_general_out_str[6][13] = {"null", "null", "null", "null", "null", "null"};
+        char energy_import_str[7][13] = {"null", "null", "null", "null", "null", "null", "null"};
+        char energy_export_str[7][13] = {"null", "null", "null", "null", "null", "null", "null"};
 
-        if (energy_grid_in != UINT32_MAX) {
-            snprintf(energy_grid_in_str, sizeof(energy_grid_in_str), "%.2f", (double)energy_grid_in / 100.0); // daWh -> kWh
-        }
-
-        if (energy_grid_out != UINT32_MAX) {
-            snprintf(energy_grid_out_str, sizeof(energy_grid_out_str), "%.2f", (double)energy_grid_out / 100.0); // daWh -> kWh
-        }
-
-        for (int i = 0; i < 6; ++i) {
-            if (energy_general_in[i] != UINT32_MAX) {
-                snprintf(energy_general_in_str[i], sizeof(energy_general_in_str[i]), "%.2f", (double)energy_general_in[i] / 100.0); // daWh -> kWh
+        for (int i = 0; i < 7; ++i) {
+            if (energy_import[i] != UINT32_MAX) {
+                snprintf(energy_import_str[i], sizeof(energy_import_str[i]), "%.2f", (double)energy_import[i] / 100.0); // daWh -> kWh
             }
 
-            if (energy_general_out[i] != UINT32_MAX) {
-                snprintf(energy_general_out_str[i], sizeof(energy_general_out_str[i]), "%.2f", (double)energy_general_out[i] / 100.0); // daWh -> kWh
+            if (energy_export[i] != UINT32_MAX) {
+                snprintf(energy_export_str[i], sizeof(energy_export_str[i]), "%.2f", (double)energy_export[i] / 100.0); // daWh -> kWh
             }
         }
 
@@ -714,27 +802,25 @@ bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
                                     "\"year\":%u,"
                                     "\"month\":%u,"
                                     "\"day\":%u,"
-                                    "\"energy_grid_in\":%s,"
-                                    "\"energy_grid_out\":%s,"
-                                    "\"energy_general_in\":[%s,%s,%s,%s,%s,%s],"
-                                    "\"energy_general_out\":[%s,%s,%s,%s,%s,%s]}}\n",
+                                    "\"energy_import\":[%s,%s,%s,%s,%s,%s,%s],"
+                                    "\"energy_export\":[%s,%s,%s,%s,%s,%s,%s]}}\n",
                                    2000U + year,
                                    month,
                                    day,
-                                   energy_grid_in_str,
-                                   energy_grid_out_str,
-                                   energy_general_in_str[0],
-                                   energy_general_in_str[1],
-                                   energy_general_in_str[2],
-                                   energy_general_in_str[3],
-                                   energy_general_in_str[4],
-                                   energy_general_in_str[5],
-                                   energy_general_out_str[0],
-                                   energy_general_out_str[1],
-                                   energy_general_out_str[2],
-                                   energy_general_out_str[3],
-                                   energy_general_out_str[4],
-                                   energy_general_out_str[5]);
+                                   energy_import_str[0],
+                                   energy_import_str[1],
+                                   energy_import_str[2],
+                                   energy_import_str[3],
+                                   energy_import_str[4],
+                                   energy_import_str[5],
+                                   energy_import_str[6],
+                                   energy_export_str[0],
+                                   energy_export_str[1],
+                                   energy_export_str[2],
+                                   energy_export_str[3],
+                                   energy_export_str[4],
+                                   energy_export_str[5],
+                                   energy_export_str[6]);
 
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, buf_written);
@@ -1178,8 +1264,7 @@ void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
 
 typedef struct {
     uint8_t flags; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data
-    int32_t power_grid; // W
-    int32_t power_general[6]; // W
+    int32_t power[7]; // W
 } __attribute__((__packed__)) EnergyManager5MinData;
 
 static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device,
@@ -1242,23 +1327,16 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
             write_success = response->writef("%u", p->flags);
         } else {
             write_success = response->writef("null");
-            p->power_grid = INT32_MAX;
 
-            for (int k = 0; k < 6; ++k) {
-                p->power_general[k] = INT32_MAX;
+            for (int k = 0; k < 7; ++k) {
+                p->power[k] = INT32_MAX;
             }
         }
 
         if (write_success) {
-            if (p->power_grid != INT32_MAX) {
-                write_success = response->writef(",%d", p->power_grid);
-            } else {
-                write_success = response->writef(",null");
-            }
-
-            for (int k = 0; k < 6 && write_success; ++k) {
-                if (p->power_general[k] != INT32_MAX) {
-                    write_success = response->writef(",%d", p->power_general[k]);
+            for (int k = 0; k < 7 && write_success; ++k) {
+                if (p->power[k] != INT32_MAX) {
+                    write_success = response->writef(",%d", p->power[k]);
                 } else {
                     write_success = response->writef(",null");
                 }
@@ -1502,6 +1580,14 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
     if (metadata->write_comma && write_success) {
         write_success = response->write(",");
     }
+
+    // the data is stored as:
+    // i0, e0, i1, i2, i3, i4, i5, i6, e1, e2, e3, e4, e5, e6
+    // but we want to report it as:
+    // i0, i1, i2, i3, i4, i5, i6, e0, e1, e2, e3, e4, e5, e6
+    uint32_t energy_export_0 = data_chunk_data[1];
+    memmove(&data_chunk_data[1], &data_chunk_data[2], sizeof(uint32_t) * 6);
+    data_chunk_data[7] = energy_export_0;
 
     for (i = 0; i < actual_length && write_success; ++i) {
         if (data_chunk_data[i] != UINT32_MAX) {
