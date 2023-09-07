@@ -1881,5 +1881,3 @@ Config::Wrap Config::add() {
     children.push_back(*slot->prototype);
     return Wrap(&children.back());
 }
-
-// 3h30m
