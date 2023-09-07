@@ -20,23 +20,13 @@
 #include "value_history.h"
 #include "module_dependencies.h"
 
+#include "tools.h"
+
 #include "gcc_warnings.h"
 #ifdef __GNUC__
 // The code is this file contains several casts to a type defined by a macro, which may result in useless casts.
 #pragma GCC diagnostic ignored "-Wuseless-cast"
 #endif
-
-// Unchecked snprintf that returns size_t
-_ATTRIBUTE ((__format__ (__printf__, 3, 4)))
-static size_t snprintf_u(char *buf, size_t len, const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    int res = vsnprintf(buf, len, format, args);
-    va_end(args);
-
-    return res < 0 ? 0 : static_cast<size_t>(res);
-}
 
 void ValueHistory::setup()
 {

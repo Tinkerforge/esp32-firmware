@@ -880,6 +880,16 @@ time_t ms_until_time(int h, int m) {
 	return delay;
 }
 
+size_t snprintf_u(char *buf, size_t len, const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    int res = vsnprintf(buf, len, format, args);
+    va_end(args);
+
+    return res < 0 ? 0 : static_cast<size_t>(res);
+}
+
 bool Ownership::try_acquire(uint32_t owner_id)
 {
     mutex.lock();

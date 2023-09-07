@@ -97,6 +97,10 @@ void trigger_reboot(const char *initiator);
 time_t ms_until_datetime(int *year, int *month, int *day, int *hour, int *minutes, int *seconds);
 time_t ms_until_time(int h, int m);
 
+// Unchecked snprintf that returns size_t
+_ATTRIBUTE ((__format__ (__printf__, 3, 4)))
+size_t snprintf_u(char *buf, size_t len, const char *format, ...);
+
 class LogSilencer
 {
 public:
