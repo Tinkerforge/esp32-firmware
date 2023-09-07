@@ -29,13 +29,6 @@ export interface low_level_state {
     contactor_check_state: number,
 }
 
-export interface meter_state {
-    energy_meter_type: number,
-    energy_meter_power: number,
-    energy_meter_energy_import: number,
-    energy_meter_energy_export: number,
-}
-
 export interface state {
     phases_switched: number,
     error_flags: number,

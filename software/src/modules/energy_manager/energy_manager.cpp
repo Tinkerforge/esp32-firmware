@@ -80,12 +80,6 @@ void EnergyManager::pre_setup()
         },
         {"uptime", Config::Uint32(0)},
     });
-    meter_state = Config::Object({ // TODO: Remove?
-        {"energy_meter_type", Config::Uint8(0)},
-        {"energy_meter_power", Config::Float(0)}, // watt
-        {"energy_meter_energy_import", Config::Float(0)}, // kWh
-        {"energy_meter_energy_export", Config::Float(0)}, // kWh
-    });
 
     // Config
     config = ConfigRoot(Config::Object({
@@ -427,7 +421,6 @@ void EnergyManager::register_urls()
     api.addPersistentConfig("energy_manager/debug_config", &debug_config, {}, 1000);
 #endif
     api.addState("energy_manager/low_level_state", &low_level_state, {}, 1000);
-    api.addState("energy_manager/meter_state", &meter_state, {}, 1000);
 
     api.addState("energy_manager/charge_mode", &charge_mode, {}, 1000);
     api.addCommand("energy_manager/charge_mode_update", &charge_mode_update, {}, [this](){
@@ -515,13 +508,6 @@ void EnergyManager::update_all_data()
     low_level_state.get("input_voltage")->updateUint(all_data.voltage);
     low_level_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
     low_level_state.get("uptime")->updateUint(all_data.uptime);
-
-    if (all_data.energy_meter_type != METER_TYPE_NONE) {
-        meter_state.get("energy_meter_type")->updateUint(all_data.energy_meter_type);
-        meter_state.get("energy_meter_power")->updateFloat(all_data.power);
-        meter_state.get("energy_meter_energy_import")->updateFloat(all_data.energy_import);
-        meter_state.get("energy_meter_energy_export")->updateFloat(all_data.energy_export);
-    }
 
 #if MODULE_METERS_EM_AVAILABLE()
     meters_em.update_from_em_all_data(all_data);
