@@ -28,10 +28,6 @@ with open(os.path.join(software_dir, "web", "src", "build.ts")) as f:
 
     meter_count = int(match.group(1))
 
-with open('api.ts.template_fragment') as f:
-    meter_api = f.read()
-
 with open('api.ts', 'w') as f:
     for i in range(meter_count):
-        f.write(meter_api.replace("{{{meter_id}}}", str(i)))
-
+        f.write(util.specialize_template('api.ts.template_fragment', None, {"{{{meter_id}}}": str(i)}))

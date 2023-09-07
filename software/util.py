@@ -347,10 +347,14 @@ def specialize_template(template_filename, destination_filename, replacements, c
     if check_completeness and replaced != set(replacements.keys()):
         raise Exception('Not all replacements for {0} have been applied. Missing are {1}'.format(template_filename, ', '.join(set(replacements.keys() - replaced))))
 
-    write_file_if_different(destination_filename, "".join(lines))
+    if destination_filename != None:
+        write_file_if_different(destination_filename, "".join(lines))
 
     if remove_template:
         os.remove(template_filename)
+
+    if destination_filename == None:
+        return ''.join(lines)
 
 def file_to_data_url(path):
     with open(path, 'rb') as f:
