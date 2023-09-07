@@ -184,6 +184,10 @@ void EnergyManager::pre_setup()
         {"year", Config::Uint(0, 2000, 2255)},
         {"month", Config::Uint(0, 1, 12)},
     });
+
+    for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
+        history_meter_power_value[slot] = NAN;
+    }
 }
 
 void EnergyManager::setup_energy_manager()

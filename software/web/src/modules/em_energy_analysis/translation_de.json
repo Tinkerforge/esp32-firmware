@@ -31,10 +31,7 @@
             "time_5min": "Uhrzeit",
             "time_daily": "Datum",
             "power": "Leistung",
-            "energy": "Energie",
-            "grid_connection": "Netzanschluss",
-            "grid_in": "Netzbezug",
-            "grid_out": "Netzeinspeisung"
+            "energy": "Energie"
         }
     }
 }

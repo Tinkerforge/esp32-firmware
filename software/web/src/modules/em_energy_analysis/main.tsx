@@ -22,6 +22,7 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
+import { METERS_SLOTS } from "../../build";
 import { h, render, createRef, Fragment, Component, ComponentChild, RefObject, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
@@ -57,32 +58,29 @@ interface UplotData extends CachedData {
 interface Wallbox5minData extends CachedData {
     empty: boolean;
     complete: boolean;
-    flags: number[]; // bit 0-2 = charger state, bit 7 = no data
-    power: number[];
+    flags: number[/*timestamp_slot*/]; // bit 0-2 = charger state, bit 7 = no data
+    power: number[/*timestamp_slot*/];
 }
 
 interface WallboxDailyData extends CachedData {
     empty: boolean;
     complete: boolean;
-    energy: number[]; // kWh
+    energy: number[/*timestamp_slot*/]; // kWh
 }
 
 interface EnergyManager5minData extends CachedData {
     empty: boolean;
     complete: boolean;
-    flags: number[]; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = output, bit 7 = no data
-    power_grid: number[]; // W
-    power_grid_empty: boolean;
-    power_general: number[][]; // W
+    flags: number[/*timestamp_slot*/]; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = output, bit 7 = no data
+    power: number[/*meter_slot*/][/*timestamp_slot*/]; // W
+    power_empty: boolean[/*meter_slot*/];
 }
 
 interface EnergyManagerDailyData extends CachedData {
     empty: boolean;
     complete: boolean;
-    energy_grid_in: number[]; // kWh
-    energy_grid_out: number[]; // kWh
-    energy_general_in: number[][]; // kWh
-    energy_general_out: number[][]; // kWh
+    energy_import: number[/*meter_slot*/][/*timestamp_slot*/]; // kWh
+    energy_export: number[/*meter_slot*/][/*timestamp_slot*/]; // kWh
 }
 
 // https://seaborn.pydata.org/tutorial/color_palettes.html#qualitative-color-palettes
@@ -1207,10 +1205,10 @@ interface EMEnergyAnalysisState {
     data_type: '5min'|'daily';
     current_5min_date: Date;
     current_daily_date: Date;
-    wallbox_5min_cache_energy_total: {[id: number]: {[id: string]: number[]}};
+    wallbox_5min_cache_energy_total: {[id: number]: {[id: string]: number[/*timestamp_slot*/]}};
     wallbox_daily_cache_energy_total: {[id: number]: {[id: string]: number}};
-    energy_manager_5min_cache_energy_total: {[id: string]: {grid_in: number[], grid_out: number[]}};
-    energy_manager_daily_cache_energy_total: {[id: string]: {grid_in: number, grid_out: number}};
+    energy_manager_5min_cache_energy_total: {[id: string]: {import: number[/*meter_slot*/][/*timestamp_slot*/], export: number[/*meter_slot*/][/*timestamp_slot*/]}};
+    energy_manager_daily_cache_energy_total: {[id: string]: {import: number[/*meter_slot*/], export: number[/*meter_slot*/]}};
 }
 
 interface Charger {
@@ -1328,9 +1326,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     reload_subcache = true;
                 }
                 else {
-                    let slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
+                    let timestamp_slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
 
-                    if (slot > 0 && data.flags[slot - 1] === null) {
+                    if (timestamp_slot > 0 && data.flags[timestamp_slot - 1] === null) {
                         // previous slot has no data. was a previous update event missed?
                         delete subcache[key];
                         reload_subcache = true;
@@ -1338,9 +1336,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     else {
                         data.update_timestamp = Date.now();
                         data.empty = false;
-                        data.complete = slot == 287; // update for last 5min slot of the day
-                        data.flags[slot] = changed.flags;
-                        data.power[slot] = changed.power;
+                        data.complete = timestamp_slot == 287; // update for last 5min slot of the day
+                        data.flags[timestamp_slot] = changed.flags;
+                        data.power[timestamp_slot] = changed.power;
 
                         this.schedule_uplot_update();
                     }
@@ -1367,9 +1365,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 // got changed event without having this day cached before
                 reload_cache = true;
             } else {
-                let slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
+                let timestamp_slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
 
-                if (slot > 0 && data.flags[slot - 1] === null) {
+                if (timestamp_slot > 0 && data.flags[timestamp_slot - 1] === null) {
                     // previous slot has no data. was a previous update event missed?
                     delete this.energy_manager_5min_cache[key];
                     reload_cache = true;
@@ -1377,13 +1375,15 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 else {
                     data.update_timestamp = Date.now();
                     data.empty = false;
-                    data.complete = slot == 287; // update for last 5min slot of the day
-                    data.flags[slot] = changed.flags;
-                    data.power_grid[slot] = changed.power_grid;
-                    data.power_general[slot] = changed.power_general;
+                    data.complete = timestamp_slot == 287; // update for last 5min slot of the day
+                    data.flags[timestamp_slot] = changed.flags;
 
-                    if (data.power_grid[slot] !== null) {
-                        data.power_grid_empty = false;
+                    for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                        data.power[meter_slot][timestamp_slot] = changed.power[meter_slot];
+
+                        if (data.power[meter_slot][timestamp_slot] !== null) {
+                            data.power_empty[meter_slot] = false;
+                        }
                     }
 
                     this.schedule_uplot_update();
@@ -1417,9 +1417,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     reload_subcache = true;
                 }
                 else {
-                    let slot = changed.day - 1;
+                    let timestamp_slot = changed.day - 1;
 
-                    if (slot > 0 && data.energy[slot - 1] == null) {
+                    if (timestamp_slot > 0 && data.energy[timestamp_slot - 1] == null) {
                         // previous slot has no data. was a previous update event missed?
                         delete subcache[key];
                         reload_subcache = true;
@@ -1428,7 +1428,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         data.update_timestamp = Date.now();
                         data.empty = false;
                         // FIXME: how to set complete = true here?
-                        data.energy[slot] = changed.energy;
+                        data.energy[timestamp_slot] = changed.energy;
                     }
 
                     this.schedule_uplot_update();
@@ -1455,17 +1455,15 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 // got changed event without having this day cached before
                 reload_cache = true;
             } else {
-                let slot = changed.day - 1;
+                let timestamp_slot = changed.day - 1;
 
                 data.update_timestamp = Date.now();
                 data.empty = false;
                 // FIXME: how to set complete = true here?
-                data.energy_grid_in[slot] = changed.energy_grid_in;
-                data.energy_grid_out[slot] = changed.energy_grid_out;
 
-                for (let i = 0; i < 6; ++i) {
-                    data.energy_general_in[i][slot] = changed.energy_general_in[i];
-                    data.energy_general_out[i][slot] = changed.energy_general_out[i];
+                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                    data.energy_import[meter_slot][timestamp_slot] = changed.energy_import[meter_slot];
+                    data.energy_export[meter_slot][timestamp_slot] = changed.energy_export[meter_slot];
                 }
 
                 this.schedule_uplot_update();
@@ -1565,19 +1563,23 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             extra_names: [null],
         };
 
-        let slot_count: number = 0;
+        let timestamp_slot_count: number = 0;
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
-        if (energy_manager_data && !energy_manager_data.empty) {
-            slot_count = Math.max(slot_count, energy_manager_data.power_grid.length);
+        if (energy_manager_data) {
+            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                if (!energy_manager_data.power_empty[meter_slot]) {
+                    timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power[meter_slot].length);
 
-            uplot_data.keys.push('em_power');
-            uplot_data.names.push(__("em_energy_analysis.script.grid_connection"));
-            uplot_data.values.push(energy_manager_data.power_grid);
-            uplot_data.extras.push(null);
-            uplot_data.stacked.push(false);
-            uplot_data.bars.push(false);
-            uplot_data.extra_names.push(null);
+                    uplot_data.keys.push('em_power_' + meter_slot);
+                    uplot_data.names.push(`Meter #${meter_slot}`); // FIXME: use meter display name instead
+                    uplot_data.values.push(energy_manager_data.power[meter_slot]);
+                    uplot_data.extras.push(null);
+                    uplot_data.stacked.push(false);
+                    uplot_data.bars.push(false);
+                    uplot_data.extra_names.push(null);
+                }
+            }
         }
 
         for (let charger of this.chargers) {
@@ -1585,7 +1587,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let wallbox_data = this.wallbox_5min_cache[charger.uid][key];
 
                 if (wallbox_data && !wallbox_data.empty) {
-                    slot_count = Math.max(slot_count, wallbox_data.power.length);
+                    timestamp_slot_count = Math.max(timestamp_slot_count, wallbox_data.power.length);
 
                     let state = new Array(wallbox_data.flags.length);
 
@@ -1609,11 +1611,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         }
 
-        let timestamps: number[] = new Array(slot_count);
+        let timestamps: number[] = new Array(timestamp_slot_count);
         let base = date.getTime() / 1000;
 
-        for (let slot = 0; slot < slot_count; ++slot) {
-            timestamps[slot] = base + slot * 300;
+        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+            timestamps[timestamp_slot] = base + timestamp_slot * 300;
         }
 
         uplot_data.values[0] = timestamps;
@@ -1672,11 +1674,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             default_visibilty: [null],
         };
 
-        let slot_count: number = 0;
+        let timestamp_slot_count: number = 0;
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
         if (energy_manager_data && !energy_manager_data.empty) {
-            slot_count = Math.max(slot_count, energy_manager_data.flags.length);
+            timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.flags.length);
 
             let phase = new Array(energy_manager_data.flags.length);
             let input3 = new Array(energy_manager_data.flags.length);
@@ -1767,7 +1769,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let wallbox_data = this.wallbox_5min_cache[charger.uid][key];
 
                 if (wallbox_data && !wallbox_data.empty) {
-                    slot_count = Math.max(slot_count, wallbox_data.flags.length);
+                    timestamp_slot_count = Math.max(timestamp_slot_count, wallbox_data.flags.length);
 
                     let state = new Array(wallbox_data.flags.length);
 
@@ -1796,11 +1798,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         }
 
-        let timestamps: number[] = new Array(slot_count);
+        let timestamps: number[] = new Array(timestamp_slot_count);
         let base = date.getTime() / 1000;
 
-        for (let slot = 0; slot < slot_count; ++slot) {
-            timestamps[slot] = base + slot * 300;
+        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+            timestamps[timestamp_slot] = base + timestamp_slot * 300;
         }
 
         uplot_data.values[0] = timestamps;
@@ -1842,24 +1844,25 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             bars: [false],
         };
 
-        let slot_count: number = 0;
+        let timestamp_slot_count: number = 0;
+        let meter_slot: number = 0; // FIXME: handle all meters
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
-        if (energy_manager_data && !energy_manager_data.power_grid_empty) {
-            slot_count = Math.max(slot_count, energy_manager_data.power_grid.length)
+        if (energy_manager_data && !energy_manager_data.power_empty[meter_slot]) {
+            timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power[meter_slot].length)
 
-            uplot_data.keys.push('em_power');
+            uplot_data.keys.push('em_power_' + meter_slot);
             uplot_data.names.push(null);
-            uplot_data.values.push(energy_manager_data.power_grid);
+            uplot_data.values.push(energy_manager_data.power[meter_slot]);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
         }
 
-        let timestamps: number[] = new Array(slot_count);
+        let timestamps: number[] = new Array(timestamp_slot_count);
         let base = date.getTime() / 1000;
 
-        for (let slot = 0; slot < slot_count; ++slot) {
-            timestamps[slot] = base + slot * 5 * 60;
+        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+            timestamps[timestamp_slot] = base + timestamp_slot * 5 * 60;
         }
 
         uplot_data.values[0] = timestamps;
@@ -1930,99 +1933,115 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             bars: [false],
         };
 
-        let slot_count: number = 0;
+        let timestamp_slot_count: number = 0;
         let energy_manager_data = this.energy_manager_daily_cache[key];
         let energy_manager_previous_data = this.energy_manager_daily_cache[previous_key];
+        let energy_import_5min_total = new Array(METERS_SLOTS);
+        let energy_import_daily_total = new Array(METERS_SLOTS);
+        let energy_export_5min_total = new Array(METERS_SLOTS);
+        let energy_export_daily_total = new Array(METERS_SLOTS);
 
         if (energy_manager_data && !energy_manager_data.empty) {
-            // energy_grid_in and energy_grid_out have the same length
-            slot_count = Math.max(slot_count, energy_manager_data.energy_grid_in.length);
+            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                // energy_import and energy_export have the same length
+                timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.energy_import[meter_slot].length);
 
-            let energy_grid_in = new Array(energy_manager_data.energy_grid_in.length);
-            let last_energy_grid_in = null;
-            let energy_grid_in_5min_total = new Array(energy_manager_data.energy_grid_in.length);
-            let energy_grid_in_daily_total: number = null;
+                let energy_import = new Array(energy_manager_data.energy_import[meter_slot].length);
+                let last_energy_import: number = null;
 
-            if (energy_manager_previous_data) {
-                last_energy_grid_in = energy_manager_previous_data.energy_grid_in[energy_manager_previous_data.energy_grid_in.length - 1];
-            }
+                if (energy_manager_previous_data) {
+                    last_energy_import = energy_manager_previous_data.energy_import[meter_slot][energy_manager_previous_data.energy_import.length - 1];
+                }
 
-            for (let i = 0; i < energy_manager_data.energy_grid_in.length; ++i) {
-                if (energy_manager_data.energy_grid_in[i] !== null && last_energy_grid_in !== null) {
-                    energy_grid_in[i] = energy_manager_data.energy_grid_in[i] - last_energy_grid_in;
+                energy_import_5min_total[meter_slot] = new Array(energy_manager_data.energy_import[meter_slot].length);
+                energy_import_daily_total[meter_slot] = null;
 
-                    if (energy_grid_in_daily_total === null) {
-                        energy_grid_in_daily_total = energy_grid_in[i];
+                for (let timestamp_slot = 0; timestamp_slot < energy_manager_data.energy_import[meter_slot].length; ++timestamp_slot) {
+                    if (energy_manager_data.energy_import[meter_slot][timestamp_slot] !== null && last_energy_import !== null) {
+                        energy_import[timestamp_slot] = energy_manager_data.energy_import[meter_slot][timestamp_slot] - last_energy_import;
+
+                        if (energy_import_daily_total[meter_slot] === null) {
+                            energy_import_daily_total[meter_slot] = energy_import[timestamp_slot];
+                        }
+                        else {
+                            energy_import_daily_total[meter_slot] += energy_import[timestamp_slot];
+                        }
                     }
                     else {
-                        energy_grid_in_daily_total += energy_grid_in[i];
-                    }
-                }
-                else {
-                    energy_grid_in[i] = null;
-                }
-
-                energy_grid_in_5min_total[i] = energy_grid_in[i];
-                last_energy_grid_in = energy_manager_data.energy_grid_in[i];
-            }
-
-            uplot_data.keys.push('em_energy_in');
-            uplot_data.names.push(__("em_energy_analysis.script.grid_in"));
-            uplot_data.values.push(energy_grid_in);
-            uplot_data.stacked.push(false);
-            uplot_data.bars.push(true);
-
-            let energy_grid_out = new Array(energy_manager_data.energy_grid_out.length);
-            let last_energy_grid_out = null;
-            let energy_grid_out_5min_total = new Array(energy_manager_data.energy_grid_out.length);
-            let energy_grid_out_daily_total: number = null;
-
-            if (energy_manager_previous_data) {
-                last_energy_grid_out = energy_manager_previous_data.energy_grid_out[energy_manager_previous_data.energy_grid_out.length - 1];
-            }
-
-            for (let i = 0; i < energy_manager_data.energy_grid_out.length; ++i) {
-                if (energy_manager_data.energy_grid_out[i] !== null && last_energy_grid_out !== null) {
-                    energy_grid_out[i] = energy_manager_data.energy_grid_out[i] - last_energy_grid_out;
-
-                    if (energy_grid_out[i] > 0) {
-                        energy_grid_out[i] = -energy_grid_out[i];
+                        energy_import[timestamp_slot] = null;
                     }
 
-                    if (energy_grid_out_daily_total === null) {
-                        energy_grid_out_daily_total = energy_grid_out[i];
+                    energy_import_5min_total[meter_slot][timestamp_slot] = energy_import[timestamp_slot];
+                    last_energy_import = energy_manager_data.energy_import[meter_slot][timestamp_slot];
+                }
+
+                // FIXME: only show meter #0 for now, because there is no good way to show the other
+                //        meters. they would have to be shown side by side, but there is no space
+                if (meter_slot == 0) {
+                    uplot_data.keys.push('em_energy_import_' + meter_slot);
+                    uplot_data.names.push(`Meter #${meter_slot} Import`); // FIXME: use meter display name instead
+                    uplot_data.values.push(energy_import);
+                    uplot_data.stacked.push(false);
+                    uplot_data.bars.push(true);
+                }
+
+                let energy_export = new Array(energy_manager_data.energy_export[meter_slot].length);
+                let last_energy_export: number = null;
+
+                if (energy_manager_previous_data) {
+                    last_energy_export = energy_manager_previous_data.energy_export[meter_slot][energy_manager_previous_data.energy_export[meter_slot].length - 1];
+                }
+
+                energy_export_5min_total[meter_slot] = new Array(energy_manager_data.energy_export[meter_slot].length);
+                energy_export_daily_total[meter_slot] = null;
+
+                for (let timestamp_slot = 0; timestamp_slot < energy_manager_data.energy_export[meter_slot].length; ++timestamp_slot) {
+                    if (energy_manager_data.energy_export[meter_slot][timestamp_slot] !== null && last_energy_export !== null) {
+                        energy_export[timestamp_slot] = energy_manager_data.energy_export[meter_slot][timestamp_slot] - last_energy_export;
+
+                        if (energy_export[timestamp_slot] > 0) {
+                            energy_export[timestamp_slot] = -energy_export[timestamp_slot];
+                        }
+
+                        if (energy_export_daily_total[meter_slot] === null) {
+                            energy_export_daily_total[meter_slot] = energy_export[timestamp_slot];
+                        }
+                        else {
+                            energy_export_daily_total[meter_slot] += energy_export[timestamp_slot];
+                        }
                     }
                     else {
-                        energy_grid_out_daily_total += energy_grid_out[i];
+                        energy_export[timestamp_slot] = null;
                     }
-                }
-                else {
-                    energy_grid_out[i] = null;
+
+                    energy_export_5min_total[meter_slot][timestamp_slot] = energy_export[timestamp_slot];
+                    last_energy_export = energy_manager_data.energy_export[meter_slot][timestamp_slot];
                 }
 
-                energy_grid_out_5min_total[i] = energy_grid_out[i];
-                last_energy_grid_out = energy_manager_data.energy_grid_out[i];
+                // FIXME: only show meter #0 for now, because there is no good way to show the other
+                //        meters. they would have to be shown side by side, but there is no space
+                if (meter_slot == 0) {
+                    uplot_data.keys.push('em_energy_export_' + meter_slot);
+                    uplot_data.names.push(`Meter #${meter_slot} Export`); // FIXME: use meter display name instead
+                    uplot_data.values.push(energy_export);
+                    uplot_data.stacked.push(false);
+                    uplot_data.bars.push(true);
+                }
             }
-
-            uplot_data.keys.push('em_energy_out');
-            uplot_data.names.push(__("em_energy_analysis.script.grid_out"));
-            uplot_data.values.push(energy_grid_out);
-            uplot_data.stacked.push(false);
-            uplot_data.bars.push(true);
 
             this.setState((prevState) => ({
                 energy_manager_5min_cache_energy_total: {
                     ...prevState.energy_manager_5min_cache_energy_total,
                     [key]: {
-                        grid_in: energy_grid_in_5min_total,
-                        grid_out: energy_grid_out_5min_total
+                        import: energy_import_5min_total,
+                        export: energy_export_5min_total
                     }
                 },
                 energy_manager_daily_cache_energy_total: {
                     ...prevState.energy_manager_daily_cache_energy_total,
                     [key]: {
-                        grid_in: energy_grid_in_daily_total,
-                        grid_out: energy_grid_out_daily_total
+                        import: energy_import_daily_total,
+                        export: energy_export_daily_total
                     }
                 }
             }));
@@ -2034,10 +2053,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let wallbox_previous_data = this.wallbox_daily_cache[charger.uid][previous_key];
 
                 if (wallbox_data && !wallbox_data.empty) {
-                    slot_count = Math.max(slot_count, wallbox_data.energy.length);
+                    timestamp_slot_count = Math.max(timestamp_slot_count, wallbox_data.energy.length);
 
                     let energy = new Array(wallbox_data.energy.length);
-                    let last_energy = null;
+                    let last_energy: number = null;
                     let energy_5min_total = new Array(wallbox_data.energy.length);
                     let energy_daily_total: number = null;
 
@@ -2045,23 +2064,23 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         last_energy = wallbox_previous_data.energy[wallbox_previous_data.energy.length - 1];
                     }
 
-                    for (let i = 0; i < wallbox_data.energy.length; ++i) {
-                        if (wallbox_data.energy[i] !== null && last_energy !== null) {
-                            energy[i] = wallbox_data.energy[i] - last_energy;
+                    for (let timestamp_slot = 0; timestamp_slot < wallbox_data.energy.length; ++timestamp_slot) {
+                        if (wallbox_data.energy[timestamp_slot] !== null && last_energy !== null) {
+                            energy[timestamp_slot] = wallbox_data.energy[timestamp_slot] - last_energy;
 
                             if (energy_daily_total === null) {
-                                energy_daily_total = energy[i];
+                                energy_daily_total = energy[timestamp_slot];
                             }
                             else {
-                                energy_daily_total += energy[i];
+                                energy_daily_total += energy[timestamp_slot];
                             }
                         }
                         else {
-                            energy[i] = null;
+                            energy[timestamp_slot] = null;
                         }
 
-                        energy_5min_total[i] = energy[i];
-                        last_energy = wallbox_data.energy[i];
+                        energy_5min_total[timestamp_slot] = energy[timestamp_slot];
+                        last_energy = wallbox_data.energy[timestamp_slot];
                     }
 
                     uplot_data.keys.push('wb_energy_' + charger.uid);
@@ -2088,11 +2107,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         }
 
-        let timestamps: number[] = new Array(slot_count);
+        let timestamps: number[] = new Array(timestamp_slot_count);
         let base = date.getTime() / 1000;
 
-        for (let slot = 0; slot < slot_count; ++slot) {
-            timestamps[slot] = base + slot * 24 * 60 * 60;
+        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+            timestamps[timestamp_slot] = base + timestamp_slot * 24 * 60 * 60;
         }
 
         uplot_data.values[0] = timestamps;
@@ -2175,21 +2194,21 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         now = Date.now();
 
         let payload = JSON.parse(response);
-        let slot_count = payload.length / 2;
+        let timestamp_slot_count = payload.length / 2;
         let data: Wallbox5minData = {
             update_timestamp: now,
             use_timestamp: now,
             empty: true,
             complete: key < this.date_to_5min_key(new Date(now)),
-            flags: new Array(slot_count),
-            power: new Array(slot_count),
+            flags: new Array(timestamp_slot_count),
+            power: new Array(timestamp_slot_count),
         };
 
-        for (let slot = 0; slot < slot_count; ++slot) {
-            data.flags[slot] = payload[slot * 2];
-            data.power[slot] = payload[slot * 2 + 1];
+        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+            data.flags[timestamp_slot] = payload[timestamp_slot * 2];
+            data.power[timestamp_slot] = payload[timestamp_slot * 2 + 1];
 
-            if (data.flags[slot] !== null) {
+            if (data.flags[timestamp_slot] !== null) {
                 data.empty = false;
             }
         }
@@ -2241,36 +2260,36 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         now = Date.now();
 
         let payload = JSON.parse(response);
-        let slot_count = payload.length / 8;
+        let timestamp_slot_count = payload.length / 8;
         let data: EnergyManager5minData = {
             update_timestamp: now,
             use_timestamp: now,
             empty: true,
             complete: key < this.date_to_5min_key(new Date(now)),
-            flags: new Array(slot_count),
-            power_grid: new Array(slot_count),
-            power_grid_empty: true,
-            power_general: new Array(slot_count)
+            flags: new Array(METERS_SLOTS),
+            power: new Array(METERS_SLOTS),
+            power_empty: new Array(METERS_SLOTS),
         };
 
-        for (let slot = 0; slot < slot_count; ++slot) {
-            data.flags[slot] = payload[slot * 8];
-            data.power_grid[slot] = payload[slot * 8 + 1];
-            data.power_general[slot] = [
-                payload[slot * 8 + 2],
-                payload[slot * 8 + 3],
-                payload[slot * 8 + 4],
-                payload[slot * 8 + 5],
-                payload[slot * 8 + 6],
-                payload[slot * 8 + 7],
-            ];
+        data.power_empty.fill(true);
 
-            if (data.flags[slot] !== null) {
+        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+            data.flags[timestamp_slot] = payload[timestamp_slot * 8];
+
+            if (data.flags[timestamp_slot] !== null) {
                 data.empty = false;
             }
+        }
 
-            if (data.power_grid[slot] !== null) {
-                data.power_grid_empty = false;
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            data.power[meter_slot] = new Array(timestamp_slot_count);
+
+            for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+                data.power[meter_slot][timestamp_slot] = payload[timestamp_slot * 8 + 1 + meter_slot];
+
+                if (data.power[meter_slot][timestamp_slot] !== null) {
+                    data.power_empty[meter_slot] = false;
+                }
             }
         }
 
@@ -2355,19 +2374,19 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         now = Date.now();
 
         let payload = JSON.parse(response);
-        let slot_count = payload.length;
+        let timestamp_slot_count = payload.length;
         let data: WallboxDailyData = {
             update_timestamp: now,
             use_timestamp: now,
             empty: true,
             complete: key < this.date_to_daily_key(new Date(now)),
-            energy: new Array(slot_count),
+            energy: new Array(timestamp_slot_count),
         };
 
-        for (let slot = 0; slot < slot_count; ++slot) {
-            data.energy[slot] = payload[slot];
+        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+            data.energy[timestamp_slot] = payload[timestamp_slot];
 
-            if (data.energy[slot] != null) {
+            if (data.energy[timestamp_slot] !== null) {
                 data.empty = false;
             }
         }
@@ -2424,44 +2443,30 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         now = Date.now();
 
         let payload = JSON.parse(response);
-        let slot_count = payload.length / 14;
+        let timestamp_slot_count = payload.length / 14;
         let data: EnergyManagerDailyData = {
             update_timestamp: now,
             use_timestamp: now,
             empty: true,
             complete: key < this.date_to_daily_key(new Date(now)),
-            energy_grid_in: new Array(slot_count),
-            energy_grid_out: new Array(slot_count),
-            energy_general_in: new Array(slot_count),
-            energy_general_out: new Array(slot_count),
+            energy_import: new Array(METERS_SLOTS),
+            energy_export: new Array(METERS_SLOTS),
         };
 
-        for (let slot = 0; slot < slot_count; ++slot) {
-            data.energy_grid_in[slot] = payload[slot * 14];
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            data.energy_import[meter_slot] = new Array(timestamp_slot_count);
+            data.energy_export[meter_slot] = new Array(timestamp_slot_count);
 
-            if (data.energy_grid_in[slot] != null) {
-                data.empty = false;
-            }
+            for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+                data.energy_import[meter_slot][timestamp_slot] = payload[timestamp_slot * 14 + meter_slot];
 
-            data.energy_grid_out[slot] = payload[slot * 14 + 1];
-
-            if (data.energy_grid_out[slot] != null) {
-                data.empty = false;
-            }
-
-            data.energy_general_in[slot] = new Array(6);
-            data.energy_general_out[slot] = new Array(6);
-
-            for (let i = 0; i < 6; ++i) {
-                data.energy_general_in[slot][i] = payload[slot * 14 + 2 + i];
-
-                if (data.energy_general_in[slot][i] != null) {
+                if (data.energy_import[meter_slot][timestamp_slot] !== null) {
                     data.empty = false;
                 }
 
-                data.energy_general_out[slot][i] = payload[slot * 14 + 8 + i];
+                data.energy_export[meter_slot][timestamp_slot] = payload[timestamp_slot * 14 + 7 + meter_slot];
 
-                if (data.energy_general_out[slot][i] != null) {
+                if (data.energy_export[meter_slot][timestamp_slot] !== null) {
                     data.empty = false;
                 }
             }
@@ -2650,30 +2655,35 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         let total_5min = () => {
             let key = this.date_to_daily_key(state.current_5min_date);
             let energy_total = state.energy_manager_5min_cache_energy_total[key];
-            let slot = state.current_5min_date.getDate() - 1;
+            let timestamp_slot = state.current_5min_date.getDate() - 1;
             let rows = [];
-            let has_grid_in = util.hasValue(energy_total) && util.hasValue(energy_total.grid_in) && util.hasValue(energy_total.grid_in[slot]);
-            let has_grid_out = util.hasValue(energy_total) && util.hasValue(energy_total.grid_out) && util.hasValue(energy_total.grid_out[slot]);
 
-            if (has_grid_in || has_grid_out) {
-                rows.push(
-                    <FormRow label={__("em_energy_analysis.script.grid_in") + ' / ' + __("em_energy_analysis.script.grid_out")}>
-                        <div class="row">
-                            <div class="col-md-6">
-                                {has_grid_in ?
-                                    <OutputFloat value={energy_total.grid_in[slot]} digits={2} scale={0} unit="kWh"/>
-                                    : undefined
-                                }
-                            </div>
-                            <div class="col-md-6">
-                                {has_grid_out ?
-                                    <OutputFloat value={energy_total.grid_out[slot]} digits={2} scale={0} unit="kWh"/>
-                                    : undefined
-                                }
-                            </div>
-                        </div>
-                    </FormRow>
-                );
+            if (util.hasValue(energy_total)) {
+                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                    let has_import = util.hasValue(energy_total.import) && util.hasValue(energy_total.import[meter_slot]) && util.hasValue(energy_total.import[meter_slot][timestamp_slot]);
+                    let has_export = util.hasValue(energy_total.export) && util.hasValue(energy_total.export[meter_slot]) && util.hasValue(energy_total.export[meter_slot][timestamp_slot]);
+
+                    if (has_import || has_export) {
+                        rows.push(
+                            <FormRow label={`Meter #${meter_slot} Import / Export`}>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {has_import ?
+                                            <OutputFloat value={energy_total.import[meter_slot][timestamp_slot]} digits={2} scale={0} unit="kWh"/>
+                                            : undefined
+                                        }
+                                    </div>
+                                    <div class="col-md-6">
+                                        {has_export ?
+                                            <OutputFloat value={energy_total.export[meter_slot][timestamp_slot]} digits={2} scale={0} unit="kWh"/>
+                                            : undefined
+                                        }
+                                    </div>
+                                </div>
+                            </FormRow>
+                        );
+                    }
+                }
             }
 
             for (let charger of this.chargers) {
@@ -2702,25 +2712,32 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let energy_total = state.energy_manager_daily_cache_energy_total[key];
             let rows = [];
 
-            if (util.hasValue(energy_total) && (util.hasValue(energy_total.grid_in) || util.hasValue(energy_total.grid_out))) {
-                rows.push(
-                    <FormRow label={__("em_energy_analysis.script.grid_in") + ' / ' + __("em_energy_analysis.script.grid_out")}>
-                        <div class="row">
-                            <div class="col-md-6">
-                                {util.hasValue(energy_total.grid_in) ?
-                                    <OutputFloat value={energy_total.grid_in} digits={2} scale={0} unit="kWh"/>
-                                    : undefined
-                                }
-                            </div>
-                            <div class="col-md-6">
-                                {util.hasValue(energy_total.grid_out) ?
-                                    <OutputFloat value={energy_total.grid_out} digits={2} scale={0} unit="kWh"/>
-                                    : undefined
-                                }
-                            </div>
-                        </div>
-                    </FormRow>
-                );
+            if (util.hasValue(energy_total)) {
+                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                    let has_import = util.hasValue(energy_total.import) && util.hasValue(energy_total.import[meter_slot]);
+                    let has_export = util.hasValue(energy_total.export) && util.hasValue(energy_total.export[meter_slot]);
+
+                    if (has_import || has_export) {
+                        rows.push(
+                            <FormRow label={`Meter #${meter_slot} Import / Export`}>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {has_import ?
+                                            <OutputFloat value={energy_total.import[meter_slot]} digits={2} scale={0} unit="kWh"/>
+                                            : undefined
+                                        }
+                                    </div>
+                                    <div class="col-md-6">
+                                        {has_export ?
+                                            <OutputFloat value={energy_total.export[meter_slot]} digits={2} scale={0} unit="kWh"/>
+                                            : undefined
+                                        }
+                                    </div>
+                                </div>
+                            </FormRow>
+                        );
+                    }
+                }
             }
 
             for (let charger of this.chargers) {
