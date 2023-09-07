@@ -68,7 +68,7 @@ void EnergyManager::update_history_meter_power(uint32_t slot, float power /* W, 
 {
     uint32_t now = millis();
 
-    if (!isnan(history_meter_power_value[slot])) {
+    if (!isnan(history_meter_power_value[slot]) && !isnan(power)) {
         uint32_t duration_ms;
 
         if (now >= history_meter_power_timestamp[slot]) {
@@ -77,8 +77,9 @@ void EnergyManager::update_history_meter_power(uint32_t slot, float power /* W, 
             duration_ms = UINT32_MAX - history_meter_power_timestamp[slot] + now;
         }
 
+        double power_avg_w = ((double)history_meter_power_value[slot] + (double)power) / 2.0;
         double duration_s = (double)duration_ms / 1000.0;
-        double energy_ws = history_meter_power_value[slot] * duration_s;
+        double energy_ws = power_avg_w * duration_s;
 
         history_meter_power_sum[slot] += energy_ws;
         history_meter_power_duration[slot] += duration_s;
