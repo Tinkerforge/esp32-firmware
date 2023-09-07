@@ -858,7 +858,7 @@ static int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t cli
     int ret = ESP_FAIL;
 
     if (client == NULL || len < 0 ||
-        (opcode != WS_TRANSPORT_OPCODES_CLOSE && (data == NULL || len <= 0))) {
+        (opcode != WS_TRANSPORT_OPCODES_CLOSE && (data == NULL && len > 0))) {
         ESP_LOGE(TAG, "Invalid arguments");
         return ESP_FAIL;
     }
