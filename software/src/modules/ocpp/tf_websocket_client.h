@@ -42,6 +42,7 @@ typedef enum {
     WEBSOCKET_EVENT_DISCONNECTED,   /*!< The connection has been disconnected */
     WEBSOCKET_EVENT_DATA,           /*!< When receiving data from the server, possibly multiple portions of the packet */
     WEBSOCKET_EVENT_CLOSED,         /*!< The connection has been closed cleanly */
+    WEBSOCKET_EVENT_PONG,
     WEBSOCKET_EVENT_MAX
 } tf_websocket_event_id_t;
 

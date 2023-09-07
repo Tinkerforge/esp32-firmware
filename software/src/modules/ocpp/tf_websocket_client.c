@@ -572,6 +572,7 @@ static esp_err_t tf_websocket_client_recv(tf_websocket_client_handle_t client)
                                   client->config->network_timeout_ms);
     } else if (client->last_opcode == WS_TRANSPORT_OPCODES_PONG) {
         client->wait_for_pong_resp = false;
+        tf_websocket_client_dispatch_event(client, WEBSOCKET_EVENT_PONG, NULL, 0);
     } else if (client->last_opcode == WS_TRANSPORT_OPCODES_CLOSE) {
         ESP_LOGD(TAG, "Received close frame");
         client->state = WEBSOCKET_STATE_CLOSING;
