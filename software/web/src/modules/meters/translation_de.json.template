@@ -8,7 +8,7 @@
             "meters": "Stromzähler"
         },
         "content": {
-            "energy_meter": "Stromzähler",
+            "meters": "Stromzähler",
             "history": "Verlauf (48 h)",
             "live": "Live",
             "detailed_values": "Details",
