@@ -495,11 +495,24 @@ struct from_json {
         auto arr_size = arr.size();
 
         auto *val = x.getVal();
-        const auto *prototype = as_const(x).getSlot()->prototype;
+        const auto old_size = val->size();
 
-        val->clear();
+        if (arr_size != old_size) {
+            if (arr_size < old_size) {
+                // resize() to smaller value truncates vector.
+                val->resize(arr_size);
+                if (arr_size < (val->capacity() / 2))
+                    val->shrink_to_fit();
+            } else {
+                // Cannot use resize() to enlarge the vector because the new elements wouldn't be copies of the prototype.
+                val->reserve(arr_size);
+                const auto *prototype = as_const(x).getSlot()->prototype;
+                for (size_t i = old_size; i < arr_size; ++i)
+                    val->push_back(*prototype);
+            }
+        }
+
         for (size_t i = 0; i < arr_size; ++i) {
-            val->push_back(*prototype);
             String inner_error = Config::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, (*val)[i].value);
             if (inner_error != "")
                 return String("[") + i + "] " + inner_error;
@@ -703,12 +716,25 @@ struct from_update {
             return "ConfUpdate node was not an array.";
 
         const auto arr_size = arr->elements.size();
-        const auto *prototype = as_const(x).getSlot()->prototype;
         auto *val = x.getVal();
+        const auto old_size = val->size();
 
-        val->clear();
+        if (arr_size != old_size) {
+            if (arr_size < old_size) {
+                // resize() to smaller value truncates vector.
+                val->resize(arr_size);
+                if (arr_size < (val->capacity() / 2))
+                    val->shrink_to_fit();
+            } else {
+                // Cannot use resize() to enlarge the vector because the new elements wouldn't be copies of the prototype.
+                val->reserve(arr_size);
+                const auto *prototype = as_const(x).getSlot()->prototype;
+                for (size_t i = old_size; i < arr_size; ++i)
+                    val->push_back(*prototype);
+            }
+        }
+
         for (size_t i = 0; i < arr_size; ++i) {
-            val->push_back(*prototype);
             String inner_error = Config::apply_visitor(from_update{&arr->elements[i]}, (*val)[i].value);
             if (inner_error != "")
                 return String("[") + i + "] " + inner_error;
