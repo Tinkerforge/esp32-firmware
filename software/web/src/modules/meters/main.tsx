@@ -25,16 +25,11 @@ import * as API from "../../ts/api";
 import { __, translate_unchecked } from "../../ts/translation";
 import { h, render, createRef, Fragment, Component, ComponentChild } from "preact";
 import { PageHeader } from "../../ts/components/page_header";
-import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { FormRow } from "../../ts/components/form_row";
-import { Button } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { OutputFloat } from "../../ts/components/output_float";
-import { Zap, ZapOff } from "react-feather";
 import uPlot from 'uplot';
-import { InputText } from "../../ts/components/input_text";
-import { FormSeparator } from "../../ts/components/form_separator";
 import { SubPage } from "../../ts/components/sub_page";
 import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS } from "./meter_value_id";
 
