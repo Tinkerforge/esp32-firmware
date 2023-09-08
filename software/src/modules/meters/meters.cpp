@@ -26,6 +26,10 @@
 #include "tools.h"
 
 #include "gcc_warnings.h"
+#ifdef __GNUC__
+// The code is this file contains several casts to a type defined by a macro, which may result in useless casts.
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
 
 static MeterGeneratorNone meter_generator_none;
 
@@ -111,20 +115,124 @@ void Meters::setup()
             continue;
         }
         if (configured_meter_class != METER_CLASS_NONE) {
-            meter_slot.power_hist.setup();
+            meter_slot.power_history.setup();
         }
         meter->setup();
         meter_slot.meter = meter;
     }
 
+    history_chars_per_value = max(String(METER_VALUE_HISTORY_VALUE_MIN).length(), String(METER_VALUE_HISTORY_VALUE_MAX).length());
+    // val_min values are replaced with null -> require at least 4 chars per value.
+    history_chars_per_value = max(4U, history_chars_per_value);
+    // For ',' between the values.
+    ++history_chars_per_value;
+
     task_scheduler.scheduleWithFixedDelay([this](){
+        uint32_t now = millis();
+        uint32_t current_history_slot = now / (HISTORY_MINUTE_INTERVAL * 60 * 1000);
+        bool update_history = current_history_slot != last_history_slot;
+        METER_VALUE_HISTORY_VALUE_TYPE live_samples[METERS_SLOTS];
+        METER_VALUE_HISTORY_VALUE_TYPE history_samples[METERS_SLOTS];
+        bool valid_samples[METERS_SLOTS];
+        METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
+
         for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
             MeterSlot &meter_slot = this->meter_slots[slot];
 
             if (meter_slot.meter->get_class() != METER_CLASS_NONE) {
-                meter_slot.power_hist.tick();
+                meter_slot.power_history.tick(now, update_history, &live_samples[slot], &history_samples[slot]);
+                valid_samples[slot] = true;
+            }
+            else {
+                valid_samples[slot] = false;
             }
         }
+
+        last_live_update = now;
+        end_this_interval = last_live_update;
+
+        if (samples_this_interval == 0) {
+            begin_this_interval = last_live_update;
+        }
+
+        ++samples_this_interval;
+
+#if MODULE_WS_AVAILABLE()
+        {
+            const size_t buf_size = METERS_SLOTS * history_chars_per_value + 100;
+            char *buf_ptr = static_cast<char *>(malloc(sizeof(char) * buf_size));
+            size_t buf_written = 0;
+
+            buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "{\"topic\":\"meters/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[", static_cast<double>(live_samples_per_second()));
+
+            if (buf_written < buf_size) {
+                for (uint32_t slot = 0; slot < METERS_SLOTS && buf_written < buf_size; slot++) {
+                    if (!valid_samples[slot]) {
+                        buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, slot == 0 ? "[%s]" : ",[%s]", "");
+                    }
+                    else if (live_samples[slot] == val_min) {
+                        buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, slot == 0 ? "[%s]" : ",[%s]", "null");
+                    }
+                    else {
+                        buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, slot == 0 ? "[%d]" : ",[%d]", static_cast<int>(live_samples[slot]));
+                    }
+                }
+
+                if (buf_written < buf_size) {
+                    buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", "]}}\n");
+                }
+            }
+
+            if (buf_written > 0) {
+                ws.web_sockets.sendToAllOwned(buf_ptr, static_cast<size_t>(buf_written));
+            }
+        }
+#endif
+
+        if (update_history) {
+            last_history_update = now;
+            samples_last_interval = samples_this_interval;
+            begin_last_interval = begin_this_interval;
+            end_last_interval = end_this_interval;
+
+            samples_this_interval = 0;
+            begin_this_interval = 0;
+            end_this_interval = 0;
+
+#if MODULE_WS_AVAILABLE()
+            {
+                const size_t buf_size = METERS_SLOTS * history_chars_per_value + 100;
+                char *buf_ptr = static_cast<char *>(malloc(sizeof(char) * buf_size));
+                size_t buf_written = 0;
+
+                buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", "{\"topic\":\"meters/history_samples\",\"payload\":{\"samples\":[");
+
+                if (buf_written < buf_size) {
+                    for (uint32_t slot = 0; slot < METERS_SLOTS && buf_written < buf_size; slot++) {
+                        if (!valid_samples[slot]) {
+                            buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, slot == 0 ? "[%s]" : ",[%s]", "");
+                        }
+                        else if (history_samples[slot] == val_min) {
+                            buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, slot == 0 ? "[%s]" : ",[%s]", "null");
+                        }
+                        else {
+                            buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, slot == 0 ? "[%d]" : ",[%d]", static_cast<int>(history_samples[slot]));
+                        }
+                    }
+
+                    if (buf_written < buf_size) {
+                        buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", "]}}\n");
+                    }
+                }
+
+                if (buf_written > 0) {
+                    ws.web_sockets.sendToAllOwned(buf_ptr, static_cast<size_t>(buf_written));
+                }
+            }
+#endif
+        }
+
+        last_history_slot = current_history_slot;
     }, 0, 500);
 
     api.addFeature("meters");
@@ -145,15 +253,97 @@ void Meters::register_urls()
         const String base_path = get_path(slot, Meters::PathType::Base);
 
         if (meter_slot.meter->get_class() != METER_CLASS_NONE) {
-            meter_slot.power_hist.register_urls(base_path);
+            meter_slot.power_history.register_urls(base_path);
         } else {
-            meter_slot.power_hist.register_urls_empty(base_path);
+            meter_slot.power_history.register_urls_empty(base_path);
         }
 
         if (meter_slot.meter) {
             meter_slot.meter->register_urls(base_path);
         }
     }
+
+    server.on("/meters/history", HTTP_GET, [this](WebServerRequest request) {
+        uint32_t now = millis();
+        const size_t buf_size = HISTORY_RING_BUF_SIZE * history_chars_per_value + 100;
+        std::unique_ptr<char[]> buf{new char[buf_size]};
+        char *buf_ptr = buf.get();
+        size_t buf_written = 0;
+        uint32_t offset = now - last_history_update;
+
+        buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[", offset);
+
+        request.beginChunkedResponse(200, "application/json; charset=utf-8");
+
+        for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+            MeterSlot &meter_slot = meter_slots[slot];
+
+            if (meter_slot.meter->get_class() != METER_CLASS_NONE) {
+                if (buf_written < buf_size) {
+                    buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", slot == 0 ? "[" : ",[");
+
+                    if (buf_written < buf_size) {
+                        buf_written += meter_slot.power_history.format_history_samples(buf_ptr + buf_written, buf_size - buf_written);
+
+                        if (buf_written < buf_size) {
+                            buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", "]");
+                        }
+                    }
+                }
+            } else if (buf_written < buf_size) {
+                buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", slot == 0 ? "null" : ",null");
+            }
+
+            request.sendChunk(buf_ptr, static_cast<ssize_t>(buf_written));
+
+            buf_written = 0;
+        }
+
+        request.sendChunk("]}", 2);
+
+        return request.endChunkedResponse();
+    });
+
+    server.on("/meters/live", HTTP_GET, [this](WebServerRequest request) {
+        uint32_t now = millis();
+        const size_t buf_size = HISTORY_RING_BUF_SIZE * history_chars_per_value + 100;
+        std::unique_ptr<char[]> buf{new char[buf_size]};
+        char *buf_ptr = buf.get();
+        size_t buf_written = 0;
+        uint32_t offset = now - last_live_update;
+
+        buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[", offset, static_cast<double>(live_samples_per_second()));
+
+        request.beginChunkedResponse(200, "application/json; charset=utf-8");
+
+        for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+            MeterSlot &meter_slot = meter_slots[slot];
+
+            if (meter_slot.meter->get_class() != METER_CLASS_NONE) {
+                if (buf_written < buf_size) {
+                    buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", slot == 0 ? "[" : ",[");
+
+                    if (buf_written < buf_size) {
+                        buf_written += meter_slot.power_history.format_live_samples(buf_ptr + buf_written, buf_size - buf_written);
+
+                        if (buf_written < buf_size) {
+                            buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", "]");
+                        }
+                    }
+                }
+            } else if (buf_written < buf_size) {
+                buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", slot == 0 ? "null" : ",null");
+            }
+
+            request.sendChunk(buf_ptr, static_cast<ssize_t>(buf_written));
+
+            buf_written = 0;
+        }
+
+        request.sendChunk("]}", 2);
+
+        return request.endChunkedResponse();
+    });
 
 #if MODULE_METERS_LEGACY_API_AVAILABLE()
     if (meters_legacy_api.get_linked_meter_slot() < METERS_SLOTS) {
@@ -356,7 +546,7 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
     meter_slot.values_last_updated_at = now_us();
 
     if (!isnan(new_value) && index == meter_slot.index_cache_single_values[INDEX_CACHE_POWER]) {
-        meter_slot.power_hist.add_sample(new_value);
+        meter_slot.power_history.add_sample(new_value);
     }
 }
 
@@ -389,7 +579,7 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
 
         float power;
         if (get_power(slot, &power) == ValueAvailability::Fresh) {
-            meter_slot.power_hist.add_sample(power);
+            meter_slot.power_history.add_sample(power);
         }
     }
 }
@@ -425,7 +615,7 @@ void Meters::update_all_values(uint32_t slot, Config *new_values)
 
         float power;
         if (get_power(slot, &power) == ValueAvailability::Fresh) {
-            meter_slot.power_hist.add_sample(power);
+            meter_slot.power_history.add_sample(power);
         }
     }
 }
@@ -516,4 +706,39 @@ uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_
             return i;
     }
     return UINT32_MAX;
+}
+
+float Meters::live_samples_per_second()
+{
+    float samples_per_second = 0;
+
+    // Only calculate samples_per_second based on the last interval
+    // if we have seen at least 2 values. With the API meter module,
+    // it can happen that we see exactly one value in the first interval.
+    // In this case 0 samples_per_second is reported for the next
+    // interval (i.e. four minutes).
+    if (samples_last_interval > 1) {
+        uint32_t duration = end_last_interval - begin_last_interval;
+
+        if (duration > 0) {
+            // (samples_last_interval - 1) because there are N samples but only (N - 1) gaps
+            // between them covering (end_last_interval - begin_last_interval) milliseconds
+            samples_per_second = static_cast<float>((samples_last_interval - 1) * 1000) / static_cast<float>(duration);
+        }
+    }
+    // Checking only for > 0 in this branch is fine: If we have seen
+    // 0 or 1 samples in the last interval and exactly 1 in this interval,
+    // we can only report that samples_per_second is 0.
+    // This fixes itself when the next sample arrives.
+    else if (samples_this_interval > 0) {
+        uint32_t duration = end_this_interval - begin_this_interval;
+
+        if (duration > 0) {
+            // (samples_this_interval - 1) because there are N samples but only (N - 1) gaps
+            // between them covering (end_this_interval - begin_this_interval) milliseconds
+            samples_per_second = static_cast<float>((samples_this_interval - 1) * 1000) / static_cast<float>(duration);
+        }
+    }
+
+    return samples_per_second;
 }

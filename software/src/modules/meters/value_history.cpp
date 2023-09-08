@@ -43,43 +43,17 @@ void ValueHistory::setup()
         history.push(val_min);
     }
 
+    for (size_t i = 0; i < live.size(); ++i) {
+        //float f = 5000.0 * sin(PI/120.0 * i) + 5000.0;
+        // Use negative state to mark that these are pre-filled.
+        live.push(val_min);
+    }
+
     chars_per_value = max(String(METER_VALUE_HISTORY_VALUE_MIN).length(), String(METER_VALUE_HISTORY_VALUE_MAX).length());
     // val_min values are replaced with null -> require at least 4 chars per value.
     chars_per_value = max(4U, chars_per_value);
     // For ',' between the values.
     ++chars_per_value;
-
-#if MODULE_WS_AVAILABLE()
-    ws.addOnConnectCallback([this](WebSocketsClient client) {
-        const size_t buf_size = RING_BUF_SIZE * chars_per_value + 200;
-
-        // live
-        size_t buf_written = 0;
-        char *buf = static_cast<char *>(malloc(buf_size));
-
-        if (buf == nullptr)
-            return;
-
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"topic\":\"%slive\",\"payload\":", base_url.c_str());
-        buf_written += format_live(buf + buf_written, buf_size - buf_written);
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "}\n");
-
-        client.sendOwned(buf, buf_written);
-
-        // history
-        buf_written = 0;
-        buf = static_cast<char *>(malloc(buf_size));
-
-        if (buf == nullptr)
-            return;
-
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"topic\":\"%shistory\",\"payload\":", base_url.c_str());
-        buf_written += format_history(buf + buf_written, buf_size - buf_written);
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "}\n");
-
-        client.sendOwned(buf, buf_written);
-    });
-#endif
 }
 
 void ValueHistory::register_urls(String base_url_)
@@ -87,27 +61,17 @@ void ValueHistory::register_urls(String base_url_)
     base_url = base_url_;
 
     server.on(("/" + base_url + "history").c_str(), HTTP_GET, [this](WebServerRequest request) {
-        /*if (!initialized) {
-            request.send(400, "text/html", "not initialized");
-            return;
-        }*/
-
-        const size_t buf_size = RING_BUF_SIZE * chars_per_value + 100;
+        const size_t buf_size = HISTORY_RING_BUF_SIZE * chars_per_value + 100;
         std::unique_ptr<char[]> buf{new char[buf_size]};
-        size_t buf_written = format_history(buf.get(), buf_size);
+        size_t buf_written = format_history(millis(), buf.get(), buf_size);
 
         return request.send(200, "application/json; charset=utf-8", buf.get(), static_cast<ssize_t>(buf_written));
     });
 
     server.on(("/" + base_url + "live").c_str(), HTTP_GET, [this](WebServerRequest request) {
-        /*if (!initialized) {
-            request.send(400, "text/html", "not initialized");
-            return;
-        }*/
-
-        const size_t buf_size = RING_BUF_SIZE * chars_per_value + 100;
+        const size_t buf_size = HISTORY_RING_BUF_SIZE * chars_per_value + 100;
         std::unique_ptr<char[]> buf{new char[buf_size]};
-        size_t buf_written = format_live(buf.get(), buf_size);
+        size_t buf_written = format_live(millis(), buf.get(), buf_size);
 
         return request.send(200, "application/json; charset=utf-8", buf.get(), static_cast<ssize_t>(buf_written));
     });
@@ -136,7 +100,7 @@ void ValueHistory::add_sample(float sample)
     sample_sum += sample;
 }
 
-void ValueHistory::tick()
+void ValueHistory::tick(uint32_t now, bool update_history, METER_VALUE_HISTORY_VALUE_TYPE *live_sample, METER_VALUE_HISTORY_VALUE_TYPE *history_sample)
 {
     METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
     METER_VALUE_HISTORY_VALUE_TYPE live_val = val_min;
@@ -160,102 +124,57 @@ void ValueHistory::tick()
     }
 
     live.push(live_val);
-    live_last_update = millis();
+    *live_sample = live_val;
+    live_last_update = now;
     end_this_interval = live_last_update;
 
-    if (samples_this_interval == 0) {
+    if (all_samples_this_interval == 0) {
         begin_this_interval = live_last_update;
     }
 
+    ++all_samples_this_interval;
+
     if (live_val != val_min) {
-        ++samples_this_interval;
+        ++valid_samples_this_interval;
         sum_this_interval += live_val;
     }
 
-#if MODULE_WS_AVAILABLE()
-    {
-        char *buf;
-        int buf_written;
+    *history_sample = val_min;
 
-        if (live_val == val_min) {
-            buf_written = asprintf(&buf, "{\"topic\":\"%slive_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[null]}}\n", base_url.c_str(), static_cast<double>(samples_per_second()));
-        } else {
-            buf_written = asprintf(&buf, "{\"topic\":\"%slive_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[%d]}}\n", base_url.c_str(), static_cast<double>(samples_per_second()), static_cast<int>(live_val));
-        }
-
-        if (buf_written > 0) {
-            ws.web_sockets.sendToAllOwned(buf, static_cast<size_t>(buf_written));
-        }
-    }
-#endif
-
-    uint32_t current_history_slot = millis() / (HISTORY_MINUTE_INTERVAL * 60 * 1000);
-
-    if (current_history_slot != last_history_slot) {
+    if (update_history) {
         METER_VALUE_HISTORY_VALUE_TYPE history_val;
 
-        if (samples_this_interval == 0) {
+        if (valid_samples_this_interval == 0) {
             history_val = val_min; // TODO push 0 or intxy_t min here? intxy_t min will be translated into null when sending as json. However we document that there is only at most one block of null values at the start of the array indicating a reboot
         } else {
-            history_val = static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(sum_this_interval / samples_this_interval);
+            history_val = static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(sum_this_interval / valid_samples_this_interval);
         }
 
         history.push(history_val);
-        history_last_update = millis();
+        *history_sample = history_val;
+        history_last_update = now;
 
-        samples_last_interval = samples_this_interval;
+        samples_last_interval = all_samples_this_interval;
         begin_last_interval = begin_this_interval;
         end_last_interval = end_this_interval;
 
         sum_this_interval = 0;
-        samples_this_interval = 0;
+        all_samples_this_interval = 0;
+        valid_samples_this_interval = 0;
         begin_this_interval = 0;
         end_this_interval = 0;
-
-#if MODULE_WS_AVAILABLE()
-        char *buf;
-        int buf_written;
-
-        if (history_val == val_min) {
-            buf_written = asprintf(&buf, "{\"topic\":\"%shistory_samples\",\"payload\":{\"samples\":[null]}}\n", base_url.c_str());
-        } else {
-            buf_written = asprintf(&buf, "{\"topic\":\"%shistory_samples\",\"payload\":{\"samples\":[%d]}}\n", base_url.c_str(), static_cast<int>(history_val));
-        }
-
-        if (buf_written > 0) {
-            ws.web_sockets.sendToAllOwned(buf, static_cast<size_t>(buf_written));
-        }
-#endif
-
-        last_history_slot = current_history_slot;
     }
 }
 
-size_t ValueHistory::format_live(char *buf, size_t buf_size)
+size_t ValueHistory::format_live(uint32_t now, char *buf, size_t buf_size)
 {
-    METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
     size_t buf_written = 0;
-    uint32_t offset = millis() - live_last_update;
-    METER_VALUE_HISTORY_VALUE_TYPE val;
+    uint32_t offset = now - live_last_update;
 
-    if (!live.peek(&val)) {
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[]}", offset, static_cast<double>(samples_per_second()));
-    }
-    else {
-        if (val == val_min) {
-            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[null", offset, static_cast<double>(samples_per_second()));
-        } else {
-            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[%d", offset, static_cast<double>(samples_per_second()), static_cast<int>(val));
-        }
+    buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[", offset, static_cast<double>(samples_per_second()));
 
-        size_t last_sample = live.used();
-        for (size_t i = 1; i < last_sample && live.peek_offset(&val, i) && buf_written < buf_size; ++i) {
-            if (val == val_min) {
-                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", ",null");
-            } else {
-                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, ",%d", static_cast<int>(val));
-            }
-        }
+    if (buf_written < buf_size) {
+        buf_written += format_live_samples(buf + buf_written, buf_size - buf_written);
 
         if (buf_written < buf_size) {
             buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "]}");
@@ -265,36 +184,70 @@ size_t ValueHistory::format_live(char *buf, size_t buf_size)
     return buf_written;
 }
 
-size_t ValueHistory::format_history(char *buf, size_t buf_size)
+size_t ValueHistory::format_live_samples(char *buf, size_t buf_size)
 {
     METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
     size_t buf_written = 0;
-    uint32_t offset = millis() - history_last_update;
     METER_VALUE_HISTORY_VALUE_TYPE val;
 
-    if (!history.peek(&val)) {
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[]}", offset);
-    }
-    else {
-        // intxy_t min values are prefilled, because the ESP was booted less than 48 hours ago.
+    if (live.peek(&val)) {
         if (val == val_min) {
-            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[null", offset);
+            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "null");
         } else {
-            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[%d", offset, static_cast<int>(val));
+            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%d", static_cast<int>(val));
         }
 
-        size_t last_sample = history.used();
-        for (size_t i = 1; i < last_sample && history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
-            // intxy_t min values are prefilled, because the ESP was booted less than 48 hours ago.
+        size_t used = live.used();
+        for (size_t i = 1; i < used && live.peek_offset(&val, i) && buf_written < buf_size; ++i) {
             if (val == val_min) {
-                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", ",null");
+                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, ",%s", "null");
             } else {
                 buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, ",%d", static_cast<int>(val));
             }
         }
+    }
+
+    return buf_written;
+}
+
+size_t ValueHistory::format_history(uint32_t now, char *buf, size_t buf_size)
+{
+    size_t buf_written = 0;
+    uint32_t offset = now - history_last_update;
+
+    buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[", offset);
+
+    if (buf_written < buf_size) {
+        buf_written += format_history_samples(buf + buf_written, buf_size - buf_written);
 
         if (buf_written < buf_size) {
             buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "]}");
+        }
+    }
+
+    return buf_written;
+}
+
+size_t ValueHistory::format_history_samples(char *buf, size_t buf_size)
+{
+    METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
+    size_t buf_written = 0;
+    METER_VALUE_HISTORY_VALUE_TYPE val;
+
+    if (history.peek(&val)) {
+        if (val == val_min) {
+            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "null");
+        } else {
+            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%d", static_cast<int>(val));
+        }
+
+        size_t used = history.used();
+        for (size_t i = 1; i < used && history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
+            if (val == val_min) {
+                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, ",%s", "null");
+            } else {
+                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, ",%d", static_cast<int>(val));
+            }
         }
     }
 
@@ -310,26 +263,26 @@ float ValueHistory::samples_per_second()
     // it can happen that we see exactly one value in the first interval.
     // In this case 0 samples_per_second is reported for the next
     // interval (i.e. four minutes).
-    if (this->samples_last_interval > 1) {
+    if (samples_last_interval > 1) {
         uint32_t duration = end_last_interval - begin_last_interval;
 
         if (duration > 0) {
             // (samples_last_interval - 1) because there are N samples but only (N - 1) gaps
             // between them covering (end_last_interval - begin_last_interval) milliseconds
-            samples_per_second = static_cast<float>((this->samples_last_interval - 1) * 1000) / static_cast<float>(duration);
+            samples_per_second = static_cast<float>((samples_last_interval - 1) * 1000) / static_cast<float>(duration);
         }
     }
     // Checking only for > 0 in this branch is fine: If we have seen
     // 0 or 1 samples in the last interval and exactly 1 in this interval,
     // we can only report that samples_per_second is 0.
     // This fixes itself when the next sample arrives.
-    else if (this->samples_this_interval > 0) {
+    else if (all_samples_this_interval > 0) {
         uint32_t duration = end_this_interval - begin_this_interval;
 
         if (duration > 0) {
-            // (samples_this_interval - 1) because there are N samples but only (N - 1) gaps
+            // (all_samples_this_interval - 1) because there are N samples but only (N - 1) gaps
             // between them covering (end_this_interval - begin_this_interval) milliseconds
-            samples_per_second = static_cast<float>((this->samples_this_interval - 1) * 1000) / static_cast<float>(duration);
+            samples_per_second = static_cast<float>((all_samples_this_interval - 1) * 1000) / static_cast<float>(duration);
         }
     }
 
