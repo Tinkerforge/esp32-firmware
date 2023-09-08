@@ -239,7 +239,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             continue;
 
         if (retain && c.forbid_retained) {
-            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message.", c.topic.c_str());
+            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message (data_len=%u).", c.topic.c_str(), data_len);
             return;
         }
 
@@ -257,20 +257,19 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     topic += prefix.length() + 1;
     topic_len -= prefix.length() + 1;
 
-
     for (auto &reg : api.commands) {
         if (topic_len != reg.path.length() || memcmp(topic, reg.path.c_str(), topic_len) != 0)
             continue;
 
         if (retain && reg.is_action) {
-            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message.", reg.path.c_str());
+            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path.c_str(), data_len);
             return;
         }
 
         String error = api.callCommand(reg, data, data_len);
 
         if (error != "")
-            logger.printfln("MQTT: Failed to update %s from MQTT payload: %s", reg.path.c_str(), error.c_str());
+            logger.printfln("MQTT: Failed to update %s from MQTT payload (data_len=%u): %s", reg.path.c_str(), data_len, error.c_str());
         return;
     }
 
@@ -279,7 +278,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             continue;
 
         if (retain && reg.is_action) {
-            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message.", reg.path.c_str());
+            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path.c_str(), data_len);
             return;
         }
 
@@ -288,7 +287,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             return;
         }
 
-        logger.printfln("MQTT: Failed to update %s from MQTT payload: %s", reg.path.c_str(), error.c_str());
+        logger.printfln("MQTT: Failed to update %s from MQTT payload (data_len=%u): %s", reg.path.c_str(), data_len, error.c_str());
         return;
     }
 
@@ -313,7 +312,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     // It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client
     // because it matches an established subscription regardless of how the flag was set in the message it received [MQTT-3.3.1-9].
     if (!retain)
-        logger.printfln("MQTT: Received message on unknown topic '%.*s'. data_len=%u", static_cast<int>(topic_len), topic, data_len);
+        logger.printfln("MQTT: Received message on unknown topic '%.*s' (data_len=%u)", static_cast<int>(topic_len), topic, data_len);
 }
 
 static char err_buf[64] = {0};
