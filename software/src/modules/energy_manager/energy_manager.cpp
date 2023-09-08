@@ -381,8 +381,8 @@ void EnergyManager::setup()
         }
     }, 0);
 
-    task_scheduler.scheduleWithFixedDelay([this](){collect_data_points();}, 10000, 10000);
-    task_scheduler.scheduleWithFixedDelay([this](){set_pending_data_points();}, 10000, 100);
+    task_scheduler.scheduleWithFixedDelay([this](){collect_data_points();}, 15000, 10000);
+    task_scheduler.scheduleWithFixedDelay([this](){set_pending_data_points();}, 15000, 100);
 }
 
 void EnergyManager::register_urls()
