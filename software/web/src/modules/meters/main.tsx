@@ -23,7 +23,7 @@ import { METERS_SLOTS } from "../../build";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __, translate_unchecked } from "../../ts/translation";
-import { h, render, createRef, Fragment, Component, ComponentChild } from "preact";
+import { h, render, createRef, Fragment, Component, RefObject, ComponentChild } from "preact";
 import { PageHeader } from "../../ts/components/page_header";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
@@ -33,9 +33,15 @@ import uPlot from 'uplot';
 import { SubPage } from "../../ts/components/sub_page";
 import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS } from "./meter_value_id";
 
-interface UplotData {
+interface CachedData {
     timestamps: number[];
-    samples: number[];
+    samples: number[/*meter_slot*/][];
+};
+
+interface UplotData {
+    keys: string[];
+    names: string[];
+    values: number[][];
 }
 
 interface UplotWrapperProps {
@@ -52,10 +58,62 @@ interface UplotWrapperProps {
     y_diff_min?: number;
 }
 
+// https://seaborn.pydata.org/tutorial/color_palettes.html#qualitative-color-palettes
+// sns.color_palette("tab10")
+const strokes = [
+    'rgb(  0, 123, 255)', // use bootstrap blue instead of tab10 blue, to avoid subtle conflict between plot and button blue
+    'rgb(255, 127,  14)',
+    'rgb( 44, 160,  44)',
+    'rgb(214,  39,  40)',
+    'rgb(148, 103, 189)',
+    'rgb(140,  86,  75)',
+    'rgb(227, 119, 194)',
+    'rgb(127, 127, 127)',
+    'rgb(188, 189,  34)',
+    'rgb( 23, 190, 207)',
+];
+
+const fills = [
+    'rgb(  0, 123, 255, 0.1)', // use bootstrap blue instead of tab10 blue, to avoid subtle conflict between plot and button blue
+    'rgb(255, 127,  14, 0.1)',
+    'rgb( 44, 160,  44, 0.1)',
+    'rgb(214,  39,  40, 0.1)',
+    'rgb(148, 103, 189, 0.1)',
+    'rgb(140,  86,  75, 0.1)',
+    'rgb(227, 119, 194, 0.1)',
+    'rgb(127, 127, 127, 0.1)',
+    'rgb(188, 189,  34, 0.1)',
+    'rgb( 23, 190, 207, 0.1)',
+];
+
+let color_cache: {[id: string]: {stroke: string, fill: string}} = {};
+let color_cache_next: {[id: string]: number} = {};
+
+function get_color(group: string, name: string)
+{
+    let key = group + '-' + name;
+
+    if (!color_cache[key]) {
+        if (!util.hasValue(color_cache_next[group])) {
+            color_cache_next[group] = 0;
+        }
+
+        color_cache[key] = {
+            stroke: strokes[color_cache_next[group] % strokes.length],
+            fill: fills[color_cache_next[group] % fills.length],
+        };
+
+        color_cache_next[group]++;
+    }
+
+    return color_cache[key];
+}
+
 class UplotWrapper extends Component<UplotWrapperProps, {}> {
     uplot: uPlot;
     data: UplotData;
     pending_data: UplotData;
+    series_visibility: {[id: string]: boolean} = {};
     visible: boolean = false;
     div_ref = createRef();
     observer: ResizeObserver;
@@ -125,19 +183,6 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         }
 
                         return null;
-                    },
-                },
-                {
-                    show: true,
-                    pxAlign: 0,
-                    spanGaps: false,
-                    label: __("meters.script.power"),
-                    value: (self: uPlot, rawValue: number) => util.hasValue(rawValue) ? util.toLocaleFixed(rawValue) + " W" : null,
-                    stroke: "rgb(0, 123, 255)",
-                    fill: "rgb(0, 123, 255, 0.1)",
-                    width: 2,
-                    points: {
-                        show: false,
                     },
                 },
             ],
@@ -245,6 +290,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 {
                     hooks: {
                         setSeries: (self: uPlot, seriesIdx: number, opts: uPlot.Series) => {
+                            this.series_visibility[this.data.keys[seriesIdx]] = opts.show;
                             this.update_internal_data();
                         },
                         drawAxes: [
@@ -273,7 +319,6 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                 ctx.lineTo(x1, y);
                                 ctx.stroke();
                                 ctx.translate(-offset, -offset);
-
                                 ctx.restore();
                             }
                         ],
@@ -325,20 +370,41 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         this.div_ref.current.style.display = show ? 'block' : 'none';
     }
 
+    get_series_opts(i: number, fill: boolean): uPlot.Series {
+        let name = this.data.names[i];
+        let color = get_color('default', name);
+
+        return {
+            show: this.series_visibility[this.data.keys[i]],
+            pxAlign: 0,
+            spanGaps: false,
+            label: name,
+            value: (self: uPlot, rawValue: number) => util.hasValue(rawValue) ? util.toLocaleFixed(rawValue) + " W" : null,
+            stroke: color.stroke,
+            fill: fill ? color.fill : undefined,
+            width: 2,
+            points: {
+                show: false,
+            },
+        };
+    }
+
     update_internal_data() {
         let y_min: number = this.props.y_min;
         let y_max: number = this.props.y_max;
 
-        for (let i = 0; i < this.data.samples.length; ++i) {
-            let value = this.data.samples[i];
+        for (let i = 1; i < this.data.values.length; ++i) {
+            for (let k = 0; k < this.data.values[i].length; ++k) {
+                let value = this.data.values[i][k];
 
-            if (value !== null) {
-                if (y_min === undefined || value < y_min) {
-                    y_min = value;
-                }
+                if (value !== null) {
+                    if (y_min === undefined || value < y_min) {
+                        y_min = value;
+                    }
 
-                if (y_max === undefined || value > y_max) {
-                    y_max = value;
+                    if (y_max === undefined || value > y_max) {
+                        y_max = value;
+                    }
                 }
             }
         }
@@ -379,7 +445,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         this.y_min = y_min;
         this.y_max = y_max;
 
-        this.uplot.setData([this.data.timestamps, this.data.samples]);
+        this.uplot.setData(this.data.values as any);
     }
 
     set_data(data: UplotData) {
@@ -391,11 +457,29 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         this.data = data;
         this.pending_data = undefined;
 
+        while (this.uplot.series.length > 1) {
+            this.uplot.delSeries(this.uplot.series.length - 1);
+        }
+
+        if (this.data) {
+            while (this.uplot.series.length < this.data.keys.length) {
+                if (this.series_visibility[this.data.keys[this.uplot.series.length]] === undefined) {
+                    this.series_visibility[this.data.keys[this.uplot.series.length]] = true;
+                }
+
+                this.uplot.addSeries(this.get_series_opts(this.uplot.series.length, this.data.keys.length <= 2));
+            }
+        }
+
         this.update_internal_data();
     }
 }
 
 type ValuesByID = {[id: number]: number};
+
+interface MetersProps {
+    status_ref: RefObject<MetersStatus>;
+}
 
 interface MetersState {
     state: {[meter_slot: number]: Readonly<API.getType['meters/0/state']>};
@@ -403,45 +487,84 @@ interface MetersState {
     chart_selected: "history"|"live";
 }
 
-function calculate_live_data(offset: number, samples_per_second: number, samples: number[]): UplotData {
-    let data: UplotData = {timestamps: new Array(samples.length), samples: samples};
+function calculate_live_data(offset: number, samples_per_second: number, samples: number[/*meter_slot*/][]): CachedData {
+    let timestamp_slot_count: number = 0;
+
+    if (samples_per_second == 0) { // implies atmost one sample
+        timestamp_slot_count = 1;
+    } else {
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            if (samples[meter_slot] !== null) {
+                timestamp_slot_count = Math.max(timestamp_slot_count, samples[meter_slot].length);
+            }
+        }
+    }
+
+    let data: CachedData = {timestamps: new Array(timestamp_slot_count), samples: new Array(METERS_SLOTS)};
     let now = Date.now();
     let start: number;
     let step: number;
 
-    if (samples_per_second == 0) { // implies samples.length == 1
+    if (samples_per_second == 0) {
         start = now - offset;
         step = 0;
     } else {
-        // (samples.length - 1) because samples_per_second defines the gaps between
+        // (timestamp_slot_count - 1) because samples_per_second defines the gaps between
         // two samples. with N samples there are (N - 1) gaps, while the lastest/newest
         // sample is offset milliseconds old
-        start = now - (samples.length - 1) / samples_per_second * 1000 - offset;
+        start = now - (timestamp_slot_count - 1) / samples_per_second * 1000 - offset;
         step = 1 / samples_per_second * 1000;
     }
 
-    for(let i = 0; i < samples.length; ++i) {
-        data.timestamps[i] = (start + i * step) / 1000;
+    for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+        data.timestamps[timestamp_slot] = (start + timestamp_slot * step) / 1000;
+    }
+
+    for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        if (samples[meter_slot] === null) {
+            data.samples[meter_slot] = [];
+        }
+        else {
+            data.samples[meter_slot] = samples[meter_slot];
+        }
     }
 
     return data;
 }
 
-function calculate_history_data(offset: number, samples: number[]): UplotData {
+function calculate_history_data(offset: number, samples: number[/*meter_slot*/][]): CachedData {
     const HISTORY_MINUTE_INTERVAL = 4;
 
-    let data: UplotData = {timestamps: new Array(samples.length), samples: samples};
+    let timestamp_slot_count: number = 0;
+
+    for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        if (samples[meter_slot] !== null) {
+            timestamp_slot_count = Math.max(timestamp_slot_count, samples[meter_slot].length);
+        }
+    }
+
+    let data: CachedData = {timestamps: new Array(timestamp_slot_count), samples: new Array(METERS_SLOTS)};
     let now = Date.now();
     let step = HISTORY_MINUTE_INTERVAL * 60 * 1000;
-    // (samples.length - 1) because step defines the gaps between two samples.
+
+    // (timestamp_slot_count - 1) because step defines the gaps between two samples.
     // with N samples there are (N - 1) gaps, while the lastest/newest sample is
     // offset milliseconds old. there might be no data point on a full hour
     // interval. to get nice aligned ticks nudge the ticks by at most half of a
     // sampling interval
-    let start = Math.round((now - (samples.length - 1) * step - offset) / step) * step;
+    let start = Math.round((now - (timestamp_slot_count - 1) * step - offset) / step) * step;
 
-    for(let i = 0; i < samples.length; ++i) {
-        data.timestamps[i] = (start + i * step) / 1000;
+    for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+        data.timestamps[timestamp_slot] = (start + timestamp_slot * step) / 1000;
+    }
+
+    for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        if (samples[meter_slot] === null) {
+            data.samples[meter_slot] = [];
+        }
+        else {
+            data.samples[meter_slot] = samples[meter_slot];
+        }
     }
 
     return data;
@@ -453,23 +576,41 @@ function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
     return a.slice(-tail);
 }
 
-export class Meters extends Component<{}, MetersState> {
-    live_data: {[meter_slot: number]: UplotData} = {};
-    pending_live_data: {[meter_slot: number]: UplotData} = {};
-    history_data: {[meter_slot: number]: UplotData} = {};
+export class Meters extends Component<MetersProps, MetersState> {
+    live_data: CachedData = {timestamps: [], samples: []};
+    pending_live_data: CachedData;
+    history_data: CachedData = {timestamps: [], samples: []};
     uplot_wrapper_live_ref = createRef();
     uplot_wrapper_history_ref = createRef();
+    status_ref: RefObject<MetersStatus> = null;
     value_ids: {[meter_slot: number]: Readonly<number[]>} = {};
     values: {[meter_slot: number]: Readonly<number[]>} = {};
 
-    constructor() {
-        super();
+    constructor(props: MetersProps) {
+        super(props);
+
+        this.status_ref = props.status_ref;
 
         this.state = {
             state: {},
             values_by_id: {},
             chart_selected: "history",
         } as any;
+
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            this.live_data.samples.push([]);
+            this.history_data.samples.push([]);
+        }
+
+        util.eventTarget.addEventListener('info/modules', () => {
+            if (!API.hasFeature('meters')) {
+                console.log("Meters: meters feature not available");
+                return;
+            }
+
+            this.update_live_cache();
+            this.update_history_cache();
+        });
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             util.addApiEventListener_unchecked(`meters/${meter_slot}/state`, () => {
@@ -519,75 +660,197 @@ export class Meters extends Component<{}, MetersState> {
                     }
                 }));
             });
+        }
 
-            util.addApiEventListener_unchecked(`meters/${meter_slot}/live`, () => {
-                let live = API.get_maybe(`meters/${meter_slot}/live`);
+        util.addApiEventListener("meters/live_samples", () => {
+            if (this.live_data.timestamps.length == 0) {
+                // received live_samples before live cache initialization
+                this.update_live_cache();
+                return
+            }
 
-                this.live_data[meter_slot] = calculate_live_data(live.offset, live.samples_per_second, live.samples);
-                this.pending_live_data[meter_slot] = {timestamps: [], samples: []};
+            let live = API.get("meters/live_samples");
+            let live_extra = calculate_live_data(0, live.samples_per_second, live.samples);
+
+            this.pending_live_data.timestamps.push(...live_extra.timestamps);
+
+            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                this.pending_live_data.samples[meter_slot].push(...live_extra.samples[meter_slot]);
+            }
+
+            if (this.pending_live_data.samples.length >= 5) {
+                this.live_data.timestamps = array_append(this.live_data.timestamps, this.pending_live_data.timestamps, 720);
+
+                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                    this.live_data.samples[meter_slot] = array_append(this.live_data.samples[meter_slot], this.pending_live_data.samples[meter_slot], 720);
+                }
+
+                this.pending_live_data.timestamps = [];
+                this.pending_live_data.samples = [];
+
+                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                    this.pending_live_data.samples.push([])
+                }
 
                 if (this.state.chart_selected == "live") {
                     this.update_uplot();
                 }
-            });
+            }
+        });
 
-            util.addApiEventListener_unchecked(`meters/${meter_slot}/live_samples`, () => {
-                let live = API.get_maybe(`meters/${meter_slot}/live_samples`);
-                let live_extra = calculate_live_data(0, live.samples_per_second, live.samples);
+        util.addApiEventListener("meters/history_samples", () => {
+            if (this.history_data.timestamps.length == 0) {
+                // received history_samples before history cache initialization
+                this.update_history_cache();
+                return
+            }
 
-                if (!this.pending_live_data[meter_slot]) {
-                    console.log('Meters: Received live_samples before live message');
-                    this.pending_live_data[meter_slot] = {timestamps: [], samples: []};
+            let history = API.get("meters/history_samples");
+            let history_samples: number[][] = new Array(METERS_SLOTS);
+
+            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                if (history.samples[meter_slot] !== null) {
+                    history_samples[meter_slot] = array_append(this.history_data.samples[meter_slot], history.samples[meter_slot], 720);
+                }
+            }
+
+            this.history_data = calculate_history_data(0, history_samples);
+
+            if (this.state.chart_selected == "history") {
+                this.update_uplot();
+            }
+
+            this.update_status_uplot();
+        });
+    }
+
+    update_live_cache() {
+        this.update_live_cache_async()
+            .then((success: boolean) => {
+                if (!success) {
+                    window.setTimeout(() => {
+                        this.update_live_cache();
+                    }, 100);
+
+                    return;
                 }
 
-                this.pending_live_data[meter_slot].timestamps.push(...live_extra.timestamps);
-                this.pending_live_data[meter_slot].samples.push(...live_extra.samples);
-
-                if (this.pending_live_data[meter_slot].samples.length >= 5) {
-                    this.live_data[meter_slot].timestamps = array_append(this.live_data[meter_slot].timestamps, this.pending_live_data[meter_slot].timestamps, 720);
-                    this.live_data[meter_slot].samples = array_append(this.live_data[meter_slot].samples, this.pending_live_data[meter_slot].samples, 720);
-
-                    this.pending_live_data[meter_slot].timestamps = [];
-                    this.pending_live_data[meter_slot].samples = [];
-
-                    if (this.state.chart_selected == "live") {
-                        this.update_uplot();
-                    }
-                }
+                this.update_uplot();
             });
+    }
 
-            util.addApiEventListener_unchecked(`meters/${meter_slot}/history`, () => {
-                let history = API.get_maybe(`meters/${meter_slot}/history`);
+    async update_live_cache_async() {
+        let response: string = '';
 
-                this.history_data[meter_slot] = calculate_history_data(history.offset, history.samples);
-
-                if (this.state.chart_selected == "history") {
-                    this.update_uplot();
-                }
-            });
-
-            util.addApiEventListener_unchecked(`meters/${meter_slot}/history_samples`, () => {
-                let history = API.get_maybe(`meters/${meter_slot}/history_samples`);
-
-                this.history_data[meter_slot] = calculate_history_data(0, array_append(this.history_data[meter_slot].samples, history.samples, 720));
-
-                if (this.state.chart_selected == "history") {
-                    this.update_uplot();
-                }
-            });
+        try {
+            response = await (await util.download('meters/live')).text();
+        } catch (e) {
+            console.log('Meters: Could not get meters live data: ' + e);
+            return false;
         }
+
+        let payload = JSON.parse(response);
+
+        this.live_data = calculate_live_data(payload.offset, payload.samples_per_second, payload.samples);
+        this.pending_live_data = {timestamps: [], samples: []}
+
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            this.pending_live_data.samples.push([])
+        }
+
+        return true;
+    }
+
+    update_history_cache() {
+        this.update_history_cache_async()
+            .then((success: boolean) => {
+                if (!success) {
+                    window.setTimeout(() => {
+                        this.update_history_cache();
+                    }, 100);
+
+                    return;
+                }
+
+                this.update_uplot();
+            });
+    }
+
+    async update_history_cache_async() {
+        let response: string = '';
+
+        try {
+            response = await (await util.download('meters/history')).text();
+        } catch (e) {
+            console.log('Meters: Could not get meters history data: ' + e);
+            return false;
+        }
+
+        let payload = JSON.parse(response);
+
+        this.history_data = calculate_history_data(payload.offset, payload.samples);
+
+        return true;
     }
 
     update_uplot() {
         if (this.state.chart_selected == 'live') {
             if (this.uplot_wrapper_live_ref && this.uplot_wrapper_live_ref.current) {
-                this.uplot_wrapper_live_ref.current.set_data(this.live_data[0/*FIXME*/]);
+                let live_data: UplotData = {
+                    keys: [null],
+                    names: [null],
+                    values: [this.live_data.timestamps],
+                };
+
+                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                    if (this.live_data.samples[meter_slot].length > 0) {
+                        live_data.keys.push('meter_' + meter_slot);
+                        live_data.names.push('Meter #' + meter_slot); // FIXME: use meter display name
+                        live_data.values.push(this.live_data.samples[meter_slot]);
+                    }
+                }
+
+                this.uplot_wrapper_live_ref.current.set_data(live_data);
             }
         }
         else {
             if (this.uplot_wrapper_history_ref && this.uplot_wrapper_history_ref.current) {
-                this.uplot_wrapper_history_ref.current.set_data(this.history_data[0/*FIXME*/]);
+                let history_data: UplotData = {
+                    keys: [null],
+                    names: [null],
+                    values: [this.history_data.timestamps],
+                };
+
+                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                    if (this.history_data.samples[meter_slot].length > 0) {
+                        history_data.keys.push('meter_' + meter_slot);
+                        history_data.names.push('Meter #' + meter_slot); // FIXME: use meter display name
+                        history_data.values.push(this.history_data.samples[meter_slot]);
+                    }
+                }
+
+                this.uplot_wrapper_history_ref.current.set_data(history_data);
             }
+        }
+
+        this.update_status_uplot();
+    }
+
+    update_status_uplot() {
+        if (this.status_ref.current && this.status_ref.current.uplot_wrapper_ref.current) {
+            let status_data: UplotData = {
+                keys: [null],
+                names: [null],
+                values: [this.history_data.timestamps],
+            };
+
+            if (this.history_data.samples[this.status_ref.current.meter_slot].length > 0) {
+                status_data.keys.push('meter_' + this.status_ref.current.meter_slot);
+                status_data.names.push('Meter #' + this.status_ref.current.meter_slot); // FIXME: use meter display name
+                status_data.values.push(this.history_data.samples[this.status_ref.current.meter_slot]);
+            }
+
+            this.status_ref.current.uplot_wrapper_ref.current.set_data(status_data);
         }
     }
 
@@ -655,40 +918,9 @@ export class Meters extends Component<{}, MetersState> {
     }
 }
 
-render(<Meters />, $('#meters')[0]);
-
 export class MetersStatus extends Component<{}, {}> {
-    history_data: UplotData;
     uplot_wrapper_ref = createRef();
     meter_slot: number = 0; // FIXME: make this configurable
-
-    constructor() {
-        super();
-
-        util.addApiEventListener_unchecked(`meters/${this.meter_slot}/history`, () => {
-            let history = API.get_maybe(`meters/${this.meter_slot}/history`);
-
-            this.history_data = calculate_history_data(history.offset, history.samples);
-
-            this.update_uplot();
-        });
-
-        util.addApiEventListener_unchecked(`meters/${this.meter_slot}/history_samples`, () => {
-            let history = API.get_maybe(`meters/${this.meter_slot}/history_samples`);
-
-            this.history_data = calculate_history_data(0, array_append(this.history_data.samples, history.samples, 720));
-
-            this.update_uplot();
-        });
-    }
-
-    update_uplot() {
-        if (!this.history_data || !this.uplot_wrapper_ref || !this.uplot_wrapper_ref.current) {
-            return;
-        }
-
-        this.uplot_wrapper_ref.current.set_data(this.history_data);
-    }
 
     render(props: {}, state: {}) {
         // Don't check util.render_allowed() here.
@@ -737,7 +969,11 @@ export class MetersStatus extends Component<{}, {}> {
     }
 }
 
-render(<MetersStatus />, $('#status-meters')[0]);
+let status_ref = createRef();
+
+render(<MetersStatus ref={status_ref} />, $('#status-meters')[0]);
+
+render(<Meters status_ref={status_ref} />, $('#meters')[0]);
 
 export function init() {
 }

@@ -28,6 +28,11 @@ with open(os.path.join(software_dir, "web", "src", "build.ts")) as f:
 
     meter_count = int(match.group(1))
 
-with open('api.ts', 'w') as f:
+with open('api.ts.template_header', 'r', encoding='utf-8') as f:
+    template_header = f.read()
+
+with open('api.ts', 'w', encoding='utf-8') as f:
+    f.write(template_header + '\n')
+
     for i in range(meter_count):
-        f.write(util.specialize_template('api.ts.template_fragment', None, {"{{{meter_id}}}": str(i)}))
+        f.write(util.specialize_template('api.ts.template_fragment', None, {"{{{meter_id}}}": str(i)}) + '\n')

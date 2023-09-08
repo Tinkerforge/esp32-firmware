@@ -118,13 +118,15 @@ private:
         ConfigRoot state;
         ConfigRoot errors;
 
-        ValueHistory power_hist;
+        ValueHistory power_history;
     };
 
     MeterGenerator *get_generator_for_class(uint32_t meter_class);
     IMeter *new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, Config *config, Config *errors);
 
     ValueAvailability get_single_value(uint32_t slot, uint32_t kind, float *value, micros_t max_age_us);
+
+    float live_samples_per_second();
 
     MeterSlot meter_slots[METERS_SLOTS];
 
@@ -133,6 +135,19 @@ private:
     Config config_uint_max_prototype;
 
     std::vector<std::tuple<uint32_t, MeterGenerator *>> generators;
+
+    size_t history_chars_per_value;
+    uint32_t last_live_update = 0;
+    uint32_t last_history_update = 0;
+    uint32_t last_history_slot = UINT32_MAX;
+
+    int samples_this_interval = 0;
+    uint32_t begin_this_interval = 0;
+    uint32_t end_this_interval = 0;
+
+    int samples_last_interval = 0;
+    uint32_t begin_last_interval = 0;
+    uint32_t end_last_interval = 0;
 };
 
 extern uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, MeterValueID id);
