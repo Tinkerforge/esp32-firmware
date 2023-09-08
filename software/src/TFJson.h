@@ -300,7 +300,7 @@ void TFJsonSerializer::write(const char *c, size_t len) {
                 write('t');
                 break;
             default:
-#if __CHAR_UNSIGNED__ == 1
+#if CHAR_MIN == 0
                 if (*c <= 0x1F) {
 #else
                 if (*c <= 0x1F && *c >= 0/*UTF-8 compatibility*/) {
