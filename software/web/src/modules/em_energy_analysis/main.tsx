@@ -1159,7 +1159,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
 
         return (
             <>
-                <FormRow label={__("em_energy_analysis_status.status.power_history")} label_muted={`Meter #${meter_slot}`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("em_energy_analysis_status.status.power_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <div class="card pl-1 pb-1">
                         <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                             <UplotLoader ref={this.uplot_loader_ref}
@@ -1173,7 +1173,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
                                               show={true}
                                               legend_time_label={__("em_energy_analysis.script.time_5min")}
                                               legend_time_with_minutes={true}
-                                              legend_value_prefix={__("em_energy_analysis.script.power")}
+                                              legend_value_prefix={""}
                                               aspect_ratio={2}
                                               x_format={{hour: '2-digit', minute: '2-digit'}}
                                               x_padding_factor={0}
@@ -1852,7 +1852,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power[meter_slot].length)
 
             uplot_data.keys.push('em_power_' + meter_slot);
-            uplot_data.names.push(null);
+            uplot_data.names.push(`Meter #${meter_slot}`); // FIXME: use meter display name instead
             uplot_data.values.push(energy_manager_data.power[meter_slot]);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
@@ -2825,7 +2825,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                             sync={this.uplot_sync}
                                             legend_time_label={__("em_energy_analysis.script.time_5min")}
                                             legend_time_with_minutes={true}
-                                            legend_value_prefix=""
+                                            legend_value_prefix={""}
                                             legend_div_ref={this.uplot_legend_div_5min_power_ref}
                                             aspect_ratio={3}
                                             x_format={{hour: '2-digit', minute: '2-digit'}}
