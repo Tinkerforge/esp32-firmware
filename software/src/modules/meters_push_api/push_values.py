@@ -15,7 +15,6 @@ def main():
     parser.add_argument('--timeout', type=float, default='0.5')
 
     args = parser.parse_args()
-    print(args)
     counter = 0
 
     while True:
