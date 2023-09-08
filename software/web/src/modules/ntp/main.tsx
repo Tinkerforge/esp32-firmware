@@ -29,7 +29,6 @@ import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-
 import timezones from "./timezones";
 import { InputSelect } from "../../ts/components/input_select";
 import { Button } from "react-bootstrap";

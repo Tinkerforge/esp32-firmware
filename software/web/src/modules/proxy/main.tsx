@@ -41,7 +41,6 @@ interface ProxyState {
     error_counters: Readonly<API.getType['proxy/error_counters']>;
 }
 
-
 export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
     constructor() {
         super('proxy/config',

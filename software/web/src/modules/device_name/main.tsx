@@ -30,7 +30,6 @@ import { Button } from "react-bootstrap";
 import { Save } from "react-feather";
 import { ConfigComponent } from "../../ts/components/config_component";
 
-
 export class DeviceName extends ConfigComponent<'info/display_name'> {
     constructor() {
         super('info/display_name', __("device_name.script.config_failed"));

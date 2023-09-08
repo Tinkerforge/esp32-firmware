@@ -32,7 +32,6 @@ import { __ } from "../../ts/translation";
 import { ConfigForm } from "../../ts/components/config_form";
 import { SubPage } from "../../ts/components/sub_page";
 
-
 type RTCTime = API.getType['rtc/time'];
 type RTCConfig = API.getType['rtc/config'];
 
