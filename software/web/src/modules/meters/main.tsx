@@ -946,7 +946,7 @@ export class MetersStatus extends Component<{}, {}> {
 
         return (
             <>
-                <FormRow label={__("meters.status.power_history")} label_muted={`Meter #${this.meter_slot}`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("meters.status.power_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <div class="card pl-1 pb-1">
                         <UplotWrapper ref={this.uplot_wrapper_ref}
                                       id="status_meters_chart"
