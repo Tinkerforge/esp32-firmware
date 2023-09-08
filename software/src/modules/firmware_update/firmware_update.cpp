@@ -338,7 +338,7 @@ void FirmwareUpdate::register_urls()
         }
 
         if (!doc["do_i_know_what_i_am_doing"].is<bool>()) {
-            return "you don't seem to know what you are doing";
+            return "You don't seem to know what you are doing";
         }
 
         if (!doc["do_i_know_what_i_am_doing"].as<bool>()) {
