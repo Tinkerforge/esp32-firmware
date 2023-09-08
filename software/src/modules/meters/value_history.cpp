@@ -114,13 +114,14 @@ void ValueHistory::tick(uint32_t now, bool update_history, METER_VALUE_HISTORY_V
         sample_sum = 0;
 
         last_live_val = live_val;
-        last_live_val_valid = true;
+        last_live_val_valid = 4;
     }
-    else if (last_live_val_valid) {
-        // reuse last value once to avoid gaps due to jitter if the
-        // samples are added with the same rate a they are used here
+    else if (last_live_val_valid > 0) {
+        // reuse last value up to 4 times (2.499 seconds) to avoid gaps due
+        // to jitter and loss of samples to due our web server being busy
+        // for a moment and not being able to accept new samples over HTTP
         live_val = last_live_val;
-        last_live_val_valid = false;
+        --last_live_val_valid;
     }
 
     live.push(live_val);

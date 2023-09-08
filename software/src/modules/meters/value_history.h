@@ -94,7 +94,7 @@ public:
     float sample_sum = 0;
 
     METER_VALUE_HISTORY_VALUE_TYPE last_live_val;
-    bool last_live_val_valid = false;
+    int last_live_val_valid = 0;
 
     TF_Ringbuffer<METER_VALUE_HISTORY_VALUE_TYPE,
                   3 * 60 * HISTORY_MINUTE_INTERVAL,
