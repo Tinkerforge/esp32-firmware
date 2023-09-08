@@ -32,7 +32,6 @@ import { FormRow } from "../../ts/components/form_row";
 import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
 import uPlot from "uplot";
-import { InputText } from "../../ts/components/input_text";
 import { uPlotTimelinePlugin } from "../../ts/uplot-plugins";
 
 interface CachedData {
@@ -1180,7 +1179,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
                     </div>
                 </FormRow>
                 <FormRow label={__("em_energy_analysis_status.status.grid_connection_power")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
-                    <InputText value={util.toLocaleFixed(power, 0) + " W"}/>
+                    <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                 </FormRow>
             </>
         )
