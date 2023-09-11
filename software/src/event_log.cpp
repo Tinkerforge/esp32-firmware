@@ -69,7 +69,7 @@ void EventLog::write(const char *buf, size_t len)
     this->get_timestamp(timestamp_buf);
 
     Serial.print(timestamp_buf);
-    Serial.print(buf);
+    Serial.write(buf, len);
 
     if (buf[len - 1] != '\n') {
         Serial.println("");
