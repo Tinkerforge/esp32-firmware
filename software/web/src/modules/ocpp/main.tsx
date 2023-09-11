@@ -95,7 +95,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                                    maxLength={128}
                                    value={state.url}
                                    onValue={this.set("url")}
-                                   pattern={"wss?://.*[^/]"}
+                                   pattern="wss?:\/\/.*[^\/]"
                                    invalidFeedback={__("ocpp.content.endpoint_url_invalid")}/>
                     </FormRow>
                     <FormRow label={__("ocpp.content.identity")}>
