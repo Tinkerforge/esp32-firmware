@@ -42,7 +42,6 @@ private:
     void modbus_slave_read_holding_registers_request_handler(uint8_t request_id, uint32_t starting_address, uint16_t count);
     void modbus_slave_read_input_registers_request_handler(uint8_t request_id, uint32_t starting_address, uint16_t count);
 
-    ConfigRoot state;
     ConfigRoot config;
 
     TF_RS485 bricklet;
