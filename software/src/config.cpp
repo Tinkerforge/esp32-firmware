@@ -507,8 +507,12 @@ struct from_json {
                 // Cannot use resize() to enlarge the vector because the new elements wouldn't be copies of the prototype.
                 val->reserve(arr_size);
                 const auto *prototype = as_const(x).getSlot()->prototype;
-                for (size_t i = old_size; i < arr_size; ++i)
+                for (size_t i = old_size; i < arr_size; ++i) {
                     val->push_back(*prototype);
+
+                    // Must get val again because the push_back() consumes a slot, which might trigger a slot array move that invalidates the pointer.
+                    val = x.getVal();
+                }
             }
         }
 
@@ -729,8 +733,12 @@ struct from_update {
                 // Cannot use resize() to enlarge the vector because the new elements wouldn't be copies of the prototype.
                 val->reserve(arr_size);
                 const auto *prototype = as_const(x).getSlot()->prototype;
-                for (size_t i = old_size; i < arr_size; ++i)
+                for (size_t i = old_size; i < arr_size; ++i) {
                     val->push_back(*prototype);
+
+                    // Must get val again because the push_back() consumes a slot, which might trigger a slot array move that invalidates the pointer.
+                    val = x.getVal();
+                }
             }
         }
 
@@ -1231,15 +1239,17 @@ Config::ConfArray::ConfArray(std::vector<Config> val, const Config *prototype, u
 Config::ConfArray::ConfArray(const ConfArray &cpy)
 {
     idx = nextSlot<Config::ConfArray>(array_buf, array_buf_size);
-    auto *slot = this->getSlot();
     // We have to mark this slot as in use here:
     // This array could contain a nested array that will be copied over
     // The inner array's copy constructor then takes the first free slot, i.e.
     // ours if we don't mark it as inUse first.
-    slot->inUse = true;
+    this->getSlot()->inUse = true;
 
     auto tmp = *cpy.getSlot();
-    *slot = std::move(tmp);
+
+    // Must call getSlot() again because any reference would be invalidated
+    // if the copy triggers a move of the slots.
+    *this->getSlot() = std::move(tmp);
 }
 
 Config::ConfArray::~ConfArray()
@@ -1317,15 +1327,16 @@ Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> val)
 Config::ConfObject::ConfObject(const ConfObject &cpy)
 {
     idx = nextSlot<Config::ConfObject>(object_buf, object_buf_size);
-    auto *slot = this->getSlot();
     // We have to mark this slot as in use here:
     // This object could contain a nested object that will be copied over
     // The inner object's copy constructor then takes the first free slot, i.e.
     // ours if we don't mark it as inUse first.
-    slot->inUse = true;
+    this->getSlot()->inUse = true;
 
     auto tmp = *cpy.getSlot();
-    *slot = std::move(tmp);
+    // Must call getSlot() again because any reference would be invalidated
+    // if the copy triggers a move of the slots.
+    *this->getSlot() = std::move(tmp);
 }
 
 Config::ConfObject::~ConfObject()
@@ -1879,5 +1890,8 @@ Config::Wrap Config::add() {
     }
 
     children.push_back(*slot->prototype);
-    return Wrap(&children.back());
+
+    // The push_back() might invalidate the children reference
+    // when ConfArray slots are moved, so asArray() must be called again.
+    return Wrap(&this->asArray().back());
 }
