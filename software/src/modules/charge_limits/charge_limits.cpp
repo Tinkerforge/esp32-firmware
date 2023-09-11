@@ -60,25 +60,25 @@ static uint32_t map_duration(uint32_t val)
 
 void ChargeLimits::pre_setup()
 {
-    config = ConfigRoot{Config::Object({
+    config = Config::Object({
         {"duration", Config::Uint(0, 0, 10)},
         {"energy_wh", Config::Uint32(0)},
-    })};
+    });
 
-    state = ConfigRoot{Config::Object({
+    state = Config::Object({
         {"start_timestamp_ms", Config::Uint32(0)},
         {"start_energy_kwh", Config::Float(NAN)},
         {"target_timestamp_ms", Config::Uint32(0)},
         {"target_energy_kwh", Config::Float(NAN)}
-    })};
+    });
 
-    override_duration = ConfigRoot{Config::Object({
+    override_duration = Config::Object({
         {"duration", Config::Uint32(0)}
-    })};
+    });
 
-    override_energy = ConfigRoot{Config::Object({
+    override_energy = Config::Object({
         {"energy_wh", Config::Uint32(0)}
-    })};
+    });
 
 #if MODULE_CRON_AVAILABLE()
     ConfUnionPrototype proto;

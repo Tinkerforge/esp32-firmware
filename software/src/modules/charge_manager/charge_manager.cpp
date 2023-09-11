@@ -208,9 +208,9 @@ void ChargeManager::pre_setup()
     }};
     available_phases_update = available_phases;
 
-    control_pilot_disconnect = ConfigRoot{Config::Object({
+    control_pilot_disconnect = Config::Object({
         {"disconnect", Config::Bool(false)},
-    })};
+    });
 
 #if MODULE_CRON_AVAILABLE()
     ConfUnionPrototype proto;
