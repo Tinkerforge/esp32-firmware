@@ -19,19 +19,18 @@ if 'software' not in sys.modules:
 from software import util
 
 import re
+import json
 
+metadata = json.loads(os.getenv('PLATFORMIO_METADATA'))
 directory = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
-
-
 imports = ""
 trigger = ""
 action = ""
 sideeffects_imports = ""
-
 already_imported = set({})
 
-for dir in os.listdir(directory):
-    dir = os.path.realpath(os.path.join(directory, dir))
+for module in metadata['frontend_modules']:
+    dir = os.path.realpath(os.path.join(directory, module))
     for file in os.listdir(dir):
         if file.find("cron_trigger") != -1:
             file = os.path.realpath(os.path.join(dir, file))
@@ -61,8 +60,6 @@ for dir in os.listdir(directory):
                 if line.find("CronAction {") != -1:
                     split = line.split(' ')
                     action += "             {0}.{1} |\n".format(module_name,split[2])
-
-
 
 trigger = trigger[13:-len(' |\n')]
 action = action[12:-len(' |\n')]

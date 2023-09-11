@@ -621,6 +621,10 @@ def main():
 
     branding_module = find_branding_module(frontend_modules)
 
+    metadata = json.dumps({
+        'frontend_modules': [frontend_module.under for frontend_module in frontend_modules]
+    }, separators=(',', ':'))
+
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
     backend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("custom_backend_modules").splitlines()]
@@ -638,6 +642,7 @@ def main():
             environ = dict(os.environ)
             environ['PLATFORMIO_PROJECT_DIR'] = env.subst('$PROJECT_DIR')
             environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
+            environ['PLATFORMIO_METADATA'] = metadata
 
             abs_branding_module = os.path.abspath(branding_module)
             with ChangedDirectory(mod_path):
@@ -706,6 +711,7 @@ def main():
             environ = dict(os.environ)
             environ['PLATFORMIO_PROJECT_DIR'] = env.subst('$PROJECT_DIR')
             environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
+            environ['PLATFORMIO_METADATA'] = metadata
 
             abs_branding_module = os.path.abspath(branding_module)
             with ChangedDirectory(mod_path):
