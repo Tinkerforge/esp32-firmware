@@ -859,7 +859,11 @@ void platform_update_connection_state(CallAction message_in_flight_type,
                                       uint32_t txn_msg_retry_deadline,
                                       uint8_t message_queue_depth,
                                       uint8_t status_notification_queue_depth,
-                                      uint8_t transaction_message_queue_depth) {
+                                      uint8_t transaction_message_queue_depth,
+                                      bool connected,
+                                      time_t connected_change_time,
+                                      uint32_t last_ping_sent,
+                                      uint32_t pong_deadline) {
     ocpp.state.get("message_in_flight_type")->updateUint((uint8_t)message_in_flight_type);
     ocpp.state.get("message_in_flight_id_high")->updateUint(message_in_flight_id >> 32);
     ocpp.state.get("message_in_flight_id_low")->updateUint(message_in_flight_id & (0xFFFFFFFF));
@@ -868,7 +872,10 @@ void platform_update_connection_state(CallAction message_in_flight_type,
     ocpp.state.get("txn_msg_retry_timeout")->updateUint(txn_msg_retry_deadline - millis());
     ocpp.state.get("message_queue_depth")->updateUint(message_queue_depth);
     ocpp.state.get("status_queue_depth")->updateUint(status_notification_queue_depth);
-    ocpp.state.get("txn_msg_queue_depth")->updateUint(transaction_message_queue_depth);
+    ocpp.state.get("connected")->updateBool(connected);
+    ocpp.state.get("connected_change_time")->updateUint(connected_change_time);
+    ocpp.state.get("last_ping_sent")->updateUint(last_ping_sent);
+    ocpp.state.get("pong_deadline")->updateUint(pong_deadline);
 }
 
 void platform_update_config_state(ConfigKey key,

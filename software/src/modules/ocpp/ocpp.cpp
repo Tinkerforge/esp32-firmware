@@ -73,6 +73,10 @@ void Ocpp::pre_setup()
         {"message_queue_depth", Config::Uint8(0)},
         {"status_queue_depth", Config::Uint8(0)},
         {"txn_msg_queue_depth", Config::Uint8(0)},
+        {"connected", Config::Bool(false)},
+        {"connected_change_time", Config::Uint32(0)},
+        {"last_ping_sent", Config::Uint32(0)},
+        {"pong_deadline", Config::Uint32(0)},
     });
 
     configuration = Config::Object({
