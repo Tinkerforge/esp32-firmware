@@ -36,6 +36,7 @@ Install debootstrap and ubuntu-keyring.
     cd ~
     git clone https://github.com/espressif/esp32-arduino-lib-builder
     cd esp32-arduino-lib-builder
+    git switch release/v4.4
     ./build.sh -t esp32 -b menuconfig
     [Press S Enter to write sdkconfig, Q to quit]
     cp sdkconfig sdkconfig.vanilla
