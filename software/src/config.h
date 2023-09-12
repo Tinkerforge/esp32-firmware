@@ -460,7 +460,7 @@ struct Config {
 
     ConfVariant value;
 
-    bool was_updated(uint8_t api_backend_flag);
+    uint8_t was_updated(uint8_t api_backend_flag);
     void set_update_handled(uint8_t api_backend_flag);
 
     template<typename T>

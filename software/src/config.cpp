@@ -810,50 +810,52 @@ struct from_update {
 };
 
 struct is_updated {
-    bool operator()(const Config::ConfString &x)
+    uint8_t operator()(const Config::ConfString &x)
     {
-        return false;
+        return 0;
     }
-    bool operator()(const Config::ConfFloat &x)
+    uint8_t operator()(const Config::ConfFloat &x)
     {
-        return false;
+        return 0;
     }
-    bool operator()(const Config::ConfInt &x)
+    uint8_t operator()(const Config::ConfInt &x)
     {
-        return false;
+        return 0;
     }
-    bool operator()(const Config::ConfUint &x)
+    uint8_t operator()(const Config::ConfUint &x)
     {
-        return false;
+        return 0;
     }
-    bool operator()(const Config::ConfBool &x)
+    uint8_t operator()(const Config::ConfBool &x)
     {
-        return false;
+        return 0;
     }
-    bool operator()(const Config::ConfVariant::Empty &x)
+    uint8_t operator()(const Config::ConfVariant::Empty &x)
     {
-        return false;
+        return 0;
     }
-    bool operator()(const Config::ConfArray &x) const
+    uint8_t operator()(const Config::ConfArray &x) const
     {
+        uint8_t result = 0;
         for (const Config &c : *x.getVal()) {
-            if (((c.value.updated & api_backend_flag) != 0) || Config::apply_visitor(is_updated{api_backend_flag}, c.value))
-                return true;
+            result |= c.value.updated & api_backend_flag;
+            result |= Config::apply_visitor(is_updated{api_backend_flag}, c.value);
         }
-        return false;
+        return result;
     }
-    bool operator()(const Config::ConfObject &x) const
+    uint8_t operator()(const Config::ConfObject &x) const
     {
+        uint8_t result = 0;
         for (const std::pair<String, Config> &c : *x.getVal()) {
-            if (((c.second.value.updated & api_backend_flag) != 0) || Config::apply_visitor(is_updated{api_backend_flag}, c.second.value))
-                return true;
+            result |= c.second.value.updated & api_backend_flag;
+            result |= Config::apply_visitor(is_updated{api_backend_flag}, c.second.value);
         }
-        return false;
+        return result;
     }
-    bool operator()(const Config::ConfUnion &x) const
+    uint8_t operator()(const Config::ConfUnion &x) const
     {
         const auto &value = x.getVal()->value;
-        return ((value.updated & api_backend_flag) != 0) || Config::apply_visitor(is_updated{api_backend_flag}, value);
+        return (value.updated & api_backend_flag) | Config::apply_visitor(is_updated{api_backend_flag}, value);
     }
 
     uint8_t api_backend_flag;
@@ -1687,9 +1689,9 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) const
     return result;
 }
 
-bool Config::was_updated(uint8_t api_backend_flag)
+uint8_t Config::was_updated(uint8_t api_backend_flag)
 {
-    return ((value.updated & api_backend_flag) != 0) || Config::apply_visitor(is_updated{api_backend_flag}, value);
+    return (value.updated & api_backend_flag) | Config::apply_visitor(is_updated{api_backend_flag}, value);
 }
 
 void Config::set_update_handled(uint8_t api_backend_flag)
