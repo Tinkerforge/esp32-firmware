@@ -382,7 +382,6 @@
 - Improve translations
 - Update timezone database
 - Log connection duration when Ethernet, WiFi, MQTT or WireGuard connection is lost
-- Fix OCPP not reconnecting if a TLS connection was closed by the server immediately after establishing it
 - Reset energy meter only once if requested via Modbus TCP
 - Make sure action requests are never ignored if requested via Modbus TCP
 - Fix broken status page links if charge manager config is changed but not applied
