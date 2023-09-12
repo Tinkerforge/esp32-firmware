@@ -79,14 +79,14 @@ void API::setup()
     version.get("config_type")->updateString(config_type);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
+        bool skip_high_latency_states = state_update_counter % 4 != 0;
+        ++state_update_counter;
+
         for (size_t state_idx = 0; state_idx < states.size(); ++state_idx) {
             auto &reg = states[state_idx];
 
-            if (!deadline_elapsed(reg.last_update + reg.interval)) {
+            if (skip_high_latency_states && !reg.low_latency)
                 continue;
-            }
-
-            reg.last_update = millis();
 
             size_t backend_count = this->backends.size();
 
@@ -131,7 +131,7 @@ void API::addState(const String &path, ConfigRoot *config, std::initializer_list
     if (already_registered(path, "state"))
         return;
 
-    states.push_back({path, config, keys_to_censor, interval_ms, millis()});
+    states.push_back({path, config, keys_to_censor, interval_ms < 1000});
     auto stateIdx = states.size() - 1;
 
     for (auto *backend : this->backends) {

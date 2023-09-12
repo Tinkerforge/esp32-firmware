@@ -36,8 +36,7 @@ struct StateRegistration {
     String path;
     ConfigRoot *config;
     std::vector<String> keys_to_censor;
-    uint32_t interval;
-    uint32_t last_update;
+    bool low_latency;
 };
 
 struct CommandRegistration {
@@ -93,8 +92,8 @@ public:
 
     void addFeature(const char *name);
     void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action);
-    void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
-    bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
+    void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms = 1000);
+    bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms = 1000);
     //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms, std::function<void(void)> callback);
     void addRawCommand(const String &path, std::function<String(char *, size_t)> callback, bool is_action);
     void addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback);
@@ -124,6 +123,8 @@ public:
     TaskHandle_t mainTaskHandle;
 
     std::mutex command_mutex;
+
+    uint8_t state_update_counter = 0;
 
 private:
     bool already_registered(const String &path, const char *api_type);
