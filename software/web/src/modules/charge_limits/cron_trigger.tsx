@@ -24,9 +24,11 @@ function ChargeLimitsCronTriggerFactory(): cron_trigger {
     return [6 as any, {}];
 }
 
-cron_trigger_components[6] = {
-    config_builder: ChargeLimitsCronTriggerFactory,
-    config_component: ChargeLimitsCronTriggerConfig,
-    table_row: ChargeLimitsCronTriggerComponent,
-    name: __("charge_limits.content.charge_limits_expiration")
-};
+export function init() {
+    cron_trigger_components[6] = {
+        config_builder: ChargeLimitsCronTriggerFactory,
+        config_component: ChargeLimitsCronTriggerConfig,
+        table_row: ChargeLimitsCronTriggerComponent,
+        name: __("charge_limits.content.charge_limits_expiration")
+    };
+}

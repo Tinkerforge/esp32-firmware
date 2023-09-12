@@ -84,9 +84,11 @@ function MqttCronActionFactory(): cron_action {
     ]
 }
 
-cron_action_components[2] = {
-    config_builder: MqttCronActionFactory,
-    config_component: MqttCronActionConfig,
-    table_row: MqttCronActionComponent,
-    name: __("mqtt.content.mqtt")
-};
+export function init() {
+    cron_action_components[2] = {
+        config_builder: MqttCronActionFactory,
+        config_component: MqttCronActionConfig,
+        table_row: MqttCronActionComponent,
+        name: __("mqtt.content.mqtt")
+    };
+}

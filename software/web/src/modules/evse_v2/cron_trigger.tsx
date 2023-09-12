@@ -69,14 +69,6 @@ function EvseButtonCronTriggerFactory(): cron_trigger {
     ]
 }
 
-cron_trigger_components[4] = {
-    config_builder: EvseButtonCronTriggerFactory,
-    config_component: EvseButtonCronTriggerConfig,
-    table_row: EvseButtonCronTriggerComponent,
-    name: __("evse.content.button_configuration"),
-    require_feature: "button_configuration"
-};
-
 function EvseShutdownTriggerComponent(cron: cron_trigger): CronComponent {
     const props = (cron as any as EvseSdCronTrigger)[1];
     return {
@@ -117,14 +109,6 @@ function EvseShutdownTriggerFactory(): cron_trigger {
         }
     ];
 }
-
-cron_trigger_components[7] = {
-    config_component: EvseShutdownTriggerConfig,
-    table_row: EvseShutdownTriggerComponent,
-    config_builder: EvseShutdownTriggerFactory,
-    name: __("evse.content.gpio_shutdown"),
-    require_feature: "button_configuration"
-};
 
 function EvseGpioInputCronTriggerComponent(cron: cron_trigger): CronComponent {
     const props = (cron as any as EvseGpioCronTrigger)[1];
@@ -167,10 +151,28 @@ function EvseGpioInputCronTriggerConfigFactory(): cron_trigger {
     ]
 }
 
-cron_trigger_components[8] = {
-    config_builder: EvseGpioInputCronTriggerConfigFactory,
-    config_component: EvseGpioInputCrontTriggerConfigComponent,
-    table_row: EvseGpioInputCronTriggerComponent,
-    name: __("evse.content.gpio_in"),
-    require_feature: "button_configuration"
+export function init() {
+    cron_trigger_components[4] = {
+        config_builder: EvseButtonCronTriggerFactory,
+        config_component: EvseButtonCronTriggerConfig,
+        table_row: EvseButtonCronTriggerComponent,
+        name: __("evse.content.button_configuration"),
+        require_feature: "button_configuration"
+    };
+
+    cron_trigger_components[7] = {
+        config_component: EvseShutdownTriggerConfig,
+        table_row: EvseShutdownTriggerComponent,
+        config_builder: EvseShutdownTriggerFactory,
+        name: __("evse.content.gpio_shutdown"),
+        require_feature: "button_configuration"
+    };
+
+    cron_trigger_components[8] = {
+        config_builder: EvseGpioInputCronTriggerConfigFactory,
+        config_component: EvseGpioInputCrontTriggerConfigComponent,
+        table_row: EvseGpioInputCronTriggerComponent,
+        name: __("evse.content.gpio_in"),
+        require_feature: "button_configuration"
+    }
 }

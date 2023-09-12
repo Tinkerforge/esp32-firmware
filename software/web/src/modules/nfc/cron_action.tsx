@@ -107,9 +107,11 @@ function NfCTagInjectCronActionFactory(): cron_action {
     ]
 }
 
-cron_action_components[7] = {
-    table_row: NFCTagInjectCronActionComponent,
-    config_builder: NfCTagInjectCronActionFactory,
-    config_component: NFCTagInjectCronActionConfig,
-    name: __("nfc.content.nfc")
+export function init() {
+    cron_action_components[7] = {
+        table_row: NFCTagInjectCronActionComponent,
+        config_builder: NfCTagInjectCronActionFactory,
+        config_component: NFCTagInjectCronActionConfig,
+        name: __("nfc.content.nfc")
+    };
 }

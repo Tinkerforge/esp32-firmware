@@ -117,9 +117,11 @@ function ChargeLimitsCronActionFactory(): cron_action {
     ];
 }
 
-cron_action_components[8] = {
-    config_builder: ChargeLimitsCronActionFactory,
-    config_component: ChargeLimitsCronActionConfig,
-    table_row: ChargeLimitsCronActionComponent,
-    name: __("charge_limits.content.charge_limits")
-};
+export function init() {
+    cron_action_components[8] = {
+        config_builder: ChargeLimitsCronActionFactory,
+        config_component: ChargeLimitsCronActionConfig,
+        table_row: ChargeLimitsCronActionComponent,
+        name: __("charge_limits.content.charge_limits")
+    };
+}

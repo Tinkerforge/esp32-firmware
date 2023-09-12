@@ -67,9 +67,11 @@ export function EvseStateCronConfig(cron_object: Cron, state: cron_trigger) {
     }]
 }
 
-cron_trigger_components[2] = {
-    config_builder: EvseStateCronFactory,
-    config_component: EvseStateCronConfig,
-    table_row: EvseStateCronComponent,
-    name: __("evse.content.state_change")
-};
+export function init() {
+    cron_trigger_components[2] = {
+        config_builder: EvseStateCronFactory,
+        config_component: EvseStateCronConfig,
+        table_row: EvseStateCronComponent,
+        name: __("evse.content.state_change")
+    };
+}

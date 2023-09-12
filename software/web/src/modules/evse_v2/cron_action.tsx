@@ -50,10 +50,12 @@ function EvseGpioOutputCronActionConfigFactory(): cron_action {
     ];
 }
 
-cron_action_components[9] = {
-    config_builder: EvseGpioOutputCronActionConfigFactory,
-    config_component: EvseGpioOutputCronActionConfigComponent,
-    table_row: EvseGpioOutputCronActionComponent,
-    name: __("evse.content.gpio_out"),
-    require_feature: "button_configuration"
+export function init() {
+    cron_action_components[9] = {
+        config_builder: EvseGpioOutputCronActionConfigFactory,
+        config_component: EvseGpioOutputCronActionConfigComponent,
+        table_row: EvseGpioOutputCronActionComponent,
+        name: __("evse.content.gpio_out"),
+        require_feature: "button_configuration"
+    };
 }

@@ -75,9 +75,11 @@ export function NFCCronTriggerConfig(cron_object: Cron, props: cron_trigger) {
     ]
 }
 
-cron_trigger_components[5] = {
-    config_builder: NfcCronTriggerFactory,
-    config_component: NFCCronTriggerConfig,
-    table_row: NFCCronTriggerComponent,
-    name: __("nfc.content.nfc")
-};
+export function init() {
+    cron_trigger_components[5] = {
+        config_builder: NfcCronTriggerFactory,
+        config_component: NFCCronTriggerConfig,
+        table_row: NFCCronTriggerComponent,
+        name: __("nfc.content.nfc")
+    };
+}

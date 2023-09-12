@@ -47,9 +47,11 @@ function ChargeManagerCronActionFactory(): cron_action {
     ]
 }
 
-cron_action_components[6] = {
-    config_builder: ChargeManagerCronActionFactory,
-    config_component: ChargeManagerCronConfigComponent,
-    table_row: ChargeManagerCronComponent,
-    name: __("charge_manager.content.set_charge_manager")
-};
+export function init() {
+    cron_action_components[6] = {
+        config_builder: ChargeManagerCronActionFactory,
+        config_component: ChargeManagerCronConfigComponent,
+        table_row: ChargeManagerCronComponent,
+        name: __("charge_manager.content.set_charge_manager")
+    };
+}

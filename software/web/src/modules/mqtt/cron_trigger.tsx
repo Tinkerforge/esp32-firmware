@@ -81,9 +81,11 @@ function MqttCronTriggerFactory(): cron_trigger {
     ]
 }
 
-cron_trigger_components[3] = {
-    table_row: MqttCronTriggerComponent,
-    config_builder: MqttCronTriggerFactory,
-    config_component: MqttCronTriggerConfig,
-    name: __("mqtt.content.mqtt")
-};
+export function init() {
+    cron_trigger_components[3] = {
+        table_row: MqttCronTriggerComponent,
+        config_builder: MqttCronTriggerFactory,
+        config_component: MqttCronTriggerConfig,
+        name: __("mqtt.content.mqtt")
+    };
+}

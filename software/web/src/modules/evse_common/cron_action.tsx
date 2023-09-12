@@ -58,13 +58,6 @@ function EvseSetCurrentCronActionConfigFactory(): cron_action {
     ]
 }
 
-cron_action_components[3] = {
-    config_builder: EvseSetCurrentCronActionConfigFactory,
-    config_component: EvseSetCurrentCronActionConfigComponent,
-    table_row: EvseSetCurrentCronActionComponent,
-    name: __("evse.content.allowed_charging_current")
-}
-
 function EvseLedCronActionComponent(cron: cron_action): CronComponent {
     const props = (cron as any as EvseLedCronAction)[1];
     let ret = __("evse.content.led_state") + ": ";
@@ -150,9 +143,18 @@ function EvseLedCronActionConfigFactory(): cron_action {
     ]
 }
 
-cron_action_components[4] = {
-    config_builder: EvseLedCronActionConfigFactory,
-    config_component: EvseLedCronActionConfigComponent,
-    table_row: EvseLedCronActionComponent,
-    name: __("evse.content.led_state")
-};
+export function init() {
+    cron_action_components[3] = {
+        config_builder: EvseSetCurrentCronActionConfigFactory,
+        config_component: EvseSetCurrentCronActionConfigComponent,
+        table_row: EvseSetCurrentCronActionComponent,
+        name: __("evse.content.allowed_charging_current")
+    };
+
+    cron_action_components[4] = {
+        config_builder: EvseLedCronActionConfigFactory,
+        config_component: EvseLedCronActionConfigComponent,
+        table_row: EvseLedCronActionComponent,
+        name: __("evse.content.led_state")
+    };
+}

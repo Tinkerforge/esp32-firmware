@@ -26,10 +26,12 @@ function MeterResetCronActionConfigFactory(): cron_action {
     ];
 }
 
-cron_action_components[5] = {
-    config_builder: MeterResetCronActionConfigFactory,
-    config_component: MeterResetCronActionConfigComponent,
-    table_row: MeterResetCronActionComponent,
-    name: __("meter.content.meter_reset"),
-    require_feature: "meter"
+export function init() {
+    cron_action_components[5] = {
+        config_builder: MeterResetCronActionConfigFactory,
+        config_component: MeterResetCronActionConfigComponent,
+        table_row: MeterResetCronActionComponent,
+        name: __("meter.content.meter_reset"),
+        require_feature: "meter"
+    };
 }

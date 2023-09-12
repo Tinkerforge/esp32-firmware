@@ -8,3 +8,7 @@ export interface RtcCronTrigger {
         minute: number
     }
 }
+
+export function init() {
+    // FIXME
+}

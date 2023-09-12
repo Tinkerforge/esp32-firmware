@@ -15,12 +15,12 @@ export interface Task {
 
 export interface cron_trigger {
     0: [0, {}]
-    | {{{trigger}}}
+    | {{{triggers}}}
 }
 
 export interface cron_action {
     0: [0, {}]
-    | {{{action}}}
+    | {{{actions}}}
 }
 
 export interface CronComponent {
