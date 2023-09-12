@@ -6,7 +6,6 @@ export interface MeterCronAction {
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
 import { CronComponent, cron_action,cron_action_components } from "../cron/api";
-import * as API from "../../ts/api"
 
 function MeterResetCronActionComponent(_: cron_action): CronComponent {
     return {
