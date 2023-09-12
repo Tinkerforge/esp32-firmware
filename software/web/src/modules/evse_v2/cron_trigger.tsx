@@ -1,8 +1,8 @@
 import { CronComponent, cron_trigger, cron_trigger_components } from "../cron/api"
 import { h } from 'preact'
 import { Cron } from "../cron/main"
-import { __ } from "src/ts/translation"
-import { InputSelect } from "src/ts/components/input_select"
+import { __ } from "../../ts/translation"
+import { InputSelect } from "../../ts/components/input_select"
 
 export interface EvseSdCronTrigger {
     0: 7,

@@ -13,13 +13,13 @@ export interface EvseLedCronAction {
     }
 }
 
-import { __ } from "src/ts/translation"
+import { __ } from "../../ts/translation"
 import { CronComponent, cron_action, cron_action_components } from "../cron/api"
 import { Cron } from "../cron/main"
-import { InputSelect } from "src/ts/components/input_select"
-import { InputFloat } from "src/ts/components/input_float"
+import { InputSelect } from "../../ts/components/input_select"
+import { InputFloat } from "../../ts/components/input_float"
 import { h } from 'preact'
-import { InputNumber } from "src/ts/components/input_number"
+import { InputNumber } from "../../ts/components/input_number"
 
 function EvseSetCurrentCronActionComponent(cron: cron_action): CronComponent {
     const props = (cron as any as EvseCronAction)[1];

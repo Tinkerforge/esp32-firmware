@@ -33,8 +33,8 @@ import { InputSelect } from "../../ts/components/input_select";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputPassword } from "../../ts/components/input_password";
 import { Switch } from "../../ts/components/switch";
-import { IndicatorGroup } from "src/ts/components/indicator_group";
-import { SubPage } from "src/ts/components/sub_page";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
+import { SubPage } from "../../ts/components/sub_page";
 
 type MqttConfig = API.getType['mqtt/config'];
 

@@ -9,10 +9,10 @@ export interface ChargeLimitsCronAction {
 import * as util from "../../ts/util";
 import * as API from "../../ts/api"
 import { h } from "preact"
-import { __ } from "src/ts/translation";
+import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
 import { CronComponent, cron_action, cron_action_components } from "../cron/api";
-import { InputSelect } from "src/ts/components/input_select";
+import { InputSelect } from "../../ts/components/input_select";
 
 function ChargeLimitsCronActionComponent(cron: cron_action): CronComponent {
     const props = (cron as any as ChargeLimitsCronAction)[1];

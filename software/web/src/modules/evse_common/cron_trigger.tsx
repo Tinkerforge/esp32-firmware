@@ -5,10 +5,10 @@ export interface EvseStateCronTrigger {
     }
 }
 
-import { __ } from "src/ts/translation";
+import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
 import { CronComponent, cron_trigger, cron_trigger_components } from "../cron/api";
-import { InputSelect } from "src/ts/components/input_select";
+import { InputSelect } from "../../ts/components/input_select";
 import { h } from "preact"
 
 export function EvseStateCronComponent(cron: cron_trigger): CronComponent {

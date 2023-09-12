@@ -38,8 +38,8 @@ import { InputSelect } from "../../ts/components/input_select";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { EVSE_SLOT_EXTERNAL } from "../evse_common/api";
 import { DebugLogger } from "../../ts/components/debug_logger";
-import { ConfigForm } from "src/ts/components/config_form";
-import { SubPage } from "src/ts/components/sub_page";
+import { ConfigForm } from "../../ts/components/config_form";
+import { SubPage } from "../../ts/components/sub_page";
 
 interface EVSEState {
     state: API.getType['evse/state'];

@@ -3,7 +3,7 @@ export interface ChargeLimitsCronTrigger {
     1: {}
 }
 
-import { __ } from "src/ts/translation";
+import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
 import { CronComponent, cron_trigger, cron_trigger_components } from "../cron/api";
 

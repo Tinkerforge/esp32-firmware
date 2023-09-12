@@ -2,7 +2,7 @@
 
 import { h, ComponentChild } from 'preact'
 import { Cron } from './main'
-import { TableModalRow } from 'src/ts/components/table'
+import { TableModalRow } from '../../ts/components/table'
 
 export interface config {
     tasks: Task[]

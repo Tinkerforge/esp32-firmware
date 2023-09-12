@@ -9,10 +9,10 @@ export interface MqttCronAction {
 
 import { Cron } from "../cron/main";
 import { CronComponent, cron_action, cron_action_components } from "../cron/api";
-import { InputText } from "src/ts/components/input_text";
+import { InputText } from "../../ts/components/input_text";
 import { h } from "preact"
-import { Switch } from "src/ts/components/switch";
-import { __ } from "src/ts/translation";
+import { Switch } from "../../ts/components/switch";
+import { __ } from "../../ts/translation";
 
 export function MqttCronActionComponent(cron: cron_action): CronComponent {
     const props = (cron as any as MqttCronAction)[1];

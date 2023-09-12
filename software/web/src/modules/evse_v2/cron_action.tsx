@@ -5,10 +5,10 @@ export interface EvseGpOutputCronAction {
     }
 }
 
-import { __ } from "src/ts/translation";
+import { __ } from "../../ts/translation";
 import { CronComponent, cron_action, cron_action_components} from "../cron/api";
 import { h } from 'preact'
-import { InputSelect } from "src/ts/components/input_select";
+import { InputSelect } from "../../ts/components/input_select";
 import { Cron } from "../cron/main";
 
 function EvseGpioOutputCronActionComponent(cron: cron_action): CronComponent {

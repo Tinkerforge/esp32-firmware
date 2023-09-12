@@ -6,10 +6,10 @@ export interface ChargeManagerCronAction {
 }
 
 import { h } from "preact"
-import { __ } from "src/ts/translation";
+import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
 import { CronComponent, cron_action, cron_action_components } from "../cron/api";
-import { InputFloat } from "src/ts/components/input_float";
+import { InputFloat } from "../../ts/components/input_float";
 
 export function ChargeManagerCronComponent(cron: cron_action): CronComponent {
     let action_props = cron as any as ChargeManagerCronAction;

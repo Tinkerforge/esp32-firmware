@@ -26,7 +26,7 @@ import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 
 import { FormRow } from "../../ts/components/form_row";
-import { InputSelect } from "src/ts/components/input_select";
+import { InputSelect } from "../../ts/components/input_select";
 
 function ChargeLimitsStatus() {
     if (!util.render_allowed() || !API.hasFeature("evse"))

@@ -7,11 +7,11 @@ export interface NfcCronTrigger {
 }
 
 import { h } from "preact"
-import { __, translate_unchecked } from "src/ts/translation";
+import { __, translate_unchecked } from "../../ts/translation";
 import { CronComponent, cron_trigger, cron_trigger_components } from "../cron/api";
 import { Cron } from "../cron/main";
-import { InputText } from "src/ts/components/input_text";
-import { InputSelect } from "src/ts/components/input_select";
+import { InputText } from "../../ts/components/input_text";
+import { InputSelect } from "../../ts/components/input_select";
 
 export function NFCCronTriggerComponent(cron: cron_trigger): CronComponent {
     const props = (cron as any as NfcCronTrigger)[1];

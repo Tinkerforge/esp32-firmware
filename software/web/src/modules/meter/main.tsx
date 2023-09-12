@@ -33,7 +33,7 @@ import { OutputFloat } from "../../ts/components/output_float";
 import { Zap, ZapOff } from "react-feather";
 import uPlot from 'uplot';
 import { FormSeparator } from "../../ts/components/form_separator";
-import { SubPage } from "src/ts/components/sub_page";
+import { SubPage } from "../../ts/components/sub_page";
 
 interface DetailedViewEntry {
     i: number,

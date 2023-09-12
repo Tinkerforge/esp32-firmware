@@ -8,11 +8,11 @@ export interface MqttCronTrigger {
 }
 
 import { h } from "preact"
-import { __ } from "src/ts/translation";
+import { __ } from "../../ts/translation";
 import { CronComponent, cron_trigger,cron_trigger_components } from "../cron/api";
 import { Cron } from "../cron/main";
-import { InputText } from "src/ts/components/input_text";
-import { Switch } from "src/ts/components/switch";
+import { InputText } from "../../ts/components/input_text";
+import { Switch } from "../../ts/components/switch";
 
 export function MqttCronTriggerComponent(cron: cron_trigger): CronComponent {
     const props = (cron as any as MqttCronTrigger)[1];

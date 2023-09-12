@@ -8,11 +8,11 @@ export interface NfcCronAction {
 }
 
 import { h } from "preact"
-import { __, translate_unchecked } from "src/ts/translation";
+import { __, translate_unchecked } from "../../ts/translation";
 import { CronComponent, cron_action, cron_action_components } from "../cron/api";
 import { Cron } from "../cron/main";
-import { InputText } from "src/ts/components/input_text";
-import { InputSelect } from "src/ts/components/input_select";
+import { InputText } from "../../ts/components/input_text";
+import { InputSelect } from "../../ts/components/input_select";
 
 const TRIGGER_CHARGE_ANY = 0;
 const TRIGGER_CHARGE_START = 1;
