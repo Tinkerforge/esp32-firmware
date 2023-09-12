@@ -171,6 +171,19 @@ bool Mqtt::pushRawStateUpdate(const String &payload, const String &path)
     return this->publish_with_prefix(path, payload);
 }
 
+void Mqtt::resubscribe() {
+    const String &prefix = config_in_use.get("global_topic_prefix")->asString();
+    String topic = prefix + "/#";
+    esp_mqtt_client_subscribe(client, topic.c_str(), 0);
+
+    for (auto &cmd : this->commands) {
+        if (cmd.starts_with_global_topic_prefix)
+            continue;
+
+        esp_mqtt_client_subscribe(client, cmd.topic.c_str(), 0);
+    }
+}
+
 void Mqtt::onMqttConnect()
 {
     last_connected_ms = millis();
@@ -191,16 +204,7 @@ void Mqtt::onMqttConnect()
         publish_with_prefix(reg.path, reg.config->to_string_except(reg.keys_to_censor));
     }
 
-    const String &prefix = config_in_use.get("global_topic_prefix")->asString();
-    String topic = prefix + "/#";
-    esp_mqtt_client_subscribe(client, topic.c_str(), 0);
-
-    for (auto &cmd : this->commands) {
-        if (cmd.starts_with_global_topic_prefix)
-            continue;
-
-        esp_mqtt_client_subscribe(client, cmd.topic.c_str(), 0);
-    }
+    this->resubscribe();
 }
 
 void Mqtt::onMqttDisconnect()

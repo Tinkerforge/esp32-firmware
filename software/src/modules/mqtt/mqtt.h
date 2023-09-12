@@ -79,6 +79,8 @@ public:
     void onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain);
     void onMqttDisconnect();
 
+    void resubscribe();
+
     bool action_triggered(Config *config, void *data);
 
     ConfigRoot config;
