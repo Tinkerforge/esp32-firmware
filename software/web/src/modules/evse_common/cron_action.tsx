@@ -1,12 +1,14 @@
+import { CronAction } from "../cron/cron_defs";
+
 export interface EvseCronAction {
-    0: 3,
+    0: CronAction.SetCurrent,
     1: {
         current: number
     }
 }
 
 export interface EvseLedCronAction {
-    0: 4,
+    0: CronAction.LED,
     1: {
         state: number,
         duration: number
@@ -51,7 +53,7 @@ function EvseSetCurrentCronActionConfigComponent(cron_object: Cron, props: cron_
 
 function EvseSetCurrentCronActionConfigFactory(): cron_action {
     return [
-        3 as any,
+        CronAction.SetCurrent as any,
         {
             current: 0
         }
@@ -135,7 +137,7 @@ function EvseLedCronActionConfigComponent(cron_object: Cron, props: cron_action)
 
 function EvseLedCronActionConfigFactory(): cron_action {
     return [
-        4 as any,
+        CronAction.LED as any,
         {
             duration: 0,
             state: 0
@@ -144,14 +146,14 @@ function EvseLedCronActionConfigFactory(): cron_action {
 }
 
 export function init() {
-    cron_action_components[3] = {
+    cron_action_components[CronAction.SetCurrent] = {
         config_builder: EvseSetCurrentCronActionConfigFactory,
         config_component: EvseSetCurrentCronActionConfigComponent,
         table_row: EvseSetCurrentCronActionComponent,
         name: __("evse.content.allowed_charging_current")
     };
 
-    cron_action_components[4] = {
+    cron_action_components[CronAction.LED] = {
         config_builder: EvseLedCronActionConfigFactory,
         config_component: EvseLedCronActionConfigComponent,
         table_row: EvseLedCronActionComponent,

@@ -73,7 +73,7 @@ void Mqtt::pre_setup()
 
 #if MODULE_CRON_AVAILABLE()
     ConfUnionPrototype proto;
-    proto.tag = CRON_TRIGGER_MQTT;
+    proto.tag = static_cast<uint8_t>(CronTrigger::MQTT);
     proto.config = Config::Object({
             {"topic", Config::Str("", 0, 64)},
             {"payload", Config::Str("", 0, 64)},
@@ -82,7 +82,7 @@ void Mqtt::pre_setup()
 
     cron.register_trigger(proto);
 
-    proto.tag = CRON_ACTION_MQTT;
+    proto.tag = static_cast<uint8_t>(CronAction::MQTT);
 
     cron.register_action(proto, [this](const Config *cfg) {
         publish(cfg->get("topic")->asString(), cfg->get("payload")->asString(), cfg->get("retain")->asBool());
@@ -302,7 +302,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     msg.topic = String(topic).substring(0, topic_len);
     msg.payload = String(data).substring(0, data_len);
     msg.retained = retain;
-    if (cron.trigger_action(CRON_TRIGGER_MQTT, &msg, &trigger_action))
+    if (cron.trigger_action(CronTrigger::MQTT, &msg, &trigger_action))
         return;
 #endif
 
@@ -464,8 +464,8 @@ void Mqtt::register_urls()
     api.addState("mqtt/state", &state, {}, 1000);
 
 #if MODULE_CRON_AVAILABLE()
-    if (cron.is_trigger_active(CRON_TRIGGER_MQTT)) {
-        ConfigVec trigger_config = cron.get_configured_triggers(CRON_TRIGGER_MQTT);
+    if (cron.is_trigger_active(CronTrigger::MQTT)) {
+        ConfigVec trigger_config = cron.get_configured_triggers(CronTrigger::MQTT);
         std::vector<String> subscribed_topics;
         for (auto &conf: trigger_config) {
             bool already_subscribed = false;
@@ -480,7 +480,7 @@ void Mqtt::register_urls()
                     msg.topic = String(tpic).substring(0, tpic_len);
                     msg.payload = String(data).substring(0, data_len);
                     msg.retained = false;
-                    if (cron.trigger_action(CRON_TRIGGER_MQTT, &msg, &trigger_action))
+                    if (cron.trigger_action(CronTrigger::MQTT, &msg, &trigger_action))
                         return;
                 }, false);
                 subscribed_topics.push_back(conf.second->get("topic")->asString());
@@ -515,9 +515,9 @@ void Mqtt::register_events() {
 bool Mqtt::action_triggered(Config *config, void *data) {
     Config *cfg = (Config*)config->get();
     MqttMessage *msg = (MqttMessage *)data;
-    switch (config->getTag())
+    switch (static_cast<CronTrigger>(config->getTag()))
     {
-    case CRON_TRIGGER_MQTT:
+        case CronTrigger::MQTT:
         if (cfg->get("payload")->asString() == msg->payload)
             return true;
         break;

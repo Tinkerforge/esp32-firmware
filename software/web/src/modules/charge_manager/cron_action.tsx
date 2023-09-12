@@ -1,5 +1,7 @@
+import { CronAction } from "../cron/cron_defs";
+
 export interface ChargeManagerCronAction {
-    0: 6,
+    0: CronAction.SetManagerCurrent,
     1: {
         current: number
     }
@@ -40,7 +42,7 @@ export function ChargeManagerCronConfigComponent(cron_object: Cron, state: cron_
 
 function ChargeManagerCronActionFactory(): cron_action {
     return [
-        6 as any,
+        CronAction.SetManagerCurrent as any,
         {
             current: 0
         }
@@ -48,7 +50,7 @@ function ChargeManagerCronActionFactory(): cron_action {
 }
 
 export function init() {
-    cron_action_components[6] = {
+    cron_action_components[CronAction.SetManagerCurrent] = {
         config_builder: ChargeManagerCronActionFactory,
         config_component: ChargeManagerCronConfigComponent,
         table_row: ChargeManagerCronComponent,

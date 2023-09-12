@@ -1,5 +1,7 @@
+import { CronAction } from "../cron/cron_defs";
+
 export interface EvseGpOutputCronAction {
-    0: 9,
+    0: CronAction.EVSEGPOutput,
     1: {
         state: number
     }
@@ -43,7 +45,7 @@ function EvseGpioOutputCronActionConfigComponent(cron_object: Cron, props: cron_
 
 function EvseGpioOutputCronActionConfigFactory(): cron_action {
     return [
-        9 as any,
+        CronAction.EVSEGPOutput as any,
         {
             state: 0
         }
@@ -51,7 +53,7 @@ function EvseGpioOutputCronActionConfigFactory(): cron_action {
 }
 
 export function init() {
-    cron_action_components[9] = {
+    cron_action_components[CronAction.EVSEGPOutput] = {
         config_builder: EvseGpioOutputCronActionConfigFactory,
         config_component: EvseGpioOutputCronActionConfigComponent,
         table_row: EvseGpioOutputCronActionComponent,

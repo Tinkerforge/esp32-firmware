@@ -1,5 +1,7 @@
+import { CronTrigger } from "../cron/cron_defs";
+
 export interface EvseStateCronTrigger {
-    0: 2,
+    0: CronTrigger.IECChange,
     1: {
         charger_state: number
     }
@@ -37,7 +39,7 @@ export function EvseStateCronComponent(cron: cron_trigger): CronComponent {
 
 function EvseStateCronFactory(): cron_trigger {
     return [
-        2 as any,
+        CronTrigger.IECChange as any,
         {
             charger_state: 0
         }
@@ -68,7 +70,7 @@ export function EvseStateCronConfig(cron_object: Cron, state: cron_trigger) {
 }
 
 export function init() {
-    cron_trigger_components[2] = {
+    cron_trigger_components[CronTrigger.IECChange] = {
         config_builder: EvseStateCronFactory,
         config_component: EvseStateCronConfig,
         table_row: EvseStateCronComponent,

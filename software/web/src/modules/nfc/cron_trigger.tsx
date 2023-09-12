@@ -1,5 +1,7 @@
+import { CronTrigger } from "../cron/cron_defs";
+
 export interface NfcCronTrigger {
-    0: 5,
+    0: CronTrigger.NFC,
     1: {
         tag_type: number,
         tag_id: string
@@ -33,7 +35,7 @@ export function NFCCronTriggerComponent(cron: cron_trigger): CronComponent {
 
 function NfcCronTriggerFactory(): cron_trigger{
     return [
-        5 as any,
+        CronTrigger.NFC as any,
         {
             tag_type: 0,
             tag_id: ""
@@ -76,7 +78,7 @@ export function NFCCronTriggerConfig(cron_object: Cron, props: cron_trigger) {
 }
 
 export function init() {
-    cron_trigger_components[5] = {
+    cron_trigger_components[CronTrigger.NFC] = {
         config_builder: NfcCronTriggerFactory,
         config_component: NFCCronTriggerConfig,
         table_row: NFCCronTriggerComponent,

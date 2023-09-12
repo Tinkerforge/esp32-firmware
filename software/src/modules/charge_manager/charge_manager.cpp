@@ -214,7 +214,7 @@ void ChargeManager::pre_setup()
 
 #if MODULE_CRON_AVAILABLE()
     ConfUnionPrototype proto;
-    proto.tag = CRON_ACTION_SET_MANAGER_CURRENT;
+    proto.tag = static_cast<uint8_t>(CronAction::SetManagerCurrent);
     proto.config = Config::Object({
         {"current", Config::Uint(0)}
     });

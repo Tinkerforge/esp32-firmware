@@ -58,7 +58,7 @@ void Meter::pre_setup()
 
 #if MODULE_CRON_AVAILABLE()
     ConfUnionPrototype proto;
-    proto.tag = CRON_ACTION_METER_RESET;
+    proto.tag = static_cast<uint8_t>(CronAction::MeterReset);
     proto.config = *Config::Null();
 
     cron.register_action(proto, [this](const Config *config) {

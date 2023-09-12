@@ -82,11 +82,11 @@ void ChargeLimits::pre_setup()
 
 #if MODULE_CRON_AVAILABLE()
     ConfUnionPrototype proto;
-    proto.tag = CRON_TRIGGER_CHARGE_LIMITS;
+    proto.tag = static_cast<uint8_t>(CronTrigger::ChargeLimits);
     proto.config = *Config::Null();
     cron.register_trigger(proto);
 
-    proto.tag = CRON_ACTION_CHARGE_LIMITS;
+    proto.tag = static_cast<uint8_t>(CronTrigger::ChargeLimits);
     proto.config = Config::Object({
         {"duration", Config::Uint32(0)},
         {"energy_wh", Config::Uint32(0)}
@@ -193,7 +193,7 @@ void ChargeLimits::register_urls()
 #if MODULE_CRON_AVAILABLE()
         static bool was_triggered = false;
         if (target_current == 0 && !was_triggered) {
-            cron.trigger_action(CRON_TRIGGER_CHARGE_LIMITS, nullptr, &trigger_action);
+            cron.trigger_action(CronTrigger::ChargeLimits, nullptr, &trigger_action);
             was_triggered = true;
         } else if (!charging) {
             was_triggered = false;
@@ -209,8 +209,8 @@ void ChargeLimits::register_urls()
 
 #if MODULE_CRON_AVAILABLE()
     bool ChargeLimits::action_triggered(Config *config, void *data) {
-        switch (config->getTag()) {
-        case CRON_TRIGGER_CHARGE_LIMITS:
+        switch (static_cast<CronTrigger>(config->getTag())) {
+        case CronTrigger::ChargeLimits:
             return true;
 
         default:

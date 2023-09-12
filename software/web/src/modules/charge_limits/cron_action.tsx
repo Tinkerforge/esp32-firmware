@@ -1,5 +1,7 @@
+import { CronAction } from "../cron/cron_defs";
+
 export interface ChargeLimitsCronAction {
-    0: 8,
+    0: CronAction.ChargeLimits,
     1: {
         duration: number,
         energy_wh: number
@@ -109,7 +111,7 @@ function ChargeLimitsCronActionConfig(cron_object: Cron, props: cron_action) {
 
 function ChargeLimitsCronActionFactory(): cron_action {
     return [
-        8 as any,
+        CronAction.ChargeLimits as any,
         {
             duration: 0,
             energy_wh: 0
@@ -118,7 +120,7 @@ function ChargeLimitsCronActionFactory(): cron_action {
 }
 
 export function init() {
-    cron_action_components[8] = {
+    cron_action_components[CronAction.ChargeLimits] = {
         config_builder: ChargeLimitsCronActionFactory,
         config_component: ChargeLimitsCronActionConfig,
         table_row: ChargeLimitsCronActionComponent,

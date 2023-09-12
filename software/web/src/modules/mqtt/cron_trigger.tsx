@@ -1,5 +1,7 @@
+import { CronTrigger } from "../cron/cron_defs";
+
 export interface MqttCronTrigger {
-    0: 3,
+    0: CronTrigger.MQTT,
     1: {
         topic: string,
         payload: string,
@@ -72,7 +74,7 @@ export function MqttCronTriggerConfig(cron_object: Cron, state: cron_trigger) {
 
 function MqttCronTriggerFactory(): cron_trigger {
     return [
-        3 as any,
+        CronTrigger.MQTT as any,
         {
             topic: "",
             payload: "",
@@ -82,7 +84,7 @@ function MqttCronTriggerFactory(): cron_trigger {
 }
 
 export function init() {
-    cron_trigger_components[3] = {
+    cron_trigger_components[CronTrigger.MQTT] = {
         table_row: MqttCronTriggerComponent,
         config_builder: MqttCronTriggerFactory,
         config_component: MqttCronTriggerConfig,

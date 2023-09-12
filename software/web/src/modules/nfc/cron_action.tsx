@@ -1,5 +1,7 @@
+import { CronAction } from "../cron/cron_defs";
+
 export interface NfcCronAction {
-    0: 7,
+    0: CronAction.NFCInjectTag,
     1: {
         tag_type: number,
         tag_id: string,
@@ -98,7 +100,7 @@ function NFCTagInjectCronActionConfig(cron_object: Cron, props: cron_action) {
 
 function NfCTagInjectCronActionFactory(): cron_action {
     return [
-        7 as any,
+        CronAction.NFCInjectTag as any,
         {
             tag_id: "",
             tag_type: 0,
@@ -108,7 +110,7 @@ function NfCTagInjectCronActionFactory(): cron_action {
 }
 
 export function init() {
-    cron_action_components[7] = {
+    cron_action_components[CronAction.NFCInjectTag] = {
         table_row: NFCTagInjectCronActionComponent,
         config_builder: NfCTagInjectCronActionFactory,
         config_component: NFCTagInjectCronActionConfig,

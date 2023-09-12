@@ -99,14 +99,14 @@ void NFC::pre_setup()
 
 #if MODULE_CRON_AVAILABLE()
     ConfUnionPrototype proto;
-    proto.tag = CRON_TRIGGER_NFC;
+    proto.tag = static_cast<uint8_t>(CronTrigger::NFC);
     proto.config = Config::Object({
         {"tag_type", Config::Uint(0, 0, 4)},
         {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
     });
     cron.register_trigger(proto);
 
-    proto.tag = CRON_ACTION_NFC_INJECT_TAG;
+    proto.tag = static_cast<uint8_t>(CronAction::NFCInjectTag);
     proto.config = Config::Object({
         {"tag_type", Config::Uint(0, 0, 4)},
         {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
@@ -216,7 +216,7 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
     }
 
 #if MODULE_CRON_AVAILABLE()
-    cron.trigger_action(CRON_TRIGGER_NFC, tag, &trigger_action);
+    cron.trigger_action(CronTrigger::NFC, tag, &trigger_action);
 #endif
 }
 
@@ -393,8 +393,8 @@ void NFC::loop()
 bool NFC::action_triggered(Config *config, void *data) {
     auto cfg = config->get();
     tag_info_t *tag = (tag_info_t *)data;
-    switch (config->getTag()) {
-    case CRON_TRIGGER_NFC:
+    switch (static_cast<CronTrigger>(config->getTag())) {
+        case CronTrigger::NFC:
         if (cfg->get("tag_type")->asUint() == tag->tag_type && cfg->get("tag_id")->asString() == tag->tag_id) {
             return true;
         }

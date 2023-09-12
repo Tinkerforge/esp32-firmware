@@ -35,7 +35,7 @@ void EvseLed::pre_setup()
 
 #if MODULE_CRON_AVAILABLE()
     ConfUnionPrototype proto;
-    proto.tag = CRON_ACTION_LED;
+    proto.tag = static_cast<uint8_t>(CronAction::LED);
     proto.config = Config::Object({
         {"state", Config::Int(-1)},
         {"duration", Config::Uint16(0)}

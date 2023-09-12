@@ -1,5 +1,7 @@
+import { CronAction } from "../cron/cron_defs";
+
 export interface MqttCronAction {
-    0: 2,
+    0: CronAction.MQTT,
     1: {
         topic: string,
         payload: string,
@@ -75,7 +77,7 @@ export function MqttCronActionConfig(cron_object: Cron, state: cron_action) {
 
 function MqttCronActionFactory(): cron_action {
     return [
-        2 as any,
+        CronAction.MQTT as any,
         {
             topic: "",
             payload: "",
@@ -85,7 +87,7 @@ function MqttCronActionFactory(): cron_action {
 }
 
 export function init() {
-    cron_action_components[2] = {
+    cron_action_components[CronAction.MQTT] = {
         config_builder: MqttCronActionFactory,
         config_component: MqttCronActionConfig,
         table_row: MqttCronActionComponent,
