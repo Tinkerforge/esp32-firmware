@@ -138,16 +138,13 @@ bool Mqtt::publish_with_prefix(const String &path, const String &payload, bool r
 
 bool Mqtt::publish(const String &topic, const String &payload, bool retain)
 {
-    esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain);
-    // We always publish with QoS 0.
-    // esp_mqtt_client_publish will thus always return 0
-    // (because it returns the message ID on success _only_ if QoS is not 0)
-    // But we've set MQTT_SKIP_PUBLISH_IF_DISCONNECTED
-    // so esp_mqtt_client_publish will return -1 if there is no connection to the broker.
-    // We don't care that this is the case, because a) onMqttConnect sends all states anyway
-    // and b) we publish with QoS 0, so message loss is expected.
-    // -> Return true in any case to clear the config's dirty flag.
-    return true;
+    // ESP-MQTT does this check but we only want to allow publishing after
+    // onMqttConnect was called (in the main thread!)
+    // ESP-MQTT's check can asynchronously flip to connected.
+    if (this->state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
+        return false;
+
+    return esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain) >= 0;
 }
 
 bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
@@ -201,7 +198,7 @@ void Mqtt::onMqttConnect()
         this->addRawCommand(i, reg);
     }
     for (auto &reg : api.states) {
-        publish_with_prefix(reg.path, reg.config->to_string_except(reg.keys_to_censor));
+        reg.config->set_updated(1 << this->backend_idx);
     }
 
     this->resubscribe();
@@ -432,7 +429,7 @@ void Mqtt::setup()
         return;
     }
 
-    api.registerBackend(this);
+    this->backend_idx = api.registerBackend(this);
 
     esp_log_level_set("MQTT_CLIENT", ESP_LOG_NONE);
     esp_log_level_set("TRANSPORT_BASE", ESP_LOG_NONE);

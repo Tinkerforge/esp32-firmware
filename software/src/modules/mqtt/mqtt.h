@@ -90,6 +90,9 @@ public:
 
     std::vector<MqttCommand> commands;
     std::vector<MqttState> states;
+
+    size_t backend_idx;
+
 private:
     esp_mqtt_client_handle_t client;
 
