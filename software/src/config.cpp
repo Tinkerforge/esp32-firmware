@@ -1700,6 +1700,10 @@ void Config::set_update_handled(uint8_t api_backend_flag)
     Config::apply_visitor(set_updated_false{api_backend_flag}, value);
 }
 
+void Config::set_updated(uint8_t api_backend_flag) {
+    value.updated |= api_backend_flag;
+}
+
 static std::recursive_mutex update_mutex;
 
 void ConfigRoot::update_from_copy(Config *copy) {
