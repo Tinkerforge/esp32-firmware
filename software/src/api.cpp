@@ -90,17 +90,25 @@ void API::setup()
 
             size_t backend_count = this->backends.size();
 
+            uint8_t to_send = reg.config->was_updated((1 << backend_count) - 1);
             // If the config was not updated for any API, we don't have to serialize the payload.
-            if (!reg.config->was_updated((1 << backend_count) - 1)) {
+            if (to_send == 0) {
                 continue;
             }
 
             String payload = reg.config->to_string_except(reg.keys_to_censor);
 
+            uint8_t sent = 0;
+
             for (size_t backend_idx = 0; backend_idx < this->backends.size(); ++backend_idx) {
+                if ((to_send & (1 << backend_idx)) == 0)
+                    continue;
+
                 if (this->backends[backend_idx]->pushStateUpdate(state_idx, payload, reg.path))
-                    reg.config->set_update_handled(1 << backend_idx);
+                    sent |= 1 << backend_idx;
             }
+
+            reg.config->set_update_handled(sent);
         }
     }, 250, 250);
 }
