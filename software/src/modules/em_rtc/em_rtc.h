@@ -30,6 +30,7 @@ class EmRtc final : public IModule, public IRtcBackend
 public:
     EmRtc() {}
     void setup() override;
+    void register_urls() override;
 
     void set_time(const tm &tm) override;
     void set_time(const timeval &tv) override;

@@ -67,6 +67,7 @@ void Rtc::pre_setup()
 #endif
 }
 
+// Intentionally override ::setup empty here: The default implementation sets initialized to true.
 void Rtc::setup() {}
 
 #if MODULE_CRON_AVAILABLE()

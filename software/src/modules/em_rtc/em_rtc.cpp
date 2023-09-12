@@ -25,9 +25,11 @@ void EmRtc::setup()
     if (!energy_manager.initialized)
         return;
 
-    rtc.register_backend(this);
-
     initialized = true;
+}
+
+void EmRtc::register_urls() {
+    rtc.register_backend(this);
 }
 
 void EmRtc::set_time(const tm &tm)

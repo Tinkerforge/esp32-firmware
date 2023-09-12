@@ -36,6 +36,7 @@ class RtcBricklet : public DeviceModule<TF_RealTimeClockV2,
 public:
     RtcBricklet(): DeviceModule("rtc", "Real Time Clock 2.0", "RTC", [this](){this->setup_rtc();}) {};
     void setup() override;
+    void register_urls() override;
 
     void setup_rtc();
     void set_time(const timeval &time);
