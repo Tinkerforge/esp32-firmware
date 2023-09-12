@@ -50,7 +50,7 @@ util.specialize_template("api.ts.template", "api.ts", {
     "{{{imports}}}": '\n'.join(imports),
     "{{{triggers}}}": '\n    | '.join(triggers),
     "{{{actions}}}": '\n    | '.join(actions),
-    })
+})
 
 util.specialize_template("plugins.tsx.template", "plugins.tsx", {
     "{{{imports}}}": '\n'.join(imports),
