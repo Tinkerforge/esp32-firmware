@@ -108,7 +108,7 @@ void API::setup()
                     sent |= 1 << backend_idx;
             }
 
-            reg.config->set_update_handled(sent);
+            reg.config->clear_updated(sent);
         }
     }, 250, 250);
 }
