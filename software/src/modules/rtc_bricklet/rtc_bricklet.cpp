@@ -63,6 +63,9 @@ void RtcBricklet::setup()
 }
 
 void RtcBricklet::register_urls() {
+    if (!device_found)
+        return;
+
     rtc.register_backend(this);
 }
 

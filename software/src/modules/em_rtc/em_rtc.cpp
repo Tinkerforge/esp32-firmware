@@ -29,6 +29,9 @@ void EmRtc::setup()
 }
 
 void EmRtc::register_urls() {
+    if (!initialized)
+        return;
+
     rtc.register_backend(this);
 }
 
