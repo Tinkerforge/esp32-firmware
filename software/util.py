@@ -4,11 +4,48 @@ import io
 import re
 import hashlib
 from zipfile import ZipFile
-import re
 import binascii
 import struct
 import mimetypes
 from base64 import b64encode
+from collections import namedtuple
+import functools
+import json
+import collections
+
+NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
+
+class FlavoredName:
+    def __init__(self, name):
+        self.words = name.split(' ')
+        self.cache = {}
+
+    def get(self, skip=0, suffix=''):
+        key = str(skip) + ',' + suffix
+
+        try:
+            return self.cache[key]
+        except KeyError:
+            if skip < 0:
+                words = self.words[:skip]
+            else:
+                words = self.words[skip:]
+
+            words[-1] += suffix
+
+            self.cache[key] = NameFlavors(' '.join(words), # space
+                                          ' '.join(words).lower(), # lower
+                                          ''.join(words), # camel
+                                          ''.join([words[0].lower()] + words[1:]), # headless
+                                          '_'.join(words).lower(), # under
+                                          '_'.join(words).upper(), # upper
+                                          '-'.join(words).lower(), # dash
+                                          ''.join([word.capitalize() for word in words]),  # camel_abbrv; like camel, but produces GetSpiTfp... instead of GetSPITFP...
+                                          ''.join(words).lower(),
+                                          # camel_constant_safe; inserts '_' between digit-words to disambiguate between 1,1ms and 11ms
+                                          functools.reduce(lambda l, r: l + '_' + r if (l[-1].isdigit() and r[0].isdigit()) else l + r, words))
+
+            return self.cache[key]
 
 def get_digest_paths(dst_dir, var_name, env=None):
     if env is not None:
@@ -327,3 +364,49 @@ def file_to_embedded_ts(path):
     path = path.replace(os.path.basename(path), basename)
     with open(path + ".embedded.ts", 'w') as f:
         f.write('export let {} = "{}";'.format(basename, data_url))
+
+FrontendPlugin = collections.namedtuple('FrontendPlugin', 'module_name import_name interface_names')
+
+def find_frontend_plugins(host_module_name, plugin_name):
+    host_module_name = FlavoredName(host_module_name).get()
+    plugin_name = FlavoredName(plugin_name).get()
+
+    project_dir = os.getenv('PLATFORMIO_PROJECT_DIR')
+
+    if project_dir == None:
+        print('$PLATFORMIO_PROJECT_DIR not set')
+        sys.exit(-1)
+
+    metadata_json = os.getenv('PLATFORMIO_METADATA')
+
+    if metadata_json == None:
+        print('$PLATFORMIO_METADATA not set')
+        sys.exit(-1)
+
+    metadata = json.loads(metadata_json)
+    plugins = []
+    plugin_file_base = host_module_name.under + '_' + plugin_name.under
+    plugin_file_names = [plugin_file_base + '.ts', plugin_file_base + '.tsx']
+
+    for module_name in metadata['frontend_modules']:
+        module_path = os.path.join(project_dir, 'web', 'src', 'modules', module_name)
+
+        for file_name in os.listdir(module_path):
+            if file_name not in plugin_file_names:
+                continue
+
+            file_path = os.path.join(module_path, file_name)
+            interface_names = []
+            #interface_re = re.compile(r'^export\s+interface\s+({0}_{1}_[A-Za-z0-9_]+)\s*{{?$'.format(host_module_name.camel, plugin_name.camel))
+            interface_re = re.compile(r'^export\s+interface\s+([A-Za-z0-9_]+{0}{1})\s*{{?$'.format(host_module_name.camel, plugin_name.camel))
+
+            with open(file_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    m = interface_re.match(line.strip())
+
+                    if m != None:
+                        interface_names.append(m.group(1))
+
+            plugins.append(FrontendPlugin(module_name, plugin_file_base, interface_names))
+
+    return plugins

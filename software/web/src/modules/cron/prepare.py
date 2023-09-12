@@ -18,58 +18,40 @@ if 'software' not in sys.modules:
 
 from software import util
 
-import re
-import json
-
-metadata = json.loads(os.getenv('PLATFORMIO_METADATA'))
-directory = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
-imports = ""
-trigger = ""
-action = ""
-sideeffects_imports = ""
+imports = []
+sideeffects_imports = []
 already_imported = set({})
+trigger = []
+action = []
 
-for module in metadata['frontend_modules']:
-    dir = os.path.realpath(os.path.join(directory, module))
-    for file in os.listdir(dir):
-        if file.find("cron_trigger") != -1:
-            file = os.path.realpath(os.path.join(dir, file))
-            f = open(file, "r")
-            dot_index = file.find('.')
-            path_split = file.split('/')
-            module_name = path_split[path_split.__len__() - 2] + "_trigger"
-            if module_name not in already_imported:
-                imports += "import * as {0} from '{1}'\n".format(module_name, file[:dot_index])
-                sideeffects_imports += "import '{}'\n".format(file[:dot_index])
-                already_imported.add(module_name)
-            for line in f:
-                if line.find("CronTrigger {") != -1:
-                    split = line.split(' ')
-                    trigger += "             {0}.{1} |\n".format(module_name,split[2])
-        elif file.find("cron_action") != -1:
-            file = os.path.realpath(os.path.join(dir, file))
-            f = open(file, "r")
-            dot_index = file.find('.')
-            path_split = file.split('/')
-            module_name = path_split[path_split.__len__() - 2] + "_actions"
-            if module_name not in already_imported:
-                imports += "import * as {0} from '{1}'\n".format(module_name, file[:dot_index])
-                sideeffects_imports += "import '{}'\n".format(file[:dot_index])
-                already_imported.add(module_name)
-            for line in f:
-                if line.find("CronAction {") != -1:
-                    split = line.split(' ')
-                    action += "             {0}.{1} |\n".format(module_name,split[2])
+for plugin in util.find_frontend_plugins('Cron', 'Trigger'):
+    import_path = os.path.join('..', plugin.module_name, plugin.import_name)
 
-trigger = trigger[13:-len(' |\n')]
-action = action[12:-len(' |\n')]
+    if import_path not in already_imported:
+        imports.append("import * as {0}_trigger from '{1}'".format(plugin.module_name, import_path))
+        sideeffects_imports.append("import '{0}'".format(import_path))
+        already_imported.add(plugin.module_name)
+
+    for interface_name in plugin.interface_names:
+        trigger.append('{0}_trigger.{1}'.format(plugin.module_name, interface_name))
+
+for plugin in util.find_frontend_plugins('Cron', 'Action'):
+    import_path = os.path.join('..', plugin.module_name, plugin.import_name)
+
+    if import_path not in already_imported:
+        imports.append("import * as {0}_action from '{1}'".format(plugin.module_name, import_path))
+        sideeffects_imports.append("import '{0}'".format(import_path))
+        already_imported.add(plugin.module_name)
+
+    for interface_name in plugin.interface_names:
+        action.append('{0}_action.{1}'.format(plugin.module_name, interface_name))
 
 util.specialize_template("api.ts.template", "api.ts", {
-    "{{{imports}}}": imports,
-    "{{{trigger}}}": trigger,
-    "{{{action}}}": action,
+    "{{{imports}}}": '\n'.join(imports),
+    "{{{trigger}}}": '\n    | '.join(trigger),
+    "{{{action}}}": '\n    | '.join(action),
     })
 
 util.specialize_template("sideeffects.tsx.template", "sideeffects.tsx", {
-    "{{{imports}}}": sideeffects_imports
+    "{{{imports}}}": '\n'.join(sideeffects_imports),
 })

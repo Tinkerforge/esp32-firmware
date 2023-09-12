@@ -6,9 +6,7 @@ if sys.hexversion < 0x3060000:
     print('Error: Python >= 3.6 required')
     sys.exit(1)
 
-from collections import namedtuple
 import configparser
-import functools
 import os
 import shutil
 import subprocess
@@ -21,40 +19,6 @@ from zlib import crc32
 import util
 
 from hyphenations import hyphenations, allowed_missing
-
-NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
-
-class FlavoredName(object):
-    def __init__(self, name):
-        self.words = name.split(' ')
-        self.cache = {}
-
-    def get(self, skip=0, suffix=''):
-        key = str(skip) + ',' + suffix
-
-        try:
-            return self.cache[key]
-        except KeyError:
-            if skip < 0:
-                words = self.words[:skip]
-            else:
-                words = self.words[skip:]
-
-            words[-1] += suffix
-
-            self.cache[key] = NameFlavors(' '.join(words), # space
-                                          ' '.join(words).lower(), # lower
-                                          ''.join(words), # camel
-                                          ''.join([words[0].lower()] + words[1:]), # headless
-                                          '_'.join(words).lower(), # under
-                                          '_'.join(words).upper(), # upper
-                                          '-'.join(words).lower(), # dash
-                                          ''.join([word.capitalize() for word in words]),  # camel_abbrv; like camel, but produces GetSpiTfp... instead of GetSPITFP...
-                                          ''.join(words).lower(),
-                                          # camel_constant_safe; inserts '_' between digit-words to disambiguate between 1,1ms and 11ms
-                                          functools.reduce(lambda l, r: l + '_' + r if (l[-1].isdigit() and r[0].isdigit()) else l + r, words))
-
-            return self.cache[key]
 
 # use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
 class ChangedDirectory(object):
@@ -615,9 +579,9 @@ def main():
     with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
         f.write(firmware_basename)
 
-    frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("custom_frontend_modules").splitlines()]
+    frontend_modules = [util.FlavoredName(x).get() for x in env.GetProjectOption("custom_frontend_modules").splitlines()]
     if nightly:
-        frontend_modules.append(FlavoredName("Nightly").get())
+        frontend_modules.append(util.FlavoredName("Nightly").get())
 
     branding_module = find_branding_module(frontend_modules)
 
@@ -627,7 +591,7 @@ def main():
 
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
-    backend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("custom_backend_modules").splitlines()]
+    backend_modules = [util.FlavoredName(x).get() for x in env.GetProjectOption("custom_backend_modules").splitlines()]
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
 
