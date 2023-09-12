@@ -1694,7 +1694,7 @@ bool Config::was_updated(uint8_t api_backend_flag)
 
 void Config::set_update_handled(uint8_t api_backend_flag)
 {
-    value.updated = false;
+    value.updated &= ~api_backend_flag;
     Config::apply_visitor(set_updated_false{api_backend_flag}, value);
 }
 
