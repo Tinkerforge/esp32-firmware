@@ -179,7 +179,7 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initi
     addCommand(path + "_reset", Config::Null(), {}, [path, conf_modified]() {
         API::removeConfig(path);
         conf_modified->get("modified")->updateUint(1);
-    }, false);
+    }, true);
 
     return true;
 }
