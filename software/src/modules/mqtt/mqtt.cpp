@@ -101,7 +101,6 @@ void Mqtt::subscribe(const String &topic, std::function<void(const char *, size_
 {
     this->commands.push_back({topic, callback, forbid_retained, topic.startsWith(config_in_use.get("global_topic_prefix")->asString())});
 
-    esp_mqtt_client_unsubscribe(client, topic.c_str());
     esp_mqtt_client_subscribe(client, topic.c_str(), 0);
 }
 
@@ -194,13 +193,12 @@ void Mqtt::onMqttConnect()
 
     const String &prefix = config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/#";
-    esp_mqtt_client_unsubscribe(client, topic.c_str());
     esp_mqtt_client_subscribe(client, topic.c_str(), 0);
 
     for (auto &cmd : this->commands) {
         if (cmd.starts_with_global_topic_prefix)
             continue;
-        esp_mqtt_client_unsubscribe(client, cmd.topic.c_str());
+
         esp_mqtt_client_subscribe(client, cmd.topic.c_str(), 0);
     }
 }
