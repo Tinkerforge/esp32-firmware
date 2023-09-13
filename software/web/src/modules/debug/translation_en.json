@@ -9,11 +9,19 @@
         "content": {
             "debug": "Debug",
             "uptime": "Uptime",
+
+            "memory_header": "Memory statistics",
+            "heap_used": "Used heap bytes",
             "heap_free": "Free heap bytes",
             "heap_block": "Largest free heap block",
-            "psram_free": "Free PSRAM bytes",
-            "psram_block": "Largest free PSRAM block",
+            "heap_size": "Heap size",
+            "static": "Static use",
+            "total_size": "Total size",
+            "dram": "DRAM",
+            "iram": "IRAM",
+            "psram": "PSRAM",
 
+            "websocket_header": "Websockets",
             "websocket_connection": "WebSocket connection",
             "websocket_connection_muted": "of this browser tab",
             "websocket_pause": "Pause",

@@ -22,34 +22,52 @@
 #include <Arduino.h>
 #include "LittleFS.h"
 
-#include "esp_core_dump.h"
-
 #include "api.h"
-#include "tools.h"
 #include "task_scheduler.h"
+#include "tools.h"
 
 #include "gcc_warnings.h"
 
 void Debug::pre_setup()
 {
+    size_t internal_heap_size = heap_caps_get_total_size(MALLOC_CAP_INTERNAL);
+    size_t dram_heap_size     = heap_caps_get_total_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    size_t iram_heap_size     = internal_heap_size - dram_heap_size;
+    size_t psram_heap_size    = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
+
+    state_fast = Config::Object({
+        {"uptime",     Config::Uint32(0)},
+        {"free_dram",  Config::Uint32(0)},
+        {"free_iram",  Config::Uint32(0)},
+        {"free_psram", Config::Uint32(0)},
+    });
+
+    state_slow = Config::Object({
+        {"largest_free_dram_block",  Config::Uint32(0)},
+        {"largest_free_psram_block", Config::Uint32(0)},
+        {"heap_dram",  Config::Uint32(dram_heap_size)},
+        {"heap_iram",  Config::Uint32(iram_heap_size)},
+        {"heap_psram", Config::Uint32(psram_heap_size)},
+    });
 }
 
 void Debug::setup()
 {
-    state = Config::Object({
-        {"uptime", Config::Uint32(0)},
-        {"free_heap", Config::Uint32(0)},
-        {"largest_free_heap_block", Config::Uint32(0)},
-        {"free_psram", Config::Uint32(0)},
-        {"largest_free_psram_block", Config::Uint32(0)}
-    });
-
     task_scheduler.scheduleWithFixedDelay([this](){
-        state.get("uptime")->updateUint(millis());
-        state.get("free_heap")->updateUint(heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
-        state.get("largest_free_heap_block")->updateUint(heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
-        state.get("free_psram")->updateUint(heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
-        state.get("largest_free_psram_block")->updateUint(heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+        size_t free_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+
+        multi_heap_info_t dram_info;
+        multi_heap_info_t psram_info;
+        heap_caps_get_info(&dram_info,  MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+        heap_caps_get_info(&psram_info, MALLOC_CAP_SPIRAM);
+
+        state_fast.get("uptime")->updateUint(millis());
+        state_fast.get("free_dram")->updateUint(dram_info.total_free_bytes);
+        state_fast.get("free_iram")->updateUint(free_internal - dram_info.total_free_bytes);
+        state_fast.get("free_psram")->updateUint(psram_info.total_free_bytes);
+
+        state_slow.get("largest_free_dram_block")->updateUint(dram_info.largest_free_block);
+        state_slow.get("largest_free_psram_block")->updateUint(psram_info.largest_free_block);
     }, 1000, 1000);
 
     initialized = true;
@@ -57,7 +75,8 @@ void Debug::setup()
 
 void Debug::register_urls()
 {
-    api.addState("debug/state", &state, {}, 1000);
+    api.addState("debug/state_fast", &state_fast, {}, 1000);
+    api.addState("debug/state_slow", &state_slow, {}, 1000);
 
     server.on("/debug/crash", HTTP_GET, [this](WebServerRequest req) {
         assert(0);

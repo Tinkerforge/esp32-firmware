@@ -24,11 +24,13 @@ import * as util from "../../ts/util";
 import { __ }    from "../../ts/translation";
 
 import { h, render, Fragment, Component} from "preact";
-import { Button     } from "react-bootstrap";
-import { FormRow    } from "../../ts/components/form_row";
-import { InputText  } from "../../ts/components/input_text";
-import { PageHeader } from "../../ts/components/page_header";
-import { SubPage } from "../../ts/components/sub_page";
+import { Button        } from "react-bootstrap";
+import { FormRow       } from "../../ts/components/form_row";
+import { FormSeparator } from "../../ts/components/form_separator";
+import { InputText     } from "../../ts/components/input_text";
+import { OutputFloat   } from "../../ts/components/output_float";
+import { PageHeader    } from "../../ts/components/page_header";
+import { SubPage       } from "../../ts/components/sub_page";
 
 export class Debug extends Component
 {
@@ -36,31 +38,117 @@ export class Debug extends Component
         if (!util.render_allowed())
             return <></>
 
-        let state = API.get('debug/state');
+        let state_fast = API.get('debug/state_fast');
+        let state_slow = API.get('debug/state_slow');
 
         return (
             <SubPage>
                 <PageHeader title={__("debug.content.debug")} />
 
                 <FormRow label={__("debug.content.uptime")}>
-                    <InputText value={util.format_timespan(Math.round(state.uptime / 1000))}/>
+                    <InputText value={util.format_timespan(Math.round(state_fast.uptime / 1000))}/>
+                </FormRow>
+
+                <FormSeparator heading={__("debug.content.memory_header")} first={true} />
+
+                <FormRow label="">
+                    <div class="row">
+                        <div class="col-12 col-sm-4">
+                            <p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>
+                        </div>
+                    </div>
+                </FormRow>
+
+                <FormRow label={__("debug.content.heap_used")}>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_slow.heap_dram - state_fast.free_dram} digits={0} scale={0} unit="B"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_slow.heap_iram - state_fast.free_iram} digits={0} scale={0} unit="B"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_slow.heap_psram - state_fast.free_psram} digits={0} scale={0} unit="B"/>
+                        </div>
+                    </div>
                 </FormRow>
 
                 <FormRow label={__("debug.content.heap_free")}>
-                    <InputText value={state.free_heap}/>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_fast.free_dram} digits={0} scale={0} unit="B"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_fast.free_iram} digits={0} scale={0} unit="B"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_fast.free_psram} digits={0} scale={0} unit="B"/>
+                        </div>
+                    </div>
                 </FormRow>
 
                 <FormRow label={__("debug.content.heap_block")}>
-                    <InputText value={state.largest_free_heap_block}/>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_slow.largest_free_dram_block} digits={0} scale={0} unit="B"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_slow.largest_free_psram_block} digits={0} scale={0} unit="B"/>
+                        </div>
+                    </div>
                 </FormRow>
 
-                <FormRow label={__("debug.content.psram_free")}>
-                    <InputText value={state.free_psram}/>
+                <FormRow label={__("debug.content.heap_size")}>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_slow.heap_dram} digits={0} scale={0} unit="B"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_slow.heap_iram} digits={0} scale={0} unit="B"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_slow.heap_psram} digits={0} scale={0} unit="B"/>
+                        </div>
+                    </div>
                 </FormRow>
 
-                <FormRow label={__("debug.content.psram_block")}>
-                    <InputText value={state.largest_free_psram_block}/>
+                <FormRow label={__("debug.content.static")}>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={335872 - state_slow.heap_dram} digits={0} scale={0} unit="B"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={131072 - state_slow.heap_iram} digits={0} scale={0} unit="B"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={4194304 - state_slow.heap_psram} digits={0} scale={0} unit="B"/>
+                        </div>
+                    </div>
                 </FormRow>
+
+                <FormRow label={__("debug.content.total_size")}>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={335872} digits={0} scale={0} unit="B"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={131072} digits={0} scale={0} unit="B"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={4194304} digits={0} scale={0} unit="B"/>
+                        </div>
+                    </div>
+                </FormRow>
+
+                <FormSeparator heading={__("debug.content.websocket_header")} first={true} />
 
                 <FormRow label={__("debug.content.websocket_connection")} label_muted={__("debug.content.websocket_connection_muted")}>
                     <div class="input-group pb-2">
