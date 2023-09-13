@@ -70,7 +70,7 @@ struct ConfUnionSlot {
     uint8_t tag = 0;
     uint8_t prototypes_len = 0;
     Config val;
-    const ConfUnionPrototype * prototypes = nullptr;
+    const ConfUnionPrototypeInternal *prototypes = nullptr;
 };
 
 #define UINT_SLOTS 512
@@ -950,7 +950,7 @@ const Config* Config::ConfUnion::getVal() const { return &union_buf[idx].val; }
 const Config::ConfUnion::Slot* Config::ConfUnion::getSlot() const { return &union_buf[idx]; }
 Config::ConfUnion::Slot* Config::ConfUnion::getSlot() { return &union_buf[idx]; }
 
-Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_len, const ConfUnionPrototype prototypes[])
+Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_len, const ConfUnionPrototypeInternal prototypes[])
 {
     idx = nextSlot<Config::ConfUnion>(union_buf, union_buf_size);
 
@@ -1414,7 +1414,7 @@ Config Config::Object(std::initializer_list<std::pair<String, Config>> obj)
     return Config{ConfObject{obj}};
 }
 
-Config Config::Union(Config value, uint8_t tag, const ConfUnionPrototype prototypes[], uint8_t prototypes_len)
+Config Config::Union(Config value, uint8_t tag, const ConfUnionPrototypeInternal prototypes[], uint8_t prototypes_len)
 {
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
