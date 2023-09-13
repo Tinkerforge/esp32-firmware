@@ -738,6 +738,9 @@ struct ConfUnionPrototype {
     T tag;
     Config config;
 
+    ConfUnionPrototype() : tag(static_cast<T>(0)), config(*Config::Null()) {
+    }
+
     ConfUnionPrototype(T tag, Config config) : tag(tag), config(config) {
         Config::check_enum_template_type<T>();
     }

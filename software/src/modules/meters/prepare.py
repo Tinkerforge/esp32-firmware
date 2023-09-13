@@ -69,3 +69,33 @@ for lang in detailed_values:
     util.specialize_template(f'../../../web/src/modules/meters/translation_{lang}.json.template', f'../../../web/src/modules/meters/translation_{lang}.json', {
         '{{{detailed_values}}}': ',\n            '.join(detailed_values[lang]),
     })
+
+# NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
+classes = [
+    ('None', 0),
+    ('Local EVSE', 1),
+    ('Local EM', 2),
+    ('Push API', 3),
+    ('Modbus TCP', 4),
+    ('MQTT Subscription', 5),
+]
+
+class_values = []
+
+for class_ in classes:
+    class_values.append('    {0} = {1},\n'.format(util.FlavoredName(class_[0]).get().camel, class_[1]))
+
+with open('meters_defs.h', 'w') as f:
+    f.write('// WARNING: This file is generated.\n\n')
+    f.write('#include <stdint.h>\n\n')
+    f.write('#pragma once\n\n')
+    f.write('enum class MeterClassID {\n')
+    f.write(''.join(class_values))
+    f.write('};\n\n')
+    f.write(f'#define METER_CLASSES {len(class_values)}')
+
+with open('../../../web/src/modules/meters/meters_defs.ts', 'w') as f:
+    f.write('// WARNING: This file is generated.\n\n')
+    f.write('export const enum MeterClassID {\n')
+    f.write(''.join(class_values))
+    f.write('};\n')

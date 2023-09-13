@@ -255,7 +255,7 @@ void EnergyManager::collect_data_points()
         Meters::ValueAvailability availability;
 
         for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
-            if (meters.get_meter_class(slot) == METER_CLASS_NONE) {
+            if (meters.get_meter_class(slot) == MeterClassID::None) {
                 continue; // don't record integrated energy values for unconfigured meters
             }
 

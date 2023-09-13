@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meter_class_defs.h"
+#include "meters_defs.h"
 #include "meter_class_none.h"
 
 #include "gcc_warnings.h"
@@ -46,7 +46,7 @@ const Config * MeterGeneratorNone::get_errors_prototype()
 
 // for both
 _ATTRIBUTE((const))
-uint32_t MeterGeneratorNone::get_class() const
+MeterClassID MeterGeneratorNone::get_class() const
 {
-    return METER_CLASS_NONE;
+    return MeterClassID::None;
 }

@@ -38,7 +38,7 @@ class MeterPushAPI final : public IMeter
 public:
     MeterPushAPI(uint32_t slot_, Config *config_) : slot(slot_), config(config_) {}
 
-    uint32_t get_class() const override;
+    MeterClassID get_class() const override;
     void setup() override;
     void register_urls(const String &base_url) override;
 
