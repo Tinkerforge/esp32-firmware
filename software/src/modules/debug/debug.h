@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include "module.h"
+#include "tools.h"
 
 class Debug final : public IModule
 {
@@ -30,8 +31,15 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void loop() override;
 
 private:
     ConfigRoot state_fast;
     ConfigRoot state_slow;
+
+    micros_t last_state_update;
+    uint32_t integrity_check_runs = 0;
+    uint32_t integrity_check_runtime_sum = 0;
+    uint32_t integrity_check_runtime_max = 0;
+    bool     integrity_check_print_errors = true;
 };

@@ -3,6 +3,9 @@ export interface state_fast {
     free_dram: number;
     free_iram: number;
     free_psram: number;
+    heap_check_time_avg: number;
+    heap_check_time_max: number;
+    cpu_usage: number;
 }
 
 export interface state_slow {
@@ -11,4 +14,6 @@ export interface state_slow {
     heap_dram: number;
     heap_iram: number;
     heap_psram: number;
+    heap_integrity_ok: boolean;
+    main_stack_hwm: number;
 }

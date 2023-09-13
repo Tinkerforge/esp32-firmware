@@ -9,6 +9,8 @@
         "content": {
             "debug": "Debug",
             "uptime": "Uptime",
+            "cpu_usage": "CPU usage",
+            "cpu_usage_muted": "ballpark figure",
 
             "memory_header": "Memory statistics",
             "heap_used": "Used heap bytes",
@@ -20,6 +22,15 @@
             "dram": "DRAM",
             "iram": "IRAM",
             "psram": "PSRAM",
+            "main_stack_hwm": "Main stack high water mark",
+            "main_stack_hwm_muted": "lowest free space on stack",
+
+            "heap_integrity_header": "Heap integrity",
+            "heap_integrity_result": "Check result",
+            "heap_integrity_ok": "Passed",
+            "heap_integrity_fail": "Corrupt",
+            "heap_integrity_runtime": "Integrity check runtime",
+            "heap_integrity_runtime_muted": "average, maximum",
 
             "websocket_header": "Websockets",
             "websocket_connection": "WebSocket connection",

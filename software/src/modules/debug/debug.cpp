@@ -20,11 +20,11 @@
 #include "debug.h"
 
 #include <Arduino.h>
+#include "esp_system.h"
 #include "LittleFS.h"
 
 #include "api.h"
 #include "task_scheduler.h"
-#include "tools.h"
 
 #include "gcc_warnings.h"
 
@@ -40,6 +40,9 @@ void Debug::pre_setup()
         {"free_dram",  Config::Uint32(0)},
         {"free_iram",  Config::Uint32(0)},
         {"free_psram", Config::Uint32(0)},
+        {"heap_check_time_avg", Config::Uint32(0)},
+        {"heap_check_time_max", Config::Uint32(0)},
+        {"cpu_usage",  Config::Float(0)},
     });
 
     state_slow = Config::Object({
@@ -48,6 +51,8 @@ void Debug::pre_setup()
         {"heap_dram",  Config::Uint32(dram_heap_size)},
         {"heap_iram",  Config::Uint32(iram_heap_size)},
         {"heap_psram", Config::Uint32(psram_heap_size)},
+        {"heap_integrity_ok", Config::Bool(true)},
+        {"main_stack_hwm", Config::Uint32(0)},
     });
 }
 
@@ -68,7 +73,30 @@ void Debug::setup()
 
         state_slow.get("largest_free_dram_block")->updateUint(dram_info.largest_free_block);
         state_slow.get("largest_free_psram_block")->updateUint(psram_info.largest_free_block);
+
+        state_slow.get("main_stack_hwm")->updateUint(uxTaskGetStackHighWaterMark(nullptr));
+
+        uint32_t runtime_avg;
+        if (this->integrity_check_runs == 0) {
+            runtime_avg = 0;
+        } else {
+            runtime_avg = this->integrity_check_runtime_sum / this->integrity_check_runs;
+        }
+        state_fast.get("heap_check_time_avg")->updateUint(runtime_avg);
+        state_fast.get("heap_check_time_max")->updateUint(this->integrity_check_runtime_max);
+
+        micros_t now = now_us();
+        uint32_t time_since_last_update_us = static_cast<uint32_t>(static_cast<int64_t>(now - this->last_state_update));
+        float heap_check_cpu_usage = static_cast<float>(this->integrity_check_runtime_sum) / static_cast<float>(time_since_last_update_us);
+        state_fast.get("cpu_usage")->updateFloat(1 - heap_check_cpu_usage);
+        this->last_state_update = now;
+
+        this->integrity_check_runs = 0;
+        this->integrity_check_runtime_sum = 0;
+        this->integrity_check_runtime_max = 0;
     }, 1000, 1000);
+
+    last_state_update = now_us();
 
     initialized = true;
 }
@@ -175,4 +203,23 @@ void Debug::register_urls()
         return request.send(200, "text/plain", ("File " + path + " created.").c_str());
     });
 #endif
+}
+
+void Debug::loop()
+{
+    micros_t start = now_us();
+    bool check_ok = heap_caps_check_integrity_all(integrity_check_print_errors);
+    uint32_t runtime = static_cast<uint32_t>(static_cast<int64_t>(now_us() - start));
+
+    integrity_check_runs++;
+    integrity_check_runtime_sum += runtime;
+
+    if (runtime > integrity_check_runtime_max) {
+        integrity_check_runtime_max = runtime;
+    }
+
+    if (!check_ok) {
+        state_slow.get("heap_integrity_ok")->updateBool(false);
+        integrity_check_print_errors = false;
+    }
 }

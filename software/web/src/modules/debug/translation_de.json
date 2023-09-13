@@ -9,6 +9,8 @@
         "content": {
             "debug": "Debug",
             "uptime": "Zeit seit Neustart",
+            "cpu_usage": "CPU-Nutzung",
+            "cpu_usage_muted": "grobe Schätzung",
 
             "memory_header": "Speicherstatistik",
             "heap_used": "Belegte Heap-Bytes",
@@ -20,6 +22,15 @@
             "dram": "DRAM",
             "iram": "IRAM",
             "psram": "PSRAM",
+            "main_stack_hwm": "Main Stack Hochwassermarke",
+            "main_stack_hwm_muted": "geringster freier Stack-Speicher",
+
+            "heap_integrity_header": "Heap-Integrität",
+            "heap_integrity_result": "Prüfergebnis",
+            "heap_integrity_ok": "Bestanden",
+            "heap_integrity_fail": "Korrupt",
+            "heap_integrity_runtime": "Laufzeit Integritätsprüfung",
+            "heap_integrity_runtime_muted": "Durchschnitt, Maximum",
 
             "websocket_header": "Websockets",
             "websocket_connection": "WebSocket-Verbindung",

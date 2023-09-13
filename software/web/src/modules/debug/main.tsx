@@ -24,13 +24,14 @@ import * as util from "../../ts/util";
 import { __ }    from "../../ts/translation";
 
 import { h, render, Fragment, Component} from "preact";
-import { Button        } from "react-bootstrap";
-import { FormRow       } from "../../ts/components/form_row";
-import { FormSeparator } from "../../ts/components/form_separator";
-import { InputText     } from "../../ts/components/input_text";
-import { OutputFloat   } from "../../ts/components/output_float";
-import { PageHeader    } from "../../ts/components/page_header";
-import { SubPage       } from "../../ts/components/sub_page";
+import { Button         } from "react-bootstrap";
+import { FormRow        } from "../../ts/components/form_row";
+import { FormSeparator  } from "../../ts/components/form_separator";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
+import { InputText      } from "../../ts/components/input_text";
+import { OutputFloat    } from "../../ts/components/output_float";
+import { PageHeader     } from "../../ts/components/page_header";
+import { SubPage        } from "../../ts/components/sub_page";
 
 export class Debug extends Component
 {
@@ -47,6 +48,10 @@ export class Debug extends Component
 
                 <FormRow label={__("debug.content.uptime")}>
                     <InputText value={util.format_timespan(Math.round(state_fast.uptime / 1000))}/>
+                </FormRow>
+
+                <FormRow label={__("debug.content.cpu_usage")} label_muted={__("debug.content.cpu_usage_muted")}>
+                    <OutputFloat value={state_fast.cpu_usage * 100} digits={0} scale={0} unit="%"/>
                 </FormRow>
 
                 <FormSeparator heading={__("debug.content.memory_header")} first={true} />
@@ -144,6 +149,36 @@ export class Debug extends Component
                         </div>
                         <div class="mb-1 col-12 col-sm-4">
                             <OutputFloat value={4194304} digits={0} scale={0} unit="B"/>
+                        </div>
+                    </div>
+                </FormRow>
+
+                <FormRow label={__("debug.content.main_stack_hwm")} label_muted={__("debug.content.main_stack_hwm_muted")}>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <OutputFloat value={state_slow.main_stack_hwm} digits={0} scale={0} unit="B"/>
+                        </div>
+                    </div>
+                </FormRow>
+
+                <FormSeparator heading={__("debug.content.heap_integrity_header")} first={true} />
+
+                <FormRow label={__("debug.content.heap_integrity_result")}>
+                    <IndicatorGroup
+                        value={state_slow.heap_integrity_ok ? 0 : 1} // intentionally inverted, OK is first
+                        items={[
+                            ["success", __("debug.content.heap_integrity_ok")],
+                            ["danger", __("debug.content.heap_integrity_fail")],
+                        ]} />
+                </FormRow>
+
+                <FormRow label={__("debug.content.heap_integrity_runtime")} label_muted={__("debug.content.heap_integrity_runtime_muted")}>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-6">
+                            <OutputFloat value={state_fast.heap_check_time_avg} digits={3} scale={3} unit="ms"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-6">
+                            <OutputFloat value={state_fast.heap_check_time_max} digits={3} scale={3} unit="ms"/>
                         </div>
                     </div>
                 </FormRow>
