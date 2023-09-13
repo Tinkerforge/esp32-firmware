@@ -451,10 +451,6 @@ void Mqtt::setup()
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
-        this->resubscribe();
-    }, 60000, 60000);
-
     initialized = true;
 }
 
