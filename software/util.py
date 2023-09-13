@@ -385,7 +385,7 @@ def find_frontend_plugins(host_module_name, plugin_name):
 
     metadata = json.loads(metadata_json)
     plugins = []
-    plugin_file_base = host_module_name.under + '_' + plugin_name.under
+    plugin_file_base = 'plugin_' + host_module_name.under + '_' + plugin_name.under
     plugin_file_names = [plugin_file_base + '.ts', plugin_file_base + '.tsx']
 
     for module_name in metadata['frontend_modules']:

@@ -1,4 +1,5 @@
 import { CronTriggerID } from "../cron/cron_defs";
+import { TableModalRow } from '../../ts/components/table'
 
 export type ChargeLimitsCronTrigger = [
     CronTriggerID.ChargeLimits,
@@ -18,7 +19,7 @@ function ChargeLimitsCronTriggerComponent(_: CronTrigger): CronComponent {
     };
 }
 
-function ChargeLimitsCronTriggerConfig(_: Cron, __: CronTrigger) {
+function ChargeLimitsCronTriggerConfig(_: Cron, __: CronTrigger): TableModalRow[] {
     return []
 }
 

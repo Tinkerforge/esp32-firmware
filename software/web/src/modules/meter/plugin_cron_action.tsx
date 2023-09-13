@@ -1,4 +1,5 @@
 import { CronActionID } from "../cron/cron_defs";
+import { TableModalRow } from '../../ts/components/table'
 
 export type MeterCronAction = [
     CronActionID.MeterReset,
@@ -17,7 +18,7 @@ function MeterResetCronActionComponent(_: CronAction): CronComponent {
     };
 }
 
-function MeterResetCronActionConfigComponent(_: Cron, __: CronAction): any {
+function MeterResetCronActionConfigComponent(_: Cron, __: CronAction): TableModalRow[] {
     return [];
 }
 
