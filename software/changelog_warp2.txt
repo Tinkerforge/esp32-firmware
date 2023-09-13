@@ -450,3 +450,4 @@
 - Correctly mark Ethernet and WiFi DNS server and alternative NTP server as optional
 - Fix recovery page API call instructions
 - Fix OCPP connection not being reestablished when closed by the server with specific timing
+- Fix MQTT subscriptions being dropped after (re)connect
