@@ -170,7 +170,7 @@ bool Mqtt::pushRawStateUpdate(const String &payload, const String &path)
 
 void Mqtt::resubscribe() {
     if (this->state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
-        return false;
+        return;
 
     if (!global_topic_prefix_subscribed) {
         const String &prefix = config_in_use.get("global_topic_prefix")->asString();
