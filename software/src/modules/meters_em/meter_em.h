@@ -37,7 +37,7 @@ class MeterEM final : public IMeter
 public:
     MeterEM(uint32_t slot_, Config *state_, Config *errors_) : slot(slot_), state(state_), errors(errors_) {}
 
-    uint32_t get_class() const override;
+    MeterClassID get_class() const override;
     //void setup() override;
     //void register_urls(const String &base_url) override;
 

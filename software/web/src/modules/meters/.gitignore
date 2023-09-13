@@ -1,3 +1,4 @@
 meter_value_id.ts
 translation_*.json
 api.ts
+meters_defs.ts

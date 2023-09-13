@@ -63,7 +63,7 @@ void Meters::pre_setup()
     }
 
     generators.reserve(METER_CLASSES);
-    register_meter_generator(METER_CLASS_NONE, &meter_generator_none);
+    register_meter_generator(MeterClassID::None, &meter_generator_none);
 }
 
 void Meters::setup()
@@ -72,11 +72,11 @@ void Meters::setup()
 
     // Create config prototypes, depending on available generators.
     uint8_t class_count = static_cast<uint8_t>(generators.size());
-    ConfUnionPrototype *config_prototypes = new ConfUnionPrototype[class_count];
+    ConfUnionPrototype<MeterClassID> *config_prototypes = new ConfUnionPrototype<MeterClassID>[class_count];
 
     for (uint32_t i = 0; i < class_count; i++) {
         const auto &generator_tuple = generators[i];
-        uint8_t meter_class = static_cast<uint8_t>(std::get<0>(generator_tuple));
+        MeterClassID meter_class = std::get<0>(generator_tuple);
         auto meter_generator = std::get<1>(generator_tuple);
         config_prototypes[i] = {meter_class, *meter_generator->get_config_prototype()};
     }
@@ -86,8 +86,8 @@ void Meters::setup()
 
         // Initialize config.
         meter_slot.config_union = Config::Union(
-            *get_generator_for_class(METER_CLASS_NONE)->get_config_prototype(),
-            METER_CLASS_NONE,
+            *get_generator_for_class(MeterClassID::None)->get_config_prototype(),
+            MeterClassID::None,
             config_prototypes,
             class_count
         );
@@ -95,7 +95,7 @@ void Meters::setup()
         // Load config.
         api.restorePersistentConfig(get_path(slot, Meters::PathType::Config), &meter_slot.config_union);
 
-        uint32_t configured_meter_class = meter_slot.config_union.getTag();
+        MeterClassID configured_meter_class = meter_slot.config_union.getTag<MeterClassID>();
 
         // Generator might be a NONE class generator if the requested class is not available.
         MeterGenerator *generator = get_generator_for_class(configured_meter_class);
@@ -111,10 +111,10 @@ void Meters::setup()
 
         IMeter *meter = new_meter_of_class(configured_meter_class, slot, meter_state, meter_conf, meter_errors);
         if (!meter) {
-            logger.printfln("meters: Failed to create meter of class %u.", configured_meter_class);
+            logger.printfln("meters: Failed to create meter of class %u.", static_cast<uint32_t>(configured_meter_class));
             continue;
         }
-        if (configured_meter_class != METER_CLASS_NONE) {
+        if (configured_meter_class != MeterClassID::None) {
             meter_slot.power_history.setup();
         }
         meter->setup();
@@ -139,7 +139,7 @@ void Meters::setup()
         for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
             MeterSlot &meter_slot = this->meter_slots[slot];
 
-            if (meter_slot.meter->get_class() != METER_CLASS_NONE) {
+            if (meter_slot.meter->get_class() != MeterClassID::None) {
                 meter_slot.power_history.tick(now, update_history, &live_samples[slot], &history_samples[slot]);
                 valid_samples[slot] = true;
             }
@@ -252,7 +252,7 @@ void Meters::register_urls()
 
         const String base_path = get_path(slot, Meters::PathType::Base);
 
-        if (meter_slot.meter->get_class() != METER_CLASS_NONE) {
+        if (meter_slot.meter->get_class() != MeterClassID::None) {
             meter_slot.power_history.register_urls(base_path);
         } else {
             meter_slot.power_history.register_urls_empty(base_path);
@@ -278,7 +278,7 @@ void Meters::register_urls()
         for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
             MeterSlot &meter_slot = meter_slots[slot];
 
-            if (meter_slot.meter->get_class() != METER_CLASS_NONE) {
+            if (meter_slot.meter->get_class() != MeterClassID::None) {
                 if (buf_written < buf_size) {
                     buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", slot == 0 ? "[" : ",[");
 
@@ -319,7 +319,7 @@ void Meters::register_urls()
         for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
             MeterSlot &meter_slot = meter_slots[slot];
 
-            if (meter_slot.meter->get_class() != METER_CLASS_NONE) {
+            if (meter_slot.meter->get_class() != MeterClassID::None) {
                 if (buf_written < buf_size) {
                     buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", slot == 0 ? "[" : ",[");
 
@@ -352,12 +352,12 @@ void Meters::register_urls()
 #endif
 }
 
-void Meters::register_meter_generator(uint32_t meter_class, MeterGenerator *generator)
+void Meters::register_meter_generator(MeterClassID meter_class, MeterGenerator *generator)
 {
     for (const auto &generator_tuple : generators) {
-        uint32_t known_class = std::get<0>(generator_tuple);
+        MeterClassID known_class = std::get<0>(generator_tuple);
         if (meter_class == known_class) {
-            logger.printfln("meters: Tried to register meter generator for already registered meter class %u.", meter_class);
+            logger.printfln("meters: Tried to register meter generator for already registered meter class %u.", static_cast<uint32_t>(meter_class));
             return;
         }
     }
@@ -365,25 +365,25 @@ void Meters::register_meter_generator(uint32_t meter_class, MeterGenerator *gene
     generators.push_back({meter_class, generator});
 }
 
-MeterGenerator *Meters::get_generator_for_class(uint32_t meter_class)
+MeterGenerator *Meters::get_generator_for_class(MeterClassID meter_class)
 {
     for (auto generator_tuple : generators) {
-        uint32_t known_class = std::get<0>(generator_tuple);
+        MeterClassID known_class = std::get<0>(generator_tuple);
         if (meter_class == known_class) {
             return std::get<1>(generator_tuple);
         }
     }
 
-    if (meter_class == METER_CLASS_NONE) {
+    if (meter_class == MeterClassID::None) {
         logger.printfln("meters: No generator for dummy meter available. This is probably fatal.");
         return nullptr;
     }
 
-    logger.printfln("meters: No generator for meter class %u.", meter_class);
-    return get_generator_for_class(METER_CLASS_NONE);
+    logger.printfln("meters: No generator for meter class %u.", static_cast<uint32_t>(meter_class));
+    return get_generator_for_class(MeterClassID::None);
 }
 
-IMeter *Meters::new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, Config *config, Config *errors)
+IMeter *Meters::new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *config, Config *errors)
 {
     MeterGenerator *generator = get_generator_for_class(meter_class);
 
@@ -401,7 +401,7 @@ IMeter *Meters::get_meter(uint32_t slot)
     return meter_slots[slot].meter;
 }
 
-uint32_t Meters::get_meters(uint32_t meter_class, IMeter **found_meters, uint32_t found_meters_capacity)
+uint32_t Meters::get_meters(MeterClassID meter_class, IMeter **found_meters, uint32_t found_meters_capacity)
 {
     uint32_t found_count = 0;
     for (uint32_t i = 0; i < METERS_SLOTS; i++) {
@@ -416,10 +416,10 @@ uint32_t Meters::get_meters(uint32_t meter_class, IMeter **found_meters, uint32_
     return found_count;
 }
 
-uint32_t Meters::get_meter_class(uint32_t slot)
+MeterClassID Meters::get_meter_class(uint32_t slot)
 {
     if (slot >= METERS_SLOTS)
-        return METER_CLASS_NONE;
+        return MeterClassID::None;
 
     return meter_slots[slot].meter->get_class();
 }

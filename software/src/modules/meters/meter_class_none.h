@@ -44,7 +44,7 @@ public:
     // (none)
 
     // for both
-    uint32_t get_class() const override _ATTRIBUTE((const));
+    MeterClassID get_class() const override _ATTRIBUTE((const));
 };
 
 #if defined(__GNUC__)

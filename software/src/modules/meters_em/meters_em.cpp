@@ -20,8 +20,6 @@
 #include "meters_em.h"
 #include "module_dependencies.h"
 
-#include "modules/meters/meter_class_defs.h"
-
 #include "gcc_warnings.h"
 
 void MetersEM::pre_setup()
@@ -39,13 +37,13 @@ void MetersEM::pre_setup()
         {"slave_device_failure", Config::Uint32(0)},
     });
 
-    meters.register_meter_generator(METER_CLASS_LOCAL_EM, this);
+    meters.register_meter_generator(MeterClassID::LocalEM, this);
 }
 
 _ATTRIBUTE((const))
-uint32_t MetersEM::get_class() const
+MeterClassID MetersEM::get_class() const
 {
-    return METER_CLASS_LOCAL_EM;
+    return MeterClassID::LocalEM;
 }
 
 IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config * /*config*/, Config * errors)

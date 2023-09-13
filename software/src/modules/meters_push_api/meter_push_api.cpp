@@ -21,15 +21,14 @@
 #include "module_dependencies.h"
 
 #include "api.h"
-#include "modules/meters/meter_class_defs.h"
 #include "modules/meters/meter_value_id.h"
 
 #include "gcc_warnings.h"
 
 _ATTRIBUTE((const))
-uint32_t MeterPushAPI::get_class() const
+MeterClassID MeterPushAPI::get_class() const
 {
-    return METER_CLASS_PUSH_API;
+    return MeterClassID::PushAPI;
 }
 
 void MeterPushAPI::setup()

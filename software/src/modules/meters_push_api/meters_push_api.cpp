@@ -21,8 +21,6 @@
 #include "meters_push_api.h"
 #include "module_dependencies.h"
 
-#include "modules/meters/meter_class_defs.h"
-
 #include "gcc_warnings.h"
 
 void MetersPushAPI::pre_setup()
@@ -38,9 +36,9 @@ void MetersPushAPI::pre_setup()
 }
 
 _ATTRIBUTE((const))
-uint32_t MetersPushAPI::get_class() const
+MeterClassID MetersPushAPI::get_class() const
 {
-    return METER_CLASS_PUSH_API;
+    return MeterClassID::PushAPI;
 }
 
 IMeter * MetersPushAPI::new_meter(uint32_t slot, Config * /*state*/, Config *config, Config * /*errors*/)

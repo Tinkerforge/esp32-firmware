@@ -20,7 +20,6 @@
 #pragma once
 
 #include "imeter.h"
-#include "meter_class_defs.h"
 #include "meter_generator.h"
 
 #include <stdint.h>
@@ -75,10 +74,10 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void register_meter_generator(uint32_t meter_class, MeterGenerator *generator);
+    void register_meter_generator(MeterClassID meter_class, MeterGenerator *generator);
     IMeter *get_meter(uint32_t slot);
-    uint32_t get_meters(uint32_t meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
-    uint32_t get_meter_class(uint32_t slot);
+    uint32_t get_meters(MeterClassID meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
+    MeterClassID get_meter_class(uint32_t slot);
 
     ValueAvailability get_power(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
     ValueAvailability get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age = 0_usec);
@@ -121,8 +120,8 @@ private:
         ValueHistory power_history;
     };
 
-    MeterGenerator *get_generator_for_class(uint32_t meter_class);
-    IMeter *new_meter_of_class(uint32_t meter_class, uint32_t slot, Config *state, Config *config, Config *errors);
+    MeterGenerator *get_generator_for_class(MeterClassID meter_class);
+    IMeter *new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *config, Config *errors);
 
     ValueAvailability get_single_value(uint32_t slot, uint32_t kind, float *value, micros_t max_age_us);
 
@@ -134,7 +133,7 @@ private:
     Config config_float_nan_prototype;
     Config config_uint_max_prototype;
 
-    std::vector<std::tuple<uint32_t, MeterGenerator *>> generators;
+    std::vector<std::tuple<MeterClassID, MeterGenerator *>> generators;
 
     size_t history_chars_per_value;
     uint32_t last_live_update = 0;

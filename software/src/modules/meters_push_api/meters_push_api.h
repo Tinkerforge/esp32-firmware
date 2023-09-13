@@ -38,7 +38,7 @@ public:
     void pre_setup() override;
 
     // for MeterGenerator
-    uint32_t get_class() const override _ATTRIBUTE((const));
+    MeterClassID get_class() const override _ATTRIBUTE((const));
     virtual IMeter *new_meter(uint32_t slot, Config *state, Config *config, Config *errors) override;
     virtual const Config *get_config_prototype() override _ATTRIBUTE((const));
     virtual const Config *get_state_prototype()  override _ATTRIBUTE((const));

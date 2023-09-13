@@ -20,7 +20,6 @@
 #include "meter_em.h"
 #include "module_dependencies.h"
 
-#include "modules/meters/meter_class_defs.h"
 #include "modules/meters/meter_value_id.h"
 #include "modules/meters/sdm_helpers.h"
 #include "task_scheduler.h"
@@ -29,9 +28,9 @@
 #include "gcc_warnings.h"
 
 _ATTRIBUTE((const))
-uint32_t MeterEM::get_class() const
+MeterClassID MeterEM::get_class() const
 {
-    return METER_CLASS_LOCAL_EM;
+    return MeterClassID::LocalEM;
 }
 
 void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)

@@ -381,8 +381,8 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
 
     free(meter_value_ids);
 
-    uint32_t linked_meter_class = meters.get_meter_class(linked_meter_slot);
-    if (linked_meter_class == METER_CLASS_LOCAL_EVSE || linked_meter_class == METER_CLASS_LOCAL_EM) {
+    MeterClassID linked_meter_class = meters.get_meter_class(linked_meter_slot);
+    if (linked_meter_class == MeterClassID::LocalEVSE || linked_meter_class == MeterClassID::LocalEM) {
         const String state_path = meters.get_path(linked_meter_slot, Meters::PathType::State);
         const Config *linked_state = api.getState(state_path);
         if (linked_state) {
@@ -471,7 +471,7 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
 
     state.get("readable")->updateBool(true);
 
-    if (linked_meter_class == METER_CLASS_PUSH_API) {
+    if (linked_meter_class == MeterClassID::PushAPI) {
         state.get("writable")->updateBool(true);
         meter_writable = true;
     }
