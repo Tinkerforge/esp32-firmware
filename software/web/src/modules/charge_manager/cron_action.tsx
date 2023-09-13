@@ -1,38 +1,35 @@
-import { CronAction } from "../cron/cron_defs";
+import { CronActionID } from "../cron/cron_defs";
 
-export interface ChargeManagerCronAction {
-    0: CronAction.SetManagerCurrent,
-    1: {
+export type ChargeManagerCronAction = [
+    CronActionID.SetManagerCurrent,
+    {
         current: number
     }
-}
+];
 
 import { h } from "preact"
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, cron_action, cron_action_components } from "../cron/api";
+import { CronComponent, CronAction, cron_action_components } from "../cron/api";
 import { InputFloat } from "../../ts/components/input_float";
 
-export function ChargeManagerCronComponent(cron: cron_action): CronComponent {
-    let action_props = cron as any as ChargeManagerCronAction;
+export function ChargeManagerCronComponent(action: CronAction): CronComponent {
+    let value = (action as ChargeManagerCronAction)[1];
     return {
-        text: __("charge_manager.content.maximum_available_current") + ": " + action_props[1].current / 1000 + " A",
+        text: __("charge_manager.content.maximum_available_current") + ": " + value.current / 1000 + " A",
         fieldNames: [__("charge_manager.content.maximum_available_current")],
-        fieldValues: [action_props[1].current / 1000 + " A"]
+        fieldValues: [value.current / 1000 + " A"]
     }
 }
 
-export function ChargeManagerCronConfigComponent(cron_object: Cron, state: cron_action) {
-    let props = state as any as ChargeManagerCronAction;
-    if (props[1] === undefined) {
-        props = ChargeManagerCronActionFactory() as any;
-    }
+export function ChargeManagerCronConfigComponent(cron: Cron, action: CronAction) {
+    let value = (action as ChargeManagerCronAction)[1];
     return [{
         name: "Maximaler Strom",
-        value: <InputFloat value={props[1].current}
+        value: <InputFloat value={value.current}
                     onValue={(v) => {
-                        props[1].current = v;
-                        cron_object.setActionFromComponent(props as any as cron_action);
+                        value.current = v;
+                        cron.setActionFromComponent(action);
                     }}
                     min={0}
                     unit="A"
@@ -40,9 +37,9 @@ export function ChargeManagerCronConfigComponent(cron_object: Cron, state: cron_
     }]
 }
 
-function ChargeManagerCronActionFactory(): cron_action {
+function ChargeManagerCronActionFactory(): CronAction {
     return [
-        CronAction.SetManagerCurrent as any,
+        CronActionID.SetManagerCurrent,
         {
             current: 0
         }
@@ -50,7 +47,7 @@ function ChargeManagerCronActionFactory(): cron_action {
 }
 
 export function init() {
-    cron_action_components[CronAction.SetManagerCurrent] = {
+    cron_action_components[CronActionID.SetManagerCurrent] = {
         config_builder: ChargeManagerCronActionFactory,
         config_component: ChargeManagerCronConfigComponent,
         table_row: ChargeManagerCronComponent,

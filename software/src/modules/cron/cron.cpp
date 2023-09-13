@@ -31,7 +31,7 @@ Cron::Cron() {
 
 void Cron::pre_setup() {
     ConfUnionPrototype proto;
-    proto.tag = static_cast<uint8_t>(CronAction::Print);
+    proto.tag = static_cast<uint8_t>(CronActionID::Print);
     proto.config = Config {
         Config::Object({
             {"message", Config::Str("", 0, 64)}
@@ -96,7 +96,7 @@ void Cron::register_trigger(const ConfUnionPrototype &proto) {
     trigger_vec.push_back(proto);
 }
 
-bool Cron::trigger_action(CronTrigger number, void *data, bool(*cb)(Config *,void *)) {
+bool Cron::trigger_action(CronTriggerID number, void *data, bool(*cb)(Config *,void *)) {
     bool triggered = false;
     for (auto &conf: config.get("tasks")) {
         if (conf.get("trigger")->getTag() == static_cast<uint8_t>(number) && cb((Config *)conf.get("trigger"), data)) {
@@ -111,7 +111,7 @@ bool Cron::trigger_action(CronTrigger number, void *data, bool(*cb)(Config *,voi
     return triggered;
 }
 
-bool Cron::is_trigger_active(CronTrigger number) {
+bool Cron::is_trigger_active(CronTriggerID number) {
     for (auto &conf: config.get("tasks")) {
         if (conf.get("trigger")->getTag() == static_cast<uint8_t>(number)) {
             return true;
@@ -120,7 +120,7 @@ bool Cron::is_trigger_active(CronTrigger number) {
     return false;
 }
 
-ConfigVec Cron::get_configured_triggers(CronTrigger number) {
+ConfigVec Cron::get_configured_triggers(CronTriggerID number) {
     ConfigVec vec;
     for (size_t idx = 0; idx < config.get("tasks")->count(); idx++) {
         auto trigger = config.get("tasks")->get(idx)->get("trigger");

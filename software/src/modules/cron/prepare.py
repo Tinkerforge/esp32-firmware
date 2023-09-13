@@ -53,19 +53,20 @@ for action in actions:
 
 with open('cron_defs.h', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
+    f.write('#include <stdint.h>\n\n')
     f.write('#pragma once\n\n')
-    f.write('enum class CronTrigger {\n')
+    f.write('enum class CronTriggerID : uint8_t {\n')
     f.write(''.join(trigger_values))
     f.write('};\n\n')
-    f.write('enum class CronAction {\n')
+    f.write('enum class CronActionID : uint8_t {\n')
     f.write(''.join(action_values))
     f.write('};\n')
 
 with open('../../../web/src/modules/cron/cron_defs.ts', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
-    f.write('export const enum CronTrigger {\n')
+    f.write('export const enum CronTriggerID {\n')
     f.write(''.join(trigger_values))
     f.write('};\n\n')
-    f.write('export const enum CronAction {\n')
+    f.write('export const enum CronActionID {\n')
     f.write(''.join(action_values))
     f.write('};\n')

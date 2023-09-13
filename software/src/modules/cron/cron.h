@@ -49,8 +49,8 @@ public:
     void register_action(const ConfUnionPrototype &proto, ActionCb callback);
     void register_trigger(const ConfUnionPrototype &proto);
 
-    bool trigger_action(CronTrigger number, void *data, bool (*cb)(Config *, void *));
-    bool is_trigger_active(CronTrigger number);
+    bool trigger_action(CronTriggerID number, void *data, bool (*cb)(Config *, void *));
+    bool is_trigger_active(CronTriggerID number);
 
-    ConfigVec get_configured_triggers(CronTrigger number);
+    ConfigVec get_configured_triggers(CronTriggerID number);
 };

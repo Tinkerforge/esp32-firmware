@@ -9,19 +9,17 @@ export interface config {
 }
 
 export interface Task {
-    trigger: cron_trigger,
-    action: cron_action
+    trigger: CronTrigger,
+    action: CronAction
 }
 
-export interface cron_trigger {
-    0: [0, {}]
-    | {{{triggers}}}
-}
+export type CronTrigger =
+    [0, null]
+    | {{{triggers}}};
 
-export interface cron_action {
-    0: [0, {}]
-    | {{{actions}}}
-}
+export type CronAction =
+    [0, null]
+    | {{{actions}}};
 
 export interface CronComponent {
     fieldNames: string[],
@@ -30,17 +28,17 @@ export interface CronComponent {
 }
 
 interface CronTriggerComponent {
-    table_row: (cron: cron_trigger) => CronComponent,
-    config_component: (cron_object: Cron, state: cron_trigger) => TableModalRow[],
-    config_builder: () => cron_trigger,
+    table_row: (cron: CronTrigger) => CronComponent,
+    config_component: (cron: Cron, trigger: CronTrigger) => TableModalRow[],
+    config_builder: () => CronTrigger,
     name: string,
     require_feature?: string
 }
 
 interface CronActionComponent {
-    table_row: (cron: cron_action) => CronComponent,
-    config_component: (cron_object: Cron, state: cron_action) => TableModalRow[],
-    config_builder: () => cron_action,
+    table_row: (cron: CronAction) => CronComponent,
+    config_component: (cron: Cron, action: CronAction) => TableModalRow[],
+    config_builder: () => CronAction,
     name: string,
     require_feature?: string
 }

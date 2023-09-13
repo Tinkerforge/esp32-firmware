@@ -1,32 +1,32 @@
-import { CronAction } from "../cron/cron_defs";
+import { CronActionID } from "../cron/cron_defs";
 
-export interface MqttCronAction {
-    0: CronAction.MQTT,
-    1: {
+export type MqttCronAction = [
+    CronActionID.MQTT,
+    {
         topic: string,
         payload: string,
         retain: boolean
     }
-}
+];
 
 import { Cron } from "../cron/main";
-import { CronComponent, cron_action, cron_action_components } from "../cron/api";
+import { CronComponent, CronAction, cron_action_components } from "../cron/api";
 import { InputText } from "../../ts/components/input_text";
 import { h } from "preact"
 import { Switch } from "../../ts/components/switch";
 import { __ } from "../../ts/translation";
 
-export function MqttCronActionComponent(cron: cron_action): CronComponent {
-    const props = (cron as any as MqttCronAction)[1];
+export function MqttCronActionComponent(action: CronAction): CronComponent {
+    const value = (action as MqttCronAction)[1];
     const fieldNames = [
         __("mqtt.content.topic"),
         __("mqtt.content.payload"),
         __("mqtt.content.accept_retain")
     ];
     const fieldValues = [
-        props.topic,
-        props.payload,
-        props.retain ? __("mqtt.content.yes") : __("mqtt.content.no")
+        value.topic,
+        value.payload,
+        value.retain ? __("mqtt.content.yes") : __("mqtt.content.no")
     ]
     let ret = "";
     fieldNames.map((name, idx) => {
@@ -39,45 +39,42 @@ export function MqttCronActionComponent(cron: cron_action): CronComponent {
     };
 }
 
-export function MqttCronActionConfig(cron_object: Cron, state: cron_action) {
-    let props = state as any as MqttCronAction;
-    if (props[1] === undefined) {
-        props = MqttCronActionFactory() as any;
-    }
+export function MqttCronActionConfig(cron: Cron, action: CronAction) {
+    let value = (action as MqttCronAction)[1];
     return [
         {
             name: __("mqtt.content.topic"),
             value: <InputText
-                value={props[1].topic}
+                value={value.topic}
                 onValue={(v) => {
-                    props[1].topic = v;
-                    cron_object.setActionFromComponent(props as any);
+                    value.topic = v;
+                    cron.setActionFromComponent(action);
                 }}/>
         },
         {
             name: __("mqtt.content.payload"),
             value: <InputText
-                value={props[1].payload}
+                value={value.payload}
                 onValue={(v) => {
-                    props[1].payload = v;
-                    cron_object.setActionFromComponent(props as any);
+                    value.payload = v;
+                    cron.setActionFromComponent(action);
                 }}/>
         },
         {
             name: __("mqtt.content.accept_retain"),
             value: <Switch
-                checked={props[1].retain}
+                checked={value.retain}
                 onClick={() => {
-                    props[1].retain = !props[1].retain;
-                    cron_object.setActionFromComponent(props as any);
+                    value.retain = !value.retain;
+                    cron.setActionFromComponent(action);
                 }}/>
         }
     ]
 }
 
-function MqttCronActionFactory(): cron_action {
+function MqttCronActionFactory(): CronAction {
     return [
-        CronAction.MQTT as any,
+        CronActionID.MQTT,
         {
             topic: "",
             payload: "",
@@ -87,7 +84,7 @@ function MqttCronActionFactory(): cron_action {
 }
 
 export function init() {
-    cron_action_components[CronAction.MQTT] = {
+    cron_action_components[CronActionID.MQTT] = {
         config_builder: MqttCronActionFactory,
         config_component: MqttCronActionConfig,
         table_row: MqttCronActionComponent,

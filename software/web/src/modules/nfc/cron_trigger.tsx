@@ -1,25 +1,24 @@
-import { CronTrigger } from "../cron/cron_defs";
+import { CronActionID } from "../cron/cron_defs";
 
-export interface NfcCronTrigger {
-    0: CronTrigger.NFC,
-    1: {
+export type NfcCronTrigger = [
+    CronActionID.NFC,
+    {
         tag_type: number,
         tag_id: string
     }
-}
+];
 
 import { h } from "preact"
 import { __, translate_unchecked } from "../../ts/translation";
-import { CronComponent, cron_trigger, cron_trigger_components } from "../cron/api";
+import { CronComponent, CronTrigger, cron_trigger_components } from "../cron/api";
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 
-export function NFCCronTriggerComponent(cron: cron_trigger): CronComponent {
-    const props = (cron as any as NfcCronTrigger)[1];
-
-    let ret = __("nfc.content.table_tag_id") + ": \"" + props.tag_id + "\",\n";
-    ret += __("nfc.content.table_tag_type") + ": " + translate_unchecked("nfc.content.type_" + props.tag_type);
+export function NFCCronTriggerComponent(trigger: CronTrigger): CronComponent {
+    const value = (trigger as NfcCronTrigger)[1];
+    let ret = __("nfc.content.table_tag_id") + ": \"" + value.tag_id + "\",\n";
+    ret += __("nfc.content.table_tag_type") + ": " + translate_unchecked("nfc.content.type_" + value.tag_type);
     return {
         text: ret,
         fieldNames: [
@@ -27,15 +26,15 @@ export function NFCCronTriggerComponent(cron: cron_trigger): CronComponent {
             __("nfc.content.table_tag_type")
         ],
         fieldValues: [
-            props.tag_id,
-            translate_unchecked("nfc.content.type_" + props.tag_type)
+            value.tag_id,
+            translate_unchecked("nfc.content.type_" + value.tag_type)
         ]
     }
 }
 
-function NfcCronTriggerFactory(): cron_trigger{
+function NfcCronTriggerFactory(): CronTrigger {
     return [
-        CronTrigger.NFC as any,
+        CronActionID.NFC,
         {
             tag_type: 0,
             tag_id: ""
@@ -43,19 +42,16 @@ function NfcCronTriggerFactory(): cron_trigger{
     ]
 }
 
-export function NFCCronTriggerConfig(cron_object: Cron, props: cron_trigger) {
-    let state = props as any as NfcCronTrigger;
-    if (state[1] === undefined) {
-        state = NfcCronTriggerFactory() as any;
-    }
+export function NFCCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
+    let value = (trigger as NfcCronTrigger)[1];
     return [
         {
             name: __("nfc.content.table_tag_id"),
             value: <InputText
-                value={state[1].tag_id}
+                value={value.tag_id}
                 onValue={(v) => {
-                    state[1].tag_id = v;
-                    cron_object.setTriggerFromComponent(state as any);
+                    value.tag_id = v;
+                    cron.setTriggerFromComponent(trigger);
                 }}/>
         },
         {
@@ -68,17 +64,17 @@ export function NFCCronTriggerConfig(cron_object: Cron, props: cron_trigger) {
                     ["3",__("nfc.content.type_3")],
                     ["4",__("nfc.content.type_4")],
                 ]}
-                value={state[1].tag_type.toString()}
+                value={value.tag_type.toString()}
                 onValue={(v) => {
-                    state[1].tag_type = parseInt(v);
-                    cron_object.setTriggerFromComponent(state as any);
+                    value.tag_type = parseInt(v);
+                    cron.setTriggerFromComponent(trigger);
                 }}/>
         }
     ]
 }
 
 export function init() {
-    cron_trigger_components[CronTrigger.NFC] = {
+    cron_trigger_components[CronTriggerID.NFC] = {
         config_builder: NfcCronTriggerFactory,
         config_component: NFCCronTriggerConfig,
         table_row: NFCCronTriggerComponent,

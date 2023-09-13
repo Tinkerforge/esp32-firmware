@@ -1,15 +1,15 @@
-import { CronAction } from "../cron/cron_defs";
+import { CronActionID } from "../cron/cron_defs";
 
-export interface MeterCronAction {
-    0: CronAction.MeterReset,
-    1: {}
-}
+export type MeterCronAction = [
+    CronActionID.MeterReset,
+    {}
+]
 
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, cron_action,cron_action_components } from "../cron/api";
+import { CronComponent, CronAction, cron_action_components } from "../cron/api";
 
-function MeterResetCronActionComponent(_: cron_action): CronComponent {
+function MeterResetCronActionComponent(_: CronAction): CronComponent {
     return {
         text: "",
         fieldNames: [],
@@ -17,19 +17,19 @@ function MeterResetCronActionComponent(_: cron_action): CronComponent {
     };
 }
 
-function MeterResetCronActionConfigComponent(_: Cron, __: cron_action): any {
+function MeterResetCronActionConfigComponent(_: Cron, __: CronAction): any {
     return [];
 }
 
-function MeterResetCronActionConfigFactory(): cron_action {
+function MeterResetCronActionConfigFactory(): CronAction {
     return [
-        CronAction.MeterReset as any,
+        CronActionID.MeterReset,
         {}
     ];
 }
 
 export function init() {
-    cron_action_components[CronAction.MeterReset] = {
+    cron_action_components[CronActionID.MeterReset] = {
         config_builder: MeterResetCronActionConfigFactory,
         config_component: MeterResetCronActionConfigComponent,
         table_row: MeterResetCronActionComponent,

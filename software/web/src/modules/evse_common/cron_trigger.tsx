@@ -1,20 +1,20 @@
-import { CronTrigger } from "../cron/cron_defs";
+import { CronTriggerID } from "../cron/cron_defs";
 
-export interface EvseStateCronTrigger {
-    0: CronTrigger.IECChange,
-    1: {
+export type EvseStateCronTrigger = [
+    CronTriggerID.IECChange,
+    {
         charger_state: number
     }
-}
+];
 
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, cron_trigger, cron_trigger_components } from "../cron/api";
+import { CronComponent, CronTrigger, cron_trigger_components } from "../cron/api";
 import { InputSelect } from "../../ts/components/input_select";
 import { h } from "preact"
 
-export function EvseStateCronComponent(cron: cron_trigger): CronComponent {
-    let trigger_props = cron as any as EvseStateCronTrigger;
+export function EvseStateCronComponent(trigger: CronTrigger): CronComponent {
+    let value = (trigger as EvseStateCronTrigger)[1];
     const names = [
         [ __("evse.status.not_connected")],
         [__("evse.status.waiting_for_charge_release")],
@@ -27,30 +27,27 @@ export function EvseStateCronComponent(cron: cron_trigger): CronComponent {
         __("evse.content.status")
     ];
     const fieldValues = [
-        names[trigger_props[1].charger_state]
+        names[value.charger_state]
     ];
 
     return {
-        text: __("evse.content.status") + ": " + names[trigger_props[1].charger_state],
+        text: __("evse.content.status") + ": " + names[value.charger_state],
         fieldNames,
         fieldValues
     }
 }
 
-function EvseStateCronFactory(): cron_trigger {
+function EvseStateCronFactory(): CronTrigger {
     return [
-        CronTrigger.IECChange as any,
+        CronTriggerID.IECChange,
         {
             charger_state: 0
         }
     ]
 }
 
-export function EvseStateCronConfig(cron_object: Cron, state: cron_trigger) {
-    let props = state as any as EvseStateCronTrigger;
-    if (props[1] == undefined) {
-        props = EvseStateCronFactory() as any;
-    }
+export function EvseStateCronConfig(cron: Cron, trigger: CronTrigger) {
+    let value = (trigger as EvseStateCronTrigger)[1];
     return [{
         name: __("evse.content.status"),
         value: <InputSelect
@@ -61,16 +58,16 @@ export function EvseStateCronConfig(cron_object: Cron, state: cron_trigger) {
                         ["3", __("evse.status.charging")],
                         ["4",  __("evse.status.error")]
                     ]}
-                    value={props[1].charger_state.toString()}
+                    value={value.charger_state.toString()}
                     onValue={(v) => {
-                        props[1].charger_state = Number(v);
-                        cron_object.setTriggerFromComponent(props as any as cron_trigger);
+                        value.charger_state = Number(v);
+                        cron.setTriggerFromComponent(trigger);
                     }}/>
     }]
 }
 
 export function init() {
-    cron_trigger_components[CronTrigger.IECChange] = {
+    cron_trigger_components[CronTriggerID.IECChange] = {
         config_builder: EvseStateCronFactory,
         config_component: EvseStateCronConfig,
         table_row: EvseStateCronComponent,

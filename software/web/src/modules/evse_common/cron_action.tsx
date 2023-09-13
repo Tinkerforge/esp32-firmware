@@ -1,39 +1,39 @@
-import { CronAction } from "../cron/cron_defs";
+import { CronActionID } from "../cron/cron_defs";
 
-export interface EvseCronAction {
-    0: CronAction.SetCurrent,
-    1: {
+export type EvseCronAction = [
+    CronActionID.SetCurrent,
+    {
         current: number
     }
-}
+];
 
-export interface EvseLedCronAction {
-    0: CronAction.LED,
-    1: {
+export type EvseLedCronAction = [
+    CronActionID.LED,
+    {
         state: number,
         duration: number
     }
-}
+];
 
 import { __ } from "../../ts/translation"
-import { CronComponent, cron_action, cron_action_components } from "../cron/api"
+import { CronComponent, CronAction, cron_action_components } from "../cron/api"
 import { Cron } from "../cron/main"
 import { InputSelect } from "../../ts/components/input_select"
 import { InputFloat } from "../../ts/components/input_float"
 import { h } from 'preact'
 import { InputNumber } from "../../ts/components/input_number"
 
-function EvseSetCurrentCronActionComponent(cron: cron_action): CronComponent {
-    const props = (cron as any as EvseCronAction)[1];
+function EvseSetCurrentCronActionComponent(action: CronAction): CronComponent {
+    const value = (action as EvseCronAction)[1];
     return {
-        text: __("evse.content.allowed_charging_current") + ": " + props.current / 1000 + " A",
+        text: __("evse.content.allowed_charging_current") + ": " + value.current / 1000 + " A",
         fieldNames: [__("evse.content.allowed_charging_current")],
-        fieldValues: [props.current / 1000 + " A"]
+        fieldValues: [value.current / 1000 + " A"]
     };
 }
 
-function EvseSetCurrentCronActionConfigComponent(cron_object: Cron, props: cron_action) {
-    const state = props as any as EvseCronAction;
+function EvseSetCurrentCronActionConfigComponent(cron: Cron, action: CronAction) {
+    const value = (action as EvseCronAction)[1];
     return [
         {
             name: __("evse.content.allowed_charging_current"),
@@ -42,33 +42,33 @@ function EvseSetCurrentCronActionConfigComponent(cron_object: Cron, props: cron_
                 min={0}
                 max={32000}
                 unit="A"
-                value={state[1].current}
+                value={value.current}
                 onValue={(v) => {
-                    state[1].current = v;
-                    cron_object.setActionFromComponent(state as any);
+                    value.current = v;
+                    cron.setActionFromComponent(action);
                 }}/>
         }
     ]
 }
 
-function EvseSetCurrentCronActionConfigFactory(): cron_action {
+function EvseSetCurrentCronActionConfigFactory(): CronAction {
     return [
-        CronAction.SetCurrent as any,
+        CronActionID.SetCurrent,
         {
             current: 0
         }
     ]
 }
 
-function EvseLedCronActionComponent(cron: cron_action): CronComponent {
-    const props = (cron as any as EvseLedCronAction)[1];
+function EvseLedCronActionComponent(action: CronAction): CronComponent {
+    const value = (action as EvseLedCronAction)[1];
     let ret = __("evse.content.led_state") + ": ";
     const fieldNames = [
         __("evse.content.led_state"),
         __("evse.content.led_duration"),
     ];
     let state = ""
-    switch (props.state) {
+    switch (value.state) {
         case 0:
             state = __("evse.content.led_state_off");
             break;
@@ -91,10 +91,10 @@ function EvseLedCronActionComponent(cron: cron_action): CronComponent {
     }
 
     const fieldValues = [
-        props.duration + " ms",
+        value.duration + " ms",
         state
     ];
-    ret = ret + "\n" + __("evse.content.led_duration") + ": " + props.duration + " ms"
+    ret = ret + "\n" + __("evse.content.led_duration") + ": " + value.duration + " ms"
     return {
         text: ret,
         fieldNames: fieldNames,
@@ -102,8 +102,8 @@ function EvseLedCronActionComponent(cron: cron_action): CronComponent {
     }
 }
 
-function EvseLedCronActionConfigComponent(cron_object: Cron, props: cron_action) {
-    const state = props as any as EvseLedCronAction;
+function EvseLedCronActionConfigComponent(cron: Cron, action: CronAction) {
+    const value = (action as EvseLedCronAction)[1];
     return [
         {
             name: __("evse.content.led_state"),
@@ -116,28 +116,28 @@ function EvseLedCronActionConfigComponent(cron_object: Cron, props: cron_action)
                     ["1002", __("evse.content.led_state_flickering")],
                     ["1003", __("evse.content.led_state_breathing")]
                 ]}
-                value={state[1].state.toString()}
+                value={value.state.toString()}
                 onValue={(v) => {
-                    state[1].state = parseInt(v);
-                    cron_object.setActionFromComponent(state as any);
+                    value.state = parseInt(v);
+                    cron.setActionFromComponent(action);
                 }}/>
         },
         {
             name: __("evse.content.led_duration"),
             value: <InputNumber
-                value={state[1].duration}
+                value={value.duration}
                 unit="ms"
                 onValue={(v) => {
-                    state[1].duration = v;
-                    cron_object.setActionFromComponent(state as any);
+                    value.duration = v;
+                    cron.setActionFromComponent(action);
                 }} />
         }
     ]
 }
 
-function EvseLedCronActionConfigFactory(): cron_action {
+function EvseLedCronActionConfigFactory(): CronAction {
     return [
-        CronAction.LED as any,
+        CronActionID.LED,
         {
             duration: 0,
             state: 0
@@ -146,14 +146,14 @@ function EvseLedCronActionConfigFactory(): cron_action {
 }
 
 export function init() {
-    cron_action_components[CronAction.SetCurrent] = {
+    cron_action_components[CronActionID.SetCurrent] = {
         config_builder: EvseSetCurrentCronActionConfigFactory,
         config_component: EvseSetCurrentCronActionConfigComponent,
         table_row: EvseSetCurrentCronActionComponent,
         name: __("evse.content.allowed_charging_current")
     };
 
-    cron_action_components[CronAction.LED] = {
+    cron_action_components[CronActionID.LED] = {
         config_builder: EvseLedCronActionConfigFactory,
         config_component: EvseLedCronActionConfigComponent,
         table_row: EvseLedCronActionComponent,

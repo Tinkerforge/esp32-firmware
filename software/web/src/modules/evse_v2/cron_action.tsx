@@ -1,31 +1,31 @@
-import { CronAction } from "../cron/cron_defs";
+import { CronActionID } from "../cron/cron_defs";
 
-export interface EvseGpOutputCronAction {
-    0: CronAction.EVSEGPOutput,
-    1: {
+export type EvseGpOutputCronAction = [
+    CronActionID.EVSEGPOutput,
+    {
         state: number
     }
-}
+];
 
 import { __ } from "../../ts/translation";
-import { CronComponent, cron_action, cron_action_components} from "../cron/api";
+import { CronComponent, CronAction, cron_action_components} from "../cron/api";
 import { h } from 'preact'
 import { InputSelect } from "../../ts/components/input_select";
 import { Cron } from "../cron/main";
 
-function EvseGpioOutputCronActionComponent(cron: cron_action): CronComponent {
-    const state = (cron as any as EvseGpOutputCronAction)[1];
+function EvseGpioOutputCronActionComponent(action: CronAction): CronComponent {
+    const value = (action as EvseGpOutputCronAction)[1];
     return {
-        text: state.state ? __("evse.content.gpio_out_high") : __("evse.content.gpio_out_low"),
+        text: value.state ? __("evse.content.gpio_out_high") : __("evse.content.gpio_out_low"),
         fieldNames: [],
         fieldValues: [
-            state.state ? __("evse.content.gpio_out_high") : __("evse.content.gpio_out_low")
+            value.state ? __("evse.content.gpio_out_high") : __("evse.content.gpio_out_low")
         ]
     }
 }
 
-function EvseGpioOutputCronActionConfigComponent(cron_object: Cron, props: cron_action) {
-    const state = props as any as EvseGpOutputCronAction;
+function EvseGpioOutputCronActionConfigComponent(cron: Cron, action: CronAction) {
+    const value = (action as EvseGpOutputCronAction)[1];
     return [
         {
             name: __("evse.content.gpio_out"),
@@ -34,18 +34,18 @@ function EvseGpioOutputCronActionConfigComponent(cron_object: Cron, props: cron_
                     ["0", __("evse.content.gpio_out_low")],
                     ["1", __("evse.content.gpio_out_high")]
                 ]}
-                value={state[1].state}
+                value={value.state}
                 onValue={(v) => {
-                    state[1].state = Number(v);
-                    cron_object.setActionFromComponent(state as any);
+                    value.state = Number(v);
+                    cron.setActionFromComponent(action);
                 }}/>
         }
     ]
 }
 
-function EvseGpioOutputCronActionConfigFactory(): cron_action {
+function EvseGpioOutputCronActionConfigFactory(): CronAction {
     return [
-        CronAction.EVSEGPOutput as any,
+        CronActionID.EVSEGPOutput,
         {
             state: 0
         }
@@ -53,7 +53,7 @@ function EvseGpioOutputCronActionConfigFactory(): cron_action {
 }
 
 export function init() {
-    cron_action_components[CronAction.EVSEGPOutput] = {
+    cron_action_components[CronActionID.EVSEGPOutput] = {
         config_builder: EvseGpioOutputCronActionConfigFactory,
         config_component: EvseGpioOutputCronActionConfigComponent,
         table_row: EvseGpioOutputCronActionComponent,

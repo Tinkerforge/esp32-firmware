@@ -1,16 +1,16 @@
-import { CronTrigger } from "../cron/cron_defs";
+import { CronTriggerID } from "../cron/cron_defs";
 
-export interface ChargeLimitsCronTrigger {
-    0: CronTrigger.ChargeLimits,
-    1: {}
-}
+export type ChargeLimitsCronTrigger = [
+    CronTriggerID.ChargeLimits,
+    {}
+];
 
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, cron_trigger, cron_trigger_components } from "../cron/api";
+import { CronComponent, CronTrigger, cron_trigger_components } from "../cron/api";
 
 // TODO: Think about a nice explanation why this does not need a config
-function ChargeLimitsCronTriggerComponent(_: cron_trigger): CronComponent {
+function ChargeLimitsCronTriggerComponent(_: CronTrigger): CronComponent {
     return {
         text: "",
         fieldNames: [],
@@ -18,16 +18,16 @@ function ChargeLimitsCronTriggerComponent(_: cron_trigger): CronComponent {
     };
 }
 
-function ChargeLimitsCronTriggerConfig(_: Cron, __: cron_trigger): any[] {
+function ChargeLimitsCronTriggerConfig(_: Cron, __: CronTrigger) {
     return []
 }
 
-function ChargeLimitsCronTriggerFactory(): cron_trigger {
-    return [CronTrigger.ChargeLimits as any, {}];
+function ChargeLimitsCronTriggerFactory(): CronTrigger {
+    return [CronTriggerID.ChargeLimits, {}];
 }
 
 export function init() {
-    cron_trigger_components[CronTrigger.ChargeLimits] = {
+    cron_trigger_components[CronTriggerID.ChargeLimits] = {
         config_builder: ChargeLimitsCronTriggerFactory,
         config_component: ChargeLimitsCronTriggerConfig,
         table_row: ChargeLimitsCronTriggerComponent,

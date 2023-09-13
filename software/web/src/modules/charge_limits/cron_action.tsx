@@ -1,23 +1,23 @@
-import { CronAction } from "../cron/cron_defs";
+import { CronActionID } from "../cron/cron_defs";
 
-export interface ChargeLimitsCronAction {
-    0: CronAction.ChargeLimits,
-    1: {
+export type ChargeLimitsCronAction = [
+    CronActionID.ChargeLimits,
+    {
         duration: number,
         energy_wh: number
     }
-}
+];
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api"
 import { h } from "preact"
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, cron_action, cron_action_components } from "../cron/api";
+import { CronComponent, CronAction, cron_action_components } from "../cron/api";
 import { InputSelect } from "../../ts/components/input_select";
 
-function ChargeLimitsCronActionComponent(cron: cron_action): CronComponent {
-    const props = (cron as any as ChargeLimitsCronAction)[1];
+function ChargeLimitsCronActionComponent(action: CronAction): CronComponent {
+    const value = (action as ChargeLimitsCronAction)[1];
     const durations = [
         __("charge_limits.content.unlimited"),
         __("charge_limits.content.min15"),
@@ -36,14 +36,14 @@ function ChargeLimitsCronActionComponent(cron: cron_action): CronComponent {
         __("charge_limits.content.duration")
     ];
     let fieldValues = [
-        durations[props.duration]
+        durations[value.duration]
     ];
-    let ret =  __("charge_limits.content.duration") + ": " + durations[props.duration];
+    let ret =  __("charge_limits.content.duration") + ": " + durations[value.duration];
     if (API.hasFeature("meter")) {
         fieldNames = fieldNames.concat([__("charge_limits.content.energy")]);
-        fieldValues = fieldValues.concat([(props.energy_wh != 0 ? props.energy_wh / 1000 + " kWh" : __("charge_limits.content.unlimited"))]);
+        fieldValues = fieldValues.concat([(value.energy_wh != 0 ? value.energy_wh / 1000 + " kWh" : __("charge_limits.content.unlimited"))]);
 
-        ret += ", " + __("charge_limits.content.energy") + ": " + (props.energy_wh != 0 ? props.energy_wh / 1000 + " kWh" : __("charge_limits.content.unlimited"));
+        ret += ", " + __("charge_limits.content.energy") + ": " + (value.energy_wh != 0 ? value.energy_wh / 1000 + " kWh" : __("charge_limits.content.unlimited"));
     }
 
     return {
@@ -53,8 +53,8 @@ function ChargeLimitsCronActionComponent(cron: cron_action): CronComponent {
     };
 }
 
-function ChargeLimitsCronActionConfig(cron_object: Cron, props: cron_action) {
-    const state = props as any as ChargeLimitsCronAction;
+function ChargeLimitsCronActionConfig(cron: Cron, action: CronAction) {
+    const value = (action as ChargeLimitsCronAction)[1];
     const energy_items: [string, string][] = [
         ["0", __("charge_limits.content.unlimited")],
         ["5000", util.toLocaleFixed(5, 0) + " kWh"],
@@ -91,27 +91,27 @@ function ChargeLimitsCronActionConfig(cron_object: Cron, props: cron_action) {
             name: __("charge_limits.content.energy"),
             value:  <InputSelect
                     items={energy_items}
-                    value={state[1].energy_wh.toString()}
+                    value={value.energy_wh.toString()}
                     onValue={(v) => {
-                        state[1].energy_wh = parseInt(v);
-                        cron_object.setActionFromComponent(state as any)
+                        value.energy_wh = parseInt(v);
+                        cron.setActionFromComponent(action)
                     }}/>
         }] : [];
     return [{
         name: __("charge_limits.content.duration"),
         value: <InputSelect
             items={duration_items}
-            value={state[1].duration.toString()}
+            value={value.duration.toString()}
             onValue={(v) => {
-                state[1].duration = parseInt(v);
-                cron_object.setActionFromComponent(state as any);
+                value.duration = parseInt(v);
+                cron.setActionFromComponent(action);
             }}/>
     }].concat(meter_entry);
 }
 
-function ChargeLimitsCronActionFactory(): cron_action {
+function ChargeLimitsCronActionFactory(): CronAction {
     return [
-        CronAction.ChargeLimits as any,
+        CronActionID.ChargeLimits,
         {
             duration: 0,
             energy_wh: 0
@@ -120,7 +120,7 @@ function ChargeLimitsCronActionFactory(): cron_action {
 }
 
 export function init() {
-    cron_action_components[CronAction.ChargeLimits] = {
+    cron_action_components[CronActionID.ChargeLimits] = {
         config_builder: ChargeLimitsCronActionFactory,
         config_component: ChargeLimitsCronActionConfig,
         table_row: ChargeLimitsCronActionComponent,

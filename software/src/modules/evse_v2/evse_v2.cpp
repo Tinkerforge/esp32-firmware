@@ -167,22 +167,22 @@ void EVSEV2::pre_setup()
 
 #if MODULE_CRON_AVAILABLE()
     ConfUnionPrototype proto;
-    proto.tag = static_cast<uint8_t>(CronTrigger::EVSEButton);
+    proto.tag = static_cast<uint8_t>(CronTriggerID::EVSEButton);
     proto.config = Config::Object({
         {"button_pressed", Config::Bool(false)}
     });
     cron.register_trigger(proto);
 
-    proto.tag = static_cast<uint8_t>(CronTrigger::EVSEGPInput);
+    proto.tag = static_cast<uint8_t>(CronTriggerID::EVSEGPInput);
     proto.config = Config::Object({
         {"high", Config::Bool(false)}
     });
     cron.register_trigger(proto);
 
-    proto.tag = static_cast<uint8_t>(CronTrigger::EVSEShutdownInput);
+    proto.tag = static_cast<uint8_t>(CronTriggerID::EVSEShutdownInput);
     cron.register_trigger(proto);
 
-    proto.tag = static_cast<uint8_t>(CronAction::EVSEGPOutput);
+    proto.tag = static_cast<uint8_t>(CronActionID::EVSEGPOutput);
 
     proto.config = Config::Object({
         {"state", Config::Uint(0, 0, 1)}
@@ -878,10 +878,10 @@ void EVSEV2::update_all_data()
 
 #if MODULE_CRON_AVAILABLE()
     if (evse_common.low_level_state.get("gpio")->get(5)->asBool() != gpio[5])
-        cron.trigger_action(CronTrigger::EVSEShutdownInput, nullptr, &trigger_action);
+        cron.trigger_action(CronTriggerID::EVSEShutdownInput, nullptr, &trigger_action);
 
     if (evse_common.low_level_state.get("gpio")->get(16)->asBool() != gpio[16])
-        cron.trigger_action(CronTrigger::EVSEGPInput, nullptr, &trigger_action);
+        cron.trigger_action(CronTriggerID::EVSEGPInput, nullptr, &trigger_action);
 #endif
 
     for (int i = 0; i < sizeof(gpio) / sizeof(gpio[0]); ++i)
@@ -1002,19 +1002,19 @@ bool EVSEV2::action_triggered(Config *config, void *data) {
     auto cfg = config->get();
     switch (static_cast<CronTrigger>(config->getTag()))
     {
-    case CronTrigger::EVSEButton:
+    case CronTriggerID::EVSEButton:
         // This check happens before the new state is written to the config.
         // Because of this we need to check if the current state in config is different than our desired state.
         if (evse_common.button_state.get("button_pressed")->asBool() != cfg->get("button_pressed")->asBool())
             return true;
         break;
 
-    case CronTrigger::EVSEGPInput:
+    case CronTriggerID::EVSEGPInput:
         if (evse_common.low_level_state.get("gpio")->get(16)->asBool() != cfg->get("high")->asBool())
             return true;
         break;
 
-    case CronTrigger::EVSEShutdownInput:
+    case CronTriggerID::EVSEShutdownInput:
         if (evse_common.low_level_state.get("gpio")->get(5)->asBool() != cfg->get("high")->asBool())
             return true;
         break;
