@@ -99,9 +99,9 @@ void Mqtt::subscribe_with_prefix(const String &path, std::function<void(const ch
 
 void Mqtt::subscribe(const String &topic, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained)
 {
-    this->commands.push_back({topic, callback, forbid_retained, topic.startsWith(config_in_use.get("global_topic_prefix")->asString())});
+    bool subscribed = esp_mqtt_client_subscribe(client, topic.c_str(), 0) >= 0;
 
-    esp_mqtt_client_subscribe(client, topic.c_str(), 0);
+    this->commands.push_back({topic, callback, forbid_retained, topic.startsWith(config_in_use.get("global_topic_prefix")->asString()), subscribed});
 }
 
 void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
@@ -169,15 +169,20 @@ bool Mqtt::pushRawStateUpdate(const String &payload, const String &path)
 }
 
 void Mqtt::resubscribe() {
-    const String &prefix = config_in_use.get("global_topic_prefix")->asString();
-    String topic = prefix + "/#";
-    esp_mqtt_client_subscribe(client, topic.c_str(), 0);
+    if (!global_topic_prefix_subscribed) {
+        const String &prefix = config_in_use.get("global_topic_prefix")->asString();
+        String topic = prefix + "/#";
+        global_topic_prefix_subscribed = esp_mqtt_client_subscribe(client, topic.c_str(), 0) >= 0;
+    }
 
     for (auto &cmd : this->commands) {
         if (cmd.starts_with_global_topic_prefix)
             continue;
 
-        esp_mqtt_client_subscribe(client, cmd.topic.c_str(), 0);
+        if (cmd.subscribed)
+            continue;
+
+        cmd.subscribed = esp_mqtt_client_subscribe(client, cmd.topic.c_str(), 0) >= 0;
     }
 }
 
@@ -201,6 +206,14 @@ void Mqtt::onMqttConnect()
         reg.config->set_updated(1 << this->backend_idx);
     }
 
+    this->global_topic_prefix_subscribed = false;
+    for (auto &cmd : this->commands) {
+        cmd.subscribed = false;
+    }
+
+    // Resubscribe now to prioritize re-subscription
+    // of the first topics (for example the global topic prefix)
+    // over sending state updates.
     this->resubscribe();
 }
 
@@ -450,6 +463,10 @@ void Mqtt::setup()
 
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
+
+    task_scheduler.scheduleWithFixedDelay([this](){
+        this->resubscribe();
+    }, 1000, 1000);
 
     initialized = true;
 }

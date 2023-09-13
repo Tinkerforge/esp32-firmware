@@ -36,6 +36,7 @@ struct MqttCommand {
     std::function<void(const char *, size_t, char *, size_t)> callback;
     bool forbid_retained;
     bool starts_with_global_topic_prefix;
+    bool subscribed;
 };
 
 struct MqttState {
@@ -98,4 +99,5 @@ private:
 
     uint32_t last_connected_ms = 0;
     bool was_connected = false;
+    bool global_topic_prefix_subscribed = false;
 };
