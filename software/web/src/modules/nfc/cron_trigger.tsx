@@ -1,7 +1,7 @@
-import { CronActionID } from "../cron/cron_defs";
+import { CronTriggerID } from "../cron/cron_defs";
 
 export type NfcCronTrigger = [
-    CronActionID.NFC,
+    CronTriggerID.NFC,
     {
         tag_type: number,
         tag_id: string
@@ -34,7 +34,7 @@ export function NFCCronTriggerComponent(trigger: CronTrigger): CronComponent {
 
 function NfcCronTriggerFactory(): CronTrigger {
     return [
-        CronActionID.NFC,
+        CronTriggerID.NFC,
         {
             tag_type: 0,
             tag_id: ""
