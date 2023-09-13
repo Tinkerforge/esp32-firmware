@@ -25,6 +25,10 @@
 #include "time.h"
 #include "module_dependencies.h"
 
+#if MODULE_CRON_AVAILABLE()
+extern Rtc rtc;
+#endif
+
 void Rtc::pre_setup()
 {
     time = Config::Object({
