@@ -81,24 +81,22 @@ void ChargeLimits::pre_setup()
     });
 
 #if MODULE_CRON_AVAILABLE()
-    ConfUnionPrototype proto;
-    proto.tag = static_cast<uint8_t>(CronTriggerID::ChargeLimits);
-    proto.config = *Config::Null();
-    cron.register_trigger(proto);
+    cron.register_trigger(CronTriggerID::ChargeLimits, *Config::Null());
 
-    proto.tag = static_cast<uint8_t>(CronTriggerID::ChargeLimits);
-    proto.config = Config::Object({
-        {"duration", Config::Uint32(0)},
-        {"energy_wh", Config::Uint32(0)}
-    });
+    cron.register_action(
+        CronActionID::ChargeLimits,
+        Config::Object({
+            {"duration", Config::Uint32(0)},
+            {"energy_wh", Config::Uint32(0)}
+        }),
+        [this](const Config *conf) {
+            config_in_use.get("duration")->updateUint(conf->get("duration")->asUint());
+            state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint() + map_duration(conf->get("duration")->asUint()));
 
-    cron.register_action(proto, [this](const Config *conf) {
-        config_in_use.get("duration")->updateUint(conf->get("duration")->asUint());
-        state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint() + map_duration(conf->get("duration")->asUint()));
-
-        config_in_use.get("energy_wh")->updateUint(conf->get("energy_wh")->asUint());
-        state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + conf->get("energy_wh")->asUint() / 1000.0);
-    });
+            config_in_use.get("energy_wh")->updateUint(conf->get("energy_wh")->asUint());
+            state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + conf->get("energy_wh")->asUint() / 1000.0);
+        }
+    );
 #endif
 }
 
@@ -209,7 +207,7 @@ void ChargeLimits::register_urls()
 
 #if MODULE_CRON_AVAILABLE()
     bool ChargeLimits::action_triggered(Config *config, void *data) {
-        switch (static_cast<CronTriggerID>(config->getTag())) {
+        switch (config->getTag<CronTriggerID>()) {
         case CronTriggerID::ChargeLimits:
             return true;
 

@@ -166,30 +166,36 @@ void EVSEV2::pre_setup()
     gp_output_update = gp_output;
 
 #if MODULE_CRON_AVAILABLE()
-    ConfUnionPrototype proto;
-    proto.tag = static_cast<uint8_t>(CronTriggerID::EVSEButton);
-    proto.config = Config::Object({
-        {"button_pressed", Config::Bool(false)}
-    });
-    cron.register_trigger(proto);
+    cron.register_trigger(
+        CronTriggerID::EVSEButton,
+        Config::Object({
+            {"button_pressed", Config::Bool(false)}
+        })
+    );
 
-    proto.tag = static_cast<uint8_t>(CronTriggerID::EVSEGPInput);
-    proto.config = Config::Object({
-        {"high", Config::Bool(false)}
-    });
-    cron.register_trigger(proto);
+    cron.register_trigger(
+        CronTriggerID::EVSEGPInput,
+        Config::Object({
+            {"high", Config::Bool(false)}
+        })
+    );
 
-    proto.tag = static_cast<uint8_t>(CronTriggerID::EVSEShutdownInput);
-    cron.register_trigger(proto);
+    cron.register_trigger(
+        CronTriggerID::EVSEShutdownInput,
+        Config::Object({
+            {"high", Config::Bool(false)}
+        })
+    );
 
-    proto.tag = static_cast<uint8_t>(CronActionID::EVSEGPOutput);
-
-    proto.config = Config::Object({
-        {"state", Config::Uint(0, 0, 1)}
-    });
-    cron.register_action(proto, [this](const Config *config) {
-        is_in_bootloader(tf_evse_v2_set_gp_output(&device, config->get("state")->asUint()));
-    });
+    cron.register_action(
+        CronActionID::EVSEGPOutput,
+        Config::Object({
+            {"state", Config::Uint(0, 0, 1)}
+        }),
+        [this](const Config *config) {
+            is_in_bootloader(tf_evse_v2_set_gp_output(&device, config->get("state")->asUint()));
+        }
+    );
 #endif
 }
 
@@ -933,7 +939,7 @@ void EVSEV2::update_all_data()
 
 #if MODULE_CRON_AVAILABLE()
     if (evse_common.button_state.get("button_pressed")->asBool() != button_pressed)
-        cron.trigger_action(CronTrigger::EVSEButton, nullptr, &trigger_action);
+        cron.trigger_action(CronTriggerID::EVSEButton, nullptr, &trigger_action);
 #endif
 
     // get_button_state
@@ -1000,7 +1006,7 @@ uint8_t EVSEV2::get_energy_meter_type()
 #if MODULE_CRON_AVAILABLE()
 bool EVSEV2::action_triggered(Config *config, void *data) {
     auto cfg = config->get();
-    switch (static_cast<CronTrigger>(config->getTag()))
+    switch (config->getTag<CronTriggerID>())
     {
     case CronTriggerID::EVSEButton:
         // This check happens before the new state is written to the config.

@@ -138,22 +138,21 @@ void EvseCommon::pre_setup() {
     require_meter_enabled_update = require_meter_enabled;
 
 #if MODULE_CRON_AVAILABLE()
-    ConfUnionPrototype proto;
-    proto.tag = static_cast<uint8_t>(CronTriggerID::IECChange);
-    proto.config = Config::Object({
-        {"charger_state", Config::Uint(0, 0, 4)}
-    });
+    cron.register_trigger(
+        CronTriggerID::IECChange,
+        Config::Object({
+            {"charger_state", Config::Uint(0, 0, 4)}
+        }));
 
-    cron.register_trigger(proto);
-
-    proto.tag = static_cast<uint8_t>(CronActionID::SetCurrent);
-    proto.config = Config::Object({
-        {"current", Config::Uint(0, 0, 32000)}
-    });
-
-    cron.register_action(proto, [this](const Config *config) {
-        backend->set_charging_slot(CHARGING_SLOT_CRON, config->get("current")->asUint(), true, false);
-    });
+    cron.register_action(
+        CronActionID::SetCurrent,
+        Config::Object({
+            {"current", Config::Uint(0, 0, 32000)}
+        }),
+        [this](const Config *config) {
+            backend->set_charging_slot(CHARGING_SLOT_CRON, config->get("current")->asUint(), true, false);
+        }
+    );
 #endif
 }
 
@@ -272,7 +271,7 @@ void EvseCommon::setup() {
 #if MODULE_CRON_AVAILABLE()
 bool EvseCommon::action_triggered(Config *config, void *data) {
     Config *cfg = (Config*)config->get();
-    switch (static_cast<CronTrigger>(config->getTag())) {
+    switch (config->getTag<CronTriggerID>()) {
         case CronTriggerID::IECChange:
                 if (cfg->get("charger_state")->asUint() == state.get("charger_state")->asUint())
                     return true;

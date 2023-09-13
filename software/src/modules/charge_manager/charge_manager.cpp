@@ -213,16 +213,15 @@ void ChargeManager::pre_setup()
     });
 
 #if MODULE_CRON_AVAILABLE()
-    ConfUnionPrototype proto;
-    proto.tag = static_cast<uint8_t>(CronActionID::SetManagerCurrent);
-    proto.config = Config::Object({
-        {"current", Config::Uint(0)}
-    });
-
-    cron.register_action(proto, [this](const Config *config) {
-        this->available_current.get("current")->updateUint(config->get("current")->asUint());
-        this->last_available_current_update = millis();
-    });
+    cron.register_action(
+        CronActionID::SetManagerCurrent,
+        Config::Object({
+            {"current", Config::Uint(0)}
+        }),
+        [this](const Config *config) {
+            this->available_current.get("current")->updateUint(config->get("current")->asUint());
+            this->last_available_current_update = millis();
+        });
 #endif
 }
 

@@ -20,6 +20,7 @@ if 'software' not in sys.modules:
 from software import util
 
 triggers = [
+    ('None', 0),
     ('Cron', 1),
     ('IEC Change', 2),
     ('MQTT', 3),
@@ -31,6 +32,7 @@ triggers = [
 ]
 
 actions = [
+    ('None', 0),
     ('Print', 1),
     ('MQTT', 2),
     ('Set Current', 3),

@@ -54,16 +54,15 @@ void Rtc::pre_setup()
     });
 
 #if MODULE_CRON_AVAILABLE()
-    ConfUnionPrototype proto;
-    proto.tag = static_cast<uint8_t>(CronTriggerID::Cron);
-    proto.config = Config::Object({
-        {"mday", Config::Int(-1, -1, 31)},
-        {"wday", Config::Int(-1, -1, 7)},
-        {"hour", Config::Int(-1, -1, 23)},
-        {"minute", Config::Int(-1, -1, 59)}
-    });
-
-    cron.register_trigger(proto);
+    cron.register_trigger(
+        CronTriggerID::Cron,
+        Config::Object({
+            {"mday", Config::Int(-1, -1, 31)},
+            {"wday", Config::Int(-1, -1, 7)},
+            {"hour", Config::Int(-1, -1, 23)},
+            {"minute", Config::Int(-1, -1, 59)}
+        })
+    );
 #endif
 }
 
@@ -183,7 +182,7 @@ bool Rtc::action_triggered(Config *conf, void *data) {
     triggered |= !(cfg->get("hour")->asInt() == time_struct->tm_hour || cfg->get("hour")->asInt() == -1);
     triggered |= !(cfg->get("minute")->asInt() == time_struct->tm_min || cfg->get("minute")->asInt() == -1);
 
-    switch (static_cast<CronTriggerID>(conf->getTag())) {
+    switch (conf->getTag<CronTriggerID>()) {
         case CronTriggerID::Cron:
             if (!triggered) {
                 return true;

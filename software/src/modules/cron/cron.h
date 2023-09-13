@@ -26,7 +26,7 @@
 #include "cron_defs.h"
 
 typedef std::function<void(const Config *)>               ActionCb;
-typedef std::map<uint32_t, ActionCb>                ActionMap;
+typedef std::map<CronActionID, ActionCb>                ActionMap;
 typedef std::vector<std::pair<size_t, Config *>>                       ConfigVec;
 
 class Cron : public IModule {
@@ -36,8 +36,8 @@ class Cron : public IModule {
     ConfigRoot enabled_in_use;
 
     ActionMap   action_map;
-    std::vector<ConfUnionPrototype>    trigger_vec;
-    std::vector<ConfUnionPrototype>    action_vec;
+    std::vector<ConfUnionPrototype<CronTriggerID>>    trigger_vec;
+    std::vector<ConfUnionPrototype<CronActionID>>    action_vec;
 
 public:
     Cron();
@@ -46,8 +46,8 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void register_action(const ConfUnionPrototype &proto, ActionCb callback);
-    void register_trigger(const ConfUnionPrototype &proto);
+    void register_action(CronActionID id, Config cfg, ActionCb callback);
+    void register_trigger(CronTriggerID id, Config cfg);
 
     bool trigger_action(CronTriggerID number, void *data, bool (*cb)(Config *, void *));
     bool is_trigger_active(CronTriggerID number);

@@ -34,16 +34,17 @@ void EvseLed::pre_setup()
     });
 
 #if MODULE_CRON_AVAILABLE()
-    ConfUnionPrototype proto;
-    proto.tag = static_cast<uint8_t>(CronActionID::LED);
-    proto.config = Config::Object({
-        {"state", Config::Int(-1)},
-        {"duration", Config::Uint16(0)}
-    });
-
-    cron.register_action(proto, [this](const Config *config) {
-        set_api(config->get("state")->asEnum<Blink>(), config->get("duration")->asUint());
-    });
+    cron.register_action(
+        CronActionID::LED,
+        Config::Object({
+            {"state", Config::Int(-1)},
+            {"duration", Config::Uint16(0)}
+        }),
+        [this](const Config *config) {
+            //FIXME: Should this call set_module instead?
+            set_api(config->get("state")->asEnum<Blink>(), config->get("duration")->asUint());
+        }
+    );
 #endif
 }
 

@@ -72,21 +72,26 @@ void Mqtt::pre_setup()
     });
 
 #if MODULE_CRON_AVAILABLE()
-    ConfUnionPrototype proto;
-    proto.tag = static_cast<uint8_t>(CronTriggerID::MQTT);
-    proto.config = Config::Object({
+    cron.register_trigger(
+        CronTriggerID::MQTT,
+        Config::Object({
             {"topic", Config::Str("", 0, 64)},
             {"payload", Config::Str("", 0, 64)},
             {"retain", Config::Bool(false)}
-        });
+        })
+    );
 
-    cron.register_trigger(proto);
-
-    proto.tag = static_cast<uint8_t>(CronActionID::MQTT);
-
-    cron.register_action(proto, [this](const Config *cfg) {
-        publish(cfg->get("topic")->asString(), cfg->get("payload")->asString(), cfg->get("retain")->asBool());
-    });
+    cron.register_action(
+        CronActionID::MQTT,
+        Config::Object({
+            {"topic", Config::Str("", 0, 64)},
+            {"payload", Config::Str("", 0, 64)},
+            {"retain", Config::Bool(false)}
+        }),
+        [this](const Config *cfg) {
+            publish(cfg->get("topic")->asString(), cfg->get("payload")->asString(), cfg->get("retain")->asBool());
+        }
+    );
 #endif
 }
 
@@ -531,7 +536,7 @@ void Mqtt::register_events() {
 bool Mqtt::action_triggered(Config *config, void *data) {
     Config *cfg = (Config*)config->get();
     MqttMessage *msg = (MqttMessage *)data;
-    switch (static_cast<CronTriggerID>(config->getTag()))
+    switch (config->getTag<CronTriggerID>())
     {
         case CronTriggerID::MQTT:
         if (cfg->get("payload")->asString() == msg->payload)
