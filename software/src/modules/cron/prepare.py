@@ -19,6 +19,7 @@ if 'software' not in sys.modules:
 
 from software import util
 
+# NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
 triggers = [
     ('None', 0),
     ('Cron', 1),
@@ -31,6 +32,7 @@ triggers = [
     ('EVSE GP Input', 8),
 ]
 
+# NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
 actions = [
     ('None', 0),
     ('Print', 1),
