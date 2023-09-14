@@ -1128,11 +1128,11 @@ bool Config::ConfInt::slotEmpty(size_t i) {
 }
 
 Config::ConfInt::Slot *Config::ConfInt::allocSlotBuf(size_t elements) {
-    return new Config::ConfInt::Slot[elements];
+    return (Config::ConfInt::Slot *) heap_caps_calloc(elements, sizeof(Config::ConfInt::Slot), MALLOC_CAP_32BIT);
 }
 
 void Config::ConfInt::freeSlotBuf(Config::ConfInt::Slot *buf) {
-    delete[] buf;
+    heap_caps_free(buf);
 }
 
 int32_t* Config::ConfInt::getVal() { return &int_buf[idx].val; }
@@ -1181,11 +1181,11 @@ bool Config::ConfUint::slotEmpty(size_t i) {
 }
 
 Config::ConfUint::Slot *Config::ConfUint::allocSlotBuf(size_t elements) {
-    return new Config::ConfUint::Slot[elements];
+    return (Config::ConfUint::Slot *) heap_caps_calloc(elements, sizeof(Config::ConfUint::Slot), MALLOC_CAP_32BIT);
 }
 
 void Config::ConfUint::freeSlotBuf(Config::ConfUint::Slot *buf) {
-    delete[] buf;
+    heap_caps_free(buf);
 }
 
 uint32_t* Config::ConfUint::getVal() { return &uint_buf[idx].val; }
