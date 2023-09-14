@@ -1950,9 +1950,14 @@ Config::Wrap Config::add() {
         return Wrap(nullptr);
     }
 
-    children.push_back(*slot->prototype);
+    auto copy = *slot->prototype;
 
-    // The push_back() might invalidate the children reference
+    // Copying the prototype might invalidate the children reference
     // when ConfArray slots are moved, so asArray() must be called again.
-    return Wrap(&this->asArray().back());
+    children = this->asArray();
+
+    children.push_back(std::move(copy));
+
+
+    return Wrap(&children.back());
 }
