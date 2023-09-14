@@ -34,6 +34,7 @@ void Debug::pre_setup()
     size_t dram_heap_size     = heap_caps_get_total_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     size_t iram_heap_size     = internal_heap_size - dram_heap_size;
     size_t psram_heap_size    = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
+    size_t psram_size         = BOARD_HAS_PSRAM ? 4 * 1024 * 1024 : 0;
 
     state_fast = Config::Object({
         {"uptime",     Config::Uint32(0)},
@@ -51,6 +52,7 @@ void Debug::pre_setup()
         {"heap_dram",  Config::Uint32(dram_heap_size)},
         {"heap_iram",  Config::Uint32(iram_heap_size)},
         {"heap_psram", Config::Uint32(psram_heap_size)},
+        {"psram_size", Config::Uint32(psram_size)},
         {"heap_integrity_ok", Config::Bool(true)},
         {"main_stack_hwm", Config::Uint32(0)},
     });

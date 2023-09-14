@@ -134,7 +134,7 @@ export class Debug extends Component
                             <OutputFloat value={131072 - state_slow.heap_iram} digits={0} scale={0} unit="B"/>
                         </div>
                         <div class="mb-1 col-12 col-sm-4">
-                            <OutputFloat value={4194304 - state_slow.heap_psram} digits={0} scale={0} unit="B"/>
+                            <OutputFloat value={state_slow.psram_size - state_slow.heap_psram} digits={0} scale={0} unit="B"/>
                         </div>
                     </div>
                 </FormRow>
@@ -148,7 +148,7 @@ export class Debug extends Component
                             <OutputFloat value={131072} digits={0} scale={0} unit="B"/>
                         </div>
                         <div class="mb-1 col-12 col-sm-4">
-                            <OutputFloat value={4194304} digits={0} scale={0} unit="B"/>
+                            <OutputFloat value={state_slow.psram_size} digits={0} scale={0} unit="B"/>
                         </div>
                     </div>
                 </FormRow>

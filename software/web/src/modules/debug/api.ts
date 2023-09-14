@@ -14,6 +14,7 @@ export interface state_slow {
     heap_dram: number;
     heap_iram: number;
     heap_psram: number;
+    psram_size: number;
     heap_integrity_ok: boolean;
     main_stack_hwm: number;
 }
