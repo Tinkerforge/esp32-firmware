@@ -913,12 +913,12 @@ static size_t nextSlot(typename T::Slot *&buf, size_t &buf_size) {
         return i;
     }
 
-    auto new_buf = new typename T::Slot[buf_size + SLOT_HEADROOM];
+    auto new_buf = T::allocSlotBuf(buf_size + SLOT_HEADROOM);
 
     for(size_t i = 0; i < buf_size; ++i)
         new_buf[i] = std::move(buf[i]);
 
-    delete[] buf;
+    T::freeSlotBuf(buf);
     buf = new_buf;
     size_t result = buf_size;
     buf_size = buf_size + SLOT_HEADROOM;
@@ -928,6 +928,14 @@ static size_t nextSlot(typename T::Slot *&buf, size_t &buf_size) {
 
 bool Config::ConfUnion::slotEmpty(size_t i) {
     return union_buf[i].prototypes == nullptr;
+}
+
+Config::ConfUnion::Slot *Config::ConfUnion::allocSlotBuf(size_t elements) {
+    return new Config::ConfUnion::Slot[elements];
+}
+
+void Config::ConfUnion::freeSlotBuf(Config::ConfUnion::Slot *buf) {
+    delete[] buf;
 }
 
 bool Config::ConfUnion::changeUnionVariant(uint8_t tag) {
@@ -1000,6 +1008,14 @@ bool Config::ConfString::slotEmpty(size_t i) {
     return !string_buf[i].inUse;
 }
 
+Config::ConfString::Slot *Config::ConfString::allocSlotBuf(size_t elements) {
+    return new Config::ConfString::Slot[elements];
+}
+
+void Config::ConfString::freeSlotBuf(Config::ConfString::Slot *buf) {
+    delete[] buf;
+}
+
 CoolString* Config::ConfString::getVal() { return &string_buf[idx].val; }
 const CoolString* Config::ConfString::getVal() const { return &string_buf[idx].val; }
 
@@ -1058,6 +1074,13 @@ bool Config::ConfFloat::slotEmpty(size_t i) {
         && float_buf[i].min == 0
         && float_buf[i].max == 0;
 }
+Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements) {
+    return new Config::ConfFloat::Slot[elements];
+}
+
+void Config::ConfFloat::freeSlotBuf(Config::ConfFloat::Slot *buf) {
+    delete[] buf;
+}
 
 float* Config::ConfFloat::getVal() { return &float_buf[idx].val; }
 const float* Config::ConfFloat::getVal() const { return &float_buf[idx].val; }
@@ -1102,6 +1125,14 @@ bool Config::ConfInt::slotEmpty(size_t i) {
     return int_buf[i].val == 0
         && int_buf[i].min == 0
         && int_buf[i].max == 0;
+}
+
+Config::ConfInt::Slot *Config::ConfInt::allocSlotBuf(size_t elements) {
+    return new Config::ConfInt::Slot[elements];
+}
+
+void Config::ConfInt::freeSlotBuf(Config::ConfInt::Slot *buf) {
+    delete[] buf;
 }
 
 int32_t* Config::ConfInt::getVal() { return &int_buf[idx].val; }
@@ -1149,6 +1180,14 @@ bool Config::ConfUint::slotEmpty(size_t i) {
         && uint_buf[i].max == 0;
 }
 
+Config::ConfUint::Slot *Config::ConfUint::allocSlotBuf(size_t elements) {
+    return new Config::ConfUint::Slot[elements];
+}
+
+void Config::ConfUint::freeSlotBuf(Config::ConfUint::Slot *buf) {
+    delete[] buf;
+}
+
 uint32_t* Config::ConfUint::getVal() { return &uint_buf[idx].val; }
 const uint32_t* Config::ConfUint::getVal() const { return &uint_buf[idx].val; }
 
@@ -1190,6 +1229,14 @@ Config::ConfUint& Config::ConfUint::operator=(const ConfUint &cpy) {
 
 bool Config::ConfArray::slotEmpty(size_t i) {
     return !array_buf[i].inUse;
+}
+
+Config::ConfArray::Slot *Config::ConfArray::allocSlotBuf(size_t elements) {
+    return new Config::ConfArray::Slot[elements];
+}
+
+void Config::ConfArray::freeSlotBuf(Config::ConfArray::Slot *buf) {
+    delete[] buf;
 }
 
 Config *Config::ConfArray::get(uint16_t i)
@@ -1277,6 +1324,14 @@ Config::ConfArray& Config::ConfArray::operator=(const ConfArray &cpy) {
 
 bool Config::ConfObject::slotEmpty(size_t i) {
     return !object_buf[i].inUse;
+}
+
+Config::ConfObject::Slot *Config::ConfObject::allocSlotBuf(size_t elements) {
+    return new Config::ConfObject::Slot[elements];
+}
+
+void Config::ConfObject::freeSlotBuf(Config::ConfObject::Slot *buf) {
+    delete[] buf;
 }
 
 Config *Config::ConfObject::get(const String &s)
@@ -1828,13 +1883,13 @@ Config::Wrap::Wrap(Config *_conf)
 
 void config_pre_init()
 {
-    uint_buf = new Config::ConfUint::Slot[UINT_SLOTS];
-    int_buf = new Config::ConfInt::Slot[INT_SLOTS];
-    float_buf = new Config::ConfFloat::Slot[FLOAT_SLOTS];
-    string_buf = new Config::ConfString::Slot[STRING_SLOTS];
-    array_buf = new Config::ConfArray::Slot[ARRAY_SLOTS];
-    object_buf = new Config::ConfObject::Slot[OBJECT_SLOTS];
-    union_buf = new Config::ConfUnion::Slot[UNION_SLOTS];
+    uint_buf = Config::ConfUint::allocSlotBuf(UINT_SLOTS);
+    int_buf = Config::ConfInt::allocSlotBuf(INT_SLOTS);
+    float_buf = Config::ConfFloat::allocSlotBuf(FLOAT_SLOTS);
+    string_buf = Config::ConfString::allocSlotBuf(STRING_SLOTS);
+    array_buf = Config::ConfArray::allocSlotBuf(ARRAY_SLOTS);
+    object_buf = Config::ConfObject::allocSlotBuf(OBJECT_SLOTS);
+    union_buf = Config::ConfUnion::allocSlotBuf(UNION_SLOTS);
 
     uint_buf_size = UINT_SLOTS;
     int_buf_size = INT_SLOTS;
@@ -1852,11 +1907,11 @@ static void shrinkToFit(typename T::Slot * &buf, size_t &buf_size) {
         if (!T::slotEmpty(i))
             highest = i;
 
-    auto new_buf = new typename T::Slot[highest + SLOT_HEADROOM];
+    auto new_buf = T::allocSlotBuf(highest + SLOT_HEADROOM);
 
     for(size_t i = 0; i <= highest; ++i)
         new_buf[i] = std::move(buf[i]);
-    delete[] buf;
+    T::freeSlotBuf(buf);
     buf = new_buf;
     buf_size = highest + SLOT_HEADROOM;
 }

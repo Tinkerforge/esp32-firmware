@@ -58,6 +58,8 @@ struct Config {
     public:
         static bool slotEmpty(size_t i);
         static constexpr const char *variantName = "ConfString";
+        static Slot *allocSlotBuf(size_t elements);
+        static void freeSlotBuf(Slot *buf);
 
         CoolString *getVal();
         const CoolString *getVal() const;
@@ -79,6 +81,8 @@ struct Config {
     public:
         static bool slotEmpty(size_t i);
         static constexpr const char *variantName = "ConfFloat";
+        static Slot *allocSlotBuf(size_t elements);
+        static void freeSlotBuf(Slot *buf);
 
         float *getVal();
         const float *getVal() const;
@@ -100,6 +104,8 @@ struct Config {
     public:
         static bool slotEmpty(size_t i);
         static constexpr const char *variantName = "ConfInt";
+        static Slot *allocSlotBuf(size_t elements);
+        static void freeSlotBuf(Slot *buf);
 
         int32_t *getVal();
         const int32_t *getVal() const;
@@ -121,6 +127,8 @@ struct Config {
     public:
         static bool slotEmpty(size_t i);
         static constexpr const char *variantName = "ConfUint";
+        static Slot *allocSlotBuf(size_t elements);
+        static void freeSlotBuf(Slot *buf);
 
         uint32_t *getVal();
         const uint32_t *getVal() const;
@@ -150,6 +158,8 @@ struct Config {
     public:
         static bool slotEmpty(size_t i);
         static constexpr const char *variantName = "ConfArray";
+        static Slot *allocSlotBuf(size_t elements);
+        static void freeSlotBuf(Slot *buf);
 
         Config *get(uint16_t i);
         const Config *get(uint16_t i) const;
@@ -173,6 +183,8 @@ struct Config {
     public:
         static bool slotEmpty(size_t i);
         static constexpr const char *variantName = "ConfObject";
+        static Slot *allocSlotBuf(size_t elements);
+        static void freeSlotBuf(Slot *buf);
 
         Config *get(const String &s);
         const Config *get(const String &s) const;
@@ -196,6 +208,8 @@ struct Config {
     public:
         static bool slotEmpty(size_t i);
         static constexpr const char *variantName = "ConfUnion";
+        static Slot *allocSlotBuf(size_t elements);
+        static void freeSlotBuf(Slot *buf);
 
         uint8_t getTag() const;
         bool changeUnionVariant(uint8_t tag);
