@@ -544,7 +544,17 @@ struct Config {
     template<typename T>
     static void check_enum_template_type() {
         static_assert(std::is_enum<T>::value, "ConfUnion tag type must be enum");
-        //static_assert(std::is_same<std::underlying_type<T>::type, uint8_t>::value, "Underlying type of ConfUnion tag type must be uint8_t");
+
+        // This is a complicated way to express
+        // static_assert(std::is_same<std::underlying_type<T>::type, uint8_t>::value, "Underlying type of ConfUnion tag type must be uint8_t");
+        // but I don't get the simpler assert to compile.
+        // So check for the alignment properties, because those are what we care about.
+        struct foobar{T foo; uint8_t bar;};
+        static_assert(offsetof(foobar, bar) == 1, "Underlying type of ConfUnion tag type must be uint8_t");
+
+        static_assert(offsetof(ConfUnionPrototype<T>, tag) == offsetof(ConfUnionPrototypeInternal, tag), "blah");
+        static_assert(offsetof(ConfUnionPrototype<T>, config) == offsetof(ConfUnionPrototypeInternal, config), "blah");
+
     }
 
     template<typename T>
