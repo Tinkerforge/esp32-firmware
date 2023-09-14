@@ -554,7 +554,6 @@ struct Config {
 
         static_assert(offsetof(ConfUnionPrototype<T>, tag) == offsetof(ConfUnionPrototypeInternal, tag), "blah");
         static_assert(offsetof(ConfUnionPrototype<T>, config) == offsetof(ConfUnionPrototypeInternal, config), "blah");
-
     }
 
     template<typename T>
