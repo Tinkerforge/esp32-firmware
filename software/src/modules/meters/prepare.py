@@ -89,7 +89,7 @@ with open('meters_defs.h', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('#include <stdint.h>\n\n')
     f.write('#pragma once\n\n')
-    f.write('enum class MeterClassID {\n')
+    f.write('enum class MeterClassID : uint8_t {\n')
     f.write(''.join(class_values))
     f.write('};\n\n')
     f.write(f'#define METER_CLASSES {len(class_values)}')
