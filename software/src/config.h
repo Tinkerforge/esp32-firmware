@@ -812,6 +812,7 @@ public:
     bool updateFloat(float value);
     bool updateBool(bool value);
 
+private:
     template<typename T, typename ConfigT>
     size_t fillArray(T *arr, size_t elements) {
         if (!this->is<ConfArray>()) {
@@ -836,6 +837,7 @@ public:
         return toWrite;
     }
 
+public:
     size_t fillFloatArray(float *arr, size_t elements);
 
     size_t fillUint8Array(uint8_t *arr, size_t elements);

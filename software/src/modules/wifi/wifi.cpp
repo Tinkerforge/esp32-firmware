@@ -276,7 +276,7 @@ bool Wifi::apply_sta_config_and_connect(WifiState current_state)
     const char *ssid = sta_config_in_use.get("ssid")->asEphemeralCStr();
 
     uint8_t bssid[6];
-    sta_config_in_use.get("bssid")->fillArray<uint8_t, Config::ConfUint>(bssid, 6 * sizeof(bssid));
+    sta_config_in_use.get("bssid")->fillUint8Array(bssid, ARRAY_SIZE(bssid));
 
     const char *passphrase = sta_config_in_use.get("passphrase")->asEphemeralCStr();
     bool bssid_lock = sta_config_in_use.get("bssid_lock")->asBool();

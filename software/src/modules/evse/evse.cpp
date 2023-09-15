@@ -111,7 +111,7 @@ void EVSE::post_register_urls() {
     api.addState("evse/user_calibration", &user_calibration, {}, 1000);
     api.addCommand("evse/user_calibration_update", &user_calibration, {}, [this](){
         int16_t resistance_880[14];
-        user_calibration.get("resistance_880")->fillArray<int16_t, Config::ConfInt>(resistance_880, sizeof(resistance_880)/sizeof(resistance_880[0]));
+        user_calibration.get("resistance_880")->fillInt16Array(resistance_880, ARRAY_SIZE(resistance_880));
 
         is_in_bootloader(tf_evse_set_user_calibration(&device,
             0xCA11B4A0,
