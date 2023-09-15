@@ -663,6 +663,7 @@ public:
         return (T) this->get<ConfUnion>()->getTag();
     }
 
+private:
     template<typename ConfigT>
     ConfigT *get() {
         if (!this->is<ConfigT>()) {
@@ -685,6 +686,7 @@ public:
         return reinterpret_cast<const ConfigT *>(&value.val);
     }
 
+public:
     const CoolString &asString() const;
 
     const char *asEphemeralCStr() const;
