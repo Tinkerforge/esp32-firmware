@@ -37,6 +37,7 @@ struct Task {
     uint32_t next_deadline_ms;
     uint32_t delay_ms;
     bool once;
+    bool cancelled;
 
     Task(std::function<void(void)> fn, uint64_t task_id, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once);
 };

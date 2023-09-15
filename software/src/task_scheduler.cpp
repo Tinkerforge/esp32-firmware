@@ -31,7 +31,8 @@ Task::Task(std::function<void(void)> fn, uint64_t task_id, uint32_t first_run_de
           task_id(task_id),
           next_deadline_ms(millis() + first_run_delay_ms),
           delay_ms(delay_ms),
-          once(once) {
+          once(once),
+          cancelled(false) {
 
 }
 
@@ -115,8 +116,7 @@ void TaskScheduler::loop()
 
         this->currentTask = tasks.top_and_pop();
 
-        bool cancelled = this->currentTask->task_id == 0;
-        if (cancelled) {
+        if (this->currentTask->cancelled) {
             this->currentTask = nullptr;
             return;
         }
@@ -140,8 +140,7 @@ void TaskScheduler::loop()
         }
 
         // Check whether a repeated task was cancelled while it was being executed.
-        bool cancelled = this->currentTask->task_id == 0;
-        if (cancelled) {
+        if (this->currentTask->cancelled) {
             return;
         }
 
@@ -168,12 +167,9 @@ uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, u
 }
 
 TaskScheduler::CancelResult TaskScheduler::cancel(uint64_t task_id) {
-    if (task_id == 0)
-        return TaskScheduler::CancelResult::NotFound;
-
     std::lock_guard<std::mutex> l{this->task_mutex};
     if (this->currentTask && this->currentTask->task_id == task_id) {
-        this->currentTask->task_id = 0;
+        this->currentTask->cancelled = true;
         return TaskScheduler::CancelResult::WillBeCancelled;
     }
     else
