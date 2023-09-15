@@ -92,7 +92,7 @@ public:
 private:
     std::mutex task_mutex;
     TaskQueue tasks;
-    TaskHandle_t mainTaskHandle;
+    TaskHandle_t mainThreadHandle;
     std::unique_ptr<Task> currentTask = nullptr;
 };
 

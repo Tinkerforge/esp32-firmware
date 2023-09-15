@@ -85,7 +85,7 @@ bool TaskQueue::removeByTaskID(uint64_t task_id)  {
 
 void TaskScheduler::pre_setup()
 {
-    mainTaskHandle = xTaskGetCurrentTaskHandle();
+    mainThreadHandle = xTaskGetCurrentTaskHandle();
 }
 
 void TaskScheduler::setup()
@@ -183,7 +183,7 @@ TaskScheduler::CancelResult TaskScheduler::cancel(uint64_t task_id) {
 uint64_t TaskScheduler::currentTaskId() {
     // currentTaskId is intended to write a self-canceling task.
     // Don't allow other threads to cancel tasks without knowing their ID.
-    if (this->mainTaskHandle != xTaskGetCurrentTaskHandle()) {
+    if (this->mainThreadHandle != xTaskGetCurrentTaskHandle()) {
         logger.printfln("Calling TaskScheduler::currentTask is only allowed in the main thread!");
         return 0;
     }
