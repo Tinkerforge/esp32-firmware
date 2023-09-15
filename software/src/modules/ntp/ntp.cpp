@@ -105,35 +105,17 @@ void NTP::pre_setup()
     });
 }
 
+struct sntp_opts {
+    const String &server1;
+    const String &server2;
+    const bool set_servers_from_dhcp;
+};
+
 void NTP::setup()
 {
     initialized = true;
 
     api.restorePersistentConfig("ntp/config", &config);
-
-    // As we use our own sntp_sync_time function, we do not need to register the cb function.
-    // sntp_set_time_sync_notification_cb(ntp_sync_cb);
-
-    bool dhcp = config.get("use_dhcp")->asBool();
-    sntp_servermode_dhcp(dhcp ? 1 : 0);
-
-    esp_netif_init();
-    if (sntp_enabled()) {
-        sntp_stop();
-    }
-
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
-
-    // Keep local copies of ephemeral conf Strings because the SNTP lib doesn't create its own copies and holds references to whatever we pass to it.
-    ntp_server1 = config.get("server")->asString();
-    ntp_server2 = config.get("server2")->asString();
-    if (ntp_server1 != "") {
-        sntp_setservername(dhcp ? 1 : 0, ntp_server1.c_str());
-    }
-    if (ntp_server2 != "") {
-        sntp_setservername(dhcp ? 2 : 1, ntp_server2.c_str());
-    }
 
     const char *tzstring = lookup_timezone(config.get("timezone")->asEphemeralCStr());
 
@@ -145,8 +127,43 @@ void NTP::setup()
     tzset();
     logger.printfln("Set timezone to %s", config.get("timezone")->asEphemeralCStr());
 
-    if (config.get("enable")->asBool())
-         sntp_init();
+    if (config.get("enable")->asBool()) {
+        bool set_servers_from_dhcp = config.get("use_dhcp")->asBool();
+
+        // Keep local copies of ephemeral conf Strings because the SNTP lib doesn't create its own copies and holds references to whatever we pass to it.
+        ntp_server1 = config.get("server")->asString();
+        ntp_server2 = config.get("server2")->asString();
+
+        sntp_opts sntp_opts = {ntp_server1, ntp_server2, set_servers_from_dhcp};
+
+        esp_netif_tcpip_exec([](void *ctx) -> esp_err_t {
+            const struct sntp_opts *opts = static_cast<struct sntp_opts *>(ctx);
+
+            // As we use our own sntp_sync_time function, we do not need to register the cb function.
+            // sntp_set_time_sync_notification_cb(ntp_sync_cb);
+
+            sntp_servermode_dhcp(opts->set_servers_from_dhcp);
+
+            esp_netif_init();
+            if (sntp_enabled()) {
+                sntp_stop();
+            }
+
+            sntp_setoperatingmode(SNTP_OPMODE_POLL);
+            sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
+
+            if (!opts->server1.isEmpty()) {
+                sntp_setservername(opts->set_servers_from_dhcp ? 1 : 0, opts->server1.c_str());
+            }
+            if (!opts->server2.isEmpty()) {
+                sntp_setservername(opts->set_servers_from_dhcp ? 2 : 1, opts->server2.c_str());
+            }
+
+            sntp_init();
+
+            return ESP_OK;
+        }, &sntp_opts);
+    }
 }
 
 void NTP::set_synced()
