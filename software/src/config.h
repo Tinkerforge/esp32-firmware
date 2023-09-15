@@ -640,84 +640,13 @@ public:
 
     // for ConfArray
     const ConstWrap get(uint16_t i) const;
-
     Wrap add();
-
-    bool removeLast()
-    {
-        if (!this->is<Config::ConfArray>()) {
-            logger.printfln("Tried to remove the last element from a node that is not an array!");
-            delay(100);
-            return false;
-        }
-
-        std::vector<Config> &children = this->asArray();
-        if (children.size() == 0)
-            return false;
-
-        children.pop_back();
-        return true;
-    }
-
-    bool removeAll()
-    {
-        if (!this->is<Config::ConfArray>()) {
-            logger.printfln("Tried to remove all from a node that is not an array!");
-            delay(100);
-            return false;
-        }
-
-        std::vector<Config> &children = this->asArray();
-
-        children.clear();
-
-        return true;
-    }
-
-    bool remove(size_t i)
-    {
-        if (!this->is<Config::ConfArray>()) {
-            logger.printfln("Tried to remove from a node that is not an array!");
-            delay(100);
-            return false;
-        }
-        std::vector<Config> &children = this->asArray();
-
-        if (children.size() <= i)
-            return false;
-
-        children.erase(children.begin() + i);
-        return true;
-    }
-
-    ssize_t count() const
-    {
-        if (!this->is<Config::ConfArray>()) {
-            logger.printfln("Tried to get count of a node that is not an array!");
-            delay(100);
-            return -1;
-        }
-        const std::vector<Config> &children = this->asArray();
-        return children.size();
-    }
-
-    std::vector<Config>::iterator begin() {
-        if (!this->is<Config::ConfArray>()) {
-            logger.printfln("Tried to get count of a node that is not an array!");
-            delay(100);
-            return std::vector<Config>::iterator();
-        }
-        return this->asArray().begin();
-    }
-
-    std::vector<Config>::iterator end() {
-        if (!this->is<Config::ConfArray>()) {
-            logger.printfln("Tried to get count of a node that is not an array!");
-            delay(100);
-            return std::vector<Config>::iterator();
-        }
-        return this->asArray().end();
-    }
+    bool removeLast();
+    bool removeAll();
+    bool remove(size_t i);
+    ssize_t count() const;
+    std::vector<Config>::iterator begin();
+    std::vector<Config>::iterator end();
 
     void swapArray(Config *other) {
         this->asArray().swap(other->asArray());
