@@ -385,43 +385,62 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
         return "Use ConfUpdate overload of callCommand in main thread!";
     }
 
-    std::lock_guard<std::mutex> l{command_mutex};
+    String result = "";
 
-    if (payload == nullptr && !reg.config->is_null())
-        return "empty payload only allowed for null configs";
+    auto task_id = task_scheduler.scheduleOnce(
+        [&result, reg, payload, len]() mutable {
+            if (payload == nullptr && !reg.config->is_null()) {
+                result = "empty payload only allowed for null configs";
+                return;
+            }
 
-    for (auto *backend : backends)
-        backend->disableReceive();
+            if (payload != nullptr) {
+                result = reg.config->update_from_cstr(payload, len);
+                if (result != "")
+                    return;
+            }
 
-    if (task_scheduler.cancel(reg.task_id) == TaskScheduler::CancelResult::Cancelled) {
-        delete reg.config_in_flight;
-        reg.config_in_flight = nullptr;
+            reg.callback();
+        }, 0);
+
+    if (task_scheduler.await(task_id, 10000) == TaskScheduler::AwaitResult::Timeout) {
+        if (task_scheduler.cancel(task_id) == TaskScheduler::CancelResult::WillBeCancelled)
+            esp_system_abort("callCommand task timed out and can't be cancelled. Giving up.");
+        return "Failed to execute command: Timeout reached."
     }
 
-    if (payload != nullptr) {
-        reg.config_in_flight = new Config();
-        String error = reg.config->get_updated_copy(payload, len, reg.config_in_flight);
-        if(error != "") {
-            delete reg.config_in_flight;
-            reg.config_in_flight = nullptr;
+    return result;
+}
 
-            for (auto *backend : backends)
-                backend->enableReceive();
-            return error;
-        }
+void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(void)> done_cb) {
+    if (this->mainTaskHandle == xTaskGetCurrentTaskHandle()) {
+        logger.printfln("callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!");
+        return;
     }
 
-    reg.task_id = task_scheduler.scheduleOnce([this, reg]() mutable {
-        std::lock_guard<std::mutex> l2{command_mutex};
-        if (reg.config_in_flight != nullptr)
-            reg.config->update_from_copy(reg.config_in_flight);
-        reg.callback();
-        delete reg.config_in_flight;
-        reg.config_in_flight = nullptr;
-        for (auto *backend : backends)
-            backend->enableReceive();
-    }, 0);
-    return "";
+    char *cpy = (char *) malloc(len);
+    memcpy(cpy, payload, len);
+
+    task_scheduler.scheduleOnce(
+        [reg, cpy, len, done_cb]() mutable {
+            defer {free(cpy);};
+
+            if (cpy == nullptr && !reg.config->is_null()) {
+                logger.printfln("empty payload only allowed for null configs");
+                return;
+            }
+
+            if (cpy != nullptr) {
+                String result = reg.config->update_from_cstr(cpy, len);
+                if (result != "") {
+                    logger.printfln("%s", result.c_str());
+                    return;
+                }
+            }
+
+            reg.callback();
+            done_cb();
+        }, 0);
 }
 
 String API::callCommand(const char *path, Config::ConfUpdate payload)

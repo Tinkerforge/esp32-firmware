@@ -286,10 +286,9 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             return;
         }
 
-        String error = api.callCommand(reg, data, data_len);
+        esp_mqtt_client_disable_receive(client, 100);
+        api.callCommandNonBlocking(reg, data, data_len, [this](){esp_mqtt_client_enable_receive(this->client);});
 
-        if (error != "")
-            logger.printfln("MQTT: Failed to update %s from MQTT payload (data_len=%u): %s", reg.path.c_str(), data_len, error.c_str());
         return;
     }
 
@@ -549,9 +548,3 @@ bool Mqtt::action_triggered(Config *config, void *data) {
     return false;
 }
 #endif
-void Mqtt::disableReceive() {
-    esp_mqtt_client_disable_receive(client, 100);
-};
-void Mqtt::enableReceive() {
-    esp_mqtt_client_enable_receive(client);
-};

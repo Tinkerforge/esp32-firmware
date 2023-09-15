@@ -71,8 +71,6 @@ public:
     virtual void addResponse(size_t responseIdx, const ResponseRegistration &reg) = 0;
     virtual bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) = 0;
     virtual bool pushRawStateUpdate(const String &payload, const String &path) = 0;
-    virtual void disableReceive() {};
-    virtual void enableReceive() {};
 };
 
 class API
@@ -85,6 +83,9 @@ public:
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
     String callCommand(CommandRegistration &reg, char *payload, size_t len);
+
+    // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
+    void callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(void)> done_cb);
 
     String callCommand(const char *path, Config::ConfUpdate payload);
 
