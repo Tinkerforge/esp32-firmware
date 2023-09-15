@@ -406,7 +406,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
     if (task_scheduler.await(task_id, 10000) == TaskScheduler::AwaitResult::Timeout) {
         if (task_scheduler.cancel(task_id) == TaskScheduler::CancelResult::WillBeCancelled)
             esp_system_abort("callCommand task timed out and can't be cancelled. Giving up.");
-        return "Failed to execute command: Timeout reached."
+        return "Failed to execute command: Timeout reached.";
     }
 
     return result;
