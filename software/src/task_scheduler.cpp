@@ -31,6 +31,7 @@ Task::Task(std::function<void(void)> fn, uint64_t task_id, uint32_t first_run_de
           task_id(task_id),
           next_deadline_ms(millis() + first_run_delay_ms),
           delay_ms(delay_ms),
+          awaited_by(nullptr),
           once(once),
           cancelled(false) {
 
@@ -84,6 +85,17 @@ bool TaskQueue::removeByTaskID(uint64_t task_id)  {
     return true;
 }
 
+Task *TaskQueue::findByTaskID(uint64_t task_id) {
+    auto it = std::find_if(this->c.begin(), this->c.end(), [task_id](const std::unique_ptr<Task> &t){return t->task_id == task_id;});
+
+    if (it == this->c.end()) {
+        // not found
+        return nullptr;
+    }
+
+    return it->get();
+}
+
 void TaskScheduler::pre_setup()
 {
     mainThreadHandle = xTaskGetCurrentTaskHandle();
@@ -117,6 +129,11 @@ void TaskScheduler::loop()
         this->currentTask = tasks.top_and_pop();
 
         if (this->currentTask->cancelled) {
+            if (this->currentTask->awaited_by != nullptr) {
+                xTaskNotifyGive(this->currentTask->awaited_by);
+                this->currentTask->awaited_by = nullptr;
+            }
+
             this->currentTask = nullptr;
             return;
         }
@@ -134,6 +151,11 @@ void TaskScheduler::loop()
     {
         std::lock_guard<std::mutex> l{this->task_mutex};
         defer {this->currentTask = nullptr;};
+
+        if (this->currentTask->awaited_by != nullptr) {
+            xTaskNotifyGive(this->currentTask->awaited_by);
+            this->currentTask->awaited_by = nullptr;
+        }
 
         if (this->currentTask->once) {
             return;
@@ -188,4 +210,49 @@ uint64_t TaskScheduler::currentTaskId() {
     if (this->currentTask != nullptr)
         return this->currentTask->task_id;
     return 0;
+}
+
+TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t millis_to_wait) {
+    TaskHandle_t thisThread = xTaskGetCurrentTaskHandle();
+
+    if (this->mainThreadHandle == thisThread) {
+        logger.printfln("Calling TaskScheduler::await is not allowed in the main thread!");
+        return TaskScheduler::AwaitResult::Error;
+    }
+
+    {
+        std::lock_guard<std::mutex> l{this->task_mutex};
+        // The awaited task either
+        // - is in the queue
+        // - is currently running, i.e. not in the queue but in this->currentTask
+        // - or was already executed, canceled or not yet created,
+        //   i.e. not in the queue and not in this->currentTask
+        Task *task = nullptr;
+
+        if (this->currentTask != nullptr && this->currentTask->task_id == task_id)
+            task = this->currentTask.get();
+        else
+            task = tasks.findByTaskID(task_id);
+
+        if (task == nullptr)
+            return TaskScheduler::AwaitResult::Done;
+
+        if (!task->once) {
+            logger.printfln("Calling TaskScheduler::await is not allowed for a non-single-shot task");
+            return TaskScheduler::AwaitResult::Error;
+        }
+
+        if (task->awaited_by != nullptr) {
+            logger.printfln("Task is already awaited by another thread!");
+            return TaskScheduler::AwaitResult::Error;
+        }
+
+        xTaskNotifyStateClear(thisThread);
+        task->awaited_by = thisThread;
+    }
+
+    if (ulTaskNotifyTake(true, pdMS_TO_TICKS(millis_to_wait)) == 0)
+        return TaskScheduler::AwaitResult::Timeout;
+
+    return TaskScheduler::AwaitResult::Done;
 }
