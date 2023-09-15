@@ -552,8 +552,8 @@ struct Config {
         struct foobar{T foo; uint8_t bar;};
         static_assert(offsetof(foobar, bar) == 1, "Underlying type of ConfUnion tag type must be uint8_t");
 
-        static_assert(offsetof(ConfUnionPrototype<T>, tag) == offsetof(ConfUnionPrototypeInternal, tag), "blah");
-        static_assert(offsetof(ConfUnionPrototype<T>, config) == offsetof(ConfUnionPrototypeInternal, config), "blah");
+        static_assert(offsetof(ConfUnionPrototype<T>, tag) == offsetof(ConfUnionPrototypeInternal, tag), "Tag offset mismatch between ConfUnionPrototype<T> and ConfUnionPrototypeInternal");
+        static_assert(offsetof(ConfUnionPrototype<T>, config) == offsetof(ConfUnionPrototypeInternal, config), "Config offset mismatch between ConfUnionPrototype<T> and ConfUnionPrototypeInternal");
     }
 
     template<typename T>
