@@ -1634,6 +1634,31 @@ const std::vector<Config> &Config::asArray() const
     return *this->get<ConfArray>()->getVal();
 }
 
+bool Config::updateString(const String &value)
+{
+    return update_value<String, ConfString>(value);
+}
+
+bool Config::updateInt(int32_t value)
+{
+    return update_value<int32_t, ConfInt>(value);
+}
+
+bool Config::updateUint(uint32_t value)
+{
+    return update_value<uint32_t, ConfUint>(value);
+}
+
+bool Config::updateFloat(float value)
+{
+    return update_value<float, ConfFloat>(value);
+}
+
+bool Config::updateBool(bool value)
+{
+    return update_value<bool, ConfBool>(value);
+}
+
 size_t Config::fillFloatArray(float *arr, size_t elements)
 {
     return fillArray<float, Config::ConfFloat>(arr, elements);

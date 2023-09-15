@@ -788,7 +788,6 @@ private:
     std::vector<Config> &asArray();
     const std::vector<Config> &asArray() const;
 
-public:
     template<typename T, typename ConfigT>
     bool update_value(T value) {
         if (!this->is<ConfigT>()) {
@@ -806,30 +805,12 @@ public:
         return old_value != value;
     }
 
-    bool updateString(const String &value)
-    {
-        return update_value<String, ConfString>(value);
-    }
-
-    bool updateInt(int32_t value)
-    {
-        return update_value<int32_t, ConfInt>(value);
-    }
-
-    bool updateUint(uint32_t value)
-    {
-        return update_value<uint32_t, ConfUint>(value);
-    }
-
-    bool updateFloat(float value)
-    {
-        return update_value<float, ConfFloat>(value);
-    }
-
-    bool updateBool(bool value)
-    {
-        return update_value<bool, ConfBool>(value);
-    }
+public:
+    bool updateString(const String &value);
+    bool updateInt(int32_t value);
+    bool updateUint(uint32_t value);
+    bool updateFloat(float value);
+    bool updateBool(bool value);
 
     template<typename T, typename ConfigT>
     size_t fillArray(T *arr, size_t elements) {
