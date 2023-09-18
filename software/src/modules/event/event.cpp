@@ -60,6 +60,15 @@ void Event::registerEvent(const String &path, const std::vector<ConfPath> values
         }
 
         state_updates.push_back({i, config, callback});
+
+        // If the config updated flag is currently set
+        // pushStateUpdate will call the callback soon.
+        // If not, trigger the callback to make sure
+        // it is always called at least once.
+        if (!config->was_updated(1 << backendIdx)) {
+            reg.callback(reg.config);
+        }
+
         return;
     }
 
