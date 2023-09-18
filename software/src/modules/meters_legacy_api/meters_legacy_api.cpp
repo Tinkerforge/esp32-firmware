@@ -294,6 +294,11 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         return;
     }
 
+    if (cnt == 0) {
+        logger.printfln("meters_legacy_api: Ignoring blank value IDs update from linked meter in slot %u.", linked_meter_slot);
+        return;
+    }
+
     linked_meter_value_count = static_cast<size_t>(cnt);
     meter_setup_done = true;
 
