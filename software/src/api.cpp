@@ -113,7 +113,11 @@ void API::setup()
     }, 250, 250);
 }
 
-void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action)
+void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action) {
+    this->addCommand(path, config, keys_to_censor_in_debug_report, (std::function<String(void)>)([&callback](){callback(); return "";}), is_action);
+}
+
+void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<String(void)> callback, bool is_action)
 {
     if (already_registered(path, "command"))
         return;
@@ -420,7 +424,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
                     return;
             }
 
-            reg.callback();
+            result = reg.callback();
         }, 0);
 
     if (task_scheduler.await(task_id, 10000) == TaskScheduler::AwaitResult::Timeout) {
@@ -432,9 +436,9 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
     return result;
 }
 
-void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(void)> done_cb) {
+void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(String)> done_cb) {
     if (this->mainTaskHandle == xTaskGetCurrentTaskHandle()) {
-        logger.printfln("callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!");
+        done_cb("callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!")
         return;
     }
 
@@ -443,23 +447,26 @@ void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t
 
     task_scheduler.scheduleOnce(
         [reg, cpy, len, done_cb]() mutable {
-            defer {free(cpy);};
+            String result;
+
+            defer {
+                done_cb(result);
+                free(cpy);
+            };
 
             if (cpy == nullptr && !reg.config->is_null()) {
-                logger.printfln("empty payload only allowed for null configs");
+                result = "empty payload only allowed for null configs";
                 return;
             }
 
             if (cpy != nullptr) {
-                String result = reg.config->update_from_cstr(cpy, len);
+                result = reg.config->update_from_cstr(cpy, len);
                 if (result != "") {
-                    logger.printfln("%s", result.c_str());
                     return;
                 }
             }
 
-            reg.callback();
-            done_cb();
+            result = reg.callback();
         }, 0);
 }
 
@@ -479,8 +486,7 @@ String API::callCommand(const char *path, Config::ConfUpdate payload)
         if (error != "") {
             return error;
         }
-        reg.callback();
-        return "";
+        return reg.callback();
     }
 
     return String("Unknown command ") + path;

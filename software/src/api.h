@@ -42,7 +42,7 @@ struct StateRegistration {
 struct CommandRegistration {
     String path;
     ConfigRoot *config;
-    std::function<void(void)> callback;
+    std::function<String(void)> callback;
     std::vector<String> keys_to_censor_in_debug_report;
     bool is_action;
     uint64_t task_id;
@@ -85,7 +85,7 @@ public:
     String callCommand(CommandRegistration &reg, char *payload, size_t len);
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
-    void callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(void)> done_cb);
+    void callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(String)> done_cb);
 
     String callCommand(const char *path, Config::ConfUpdate payload);
 
@@ -95,6 +95,8 @@ public:
 
     void addFeature(const char *name);
     void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action);
+    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<String(void)> callback, bool is_action);
+
     void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {}, bool low_latency = false);
     bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {});
     //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<String> keys_to_censor, std::function<void(void)> callback);
