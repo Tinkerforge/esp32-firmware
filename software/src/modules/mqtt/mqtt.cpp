@@ -305,12 +305,15 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             return;
         }
 
-        String error = reg.callback(data, data_len);
-        if(error == "") {
-            return;
-        }
+        esp_mqtt_client_disable_receive(client, 100);
+        task_scheduler.scheduleOnce([this, reg, data, data_len](){
+            String error = reg.callback(data, data_len);
+            if (error != "")
+                logger.printfln("MQTT: %s", error.c_str());
 
-        logger.printfln("MQTT: Failed to update %s from MQTT payload (data_len=%u): %s", reg.path.c_str(), data_len, error.c_str());
+            esp_mqtt_client_enable_receive(this->client);
+        }, 0);
+
         return;
     }
 

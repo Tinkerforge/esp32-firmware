@@ -218,7 +218,13 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
             return req.send(400);
         }
 
-        String message = api.raw_commands[i].callback(recv_buf, bytes_written);
+        String message;
+        auto tid = task_scheduler.scheduleOnce([&message, i, bytes_written]() {
+            message = api.raw_commands[i].callback(recv_buf, bytes_written);
+        }, 0);
+        if (task_scheduler.await(tid, 10000) == TaskScheduler::AwaitResult::Timeout)
+            return req.send(500, "text/html", "Failed to call raw command. Task timed out.");
+
         if (message == "") {
             return req.send(200, "text/html", "");
         }
