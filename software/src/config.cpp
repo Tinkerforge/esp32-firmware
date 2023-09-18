@@ -517,7 +517,8 @@ struct from_json {
         }
 
         for (size_t i = 0; i < arr_size; ++i) {
-            String inner_error = Config::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, (*val)[i].value);
+            // Must always call getVal() because a nested array might grow and trigger a slot array move that would invalidate any kept reference on the outer array.
+            String inner_error = Config::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, (*x.getVal())[i].value);
             if (inner_error != "")
                 return String("[") + i + "] " + inner_error;
         }
@@ -743,7 +744,8 @@ struct from_update {
         }
 
         for (size_t i = 0; i < arr_size; ++i) {
-            String inner_error = Config::apply_visitor(from_update{&arr->elements[i]}, (*val)[i].value);
+            // Must always call getVal() because a nested array might grow and trigger a slot array move that would invalidate any kept reference on the outer array.
+            String inner_error = Config::apply_visitor(from_update{&arr->elements[i]}, (*x.getVal())[i].value);
             if (inner_error != "")
                 return String("[") + i + "] " + inner_error;
         }
