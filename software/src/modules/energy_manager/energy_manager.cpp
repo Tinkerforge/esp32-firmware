@@ -186,6 +186,7 @@ void EnergyManager::pre_setup()
     });
 
     for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
+        history_meter_setup_done[slot] = false;
         history_meter_power_value[slot] = NAN;
     }
 }
