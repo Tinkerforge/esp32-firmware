@@ -114,7 +114,7 @@ void API::setup()
 }
 
 void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action) {
-    this->addCommand(path, config, keys_to_censor_in_debug_report, [&callback](String &){callback();}, is_action);
+    this->addCommand(path, config, keys_to_censor_in_debug_report, [callback](String &){callback();}, is_action);
 }
 
 void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> callback, bool is_action)
