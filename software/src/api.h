@@ -89,6 +89,8 @@ public:
 
     String callCommand(const char *path, Config::ConfUpdate payload);
 
+    void callResponse(ResponseRegistration &reg, char *payload, size_t len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
+
     Config *getState(const String &path, bool log_if_not_found = true);
 
     void addFeature(const char *name);

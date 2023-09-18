@@ -205,6 +205,26 @@ void API::addRawCommand(const String &path, std::function<String(char *, size_t)
     }
 }
 
+void API::callResponse(ResponseRegistration &reg, char *payload, size_t len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id) {
+    if (this->mainTaskHandle != xTaskGetCurrentTaskHandle()) {
+        logger.printfln("Don't use API::callResponse in non-main thread!");
+        return;
+    }
+
+    if (!(len == 0 && reg.config->is_null())) {
+        String message = reg.config->update_from_cstr(payload, len);
+        if (message != "") {
+            response->begin(false);
+            response->write(message.c_str(), message.length());
+            response->flush();
+            response->end("");
+            return;
+        }
+    }
+
+    reg.callback(response, response_ownership, response_owner_id);
+}
+
 void API::addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback)
 {
     if (already_registered(path, "response"))
