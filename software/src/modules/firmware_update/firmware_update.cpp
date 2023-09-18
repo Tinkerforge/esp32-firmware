@@ -328,22 +328,22 @@ void FirmwareUpdate::register_urls()
         return handle_update_chunk(U_SPIFFS, request, index, data, len, final, request.contentLength());
     });
 
-    api.addCommand("factory_reset", Config::Confirm(), {Config::ConfirmKey()}, [this] {
+    api.addCommand("factory_reset", Config::Confirm(), {Config::ConfirmKey()}, [this](String &result) {
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
-            return "Factory reset NOT requested";
+            result = "Factory reset NOT requested";
+            return;
         }
 
         task_scheduler.scheduleOnce([](){
             logger.printfln("Factory reset requested");
             factory_reset();
         }, 3000);
-
-        return "";
     }, true);
 
-    api.addCommand("config_reset", Config::Confirm(), {Config::ConfirmKey()}, [this] {
+    api.addCommand("config_reset", Config::Confirm(), {Config::ConfirmKey()}, [this](String &result) {
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
-            return "Config reset NOT requested";
+            result = "Config reset NOT requested";
+            return;
         }
 
         task_scheduler.scheduleOnce([](){
@@ -367,7 +367,5 @@ void FirmwareUpdate::register_urls()
             API::removeAllConfig();
             ESP.restart();
         }, 3000);
-
-        return "";
     }, true);
 }

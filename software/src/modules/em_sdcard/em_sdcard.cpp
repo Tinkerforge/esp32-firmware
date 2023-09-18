@@ -57,19 +57,20 @@ void EMSDcard::register_urls()
 {
     api.addState("energy_manager/sdcard_state", &state, {}, 1000);
 
-    api.addCommand("energy_manager/sdcard_format", Config::Confirm(), {Config::ConfirmKey()}, [this] {
+    api.addCommand("energy_manager/sdcard_format", Config::Confirm(), {Config::ConfirmKey()}, [this](String &result) {
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
-            return "SD card format NOT initiated";
+            result = "SD card format NOT initiated";
+            return;
         }
 
         logger.printfln("em_sdcard: Formatting SD card...");
-        if (!energy_manager.format_sdcard())
-            return "Format request failed";
+        if (!energy_manager.format_sdcard()) {
+            result = "Format request failed";
+            return;
+        }
 
         // Fake LittleFS state to display "Formatting..." message in frontend.
         state.get("lfs_status")->updateUint(256);
-
-        return "";
     }, true);
 }
 

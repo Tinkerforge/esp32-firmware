@@ -42,7 +42,7 @@ struct StateRegistration {
 struct CommandRegistration {
     String path;
     ConfigRoot *config;
-    std::function<String(void)> callback;
+    std::function<void(String &)> callback;
     std::vector<String> keys_to_censor_in_debug_report;
     bool is_action;
     uint64_t task_id;
@@ -94,8 +94,8 @@ public:
     Config *getState(const String &path, bool log_if_not_found = true);
 
     void addFeature(const char *name);
-    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action);
-    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<String(void)> callback, bool is_action);
+    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void()> callback, bool is_action);
+    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> callback, bool is_action);
 
     void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {}, bool low_latency = false);
     bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {});

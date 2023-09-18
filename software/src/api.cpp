@@ -114,10 +114,10 @@ void API::setup()
 }
 
 void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action) {
-    this->addCommand(path, config, keys_to_censor_in_debug_report, (std::function<String(void)>)([&callback](){callback(); return "";}), is_action);
+    this->addCommand(path, config, keys_to_censor_in_debug_report, [&callback](String &){callback();}, is_action);
 }
 
-void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<String(void)> callback, bool is_action)
+void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> callback, bool is_action)
 {
     if (already_registered(path, "command"))
         return;
@@ -424,7 +424,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
                     return;
             }
 
-            result = reg.callback();
+            reg.callback(result);
         }, 0);
 
     if (task_scheduler.await(task_id, 10000) == TaskScheduler::AwaitResult::Timeout) {
@@ -438,7 +438,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
 
 void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(String)> done_cb) {
     if (this->mainTaskHandle == xTaskGetCurrentTaskHandle()) {
-        done_cb("callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!")
+        done_cb("callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!");
         return;
     }
 
@@ -466,7 +466,7 @@ void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t
                 }
             }
 
-            result = reg.callback();
+            reg.callback(result);
         }, 0);
 }
 
@@ -486,7 +486,8 @@ String API::callCommand(const char *path, Config::ConfUpdate payload)
         if (error != "") {
             return error;
         }
-        return reg.callback();
+        reg.callback(error);
+        return error;
     }
 
     return String("Unknown command ") + path;

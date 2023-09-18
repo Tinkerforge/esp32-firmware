@@ -693,9 +693,10 @@ void ChargeTracker::register_urls()
     api.addState("charge_tracker/current_charge", &current_charge, {}, 1000);
     api.addState("charge_tracker/state", &state, {}, 1000);
 
-    api.addCommand("charge_tracker/remove_all_charges", Config::Confirm(), {Config::ConfirmKey()}, [this](){
+    api.addCommand("charge_tracker/remove_all_charges", Config::Confirm(), {Config::ConfirmKey()}, [this](String &result){
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
-            return "Tracked charges will NOT be removed";
+            result = "Tracked charges will NOT be removed";
+            return;
         }
 
         task_scheduler.scheduleOnce([](){
@@ -704,7 +705,6 @@ void ChargeTracker::register_urls()
             users.remove_username_file();
             ESP.restart();
         }, 3000);
-        return "";
     }, true);
 
     server.on("/charge_tracker/pdf", HTTP_PUT, [this](WebServerRequest request) {
