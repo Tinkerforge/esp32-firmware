@@ -38,21 +38,34 @@ static_assert(METERS_SLOTS <= 7, "Too many meters slots");
 void EnergyManager::register_events()
 {
     for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
+        if (meters.get_meter_class(slot) == MeterClassID::None) {
+            continue;
+        }
+
         // Passing no values will register on the ConfigRoot.
-        event.registerEvent(meters.get_path(slot, Meters::PathType::ValueIDs), {}, [this, slot](Config * /*unused*/){
+        event.registerEvent(meters.get_path(slot, Meters::PathType::ValueIDs), {}, [this, slot](Config *config){
+            if (history_meter_setup_done[slot]) {
+                logger.printfln("data_points: Value IDs changed but meter setup for slot %u already done.", slot);
+                return;
+            }
+
+            ssize_t count = config->count();
+
+            if (count < 0) {
+                logger.printfln("data_points: Invalid value ID count meter in slot %u: %zi", slot, count);
+                return;
+            }
+
+            if (count == 0) {
+                logger.printfln("data_points: Ignoring blank value IDs update from meter in slot %u.", slot);
+                return;
+            }
+
+            history_meter_setup_done[slot] = true;
+
             uint32_t power_index;
             if (meters.get_cached_power_index(slot, &power_index)) {
                 task_scheduler.scheduleOnce([this, slot, power_index](){
-                    // get initial power value in case the power value was already updated by the
-                    // meter before registering the event here. if the power value doesn't change
-                    // then no future event will be generated leaving the cached value here as NaN
-                    float power;
-                    if (meters.get_power(slot, &power) == Meters::ValueAvailability::Fresh) {
-                        if (!isnan(power)) {
-                            update_history_meter_power(slot, power);
-                        }
-                    }
-
                     event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {static_cast<uint16_t>(power_index)}, [this, slot](Config *config){
                         update_history_meter_power(slot, config->asFloat());
                     });
