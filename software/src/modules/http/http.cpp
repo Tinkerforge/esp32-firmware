@@ -179,7 +179,13 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
         if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) != 0)
             continue;
 
-        String response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
+        String response;
+        auto tid = task_scheduler.scheduleOnce([&response, i](){
+            response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
+        }, 0);
+        if (task_scheduler.await(tid, 10000) == TaskScheduler::AwaitResult::Timeout)
+            return req.send(500, "text/html", "Failed to get config. Task timed out.");
+
         return req.send(200, "application/json; charset=utf-8", response.c_str());
     }
 
