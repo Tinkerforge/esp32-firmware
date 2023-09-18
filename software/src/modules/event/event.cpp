@@ -66,7 +66,7 @@ void Event::registerEvent(const String &path, const std::vector<ConfPath> values
         // If not, trigger the callback to make sure
         // it is always called at least once.
         if (!config->was_updated(1 << backendIdx)) {
-            reg.callback(reg.config);
+            callback(config);
         }
 
         return;
