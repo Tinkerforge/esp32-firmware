@@ -246,7 +246,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
         BufferedChunkedResponse buffered_response(&queued_response);
 
         task_scheduler.scheduleOnce(
-            [this, i, recv_buf, bytes_written, &buffered_response, response_owner_id]{
+            [this, i, bytes_written, &buffered_response, response_owner_id]{
                 api.callResponse(api.responses[i], recv_buf, bytes_written, &buffered_response, &response_ownership, response_owner_id);
             },
             0);
