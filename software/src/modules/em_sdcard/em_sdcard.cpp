@@ -57,19 +57,8 @@ void EMSDcard::register_urls()
 {
     api.addState("energy_manager/sdcard_state", &state, {}, 1000);
 
-    api.addRawCommand("energy_manager/sdcard_format", [this](char *c, size_t s) -> String {
-        StaticJsonDocument<16> doc;
-        DeserializationError error = deserializeJson(doc, c, s);
-
-        if (error) {
-            return String("Failed to deserialize string: ") + error.c_str();
-        }
-
-        if (!doc["do_i_know_what_i_am_doing"].is<bool>()) {
-            return "You don't seem to know what you are doing";
-        }
-
-        if (!doc["do_i_know_what_i_am_doing"].as<bool>()) {
+    api.addCommand("energy_manager/sdcard_format", Config::Confirm(), {Config::ConfirmKey()}, [this] {
+        if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
             return "SD card format NOT initiated";
         }
 

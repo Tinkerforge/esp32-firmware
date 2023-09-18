@@ -102,6 +102,7 @@ Config::ConfUnion::Slot *union_buf = nullptr;
 size_t union_buf_size = 0;
 
 static ConfigRoot nullconf = Config{Config::ConfVariant{}};
+static ConfigRoot *confirmconf;
 
 
 struct default_validator {
@@ -1485,6 +1486,23 @@ ConfigRoot *Config::Null()
     // Those are not stored in slots so no static initialization order problems can emerge here.
 
     return &nullconf;
+}
+
+ConfigRoot *Config::Confirm() {
+    if (boot_stage < BootStage::PRE_SETUP)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
+    if (confirmconf == nullptr) {
+        confirmconf = new ConfigRoot(Config::Object({
+            {Config::ConfirmKey(), Config::Bool(false)}
+        }));
+    }
+
+    return confirmconf;
+}
+
+String Config::ConfirmKey() {
+    return "do_i_know_what_i_am_doing";
 }
 
 Config Config::Uint8(uint8_t u)

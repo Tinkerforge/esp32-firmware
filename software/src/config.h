@@ -567,6 +567,9 @@ public:
 
     static ConfigRoot *Null();
 
+    static ConfigRoot *Confirm();
+    static String ConfirmKey();
+
     static Config Uint8(uint8_t u);
 
     static Config Uint16(uint16_t u);
