@@ -126,12 +126,12 @@ void API::addCommand(const String &path, ConfigRoot *config, std::initializer_li
     }
 }
 
-void API::addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
+void API::addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, bool low_latency)
 {
     if (already_registered(path, "state"))
         return;
 
-    states.push_back({path, config, keys_to_censor, interval_ms < 1000});
+    states.push_back({path, config, keys_to_censor, low_latency});
     auto stateIdx = states.size() - 1;
 
     for (auto *backend : this->backends) {
@@ -139,7 +139,7 @@ void API::addState(const String &path, ConfigRoot *config, std::initializer_list
     }
 }
 
-bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
+bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor)
 {
     if (path.length() > 63) {
         logger.printfln("The maximum allowed config path length is 63 bytes. Got %u bytes instead.", path.length());
@@ -174,9 +174,9 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initi
         }
 
         String conf_modified_path = path + "_modified";
-        addState(conf_modified_path, conf_modified, {}, interval_ms);
+        addState(conf_modified_path, conf_modified);
 
-        addState(path, config, keys_to_censor, interval_ms);
+        addState(path, config, keys_to_censor);
     }
 
     addCommand(path + "_update", config, keys_to_censor, [path, config, conf_modified]() {
@@ -289,9 +289,9 @@ void API::removeAllConfig() {
 }
 
 /*
-void API::addTemporaryConfig(String path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms, std::function<void(void)> callback)
+void API::addTemporaryConfig(String path, Config *config, std::initializer_list<String> keys_to_censor, std::function<void(void)> callback)
 {
-    addState(path, config, keys_to_censor, interval_ms);
+    addState(path, config, keys_to_censor);
     addCommand(path + "_update", config, callback);
 }
 */
@@ -387,8 +387,8 @@ void API::registerDebugUrl(WebServer *server)
         return request.send(200, "application/json; charset=utf-8", result.c_str());
     });
 
-    this->addState("info/features", &features, {}, 1000);
-    this->addState("info/version", &version, {}, 1000);
+    this->addState("info/features", &features);
+    this->addState("info/version", &version);
 }
 
 size_t API::registerBackend(IAPIBackend *backend)

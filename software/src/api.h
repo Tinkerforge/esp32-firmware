@@ -95,11 +95,23 @@ public:
 
     void addFeature(const char *name);
     void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action);
-    void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms = 1000);
-    bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms = 1000);
-    //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms, std::function<void(void)> callback);
+    void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {}, bool low_latency = false);
+    bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {});
+    //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<String> keys_to_censor, std::function<void(void)> callback);
     void addRawCommand(const String &path, std::function<String(char *, size_t)> callback, bool is_action);
     void addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback);
+
+    template<typename T>
+    //_ATTRIBUTE((deprecated("Pass bool low_latecy instead of interval_ms. Use 'false' or nothing for 1000ms interval or 'true' for 250ms interval.")))
+    void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, T interval_ms) {
+        addState(path, config, keys_to_censor, interval_ms < 1000);
+    }
+    template<typename T>
+    //_ATTRIBUTE((deprecated("Please remove interval_ms parameter.")))
+    bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, T interval_ms) {
+        (void)interval_ms;
+        return addPersistentConfig(path, config, keys_to_censor);
+    }
 
     bool hasFeature(const char *name);
 
