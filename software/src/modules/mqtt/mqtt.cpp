@@ -97,7 +97,6 @@ void Mqtt::pre_setup()
 
 void Mqtt::subscribe_with_prefix(const String &path, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained)
 {
-    const String &prefix = config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
     subscribe(topic, callback, forbid_retained);
 }
@@ -106,7 +105,7 @@ void Mqtt::subscribe(const String &topic, std::function<void(const char *, size_
 {
     bool subscribed = esp_mqtt_client_subscribe(client, topic.c_str(), 0) >= 0;
 
-    this->commands.push_back({topic, callback, forbid_retained, topic.startsWith(config_in_use.get("global_topic_prefix")->asString()), subscribed});
+    this->commands.push_back({topic, callback, forbid_retained, topic.startsWith(prefix), subscribed});
 }
 
 void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
@@ -136,7 +135,6 @@ void Mqtt::addResponse(size_t responseIdx, const ResponseRegistration &reg)
 
 bool Mqtt::publish_with_prefix(const String &path, const String &payload, bool retain)
 {
-    const String &prefix = config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
     return publish(topic, payload, retain);
 }
@@ -178,7 +176,6 @@ void Mqtt::resubscribe() {
         return;
 
     if (!global_topic_prefix_subscribed) {
-        const String &prefix = config_in_use.get("global_topic_prefix")->asString();
         String topic = prefix + "/#";
         global_topic_prefix_subscribed = esp_mqtt_client_subscribe(client, topic.c_str(), 0) >= 0;
     }
@@ -266,7 +263,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         c.callback(topic, topic_len, data, data_len);
         return;
     }
-    const String &prefix = this->config_in_use.get("global_topic_prefix")->asString();
+
     if (topic_len < prefix.length() + 1) // + 1 because we will check for the / between the prefix and the topic.
         return;
     if (memcmp(topic, prefix.c_str(), prefix.length()) != 0)
@@ -450,6 +447,7 @@ void Mqtt::setup()
     }
 
     config_in_use = config;
+    prefix = this->config_in_use.get("global_topic_prefix")->asString();
 
     if (!config.get("enable_mqtt")->asBool()) {
         initialized = true;

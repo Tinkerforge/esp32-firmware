@@ -94,6 +94,8 @@ public:
 
 private:
     esp_mqtt_client_handle_t client;
+    // Copy prefix to not access config in MQTT thread.
+    String prefix;
 
     uint32_t last_connected_ms = 0;
     bool was_connected = false;
