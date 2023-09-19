@@ -1912,10 +1912,7 @@ void Config::set_updated(uint8_t api_backend_flag) {
     value.updated |= api_backend_flag;
 }
 
-static std::recursive_mutex update_mutex;
-
 void ConfigRoot::update_from_copy(Config *copy) {
-    std::lock_guard<std::recursive_mutex> l{update_mutex};
     this->value = copy->value;
     this->value.updated = true;
 }
@@ -1984,7 +1981,6 @@ String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Conf
 
 template<typename T>
 String ConfigRoot::get_updated_copy(T visitor, Config *out_config) {
-    std::lock_guard<std::recursive_mutex> l{update_mutex};
     *out_config = *this;
     String err = Config::apply_visitor(visitor, out_config->value);
 
