@@ -45,7 +45,7 @@
             "no": "No"
         },
         "script": {
-            "save_failed": "Failed to save the MQTT configuration.",
+            "save_failed": "Failed to save the MQTT settings.",
             "reboot_content_changed": "MQTT settings"
         }
     }

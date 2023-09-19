@@ -16,7 +16,7 @@
             "meter_path_invalid": "The path cannot start with $, contain a # or +, or be empty."
         },
         "script": {
-            "save_failed": "Failed to save the MQTT meter configuration.",
+            "save_failed": "Failed to save the MQTT meter settings.",
             "reboot_content_changed": "MQTT meter settings"
         }
     }

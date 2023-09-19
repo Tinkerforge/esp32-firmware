@@ -16,8 +16,8 @@
             "meter_path_invalid": "Der Pfad darf nicht mit $ beginnen, ein # oder + enthalten oder leer sein."
         },
         "script": {
-            "save_failed": "Speichern der MQTT-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "MQTT-Einstellungen"
+            "save_failed": "Speichern der MQTT-Stromzähler-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "MQTT-Stromzähler-Einstellungen"
         }
     }
 }

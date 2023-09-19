@@ -49,9 +49,9 @@ let x = {
             "evse_user_enable_invalid": "At least one user is required for the charge_release."
         },
         "script": {
-            "reboot_content_changed": "User configuration",
+            "reboot_content_changed": "user settings",
             "login_disabled": "Login disabled",
-            "save_failed": "Failed to save the user configuration.",
+            "save_failed": "Failed to save the user settings.",
             "username_already_tracked": "Username is already in tracked charges",
             "username_already_used": "Username is already in use",
             "all_user_ids_in_use": "All user-ids in use."

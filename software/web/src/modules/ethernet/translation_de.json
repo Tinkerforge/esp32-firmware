@@ -16,7 +16,7 @@
             "enable_desc": null
         },
         "script": {
-            "config_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen.",
+            "save_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen.",
             "reboot_content_changed": "Verbindungseinstellungen"
         }
     }

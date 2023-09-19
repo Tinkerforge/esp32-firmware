@@ -47,8 +47,8 @@
         },
         "script": {
             "not_seen": "Unknown",
-            "save_failed": "Failed to update the NFC configuration",
-            "reboot_content_changed": "NFC configuration",
+            "save_failed": "Failed to save the NFC settings.",
+            "reboot_content_changed": "NFC settings",
             "not_assigned": "Not assigned",
             "not_assigned_desc": "This tag will not be able to start charges."
         }

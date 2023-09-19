@@ -32,7 +32,7 @@ import { ConfigComponent } from "../../ts/components/config_component";
 
 export class DeviceName extends ConfigComponent<'info/display_name'> {
     constructor() {
-        super('info/display_name', __("device_name.script.config_failed"));
+        super('info/display_name', __("device_name.script.save_failed"));
     }
 
     render(props: {}, state: Readonly<API.getType['info/display_name']>) {
@@ -51,7 +51,7 @@ export class DeviceName extends ConfigComponent<'info/display_name'> {
                         if (!(e.target as HTMLFormElement).checkValidity())
                             return;
 
-                        API.save("info/display_name", state, __("device_name.script.config_failed"));
+                        API.save("info/display_name", state, __("device_name.script.save_failed"));
                     }}>
                         <InputText maxLength={32} value={state.display_name} onValue={(v) => this.setState({display_name: v})} required>
                             {state.display_name == API.get('info/display_name').display_name ? <></> :

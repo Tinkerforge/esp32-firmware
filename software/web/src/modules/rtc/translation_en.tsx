@@ -78,7 +78,7 @@ let x = {
         },
         "script": {
             "save_failed": "Failed to save the real-time clock settings.",
-            "reboot_content_changed": "Real-time clock settings"
+            "reboot_content_changed": "real-time clock settings"
         }
     }
 }

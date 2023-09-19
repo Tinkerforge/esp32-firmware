@@ -58,10 +58,10 @@ let x = {
             "no_ap_found": "No network found",
             "hidden_ap": "[Hidden AP]",
 
-            "sta_config_failed": "Failed to save connection configuration.",
-            "ap_config_failed": "Failed to save access point configuration.",
-            "sta_reboot_content_changed": "connection configuration",
-            "ap_reboot_content_changed": "access point configuration"
+            "sta_save_failed": "Failed to save connection settings.",
+            "ap_save_failed": "Failed to save access point settings.",
+            "sta_reboot_content_changed": "connection settings",
+            "ap_reboot_content_changed": "access point settings"
         }
     }
 }

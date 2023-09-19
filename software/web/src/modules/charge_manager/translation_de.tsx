@@ -113,7 +113,7 @@ let x = {
 
             "last_update_prefix": "Gestört seit ",
             "last_update_suffix": "",
-            "save_failed": "Speichern der Lastmanager-Konfiguration fehlgeschlagen",
+            "save_failed": "Speichern der Lastmanager-Einstellungen fehlgeschlagen.",
             "set_available_current_failed": "Setzen des verfügbaren Stroms fehlgeschlagen",
 
             "reboot_content_changed": "Lastmanagement-Einstellungen",

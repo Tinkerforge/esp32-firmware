@@ -61,7 +61,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
 
     constructor() {
         super('wifi/sta_config',
-              __("wifi.script.sta_config_failed"),
+              __("wifi.script.sta_save_failed"),
               __("wifi.script.sta_reboot_content_changed"));
 
         util.addApiEventListener('wifi/scan_results', (e) => {

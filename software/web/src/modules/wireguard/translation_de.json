@@ -30,7 +30,7 @@
             "allowed_subnet": "Erlaubte Subnetzmaske empfangener Pakete"
         },
         "script": {
-            "save_failed": "Speichern der WireGuard-Einstellungen fehlgeschlagen",
+            "save_failed": "Speichern der WireGuard-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "WireGuard-Einstellungen",
             "preshared_key_unused": "PSK wird nicht verwendet"
         }

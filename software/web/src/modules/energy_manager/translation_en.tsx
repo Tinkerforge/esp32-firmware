@@ -129,8 +129,8 @@ let x = {
             "hysteresis_time_muted": "Minimum delay before phase switches or starting or stopping a charge, to avoid excessive wear on the vehicle's charge electronics by switching too often."
         },
         "script": {
-            "save_failed": "Failed to save energy manager configuration.",
-            "reboot_content_changed": "energy manager configuration",
+            "save_failed": "Failed to save energy manager settings.",
+            "reboot_content_changed": "energy manager settings",
             "mode_change_failed": "Failed to change charging mode."
         }
     }

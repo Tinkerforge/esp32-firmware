@@ -160,7 +160,7 @@ let x = {
             "acc_blocked": "Blockiert",
             "by": "durch",
 
-            "save_failed": "Speichern der Ladeeinstellungen fehlgeschlagen",
+            "save_failed": "Speichern der Ladeeinstellungen fehlgeschlagen.",
 
             "reset_slot_failed": "Freigeben der Stromgrenze fehlgeschlagen",
 

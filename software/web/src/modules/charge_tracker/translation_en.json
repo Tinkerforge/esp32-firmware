@@ -72,8 +72,8 @@
             "download_charge_log_failed": "Failed to download tracked charges",
             "download_usernames_failed": "Failed to download the usernames used in tracked charges",
 
-            "save_failed": "Failed to save the charge manager configuration",
-            "reboot_content_changed": "charge manager configuration"
+            "save_failed": "Failed to save the charge manager settings.",
+            "reboot_content_changed": "charge manager settings"
         }
     }
 }

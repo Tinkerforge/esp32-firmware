@@ -160,7 +160,7 @@ let x = {
             "acc_blocked": "Blocked",
             "by": "by",
 
-            "save_failed": "Failed to save charge settings",
+            "save_failed": "Failed to save charge settings.",
 
             "reset_slot_failed": "Releasing the current limit failed",
 
@@ -182,7 +182,7 @@ let x = {
             "slot_12": "energy/time limit",
             "slot_13": "meter monitoring",
 
-            "reboot_content_changed": "Charge Settings"
+            "reboot_content_changed": "charge settings"
         }
     }
 }

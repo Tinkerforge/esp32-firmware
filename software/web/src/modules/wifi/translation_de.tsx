@@ -58,8 +58,8 @@ let x = {
             "no_ap_found": "Kein Netzwerk gefunden.",
             "hidden_ap": "[Versteckter AP]",
 
-            "sta_config_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen.",
-            "ap_config_failed": "Speichern der Access Point-Einstellungen fehlgeschlagen.",
+            "sta_save_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen.",
+            "ap_save_failed": "Speichern der Access Point-Einstellungen fehlgeschlagen.",
             "sta_reboot_content_changed": "Verbindungseinstellungen",
             "ap_reboot_content_changed": "Access-Point-Einstellungen"
         }

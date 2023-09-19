@@ -31,7 +31,7 @@ let x = {
         "script": {
             "no_bricklets": "No Bricklets connected.",
             "unknown_device": "unknown device",
-            "save_failed": "Failed to save the proxy configuration.",
+            "save_failed": "Failed to save the proxy settings.",
             "reboot_content_changed": "proxy settings"
         }
     }

@@ -155,7 +155,7 @@ let x = {
             "configuration": "Configuration"
         },
         "script": {
-            "save_failed": "Failed to save the OCPP configuration.",
+            "save_failed": "Failed to save the OCPP settings.",
             "reboot_content_changed": "OCPP settings"
         }
     }

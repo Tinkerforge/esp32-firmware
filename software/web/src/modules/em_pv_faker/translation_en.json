@@ -20,7 +20,7 @@
             "manual_power": "Manual PV production"
         },
         "script": {
-            "save_failed": "Failed to save EM PV faker configuration."
+            "save_failed": "Failed to save EM PV faker settings."
         }
     }
 }

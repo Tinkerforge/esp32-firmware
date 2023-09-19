@@ -113,10 +113,10 @@ let x = {
 
             "last_update_prefix": "Unavailable for",
             "last_update_suffix": "",
-            "save_failed": "Failed to save the charge manager configuration",
+            "save_failed": "Failed to save the charge manager settings.",
             "set_available_current_failed": "Failed to set the available current",
 
-            "reboot_content_changed": "charge manager configuration",
+            "reboot_content_changed": "charge manager settings",
 
             "scan_failed": "Scan failed",
 

@@ -39,7 +39,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
 
     constructor() {
         super('ethernet/config',
-              __("ethernet.script.config_failed"),
+              __("ethernet.script.save_failed"),
               __("ethernet.script.reboot_content_changed"));
     }
 

@@ -16,8 +16,8 @@
             "enable_desc": "Automatically connects to the configured network on start-up"
         },
         "script": {
-            "config_failed": "Failed to save connection configuration.",
-            "reboot_content_changed": "connection configuration"
+            "save_failed": "Failed to save connection settings.",
+            "reboot_content_changed": "connection settings"
         }
     }
 }

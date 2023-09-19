@@ -72,7 +72,7 @@
             "download_charge_log_failed": "Herunterladen der aufgezeichneten Ladevorgänge fehlgeschlagen",
             "download_usernames_failed": "Herunterladen der verwendeten Benutzernamen in aufgezeichneten Ladevorgängen fehlgeschlagen",
 
-            "save_failed": "Speichern der Ladetracker-Konfiguration fehlgeschlagen",
+            "save_failed": "Speichern der Ladetracker-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "Ladetracker-Einstellungen"
         }
     }

@@ -47,7 +47,7 @@
         },
         "script": {
             "not_seen": "Unbekannt",
-            "save_failed": "Aktualisieren der NFC-Einstellungen fehlgeschlagen",
+            "save_failed": "Speichern der NFC-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "NFC-Einstellungen",
             "not_assigned": "Nicht zugeordnet",
             "not_assigned_desc": "Dieses Tag kann keinen Ladevorgang freigeben."

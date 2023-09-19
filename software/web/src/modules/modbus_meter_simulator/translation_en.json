@@ -12,7 +12,7 @@
             "meter_type_no_meter": "No meter"
         },
         "script": {
-            "save_failed": "Failed to save modbus meter simulator configuration.",
+            "save_failed": "Failed to save Modbus meter simulator settings.",
             "reboot_content_changed": "Modbus meter simulator settings"
         }
     }
