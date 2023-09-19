@@ -112,7 +112,7 @@ void TaskScheduler::register_urls()
 
 void TaskScheduler::loop()
 {
-    // We can't use defer to clean up currenTask on function level,
+    // We can't use defer to clean up currentTask on function level,
     // because we have to make sure currentTask is only written
     // while the task_mutex is locked.
 
