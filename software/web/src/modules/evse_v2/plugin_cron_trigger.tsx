@@ -1,5 +1,5 @@
 import { CronTriggerID } from "../cron/cron_defs";
-import { CronComponent, CronTrigger, cron_trigger_components } from "../cron/api"
+import { CronComponent, CronTrigger } from "../cron/api"
 import { h } from 'preact'
 import { Cron } from "../cron/main"
 import { __ } from "../../ts/translation"
@@ -150,27 +150,29 @@ function EvseGpioInputCronTriggerConfigFactory(): CronTrigger {
 }
 
 export function init() {
-    cron_trigger_components[CronTriggerID.EVSEButton] = {
-        config_builder: EvseButtonCronTriggerFactory,
-        config_component: EvseButtonCronTriggerConfig,
-        table_row: EvseButtonCronTriggerComponent,
-        name: __("evse.content.button_configuration"),
-        require_feature: "button_configuration"
+    return {
+        trigger_components: {
+            [CronTriggerID.EVSEButton]: {
+                config_builder: EvseButtonCronTriggerFactory,
+                config_component: EvseButtonCronTriggerConfig,
+                table_row: EvseButtonCronTriggerComponent,
+                name: __("evse.content.button_configuration"),
+                require_feature: "button_configuration"
+            },
+            [CronTriggerID.EVSEShutdownInput]: {
+                config_component: EvseShutdownTriggerConfig,
+                table_row: EvseShutdownTriggerComponent,
+                config_builder: EvseShutdownTriggerFactory,
+                name: __("evse.content.gpio_shutdown"),
+                require_feature: "button_configuration"
+            },
+            [CronTriggerID.EVSEGPInput]: {
+                config_builder: EvseGpioInputCronTriggerConfigFactory,
+                config_component: EvseGpioInputCrontTriggerConfigComponent,
+                table_row: EvseGpioInputCronTriggerComponent,
+                name: __("evse.content.gpio_in"),
+                require_feature: "button_configuration"
+            }
+        }
     };
-
-    cron_trigger_components[CronTriggerID.EVSEShutdownInput] = {
-        config_component: EvseShutdownTriggerConfig,
-        table_row: EvseShutdownTriggerComponent,
-        config_builder: EvseShutdownTriggerFactory,
-        name: __("evse.content.gpio_shutdown"),
-        require_feature: "button_configuration"
-    };
-
-    cron_trigger_components[CronTriggerID.EVSEGPInput] = {
-        config_builder: EvseGpioInputCronTriggerConfigFactory,
-        config_component: EvseGpioInputCrontTriggerConfigComponent,
-        table_row: EvseGpioInputCronTriggerComponent,
-        name: __("evse.content.gpio_in"),
-        require_feature: "button_configuration"
-    }
 }

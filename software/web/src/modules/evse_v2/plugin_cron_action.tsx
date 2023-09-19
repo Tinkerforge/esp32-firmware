@@ -8,7 +8,7 @@ export type EvseGpOutputCronAction = [
 ];
 
 import { __ } from "../../ts/translation";
-import { CronComponent, CronAction, cron_action_components} from "../cron/api";
+import { CronComponent, CronAction } from "../cron/api";
 import { h } from 'preact'
 import { InputSelect } from "../../ts/components/input_select";
 import { Cron } from "../cron/main";
@@ -53,11 +53,15 @@ function EvseGpioOutputCronActionConfigFactory(): CronAction {
 }
 
 export function init() {
-    cron_action_components[CronActionID.EVSEGPOutput] = {
-        config_builder: EvseGpioOutputCronActionConfigFactory,
-        config_component: EvseGpioOutputCronActionConfigComponent,
-        table_row: EvseGpioOutputCronActionComponent,
-        name: __("evse.content.gpio_out"),
-        require_feature: "button_configuration"
+    return {
+        action_components: {
+            [CronActionID.EVSEGPOutput]: {
+                config_builder: EvseGpioOutputCronActionConfigFactory,
+                config_component: EvseGpioOutputCronActionConfigComponent,
+                table_row: EvseGpioOutputCronActionComponent,
+                name: __("evse.content.gpio_out"),
+                require_feature: "button_configuration"
+            }
+        }
     };
 }

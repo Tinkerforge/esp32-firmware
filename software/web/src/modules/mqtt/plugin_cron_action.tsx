@@ -11,7 +11,7 @@ export type MqttCronAction = [
 ];
 
 import { Cron } from "../cron/main";
-import { CronComponent, CronAction, cron_action_components } from "../cron/api";
+import { CronComponent, CronAction } from "../cron/api";
 import { InputText } from "../../ts/components/input_text";
 import { h, Fragment } from "preact"
 import { Switch } from "../../ts/components/switch";
@@ -117,10 +117,14 @@ function MqttCronActionFactory(): CronAction {
 }
 
 export function init() {
-    cron_action_components[CronActionID.MQTT] = {
-        config_builder: MqttCronActionFactory,
-        config_component: MqttCronActionConfig,
-        table_row: MqttCronActionComponent,
-        name: __("mqtt.content.mqtt")
+    return {
+        action_components: {
+            [CronActionID.MQTT]: {
+                config_builder: MqttCronActionFactory,
+                config_component: MqttCronActionConfig,
+                table_row: MqttCronActionComponent,
+                name: __("mqtt.content.mqtt")
+            }
+        }
     };
 }

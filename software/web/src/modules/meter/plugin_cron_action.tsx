@@ -8,7 +8,7 @@ export type MeterCronAction = [
 
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, CronAction, cron_action_components } from "../cron/api";
+import { CronComponent, CronAction } from "../cron/api";
 
 function MeterResetCronActionComponent(_: CronAction): CronComponent {
     return {
@@ -30,11 +30,15 @@ function MeterResetCronActionConfigFactory(): CronAction {
 }
 
 export function init() {
-    cron_action_components[CronActionID.MeterReset] = {
-        config_builder: MeterResetCronActionConfigFactory,
-        config_component: MeterResetCronActionConfigComponent,
-        table_row: MeterResetCronActionComponent,
-        name: __("meter.content.meter_reset"),
-        require_feature: "meter"
-    };
+    return {
+        action_components: {
+            [CronActionID.MeterReset]: {
+                config_builder: MeterResetCronActionConfigFactory,
+                config_component: MeterResetCronActionConfigComponent,
+                table_row: MeterResetCronActionComponent,
+                name: __("meter.content.meter_reset"),
+                require_feature: "meter"
+            }
+        }
+    }
 }

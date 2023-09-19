@@ -26,9 +26,10 @@ import { Fragment, render, h, ComponentChild } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { Table, TableModalRow, TableRow } from "../../ts/components/table";
-import { CronAction, cron_action_components, CronTrigger, cron_trigger_components, Task } from "./api";
+import { CronAction, CronTrigger, Task } from "./api";
 import { InputSelect } from "../../ts/components/input_select";
 import { __ } from "../../ts/translation";
+import { CronTriggerComponents, CronActionComponents } from "./api";
 import { plugins_init } from "./plugins";
 
 type CronState = {
@@ -36,6 +37,9 @@ type CronState = {
     displayed_trigger: number,
     displayed_action: number
 };
+
+let cron_trigger_components: CronTriggerComponents = {};
+let cron_action_components: CronActionComponents = {};
 
 export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
     constructor() {
@@ -263,7 +267,29 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
 render(<Cron/>, $('#cron')[0]);
 
 export function init() {
-    plugins_init();
+    let result = plugins_init();
+
+    for (let item of result) {
+        if (item.trigger_components) {
+            for (let i in item.trigger_components) {
+                if (cron_trigger_components[i]) {
+                    console.log('Cron: Overwriting trigger ID ' + i);
+                }
+
+                cron_trigger_components[i] = item.trigger_components[i];
+            }
+        }
+
+        if (item.action_components) {
+            for (let i in item.action_components) {
+                if (cron_action_components[i]) {
+                    console.log('Cron: Overwriting action ID ' + i);
+                }
+
+                cron_action_components[i] = item.action_components[i];
+            }
+        }
+    }
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
@@ -272,17 +298,3 @@ export function add_event_listeners(source: API.APIEventTarget) {
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-cron').prop('hidden', !module_init.cron);
 }
-
-// cron_trigger_components[0] = {
-//     config_builder: () => [0, null],
-//     config_component: () => [],
-//     table_row: () => "",
-//     name: __("cron.content.select")
-// };
-
-// cron_action_components[0] = {
-//     config_builder: () => [0, null],
-//     config_component: () => [],
-//     table_row: () => "",
-//     name: __("cron.content.select")
-// }

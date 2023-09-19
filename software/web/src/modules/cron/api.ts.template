@@ -43,5 +43,5 @@ interface CronActionComponent {
     require_feature?: string
 }
 
-export const cron_trigger_components: {[key: number]: CronTriggerComponent} = [];
-export const cron_action_components: {[key: number]: CronActionComponent} = [];
+export type CronTriggerComponents = {[key: number]: CronTriggerComponent};
+export type CronActionComponents = {[key: number]: CronActionComponent};

@@ -10,7 +10,7 @@ export type ChargeManagerCronAction = [
 import { h } from "preact"
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, CronAction, cron_action_components } from "../cron/api";
+import { CronComponent, CronAction } from "../cron/api";
 import { InputFloat } from "../../ts/components/input_float";
 
 export function ChargeManagerCronComponent(action: CronAction): CronComponent {
@@ -47,10 +47,14 @@ function ChargeManagerCronActionFactory(): CronAction {
 }
 
 export function init() {
-    cron_action_components[CronActionID.SetManagerCurrent] = {
-        config_builder: ChargeManagerCronActionFactory,
-        config_component: ChargeManagerCronConfigComponent,
-        table_row: ChargeManagerCronComponent,
-        name: __("charge_manager.content.set_charge_manager")
+    return {
+        action_components: {
+            [CronActionID.SetManagerCurrent]: {
+                config_builder: ChargeManagerCronActionFactory,
+                config_component: ChargeManagerCronConfigComponent,
+                table_row: ChargeManagerCronComponent,
+                name: __("charge_manager.content.set_charge_manager")
+            }
+        }
     };
 }

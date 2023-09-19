@@ -30,7 +30,7 @@ for plugin in util.find_frontend_plugins('Cron', 'Trigger'):
     if import_path not in already_imported:
         imports.append("import * as {0}_trigger from '{1}'".format(plugin.module_name, import_path))
         already_imported.add(plugin.module_name)
-        inits.append("{0}_trigger.init();".format(plugin.module_name))
+        inits.append("result.push({0}_trigger.init());".format(plugin.module_name))
 
     for interface_name in plugin.interface_names:
         triggers.append('{0}_trigger.{1}'.format(plugin.module_name, interface_name))
@@ -41,7 +41,7 @@ for plugin in util.find_frontend_plugins('Cron', 'Action'):
     if import_path not in already_imported:
         imports.append("import * as {0}_action from '{1}'".format(plugin.module_name, import_path))
         already_imported.add(plugin.module_name)
-        inits.append("{0}_action.init();".format(plugin.module_name))
+        inits.append("result.push({0}_action.init());".format(plugin.module_name))
 
     for interface_name in plugin.interface_names:
         actions.append('{0}_action.{1}'.format(plugin.module_name, interface_name))

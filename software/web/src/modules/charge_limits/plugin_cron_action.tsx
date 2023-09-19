@@ -13,7 +13,7 @@ import * as API from "../../ts/api"
 import { h } from "preact"
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, CronAction, cron_action_components } from "../cron/api";
+import { CronComponent, CronAction } from "../cron/api";
 import { InputSelect } from "../../ts/components/input_select";
 
 function ChargeLimitsCronActionComponent(action: CronAction): CronComponent {
@@ -120,10 +120,14 @@ function ChargeLimitsCronActionFactory(): CronAction {
 }
 
 export function init() {
-    cron_action_components[CronActionID.ChargeLimits] = {
-        config_builder: ChargeLimitsCronActionFactory,
-        config_component: ChargeLimitsCronActionConfig,
-        table_row: ChargeLimitsCronActionComponent,
-        name: __("charge_limits.content.charge_limits")
+    return {
+        action_components: {
+            [CronActionID.ChargeLimits]: {
+                config_builder: ChargeLimitsCronActionFactory,
+                config_component: ChargeLimitsCronActionConfig,
+                table_row: ChargeLimitsCronActionComponent,
+                name: __("charge_limits.content.charge_limits")
+            }
+        }
     };
 }

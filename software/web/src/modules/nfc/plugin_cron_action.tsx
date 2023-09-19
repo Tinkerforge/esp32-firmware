@@ -11,7 +11,7 @@ export type NfcCronAction = [
 
 import { h } from "preact"
 import { __, translate_unchecked } from "../../ts/translation";
-import { CronComponent, CronAction, cron_action_components } from "../cron/api";
+import { CronComponent, CronAction } from "../cron/api";
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
@@ -154,10 +154,14 @@ function NfCTagInjectCronActionFactory(): CronAction {
 }
 
 export function init() {
-    cron_action_components[CronActionID.NFCInjectTag] = {
-        table_row: NFCTagInjectCronActionComponent,
-        config_builder: NfCTagInjectCronActionFactory,
-        config_component: NFCTagInjectCronActionConfig,
-        name: __("nfc.content.nfc")
+    return {
+        action_components: {
+            [CronActionID.NFCInjectTag]: {
+                table_row: NFCTagInjectCronActionComponent,
+                config_builder: NfCTagInjectCronActionFactory,
+                config_component: NFCTagInjectCronActionConfig,
+                name: __("nfc.content.nfc")
+            }
+        }
     };
 }

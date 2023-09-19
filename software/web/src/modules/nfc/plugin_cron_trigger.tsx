@@ -10,7 +10,7 @@ export type NfcCronTrigger = [
 
 import { h } from "preact"
 import { __, translate_unchecked } from "../../ts/translation";
-import { CronComponent, CronTrigger, cron_trigger_components } from "../cron/api";
+import { CronComponent, CronTrigger } from "../cron/api";
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
@@ -118,10 +118,14 @@ export function NFCCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
 }
 
 export function init() {
-    cron_trigger_components[CronTriggerID.NFC] = {
-        config_builder: NfcCronTriggerFactory,
-        config_component: NFCCronTriggerConfig,
-        table_row: NFCCronTriggerComponent,
-        name: __("nfc.content.nfc")
+    return {
+        trigger_components: {
+            [CronTriggerID.NFC]: {
+                config_builder: NfcCronTriggerFactory,
+                config_component: NFCCronTriggerConfig,
+                table_row: NFCCronTriggerComponent,
+                name: __("nfc.content.nfc")
+            }
+        }
     };
 }

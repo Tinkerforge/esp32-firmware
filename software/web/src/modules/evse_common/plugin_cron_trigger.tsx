@@ -9,7 +9,7 @@ export type EvseStateCronTrigger = [
 
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, CronTrigger, cron_trigger_components } from "../cron/api";
+import { CronComponent, CronTrigger } from "../cron/api";
 import { InputSelect } from "../../ts/components/input_select";
 import { h } from "preact"
 
@@ -67,10 +67,14 @@ export function EvseStateCronConfig(cron: Cron, trigger: CronTrigger) {
 }
 
 export function init() {
-    cron_trigger_components[CronTriggerID.IECChange] = {
-        config_builder: EvseStateCronFactory,
-        config_component: EvseStateCronConfig,
-        table_row: EvseStateCronComponent,
-        name: __("evse.content.state_change")
+    return {
+        trigger_components: {
+            [CronTriggerID.IECChange] = {
+                config_builder: EvseStateCronFactory,
+                config_component: EvseStateCronConfig,
+                table_row: EvseStateCronComponent,
+                name: __("evse.content.state_change")
+            }
+        }
     };
 }

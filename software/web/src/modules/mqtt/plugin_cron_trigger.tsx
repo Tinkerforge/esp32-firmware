@@ -12,7 +12,7 @@ export type MqttCronTrigger = [
 
 import { h, Fragment } from "preact"
 import { __ } from "../../ts/translation";
-import { CronComponent, CronTrigger, cron_trigger_components } from "../cron/api";
+import { CronComponent, CronTrigger } from "../cron/api";
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { Switch } from "../../ts/components/switch";
@@ -115,10 +115,14 @@ function MqttCronTriggerFactory(): CronTrigger {
 }
 
 export function init() {
-    cron_trigger_components[CronTriggerID.MQTT] = {
-        table_row: MqttCronTriggerComponent,
-        config_builder: MqttCronTriggerFactory,
-        config_component: MqttCronTriggerConfig,
-        name: __("mqtt.content.mqtt")
+    return {
+        trigger_components: {
+            [CronTriggerID.MQTT]: {
+                table_row: MqttCronTriggerComponent,
+                config_builder: MqttCronTriggerFactory,
+                config_component: MqttCronTriggerConfig,
+                name: __("mqtt.content.mqtt")
+            }
+        }
     };
 }
