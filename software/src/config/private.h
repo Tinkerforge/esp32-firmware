@@ -1,9 +1,7 @@
 #pragma once
 
 #include "config.h"
-
-#include "modules.h"
-#include "api.h"
+#include "tools.h"
 
 #define SLOT_HEADROOM 20
 
@@ -76,6 +74,7 @@ extern size_t union_buf_size;
 
 template<typename T>
 static size_t nextSlot(typename T::Slot *&buf, size_t &buf_size) {
+    ASSERT_MAIN_THREAD();
     for (size_t i = 0; i < buf_size; i++)
     {
         if (!T::slotEmpty(i))

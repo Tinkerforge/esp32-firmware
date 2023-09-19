@@ -20,6 +20,7 @@ String ConfigRoot::update_from_file(File &file)
 // This allows ArduinoJson to deserialize in zero-copy mode
 String ConfigRoot::update_from_cstr(char *c, size_t len)
 {
+    ASSERT_MAIN_THREAD();
     Config copy;
     String err = this->get_updated_copy(c, len, &copy);
     if (err != "")
@@ -70,6 +71,7 @@ String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Conf
 
 template<typename T>
 String ConfigRoot::get_updated_copy(T visitor, Config *out_config) {
+    ASSERT_MAIN_THREAD();
     *out_config = *this;
     String err = Config::apply_visitor(visitor, out_config->value);
 
@@ -91,6 +93,7 @@ String ConfigRoot::get_updated_copy(T visitor, Config *out_config) {
 
 template<typename T>
 String ConfigRoot::update_from_visitor(T visitor) {
+    ASSERT_MAIN_THREAD();
     Config copy;
 
     String err = this->get_updated_copy(visitor, &copy);
@@ -103,11 +106,13 @@ String ConfigRoot::update_from_visitor(T visitor) {
 
 String ConfigRoot::update(const Config::ConfUpdate *val)
 {
+    ASSERT_MAIN_THREAD();
     return this->update_from_visitor(from_update{val});
 }
 
 String ConfigRoot::validate()
 {
+    ASSERT_MAIN_THREAD();
     if (this->validator != nullptr) {
         return this->validator(*this);
     }
@@ -115,6 +120,7 @@ String ConfigRoot::validate()
 }
 
 void ConfigRoot::update_from_copy(Config *copy) {
+    ASSERT_MAIN_THREAD();
     this->value = copy->value;
     this->value.updated = true;
 }

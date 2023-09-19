@@ -31,6 +31,18 @@
 #include "strict_variant/variant.hpp"
 #include "strict_variant/mpl/find_with.hpp"
 
+
+#ifdef DEBUG_FS_ENABLE
+extern TaskHandle_t mainTaskHandle;
+#define ASSERT_MAIN_THREAD() do { \
+        if (mainTaskHandle != xTaskGetCurrentTaskHandle()) { \
+            esp_system_abort("Accessing the config is only allowed in the main thread!"); \
+        } \
+    } while (0)
+#else
+#define ASSERT_MAIN_THREAD() do {} while (0)
+#endif
+
 void config_pre_init();
 void config_post_setup();
 
@@ -314,6 +326,7 @@ struct Config {
 
     template<typename T>
     static auto apply_visitor(T visitor, ConfVariant &v) -> decltype(visitor(ConfVariant::Empty{})) {
+        ASSERT_MAIN_THREAD();
         switch (v.tag) {
             case ConfVariant::Tag::EMPTY:
                 return visitor(v.val.e);
@@ -341,6 +354,7 @@ struct Config {
 
     template<typename T>
     static auto apply_visitor(T visitor, const ConfVariant &v) -> decltype(visitor(ConfVariant::Empty{})) {
+        ASSERT_MAIN_THREAD();
         switch (v.tag) {
             case ConfVariant::Tag::EMPTY:
                 return visitor(v.val.e);
@@ -543,6 +557,7 @@ public:
 private:
     template<typename ConfigT>
     ConfigT *get() {
+        ASSERT_MAIN_THREAD();
         if (!this->is<ConfigT>()) {
             logger.printfln("get: Config has wrong type. This is %s, requested is %s", this->value.getVariantName(), ConfigT::variantName);
 #ifdef DEBUG_FS_ENABLE
@@ -557,6 +572,7 @@ private:
 
     template<typename ConfigT>
     const ConfigT *get() const {
+        ASSERT_MAIN_THREAD();
         if (!this->is<ConfigT>()) {
             logger.printfln("get: Config has wrong type. This is %s, requested is %s", this->value.getVariantName(), ConfigT::variantName);
 #ifdef DEBUG_FS_ENABLE
@@ -607,6 +623,7 @@ private:
 
     template<typename T, typename ConfigT>
     bool update_value(T value, const char *value_type) {
+        ASSERT_MAIN_THREAD();
         if (!this->is<ConfigT>()) {
             logger.printfln("update_value: Config has wrong type. This is a %s. new value is a %s", this->value.getVariantName(), value_type);
 #ifdef DEBUG_FS_ENABLE
@@ -636,6 +653,7 @@ public:
 private:
     template<typename T, typename ConfigT>
     size_t fillArray(T *arr, size_t elements) {
+        ASSERT_MAIN_THREAD();
         if (!this->is<ConfArray>()) {
             logger.printfln("Can't fill array, Config is not an array");
             delay(100);

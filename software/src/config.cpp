@@ -184,6 +184,7 @@ Config Config::Int32(int32_t i)
 }
 
 Config::Wrap Config::get() {
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfUnion>()) {
         logger.printfln("Config is not a union!");
         delay(100);
@@ -195,6 +196,7 @@ Config::Wrap Config::get() {
 }
 
 const Config::ConstWrap Config::get() const {
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfUnion>()) {
         logger.printfln("Config is not a union!");
         delay(100);
@@ -207,7 +209,7 @@ const Config::ConstWrap Config::get() const {
 
 Config::Wrap Config::get(const String &s)
 {
-
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfObject>()) {
         logger.printfln("Config key %s not in this node: is not an object!", s.c_str());
         delay(100);
@@ -220,7 +222,7 @@ Config::Wrap Config::get(const String &s)
 
 Config::Wrap Config::get(uint16_t i)
 {
-
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Config index %u not in this node: is not an array!", i);
         delay(100);
@@ -233,6 +235,7 @@ Config::Wrap Config::get(uint16_t i)
 
 const Config::ConstWrap Config::get(const String &s) const
 {
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfObject>()) {
         logger.printfln("Config key %s not in this node: is not an object!", s.c_str());
         delay(100);
@@ -245,6 +248,7 @@ const Config::ConstWrap Config::get(const String &s) const
 
 const Config::ConstWrap Config::get(uint16_t i) const
 {
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Config index %u not in this node: is not an array!", i);
         delay(100);
@@ -256,6 +260,7 @@ const Config::ConstWrap Config::get(uint16_t i) const
 }
 
 Config::Wrap Config::add() {
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to add to a node that is not an array!");
         delay(100);
@@ -287,6 +292,7 @@ Config::Wrap Config::add() {
 
 bool Config::removeLast()
 {
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to remove the last element from a node that is not an array!");
         delay(100);
@@ -303,6 +309,7 @@ bool Config::removeLast()
 
 bool Config::removeAll()
 {
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to remove all from a node that is not an array!");
         delay(100);
@@ -318,6 +325,7 @@ bool Config::removeAll()
 
 bool Config::remove(size_t i)
 {
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to remove from a node that is not an array!");
         delay(100);
@@ -334,6 +342,7 @@ bool Config::remove(size_t i)
 
 ssize_t Config::count() const
 {
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to get count of a node that is not an array!");
         delay(100);
@@ -345,6 +354,7 @@ ssize_t Config::count() const
 
 std::vector<Config>::iterator Config::begin()
 {
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to get begin iterator of a node that is not an array!");
         delay(100);
@@ -355,6 +365,7 @@ std::vector<Config>::iterator Config::begin()
 
 std::vector<Config>::iterator Config::end()
 {
+    ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to get end iterator of a node that is not an array!");
         delay(100);
@@ -545,16 +556,19 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) const
 
 uint8_t Config::was_updated(uint8_t api_backend_flag)
 {
+    ASSERT_MAIN_THREAD();
     return (value.updated & api_backend_flag) | Config::apply_visitor(is_updated{api_backend_flag}, value);
 }
 
 void Config::clear_updated(uint8_t api_backend_flag)
 {
+    ASSERT_MAIN_THREAD();
     value.updated &= ~api_backend_flag;
     Config::apply_visitor(set_updated_false{api_backend_flag}, value);
 }
 
 void Config::set_updated(uint8_t api_backend_flag) {
+    ASSERT_MAIN_THREAD();
     value.updated |= api_backend_flag;
 }
 
@@ -579,6 +593,7 @@ void config_pre_init()
 
 template<typename T>
 static void shrinkToFit(typename T::Slot * &buf, size_t &buf_size) {
+    ASSERT_MAIN_THREAD();
     size_t highest = 0;
     for (size_t i = 0; i < buf_size; i++)
         if (!T::slotEmpty(i))
