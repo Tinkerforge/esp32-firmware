@@ -2,6 +2,10 @@
 
 #include "config/visitors.h"
 
+ConfigRoot::ConfigRoot(Config cfg) : Config(cfg), validator(nullptr) {}
+
+ConfigRoot::ConfigRoot(Config cfg, std::function<String(Config &)> validator) : Config(cfg), validator(validator) {}
+
 String ConfigRoot::update_from_file(File &file)
 {
     DynamicJsonDocument doc(this->json_size(false));

@@ -143,8 +143,8 @@ struct Config {
 
     struct ConfBool {
         bool value;
-        bool *getVal() { return &value; };
-        const bool *getVal() const { return &value; };
+        bool *getVal();
+        const bool *getVal() const;
 
         static constexpr const char *variantName = "ConfBool";
     };
@@ -245,10 +245,7 @@ struct Config {
     // a get<std::nullptr_t>() that returned nullptr because the variant
     // had another type and the same call that returned nullptr because
     // the variant has the std::nullptr_type and thus contains a nullptr.
-    static bool containsNull(const ConfUpdate *update)
-    {
-        return update->which() == 0;
-    }
+    static bool containsNull(const ConfUpdate *update);
 
     struct ConfUpdateArray {
         std::vector<ConfUpdate> elements;
@@ -280,7 +277,7 @@ struct Config {
         Tag tag = Tag::EMPTY;
         uint8_t updated;
         union Val {
-            Val() : e(Empty{}) {}
+            Val();
             Empty e;
             ConfString s;
             ConfFloat f;
@@ -290,135 +287,27 @@ struct Config {
             ConfArray a;
             ConfObject o;
             ConfUnion un;
-            ~Val() {}
+            ~Val();
         } val;
 
-        ConfVariant(ConfString s) : tag(Tag::STRING), updated(0xFF), val() {new(&val.s)  ConfString{s};}
-        ConfVariant(ConfFloat f)  : tag(Tag::FLOAT),  updated(0xFF), val() {new(&val.f)  ConfFloat{f};}
-        ConfVariant(ConfInt i)    : tag(Tag::INT),    updated(0xFF), val() {new(&val.i)  ConfInt{i};}
-        ConfVariant(ConfUint u)   : tag(Tag::UINT),   updated(0xFF), val() {new(&val.u)  ConfUint{u};}
-        ConfVariant(ConfBool b)   : tag(Tag::BOOL),   updated(0xFF), val() {new(&val.b)  ConfBool{b};}
-        ConfVariant(ConfArray a)  : tag(Tag::ARRAY),  updated(0xFF), val() {new(&val.a)  ConfArray{a};}
-        ConfVariant(ConfObject o) : tag(Tag::OBJECT), updated(0xFF), val() {new(&val.o)  ConfObject{o};}
-        ConfVariant(ConfUnion un) : tag(Tag::UNION),  updated(0xFF), val() {new(&val.un) ConfUnion{un};}
+        ConfVariant(ConfString s);
+        ConfVariant(ConfFloat f);
+        ConfVariant(ConfInt i);
+        ConfVariant(ConfUint u);
+        ConfVariant(ConfBool b);
+        ConfVariant(ConfArray a);
+        ConfVariant(ConfObject o);
+        ConfVariant(ConfUnion un);
 
-        ConfVariant() : tag(Tag::EMPTY), updated(0xFF), val() {}
+        ConfVariant();
 
-        ConfVariant(const ConfVariant &cpy) {
-            if (tag != Tag::EMPTY)
-                destroyUnionMember();
+        ConfVariant(const ConfVariant &cpy);
 
-            switch (cpy.tag) {
-                case ConfVariant::Tag::EMPTY:
-                    new(&val.e) Empty(cpy.val.e);
-                    break;
-                case ConfVariant::Tag::STRING:
-                    new(&val.s) ConfString(cpy.val.s);
-                    break;
-                case ConfVariant::Tag::FLOAT:
-                    new(&val.f) ConfFloat(cpy.val.f);
-                    break;
-                case ConfVariant::Tag::INT:
-                    new(&val.i) ConfInt(cpy.val.i);
-                    break;
-                case ConfVariant::Tag::UINT:
-                    new(&val.u) ConfUint(cpy.val.u);
-                    break;
-                case ConfVariant::Tag::BOOL:
-                    new(&val.b) ConfBool(cpy.val.b);
-                    break;
-                case ConfVariant::Tag::ARRAY:
-                    new(&val.a) ConfArray(cpy.val.a);
-                    break;
-                case ConfVariant::Tag::OBJECT:
-                    new(&val.o) ConfObject(cpy.val.o);
-                    break;
-                case ConfVariant::Tag::UNION:
-                    new(&val.un) ConfUnion(cpy.val.un);
-                    break;
-            }
-            this->tag = cpy.tag;
-            this->updated = cpy.updated;
-        }
+        ConfVariant &operator=(const ConfVariant &cpy);
 
-        ConfVariant &operator=(const ConfVariant &cpy) {
-            if (this == &cpy) {
-                return *this;
-            }
+        void destroyUnionMember();
 
-            if (tag != Tag::EMPTY)
-                destroyUnionMember();
-
-            switch (cpy.tag) {
-                case ConfVariant::Tag::EMPTY:
-                    new(&val.e) Empty(cpy.val.e);
-                    break;
-                case ConfVariant::Tag::STRING:
-                    new(&val.s) ConfString(cpy.val.s);
-                    break;
-                case ConfVariant::Tag::FLOAT:
-                    new(&val.f) ConfFloat(cpy.val.f);
-                    break;
-                case ConfVariant::Tag::INT:
-                    new(&val.i) ConfInt(cpy.val.i);
-                    break;
-                case ConfVariant::Tag::UINT:
-                    new(&val.u) ConfUint(cpy.val.u);
-                    break;
-                case ConfVariant::Tag::BOOL:
-                    new(&val.b) ConfBool(cpy.val.b);
-                    break;
-                case ConfVariant::Tag::ARRAY:
-                    new(&val.a) ConfArray(cpy.val.a);
-                    break;
-                case ConfVariant::Tag::OBJECT:
-                    new(&val.o) ConfObject(cpy.val.o);
-                    break;
-                case ConfVariant::Tag::UNION:
-                    new(&val.un) ConfUnion(cpy.val.un);
-                    break;
-            }
-            this->tag = cpy.tag;
-            this->updated = cpy.updated;
-
-            return *this;
-        }
-
-        void destroyUnionMember() {
-            switch (tag) {
-                case ConfVariant::Tag::EMPTY:
-                    val.e.~Empty();
-                    break;
-                case ConfVariant::Tag::STRING:
-                    val.s.~ConfString();
-                    break;
-                case ConfVariant::Tag::FLOAT:
-                    val.f.~ConfFloat();
-                    break;
-                case ConfVariant::Tag::INT:
-                    val.i.~ConfInt();
-                    break;
-                case ConfVariant::Tag::UINT:
-                    val.u.~ConfUint();
-                    break;
-                case ConfVariant::Tag::BOOL:
-                    val.b.~ConfBool();
-                    break;
-                case ConfVariant::Tag::ARRAY:
-                    val.a.~ConfArray();
-                    break;
-                case ConfVariant::Tag::OBJECT:
-                    val.o.~ConfObject();
-                    break;
-                case ConfVariant::Tag::UNION:
-                    val.un.~ConfUnion();
-                    break;
-            }
-        }
-
-        ~ConfVariant() {
-            destroyUnionMember();
-        }
+        ~ConfVariant();
     };
 
     template<typename T>
@@ -511,9 +400,7 @@ struct Config {
         return (int)value.tag == Config::type_id<T>();
     }
 
-    bool is_null() const {
-        return value.tag == ConfVariant::Tag::EMPTY;
-    }
+    bool is_null() const;
 
     static Config Str(const String &s,
                       uint16_t minChars,
@@ -587,23 +474,15 @@ public:
         public:
             Wrap(Config *_conf);
 
-            Config *operator->()
-            {
-                return conf;
-            }
+            Config *operator->();
 
-            explicit operator Config*(){return conf;}
+            explicit operator Config*();
 
             // Allowing to call begin and end directly on
             // the wrapper makes it easier to use
             // range-based for loops.
-            std::vector<Config>::iterator begin() {
-                return conf->begin();
-            }
-
-            std::vector<Config>::iterator end() {
-                return conf->end();
-            }
+            std::vector<Config>::iterator begin();
+            std::vector<Config>::iterator end();
 
         private:
             Config *conf;
@@ -615,12 +494,9 @@ public:
         public:
             ConstWrap(const Config *_conf);
 
-            const Config *operator->() const
-            {
-                return conf;
-            }
+            const Config *operator->() const;
 
-            explicit operator const Config*() const {return conf;}
+            explicit operator const Config*() const;
 
         private:
             const Config *conf;
@@ -796,13 +672,9 @@ struct ConfigRoot : public Config {
 public:
     ConfigRoot() = default;
 
-    ConfigRoot(Config cfg) : Config(cfg), validator(nullptr)
-    {
-    }
+    ConfigRoot(Config cfg);
 
-    ConfigRoot(Config cfg, std::function<String(Config &)> validator) : Config(cfg), validator(validator)
-    {
-    }
+    ConfigRoot(Config cfg, std::function<String(Config &)> validator);
 
     std::function<String(Config &)> validator;
     bool permit_null_updates = true;

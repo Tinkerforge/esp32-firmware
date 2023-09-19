@@ -56,6 +56,14 @@ size_t union_buf_size = 0;
 static ConfigRoot nullconf = Config{Config::ConfVariant{}};
 static ConfigRoot *confirmconf;
 
+bool Config::containsNull(const ConfUpdate *update) {
+    return update->which() == 0;
+}
+
+bool Config::is_null() const {
+    return value.tag == ConfVariant::Tag::EMPTY;
+}
+
 Config Config::Str(const String &s, uint16_t minChars, uint16_t maxChars)
 {
     if (boot_stage < BootStage::PRE_SETUP)
@@ -593,14 +601,4 @@ void config_post_setup() {
     shrinkToFit<Config::ConfArray>(array_buf, array_buf_size);
     shrinkToFit<Config::ConfObject>(object_buf, object_buf_size);
     shrinkToFit<Config::ConfUnion>(union_buf, union_buf_size);
-}
-
-Config::Wrap::Wrap(Config *_conf)
-{
-    conf = _conf;
-}
-
-Config::ConstWrap::ConstWrap(const Config *_conf)
-{
-    conf = _conf;
 }
