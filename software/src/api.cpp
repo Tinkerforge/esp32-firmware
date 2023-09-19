@@ -410,7 +410,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
 
     String result = "";
 
-    auto result = task_scheduler.await(
+    auto await_result = task_scheduler.await(
         [&result, reg, payload, len]() mutable {
             if (payload == nullptr && !reg.config->is_null()) {
                 result = "empty payload only allowed for null configs";
@@ -426,7 +426,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
             reg.callback(result);
         });
 
-    if (result == TaskScheduler::AwaitResult::Timeout) {
+    if (await_result == TaskScheduler::AwaitResult::Timeout) {
         return "Failed to execute command: Timeout reached.";
     }
 

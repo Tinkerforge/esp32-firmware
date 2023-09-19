@@ -267,5 +267,5 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t milli
 }
 
 TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, uint32_t millis_to_wait) {
-    return task_scheduler.await(task_scheduler.scheduleOnce(fn, 0), millis_to_wait);
+    return task_scheduler.await(task_scheduler.scheduleOnce(std::move(fn), 0), millis_to_wait);
 }

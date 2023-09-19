@@ -219,7 +219,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
         }
 
         String message;
-        auto result = task_scheduler.scheduleOnce([&message, i, bytes_written]() {
+        auto result = task_scheduler.await([&message, i, bytes_written]() {
             message = api.raw_commands[i].callback(recv_buf, bytes_written);
         }, 0);
         if (result == TaskScheduler::AwaitResult::Timeout)
