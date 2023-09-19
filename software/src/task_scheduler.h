@@ -97,7 +97,7 @@ public:
         Timeout,
         Error
     };
-    AwaitResult await(uint64_t task_id, uint32_t millis_to_wait);
+    AwaitResult await(uint64_t task_id, uint32_t millis_to_wait = 10000);
 
 private:
     std::mutex task_mutex;

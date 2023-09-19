@@ -251,8 +251,17 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t milli
         task->awaited_by = thisThread;
     }
 
-    if (ulTaskNotifyTake(true, pdMS_TO_TICKS(millis_to_wait)) == 0)
-        return TaskScheduler::AwaitResult::Timeout;
+    if (ulTaskNotifyTake(true, pdMS_TO_TICKS(millis_to_wait)) == 0) {
+        switch(this->cancel(task_id)) {
+            case TaskScheduler::CancelResult::WillBeCancelled:
+                esp_system_abort("Awaited task timed out and can't be cancelled. Giving up.");
+                return TaskScheduler::AwaitResult::Timeout;
+            case TaskScheduler::CancelResult::Cancelled:
+                return TaskScheduler::AwaitResult::Timeout;
+            case  TaskScheduler::CancelResult::NotFound:
+                return TaskScheduler::AwaitResult::Done;
+        }
+    }
 
     return TaskScheduler::AwaitResult::Done;
 }

@@ -183,7 +183,7 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
         auto tid = task_scheduler.scheduleOnce([&response, i](){
             response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
         }, 0);
-        if (task_scheduler.await(tid, 10000) == TaskScheduler::AwaitResult::Timeout)
+        if (task_scheduler.await(tid) == TaskScheduler::AwaitResult::Timeout)
             return req.send(500, "text/html", "Failed to get config. Task timed out.");
 
         return req.send(200, "application/json; charset=utf-8", response.c_str());
@@ -222,7 +222,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
         auto tid = task_scheduler.scheduleOnce([&message, i, bytes_written]() {
             message = api.raw_commands[i].callback(recv_buf, bytes_written);
         }, 0);
-        if (task_scheduler.await(tid, 10000) == TaskScheduler::AwaitResult::Timeout)
+        if (task_scheduler.await(tid) == TaskScheduler::AwaitResult::Timeout)
             return req.send(500, "text/html", "Failed to call raw command. Task timed out.");
 
         if (message == "") {
