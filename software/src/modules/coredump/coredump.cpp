@@ -22,6 +22,7 @@
 #include "build.h"
 #include "api.h"
 #include "tools.h"
+#include "task_scheduler.h"
 
 #include "LittleFS.h"
 
@@ -102,7 +103,10 @@ void Coredump::register_urls()
         if (esp_core_dump_image_check() == ESP_OK)
             return request.send(503, "text/plain", "Error while erasing core dump");
 
-        state.get("coredump_available")->updateBool(false);
+        task_scheduler.scheduleOnce([this](){
+                state.get("coredump_available")->updateBool(false);
+            }, 0);
+
         return request.send(200);
     });
 
