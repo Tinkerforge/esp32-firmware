@@ -86,8 +86,12 @@ void Debug::pre_setup()
         default: flash_mode = static_cast<int>(esp_flash_default_chip->read_mode);
     }
 
-    float psram_speed = benchmark_area(reinterpret_cast<uint8_t *>(0x3FB00000), 128*1024); // 128KiB inside the fourth MiB
-    float flash_speed = benchmark_area(&_text_start + 1024*1024, 128*1024); // 128KiB in the second MiB of code
+    float psram_speed = 0;
+#if defined(BOARD_HAS_PSRAM)
+    psram_speed = benchmark_area(reinterpret_cast<uint8_t *>(0x3FB00000), 128*1024); // 128KiB inside the fourth MiB
+#endif
+
+    float flash_speed = benchmark_area(&_text_start, 128*1024); // 128KiB at the beginning of the code
 
     state_fast = Config::Object({
         {"uptime",     Config::Uint32(0)},
