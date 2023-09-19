@@ -16,7 +16,7 @@ Config *Config::ConfArray::get(uint16_t i)
 {
     auto *val = this->getVal();
     if (i >= val->size()) {
-        logger.printfln("Config index %u out of range [%u; %u]!", i, this->getSlot()->minElements, this->getSlot()->maxElements);
+        logger.printfln("Config index %u out of bounds (vector size %u, minElements %u maxElements %u)!", i, val->size(), this->getSlot()->minElements, this->getSlot()->maxElements);
         delay(100);
         return nullptr;
     }
@@ -26,7 +26,7 @@ const Config *Config::ConfArray::get(uint16_t i) const
 {
     const auto *val = this->getVal();
     if (i >= val->size()) {
-        logger.printfln("Config index %u out of range [%u; %u]!", i, this->getSlot()->minElements, this->getSlot()->maxElements);
+        logger.printfln("Config index %u out of bounds (vector size %u, minElements %u maxElements %u)!", i, val->size(), this->getSlot()->minElements, this->getSlot()->maxElements);
         delay(100);
         return nullptr;
     }
