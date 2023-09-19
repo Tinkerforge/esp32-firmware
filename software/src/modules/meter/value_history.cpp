@@ -152,7 +152,7 @@ void ValueHistory::add_sample(float sample)
 #endif
 
     // start history task when first sample arrives. this adds the first sample to the
-    // history immediately to avoid and empty history for the first history period
+    // history immediately to avoid an empty history for the first history period
     if (live.used() == 1) {
         task_scheduler.scheduleWithFixedDelay([this, val_min](){
             METER_VALUE_HISTORY_VALUE_TYPE history_val;
