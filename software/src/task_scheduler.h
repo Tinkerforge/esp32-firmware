@@ -98,6 +98,7 @@ public:
         Error
     };
     AwaitResult await(uint64_t task_id, uint32_t millis_to_wait = 10000);
+    AwaitResult await(std::function<void(void)> &&fn, uint32_t millis_to_wait = 10000);
 
 private:
     std::mutex task_mutex;
