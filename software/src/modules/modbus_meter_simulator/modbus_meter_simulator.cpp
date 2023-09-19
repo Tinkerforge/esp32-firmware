@@ -247,7 +247,11 @@ void ModbusMeterSimulator::modbus_slave_read_input_registers_request_handler(uin
         // Don't trust all_values or all_values position. get() returns nullptr when OOB.
         Config *val = static_cast<Config *>(meter.all_values.get(all_values_position));
         if (!val) {
-            logger.printfln("modbus_meter_simulator: Don't have a value for input register address %u", starting_address);
+            if (meter.all_values.count() == 0) {
+                logger.printfln("modbus_meter_simulator: Don't have any values yet. Ignore the previous config index out of range message.");
+            } else {
+                logger.printfln("modbus_meter_simulator: Don't have a value for input register address %u at index %u", starting_address, all_values_position);
+            }
             return;
         }
         float_val = val->asFloat();
