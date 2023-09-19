@@ -41,8 +41,5 @@ private:
     void handle_mqtt_values(const JsonDocument &doc);
     void handle_mqtt_all_values(const JsonDocument &doc);
 
-    bool enabled = false;
     uint8_t mqtt_meter_type = 0;
-    String source_meter_values_topic;
-    String source_meter_all_values_topic;
 };
