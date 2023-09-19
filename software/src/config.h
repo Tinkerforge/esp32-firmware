@@ -651,10 +651,6 @@ public:
     std::vector<Config>::iterator begin();
     std::vector<Config>::iterator end();
 
-    void swapArray(Config *other) {
-        this->asArray().swap(other->asArray());
-    }
-
     template<typename T>
     T getTag() const {
         Config::check_enum_template_type<T>();
