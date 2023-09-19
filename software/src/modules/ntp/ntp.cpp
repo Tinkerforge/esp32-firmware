@@ -56,14 +56,14 @@ static void ntp_sync_cb(struct timeval *t)
     }, 0);
 
 #if MODULE_RTC_AVAILABLE()
-    if (api.hasFeature("rtc"))
-    {
-        task_scheduler.scheduleOnce([]() {
-            timeval time;
-            gettimeofday(&time, nullptr);
-            rtc.set_time(time);
-        }, 0);
-    }
+    task_scheduler.scheduleOnce([]() {
+        if (!api.hasFeature("rtc"))
+            return;
+
+        timeval time;
+        gettimeofday(&time, nullptr);
+        rtc.set_time(time);
+    }, 0);
 #endif
 }
 

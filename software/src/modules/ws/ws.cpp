@@ -41,12 +41,18 @@ void WS::register_urls()
 {
     web_sockets.onConnect([this](WebSocketsClient client) {
         CoolString to_send;
-        for (auto &reg : api.states) {
-            to_send += "{\"topic\":\"" + reg.path + "\",\"payload\":" + reg.config->to_string_except(reg.keys_to_censor) + "}\n";
+        auto tid = task_scheduler.scheduleOnce([&to_send](){
+            for (auto &reg : api.states) {
+                to_send += "{\"topic\":\"" + reg.path + "\",\"payload\":" + reg.config->to_string_except(reg.keys_to_censor) + "}\n";
+            }
+        }, 0);
+
+        if (task_scheduler.await(tid) == TaskScheduler::AwaitResult::Done) {
+            size_t len;
+            char *p = to_send.releaseOwnership(&len);
+            client.sendOwned(p, len);
         }
-        size_t len;
-        char *p = to_send.releaseOwnership(&len);
-        client.sendOwned(p, len);
+
         for (auto &callback : on_connect_callbacks) {
             callback(client);
         }

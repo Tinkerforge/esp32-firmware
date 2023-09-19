@@ -116,53 +116,59 @@ void Ethernet::setup()
     state.get("connection_state")->updateUint((uint)EthernetState::NOT_CONNECTED);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Ethernet started");
+            task_scheduler.scheduleOnce([this](){
+                logger.printfln("Ethernet started");
 #if MODULE_NETWORK_AVAILABLE()
-            ETH.setHostname(network.config.get("hostname")->asEphemeralCStr());
+                ETH.setHostname(network.config.get("hostname")->asEphemeralCStr());
 #else
-            ETH.setHostname((String(BUILD_HOST_PREFIX) + "-" + local_uid_str).c_str());
+                ETH.setHostname((String(BUILD_HOST_PREFIX) + "-" + local_uid_str).c_str());
 #endif
-            state.get("connection_state")->updateUint((uint)EthernetState::NOT_CONNECTED);
+                state.get("connection_state")->updateUint((uint)EthernetState::NOT_CONNECTED);
+            }, 0);
         },
         ARDUINO_EVENT_ETH_START);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            uint32_t link_speed = ETH.linkSpeed();
-            bool full_duplex    = ETH.fullDuplex();
-            logger.printfln("Ethernet connected: %u Mbps %s Duplex, MAC: %s", link_speed, full_duplex ? "Full" : "Half", ETH.macAddress().c_str());
-            state.get("connection_state")->updateUint((uint)EthernetState::CONNECTING);
-            state.get("link_speed" )->updateUint(link_speed);
-            state.get("full_duplex")->updateBool(full_duplex);
+            task_scheduler.scheduleOnce([this](){
+                uint32_t link_speed = ETH.linkSpeed();
+                bool full_duplex    = ETH.fullDuplex();
+                logger.printfln("Ethernet connected: %u Mbps %s Duplex, MAC: %s", link_speed, full_duplex ? "Full" : "Half", ETH.macAddress().c_str());
+                state.get("connection_state")->updateUint((uint)EthernetState::CONNECTING);
+                state.get("link_speed" )->updateUint(link_speed);
+                state.get("full_duplex")->updateBool(full_duplex);
 
-            IPAddress ip, subnet, gateway, dns, dns2;
-            ip.fromString(config_in_use.get("ip")->asEphemeralCStr());
-            subnet.fromString(config_in_use.get("subnet")->asEphemeralCStr());
-            gateway.fromString(config_in_use.get("gateway")->asEphemeralCStr());
-            dns.fromString(config_in_use.get("dns")->asEphemeralCStr());
-            dns2.fromString(config_in_use.get("dns2")->asEphemeralCStr());
+                IPAddress ip, subnet, gateway, dns, dns2;
+                ip.fromString(config_in_use.get("ip")->asEphemeralCStr());
+                subnet.fromString(config_in_use.get("subnet")->asEphemeralCStr());
+                gateway.fromString(config_in_use.get("gateway")->asEphemeralCStr());
+                dns.fromString(config_in_use.get("dns")->asEphemeralCStr());
+                dns2.fromString(config_in_use.get("dns2")->asEphemeralCStr());
 
-            if (link_speed < 100)
-                delay(40); // 10MBit usually needs at least 19ms extra. Give it 40ms to be safe.
+                if (link_speed < 100)
+                    delay(40); // 10MBit usually needs at least 19ms extra. Give it 40ms to be safe.
 
-            if (ip != 0) {
-                ETH.config(ip, gateway, subnet, dns, dns2);
-            } else {
-                ETH.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
-            }
+                if (ip != 0) {
+                    ETH.config(ip, gateway, subnet, dns, dns2);
+                } else {
+                    ETH.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
+                }
+            }, 0);
         },
         ARDUINO_EVENT_ETH_CONNECTED);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            auto ip = ETH.localIP().toString();
-            auto subnet = ETH.subnetMask();
-            logger.printfln("Ethernet got IP address: %s/%u", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet));
-            state.get("connection_state")->updateUint((uint)EthernetState::CONNECTED);
-            state.get("ip")->updateString(ip);
-            state.get("subnet")->updateString(subnet.toString());
+            task_scheduler.scheduleOnce([this](){
+                auto ip = ETH.localIP().toString();
+                auto subnet = ETH.subnetMask();
+                logger.printfln("Ethernet got IP address: %s/%u", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet));
+                state.get("connection_state")->updateUint((uint)EthernetState::CONNECTED);
+                state.get("ip")->updateString(ip);
+                state.get("subnet")->updateString(subnet.toString());
 
-            was_connected = true;
-            last_connected = millis();
-            state.get("connection_start")->updateUint(last_connected);
+                was_connected = true;
+                last_connected = millis();
+                state.get("connection_start")->updateUint(last_connected);
+            }, 0);
         },
         ARDUINO_EVENT_ETH_GOT_IP);
 
@@ -172,29 +178,35 @@ void Ethernet::setup()
         ARDUINO_EVENT_ETH_GOT_IP6);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Ethernet lost IP address.");
-            state.get("connection_state")->updateUint((uint)EthernetState::CONNECTING);
+            task_scheduler.scheduleOnce([this](){
+                logger.printfln("Ethernet lost IP address.");
+                state.get("connection_state")->updateUint((uint)EthernetState::CONNECTING);
 
-            state.get("ip")->updateString("0.0.0.0");
-            state.get("subnet")->updateString("0.0.0.0");
-            this->print_con_duration();
+                state.get("ip")->updateString("0.0.0.0");
+                state.get("subnet")->updateString("0.0.0.0");
+                this->print_con_duration();
+            }, 0);
         },
         ARDUINO_EVENT_ETH_LOST_IP);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Ethernet disconnected");
-            state.get("connection_state")->updateUint((uint)EthernetState::NOT_CONNECTED);
+            task_scheduler.scheduleOnce([this](){
+                logger.printfln("Ethernet disconnected");
+                state.get("connection_state")->updateUint((uint)EthernetState::NOT_CONNECTED);
 
-            state.get("ip")->updateString("0.0.0.0");
-            state.get("subnet")->updateString("0.0.0.0");
-            this->print_con_duration();
+                state.get("ip")->updateString("0.0.0.0");
+                state.get("subnet")->updateString("0.0.0.0");
+                this->print_con_duration();
+            }, 0);
         },
         ARDUINO_EVENT_ETH_DISCONNECTED);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-           logger.printfln("Ethernet stopped");
-           state.get("connection_state")->updateUint((uint)EthernetState::NOT_CONNECTED);
-            this->print_con_duration();
+            task_scheduler.scheduleOnce([this](){
+                logger.printfln("Ethernet stopped");
+                state.get("connection_state")->updateUint((uint)EthernetState::NOT_CONNECTED);
+                this->print_con_duration();
+            }, 0);
         },
         ARDUINO_EVENT_ETH_STOP);
 
