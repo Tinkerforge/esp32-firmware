@@ -131,25 +131,25 @@ Config::ConfVariant::~ConfVariant()  {
 }
 
 const char * Config::ConfVariant::getVariantName() const {
-    switch (v.tag) {
+    switch (tag) {
         case ConfVariant::Tag::EMPTY:
             return "Empty";
         case ConfVariant::Tag::STRING:
-            return v.val.s.variantName;
+            return val.s.variantName;
         case ConfVariant::Tag::FLOAT:
-            return v.val.f.variantName;
+            return val.f.variantName;
         case ConfVariant::Tag::INT:
-            return v.val.i.variantName;
+            return val.i.variantName;
         case ConfVariant::Tag::UINT:
-            return v.val.u.variantName;
+            return val.u.variantName;
         case ConfVariant::Tag::BOOL:
-            return v.val.b.variantName;
+            return val.b.variantName;
         case ConfVariant::Tag::ARRAY:
-            return v.val.a.variantName;
+            return val.a.variantName;
         case ConfVariant::Tag::OBJECT:
-            return v.val.o.variantName;
+            return val.o.variantName;
         case ConfVariant::Tag::UNION:
-            return v.val.un.variantName;
+            return val.un.variantName;
     }
 #ifdef __GNUC__
     __builtin_unreachable();
