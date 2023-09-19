@@ -137,8 +137,6 @@ public:
     ConfigRoot features;
     ConfigRoot version;
 
-    TaskHandle_t mainTaskHandle;
-
     uint8_t state_update_counter = 0;
 
 private:

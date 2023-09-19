@@ -82,6 +82,8 @@ ConfigRoot modules;
 
 bool firmware_update_allowed = true;
 
+TaskHandle_t mainTaskHandle;
+
 static bool is_safari(const String &user_agent) {
     return user_agent.indexOf("Safari/") >= 0 &&
            user_agent.indexOf("Version/") >= 0 &&
@@ -152,6 +154,7 @@ static void register_default_urls(void) {
 }
 
 void setup(void) {
+    mainTaskHandle = xTaskGetCurrentTaskHandle();
     boot_stage = BootStage::PRE_INIT;
     Serial.begin(BUILD_MONITOR_SPEED);
 

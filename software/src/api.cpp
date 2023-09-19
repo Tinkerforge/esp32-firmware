@@ -29,6 +29,7 @@
 #include "task_scheduler.h"
 
 extern TF_HAL hal;
+extern TaskHandle_t mainTaskHandle;
 
 // Global definition here to match the declaration in api.h.
 API api;
@@ -39,8 +40,6 @@ API::API() {
 
 void API::pre_setup()
 {
-    mainTaskHandle = xTaskGetCurrentTaskHandle();
-
     features = Config::Array(
         {},
         new Config{Config::Str("", 0, 32)},
@@ -210,7 +209,7 @@ void API::addRawCommand(const String &path, std::function<String(char *, size_t)
 }
 
 void API::callResponse(ResponseRegistration &reg, char *payload, size_t len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id) {
-    if (this->mainTaskHandle != xTaskGetCurrentTaskHandle()) {
+    if (mainTaskHandle != xTaskGetCurrentTaskHandle()) {
         logger.printfln("Don't use API::callResponse in non-main thread!");
         return;
     }
@@ -405,7 +404,7 @@ size_t API::registerBackend(IAPIBackend *backend)
 }
 
 String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
-    if (this->mainTaskHandle == xTaskGetCurrentTaskHandle()) {
+    if (mainTaskHandle == xTaskGetCurrentTaskHandle()) {
         return "Use ConfUpdate overload of callCommand in main thread!";
     }
 
@@ -437,7 +436,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
 }
 
 void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(String)> done_cb) {
-    if (this->mainTaskHandle == xTaskGetCurrentTaskHandle()) {
+    if (mainTaskHandle == xTaskGetCurrentTaskHandle()) {
         done_cb("callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!");
         return;
     }
@@ -472,7 +471,7 @@ void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t
 
 String API::callCommand(const char *path, Config::ConfUpdate payload)
 {
-    if (this->mainTaskHandle != xTaskGetCurrentTaskHandle()) {
+    if (mainTaskHandle != xTaskGetCurrentTaskHandle()) {
         return "Use char *, size_t overload of callCommand in non-main thread!";
     }
 
