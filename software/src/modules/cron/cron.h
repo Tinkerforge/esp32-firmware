@@ -49,7 +49,7 @@ public:
     void register_action(CronActionID id, Config cfg, ActionCb callback);
     void register_trigger(CronTriggerID id, Config cfg);
 
-    bool trigger_action(CronTriggerID number, void *data, bool (*cb)(Config *, void *));
+    bool trigger_action(CronTriggerID number, void *data, std::function<bool(Config *, void *)> cb);
     bool is_trigger_active(CronTriggerID number);
 
     ConfigVec get_configured_triggers(CronTriggerID number);

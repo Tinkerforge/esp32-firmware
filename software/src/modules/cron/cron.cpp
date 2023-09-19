@@ -90,7 +90,7 @@ void Cron::register_trigger(CronTriggerID id, Config cfg) {
     trigger_vec.push_back({id, cfg});
 }
 
-bool Cron::trigger_action(CronTriggerID number, void *data, bool(*cb)(Config *,void *)) {
+bool Cron::trigger_action(CronTriggerID number, void *data, std::function<bool(Config *, void *)> cb) {
     bool triggered = false;
     for (auto &conf: config.get("tasks")) {
         if (conf.get("trigger")->getTag<CronTriggerID>() == number && cb((Config *)conf.get("trigger"), data)) {
