@@ -518,7 +518,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
         return (
             <SubPage>
-                <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     {!energyManagerMode || warpUltimateMode ?
                         charge_manager_mode
                     :

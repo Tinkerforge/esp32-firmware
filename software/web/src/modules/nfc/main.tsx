@@ -120,7 +120,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
 
         return (
             <SubPage>
-                <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <div class="mb-3">
                         <Table
                             tableTill="md"

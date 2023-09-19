@@ -63,7 +63,7 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
 
         return (
             <SubPage>
-                <ConfigForm id="proxy_config_form" title={__("proxy.content.proxy")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="proxy_config_form" title={__("proxy.content.proxy")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("proxy.content.auth_secret")} label_muted={__("proxy.content.auth_secret_muted")}>
                         <InputPassword maxLength={64}
                                        value={state.authentication_secret}

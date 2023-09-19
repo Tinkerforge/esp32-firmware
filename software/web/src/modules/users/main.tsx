@@ -347,7 +347,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
         return (
             <SubPage>
-                <ConfigForm id="users_config_form" title={__("users.content.users")} isModified={this.isModified()} onSave={async () =>{this.save();}}
+                <ConfigForm id="users_config_form" title={__("users.content.users")} isModified={this.isModified()} onSave={this.save}
                     onReset={this.reset}
                     onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("users.content.enable_authentication")}>
