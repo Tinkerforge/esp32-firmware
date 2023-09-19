@@ -308,6 +308,8 @@ struct Config {
         void destroyUnionMember();
 
         ~ConfVariant();
+
+        const char *getVariantName() const;
     };
 
     template<typename T>

@@ -129,3 +129,29 @@ void Config::ConfVariant::destroyUnionMember() {
 Config::ConfVariant::~ConfVariant()  {
     destroyUnionMember();
 }
+
+const char * Config::ConfVariant::getVariantName() const {
+    switch (v.tag) {
+        case ConfVariant::Tag::EMPTY:
+            return "Empty";
+        case ConfVariant::Tag::STRING:
+            return v.val.s.variantName;
+        case ConfVariant::Tag::FLOAT:
+            return v.val.f.variantName;
+        case ConfVariant::Tag::INT:
+            return v.val.i.variantName;
+        case ConfVariant::Tag::UINT:
+            return v.val.u.variantName;
+        case ConfVariant::Tag::BOOL:
+            return v.val.b.variantName;
+        case ConfVariant::Tag::ARRAY:
+            return v.val.a.variantName;
+        case ConfVariant::Tag::OBJECT:
+            return v.val.o.variantName;
+        case ConfVariant::Tag::UNION:
+            return v.val.un.variantName;
+    }
+#ifdef __GNUC__
+    __builtin_unreachable();
+#endif
+}
