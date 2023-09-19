@@ -544,7 +544,10 @@ private:
     template<typename ConfigT>
     ConfigT *get() {
         if (!this->is<ConfigT>()) {
-            logger.printfln("get: Config has wrong type. This is %s, requested is %s", this->to_string().c_str(), ConfigT::variantName);
+            logger.printfln("get: Config has wrong type. This is %s, requested is %s", this->value.getVariantName(), ConfigT::variantName);
+#ifdef DEBUG_FS_ENABLE
+            logger.printfln("Content is %s", this->to_string().c_str());
+#endif
             delay(100);
             return nullptr;
         }
@@ -555,7 +558,10 @@ private:
     template<typename ConfigT>
     const ConfigT *get() const {
         if (!this->is<ConfigT>()) {
-            logger.printfln("get: Config has wrong type. This is %s, requested is %s", this->to_string().c_str(), ConfigT::variantName);
+            logger.printfln("get: Config has wrong type. This is %s, requested is %s", this->value.getVariantName(), ConfigT::variantName);
+#ifdef DEBUG_FS_ENABLE
+            logger.printfln("Content is %s", this->to_string().c_str());
+#endif
             delay(100);
             return nullptr;
         }
@@ -582,7 +588,10 @@ public:
         } else if (this->is<ConfInt>()) {
             return (T) this->asInt();
         } else {
-            logger.printfln("asEnum: Config has wrong type. This is %s, (not a ConfInt or ConfUint)", this->to_string().c_str());
+            logger.printfln("asEnum: Config has wrong type. This is %s, (not a ConfInt or ConfUint)", this->value.getVariantName());
+#ifdef DEBUG_FS_ENABLE
+            logger.printfln("Content is %s", this->to_string().c_str());
+#endif
             delay(100);
             return (T) this->asUint();
         }
@@ -597,9 +606,13 @@ private:
     const std::vector<Config> &asArray() const;
 
     template<typename T, typename ConfigT>
-    bool update_value(T value) {
+    bool update_value(T value, const char *value_type) {
         if (!this->is<ConfigT>()) {
-            logger.printfln("update_value: Config has wrong type. This is %s. new value is %s", this->to_string().c_str(), String(value).c_str());
+            logger.printfln("update_value: Config has wrong type. This is a %s. new value is a %s", this->value.getVariantName(), value_type);
+#ifdef DEBUG_FS_ENABLE
+            logger.printfln("Content is %s", this->to_string().c_str());
+            logger.printfln("value is is %s", String(value).c_str());
+#endif
             delay(100);
             return false;
         }

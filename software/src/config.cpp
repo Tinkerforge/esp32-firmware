@@ -410,27 +410,27 @@ const std::vector<Config> &Config::asArray() const
 
 bool Config::updateString(const String &value)
 {
-    return update_value<String, ConfString>(value);
+    return update_value<String, ConfString>(value, "String");
 }
 
 bool Config::updateInt(int32_t value)
 {
-    return update_value<int32_t, ConfInt>(value);
+    return update_value<int32_t, ConfInt>(value, "int32_t");
 }
 
 bool Config::updateUint(uint32_t value)
 {
-    return update_value<uint32_t, ConfUint>(value);
+    return update_value<uint32_t, ConfUint>(value, "uint32_t");
 }
 
 bool Config::updateFloat(float value)
 {
-    return update_value<float, ConfFloat>(value);
+    return update_value<float, ConfFloat>(value, "float");
 }
 
 bool Config::updateBool(bool value)
 {
-    return update_value<bool, ConfBool>(value);
+    return update_value<bool, ConfBool>(value, "bool");
 }
 
 size_t Config::fillFloatArray(float *arr, size_t elements)
