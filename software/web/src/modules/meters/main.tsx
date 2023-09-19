@@ -28,6 +28,7 @@ import { PageHeader } from "../../ts/components/page_header";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
+import { ConfigComponent } from "../../ts/components/config_component";
 import { OutputFloat } from "../../ts/components/output_float";
 import uPlot from 'uplot';
 import { SubPage } from "../../ts/components/sub_page";
@@ -576,7 +577,7 @@ function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
     return a.slice(-tail);
 }
 
-export class Meters extends Component<MetersProps, MetersState> {
+export class Meters extends ConfigComponent<'meters/config', MetersProps, MetersState> {
     live_data: CachedData = {timestamps: [], samples: []};
     pending_live_data: CachedData;
     history_data: CachedData = {timestamps: [], samples: []};
@@ -587,7 +588,10 @@ export class Meters extends Component<MetersProps, MetersState> {
     values: {[meter_slot: number]: Readonly<number[]>} = {};
 
     constructor(props: MetersProps) {
-        super(props);
+        super('meters/config',
+              __("meters.script.save_failed"),
+              __("meters.script.reboot_content_changed"),
+              props);
 
         this.status_ref = props.status_ref;
 
@@ -844,10 +848,10 @@ export class Meters extends Component<MetersProps, MetersState> {
                 values: [this.history_data.timestamps],
             };
 
-            if (this.history_data.samples[this.status_ref.current.meter_slot].length > 0) {
-                status_data.keys.push('meter_' + this.status_ref.current.meter_slot);
-                status_data.names.push('Meter #' + this.status_ref.current.meter_slot); // FIXME: use meter display name
-                status_data.values.push(this.history_data.samples[this.status_ref.current.meter_slot]);
+            if (this.history_data.samples[this.state.meter_slot_status].length > 0) {
+                status_data.keys.push('meter_' + this.state.meter_slot_status);
+                status_data.names.push('Meter #' + this.state.meter_slot_status); // FIXME: use meter display name
+                status_data.values.push(this.history_data.samples[this.state.meter_slot_status]);
             }
 
             this.status_ref.current.uplot_wrapper_ref.current.set_data(status_data);
@@ -918,11 +922,28 @@ export class Meters extends Component<MetersProps, MetersState> {
     }
 }
 
-export class MetersStatus extends Component<{}, {}> {
-    uplot_wrapper_ref = createRef();
-    meter_slot: number = 0; // FIXME: make this configurable
+interface MeterStatusState {
+    meter_slot: number
+}
 
-    render(props: {}, state: {}) {
+export class MetersStatus extends Component<{}, MeterStatusState> {
+    uplot_wrapper_ref = createRef();
+
+    constructor() {
+        super();
+
+        this.state = {
+            meter_slot: 0,
+        } as any;
+
+        util.addApiEventListener("meters/config", () => {
+            let config = API.get("meters/config");
+
+            this.setState({meter_slot: config.meter_slot_status});
+        });
+    }
+
+    render(props: {}, state: MeterStatusState) {
         // Don't check util.render_allowed() here.
         // We can receive graph data points with the first web socket packet and
         // want to push them into the uplot graph immediately.
@@ -932,8 +953,8 @@ export class MetersStatus extends Component<{}, {}> {
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
-        let value_ids = API.get_maybe(`meters/${this.meter_slot}/value_ids`);
-        let values = API.get_maybe(`meters/${this.meter_slot}/values`);
+        let value_ids = API.get_maybe(`meters/${state.meter_slot}/value_ids`);
+        let values = API.get_maybe(`meters/${state.meter_slot}/values`);
         let power = 0;
 
         if (value_ids && values.length > 0 && values && values.length > 0) {
@@ -961,7 +982,7 @@ export class MetersStatus extends Component<{}, {}> {
                                       y_max={1500} />
                     </div>
                 </FormRow>
-                <FormRow label={__("meters.status.current_power")} label_muted={`Meter #${this.meter_slot}`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("meters.status.current_power")} label_muted={`Meter #${state.meter_slot}`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                 </FormRow>
             </>

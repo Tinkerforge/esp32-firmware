@@ -17,7 +17,9 @@
         },
         "script": {
             "time": "Time of day",
-            "power": "Power"
+            "power": "Power",
+            "save_failed": "Failed to save the energy meter settings.",
+            "reboot_content_changed": "energy meter settings"
         }
     }
 }

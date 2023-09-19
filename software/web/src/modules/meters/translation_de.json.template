@@ -17,7 +17,9 @@
         },
         "script": {
             "time": "Uhrzeit",
-            "power": "Leistung"
+            "power": "Leistung",
+            "save_failed": "Speichern der Stromzähler-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "Stromzähler-Einstellungen"
         }
     }
 }

@@ -46,6 +46,10 @@ static void init_uint32_array(uint32_t *arr, size_t len, uint32_t val)
 
 void Meters::pre_setup()
 {
+    config = ConfigRoot(Config::Object({
+        {"meter_slot_status", Config::Uint(0, 0, METERS_SLOTS - 1)}
+    }));
+
     for (MeterSlot &meter_slot : meter_slots) {
         meter_slot.value_ids = Config::Array({},
             get_config_uint_max_prototype(),
@@ -68,6 +72,9 @@ void Meters::pre_setup()
 
 void Meters::setup()
 {
+    api.restorePersistentConfig("meters/config", &config);
+    config_in_use = config;
+
     generators.shrink_to_fit();
 
     // Create config prototypes, depending on available generators.
@@ -241,6 +248,8 @@ void Meters::setup()
 
 void Meters::register_urls()
 {
+    api.addPersistentConfig("meters/config", &config, {}, 1000);
+
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
         MeterSlot &meter_slot = meter_slots[slot];
 
@@ -383,14 +392,14 @@ MeterGenerator *Meters::get_generator_for_class(MeterClassID meter_class)
     return get_generator_for_class(MeterClassID::None);
 }
 
-IMeter *Meters::new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *config, Config *errors)
+IMeter *Meters::new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *config_, Config *errors)
 {
     MeterGenerator *generator = get_generator_for_class(meter_class);
 
     if (!generator)
         return nullptr;
 
-    return generator->new_meter(slot, state, config, errors);
+    return generator->new_meter(slot, state, config_, errors);
 }
 
 IMeter *Meters::get_meter(uint32_t slot)
