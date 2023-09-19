@@ -60,13 +60,13 @@ void ModbusTcpMeter::pre_setup()
 {
     Config *config_element = new Config{Config::Object({
         {"enable", Config::Bool(false)},
-        {"display_name", Config::Str("", 0, 32)},
+        //{"display_name", Config::Str("", 0, 32)},
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
         {"register_set", Config::Array(
             {},
             new Config{Config::Object({
-                {"role", Config::Uint16(0)},
+                //{"role", Config::Uint16(0)},
                 {"register", Config::Uint32(0)},
                 {"register_type", Config::Uint8(0)}, // input, holding, coil, discrete
                 {"value_type", Config::Uint8(0)},    // uint16, int16, uint32, int32, etc...
@@ -163,7 +163,7 @@ void ModbusTcpMeter::zero_results()
     }
 }
 
-void ModbusTcpMeter::read_register(const char *host, Config *register_config, uint16_t *result)
+void ModbusTcpMeter::read_register(const char *host, const Config *register_config, uint16_t *result)
 {
     // Set in_progress. We only read one register at a time
     in_progress = true;
@@ -173,7 +173,7 @@ void ModbusTcpMeter::read_register(const char *host, Config *register_config, ui
     const uint8_t  value_type       = register_config->get("value_type")->asUint();
     const uint8_t  register_length  = get_length_from_type(value_type);
 
-    logger.printfln("Read register host %s, type %d, address %d, length %d", host, register_type, register_address, register_length);
+    logger.printfln("Read register host %s, type %u, address %u, length %u", host, register_type, register_address, register_length);
 
     zero_results();
     switch(register_type) {
@@ -241,7 +241,11 @@ void ModbusTcpMeter::read_register(const char *host, Config *register_config, ui
 void ModbusTcpMeter::loop()
 {
     if(!in_progress && deadline_elapsed(read_deadline + 1000)) {
-        const char *host = config_in_use.get(current_meter)->get("host")->asEphemeralCStr();
+        if (config_in_use.count() == 0)
+            return;
+
+        const Config *meter = static_cast<const Config *>(config_in_use.get(current_meter));
+        const char *host = meter->get("host")->asEphemeralCStr();
 
         // Ignore meter with empty host
         if((host == nullptr) || (strlen(host) == 0)) {
@@ -250,7 +254,7 @@ void ModbusTcpMeter::loop()
         }
 
         if(mb.isConnected(host)) { // Check if connection to Modbus slave is established
-            Config *register_config = (Config*)config_in_use.get(current_meter)->get("register_set")->get(current_register);
+            const Config *register_config = (const Config*)meter->get("register_set")->get(current_register);
             read_register(host, register_config, results[current_meter][current_register]);
             next_register();
         } else {
