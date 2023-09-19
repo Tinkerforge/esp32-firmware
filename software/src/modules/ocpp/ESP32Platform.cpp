@@ -51,10 +51,13 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         // - data->data_ptr is only set in tf_websocket_client_dispatch_event to the const char *data param
         // - const char *data is either null or (in tf_websocket_client_recv) set to client->rx_buffer
         // - client->rx_buffer is char * (so not const)
-        recv_cb(const_cast<char *>(data->data_ptr), data->data_len, recv_cb_userdata);
+        task_scheduler.await([data](){
+            recv_cb(const_cast<char *>(data->data_ptr), data->data_len, recv_cb_userdata);
+        });
         break;
     case WEBSOCKET_EVENT_PONG:
-        pong_cb(pong_cb_userdata);
+        task_scheduler.await([](){pong_cb(pong_cb_userdata);});
+        break;
     case WEBSOCKET_EVENT_ERROR:
         break;
     }
