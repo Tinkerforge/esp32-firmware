@@ -54,7 +54,7 @@ export class Debug extends Component
                     <OutputFloat value={state_fast.cpu_usage * 100} digits={0} scale={0} unit="%"/>
                 </FormRow>
 
-                <FormSeparator heading={__("debug.content.memory_header")} first={true} />
+                <FormSeparator heading={__("debug.content.memory_header")} first={false} />
 
                 <FormRow label="">
                     <div class="row">
@@ -161,7 +161,7 @@ export class Debug extends Component
                     </div>
                 </FormRow>
 
-                <FormSeparator heading={__("debug.content.heap_integrity_header")} first={true} />
+                <FormSeparator heading={__("debug.content.heap_integrity_header")} first={false} />
 
                 <FormRow label={__("debug.content.heap_integrity_result")}>
                     <IndicatorGroup
@@ -183,7 +183,39 @@ export class Debug extends Component
                     </div>
                 </FormRow>
 
-                <FormSeparator heading={__("debug.content.websocket_header")} first={true} />
+                <FormSeparator heading={__("debug.content.memory_speed_header")} first={false} />
+
+                <FormRow label="">
+                    <div class="row">
+                    <div class="mb-1 col-12 col-sm-6">
+                            <p class="mb-0 form-label text-center">{__("debug.content.flash")}</p>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-6">
+                            <p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>
+                        </div>
+                    </div>
+                </FormRow>
+
+                <FormRow label={__("debug.content.speed_benchmark")}>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-6">
+                            <OutputFloat value={state_slow.flash_benchmark} digits={1} scale={0} unit="MiB/s"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-6">
+                            <OutputFloat value={state_slow.psram_benchmark} digits={1} scale={0} unit="MiB/s"/>
+                        </div>
+                    </div>
+                </FormRow>
+
+                <FormRow label={__("debug.content.memory_mode")} label_muted={__("debug.content.memory_mode_muted")}>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-6">
+                            <InputText value={state_slow.flash_mode}/>
+                        </div>
+                    </div>
+                </FormRow>
+
+                <FormSeparator heading={__("debug.content.websocket_header")} first={false} />
 
                 <FormRow label={__("debug.content.websocket_connection")} label_muted={__("debug.content.websocket_connection_muted")}>
                     <div class="input-group pb-2">

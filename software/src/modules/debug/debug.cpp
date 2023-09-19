@@ -28,6 +28,38 @@
 
 #include "gcc_warnings.h"
 
+#define BENCHMARK_BLOCKSIZE 32768
+
+static float benchmark_area(uint8_t *start_address, size_t max_length)
+{
+    uint8_t *buffer = static_cast<uint8_t *>(heap_caps_malloc(BENCHMARK_BLOCKSIZE, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    if (!buffer) {
+        logger.printfln("debug: Can't malloc %i bytes for benchmark buffer.", BENCHMARK_BLOCKSIZE);
+        return 0;
+    }
+
+    size_t blocks = max_length / BENCHMARK_BLOCKSIZE;
+    size_t test_length = blocks * BENCHMARK_BLOCKSIZE;
+
+    micros_t start_time = now_us();
+    while (blocks > 0) {
+        memcpy(buffer, start_address, BENCHMARK_BLOCKSIZE);
+        start_address += BENCHMARK_BLOCKSIZE;
+        blocks--;
+    }
+    micros_t runtime = now_us() - start_time;
+    uint32_t runtime32 = static_cast<uint32_t>(static_cast<int64_t>(runtime));
+    float runtime_f = static_cast<float>(runtime32);
+    float test_length_f = static_cast<float>(test_length);
+    float speed_MiBps = (test_length_f * 1000000.0F) / (runtime_f * 1024 * 1024);
+
+    free(buffer);
+
+    return speed_MiBps;
+}
+
+extern uint8_t _text_start;
+
 void Debug::pre_setup()
 {
     size_t internal_heap_size = heap_caps_get_total_size(MALLOC_CAP_INTERNAL);
@@ -39,6 +71,23 @@ void Debug::pre_setup()
 #if defined(BOARD_HAS_PSRAM)
     psram_size = 4 * 1024 * 1024;
 #endif
+
+    String flash_mode;
+    switch (esp_flash_default_chip->read_mode) {
+        case SPI_FLASH_SLOWRD:  flash_mode = "slowrd";  break;
+        case SPI_FLASH_FASTRD:  flash_mode = "fastrd";  break;
+        case SPI_FLASH_DOUT:    flash_mode = "dout";    break;
+        case SPI_FLASH_DIO:     flash_mode = "dio";     break;
+        case SPI_FLASH_QOUT:    flash_mode = "qout";    break;
+        case SPI_FLASH_QIO:     flash_mode = "qio";     break;
+        case SPI_FLASH_OPI_STR: flash_mode = "opi_str"; break;
+        case SPI_FLASH_OPI_DTR: flash_mode = "opi_dtr"; break;
+        case SPI_FLASH_READ_MODE_MAX:
+        default: flash_mode = static_cast<int>(esp_flash_default_chip->read_mode);
+    }
+
+    float psram_speed = benchmark_area(reinterpret_cast<uint8_t *>(0x3FB00000), 128*1024); // 128KiB inside the fourth MiB
+    float flash_speed = benchmark_area(&_text_start + 1024*1024, 128*1024); // 128KiB in the second MiB of code
 
     state_fast = Config::Object({
         {"uptime",     Config::Uint32(0)},
@@ -59,6 +108,9 @@ void Debug::pre_setup()
         {"psram_size", Config::Uint32(psram_size)},
         {"heap_integrity_ok", Config::Bool(true)},
         {"main_stack_hwm", Config::Uint32(0)},
+        {"flash_mode", Config::Str(flash_mode, 0, 8)},
+        {"flash_benchmark", Config::Float(flash_speed)},
+        {"psram_benchmark", Config::Float(psram_speed)},
     });
 }
 
@@ -109,8 +161,8 @@ void Debug::setup()
 
 void Debug::register_urls()
 {
-    api.addState("debug/state_fast", &state_fast, {}, 1000);
-    api.addState("debug/state_slow", &state_slow, {}, 1000);
+    api.addState("debug/state_fast", &state_fast);
+    api.addState("debug/state_slow", &state_slow);
 
     server.on("/debug/crash", HTTP_GET, [this](WebServerRequest req) {
         assert(0);

@@ -32,6 +32,12 @@
             "heap_integrity_runtime": "Laufzeit Integritätsprüfung",
             "heap_integrity_runtime_muted": "Durchschnitt, Maximum",
 
+            "memory_speed_header": "Speichergeswindigkeit",
+            "flash": "Flash",
+            "speed_benchmark": "Geschwindigkeitsbenchmark",
+            "memory_mode": "Speichermodus",
+            "memory_mode_muted": "behauptet der Code",
+
             "websocket_header": "Websockets",
             "websocket_connection": "WebSocket-Verbindung",
             "websocket_connection_muted": "von diesem Browser-Tab",

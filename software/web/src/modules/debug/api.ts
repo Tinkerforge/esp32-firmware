@@ -17,4 +17,7 @@ export interface state_slow {
     psram_size: number;
     heap_integrity_ok: boolean;
     main_stack_hwm: number;
+    flash_mode: string;
+    flash_benchmark: number;
+    psram_benchmark: number;
 }
