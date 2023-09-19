@@ -781,38 +781,7 @@ public:
     size_t fillInt8Array(int8_t *arr, size_t elements);
     size_t fillInt16Array(int16_t *arr, size_t elements);
     size_t fillInt32Array(int32_t *arr, size_t elements);
-/*
-    template<typename T, typename ConfigT>
-    void fromArray(T *arr, size_t elements) {
-        if (!this->is<ConfArray>()) {
-            Serial.println("Can't from array, config is not an array");
-            delay(100);
-            return;
-        }
 
-        ConfArray *confArr = strict_variant::get<ConfArray>(&this->value);
-
-        confArr->value.clear();
-        for(size_t i = 0; i < elements; ++i) {
-            confArr->value.push_back(confArr->prototype[0]);
-            *confArr->value[i].as<T, ConfigT>() = arr[i];
-            ConfigT *inner = strict_variant::get<ConfigT>(confArr->value[i]);
-            String inner_error = inner->validator(*inner);
-            if(inner_error != "") {
-                //return String("[") + i + "]" + inner_error;
-                Serial.println( String("[") + i + "]" + inner_error);
-                delay(100);
-                return;
-            }
-        }
-
-        String error = confArr->validator(*confArr);
-        if(error != "") {
-            Serial.println(error);
-            delay(100);
-        }
-    }
-*/
     size_t json_size(bool zero_copy) const;
     size_t max_string_length() const;
 
