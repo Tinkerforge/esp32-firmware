@@ -2025,11 +2025,6 @@ String ConfigRoot::validate()
     return "";
 }
 
-Config::Wrap::Wrap(Config *_conf)
-{
-    conf = _conf;
-}
-
 void config_pre_init()
 {
     uint_buf = Config::ConfUint::allocSlotBuf(UINT_SLOTS);
@@ -2073,6 +2068,11 @@ void config_post_setup() {
     shrinkToFit<Config::ConfArray>(array_buf, array_buf_size);
     shrinkToFit<Config::ConfObject>(object_buf, object_buf_size);
     shrinkToFit<Config::ConfUnion>(union_buf, union_buf_size);
+}
+
+Config::Wrap::Wrap(Config *_conf)
+{
+    conf = _conf;
 }
 
 Config::ConstWrap::ConstWrap(const Config *_conf)
