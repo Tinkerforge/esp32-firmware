@@ -584,12 +584,6 @@ void WebSockets::start(const char *uri)
     }, 100, 100);
 
     api.addState("info/ws", &state, {}, 1000);
-
-    server.on("/info/ws_trigger", HTTP_GET, [this](WebServerRequest request) {
-        this->updateDebugState();
-        String s = state.to_string();
-        return request.send(200, "application/json", s.c_str());
-    });
 }
 
 void WebSockets::onConnect(std::function<void(WebSocketsClient)> fn)
