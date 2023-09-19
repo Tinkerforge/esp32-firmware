@@ -256,7 +256,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             continue;
 
         if (retain && c.forbid_retained) {
-            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message (data_len=%u).", c.topic.c_str(), data_len);
+            logger.printfln("MQTT: Retained messages on topic %s are forbidden. Ignoring retained message (data_len=%u).", c.topic.c_str(), data_len);
             return;
         }
 
