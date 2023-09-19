@@ -1,4 +1,8 @@
 //APIPath:meters/
+export interface config {
+    meter_slot_status: number,
+}
+
 export interface live {
     offset: number,
     samples_per_second: number,

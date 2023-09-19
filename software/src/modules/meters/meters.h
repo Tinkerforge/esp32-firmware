@@ -127,6 +127,9 @@ private:
 
     float live_samples_per_second();
 
+    ConfigRoot config;
+    ConfigRoot config_in_use;
+
     MeterSlot meter_slots[METERS_SLOTS];
 
     Config config_bool_false_prototype = Config::Bool(false);
