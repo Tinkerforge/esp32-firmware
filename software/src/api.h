@@ -139,8 +139,6 @@ public:
 
     TaskHandle_t mainTaskHandle;
 
-    std::mutex command_mutex;
-
     uint8_t state_update_counter = 0;
 
 private:
