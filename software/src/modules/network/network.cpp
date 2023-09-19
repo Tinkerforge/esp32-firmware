@@ -49,7 +49,7 @@ void Network::setup()
 
 void Network::register_urls()
 {
-    api.addPersistentConfig("network/config", &config, {}, 1000);
+    api.addPersistentConfig("network/config", &config);
 
     if (!config.get("enable_mdns")->asBool())
         return;

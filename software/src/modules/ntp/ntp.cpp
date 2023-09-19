@@ -174,8 +174,8 @@ void NTP::set_synced()
 
 void NTP::register_urls()
 {
-    api.addPersistentConfig("ntp/config", &config, {}, 1000);
-    api.addState("ntp/state", &state, {}, 1000);
+    api.addPersistentConfig("ntp/config", &config);
+    api.addState("ntp/state", &state);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         struct timeval time;

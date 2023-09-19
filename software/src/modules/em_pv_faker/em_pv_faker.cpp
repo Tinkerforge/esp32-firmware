@@ -125,10 +125,10 @@ void EmPvFaker::setup()
 
 void EmPvFaker::register_urls()
 {
-    api.addState("em_pv_faker/state",             &state,  {}, 1000);
-    api.addPersistentConfig("em_pv_faker/config", &config, {}, 1000);
+    api.addState("em_pv_faker/state",             &state);
+    api.addPersistentConfig("em_pv_faker/config", &config);
 
-    api.addState("em_pv_faker/runtime_config", &runtime_config, {}, 1000);
+    api.addState("em_pv_faker/runtime_config", &runtime_config);
     api.addCommand("em_pv_faker/runtime_config_update", &runtime_config_update, {}, [this](){
         int32_t new_power = runtime_config_update.get("manual_power")->asInt();
 

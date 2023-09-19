@@ -203,8 +203,8 @@ void Ethernet::setup()
 
 void Ethernet::register_urls()
 {
-    api.addPersistentConfig("ethernet/config", &config, {}, 1000);
-    api.addState("ethernet/state", &state, {}, 1000);
+    api.addPersistentConfig("ethernet/config", &config);
+    api.addState("ethernet/state", &state);
     api.addCommand("ethernet/force_reset", Config::Null(), {}, [this](){
         esp_eth_stop(ETH.eth_handle);
         pinMode(5, OUTPUT);

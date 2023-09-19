@@ -485,8 +485,8 @@ void Mqtt::setup()
 
 void Mqtt::register_urls()
 {
-    api.addPersistentConfig("mqtt/config", &config, {"broker_password"}, 1000);
-    api.addState("mqtt/state", &state, {}, 1000);
+    api.addPersistentConfig("mqtt/config", &config, {"broker_password"});
+    api.addState("mqtt/state", &state);
 
 #if MODULE_CRON_AVAILABLE()
     if (cron.is_trigger_active(CronTriggerID::MQTT)) {

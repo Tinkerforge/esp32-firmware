@@ -681,7 +681,7 @@ void Wifi::start_scan()
 
 void Wifi::register_urls()
 {
-    api.addState("wifi/state", &state, {}, 1000);
+    api.addState("wifi/state", &state);
 
     api.addCommand("wifi/scan", Config::Null(), {}, [this](){
         start_scan();
@@ -699,8 +699,8 @@ void Wifi::register_urls()
         return request.send(200, "application/json; charset=utf-8", result.c_str());
     });
 
-    api.addPersistentConfig("wifi/sta_config", &sta_config, {"passphrase"}, 1000);
-    api.addPersistentConfig("wifi/ap_config", &ap_config, {"passphrase"}, 1000);
+    api.addPersistentConfig("wifi/sta_config", &sta_config, {"passphrase"});
+    api.addPersistentConfig("wifi/ap_config", &ap_config, {"passphrase"});
 }
 
 WifiState Wifi::get_connection_state() const
