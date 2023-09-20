@@ -37,13 +37,13 @@ void MetersEM::pre_setup()
         {"slave_device_failure", Config::Uint32(0)},
     });
 
-    meters.register_meter_generator(MeterClassID::LocalEM, this);
+    meters.register_meter_generator(MeterClassID::EM, this);
 }
 
 _ATTRIBUTE((const))
 MeterClassID MetersEM::get_class() const
 {
-    return MeterClassID::LocalEM;
+    return MeterClassID::EM;
 }
 
 IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config * /*config*/, Config * errors)
