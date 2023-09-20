@@ -5,7 +5,7 @@ import { Cron } from "../cron/main"
 import { __ } from "../../ts/translation"
 import { InputSelect } from "../../ts/components/input_select"
 
-export type EvseSdCronTrigger = [
+export type EvseShutdownCronTrigger = [
     CronTriggerID.EVSEShutdownInput,
     {
         high: boolean
@@ -81,7 +81,7 @@ function EvseShutdownTriggerComponent(trigger: CronTrigger): CronComponent {
 }
 
 function EvseShutdownTriggerConfig(cron: Cron, trigger: CronTrigger) {
-    const value = (trigger as EvseSdCronTrigger)[1];
+    const value = (trigger as EvseShutdownCronTrigger)[1];
     return [
         {
             name: __("evse.content.gpio_shutdown"),
