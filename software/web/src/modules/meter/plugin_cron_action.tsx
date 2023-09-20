@@ -33,6 +33,7 @@ export function init() {
     return {
         action_components: {
             [CronActionID.MeterReset]: {
+                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 config_builder: MeterResetCronActionConfigFactory,
                 config_component: MeterResetCronActionConfigComponent,
                 table_row: MeterResetCronActionComponent,

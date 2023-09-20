@@ -118,6 +118,7 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.MQTT]: {
+                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 table_row: MqttCronTriggerComponent,
                 config_builder: MqttCronTriggerFactory,
                 config_component: MqttCronTriggerConfig,

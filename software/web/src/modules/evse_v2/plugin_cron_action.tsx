@@ -56,6 +56,7 @@ export function init() {
     return {
         action_components: {
             [CronActionID.EVSEGPOutput]: {
+                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 config_builder: EvseGpioOutputCronActionConfigFactory,
                 config_component: EvseGpioOutputCronActionConfigComponent,
                 table_row: EvseGpioOutputCronActionComponent,

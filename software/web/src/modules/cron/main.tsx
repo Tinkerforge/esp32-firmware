@@ -151,27 +151,25 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
     assembleTable() {
         let rows: TableRow[] = [];
         this.state.tasks.forEach((task, idx) => {
-            let action: number = task.action[0];
-            let action_obj: any = task.action[1];
-            let trigger: number = task.trigger[0];
-            let trigger_obj: any = task.trigger[1];
+            let action_id: number = task.action[0];
+            let trigger_id: number = task.trigger[0];
 
-            const ActionComponent = cron_action_components[action];
-            const TriggerComponent = cron_trigger_components[trigger];
+            const action_component = cron_action_components[action_id];
+            const trigger_component = cron_trigger_components[trigger_id];
 
             const task_copy: Task = {
-                action: [action, {...action_obj}],
-                trigger: [trigger, {...trigger_obj}]
+                action: action_component.clone(task.action),
+                trigger: trigger_component.clone(task.trigger)
             };
-            const trigger_row = TriggerComponent.table_row(task.trigger);
-            const action_row = ActionComponent.table_row(task.action);
+            const trigger_row = trigger_component.table_row(task.trigger);
+            const action_row = action_component.table_row(task.action);
             trigger_row.fieldNames = [__("cron.content.condition")].concat(trigger_row.fieldNames);
-            trigger_row.fieldValues = [TriggerComponent.name as ComponentChild].concat(trigger_row.fieldValues);
+            trigger_row.fieldValues = [trigger_component.name as ComponentChild].concat(trigger_row.fieldValues);
             trigger_row.fieldNames.push(null);
             trigger_row.fieldValues.push(<hr/>);
 
             action_row.fieldNames = [__("cron.content.action")].concat(action_row.fieldNames);
-            action_row.fieldValues = [ActionComponent.name as ComponentChild].concat(action_row.fieldValues);
+            action_row.fieldValues = [action_component.name as ComponentChild].concat(action_row.fieldValues);
 
             let row: TableRow = {
                 columnValues: [

@@ -34,6 +34,7 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.ChargeLimits]: {
+                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 config_builder: ChargeLimitsCronTriggerFactory,
                 config_component: ChargeLimitsCronTriggerConfig,
                 table_row: ChargeLimitsCronTriggerComponent,

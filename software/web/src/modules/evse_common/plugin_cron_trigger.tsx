@@ -70,6 +70,7 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.IECChange] = {
+                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 config_builder: EvseStateCronFactory,
                 config_component: EvseStateCronConfig,
                 table_row: EvseStateCronComponent,

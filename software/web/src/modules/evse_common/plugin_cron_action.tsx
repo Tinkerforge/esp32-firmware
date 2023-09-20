@@ -156,12 +156,14 @@ export function init() {
     return {
         action_components: {
             [CronActionID.SetCurrent]: {
+                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 config_builder: EvseSetCurrentCronActionConfigFactory,
                 config_component: EvseSetCurrentCronActionConfigComponent,
                 table_row: EvseSetCurrentCronActionComponent,
                 name: __("evse.content.allowed_charging_current")
             },
             [CronActionID.LED]: {
+                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 config_builder: EvseLedCronActionConfigFactory,
                 config_component: EvseLedCronActionConfigComponent,
                 table_row: EvseLedCronActionComponent,

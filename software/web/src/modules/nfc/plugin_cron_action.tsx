@@ -157,6 +157,7 @@ export function init() {
     return {
         action_components: {
             [CronActionID.NFCInjectTag]: {
+                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 table_row: NFCTagInjectCronActionComponent,
                 config_builder: NfCTagInjectCronActionFactory,
                 config_component: NFCTagInjectCronActionConfig,

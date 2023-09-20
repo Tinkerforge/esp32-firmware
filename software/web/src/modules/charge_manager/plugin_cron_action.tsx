@@ -50,6 +50,7 @@ export function init() {
     return {
         action_components: {
             [CronActionID.SetManagerCurrent]: {
+                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 config_builder: ChargeManagerCronActionFactory,
                 config_component: ChargeManagerCronConfigComponent,
                 table_row: ChargeManagerCronComponent,

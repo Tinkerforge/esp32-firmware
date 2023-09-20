@@ -120,6 +120,7 @@ export function init() {
     return {
         action_components: {
             [CronActionID.MQTT]: {
+                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 config_builder: MqttCronActionFactory,
                 config_component: MqttCronActionConfig,
                 table_row: MqttCronActionComponent,

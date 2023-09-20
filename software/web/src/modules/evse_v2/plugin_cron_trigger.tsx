@@ -153,6 +153,7 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.EVSEButton]: {
+                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 config_builder: EvseButtonCronTriggerFactory,
                 config_component: EvseButtonCronTriggerConfig,
                 table_row: EvseButtonCronTriggerComponent,
@@ -160,6 +161,7 @@ export function init() {
                 require_feature: "button_configuration"
             },
             [CronTriggerID.EVSEShutdownInput]: {
+                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 config_component: EvseShutdownTriggerConfig,
                 table_row: EvseShutdownTriggerComponent,
                 config_builder: EvseShutdownTriggerFactory,
@@ -167,6 +169,7 @@ export function init() {
                 require_feature: "button_configuration"
             },
             [CronTriggerID.EVSEGPInput]: {
+                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 config_builder: EvseGpioInputCronTriggerConfigFactory,
                 config_component: EvseGpioInputCrontTriggerConfigComponent,
                 table_row: EvseGpioInputCronTriggerComponent,

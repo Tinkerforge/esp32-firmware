@@ -29,6 +29,7 @@ export interface CronComponent {
 
 interface CronTriggerComponent {
     table_row: (cron: CronTrigger) => CronComponent,
+    clone: (trigger: CronTrigger) => CronTrigger,
     config_component: (cron: Cron, trigger: CronTrigger) => TableModalRow[],
     config_builder: () => CronTrigger,
     name: string,
@@ -37,6 +38,7 @@ interface CronTriggerComponent {
 
 interface CronActionComponent {
     table_row: (cron: CronAction) => CronComponent,
+    clone: (action: CronAction) => CronAction,
     config_component: (cron: Cron, action: CronAction) => TableModalRow[],
     config_builder: () => CronAction,
     name: string,
