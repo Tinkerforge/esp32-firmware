@@ -223,12 +223,11 @@ bool is_littlefs_available(const char *part_label, const char *base_path)
 {
     LogSilencer ls;
 
-    esp_vfs_littlefs_conf_t conf = {
-        .base_path = base_path,
-        .partition_label = part_label,
-        .format_if_mount_failed = false,
-        .dont_mount = false
-    };
+    esp_vfs_littlefs_conf_t conf;
+    memset(&conf, 0, sizeof(conf));
+    conf.base_path = base_path;
+    conf.partition_label = part_label;
+    conf.format_if_mount_failed = false;
 
     esp_err_t err = esp_vfs_littlefs_register(&conf);
     esp_vfs_littlefs_unregister(part_label);
