@@ -606,7 +606,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
             this.history_data.samples.push([]);
         }
 
-        util.eventTarget.addEventListener('info/modules', () => {
+        util.addApiEventListener('info/modules', () => {
             this.update_live_cache();
             this.update_history_cache();
         });

@@ -1124,7 +1124,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
             force_render: 0,
         } as any;
 
-        util.eventTarget.addEventListener('info/modules', () => {
+        util.addApiEventListener('info/modules', () => {
             if (!API.hasFeature('energy_manager')) {
                 console.log("Energy Analysis: energy_manager feature not available");
                 return;
@@ -1269,7 +1269,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             energy_manager_daily_cache_energy_total: {}
         } as any;
 
-        util.eventTarget.addEventListener('info/modules', () => {
+        util.addApiEventListener('info/modules', () => {
             if (!API.hasFeature('energy_manager')) {
                 console.log("Energy Analysis: energy_manager feature not available");
                 return;
@@ -1281,7 +1281,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             this.setState({force_render: Date.now()});
         });
 
-        util.eventTarget.addEventListener('charge_manager/state', () => {
+        util.addApiEventListener('charge_manager/state', () => {
             if (!API.hasFeature('energy_manager'))
                 return;
 
@@ -1309,7 +1309,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         });
 
-        util.eventTarget.addEventListener('energy_manager/history_wallbox_5min_changed', () => {
+        util.addApiEventListener('energy_manager/history_wallbox_5min_changed', () => {
             let changed = API.get('energy_manager/history_wallbox_5min_changed');
             let subcache = this.wallbox_5min_cache[changed.uid];
             let reload_subcache: boolean = false;
@@ -1355,7 +1355,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         });
 
-        util.eventTarget.addEventListener('energy_manager/history_energy_manager_5min_changed', () => {
+        util.addApiEventListener('energy_manager/history_energy_manager_5min_changed', () => {
             let changed = API.get('energy_manager/history_energy_manager_5min_changed');
             let key = `${changed.year}-${changed.month}-${changed.day}`;
             let data = this.energy_manager_5min_cache[key];
@@ -1400,7 +1400,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         });
 
-        util.eventTarget.addEventListener('energy_manager/history_wallbox_daily_changed', () => {
+        util.addApiEventListener('energy_manager/history_wallbox_daily_changed', () => {
             let changed = API.get('energy_manager/history_wallbox_daily_changed');
             let subcache = this.wallbox_daily_cache[changed.uid];
             let reload_subcache: boolean = false;
@@ -1445,7 +1445,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         });
 
-        util.eventTarget.addEventListener('energy_manager/history_energy_manager_daily_changed', () => {
+        util.addApiEventListener('energy_manager/history_energy_manager_daily_changed', () => {
             let changed = API.get('energy_manager/history_energy_manager_daily_changed');
             let key = `${changed.year}-${changed.month}`;
             let data = this.energy_manager_daily_cache[key];
