@@ -1113,7 +1113,12 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     }
 }
 
-export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}> {
+interface EMEnergyAnalysisStatusState {
+    force_render: number,
+    meter_slot: number,
+}
+
+export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatusState> {
     uplot_loader_ref = createRef();
     uplot_wrapper_ref = createRef();
 
@@ -1122,6 +1127,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
 
         this.state = {
             force_render: 0,
+            meter_slot: 0,
         } as any;
 
         util.addApiEventListener('info/modules', () => {
@@ -1132,9 +1138,15 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
 
             this.setState({force_render: Date.now()});
         });
+
+        util.addApiEventListener("energy_manager/config", () => {
+            let config = API.get("energy_manager/config");
+
+            this.setState({meter_slot: config.meter_slot_grid_power});
+        });
     }
 
-    render(props: {}, state: {}) {
+    render(props: {}, state: EMEnergyAnalysisStatusState) {
         // Don't check util.render_allowed() here.
         // We can receive graph data points with the first web socket packet and
         // want to push them into the uplot graph immediately.
@@ -1144,9 +1156,8 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
-        let meter_slot: number = 0; // FIXME: make this configurable
-        let value_ids = API.get_maybe(`meters/${meter_slot}/value_ids`);
-        let values = API.get_maybe(`meters/${meter_slot}/values`);
+        let value_ids = API.get_maybe(`meters/${state.meter_slot}/value_ids`);
+        let values = API.get_maybe(`meters/${state.meter_slot}/values`);
         let power = 0;
 
         if (value_ids && values.length > 0 && values && values.length > 0) {
@@ -1188,7 +1199,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
                         </div>
                     </div>
                 </FormRow>
-                <FormRow label={__("em_energy_analysis_status.status.current_power")} label_muted={`Meter #${meter_slot}`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("em_energy_analysis_status.status.current_power")} label_muted={`Meter #${state.meter_slot}`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                 </FormRow>
             </>
@@ -1202,6 +1213,7 @@ interface EMEnergyAnalysisProps {
 
 interface EMEnergyAnalysisState {
     force_render: number,
+    meter_slot_status: number,
     data_type: '5min'|'daily';
     current_5min_date: Date;
     current_daily_date: Date;
@@ -1260,6 +1272,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         this.state = {
             force_render: 0,
+            meter_slot_status: 0,
             data_type: '5min',
             current_5min_date: current_5min_date,
             current_daily_date: current_daily_date,
@@ -1477,6 +1490,12 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         }
                     });
             }
+        });
+
+        util.addApiEventListener("energy_manager/config", () => {
+            let config = API.get("energy_manager/config");
+
+            this.setState({meter_slot_status: config.meter_slot_grid_power});
         });
     }
 
@@ -1845,15 +1864,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         };
 
         let timestamp_slot_count: number = 0;
-        let meter_slot: number = 0; // FIXME: handle all meters
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
-        if (energy_manager_data && !energy_manager_data.power_empty[meter_slot]) {
-            timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power[meter_slot].length)
+        if (energy_manager_data && !energy_manager_data.power_empty[this.state.meter_slot_status]) {
+            timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power[this.state.meter_slot_status].length)
 
-            uplot_data.keys.push('em_power_' + meter_slot);
-            uplot_data.names.push(`Meter #${meter_slot}`); // FIXME: use meter display name instead
-            uplot_data.values.push(energy_manager_data.power[meter_slot]);
+            uplot_data.keys.push('em_power_' + this.state.meter_slot_status);
+            uplot_data.names.push(`Meter #${this.state.meter_slot_status}`); // FIXME: use meter display name instead
+            uplot_data.values.push(energy_manager_data.power[this.state.meter_slot_status]);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
         }
