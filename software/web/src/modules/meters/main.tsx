@@ -607,11 +607,6 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
         }
 
         util.eventTarget.addEventListener('info/modules', () => {
-            if (!API.hasFeature('meters')) {
-                console.log("Meters: meters feature not available");
-                return;
-            }
-
             this.update_live_cache();
             this.update_history_cache();
         });
@@ -859,7 +854,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
     }
 
     render(props: {}, state: Readonly<MetersState>) {
-        if (!util.render_allowed() || !API.hasFeature("meters")) {
+        if (!util.render_allowed()) {
             return (<></>);
         }
 
@@ -949,7 +944,7 @@ export class MetersStatus extends Component<{}, MeterStatusState> {
         // want to push them into the uplot graph immediately.
         // This only works if the wrapper component is already created.
         // Hide the form rows to fix any visual bugs instead.
-        let show = API.hasFeature('meters') && !API.hasFeature("energy_manager");
+        let show = !API.hasFeature("energy_manager");
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
@@ -1000,7 +995,8 @@ export function init() {
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('info/features', () => $('#sidebar-meters').prop('hidden', !API.hasFeature('meters')));
 }
 
-export function update_sidebar_state(module_init: any) {}
+export function update_sidebar_state(module_init: any) {
+    $('#sidebar-meters').prop('hidden', !module_init.meters);
+}
