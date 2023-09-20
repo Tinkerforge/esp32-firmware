@@ -73,9 +73,9 @@ for lang in detailed_values:
 # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
 classes = [
     'None',
-    'Local RS485 Bricklet',
-    'Local EVSE V2',
-    'Local EM',
+    'RS485 Bricklet',
+    'EVSE V2',
+    'EM',
     'Push API',
     'Sun Spec',
     'Modbus TCP',
