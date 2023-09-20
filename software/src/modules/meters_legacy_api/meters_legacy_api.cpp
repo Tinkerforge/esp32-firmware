@@ -387,13 +387,15 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     free(meter_value_ids);
 
     MeterClassID linked_meter_class = meters.get_meter_class(linked_meter_slot);
-    if (linked_meter_class == MeterClassID::LocalEVSE || linked_meter_class == MeterClassID::LocalEM) {
+    if (linked_meter_class == MeterClassID::LocalRS485Bricklet
+        || linked_meter_class == MeterClassID::LocalEVSEV2
+        || linked_meter_class == MeterClassID::LocalEM) {
         const String state_path = meters.get_path(linked_meter_slot, Meters::PathType::State);
         const Config *linked_state = api.getState(state_path);
         if (linked_state) {
             uint32_t local_meter_type = linked_state->get("type")->asUint();
             if (meter_type != local_meter_type) {
-                logger.printfln("meters_legacy_api: Meter type %u from bricklet overrides auto-detected meter type %u.", local_meter_type, meter_type);
+                logger.printfln("meters_legacy_api: Meter type %u from Bricklet overrides auto-detected meter type %u.", local_meter_type, meter_type);
                 meter_type = local_meter_type;
             }
         } else {

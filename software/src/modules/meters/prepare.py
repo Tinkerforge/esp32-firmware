@@ -72,18 +72,20 @@ for lang in detailed_values:
 
 # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
 classes = [
-    ('None', 0),
-    ('Local EVSE', 1),
-    ('Local EM', 2),
-    ('Push API', 3),
-    ('Modbus TCP', 4),
-    ('MQTT Subscription', 5),
+    'None',
+    'Local RS485 Bricklet',
+    'Local EVSE V2',
+    'Local EM',
+    'Push API',
+    'Sun Spec',
+    'Modbus TCP',
+    'MQTT Subscription',
 ]
 
 class_values = []
 
-for class_ in classes:
-    class_values.append('    {0} = {1},\n'.format(util.FlavoredName(class_[0]).get().camel, class_[1]))
+for i, name in enumerate(classes):
+    class_values.append('    {0} = {1},\n'.format(util.FlavoredName(name).get().camel, i))
 
 with open('meters_defs.h', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
