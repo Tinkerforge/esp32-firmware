@@ -104,7 +104,7 @@ static WebServerRequestReturnProtect send_index_html(WebServerRequest &request) 
 }
 
 static void register_default_urls(void) {
-    server.on("/", HTTP_GET, [](WebServerRequest request) {
+    server.on_HTTPThread("/", HTTP_GET, [](WebServerRequest request) {
         return send_index_html(request);
     });
 
@@ -115,12 +115,12 @@ static void register_default_urls(void) {
 
     api.addState("info/modules", &modules, {}, 10000);
 
-    server.on("/force_reboot", HTTP_GET, [](WebServerRequest request) {
+    server.on_HTTPThread("/force_reboot", HTTP_GET, [](WebServerRequest request) {
         ESP.restart();
         return request.send(200, "text/html", "Forced reboot.");
     });
 
-    server.onNotAuthorized([](WebServerRequest request) {
+    server.onNotAuthorized_HTTPThread([](WebServerRequest request) {
         if (request.uri() == "/") {
             // Safari does not support an unauthenticated login page and an authenticated main page on the same url,
             // as it does not proactively send the credentials if the same url is known to have an unauthenticated
@@ -142,15 +142,15 @@ static void register_default_urls(void) {
         }
     });
 
-    server.on("/credential_check", HTTP_GET, [](WebServerRequest request) {
+    server.on_HTTPThread("/credential_check", HTTP_GET, [](WebServerRequest request) {
         return request.send(200, "text/plain", "Credentials okay");
     });
 
-    server.on("/login_state", HTTP_GET, [](WebServerRequest request) {
+    server.on_HTTPThread("/login_state", HTTP_GET, [](WebServerRequest request) {
         return request.send(200, "text/plain", "Logged in");
     });
 
-    api.registerDebugUrl(&server);
+    api.registerDebugUrl();
 }
 
 void setup(void) {

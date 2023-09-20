@@ -31,12 +31,15 @@ enum class MqttConnectionState {
     ERROR
 };
 
+using SubscribeCallback = std::function<void(const char *, size_t, char *, size_t)>;
+
 struct MqttCommand {
     String topic;
-    std::function<void(const char *, size_t, char *, size_t)> callback;
+    SubscribeCallback callback;
     bool forbid_retained;
     bool starts_with_global_topic_prefix;
     bool subscribed;
+    bool callback_in_main_thread;
 };
 
 struct MqttState {
@@ -62,9 +65,13 @@ public:
 
     // Retain messages by default because we only send on change.
     bool publish_with_prefix(const String &path, const String &payload, bool retain=true);
-    void subscribe_with_prefix(const String &path, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained);
     bool publish(const String &topic, const String &payload, bool retain);
-    void subscribe(const String &topic, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained);
+
+    void subscribe_with_prefix(const String &path, SubscribeCallback callback, bool forbid_retained);
+    void subscribe_with_prefix_mqtt_thread(const String &path, SubscribeCallback callback, bool forbid_retained);
+
+    void subscribe(const String &topic, SubscribeCallback callback, bool forbid_retained);
+    void subscribe_mqtt_thread(const String &topic, SubscribeCallback callback, bool forbid_retained);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
@@ -93,6 +100,8 @@ public:
     size_t backend_idx;
 
 private:
+    void subscribe_internal(const String &path, bool callback_in_main_thread, SubscribeCallback callback, bool forbid_retained);
+
     esp_mqtt_client_handle_t client;
     // Copy prefix to not access config in MQTT thread.
     String prefix;

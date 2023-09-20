@@ -168,12 +168,12 @@ void Debug::register_urls()
     api.addState("debug/state_fast", &state_fast);
     api.addState("debug/state_slow", &state_slow);
 
-    server.on("/debug/crash", HTTP_GET, [this](WebServerRequest req) {
+    server.on_HTTPThread("/debug/crash", HTTP_GET, [this](WebServerRequest req) {
         assert(0);
         return req.send(200, "text/plain", "ok");
     });
 #ifdef DEBUG_FS_ENABLE
-    server.on("/debug/fs/*", HTTP_GET, [this](WebServerRequest request) {
+    server.on_HTTPThread("/debug/fs/*", HTTP_GET, [this](WebServerRequest request) {
         String path = request.uri().substring(ARRAY_SIZE("/debug/fs") - 1);
         if (path.length() > 1 && path[path.length() - 1] == '/')
             path = path.substring(0, path.length() - 1);
@@ -213,7 +213,7 @@ void Debug::register_urls()
         }
     });
 
-    server.on("/debug/fs/*", HTTP_DELETE, [this](WebServerRequest request) {
+    server.on_HTTPThread("/debug/fs/*", HTTP_DELETE, [this](WebServerRequest request) {
         String path = request.uri().substring(ARRAY_SIZE("/debug/fs") - 1);
         if (path.length() > 1 && path[path.length() - 1] == '/')
             path = path.substring(0, path.length() - 1);
@@ -233,7 +233,7 @@ void Debug::register_urls()
         }
     });
 
-    server.on("/debug/fs/*", HTTP_PUT, [this](WebServerRequest request) {
+    server.on_HTTPThread("/debug/fs/*", HTTP_PUT, [this](WebServerRequest request) {
         String path = request.uri().substring(ARRAY_SIZE("/debug/fs") - 1);
         bool create_directory = path.length() > 1 && path[path.length() - 1] == '/';
         if (create_directory)

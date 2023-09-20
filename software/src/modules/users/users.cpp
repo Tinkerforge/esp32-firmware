@@ -34,8 +34,6 @@
 
 #define USERNAME_FILE "/users/all_usernames"
 
-#define MAX_ACTIVE_USERS 17
-
 // We have to do access the evse/evse_v2 configs manually
 // because a lot of the code runs in setup(), i.e. before APIs
 // are registered.
@@ -416,7 +414,7 @@ void Users::setup()
             return;
         }
 
-        server.setAuthentication([this](WebServerRequest req) -> bool {
+        server.onAuthenticate_HTTPThread([this](WebServerRequest req) -> bool {
             String auth = req.header("Authorization");
             if (auth == "") {
                 return false;
@@ -749,13 +747,13 @@ void Users::register_urls()
     api.addCommand("users/http_auth_update", &http_auth_update, {}, [this](){
         bool enable = http_auth_update.get("enabled")->asBool();
         if (!enable)
-            server.setAuthentication([](WebServerRequest req){return true;});
+            server.onAuthenticate_HTTPThread([](WebServerRequest req){return true;});
 
         config.get("http_auth_enabled")->updateBool(enable);
         API::writeConfig("users/config", &config);
     }, false);
 
-    server.on("/users/all_usernames", HTTP_GET, [this](WebServerRequest request) {
+    server.on_HTTPThread("/users/all_usernames", HTTP_GET, [this](WebServerRequest request) {
         //std::lock_guard<std::mutex> lock{records_mutex};
         size_t len = MAX_PASSIVE_USERS * USERNAME_ENTRY_LENGTH;
         auto buf = heap_alloc_array<char>(len);

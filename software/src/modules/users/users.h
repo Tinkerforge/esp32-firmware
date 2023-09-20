@@ -37,6 +37,8 @@
 #define USERNAME_ENTRY_LENGTH (USERNAME_LENGTH + DISPLAY_NAME_LENGTH)
 #define MAX_PASSIVE_USERS 256
 
+#define MAX_ACTIVE_USERS 17
+
 class Users final : public IModule
 {
 public:

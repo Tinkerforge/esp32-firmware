@@ -123,7 +123,7 @@ public:
 
     static bool restorePersistentConfig(const String &path, ConfigRoot *config);
 
-    void registerDebugUrl(WebServer *server);
+    void registerDebugUrl();
 
     size_t registerBackend(IAPIBackend *backend);
 

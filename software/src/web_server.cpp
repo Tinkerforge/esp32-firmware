@@ -89,33 +89,12 @@ static esp_err_t low_level_handler(httpd_req_t *req)
         return ESP_OK;
     }
 
-    ctx->handler->callback(request);
+    if (ctx->handler->callbackInMainThread)
+        task_scheduler.await([ctx, request](){ctx->handler->callback(request);});
+    else
+        ctx->handler->callback(request);
+
     return ESP_OK;
-}
-
-WebServerHandler *WebServer::on(const char *uri, httpd_method_t method, wshCallback callback)
-{
-    if (handler_count >= MAX_URI_HANDLERS) {
-        logger.printfln("Can't add WebServer handler for %s: %d handlers already registered. Please increase MAX_URI_HANDLERS.", uri, handler_count);
-        return nullptr;
-    }
-
-    handlers.emplace_front(uri, method, callback, wshUploadCallback());
-    ++handler_count;
-    WebServerHandler *result = &handlers.front();
-
-    UserCtx *user_ctx = (UserCtx *)malloc(sizeof(UserCtx));
-    user_ctx->server = this;
-    user_ctx->handler = result;
-
-    httpd_uri_t ll_handler = {};
-    ll_handler.uri       = uri;
-    ll_handler.method    = method;
-    ll_handler.handler   = low_level_handler;
-    ll_handler.user_ctx  = (void*)user_ctx;
-
-    httpd_register_uri_handler(httpd, &ll_handler);
-    return result;
 }
 
 static const size_t SCRATCH_BUFSIZE = 2048;
@@ -154,25 +133,52 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
         }
 
         remaining -= received;
-        if (!ctx->handler->uploadCallback(request, "not implemented", index, scratch_buf.get(), received, remaining == 0)) {
+        bool result = false;
+        if (ctx->handler->callbackInMainThread) {
+            auto scratch_ptr = scratch_buf.get();
+            task_scheduler.await([ctx, request, index, scratch_ptr, received, remaining, &result]{result = ctx->handler->uploadCallback(request, "not implemented", index, scratch_ptr, received, remaining == 0);});
+        } else {
+            result = ctx->handler->uploadCallback(request, "not implemented", index, scratch_buf.get(), received, remaining == 0);
+        }
+
+        if (!result) {
             return ESP_FAIL;
         }
 
         index += received;
     }
 
-    ctx->handler->callback(request);
+    if (ctx->handler->callbackInMainThread)
+        task_scheduler.await([ctx, request](){ctx->handler->callback(request);});
+    else
+        ctx->handler->callback(request);
+
     return ESP_OK;
 }
 
 WebServerHandler *WebServer::on(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback)
+{
+    return addHandler(uri, method, true, callback, uploadCallback);
+}
+
+WebServerHandler *WebServer::on_HTTPThread(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback)
+{
+    return addHandler(uri, method, false, callback, uploadCallback);
+}
+
+void WebServer::onNotAuthorized_HTTPThread(wshCallback callback)
+{
+    this->on_not_authorized = callback;
+}
+
+WebServerHandler *WebServer::addHandler(const char *uri, httpd_method_t method, bool callbackInMainThread, wshCallback callback, wshUploadCallback uploadCallback)
 {
     if (handler_count >= MAX_URI_HANDLERS) {
         logger.printfln("Can't add WebServer handler for %s: %d handlers already registered. Please increase MAX_URI_HANDLERS.", uri, handler_count);
         return nullptr;
     }
 
-    handlers.emplace_front(uri, method, callback, uploadCallback);
+    handlers.emplace_front(uri, method, callbackInMainThread, callback, uploadCallback);
     ++handler_count;
     WebServerHandler *result = &handlers.front();
 
@@ -183,16 +189,11 @@ WebServerHandler *WebServer::on(const char *uri, httpd_method_t method, wshCallb
     httpd_uri_t ll_handler = {};
     ll_handler.uri       = uri;
     ll_handler.method    = method;
-    ll_handler.handler   = low_level_upload_handler;
+    ll_handler.handler   = uploadCallback == nullptr ? low_level_handler : low_level_upload_handler;
     ll_handler.user_ctx  = (void*)user_ctx;
 
     httpd_register_uri_handler(httpd, &ll_handler);
     return result;
-}
-
-void WebServer::onNotAuthorized(wshCallback callback)
-{
-    this->on_not_authorized = callback;
 }
 
 // From: https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml

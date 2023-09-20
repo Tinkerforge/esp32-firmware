@@ -95,17 +95,33 @@ void Mqtt::pre_setup()
 #endif
 }
 
-void Mqtt::subscribe_with_prefix(const String &path, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained)
+void Mqtt::subscribe_with_prefix(const String &path, SubscribeCallback callback, bool forbid_retained)
 {
     String topic = prefix + "/" + path;
-    subscribe(topic, callback, forbid_retained);
+    subscribe_internal(topic, true, callback, forbid_retained);
 }
 
-void Mqtt::subscribe(const String &topic, std::function<void(const char *, size_t, char *, size_t)> callback, bool forbid_retained)
+void Mqtt::subscribe_with_prefix_mqtt_thread(const String &path, SubscribeCallback callback, bool forbid_retained)
 {
+    String topic = prefix + "/" + path;
+    subscribe_internal(topic, false, callback, forbid_retained);
+}
+
+
+void Mqtt::subscribe(const String &topic, SubscribeCallback callback, bool forbid_retained)
+{
+    subscribe_internal(topic, true, callback, forbid_retained);
+}
+
+void Mqtt::subscribe_mqtt_thread(const String &topic, SubscribeCallback callback, bool forbid_retained)
+{
+    subscribe_internal(topic, false, callback, forbid_retained);
+}
+
+void Mqtt::subscribe_internal(const String &topic, bool callback_in_main_thread, SubscribeCallback callback, bool forbid_retained) {
     bool subscribed = esp_mqtt_client_subscribe(client, topic.c_str(), 0) >= 0;
 
-    this->commands.push_back({topic, callback, forbid_retained, topic.startsWith(prefix), subscribed});
+    this->commands.push_back({topic, callback, forbid_retained, topic.startsWith(prefix), subscribed, callback_in_main_thread});
 }
 
 void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
@@ -260,7 +276,23 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             return;
         }
 
-        c.callback(topic, topic_len, data, data_len);
+        if (c.callback_in_main_thread) {
+            esp_mqtt_client_disable_receive(client, 100);
+            char *topic_cpy = (char *) malloc(topic_len);
+            memcpy(topic_cpy, topic, topic_len);
+
+            char *data_cpy = (char *) malloc(data_len);
+            memcpy(data_cpy, data, data_len);
+
+            task_scheduler.scheduleOnce([this, c, topic_cpy, topic_len, data_cpy, data_len](){
+                c.callback(topic_cpy, topic_len, data_cpy, data_len);
+                free(data_cpy);
+                free(topic_cpy);
+                esp_mqtt_client_enable_receive(client);
+            }, 0);
+        } else
+            c.callback(topic, topic_len, data, data_len);
+
         return;
     }
 
@@ -302,12 +334,16 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             return;
         }
 
+        char *data_cpy = (char *) malloc(data_len);
+        memcpy(data_cpy, data, data_len);
+
         esp_mqtt_client_disable_receive(client, 100);
-        task_scheduler.scheduleOnce([this, reg, data, data_len](){
-            String error = reg.callback(data, data_len);
+        task_scheduler.scheduleOnce([this, reg, data_cpy, data_len](){
+            String error = reg.callback(data_cpy, data_len);
             if (error != "")
                 logger.printfln("MQTT: %s", error.c_str());
 
+            free(data_cpy);
             esp_mqtt_client_enable_receive(this->client);
         }, 0);
 
@@ -389,33 +425,35 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             mqtt->onMqttMessage(event->topic, event->topic_len, event->data, event->data_len, event->retain);
             break;
         case MQTT_EVENT_ERROR: {
-                auto eh = event->error_handle;
-                bool was_connected = mqtt->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::NOT_CONNECTED;
+                auto eh = *event->error_handle;
+                task_scheduler.scheduleOnce([mqtt, eh](){
+                    bool was_connected = mqtt->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::NOT_CONNECTED;
 
-                if (eh->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
-                    if (was_connected && eh->esp_tls_last_esp_err != ESP_OK) {
-                        const char *e = esp_err_to_name_r(eh->esp_tls_last_esp_err, err_buf, sizeof(err_buf) / sizeof(err_buf[0]));
-                        logger.printfln("MQTT: Transport error: %s (esp_tls_last_esp_err)", e);
-                        mqtt->state.get("last_error")->updateInt(eh->esp_tls_last_esp_err);
+                    if (eh.error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
+                        if (was_connected && eh.esp_tls_last_esp_err != ESP_OK) {
+                            const char *e = esp_err_to_name_r(eh.esp_tls_last_esp_err, err_buf, sizeof(err_buf) / sizeof(err_buf[0]));
+                            logger.printfln("MQTT: Transport error: %s (esp_tls_last_esp_err)", e);
+                            mqtt->state.get("last_error")->updateInt(eh.esp_tls_last_esp_err);
+                        }
+                        if (was_connected && eh.esp_tls_stack_err != 0) {
+                            const char *e = esp_err_to_name_r(eh.esp_tls_stack_err, err_buf, sizeof(err_buf) / sizeof(err_buf[0]));
+                            logger.printfln("MQTT: Transport error: %s (esp_tls_stack_err)", e);
+                            mqtt->state.get("last_error")->updateInt(eh.esp_tls_stack_err);
+                        }
+                        if (eh.esp_transport_sock_errno != 0) {
+                            const char *e = strerror(eh.esp_transport_sock_errno);
+                            logger.printfln("MQTT: Transport error: %s", e);
+                            mqtt->state.get("last_error")->updateInt(eh.esp_transport_sock_errno);
+                        }
+                    } else if (eh.error_type == MQTT_ERROR_TYPE_CONNECTION_REFUSED) {
+                        logger.printfln("MQTT: Connection refused: %s", get_mqtt_error(eh.connect_return_code));
+                        // Minus to indicate this is a connection error
+                        mqtt->state.get("last_error")->updateInt(-eh.connect_return_code);
+                    } else {
+                        logger.printfln("MQTT: Unknown error");
+                        mqtt->state.get("last_error")->updateInt(0xFFFFFFFF);
                     }
-                    if (was_connected && eh->esp_tls_stack_err != 0) {
-                        const char *e = esp_err_to_name_r(eh->esp_tls_stack_err, err_buf, sizeof(err_buf) / sizeof(err_buf[0]));
-                        logger.printfln("MQTT: Transport error: %s (esp_tls_stack_err)", e);
-                        mqtt->state.get("last_error")->updateInt(eh->esp_tls_stack_err);
-                    }
-                    if (eh->esp_transport_sock_errno != 0) {
-                        const char *e = strerror(eh->esp_transport_sock_errno);
-                        logger.printfln("MQTT: Transport error: %s", e);
-                        mqtt->state.get("last_error")->updateInt(eh->esp_transport_sock_errno);
-                    }
-                } else if (eh->error_type == MQTT_ERROR_TYPE_CONNECTION_REFUSED) {
-                    logger.printfln("MQTT: Connection refused: %s", get_mqtt_error(eh->connect_return_code));
-                    // Minus to indicate this is a connection error
-                    mqtt->state.get("last_error")->updateInt(-eh->connect_return_code);
-                } else {
-                    logger.printfln("MQTT: Unknown error");
-                    mqtt->state.get("last_error")->updateInt(0xFFFFFFFF);
-                }
+                }, 0);
                 break;
             }
         default:

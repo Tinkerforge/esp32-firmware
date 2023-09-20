@@ -391,12 +391,10 @@ void EnergyManager::register_urls()
     api.addState("energy_manager/state", &state, {}, 1000);
 
     server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
-        task_scheduler.scheduleOnce([this](){
-            last_debug_keep_alive = millis();
-            check_debug();
-            ws.pushRawStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
-            debug = true;
-        }, 0);
+        last_debug_keep_alive = millis();
+        check_debug();
+        ws.pushRawStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
+        debug = true;
         return request.send(200);
     });
 
@@ -406,9 +404,7 @@ void EnergyManager::register_urls()
     });
 
     server.on("/energy_manager/stop_debug", HTTP_GET, [this](WebServerRequest request){
-        task_scheduler.scheduleOnce([this](){
-            debug = false;
-        }, 0);
+        debug = false;
         return request.send(200);
     });
 

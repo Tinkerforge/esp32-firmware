@@ -255,7 +255,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
 
 void FirmwareUpdate::register_urls()
 {
-    server.on("/recovery", HTTP_GET, [](WebServerRequest req) {
+    server.on_HTTPThread("/recovery", HTTP_GET, [](WebServerRequest req) {
         req.addResponseHeader("Content-Encoding", "gzip");
         req.addResponseHeader("ETag", "dontcachemeplease");
         // Intentionally don't handle the If-None-Match header:
@@ -299,7 +299,7 @@ void FirmwareUpdate::register_urls()
         return true;
     });
 
-    server.on("/flash_firmware", HTTP_POST, [this](WebServerRequest request){
+    server.on_HTTPThread("/flash_firmware", HTTP_POST, [this](WebServerRequest request){
         if (update_aborted)
             return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
 
@@ -317,7 +317,7 @@ void FirmwareUpdate::register_urls()
         return handle_update_chunk(U_FLASH, request, index, data, len, final, request.contentLength());
     });
 
-    server.on("/flash_spiffs", HTTP_POST, [this](WebServerRequest request){
+    server.on_HTTPThread("/flash_spiffs", HTTP_POST, [this](WebServerRequest request){
         if(!Update.hasError()) {
             logger.printfln("SPFFS flashed successfully! Rebooting in one second.");
             task_scheduler.scheduleOnce([](){ESP.restart();}, 1000);

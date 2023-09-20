@@ -127,7 +127,7 @@ void EventLog::drop(size_t count)
 
 void EventLog::register_urls()
 {
-    server.on("/event_log", HTTP_GET, [this](WebServerRequest request) {
+    server.on_HTTPThread("/event_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{event_buf_mutex};
         auto chunk_buf = heap_alloc_array<char>(CHUNK_SIZE);
         auto used = event_buf.used();

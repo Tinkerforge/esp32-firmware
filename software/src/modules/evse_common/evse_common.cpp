@@ -369,12 +369,10 @@ void EvseCommon::register_urls() {
 
 #if MODULE_WS_AVAILABLE()
     server.on("/evse/start_debug", HTTP_GET, [this](WebServerRequest request) {
-        task_scheduler.scheduleOnce([this](){
-            last_debug_keep_alive = millis();
-            check_debug();
-            ws.pushRawStateUpdate(backend->get_evse_debug_header(), "evse/debug_header");
-            debug = true;
-        }, 0);
+        last_debug_keep_alive = millis();
+        check_debug();
+        ws.pushRawStateUpdate(backend->get_evse_debug_header(), "evse/debug_header");
+        debug = true;
         return request.send(200);
     });
 
@@ -384,9 +382,7 @@ void EvseCommon::register_urls() {
     });
 
     server.on("/evse/stop_debug", HTTP_GET, [this](WebServerRequest request){
-        task_scheduler.scheduleOnce([this](){
-            debug = false;
-        }, 0);
+        debug = false;
         return request.send(200);
     });
 #endif

@@ -321,9 +321,9 @@ bool API::restorePersistentConfig(const String &path, ConfigRoot *config)
     return error == "";
 }
 
-void API::registerDebugUrl(WebServer *server)
+void API::registerDebugUrl()
 {
-    server->on("/debug_report", HTTP_GET, [this](WebServerRequest request) {
+    server.on("/debug_report", HTTP_GET, [this](WebServerRequest request) {
         String result = "{\"uptime\": ";
         result += String(millis());
         result += ",\n \"free_heap_bytes\":";

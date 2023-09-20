@@ -221,7 +221,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
         String message;
         auto result = task_scheduler.await([&message, i, bytes_written]() {
             message = api.raw_commands[i].callback(recv_buf, bytes_written);
-        }, 0);
+        });
         if (result == TaskScheduler::AwaitResult::Timeout)
             return req.send(500, "text/html", "Failed to call raw command. Task timed out.");
 
@@ -289,9 +289,9 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
 
 void Http::register_urls()
 {
-    server.on("/*", HTTP_GET, [this](WebServerRequest request){return api_handler_get(request);});
-    server.on("/*", HTTP_PUT, [this](WebServerRequest request){return api_handler_put(request);});
-    server.on("/*", HTTP_POST, [this](WebServerRequest request){return api_handler_put(request);});
+    server.on_HTTPThread("/*", HTTP_GET, [this](WebServerRequest request){return api_handler_get(request);});
+    server.on_HTTPThread("/*", HTTP_PUT, [this](WebServerRequest request){return api_handler_put(request);});
+    server.on_HTTPThread("/*", HTTP_POST, [this](WebServerRequest request){return api_handler_put(request);});
 }
 
 void Http::addCommand(size_t commandIdx, const CommandRegistration &reg)

@@ -56,7 +56,7 @@ void Authentication::setup()
         String user = config.get("username")->asString(); // Create copies of possibly emphemeral Strings from config.
         String digest_hash = config.get("digest_hash")->asString();
 
-        server.setAuthentication([user, digest_hash](WebServerRequest req) -> bool {
+        server.onAuthenticate_HTTPThread([user, digest_hash](WebServerRequest req) -> bool {
             String auth = req.header("Authorization");
             if (auth == "") {
                 return false;

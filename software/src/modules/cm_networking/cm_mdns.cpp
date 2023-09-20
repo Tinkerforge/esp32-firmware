@@ -50,7 +50,7 @@ void CMNetworking::register_urls()
         start_scan();
     }, true);
 
-    server.on("/charge_manager/scan_result", HTTP_GET, [this](WebServerRequest request) {
+    server.on_HTTPThread("/charge_manager/scan_result", HTTP_GET, [this](WebServerRequest request) {
         String result = cm_networking.get_scan_results();
 
         if (result == "In progress or not started")

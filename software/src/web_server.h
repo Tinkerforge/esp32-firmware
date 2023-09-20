@@ -94,10 +94,11 @@ using wshCallback = std::function<WebServerRequestReturnProtect(WebServerRequest
 using wshUploadCallback = std::function<bool(WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final)>;
 
 struct WebServerHandler {
-    WebServerHandler(String uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback) : uri(uri), method(method), callback(callback), uploadCallback(uploadCallback) {}
+    WebServerHandler(String uri, httpd_method_t method, bool callbackInMainThread, wshCallback callback, wshUploadCallback uploadCallback) : uri(uri), method(method), callbackInMainThread(callbackInMainThread), callback(callback), uploadCallback(uploadCallback) {}
 
     String uri;
     httpd_method_t method;
+    bool callbackInMainThread;
     wshCallback callback;
     wshUploadCallback uploadCallback;
 };
@@ -110,11 +111,11 @@ public:
     }
     void start();
 
-    WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback callback);
-    WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback);
-    void onNotAuthorized(wshCallback callback);
+    WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback = wshUploadCallback());
+    WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback = wshUploadCallback());
+    void onNotAuthorized_HTTPThread(wshCallback callback);
 
-    void setAuthentication(std::function<bool(WebServerRequest)> auth_fn)
+    void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> auth_fn)
     {
         this->auth_fn = auth_fn;
     }
@@ -127,6 +128,8 @@ public:
     wshCallback on_not_authorized;
 
     std::function<bool(WebServerRequest)> auth_fn;
+private:
+    WebServerHandler *addHandler(const char *uri, httpd_method_t method, bool callbackInMainThread, wshCallback callback, wshUploadCallback uploadCallback);
 };
 
 // Make global variable available everywhere because it is not declared in modules.h.

@@ -103,14 +103,12 @@ void Coredump::register_urls()
         if (esp_core_dump_image_check() == ESP_OK)
             return request.send(503, "text/plain", "Error while erasing core dump");
 
-        task_scheduler.scheduleOnce([this](){
-                state.get("coredump_available")->updateBool(false);
-            }, 0);
+        state.get("coredump_available")->updateBool(false);
 
         return request.send(200);
     });
 
-    server.on("/coredump/coredump.elf", HTTP_GET, [this](WebServerRequest request) {
+    server.on_HTTPThread("/coredump/coredump.elf", HTTP_GET, [this](WebServerRequest request) {
         if (esp_core_dump_image_check() != ESP_OK)
             return request.send(404);
 
