@@ -173,11 +173,11 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
 
             let row: TableRow = {
                 columnValues: [
-                    [idx + 1],
-                    [TriggerComponent.name],
-                    [trigger_row.text],
-                    [ActionComponent.name],
-                    [action_row.text]
+                    idx + 1,
+                    trigger_component.name,
+                    trigger_row.text,
+                    action_component.name,
+                    action_row.text
                 ],
                 fieldNames: [""].concat(trigger_row.fieldNames.concat(action_row.fieldNames)),
                 fieldValues: [__("cron.content.task") + " #" + (idx + 1) as ComponentChild].concat(trigger_row.fieldValues.concat(action_row.fieldValues)),
