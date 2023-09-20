@@ -65,7 +65,6 @@ let x = {
             "auto_reset_time": "Reset at",
             "meter_slot_grid_power": "Power meter",
             "meter_slot_grid_power_muted": "for excess charging",
-            "meter_slot_no_meter": "No meter",
             "guaranteed_power": "Min + PV: Minimum charging power",
             "guaranteed_power_muted": "Charging power that is allowed to be drawn from the grid to charge vehicles.",
             "target_power_from_grid": "Target grid power draw",

@@ -65,7 +65,6 @@ let x = {
             "auto_reset_time": "Zurücksetzen um",
             "meter_slot_grid_power": "Stromzähler",
             "meter_slot_grid_power_muted": "für Überschussladen",
-            "meter_slot_no_meter": "Kein Stromzähler",
             "guaranteed_power": "Min + PV: Mindestladeleistung",
             "guaranteed_power_muted": "Leistung, die im Min + PV-Modus zum Laden von Fahrzeugen aus dem Netz bezogen werden darf.",
             "target_power_from_grid": "Soll-Netzbezug",
