@@ -213,6 +213,11 @@ uint64_t TaskScheduler::currentTaskId() {
 }
 
 TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t millis_to_wait) {
+    if (millis_to_wait == 0) {
+        logger.printfln("Calling TaskScheduler::await with millis_to_wait == 0 is not allowed. This is not scheduleOnce!");
+        return TaskScheduler::AwaitResult::Error;
+    }
+
     TaskHandle_t thisThread = xTaskGetCurrentTaskHandle();
 
     if (this->mainThreadHandle == thisThread) {
