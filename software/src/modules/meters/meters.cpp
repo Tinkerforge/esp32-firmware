@@ -247,7 +247,6 @@ void Meters::setup()
         last_history_slot = current_history_slot;
     }, 0, 500);
 
-    api.addFeature("meters");
     initialized = true;
 }
 
