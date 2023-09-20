@@ -90,11 +90,16 @@ void Meters::setup()
 
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
         MeterSlot &meter_slot = meter_slots[slot];
+#ifdef METERS_SLOT_0_DEFAULT_CLASS
+        MeterClassID meter_class = slot == 0 ? METERS_SLOT_0_DEFAULT_CLASS : MeterClassID::None;
+#else
+        MeterClassID meter_class = MeterClassID::None;
+#endif
 
         // Initialize config.
         meter_slot.config_union = Config::Union(
-            *get_generator_for_class(MeterClassID::None)->get_config_prototype(),
-            MeterClassID::None,
+            *get_generator_for_class(meter_class)->get_config_prototype(),
+            meter_class,
             config_prototypes,
             class_count
         );
