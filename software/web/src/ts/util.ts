@@ -284,9 +284,7 @@ export function postReboot(alert_title: string, alert_text: string) {
                 // as opposed to keep-alive, version was already there in the first version.
                 // so this will even work if downgrading to an version older than
                 // 1.1.0
-                console.log("setting up...");
                 eventSource.addEventListener_unchecked('info/version', function (e) {
-                    console.log("reloading");
                     window.location.reload();
                 }, false);})
     ), 5000);
