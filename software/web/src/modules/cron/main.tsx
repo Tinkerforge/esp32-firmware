@@ -26,10 +26,9 @@ import { Fragment, render, h, ComponentChild } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { Table, TableModalRow, TableRow } from "../../ts/components/table";
-import { CronAction, CronTrigger, Task } from "./api";
 import { InputSelect } from "../../ts/components/input_select";
 import { __ } from "../../ts/translation";
-import { CronTriggerComponents, CronActionComponents } from "./api";
+import { CronAction, CronTrigger, Task, CronTriggerComponents, CronActionComponents } from "./types";
 import { plugins_init } from "./plugins";
 
 type CronState = {

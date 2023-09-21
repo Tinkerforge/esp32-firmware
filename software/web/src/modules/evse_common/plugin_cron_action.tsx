@@ -16,7 +16,7 @@ export type EvseLedCronAction = [
 ];
 
 import { __ } from "../../ts/translation"
-import { CronComponent, CronAction } from "../cron/api"
+import { CronComponent, CronAction } from "../cron/types"
 import { Cron } from "../cron/main"
 import { InputSelect } from "../../ts/components/input_select"
 import { InputFloat } from "../../ts/components/input_float"

@@ -1,49 +1,18 @@
 {{{imports}}}
 
-import { h, ComponentChild } from 'preact'
-import { Cron } from './main'
-import { TableModalRow } from '../../ts/components/table'
-
 export interface config {
     tasks: Task[]
 }
 
-export interface Task {
+interface Task {
     trigger: CronTrigger,
     action: CronAction
 }
 
-export type CronTrigger =
+type CronTrigger =
     [0, null]
     | {{{triggers}}};
 
-export type CronAction =
+type CronAction =
     [0, null]
     | {{{actions}}};
-
-export interface CronComponent {
-    fieldNames: string[],
-    fieldValues: ComponentChild[],
-    text: string
-}
-
-interface CronTriggerComponent {
-    clone: (trigger: CronTrigger) => CronTrigger,
-    table_row: (trigger: CronTrigger) => CronComponent,
-    config_component: (cron: Cron, trigger: CronTrigger) => TableModalRow[],
-    config_builder: () => CronTrigger,
-    name: string,
-    require_feature?: string
-}
-
-interface CronActionComponent {
-    clone: (action: CronAction) => CronAction,
-    table_row: (action: CronAction) => CronComponent,
-    config_component: (cron: Cron, action: CronAction) => TableModalRow[],
-    config_builder: () => CronAction,
-    name: string,
-    require_feature?: string
-}
-
-export type CronTriggerComponents = {[key: number]: CronTriggerComponent};
-export type CronActionComponents = {[key: number]: CronActionComponent};

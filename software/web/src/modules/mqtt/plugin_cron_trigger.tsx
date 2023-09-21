@@ -12,7 +12,7 @@ export type MqttCronTrigger = [
 
 import { h, Fragment } from "preact"
 import { __ } from "../../ts/translation";
-import { CronComponent, CronTrigger } from "../cron/api";
+import { CronComponent, CronTrigger } from "../cron/types";
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { Switch } from "../../ts/components/switch";

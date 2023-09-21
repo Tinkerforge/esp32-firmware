@@ -8,7 +8,7 @@ export type EvseGpOutputCronAction = [
 ];
 
 import { __ } from "../../ts/translation";
-import { CronComponent, CronAction } from "../cron/api";
+import { CronComponent, CronAction } from "../cron/types";
 import { h } from 'preact'
 import { InputSelect } from "../../ts/components/input_select";
 import { Cron } from "../cron/main";

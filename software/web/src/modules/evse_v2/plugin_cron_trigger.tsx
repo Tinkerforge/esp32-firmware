@@ -1,5 +1,5 @@
 import { CronTriggerID } from "../cron/cron_defs";
-import { CronComponent, CronTrigger } from "../cron/api"
+import { CronComponent, CronTrigger } from "../cron/types"
 import { h } from 'preact'
 import { Cron } from "../cron/main"
 import { __ } from "../../ts/translation"

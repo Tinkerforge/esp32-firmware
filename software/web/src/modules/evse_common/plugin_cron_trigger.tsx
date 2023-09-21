@@ -9,7 +9,7 @@ export type EvseStateCronTrigger = [
 
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, CronTrigger } from "../cron/api";
+import { CronComponent, CronTrigger } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { h } from "preact"
 

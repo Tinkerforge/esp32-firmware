@@ -11,7 +11,7 @@ export type MqttCronAction = [
 ];
 
 import { Cron } from "../cron/main";
-import { CronComponent, CronAction } from "../cron/api";
+import { CronComponent, CronAction } from "../cron/types";
 import { InputText } from "../../ts/components/input_text";
 import { h, Fragment } from "preact"
 import { Switch } from "../../ts/components/switch";

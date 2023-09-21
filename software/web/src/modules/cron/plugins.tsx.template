@@ -1,4 +1,4 @@
-import { CronTriggerComponents, CronActionComponents } from "./api";
+import { CronTriggerComponents, CronActionComponents } from "./types";
 
 {{{imports}}}
 

@@ -10,7 +10,7 @@ export type ChargeManagerCronAction = [
 import { h } from "preact"
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, CronAction } from "../cron/api";
+import { CronComponent, CronAction } from "../cron/types";
 import { InputFloat } from "../../ts/components/input_float";
 
 export function ChargeManagerCronComponent(action: CronAction): CronComponent {
