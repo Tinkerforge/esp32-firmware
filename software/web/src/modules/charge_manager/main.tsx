@@ -33,7 +33,6 @@ import { Button, Collapse, ListGroup } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
 import { Switch } from "../../ts/components/switch";
-import { config } from "./api";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
@@ -120,7 +119,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         document.getElementById("charge_manager_config_form").dispatchEvent(new Event('input'));
     }
 
-    override async isSaveAllowed(cfg: config): Promise<boolean> {
+    override async isSaveAllowed(cfg: ChargeManagerConfig): Promise<boolean> {
         for (let i = 0; i < cfg.chargers.length; i++)
             for (let a = i + 1; a < cfg.chargers.length; a++)
                 if (cfg.chargers[a].host == cfg.chargers[i].host)
@@ -128,7 +127,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         return true;
     }
 
-    override async sendSave(t: "charge_manager/config", cfg: config) {
+    override async sendSave(t: "charge_manager/config", cfg: ChargeManagerConfig) {
         const modal = util.async_modal_ref.current;
         let illegal_chargers = "";
         for (let i = 0; i < cfg.chargers.length; i++)

@@ -1,4 +1,4 @@
-interface Charger {
+interface ChargerState {
     name: string,
     uid: number,
     last_update: number,
@@ -33,7 +33,7 @@ export type scan_result = ServCharger[] | string;
 export interface state {
     state: number,
     uptime: number,
-    chargers: Charger[]
+    chargers: ChargerState[]
 }
 
 interface ChargerConfig {
@@ -61,5 +61,4 @@ export interface available_current {
 }
 
 export interface scan {
-
 }
