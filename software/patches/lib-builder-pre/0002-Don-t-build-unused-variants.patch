@@ -1,0 +1,40 @@
+From dfc88f4d633369d0bb722318ccb02b7d70e3569d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Tue, 19 Sep 2023 15:07:53 +0200
+Subject: [PATCH] Don't build unused variants.
+
+---
+ configs/builds.json | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
+
+diff --git a/configs/builds.json b/configs/builds.json
+index c32e465..65341ff 100644
+--- a/configs/builds.json
++++ b/configs/builds.json
+@@ -102,19 +102,13 @@
+ 			"idf_libs":["qio","80m"],
+ 			"bootloaders":[
+ 				["qio","80m"],
+-				["qout","80m"],
+ 				["dio","80m"],
+-				["dout","80m"],
+ 				["qio","40m"],
+-				["qout","40m"],
+-				["dio","40m"],
+-				["dout","40m"]
++				["dio","40m"]
+ 			],
+ 			"mem_variants":[
+-				["qout","80m"],
+-				["dio","80m"],
+-				["dout","80m"]
++				["dio","80m"]
+ 			]
+ 		}
+ 	]
+-}
+\ No newline at end of file
++}
+-- 
+2.30.2
+

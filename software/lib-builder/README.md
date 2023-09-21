@@ -25,26 +25,30 @@ Install debootstrap and ubuntu-keyring.
     logout
     [login as user]
 
-### Setup lib builder
-(see https://github.com/espressif/esp32-arduino-lib-builder README)
+### Install required packages
 
     sudo apt update
     sudo apt-get install jq git wget curl libssl-dev libncurses-dev flex bison gperf python3 python-is-python3 python3-pip python3-setuptools python3-serial python3-click python3-cryptography python3-future python3-pyparsing python3-pyelftools cmake ninja-build ccache python3-venv libffi-dev libssl-dev dfu-util libusb-1.0-0
     git config --global user.name username
     git config --global user.email user@example.com
     sudo pip install --upgrade pip
-    cd ~
-    git clone https://github.com/espressif/esp32-arduino-lib-builder
-    cd esp32-arduino-lib-builder
-    git switch release/v4.4
-    ./build.sh -t esp32 -b menuconfig
-    [Press S Enter to write sdkconfig, Q to quit]
-    cp sdkconfig sdkconfig.vanilla
 
 ### Clone esp32-firmware
 
     cd ~
     git clone https://github.com/Tinkerforge/esp32-firmware
+
+### Setup lib builder
+(see https://github.com/espressif/esp32-arduino-lib-builder README)
+
+    cd ~
+    git clone https://github.com/espressif/esp32-arduino-lib-builder
+    cd esp32-arduino-lib-builder
+    git switch release/v4.4
+    ~/esp32-firmware/software/lib-builder/apply_patches.py ~/esp32-arduino-lib-builder ~/esp32-firmware/software/patches/lib-builder-pre
+    ./build.sh -t esp32 -b menuconfig
+    [Press S Enter to write sdkconfig, Q to quit]
+    cp sdkconfig sdkconfig.vanilla
 
 ### Apply patches to ESP-IDF and components
 
