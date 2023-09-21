@@ -31,7 +31,8 @@
             "time_5min": "Uhrzeit",
             "time_daily": "Datum",
             "power": "Leistung",
-            "energy": "Energie"
+            "energy": "Energie",
+            "total_energy": "Gesamt-Energie"
         }
     }
 }
