@@ -582,15 +582,15 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
         super();
 
         util.addApiEventListener('charge_manager/state', () => {
-            this.setState({state: API.get_maybe('charge_manager/state')})
+            this.setState({state: API.get('charge_manager/state')})
         });
 
         util.addApiEventListener('charge_manager/available_current', () => {
-            this.setState({available_current: API.get_maybe('charge_manager/available_current')})
+            this.setState({available_current: API.get('charge_manager/available_current')})
         });
 
         util.addApiEventListener('charge_manager/config', () => {
-            this.setState({config: API.get_maybe('charge_manager/config')})
+            this.setState({config: API.get('charge_manager/config')})
         });
 
         util.addApiEventListener('info/keep_alive', () => {
