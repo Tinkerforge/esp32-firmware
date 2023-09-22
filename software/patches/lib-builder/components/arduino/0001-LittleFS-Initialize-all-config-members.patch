@@ -1,27 +1,26 @@
-From 6f85d9d1d35940c1046d35f6505eff3b6c83c1e8 Mon Sep 17 00:00:00 2001
+From 572b6b5adf8e58a8dd341c8dced548c36d231b9f Mon Sep 17 00:00:00 2001
 From: Erik Fleckstein <erik@tinkerforge.com>
 Date: Fri, 22 Sep 2023 11:41:08 +0200
 Subject: [PATCH] LittleFS: Initialize all config members.
 
 ---
- libraries/LittleFS/src/LittleFS.cpp | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ libraries/LittleFS/src/LittleFS.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/libraries/LittleFS/src/LittleFS.cpp b/libraries/LittleFS/src/LittleFS.cpp
-index 608e0ba2..4e94e8c0 100644
+index 608e0ba2..86552f14 100644
 --- a/libraries/LittleFS/src/LittleFS.cpp
 +++ b/libraries/LittleFS/src/LittleFS.cpp
-@@ -82,7 +82,9 @@ bool LittleFSFS::begin(bool formatOnFail, const char * basePath, uint8_t maxOpen
+@@ -81,7 +81,9 @@ bool LittleFSFS::begin(bool formatOnFail, const char * basePath, uint8_t maxOpen
+     esp_vfs_littlefs_conf_t conf = {
        .base_path = basePath,
        .partition_label = partitionLabel_,
++      .partition = NULL,
        .format_if_mount_failed = false,
--      .dont_mount = false
-+      .dont_mount = false,
-+      .partition = null,
-+      .read_only = false
++      .read_only = false,
+       .dont_mount = false
      };
  
-     esp_err_t err = esp_vfs_littlefs_register(&conf);
 -- 
 2.42.0
 
