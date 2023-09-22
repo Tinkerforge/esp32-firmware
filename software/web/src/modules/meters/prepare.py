@@ -28,11 +28,30 @@ with open(os.path.join(software_dir, "web", "src", "build.ts")) as f:
 
     meter_count = int(match.group(1))
 
-with open('api.ts.template_header', 'r', encoding='utf-8') as f:
-    template_header = f.read()
+imports = []
+inits = []
+configs = []
+
+for plugin in util.find_frontend_plugins('Meters', 'Config'):
+    import_path = os.path.join('..', plugin.module_name, plugin.import_name)
+    imports.append("import * as {0}_config from '{1}'".format(plugin.module_name, import_path))
+    inits.append("result.push({0}_config.init());".format(plugin.module_name))
+
+    for interface_name in plugin.interface_names:
+        configs.append('{0}_config.{1}'.format(plugin.module_name, interface_name))
 
 with open('api.ts', 'w', encoding='utf-8') as f:
-    f.write(template_header + '\n')
+    f.write(util.specialize_template('api.ts.template_header', None, {
+        "{{{imports}}}": '\n'.join(imports),
+        "{{{configs}}}": '\n    | '.join(configs),
+    }) + '\n')
 
     for i in range(meter_count):
-        f.write(util.specialize_template('api.ts.template_fragment', None, {"{{{meter_id}}}": str(i)}) + '\n')
+        f.write(util.specialize_template('api.ts.template_fragment', None, {
+            "{{{meter_id}}}": str(i),
+        }) + '\n')
+
+util.specialize_template("plugins.tsx.template", "plugins.tsx", {
+    "{{{imports}}}": '\n'.join(imports),
+    "{{{inits}}}": '\n    '.join(inits),
+})

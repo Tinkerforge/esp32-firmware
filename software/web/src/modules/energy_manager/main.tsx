@@ -39,6 +39,8 @@ import { InputTime       } from "../../ts/components/input_time";
 import { InputText       } from "../../ts/components/input_text";
 import { Switch          } from "../../ts/components/switch";
 import { SubPage         } from "../../ts/components/sub_page";
+import { MeterConfig     } from "../meters/types";
+import { MeterClassID    } from "../meters/meters_defs";
 
 type StringStringTuple = [string, string];
 
@@ -210,7 +212,7 @@ export class EnergyManagerStatus extends Component {
 
 render(<EnergyManagerStatus/>, $('#status-energy_manager')[0])
 
-export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, API.getType['energy_manager/debug_config']> {
+export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, API.getType['energy_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
     old_input4_rule_then = -1;
 
     constructor() {
@@ -218,10 +220,22 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
             __("energy_manager.script.save_failed"),
             __("energy_manager.script.reboot_content_changed"));
 
-
         util.addApiEventListener('energy_manager/debug_config', () => {
             this.setState({...API.get('energy_manager/debug_config')});
         });
+
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
+                let meter_config = API.get_maybe(`meters/${meter_slot}/config`);
+
+                this.setState((prevState) => ({
+                    meter_configs: {
+                        ...prevState.meter_configs,
+                        [meter_slot]: meter_config
+                    }
+                }));
+            });
+        }
     }
 
     override async sendSave(t: "energy_manager/config", cfg: API.getType['energy_manager/config']) {
@@ -249,7 +263,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         return super.getIsModified(t);
     }
 
-    render(props: {}, s: Readonly<API.getType['energy_manager/config'] & API.getType['energy_manager/debug_config']>) {
+    render(props: {}, s: Readonly<API.getType['energy_manager/config'] & API.getType['energy_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}>) {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
             return <></>
 
@@ -268,7 +282,9 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
         let meter_slots: StringStringTuple[] = [];
         for (let i = 0; i < METERS_SLOTS; i++) {
-            meter_slots.push([i.toString(), "Meter #" + i]); // FIXME: use meter display name instead
+            if (s.meter_configs[i][0] != MeterClassID.None) {
+                meter_slots.push([i.toString(), "Meter #" + i]); // FIXME: use meter display name instead
+            }
         }
 
         // Remember previous input4_rule_then setting so that it can be restored after toggling the contactor installed setting multiple times.
@@ -372,9 +388,11 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                             <FormRow label={__("energy_manager.content.meter_slot_grid_power")} label_muted={__("energy_manager.content.meter_slot_grid_power_muted")}>
                                 <InputSelect
                                     required
+                                    placeholder={meter_slots.length > 0 ? __("energy_manager.content.meter_slot_grid_power_select") : __("energy_manager.content.meter_slot_grid_power_none")}
                                     items={meter_slots}
                                     value={s.meter_slot_grid_power}
                                     onValue={(v) => this.setState({meter_slot_grid_power: parseInt(v)})}
+                                    disabled={meter_slots.length == 0}
                                 />
                             </FormRow>
 
