@@ -39,7 +39,7 @@ export function InputSelect(props: InputSelectProps) {
         let found = false;
 
         for (let i = 0; i < items.length; ++i) {
-            if (items[i][0] === value) {
+            if (items[i][0] == value) {
                 found = true;
             }
         }
