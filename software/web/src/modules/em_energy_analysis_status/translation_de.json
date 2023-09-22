@@ -1,7 +1,7 @@
 {
     "em_energy_analysis_status": {
         "status": {
-            "power_history": "Verbrauchsverlauf",
+            "power_history": "Leistungsverlauf",
             "current_power": "Leistungsaufnahme"
         },
         "navbar": {
