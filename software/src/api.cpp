@@ -451,7 +451,7 @@ void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t
                 free(cpy);
             };
 
-            if (cpy == nullptr && !reg.config->is_null()) {
+            if ((cpy == nullptr || len == 0) && !reg.config->is_null()) {
                 result = "empty payload only allowed for null configs";
                 return;
             }
