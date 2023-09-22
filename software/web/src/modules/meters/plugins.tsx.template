@@ -1,0 +1,11 @@
+import { MeterConfigPlugin } from "./types";
+
+{{{imports}}}
+
+export function plugins_init() {
+    let result: Array<{[meter_class: number]: MeterConfigPlugin}> = [];
+
+    {{{inits}}}
+
+    return result;
+}

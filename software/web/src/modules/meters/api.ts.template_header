@@ -1,3 +1,9 @@
+{{{imports}}}
+
+type MeterConfig =
+    [0, null]
+    | {{{configs}}};
+
 //APIPath:meters/
 export interface config {
     meter_slot_status: number,

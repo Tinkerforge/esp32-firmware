@@ -1,4 +1,6 @@
 //APIPath:meters/{{{meter_id}}}/
+export type config___{{{meter_id}}} = MeterConfig;
+
 export interface state___{{{meter_id}}} {
     state: number,
     type: number
