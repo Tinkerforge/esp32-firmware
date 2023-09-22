@@ -400,14 +400,12 @@ void Wifi::setup()
                 static bool first = true;
                 const char *reason = reason2str(reason_code);
                 if (!this->was_connected) {
-                {
                     logger.printfln("Wifi failed to connect to %s: %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
                     if (first)
                     {
                         first = false;
                         this->apply_sta_config_and_connect();
                     }
-                }
                 } else {
                     uint32_t now = millis();
                     uint32_t connected_for = now - last_connected_ms;
