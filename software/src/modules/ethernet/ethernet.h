@@ -50,5 +50,7 @@ private:
     ConfigRoot config;
     ConfigRoot state;
 
-    ConfigRoot config_in_use;
+    OwnedConfig config_in_use;
+    String hostname;
+    EthernetState connection_state = EthernetState::NOT_CONFIGURED;
 };

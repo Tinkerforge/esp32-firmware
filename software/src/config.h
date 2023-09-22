@@ -31,6 +31,7 @@
 #include "strict_variant/variant.hpp"
 #include "strict_variant/mpl/find_with.hpp"
 
+#include "config/owned_config.h"
 
 #ifdef DEBUG_FS_ENABLE
 extern TaskHandle_t mainTaskHandle;
@@ -727,6 +728,8 @@ public:
     String update(const Config::ConfUpdate *val);
 
     String validate();
+
+    OwnedConfig get_owned_copy();
 
 private:
     template<typename T>

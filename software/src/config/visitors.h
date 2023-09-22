@@ -802,3 +802,58 @@ struct set_updated_false {
     }
     uint8_t api_backend_flag;
 };
+
+struct to_owned {
+    OwnedConfig operator()(const Config::ConfString &x)
+    {
+        return OwnedConfig{*x.getVal()};
+    }
+    OwnedConfig operator()(const Config::ConfFloat &x)
+    {
+        return OwnedConfig{*x.getVal()};
+    }
+    OwnedConfig operator()(const Config::ConfInt &x)
+    {
+        return OwnedConfig{*x.getVal()};
+    }
+    OwnedConfig operator()(const Config::ConfUint &x)
+    {
+        return OwnedConfig{*x.getVal()};
+    }
+    OwnedConfig operator()(const Config::ConfBool &x)
+    {
+        return OwnedConfig{*x.getVal()};
+    }
+    OwnedConfig operator()(const Config::ConfVariant::Empty &x)
+    {
+        return OwnedConfig{nullptr};
+    }
+    OwnedConfig operator()(const Config::ConfArray &x)
+    {
+        std::vector<OwnedConfig> result;
+
+        for (const Config &c : *x.getVal()) {
+            result.push_back(Config::apply_visitor(to_owned{}, c.value));
+        }
+
+        return OwnedConfig{OwnedConfig::OwnedConfigArray{result}};
+    }
+    OwnedConfig operator()(const Config::ConfObject &x)
+    {
+        std::vector<std::pair<String, OwnedConfig>> result;
+
+        for (const std::pair<String, Config> &c : *x.getVal()) {
+            result.push_back({c.first, Config::apply_visitor(to_owned{}, c.second.value)});
+        }
+
+        return OwnedConfig{OwnedConfig::OwnedConfigObject{result}};
+    }
+    OwnedConfig operator()(const Config::ConfUnion &x)
+    {
+        std::vector<OwnedConfig> result;
+        result.reserve(1);
+        result.push_back(Config::apply_visitor(to_owned{}, x.getVal()->value));
+        result.shrink_to_fit();
+        return OwnedConfig(OwnedConfig::OwnedConfigUnion{x.getTag(), result});
+    }
+};

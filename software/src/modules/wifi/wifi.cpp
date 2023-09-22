@@ -389,66 +389,71 @@ void Wifi::setup()
 #endif
     }
 
-    ap_config_in_use = ap_config;
-    sta_config_in_use = sta_config;
+    ap_config_in_use = ap_config.get_owned_copy();
+    sta_config_in_use = sta_config.get_owned_copy();
 
     WiFi.persistent(false);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             uint8_t reason_code = info.wifi_sta_disconnected.reason;
-            task_scheduler.scheduleOnce([this, reason_code](){
-                static bool first = true;
-                const char *reason = reason2str(reason_code);
-                if (!this->was_connected) {
-                    logger.printfln("Wifi failed to connect to %s: %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
-                    if (first)
-                    {
-                        first = false;
-                        this->apply_sta_config_and_connect();
-                    }
-                } else {
-                    uint32_t now = millis();
-                    uint32_t connected_for = now - last_connected_ms;
-                    state.get("connection_end")->updateUint(now);
-
-                    // FIXME: Use a better way of time keeping here.
-                    if (connected_for < 0x7FFFFFFF)
-                        logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for %u seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
-                    else
-                        logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for a long time.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
-
+            static bool first = true;
+            const char *reason = reason2str(reason_code);
+            if (!this->was_connected) {
+                logger.printfln("Wifi failed to connect to %s: %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
+                if (first)
+                {
+                    first = false;
+                    this->apply_sta_config_and_connect();
                 }
-                this->was_connected = false;
+            } else {
+                uint32_t now = millis();
+                uint32_t connected_for = now - last_connected_ms;
 
+                // FIXME: Use a better way of time keeping here.
+                if (connected_for < 0x7FFFFFFF)
+                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for %u seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
+                else
+                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for a long time.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
+
+                task_scheduler.scheduleOnce([this, now](){
+                    state.get("connection_end")->updateUint(now);
+                }, 0);
+            }
+
+            task_scheduler.scheduleOnce([this](){
                 state.get("sta_ip")->updateString("0.0.0.0");
                 state.get("sta_subnet")->updateString("0.0.0.0");
                 state.get("sta_bssid")->updateString("");
             }, 0);
+
+            this->was_connected = false;
         },
         ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            task_scheduler.scheduleOnce([this](){
-                this->was_connected = true;
+            this->was_connected = true;
 
-                logger.printfln("Wifi connected to %s, BSSID %s", WiFi.SSID().c_str(), WiFi.BSSIDstr().c_str());
-                last_connected_ms = millis();
-                state.get("connection_start")->updateUint(last_connected_ms);
+            logger.printfln("Wifi connected to %s, BSSID %s", WiFi.SSID().c_str(), WiFi.BSSIDstr().c_str());
+            auto now = millis();
+            last_connected_ms = now;
+
+            task_scheduler.scheduleOnce([this, now](){
+                state.get("connection_start")->updateUint(now);
             }, 0);
         },
         ARDUINO_EVENT_WIFI_STA_CONNECTED);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            task_scheduler.scheduleOnce([this](){
-                // Sometimes the ARDUINO_EVENT_WIFI_STA_CONNECTED is not fired.
-                // Instead we get the ARDUINO_EVENT_WIFI_STA_GOT_IP twice?
-                // Make sure that the state is set to connected here,
-                // or else MQTT will never attempt to connect.
-                this->was_connected = true;
+            // Sometimes the ARDUINO_EVENT_WIFI_STA_CONNECTED is not fired.
+            // Instead we get the ARDUINO_EVENT_WIFI_STA_GOT_IP twice?
+            // Make sure that the state is set to connected here,
+            // or else MQTT will never attempt to connect.
+            this->was_connected = true;
 
-                auto ip = WiFi.localIP().toString();
-                auto subnet = WiFi.subnetMask();
-                logger.printfln("Wifi got IP address: %s/%u. Own MAC address: %s", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet), WiFi.macAddress().c_str());
+            auto ip = WiFi.localIP().toString();
+            auto subnet = WiFi.subnetMask();
+            logger.printfln("Wifi got IP address: %s/%u. Own MAC address: %s", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet), WiFi.macAddress().c_str());
+            task_scheduler.scheduleOnce([this, ip, subnet](){
                 state.get("sta_ip")->updateString(ip);
                 state.get("sta_subnet")->updateString(subnet.toString());
                 state.get("sta_bssid")->updateString(WiFi.BSSIDstr());
@@ -462,18 +467,18 @@ void Wifi::setup()
         ARDUINO_EVENT_WIFI_STA_GOT_IP6);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            if(!this->was_connected)
+                return;
+
+            this->was_connected = false;
+
+            logger.printfln("Wifi lost IP. Forcing disconnect and reconnect of WiFi");
+            WiFi.disconnect(false, true);
+
             task_scheduler.scheduleOnce([this](){
-                if(!this->was_connected)
-                    return;
-
-                this->was_connected = false;
-
-                logger.printfln("Wifi lost IP. Forcing disconnect and reconnect of WiFi");
                 state.get("sta_ip")->updateString("0.0.0.0");
                 state.get("sta_subnet")->updateString("0.0.0.0");
                 state.get("sta_bssid")->updateString("");
-
-                WiFi.disconnect(false, true);
             }, 0);
         },
         ARDUINO_EVENT_WIFI_STA_LOST_IP);

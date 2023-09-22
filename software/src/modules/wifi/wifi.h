@@ -58,8 +58,8 @@ private:
     ConfigRoot sta_config;
     ConfigRoot state;
 
-    ConfigRoot ap_config_in_use;
-    ConfigRoot sta_config_in_use;
+    OwnedConfig ap_config_in_use;
+    OwnedConfig sta_config_in_use;
 
     bool soft_ap_running = false;
 
