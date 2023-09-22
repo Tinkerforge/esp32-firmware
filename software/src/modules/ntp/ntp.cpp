@@ -53,18 +53,16 @@ static void ntp_sync_cb(struct timeval *t)
 
     task_scheduler.scheduleOnce([]() {
         ntp.set_synced();
-    }, 0);
 
 #if MODULE_RTC_AVAILABLE()
-    task_scheduler.scheduleOnce([]() {
         if (!api.hasFeature("rtc"))
             return;
 
         timeval time;
         gettimeofday(&time, nullptr);
         rtc.set_time(time);
-    }, 0);
 #endif
+    }, 0);
 }
 
 // Because there is the risk of a race condition with the rtc module,
