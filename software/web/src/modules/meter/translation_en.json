@@ -86,11 +86,11 @@
             "detailed_total_export_kwh": "Active energy (export)",
             "detailed_total_export_kwh_desc": "fed to grid",
 
-            "detailed_total_import_kvarh": "Reactive energy (import)",
-            "detailed_total_import_kvarh_desc": "drawn from grid",
+            "detailed_total_import_kvarh": "Reactive energy (inductive)",
+            "detailed_total_import_kvarh_desc": "",
 
-            "detailed_total_export_kvarh": "Reactive energy (export)",
-            "detailed_total_export_kvarh_desc": "fed to grid",
+            "detailed_total_export_kvarh": "Reactive energy (capacitive)",
+            "detailed_total_export_kvarh_desc": "",
 
             "detailed_total_vah": "Total apparent power",
             "detailed_total_vah_desc": "",
@@ -105,7 +105,7 @@
             "detailed_maximum_total_system_power_demand_desc": "highest value measured",
 
             "detailed_total_system_va_demand": "Apparent power demand",
-            "detailed_total_system_va_demand_desc": "difference of import to export",
+            "detailed_total_system_va_demand_desc": "",
 
             "detailed_maximum_total_system_va_demand": "Maximum apparent power demand",
             "detailed_maximum_total_system_va_demand_desc": "highest value measured",
@@ -165,7 +165,7 @@
             "detailed_total_kwh_sum_desc": "sum of import and export of all phases",
 
             "detailed_total_kvarh_sum": "Sum of total reactive energies",
-            "detailed_total_kvarh_sum_desc": "sum of import and export of all phases",
+            "detailed_total_kvarh_sum_desc": "sum of all phases",
 
             "detailed_import_kwh": "Active energies (import)",
             "detailed_import_kwh_desc": "L1, L2, L3; transferred to vehicle",
@@ -176,14 +176,14 @@
             "detailed_total_kwh": "Total active energies",
             "detailed_total_kwh_desc": "L1, L2, L3; sum of import and export",
 
-            "detailed_import_kvarh": "Reactive energies (import)",
-            "detailed_import_kvarh_desc": "L1, L2, L3; transferred to vehicle",
+            "detailed_import_kvarh": "Reactive energies (inductive)",
+            "detailed_import_kvarh_desc": "L1, L2, L3",
 
-            "detailed_export_kvarh": "Reactive energies (export)",
-            "detailed_export_kvarh_desc": "L1, L2, L3; transferred from vehicle",
+            "detailed_export_kvarh": "Reactive energies (capacitive)",
+            "detailed_export_kvarh_desc": "L1, L2, L3",
 
             "detailed_total_kvarh": "Total reactive energies",
-            "detailed_total_kvarh_desc": "L1, L2, L3; sum of import and export",
+            "detailed_total_kvarh_desc": "L1, L2, L3",
 
             "cron_action_text": "reset energy consumption."
         },
