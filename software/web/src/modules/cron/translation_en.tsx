@@ -8,8 +8,6 @@ let x = {
         "content": {
             "cron": "Events",
             "task": "Task",
-            "condition_category": "Condition category",
-            "action_category": "Action category",
             "condition": "Condition",
             "action": "Action",
             "add_rule": "Regel hinzufügen",

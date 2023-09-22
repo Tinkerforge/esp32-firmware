@@ -90,7 +90,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
         }
 
         let triggerSelector: TableModalRow[] = [{
-            name: __("cron.content.condition_category"),
+            name: __("cron.content.condition"),
             value: <InputSelect
                         placeholder={__("cron.content.select")}
                         items={trigger}
@@ -117,7 +117,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
         triggerSelector = triggerSelector.concat({name: null, value: <hr/>});
 
         let actionSelector: TableModalRow[] = [{
-            name: __("cron.content.action_category"),
+            name: __("cron.content.action"),
             value: <>
             <InputSelect
                         items={action}
