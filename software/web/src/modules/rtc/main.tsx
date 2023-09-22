@@ -126,11 +126,10 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
 render(<Rtc/>, $('#rtc')[0])
 
 export function add_event_listeners(source: API.APIEventTarget) {
+    source.addEventListener('info/features', () => $('#sidebar-rtc').prop('hidden', !API.hasFeature('rtc')));
 }
 
 export function init() {
 }
 
-export function update_sidebar_state(module_init: any) {
-    $('#sidebar-rtc').prop('hidden', !module_init.rtc);
-}
+export function update_sidebar_state(module_init: any) {}

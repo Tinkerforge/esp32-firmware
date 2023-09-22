@@ -66,9 +66,6 @@ void Rtc::pre_setup()
 #endif
 }
 
-// Intentionally override ::setup empty here: The default implementation sets initialized to true.
-void Rtc::setup() {}
-
 #if MODULE_CRON_AVAILABLE()
 static bool trigger_action(Config *cfg, void *data) {
     return rtc.action_triggered(cfg, data);
@@ -129,7 +126,6 @@ void Rtc::register_backend(IRtcBackend *_backend)
     }, 0, 200);
 
     api.addFeature("rtc");
-    initialized = true;
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         update_system_time();
