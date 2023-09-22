@@ -1,7 +1,7 @@
 {
     "em_energy_analysis_status": {
         "status": {
-            "power_history": "Consumption history",
+            "power_history": "Power history",
             "current_power": "Power draw"
         },
         "navbar": {

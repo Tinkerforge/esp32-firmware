@@ -62,12 +62,12 @@ let x = {
     },
     "meter": {
         "status": {
-            "power_history": "Verbrauchsverlauf"
+            "power_history": "Leistungsverlauf"
         }
     },
     "meters": {
         "status": {
-            "power_history": "Verbrauchsverlauf"
+            "power_history": "Leistungsverlauf"
         }
     }
 }
