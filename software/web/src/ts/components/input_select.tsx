@@ -48,6 +48,10 @@ export function InputSelect(props: InputSelectProps) {
             // if value is not found make sure to show the
             // placeholder instead of an empty input field
             value = "";
+        } else {
+            // if value is found then remove the placeholder
+            // because it cannot be selected anyway
+            placeholder = undefined;
         }
     }
 
