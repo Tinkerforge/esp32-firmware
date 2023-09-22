@@ -766,13 +766,13 @@ void ChargeTracker::register_urls()
             }
         }
 
-        char stats_buf[384];//42  9 "Wallbox: " + 32 display name + \0
+        char stats_buf[384];//55  9 "Wallbox: " + 32 display name + 13 " (warp2-AbCd)" + \0
                             //31  13 "Exportiert am " + 17 (date time + \0)
                             //55  22  "Exportierte Benutzer: " + 32 display name + \0
                             //63  "Exportierter Zeitraum: Aufzeichnungsbeginn - Aufzeichnungsende" + \0
                             //60  41 "Gesamtenergie exportierter Ladevorgänge: " + 19 "999.999.999,999kWh" + \0
                             //50 "Gesamtbetrag 99999.99€ (Strompreis 123.45 ct/kWh)" + \0
-                            //= 301
+                            //= 314
 
 
         double charged_sum = 0;
@@ -796,6 +796,8 @@ void ChargeTracker::register_urls()
                 configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
             }
             dev_name = device_name.display_name.get("display_name")->asString();
+            if (device_name.display_name.get("display_name")->asString() != device_name.name.get("name")->asString())
+                dev_name += " (" + device_name.name.get("name")->asString() + ")";
         });
         if (await_result == TaskScheduler::AwaitResult::Timeout)
             return request.send(500, "text/plain", "Failed to generate PDF: Task timed out");
