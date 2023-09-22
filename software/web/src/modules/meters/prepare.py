@@ -43,7 +43,7 @@ for plugin in util.find_frontend_plugins('Meters', 'Config'):
 with open('api.ts', 'w', encoding='utf-8') as f:
     f.write(util.specialize_template('api.ts.template_header', None, {
         "{{{imports}}}": '\n'.join(imports),
-        "{{{configs}}}": '\n    | '.join(configs),
+        "{{{configs}}}": ('\n    | ' if len(configs) > 0 else '') + '\n    | '.join(configs),
     }) + '\n')
 
     for i in range(meter_count):
