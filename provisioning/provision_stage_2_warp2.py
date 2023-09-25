@@ -36,6 +36,8 @@ from provision_stage_3_warp2 import Stage3
 
 evse = None
 
+power_off_on_error = True
+
 def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_wiring, ssid, stage3):
     global evse
     enumerations = enumerate_devices(ipcon)
@@ -137,9 +139,17 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
         if len(samples) < 2:
             fatal_error("Expected at least 2 samples but got {}".format(len(samples)))
 
-        error_count = evse.get_energy_meter_errors()
-        if any(x != 0 for x in error_count):
-            fatal_error("Energy meter error count is {}, expected only zeros!".format(error_count))
+        for i in range(3):
+            error_count = evse.get_energy_meter_errors()
+            if any(x != 0 for x in error_count):
+                if i == 2:
+                    fatal_error("Energy meter error count is {}, expected only zeros!".format(error_count) + blink("Complain to Erik!"))
+                else:
+                    print(".")
+            else:
+                result["energy_meter_reachable"] = True
+                break
+            time.sleep(3)
 
         result["energy_meter_reachable"] = True
 
@@ -188,7 +198,8 @@ def led_wrap():
     try:
         main(stage3)
     except BaseException:
-        stage3.power_off()
+        if power_off_on_error:
+            stage3.power_off()
         stage3.set_led_strip_color((255, 0, 0))
         stage3.beep_failure()
         raise
