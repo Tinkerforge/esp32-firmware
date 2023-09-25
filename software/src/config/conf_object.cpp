@@ -24,8 +24,7 @@ Config *Config::ConfObject::get(const String &s)
     }
 
     logger.printfln("Config key %s not found!", s.c_str());
-    delay(100);
-    return nullptr;
+    esp_system_abort("");
 }
 
 const Config *Config::ConfObject::get(const String &s) const
@@ -40,8 +39,7 @@ const Config *Config::ConfObject::get(const String &s) const
     }
 
     logger.printfln("Config key %s not found!", s.c_str());
-    delay(100);
-    return nullptr;
+    esp_system_abort("");
 }
 
 std::vector<std::pair<String, Config>> *Config::ConfObject::getVal() { return &object_buf[idx].val; }

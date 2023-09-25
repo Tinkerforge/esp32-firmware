@@ -549,8 +549,7 @@ public:
         Config::check_enum_template_type<T>();
         if (!this->is<Config::ConfUnion>()) {
             logger.printfln("Tried to get tag of a node that is not a union!");
-            delay(100);
-            return (T) -1;
+            esp_system_abort("");
         }
         return (T) this->get<ConfUnion>()->getTag();
     }
@@ -564,8 +563,7 @@ private:
 #ifdef DEBUG_FS_ENABLE
             logger.printfln("Content is %s", this->to_string().c_str());
 #endif
-            delay(100);
-            return nullptr;
+            esp_system_abort("");
         }
 
         return reinterpret_cast<ConfigT *>(&value.val);
@@ -579,8 +577,7 @@ private:
 #ifdef DEBUG_FS_ENABLE
             logger.printfln("Content is %s", this->to_string().c_str());
 #endif
-            delay(100);
-            return nullptr;
+            esp_system_abort("");
         }
 
         return reinterpret_cast<const ConfigT *>(&value.val);
@@ -609,8 +606,7 @@ public:
 #ifdef DEBUG_FS_ENABLE
             logger.printfln("Content is %s", this->to_string().c_str());
 #endif
-            delay(100);
-            return (T) this->asUint();
+            esp_system_abort("");
         }
     }
 
@@ -631,8 +627,7 @@ private:
             logger.printfln("Content is %s", this->to_string().c_str());
             logger.printfln("value is is %s", String(value).c_str());
 #endif
-            delay(100);
-            return false;
+            esp_system_abort("");
         }
         T *target = get<ConfigT>()->getVal();
         T old_value = *target;
@@ -657,8 +652,7 @@ private:
         ASSERT_MAIN_THREAD();
         if (!this->is<ConfArray>()) {
             logger.printfln("Can't fill array, Config is not an array");
-            delay(100);
-            return 0;
+            esp_system_abort("");
         }
 
         const ConfArray &confArr = this->value.val.a;
@@ -668,8 +662,7 @@ private:
             const Config *entry = confArr.get(i);
             if (!entry->is<ConfigT>()) {
                 logger.printfln("Config entry has wrong type.");
-                delay(100);
-                return 0;
+                esp_system_abort("");
             }
             arr[i] = *entry->get<ConfigT>()->getVal();
         }

@@ -187,8 +187,7 @@ Config::Wrap Config::get() {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfUnion>()) {
         logger.printfln("Config is not a union!");
-        delay(100);
-        return Wrap(nullptr);
+        esp_system_abort("");
     }
     Wrap wrap(value.val.un.getVal());
 
@@ -199,8 +198,7 @@ const Config::ConstWrap Config::get() const {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfUnion>()) {
         logger.printfln("Config is not a union!");
-        delay(100);
-        return ConstWrap(nullptr);
+        esp_system_abort("");
     }
     ConstWrap wrap(value.val.un.getVal());
 
@@ -212,8 +210,7 @@ Config::Wrap Config::get(const String &s)
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfObject>()) {
         logger.printfln("Config key %s not in this node: is not an object!", s.c_str());
-        delay(100);
-        return Wrap(nullptr);
+        esp_system_abort("");
     }
     Wrap wrap(value.val.o.get(s));
 
@@ -225,8 +222,7 @@ Config::Wrap Config::get(uint16_t i)
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Config index %u not in this node: is not an array!", i);
-        delay(100);
-        return Wrap(nullptr);
+        esp_system_abort("");
     }
     Wrap wrap(value.val.a.get(i));
 
@@ -238,8 +234,7 @@ const Config::ConstWrap Config::get(const String &s) const
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfObject>()) {
         logger.printfln("Config key %s not in this node: is not an object!", s.c_str());
-        delay(100);
-        return ConstWrap(nullptr);
+        esp_system_abort("");
     }
     ConstWrap wrap(value.val.o.get(s));
 
@@ -251,8 +246,7 @@ const Config::ConstWrap Config::get(uint16_t i) const
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Config index %u not in this node: is not an array!", i);
-        delay(100);
-        return ConstWrap(nullptr);
+        esp_system_abort("");
     }
     ConstWrap wrap(value.val.a.get(i));
 
@@ -263,8 +257,7 @@ Config::Wrap Config::add() {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to add to a node that is not an array!");
-        delay(100);
-        return Wrap(nullptr);
+        esp_system_abort("");
     }
 
     std::vector<Config> &children = this->asArray();
@@ -275,8 +268,7 @@ Config::Wrap Config::add() {
     const auto max_elements = slot->maxElements;
     if (children.size() >= max_elements) {
         logger.printfln("Tried to add to an ConfArray that already has the max allowed number of elements (%u).", max_elements);
-        delay(100);
-        return Wrap(nullptr);
+        esp_system_abort("");
     }
 
     auto copy = *slot->prototype;
@@ -295,8 +287,7 @@ bool Config::removeLast()
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to remove the last element from a node that is not an array!");
-        delay(100);
-        return false;
+        esp_system_abort("");
     }
 
     std::vector<Config> &children = this->asArray();
@@ -312,8 +303,7 @@ bool Config::removeAll()
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to remove all from a node that is not an array!");
-        delay(100);
-        return false;
+        esp_system_abort("");
     }
 
     std::vector<Config> &children = this->asArray();
@@ -328,8 +318,7 @@ bool Config::remove(size_t i)
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to remove from a node that is not an array!");
-        delay(100);
-        return false;
+        esp_system_abort("");
     }
     std::vector<Config> &children = this->asArray();
 
@@ -345,8 +334,7 @@ ssize_t Config::count() const
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to get count of a node that is not an array!");
-        delay(100);
-        return -1;
+        esp_system_abort("");
     }
     const std::vector<Config> &children = this->asArray();
     return children.size();
@@ -357,8 +345,7 @@ std::vector<Config>::iterator Config::begin()
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to get begin iterator of a node that is not an array!");
-        delay(100);
-        return std::vector<Config>::iterator();
+        esp_system_abort("");
     }
     return this->asArray().begin();
 }
@@ -368,8 +355,7 @@ std::vector<Config>::iterator Config::end()
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to get end iterator of a node that is not an array!");
-        delay(100);
-        return std::vector<Config>::iterator();
+        esp_system_abort("");
     }
     return this->asArray().end();
 }

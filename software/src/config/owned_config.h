@@ -65,8 +65,7 @@ struct OwnedConfig {
     const ConfigT *as() const {
         if (!this->is<ConfigT>()) {
             logger.printfln("as: Config has wrong type.");
-            delay(100);
-            return nullptr;
+            esp_system_abort("");
         }
         return strict_variant::get<ConfigT>(&value);
     }
@@ -90,8 +89,7 @@ struct OwnedConfig {
             return (T) this->asInt();
         } else {
             logger.printfln("asEnum: Config has wrong type.");
-            delay(100);
-            return (T) this->asUint();
+            esp_system_abort("");
         }
     }
 
@@ -130,8 +128,7 @@ private:
     size_t fillArray(T *arr, size_t count) const{
         if (!this->is<OwnedConfigArray>()) {
             logger.printfln("Can't fill array, Config is not an array");
-            delay(100);
-            return 0;
+            esp_system_abort("");
         }
 
         const auto &elements = strict_variant::get<OwnedConfig::OwnedConfigArray>(&value)->elements;
@@ -141,8 +138,7 @@ private:
             const OwnedConfig *entry = &elements[i];
             if (!entry->is<ConfigT>()) {
                 logger.printfln("Config entry has wrong type.");
-                delay(100);
-                return 0;
+                esp_system_abort("");
             }
             arr[i] = *strict_variant::get<ConfigT>(&entry->value);
         }

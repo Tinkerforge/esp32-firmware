@@ -169,7 +169,7 @@ void Debug::register_urls()
     api.addState("debug/state_slow", &state_slow);
 
     server.on_HTTPThread("/debug/crash", HTTP_GET, [this](WebServerRequest req) {
-        assert(0);
+        esp_system_abort("Crash requested");
         return req.send(200, "text/plain", "ok");
     });
 #ifdef DEBUG_FS_ENABLE
