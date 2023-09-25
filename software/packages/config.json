@@ -2,13 +2,13 @@
     {
         "base": "arduino-esp32",
         "branch": "warp-2.1.5",
-        "commit": "7566d054c407469983d4e971bd54001b67bc9e7a",
+        "commit": "49331ac8f553d5e314a97eebd8ba635a27442de3",
         "url": "https://github.com/Tinkerforge/arduino-esp32"
     },
     {
         "base": "arduino-esp32",
         "branch": "warp2-2.1.5",
-        "commit": "d0f25126da68a18cdb1fb0eacd3b171d90714ead",
+        "commit": "8f8dfc02ec6fa0ebc08ec906ad71eca2c9e6f171",
         "url": "https://github.com/Tinkerforge/arduino-esp32"
     }
 ]
