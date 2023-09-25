@@ -70,7 +70,8 @@ colors = {"off":"\x1b[00m",
           "cyan":   "\x1b[36m",
           "green":  "\x1b[32m",
           "red":    "\x1b[31m",
-          "gray": "\x1b[90m"}
+          "gray": "\x1b[90m",
+          "blink": "\x1b[5m"}
 
 def red(s):
     return colors["red"]+s+colors["off"]
@@ -80,6 +81,9 @@ def green(s):
 
 def gray(s):
     return colors['gray']+s+colors["off"]
+
+def blink(s):
+    return colors['blink']+s+colors["off"]
 
 def remove_color_codes(s):
     for code in colors.values():
