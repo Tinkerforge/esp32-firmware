@@ -27,6 +27,7 @@
 #include "esp_spiffs.h"
 #include "LittleFS.h"
 #include "esp_littlefs.h"
+#include "esp_netif.h"
 #include "esp_system.h"
 #include "esp_timer.h"
 
@@ -748,6 +749,50 @@ uint16_t internet_checksum(const uint8_t* data, size_t length) {
     checksum = (checksum & 0xFFFF) + carry;
     checksum = ~checksum;
     return checksum;
+}
+
+struct gethostbyname_parameters
+{
+    const char *hostname;
+    ip_addr_t *addr;
+    dns_found_callback found_callback;
+    void *callback_arg;
+    u8_t dns_addrtype;
+};
+
+static esp_err_t gethostbyname_lwip_ctx(void *ctx)
+{
+    gethostbyname_parameters *parameters = static_cast<gethostbyname_parameters *>(ctx);
+    return dns_gethostbyname(parameters->hostname, parameters->addr, parameters->found_callback, parameters->callback_arg);
+}
+
+err_t dns_gethostbyname_lwip_ctx(const char *hostname, ip_addr_t *addr, dns_found_callback found_callback, void *callback_arg)
+{
+    gethostbyname_parameters parameters;
+    parameters.hostname = hostname;
+    parameters.addr = addr;
+    parameters.found_callback = found_callback;
+    parameters.callback_arg = callback_arg;
+
+    return esp_netif_tcpip_exec(gethostbyname_lwip_ctx, &parameters);
+}
+
+static esp_err_t gethostbyname_addrtype_lwip_ctx(void *ctx)
+{
+    gethostbyname_parameters *parameters = static_cast<gethostbyname_parameters *>(ctx);
+    return dns_gethostbyname_addrtype(parameters->hostname, parameters->addr, parameters->found_callback, parameters->callback_arg, parameters->dns_addrtype);
+}
+
+err_t dns_gethostbyname_addrtype_lwip_ctx(const char *hostname, ip_addr_t *addr, dns_found_callback found_callback, void *callback_arg, u8_t dns_addrtype)
+{
+    gethostbyname_parameters parameters;
+    parameters.hostname = hostname;
+    parameters.addr = addr;
+    parameters.found_callback = found_callback;
+    parameters.callback_arg = callback_arg;
+    parameters.dns_addrtype = dns_addrtype;
+
+    return esp_netif_tcpip_exec(gethostbyname_addrtype_lwip_ctx, &parameters);
 }
 
 void trigger_reboot(const char *initiator)
