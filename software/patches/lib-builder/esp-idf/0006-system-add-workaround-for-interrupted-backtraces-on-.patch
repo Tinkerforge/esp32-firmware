@@ -1,0 +1,133 @@
+From 2e409ad57a9f228c1ba2fc73e95f63df3359a848 Mon Sep 17 00:00:00 2001
+From: Erik Fleckstein <erik@tinkerforge.com>
+Date: Mon, 25 Sep 2023 15:05:26 +0200
+Subject: [PATCH] system: add workaround for interrupted backtraces on Xtensa.
+
+Based on
+https://github.com/espressif/esp-idf/issues/6124#issuecomment-1157298092
+but replaces esp_system_abort and panic_abort directly with a macro
+protecting the call stacks.
+---
+ components/esp_system/esp_system.c            |  2 +-
+ .../include/esp_private/panic_internal.h      | 33 ++++++++++++++++++-
+ components/esp_system/include/esp_system.h    | 33 ++++++++++++++++++-
+ components/esp_system/panic.c                 |  2 +-
+ 4 files changed, 66 insertions(+), 4 deletions(-)
+
+diff --git a/components/esp_system/esp_system.c b/components/esp_system/esp_system.c
+index 3fa64c9935..2d9e5fcf49 100644
+--- a/components/esp_system/esp_system.c
++++ b/components/esp_system/esp_system.c
+@@ -132,7 +132,7 @@ const char *esp_get_idf_version(void)
+     return IDF_VER;
+ }
+ 
+-void __attribute__((noreturn)) esp_system_abort(const char *details)
++void __attribute__((noreturn)) esp_system_abort_impl(const char *details)
+ {
+     panic_abort(details);
+ }
+diff --git a/components/esp_system/include/esp_private/panic_internal.h b/components/esp_system/include/esp_private/panic_internal.h
+index d43a705aba..51da19ff97 100644
+--- a/components/esp_system/include/esp_private/panic_internal.h
++++ b/components/esp_system/include/esp_private/panic_internal.h
+@@ -76,7 +76,38 @@ void panic_print_hex(int h);
+ #define panic_print_hex(h)
+ #endif
+ 
+-void __attribute__((noreturn)) panic_abort(const char *details);
++void __attribute__((noreturn)) panic_abort_impl(const char *details);
++
++/** @cond */
++
++/**
++ * @brief Helper macro to protect the backtrace when calling a noreturn function.
++ *
++ * This macro is equivalent to calling fn(arg1), where fn is a noreturn function.
++ *
++ * This macro is used as a workaround for the issue with interrupted backtraces,
++ * https://github.com/espressif/esp-idf/issues/6124 or IDF-842.
++ * Use this macro when calling a function with "noreturn" attribute at the end
++ * of a function. See the commit message or follow the issue link for details.
++ * When the issue is fixed in Xtensa GDB, this workaround can be removed.
++ *
++ * @param arg1  argument to pass to the function
++ */
++#ifdef __xtensa__
++#define panic_abort(arg1) \
++  do { \
++    __asm__ __volatile__ ( \
++      "mov a10, %1\n" \
++      "callx8 %0\n" \
++      "nop\n" \
++      :: "r" ((panic_abort_impl)), "r"((arg1)) : "a10" \
++    ); \
++    while(1) {} \
++  } while(0)
++#else // not __xtensa__
++#define panic_abort(arg1)  do { panic_abort_impl((arg1)); } while(0)
++#endif // __xtensa__
++/** @endcond */
+ 
+ void panic_arch_fill_info(void *frame, panic_info_t *info);
+ 
+diff --git a/components/esp_system/include/esp_system.h b/components/esp_system/include/esp_system.h
+index b98b719490..6b1596de67 100644
+--- a/components/esp_system/include/esp_system.h
++++ b/components/esp_system/include/esp_system.h
+@@ -129,7 +129,38 @@ uint32_t esp_get_minimum_free_heap_size( void );
+  *
+  * @param details Details that will be displayed during panic handling.
+  */
+-void  __attribute__((noreturn)) esp_system_abort(const char* details);
++void  __attribute__((noreturn)) esp_system_abort_impl(const char* details);
++
++/** @cond */
++
++/**
++ * @brief Helper macro to protect the backtrace when calling a noreturn function.
++ *
++ * This macro is equivalent to calling fn(arg1), where fn is a noreturn function.
++ *
++ * This macro is used as a workaround for the issue with interrupted backtraces,
++ * https://github.com/espressif/esp-idf/issues/6124 or IDF-842.
++ * Use this macro when calling a function with "noreturn" attribute at the end
++ * of a function. See the commit message or follow the issue link for details.
++ * When the issue is fixed in Xtensa GDB, this workaround can be removed.
++ *
++ * @param arg1  argument to pass to the function
++ */
++#ifdef __xtensa__
++#define esp_system_abort(arg1) \
++  do { \
++    __asm__ __volatile__ ( \
++      "mov a10, %1\n" \
++      "callx8 %0\n" \
++      "nop\n" \
++      :: "r" ((esp_system_abort_impl)), "r"((arg1)) : "a10" \
++    ); \
++    while(1) {} \
++  } while(0)
++#else // not __xtensa__
++#define esp_system_abort(arg1)  do { esp_system_abort_impl((arg1)); } while(0)
++#endif // __xtensa__
++/** @endcond */
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/components/esp_system/panic.c b/components/esp_system/panic.c
+index ae8940e878..93fa418deb 100644
+--- a/components/esp_system/panic.c
++++ b/components/esp_system/panic.c
+@@ -391,7 +391,7 @@ void esp_panic_handler(panic_info_t *info)
+ }
+ 
+ 
+-void IRAM_ATTR __attribute__((noreturn, no_sanitize_undefined)) panic_abort(const char *details)
++void IRAM_ATTR __attribute__((noreturn, no_sanitize_undefined)) panic_abort_impl(const char *details)
+ {
+     g_panic_abort = true;
+     s_panic_abort_details = (char *) details;
+-- 
+2.42.0
+
