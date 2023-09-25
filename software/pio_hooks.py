@@ -582,6 +582,7 @@ def main():
     frontend_modules = [util.FlavoredName(x).get() for x in env.GetProjectOption("custom_frontend_modules").splitlines()]
     if nightly:
         frontend_modules.append(util.FlavoredName("Nightly").get())
+        frontend_modules.append(util.FlavoredName("Debug").get())
 
     branding_module = find_branding_module(frontend_modules)
 
@@ -592,6 +593,10 @@ def main():
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
     backend_modules = [util.FlavoredName(x).get() for x in env.GetProjectOption("custom_backend_modules").splitlines()]
+
+    if nightly:
+        backend_modules.append(util.FlavoredName("Debug").get())
+
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
 
