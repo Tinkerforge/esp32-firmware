@@ -315,6 +315,11 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             return;
         }
 
+        if (reg.is_action && data_len == 0)  {
+            logger.printfln("MQTT: Topic %s is an action. Ignoring empty message.", reg.path.c_str());
+            return;
+        }
+
         esp_mqtt_client_disable_receive(client, 100);
         api.callCommandNonBlocking(reg, data, data_len, [this](String error){
             if (error != "")
