@@ -19,14 +19,12 @@
 
 #include "event_log.h"
 
-#include "web_server.h"
-
-#include "time.h"
+#include <time.h>
 
 #include "config.h"
 #include "tools.h"
-
 #include "modules.h"
+#include "web_server.h"
 
 // Global definition here to match the declaration in event_log.h.
 EventLog logger;
