@@ -282,7 +282,7 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
         json.add("ip", buf);
 
         json.add("display_name", display_name);
-        json.add("error", error);
+        json.add("error", (uint64_t)error);
     json.endObject();
 }
 
