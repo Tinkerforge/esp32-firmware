@@ -183,6 +183,7 @@ void setup(void) {
 
     task_scheduler.pre_setup();
     api.pre_setup();
+    logger.pre_setup();
 
     for (IModule *imodule : imodules) {
         imodule->pre_setup();

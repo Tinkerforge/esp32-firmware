@@ -23,6 +23,7 @@
 
 #include "time.h"
 
+#include "config.h"
 #include "tools.h"
 
 #include "modules.h"
@@ -30,9 +31,18 @@
 // Global definition here to match the declaration in event_log.h.
 EventLog logger;
 
+// event_log.h can't include config.h because config.h includes event_log.h
+static ConfigRoot boot_id;
+
 void EventLog::pre_init()
 {
     event_buf.setup();
+}
+
+void EventLog::pre_setup() {
+    boot_id = Config::Object({
+        {"boot_id", Config::Uint32(esp_random())}
+    });
 }
 
 void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
@@ -158,4 +168,6 @@ void EventLog::register_urls()
 
         return request.endChunkedResponse();
     });
+
+    api.addState("event_log/boot_id", &boot_id);
 }
