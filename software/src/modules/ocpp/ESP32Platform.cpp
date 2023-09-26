@@ -122,13 +122,11 @@ bool platform_has_fixed_cable(int connectorId) {
 }
 
 void platform_disconnect(void *ctx) {
-    if (tf_websocket_client_close(client, pdMS_TO_TICKS(1000)) != ERR_OK)
-        tf_websocket_client_stop(client);
+    tf_websocket_client_close(client, pdMS_TO_TICKS(1000));
 }
 
 void platform_reconnect(void *ctx) {
-    if (tf_websocket_client_close(client, pdMS_TO_TICKS(1000)) != ERR_OK)
-        tf_websocket_client_stop(client);
+    tf_websocket_client_close(client, pdMS_TO_TICKS(1000));
     tf_websocket_client_start(client);
 }
 
