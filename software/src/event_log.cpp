@@ -25,6 +25,8 @@
 
 #include "tools.h"
 
+#include "modules.h"
+
 // Global definition here to match the declaration in event_log.h.
 EventLog logger;
 
@@ -89,6 +91,16 @@ void EventLog::write(const char *buf, size_t len)
     if (buf[len - 1] != '\n') {
         event_buf.push('\n');
     }
+
+#if MODULE_WS_AVAILABLE()
+    String payload;
+    payload.reserve(to_write);
+    payload += '"';
+    payload.concat(timestamp_buf);
+    payload.concat(buf, len);
+    payload += '"';
+    ws.pushRawStateUpdate(payload, "event_log/message");
+#endif
 }
 
 void EventLog::printfln(const char *fmt, va_list args) {

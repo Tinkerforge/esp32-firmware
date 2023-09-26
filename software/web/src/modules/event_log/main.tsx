@@ -36,25 +36,29 @@ interface EventLogState {
 }
 
 export class EventLog extends Component<{}, EventLogState> {
-    update_event_log_interval: number = null;
+    page_visible: boolean = false;
 
     constructor() {
         super();
+
+        util.addApiEventListener("info/modules", () => {
+            if (this.page_visible)
+                this.load_event_log();
+        });
+
+        util.addApiEventListener("event_log/message", (ev: MessageEvent<Readonly<API.getType["event_log/message"]>>) => {
+            this.setState({log: this.state.log + ev.data + "\n"});
+        });
 
         // We have to use jquery here or else the events don't fire?
         // This can be removed once the sidebar is ported to preact.
         $('#sidebar-event_log').on('shown.bs.tab', () => {
             this.load_event_log();
-            if (this.update_event_log_interval == null) {
-                this.update_event_log_interval = window.setInterval(() => this.load_event_log(), 10000);
-            }
+            this.page_visible = true;
         });
 
         $('#sidebar-event_log').on('hidden.bs.tab', () => {
-            if (this.update_event_log_interval != null) {
-                clearInterval(this.update_event_log_interval);
-                this.update_event_log_interval = null;
-            }
+            this.page_visible = false;
         });
     }
 
