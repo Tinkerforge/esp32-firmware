@@ -22,6 +22,9 @@
 #include <Arduino.h>
 #include "esp_system.h"
 #include "LittleFS.h"
+#include "soc/dport_reg.h"
+#include "soc/rtc_cntl_reg.h"
+#include "soc/spi_reg.h"
 
 #include "api.h"
 #include "task_scheduler.h"
@@ -30,33 +33,8 @@
 
 #define BENCHMARK_BLOCKSIZE 32768
 
-static float benchmark_area(uint8_t *start_address, size_t max_length)
-{
-    uint8_t *buffer = static_cast<uint8_t *>(heap_caps_malloc(BENCHMARK_BLOCKSIZE, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    if (!buffer) {
-        logger.printfln("debug: Can't malloc %i bytes for benchmark buffer.", BENCHMARK_BLOCKSIZE);
-        return 0;
-    }
-
-    size_t blocks = max_length / BENCHMARK_BLOCKSIZE;
-    size_t test_length = blocks * BENCHMARK_BLOCKSIZE;
-
-    micros_t start_time = now_us();
-    while (blocks > 0) {
-        memcpy(buffer, start_address, BENCHMARK_BLOCKSIZE);
-        start_address += BENCHMARK_BLOCKSIZE;
-        blocks--;
-    }
-    micros_t runtime = now_us() - start_time;
-    uint32_t runtime32 = static_cast<uint32_t>(static_cast<int64_t>(runtime));
-    float runtime_f = static_cast<float>(runtime32);
-    float test_length_f = static_cast<float>(test_length);
-    float speed_MiBps = (test_length_f * 1000000.0F) / (runtime_f * 1024 * 1024);
-
-    free(buffer);
-
-    return speed_MiBps;
-}
+static float benchmark_area(uint8_t *start_address, size_t max_length);
+static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_clk, uint32_t *dummy_cyclelen, const char **spi_mode);
 
 extern uint8_t _text_start;
 
@@ -93,6 +71,61 @@ void Debug::pre_setup()
 
     float flash_speed = benchmark_area(&_text_start, 128*1024); // 128KiB at the beginning of the code
 
+    uint32_t rtc_cntl_clk_conf_reg = *reinterpret_cast<uint32_t *>(RTC_CNTL_CLK_CONF_REG);
+    uint32_t soc_clk_sel = rtc_cntl_clk_conf_reg >> RTC_CNTL_SOC_CLK_SEL_S & RTC_CNTL_SOC_CLK_SEL_V;
+
+    uint32_t cpu_per_conf_reg = *reinterpret_cast<uint32_t *>(DPORT_CPU_PER_CONF_REG);
+    uint32_t cpuperiod_sel = cpu_per_conf_reg >> DPORT_CPUPERIOD_SEL_S & DPORT_CPUPERIOD_SEL_V;
+
+    uint32_t cpu_clk = 0;
+    uint32_t apb_clk = 0;
+
+    if (soc_clk_sel == 1) { // PLL_CLK
+        if (cpuperiod_sel == 0) {
+            cpu_clk =  80000000;
+        } else if (cpuperiod_sel == 1) {
+            cpu_clk = 160000000;
+        } else if (cpuperiod_sel == 2) {
+            cpu_clk = 240000000;
+        }
+        apb_clk = 80000000;
+    } else {
+        logger.printfln("Unexpected CPU clock source RTC_CNTL_SOC_CLK_SEL=%u", soc_clk_sel);
+    }
+
+    state_static = Config::Object({
+        {"heap_dram",  Config::Uint32(dram_heap_size)},
+        {"heap_iram",  Config::Uint32(iram_heap_size)},
+        {"heap_psram", Config::Uint32(psram_heap_size)},
+        {"psram_size", Config::Uint32(psram_size)},
+        {"cpu_clk",    Config::Uint32(cpu_clk)},
+        {"apb_clk",    Config::Uint32(apb_clk)},
+        {"spi_buses",  Config::Array({},
+            new Config{Config::Object({
+                {"clk",          Config::Uint32(0)},
+                {"dummy_cycles", Config::Uint32(0)},
+                {"spi_mode",     Config::Str("", 0, 8)}
+            })},
+            0, 4, Config::type_id<Config::ConfObject>()
+        )},
+        {"flash_mode", Config::Str(flash_mode, 0, 8)},
+        {"flash_benchmark", Config::Float(flash_speed)},
+        {"psram_benchmark", Config::Float(psram_speed)},
+    });
+
+    for (uint32_t i = 0; i < 4; i++) {
+        uint32_t spi_clk;
+        uint32_t dummy_cyclelen;
+        const char *spi_mode;
+
+        get_spi_settings(i, apb_clk, &spi_clk, &dummy_cyclelen, &spi_mode);
+
+        Config *conf = static_cast<Config *>(state_static.get("spi_buses")->add());
+        conf->get("clk")->updateUint(spi_clk);
+        conf->get("dummy_cycles")->updateUint(dummy_cyclelen);
+        conf->get("spi_mode")->updateString(spi_mode);
+    }
+
     state_fast = Config::Object({
         {"uptime",     Config::Uint32(0)},
         {"free_dram",  Config::Uint32(0)},
@@ -106,15 +139,8 @@ void Debug::pre_setup()
     state_slow = Config::Object({
         {"largest_free_dram_block",  Config::Uint32(0)},
         {"largest_free_psram_block", Config::Uint32(0)},
-        {"heap_dram",  Config::Uint32(dram_heap_size)},
-        {"heap_iram",  Config::Uint32(iram_heap_size)},
-        {"heap_psram", Config::Uint32(psram_heap_size)},
-        {"psram_size", Config::Uint32(psram_size)},
         {"heap_integrity_ok", Config::Bool(true)},
         {"main_stack_hwm", Config::Uint32(0)},
-        {"flash_mode", Config::Str(flash_mode, 0, 8)},
-        {"flash_benchmark", Config::Float(flash_speed)},
-        {"psram_benchmark", Config::Float(psram_speed)},
     });
 }
 
@@ -165,6 +191,7 @@ void Debug::setup()
 
 void Debug::register_urls()
 {
+    api.addState("debug/state_static", &state_static);
     api.addState("debug/state_fast", &state_fast);
     api.addState("debug/state_slow", &state_slow);
 
@@ -283,5 +310,87 @@ void Debug::loop()
     if (!check_ok) {
         state_slow.get("heap_integrity_ok")->updateBool(false);
         integrity_check_print_errors = false;
+    }
+}
+
+static float benchmark_area(uint8_t *start_address, size_t max_length)
+{
+    uint8_t *buffer = static_cast<uint8_t *>(heap_caps_malloc(BENCHMARK_BLOCKSIZE, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    if (!buffer) {
+        logger.printfln("debug: Can't malloc %i bytes for benchmark buffer.", BENCHMARK_BLOCKSIZE);
+        return 0;
+    }
+
+    size_t blocks = max_length / BENCHMARK_BLOCKSIZE;
+    size_t test_length = blocks * BENCHMARK_BLOCKSIZE;
+
+    micros_t start_time = now_us();
+    while (blocks > 0) {
+        memcpy(buffer, start_address, BENCHMARK_BLOCKSIZE);
+        start_address += BENCHMARK_BLOCKSIZE;
+        blocks--;
+    }
+    micros_t runtime = now_us() - start_time;
+    uint32_t runtime32 = static_cast<uint32_t>(static_cast<int64_t>(runtime));
+    float runtime_f = static_cast<float>(runtime32);
+    float test_length_f = static_cast<float>(test_length);
+    float speed_MiBps = (test_length_f * 1000000.0F) / (runtime_f * 1024 * 1024);
+
+    free(buffer);
+
+    return speed_MiBps;
+}
+
+static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_clk, uint32_t *dummy_cyclelen, const char **spi_mode)
+{
+    // Dummy cycles
+    uint32_t spi_user1_reg = *reinterpret_cast<uint32_t *>(SPI_USER1_REG(spi_num));
+    *dummy_cyclelen = spi_user1_reg >> SPI_USR_DUMMY_CYCLELEN_S & SPI_USR_DUMMY_CYCLELEN_V;
+
+    // Mode
+    uint32_t spi_ctrl_reg = *reinterpret_cast<uint32_t *>(SPI_CTRL_REG(spi_num));
+    uint32_t fread_qio  = spi_ctrl_reg >> SPI_FREAD_QIO_S  & SPI_FREAD_QIO_V;
+    uint32_t fread_dio  = spi_ctrl_reg >> SPI_FREAD_DIO_S  & SPI_FREAD_DIO_V;
+    uint32_t fread_quad = spi_ctrl_reg >> SPI_FREAD_QUAD_S & SPI_FREAD_QUAD_V;
+    uint32_t fread_dual = spi_ctrl_reg >> SPI_FREAD_DUAL_S & SPI_FREAD_DUAL_V;
+    uint32_t mode_count = fread_qio + fread_dio + fread_quad + fread_dual;
+
+    if (mode_count == 0) {
+        *spi_mode = "unknown";
+    } else if (mode_count == 1) {
+        if (fread_qio) {
+            *spi_mode = "qio";
+        } else if (fread_dio) {
+            *spi_mode = "dio";
+        } else if (fread_quad) {
+            *spi_mode = "quad";
+        } else {
+            *spi_mode = "dual";
+        }
+    } else {
+        *spi_mode = "invalid";
+        logger.printfln("fread_qio=%u fread_dio=%u fread_quad=%u fread_dual=%u", fread_qio, fread_dio, fread_quad, fread_dual);
+    }
+
+    // Clock
+    uint32_t spi_clock_reg = *reinterpret_cast<uint32_t *>(SPI_CLOCK_REG(spi_num));
+    uint32_t clk_equ_sysclk = spi_clock_reg >> SPI_CLK_EQU_SYSCLK_S & SPI_CLK_EQU_SYSCLK_V;
+    uint32_t clkdiv_pre     = spi_clock_reg >> SPI_CLKDIV_PRE_S     & SPI_CLKDIV_PRE_V;
+    uint32_t clkcnt_n       = spi_clock_reg >> SPI_CLKCNT_N_S       & SPI_CLKCNT_N_V;
+    uint32_t clkcnt_h       = spi_clock_reg >> SPI_CLKCNT_H_S       & SPI_CLKCNT_H_V;
+    uint32_t clkcnt_l       = spi_clock_reg >> SPI_CLKCNT_L_S       & SPI_CLKCNT_L_V;
+
+    *spi_clk = apb_clk / ((clkcnt_n + 1) * (clkdiv_pre + 1));
+
+    // Clock check
+    uint32_t clk_conf_sum = clkdiv_pre + clkcnt_n + clkcnt_h + clkcnt_l;
+    if (clk_equ_sysclk == 0) {
+        if (clk_conf_sum == 0) {
+            *spi_mode = "zero clk";
+        }
+    } else {
+        if (clk_conf_sum != 0) {
+            *spi_mode = "bad clk";
+        }
     }
 }

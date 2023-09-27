@@ -1,3 +1,22 @@
+interface spi_state {
+    clk: number;
+    dummy_cycles: number;
+    spi_mode: string;
+}
+
+export interface state_static {
+    heap_dram: number;
+    heap_iram: number;
+    heap_psram: number;
+    psram_size: number;
+    cpu_clk: number;
+    apb_clk: number;
+    spi_buses: spi_state[];
+    flash_mode: string;
+    flash_benchmark: number;
+    psram_benchmark: number;
+}
+
 export interface state_fast {
     uptime: number;
     free_dram: number;
@@ -11,13 +30,6 @@ export interface state_fast {
 export interface state_slow {
     largest_free_dram_block: number;
     largest_free_psram_block: number;
-    heap_dram: number;
-    heap_iram: number;
-    heap_psram: number;
-    psram_size: number;
     heap_integrity_ok: boolean;
     main_stack_hwm: number;
-    flash_mode: string;
-    flash_benchmark: number;
-    psram_benchmark: number;
 }

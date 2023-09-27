@@ -32,6 +32,16 @@
             "heap_integrity_runtime": "Integrity check runtime",
             "heap_integrity_runtime_muted": "average, maximum",
 
+            "clocks_buses_header": "Clocks and buses",
+            "cpu_apb": "CPU, APB",
+            "spi_clock": "Clock",
+            "dummy_cycles": "Dummy cycles",
+            "spi_mode": "SPI mode",
+            "spi0": "SPI0 (Memory)",
+            "spi1": "SPI1",
+            "spi2": "SPI2 (HSPI)",
+            "spi3": "SPI3 (VSPI)",
+
             "memory_speed_header": "Memory speeds",
             "flash": "Flash",
             "speed_benchmark": "Speed benchmark",

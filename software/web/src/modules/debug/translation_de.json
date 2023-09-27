@@ -32,7 +32,17 @@
             "heap_integrity_runtime": "Laufzeit Integritätsprüfung",
             "heap_integrity_runtime_muted": "Durchschnitt, Maximum",
 
-            "memory_speed_header": "Speichergeswindigkeit",
+            "clocks_buses_header": "Taktraten und Busse",
+            "cpu_apb": "CPU, APB",
+            "spi_clock": "Taktrate",
+            "dummy_cycles": "Füllzyklen",
+            "spi_mode": "SPI-Modus",
+            "spi0": "SPI0 (Memory)",
+            "spi1": "SPI1",
+            "spi2": "SPI2 (HSPI)",
+            "spi3": "SPI3 (VSPI)",
+
+            "memory_speed_header": "Speichergeschwindigkeit",
             "flash": "Flash",
             "speed_benchmark": "Geschwindigkeitsbenchmark",
             "memory_mode": "Speichermodus",

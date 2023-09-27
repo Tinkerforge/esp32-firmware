@@ -34,6 +34,7 @@ public:
     void loop() override;
 
 private:
+    ConfigRoot state_static;
     ConfigRoot state_fast;
     ConfigRoot state_slow;
 
