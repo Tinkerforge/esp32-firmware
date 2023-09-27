@@ -47,7 +47,7 @@ export class EventLog extends Component<{}, EventLogState> {
         super();
 
         util.addApiEventListener("event_log/boot_id", (ev) => {
-            window.setTimeout(() => this.load_event_log(this.last_boot_id != ev.data.boot_id), 1000);
+            this.load_event_log(this.last_boot_id != ev.data.boot_id)
             this.last_boot_id = ev.data.boot_id;
         });
 
