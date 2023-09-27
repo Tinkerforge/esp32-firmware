@@ -362,15 +362,6 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         return;
     }
 
-#if MODULE_CRON_AVAILABLE()
-    MqttMessage msg;
-    msg.topic = String(topic).substring(0, topic_len);
-    msg.payload = String(data).substring(0, data_len);
-    msg.retained = retain;
-    if (cron.trigger_action(CronTriggerID::MQTT, &msg, &trigger_action))
-        return;
-#endif
-
     // Don't print error message if this packet was received because it was retained (as opposed to a newly published message)
     // The spec says:
     // It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client
