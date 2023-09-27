@@ -52,10 +52,23 @@ export function MqttCronActionConfig(cron: Cron, action: CronAction) {
 
     return [
         {
+            name: __("mqtt.content.use_topic_prefix"),
+            value: <Switch
+                checked={value.use_prefix}
+                onClick={() => {
+                    value.use_prefix = !value.use_prefix;
+                    cron.setActionFromComponent(action);
+                }}
+                desc={__("mqtt.content.use_topic_prefix_muted") + mqtt_config.global_topic_prefix}/>
+        },
+        {
             name: __("mqtt.content.topic"),
             value: <InputText
                 value={value.topic}
                 class={isInvalid ? "is-invalid" : undefined}
+                prefixChildren={
+                    value.use_prefix ? <InputText value={mqtt_config.global_topic_prefix + "/cron_action/"}></InputText> : undefined
+                }
                 onValue={(v) => {
                     value.topic = v;
                     if (value.topic.startsWith(mqtt_config.global_topic_prefix)) {
@@ -67,16 +80,6 @@ export function MqttCronActionConfig(cron: Cron, action: CronAction) {
                 }}
                 invalidFeedback={__("mqtt.content.use_topic_prefix_invalid")}
                 />
-        },
-        {
-            name: __("mqtt.content.use_topic_prefix"),
-            value: <Switch
-                checked={value.use_prefix}
-                onClick={() => {
-                    value.use_prefix = !value.use_prefix;
-                    cron.setActionFromComponent(action);
-                }}
-                desc={__("mqtt.content.use_topic_prefix_muted") + mqtt_config.global_topic_prefix}/>
         },
         {
             name: __("mqtt.content.payload"),
