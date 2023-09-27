@@ -29,6 +29,7 @@ interface InputTextProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
     onValue?: (value: string) => void
     class?: string
     children?: ComponentChildren
+    prefixChildren?: ComponentChildren
 }
 
 interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "className"> {
@@ -37,6 +38,7 @@ interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<H
     invalidFeedback: string
     class?: string
     children?: ComponentChildren
+    prefixChildren?: ComponentChildren
 }
 
 export function InputText<T extends (InputTextProps | InputTextWithValidationProps)>(props: util.NoExtraProperties<InputTextProps, T> | InputTextWithValidationProps) {
@@ -67,9 +69,10 @@ export function InputText<T extends (InputTextProps | InputTextWithValidationPro
                     } : undefined}
                     readonly={!props.onValue}/>
 
-    if (props.children) {
+    if (props.prefixChildren || props.children) {
         return <>
             <div class="input-group">
+                {props.prefixChildren}
                 {inner}
                 {props.children}
             </div>
