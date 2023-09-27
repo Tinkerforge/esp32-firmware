@@ -679,11 +679,11 @@ bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
         }
 
         for (int i = 0; i < 6; ++i) {
-            if (energy_general_in[i] != INT32_MAX) {
+            if (energy_general_in[i] != UINT32_MAX) {
                 snprintf(energy_general_in_str[i], sizeof(energy_general_in_str[i]), "%.2f", (double)energy_general_in[i] / 100.0); // dWh -> kWh
             }
 
-            if (energy_general_out[i] != INT32_MAX) {
+            if (energy_general_out[i] != UINT32_MAX) {
                 snprintf(energy_general_out_str[i], sizeof(energy_general_out_str[i]), "%.2f", (double)energy_general_out[i] / 100.0); // dWh -> kWh
             }
         }
