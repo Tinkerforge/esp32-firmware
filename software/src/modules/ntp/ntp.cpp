@@ -167,7 +167,7 @@ void NTP::setup()
 void NTP::set_synced()
 {
     gettimeofday(&last_sync, NULL);
-    ntp.state.get("synced")->updateBool(true);
+    ntp.state.get("synced")->updateBool(last_sync.tv_sec > build_timestamp());
 }
 
 void NTP::register_urls()
@@ -178,7 +178,7 @@ void NTP::register_urls()
     task_scheduler.scheduleWithFixedDelay([this]() {
         struct timeval time;
         gettimeofday(&time, NULL);
-        if (time.tv_sec - this->last_sync.tv_sec >= NTP_DESYNC_THRESHOLD_S || time.tv_sec < build_timestamp())
+        if (time.tv_sec - this->last_sync.tv_sec >= NTP_DESYNC_THRESHOLD_S)
             ntp.state.get("synced")->updateBool(false);
     }, 0, 30 * 1000);
 }
