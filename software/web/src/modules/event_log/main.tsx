@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render, Fragment, Component } from "preact";
+import { h, render, Fragment, Component, createRef } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 import { FormRow } from "../../ts/components/form_row";
@@ -42,6 +42,8 @@ const RELATIVE_TIME_REGEX = /^\s+(\d+),(\d{3})  $/;
 export class EventLog extends Component<{}, EventLogState> {
     page_visible: boolean = false;
     last_boot_id = -1;
+    textarea_ref = createRef<HTMLTextAreaElement>();
+    auto_scroll: boolean = true;
 
     constructor() {
         super();
@@ -200,6 +202,19 @@ export class EventLog extends Component<{}, EventLogState> {
         }
     }
 
+    override componentDidUpdate() {
+        let ta = this.textarea_ref.current;
+
+        if (!ta)
+            return;
+
+        if (!this.auto_scroll)
+            return;
+
+        this.textarea_ref.current.scrollTop = this.textarea_ref.current.scrollHeight;
+    }
+
+
     render(props: {}, state: Readonly<EventLogState>) {
         if (!util.render_allowed())
             return (<></>);
@@ -214,7 +229,12 @@ export class EventLog extends Component<{}, EventLogState> {
                               id="event_log_content"
                               rows={20}
                               style="resize: both; width: 100%; white-space: pre; line-height: 1.2; text-shadow: none; font-size: 0.875rem;"
-                              placeholder={__("event_log.content.event_log_placeholder")}>
+                              placeholder={__("event_log.content.event_log_placeholder")}
+                              ref={this.textarea_ref}
+                              onScroll={(ev) => {
+                                let ta = ev.target as HTMLTextAreaElement;
+                                this.auto_scroll = ta.scrollHeight - Math.round(ta.scrollTop) === ta.clientHeight}
+                              }>
                         {state.log}
                     </textarea>
                 </FormRow>
