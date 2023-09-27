@@ -56,8 +56,29 @@ void Cron::pre_setup() {
             })
         }, 0, 20, Config::type_id<Config::ConfObject>());
 
-    config = Config::Object({
+    config = ConfigRoot(Config::Object({
         {"tasks", config}
+    }),
+    [this](Config &cfg) {
+        for (auto &task : cfg.get("tasks")) {
+            auto &action_validator = this->action_map[task.get("action")->getTag<CronActionID>()].second;
+            if (action_validator) {
+                auto ret = action_validator((Config *)task.get("action")->get());
+                if (ret != "") {
+                    return ret;
+                }
+            }
+
+            auto &trigger_validator = this->trigger_map[task.get("trigger")->getTag<CronTriggerID>()];
+            if (trigger_validator) {
+                auto ret = trigger_validator((Config *)task.get("trigger")->get());
+                if (ret != "") {
+                    return ret;
+                }
+            }
+        }
+
+        return String("");
     });
 
 
@@ -81,13 +102,14 @@ void Cron::register_urls() {
     api.addPersistentConfig("cron/timed_config", &enabled, {}, 1000);
 }
 
-void Cron::register_action(CronActionID id, Config cfg, ActionCb callback) {
+void Cron::register_action(CronActionID id, Config cfg, ActionCb callback, ValidatorCb validator) {
     action_vec.push_back({id, cfg});
-    action_map[id] = callback;
+    action_map[id] = std::pair<ActionCb, ValidatorCb>(callback, validator);
 }
 
-void Cron::register_trigger(CronTriggerID id, Config cfg) {
+void Cron::register_trigger(CronTriggerID id, Config cfg, ValidatorCb validator) {
     trigger_vec.push_back({id, cfg});
+    trigger_map[id] = validator;
 }
 
 bool Cron::trigger_action(CronTriggerID number, void *data, std::function<bool(Config *, void *)> cb) {
@@ -97,7 +119,7 @@ bool Cron::trigger_action(CronTriggerID number, void *data, std::function<bool(C
             triggered = true;
             auto action_ident = conf.get("action")->getTag<CronActionID>();
             if (action_map.find(action_ident) != action_map.end())
-                action_map[action_ident]((Config *)conf.get("action")->get());
+                action_map[action_ident].first((Config *)conf.get("action")->get());
             else
                 logger.printfln("There is no action with ident-nr %u!", (uint8_t)action_ident);
         }
