@@ -81,13 +81,16 @@ export class EventLog extends Component<{}, EventLogState> {
         return new Date(...nums);
     }
 
-    load_event_log(replace: boolean) {
+    load_event_log(reboot: boolean) {
         util.download("/event_log")
             .then(blob => blob.text())
             .then(text => {
                 util.remove_alert("event_log_load_failed");
 
-                if (replace || !this.state.log) {
+                if (!text || text.length == 0)
+                    return;
+
+                if (!this.state.log) {
                     this.setState({log: text});
                     return;
                 }
@@ -109,18 +112,25 @@ export class EventLog extends Component<{}, EventLogState> {
                     return;
                 }
 
-                const old_lines = this.state.log.split("\n");
+                // string.trimEnd is in es2019
+                // log starts with (relevant!) whitespace
+                const log = this.state.log.endsWith("\n") ? this.state.log.slice(0, -1) : this.state.log;
+                const old_lines = log.split("\n");
 
-                let i = 0;
-                for (; i < old_lines.length; ++i) {
+                let i = old_lines.length - 1;
+                for (; i >= 0; --i) {
                     const line = old_lines[i];
+                    if (line == ("-".repeat(TIMESTAMP_LEN - 2) + "  [Reboot]"))
+                        break;
+
                     let date = this.get_line_date(line);
                     if (date == null)
                         continue;
 
-
-                    if (date > first_new_date)
+                    if (date < first_new_date) {
+                        ++i;
                         break;
+                    }
 
                     // == compares references on objects and Date has no equals method.
                     // Isn't javascript fun?
@@ -128,12 +138,24 @@ export class EventLog extends Component<{}, EventLogState> {
                         break;
                 }
 
-                if (i == 0) {
+                if (i <= 0 && reboot) {
+                    i = old_lines.length;
+                }
+
+                if (i < 0) {
                     this.setState({log: text});
                     return;
                 }
 
-                const new_log = old_lines.slice(0, i).join("\n") + (i != 0 ? "\n" : "") + text;
+                let new_log = old_lines.slice(0, i).join("\n");
+                if (new_log.length > 0 && !new_log.endsWith("\n"))
+                    new_log += "\n"
+                if (reboot)
+                    new_log += "-".repeat(TIMESTAMP_LEN - 2) + "  [Reboot]\n";
+                if (!reboot && i == old_lines.length)
+                    new_log += "-".repeat(TIMESTAMP_LEN - 2) + "  [WebSocket reconnect]\n";
+                new_log += text;
+
                 this.setState({log: new_log});
             })
             .catch(e => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), e.message))
@@ -156,7 +178,7 @@ export class EventLog extends Component<{}, EventLogState> {
 
             debug_log += await util.download("/debug_report").then(blob => blob.text());
             debug_log += "\n\n";
-            debug_log += await util.download("/event_log").then(blob => blob.text());
+            debug_log += this.state.log;
             try {
                 let blob = await util.download("/coredump/coredump.elf");
                 let base64 = await this.blobToBase64(blob);
