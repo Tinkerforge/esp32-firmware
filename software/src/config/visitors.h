@@ -428,14 +428,13 @@ struct from_json {
         if (json_node.isNull())
             return permit_null_updates ? "" : "Null updates not permitted.";
 
-        auto *val = x.getVal();
-        const auto size = val->size();
+        const auto size = x.getVal()->size();
 
         // If a user passes a non-object to an API that expects an object with exactly one member
         // Try to use the non-object as value for the single member.
         // This allows calling for example evse/external_current_update with the payload 8000 instead of {"current": 8000}
         if (!json_node.is<JsonObject>() && is_root && size == 1) {
-            auto &val_pair = (*val)[0];
+            auto &val_pair = (*x.getVal())[0];
             String inner_error = Config::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, val_pair.second.value);
             if (inner_error != "")
                 return String("(inferred) [\"") + val_pair.first + "\"] " + inner_error + "\n";
@@ -452,7 +451,8 @@ struct from_json {
         bool more_errors = false;
 
         for (size_t i = 0; i < size; ++i) {
-            auto &val_pair = (*val)[i];
+            // Don't cache x.getVal(): The recursive visitor can reallocate slot buffers which invalidates the returned pointer!
+            auto &val_pair = (*x.getVal())[i];
             if (!obj.containsKey(val_pair.first))
             {
                 if (!force_same_keys)
@@ -661,8 +661,7 @@ struct from_update {
             return "ConfUpdate node was not an object.";
         }
 
-        auto *val = x.getVal();
-        const auto size = val->size();
+        const auto size = x.getVal()->size();
 
         const auto &obj_elements = obj->elements;
         const auto obj_size = obj_elements.size();
@@ -671,7 +670,8 @@ struct from_update {
 
         for (size_t i = 0; i < size; ++i) {
             size_t obj_idx = 0xFFFFFFFF;
-            auto &val_pair = (*val)[i];
+            // Don't cache x.getVal(): The recursive visitor can reallocate slot buffers which invalidates the returned pointer!
+            auto &val_pair = (*x.getVal())[i];
             for (size_t j = 0; j < size; ++j) {
                 if (obj_elements[j].first != val_pair.first)
                     continue;
