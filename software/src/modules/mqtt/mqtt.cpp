@@ -77,8 +77,16 @@ void Mqtt::pre_setup()
         Config::Object({
             {"topic", Config::Str("", 0, 64)},
             {"payload", Config::Str("", 0, 64)},
-            {"retain", Config::Bool(false)}
-        })
+            {"retain", Config::Bool(false)},
+            {"use_prefix", Config::Bool(false)}
+        }),
+        [this](const Config *cfg) {
+            auto &topic = cfg->get("topic")->asString();
+            if (topic.startsWith(this->config.get("global_topic_prefix")->asString())) {
+                return String("Mqtt-topic must not contain the global prefix.");
+            }
+            return String("");
+        }
     );
 
     cron.register_action(
@@ -86,10 +94,22 @@ void Mqtt::pre_setup()
         Config::Object({
             {"topic", Config::Str("", 0, 64)},
             {"payload", Config::Str("", 0, 64)},
-            {"retain", Config::Bool(false)}
+            {"retain", Config::Bool(false)},
+            {"use_prefix", Config::Bool(false)}
         }),
         [this](const Config *cfg) {
-            publish(cfg->get("topic")->asString(), cfg->get("payload")->asString(), cfg->get("retain")->asBool());
+            String topic = cfg->get("topic")->asString();
+            if (cfg->get("use_prefix")->asBool()) {
+                topic = config.get("global_topic_prefix")->asString() + "/cron_action/" + topic;
+            }
+            publish(topic, cfg->get("payload")->asString(), cfg->get("retain")->asBool());
+        },
+        [this](const Config *cfg) {
+            auto &topic = cfg->get("topic")->asString();
+            if (topic.startsWith(this->config.get("global_topic_prefix")->asString())) {
+                return String("Mqtt-topic must not contain the global prefix.");
+            }
+            return String("");
         }
     );
 #endif
@@ -366,7 +386,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     // The spec says:
     // It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client
     // because it matches an established subscription regardless of how the flag was set in the message it received [MQTT-3.3.1-9].
-    if (!retain)
+    if (!retain && memcmp(topic, "cron_action/", 12))
         logger.printfln("MQTT: Received message on unknown topic '%.*s' (data_len=%u)", static_cast<int>(topic_len), topic, data_len);
 }
 
@@ -534,7 +554,12 @@ void Mqtt::register_urls()
             }
             const size_t idx = conf.first;
             if (!already_subscribed) {
-                subscribe(conf.second->get("topic")->asString(), [this, idx](const char *tpic, size_t tpic_len, char * data, size_t data_len) {
+                String topic = conf.second->get("topic")->asString();
+                if (conf.second->get("use_prefix")->asBool()) {
+                    topic = config.get("global_topic_prefix")->asString() + "/cron_trigger/" + topic;
+                }
+
+                subscribe(topic, [this, idx](const char *tpic, size_t tpic_len, char * data, size_t data_len) {
                     MqttMessage msg;
                     msg.topic = String(tpic).substring(0, tpic_len);
                     msg.payload = String(data).substring(0, data_len);
@@ -542,7 +567,7 @@ void Mqtt::register_urls()
                     if (cron.trigger_action(CronTriggerID::MQTT, &msg, &trigger_action))
                         return;
                 }, false);
-                subscribed_topics.push_back(conf.second->get("topic")->asString());
+                subscribed_topics.push_back(topic);
             }
         }
     }
