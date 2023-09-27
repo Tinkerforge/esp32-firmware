@@ -35,25 +35,29 @@ interface EventLogState {
     show_spinner: boolean
 }
 
+const TIMESTAMP_LEN = 25;
+const TIMESTAMP_REGEX = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}),(\d{3})  $/;
+const RELATIVE_TIME_REGEX = /^\s+(\d+),(\d{3})  $/;
+
 export class EventLog extends Component<{}, EventLogState> {
     page_visible: boolean = false;
+    last_boot_id = -1;
 
     constructor() {
         super();
 
-        util.addApiEventListener("info/modules", () => {
-            if (this.page_visible)
-                this.load_event_log();
+        util.addApiEventListener("event_log/boot_id", (ev) => {
+            window.setTimeout(() => this.load_event_log(this.last_boot_id != ev.data.boot_id), 1000);
+            this.last_boot_id = ev.data.boot_id;
         });
 
-        util.addApiEventListener("event_log/message", (ev: MessageEvent<Readonly<API.getType["event_log/message"]>>) => {
+        util.addApiEventListener("event_log/message", (ev) => {
             this.setState({log: this.state.log + ev.data + "\n"});
         });
 
         // We have to use jquery here or else the events don't fire?
         // This can be removed once the sidebar is ported to preact.
         $('#sidebar-event_log').on('shown.bs.tab', () => {
-            this.load_event_log();
             this.page_visible = true;
         });
 
@@ -62,12 +66,75 @@ export class EventLog extends Component<{}, EventLogState> {
         });
     }
 
-    load_event_log() {
+    get_line_date(line: string) {
+        let match = line.substring(0, TIMESTAMP_LEN).match(TIMESTAMP_REGEX);
+        if (match == null) {
+            match = line.substring(0, TIMESTAMP_LEN).match(RELATIVE_TIME_REGEX);
+            if (match == null)
+                return null;
+            let nums = match.slice(1).map(x => parseInt(x)) as [number, number];
+            return new Date(nums[0] * 1000 + nums[1]);
+        }
+        let nums = match.slice(1).map(x => parseInt(x)) as [number,number,number,number,number,number,number];
+        // Month is index from 0 to 11.
+        nums[1]--;
+        return new Date(...nums);
+    }
+
+    load_event_log(replace: boolean) {
         util.download("/event_log")
             .then(blob => blob.text())
             .then(text => {
-                this.setState({log: text});
                 util.remove_alert("event_log_load_failed");
+
+                if (replace || !this.state.log) {
+                    this.setState({log: text});
+                    return;
+                }
+
+                const new_lines = text.split("\n");
+                let first_new_line = null;
+                let first_new_date = null;
+
+                if (new_lines.length == 0) {
+                    this.setState({log: text});
+                    return;
+                } else {
+                    first_new_line = new_lines[0]
+                    first_new_date = this.get_line_date(first_new_line);
+                }
+
+                if (first_new_date == null) {
+                    this.setState({log: text});
+                    return;
+                }
+
+                const old_lines = this.state.log.split("\n");
+
+                let i = 0;
+                for (; i < old_lines.length; ++i) {
+                    const line = old_lines[i];
+                    let date = this.get_line_date(line);
+                    if (date == null)
+                        continue;
+
+
+                    if (date > first_new_date)
+                        break;
+
+                    // == compares references on objects and Date has no equals method.
+                    // Isn't javascript fun?
+                    if (date.getTime() == first_new_date.getTime() && line == first_new_line)
+                        break;
+                }
+
+                if (i == 0) {
+                    this.setState({log: text});
+                    return;
+                }
+
+                const new_log = old_lines.slice(0, i).join("\n") + (i != 0 ? "\n" : "") + text;
+                this.setState({log: new_log});
             })
             .catch(e => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), e.message))
     }

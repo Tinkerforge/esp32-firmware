@@ -28,6 +28,7 @@
 #include "malloc_tools.h"
 
 // Length of a timestamp with two spaces at the end. For example "2022-02-11 12:34:56,789"
+// Also change in frontend when changing here!
 #define TIMESTAMP_LEN 25
 
 class EventLog
