@@ -18,7 +18,7 @@
  */
 
 import { h, Context, Fragment, ComponentChildren } from "preact";
-import {useContext} from "preact/hooks";
+import {useContext, useId} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 
 interface InputIPProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "minLength" | "maxLength" | "size" | "pattern" | "onInput"> {
@@ -29,7 +29,7 @@ interface InputIPProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>
 }
 
 export function InputIP(props: InputIPProps) {
-    let id = useContext(props.idContext);
+    const id = !props.idContext ? useId() : useContext(props.idContext);
     return (<>
         <input class={"form-control" + (props.moreClasses? " " + props.moreClasses.join(" ") : "")}
                id={id}

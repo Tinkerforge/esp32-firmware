@@ -18,7 +18,7 @@
  */
 
 import { h, JSX, Context, ComponentChildren } from "preact";
-import {useContext} from "preact/hooks";
+import {useContext, useId,} from "preact/hooks";
 
 export interface SwitchProps {
     idContext?: Context<string>
@@ -30,7 +30,7 @@ export interface SwitchProps {
 }
 
 export function Switch(props: SwitchProps) {
-    let id = useContext(props.idContext);
+    const id = !props.idContext ? useId() : useContext(props.idContext);
 
     let inner = <div class={"borderless-form-control custom-control custom-switch "}>
             <input type="checkbox" class="custom-control-input" id={id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>

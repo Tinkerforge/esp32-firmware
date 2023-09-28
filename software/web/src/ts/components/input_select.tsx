@@ -18,7 +18,7 @@
  */
 
 import { h, Context } from "preact";
-import {useContext} from "preact/hooks";
+import {useContext, useId} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 
 export interface InputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
@@ -32,6 +32,8 @@ export interface InputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSe
 
 export function InputSelect(props: InputSelectProps) {
     let {idContext, items, value, onValue, placeholder, classList, style, ...p} = props;
+
+    const id = !idContext ? useId() : useContext(idContext);
 
     if (placeholder) {
         let found = false;
@@ -57,7 +59,7 @@ export function InputSelect(props: InputSelectProps) {
                {...p}
                class={(classList ?? "") + " custom-select"}
                style={style ?? ""}
-               id={idContext === undefined ? "" : useContext(idContext)}
+               id={id}
                onChange={onValue === undefined ? undefined : (e) => onValue((e.target as HTMLSelectElement).value)}
                >
             {

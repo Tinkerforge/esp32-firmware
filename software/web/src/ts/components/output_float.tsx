@@ -20,7 +20,7 @@
 import * as util from "../util";
 
 import { h, Context } from "preact";
-import {useContext} from "preact/hooks";
+import {useContext, useId} from "preact/hooks";
 
 interface OutputFloatProps {
     idContext?: Context<string>
@@ -33,6 +33,7 @@ interface OutputFloatProps {
 }
 
 export function OutputFloat(props: OutputFloatProps) {
+    const id = !props.idContext ? useId() : useContext(props.idContext);
     let pow10 = Math.pow(10, props.scale);
 
     let val = util.toLocaleFixed(props.value / pow10, props.digits);
@@ -51,7 +52,7 @@ export function OutputFloat(props: OutputFloatProps) {
         <div class="input-group">
             <input class="form-control no-spin text-right text-monospace"
                     style={pad_right}
-                       id={props.idContext ? useContext(props.idContext) : undefined}
+                       id={id}
                        type="text"
                        disabled
                        value={val}/>

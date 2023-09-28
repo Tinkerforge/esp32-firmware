@@ -18,7 +18,7 @@
  */
 
 import { h, Context, Fragment, ComponentChildren } from "preact";
-import { useContext, useRef } from "preact/hooks";
+import { useContext, useId, useRef } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { ArrowLeft, ArrowRight } from "react-feather";
@@ -36,7 +36,7 @@ interface InputDateProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
 
 export function InputDate(props: InputDateProps) {
     const input = useRef<HTMLInputElement>();
-    let id = props.idContext === undefined ? "" : useContext(props.idContext);
+    const id = !props.idContext ? useId() : useContext(props.idContext);
 
     const dateToValue = (date: Date) => {
         try {

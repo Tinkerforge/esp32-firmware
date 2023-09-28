@@ -18,7 +18,7 @@
  */
 
 import { h, Context, Fragment } from "preact";
-import {useContext, useRef} from "preact/hooks";
+import {useContext, useId, useRef} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
@@ -33,6 +33,7 @@ interface InputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElem
 }
 
 export function InputNumber(props: InputNumberProps) {
+    const id = !props.idContext ? useId() : useContext(props.idContext);
 
     const input = useRef<HTMLInputElement>();
 
@@ -40,7 +41,7 @@ export function InputNumber(props: InputNumberProps) {
         <div class="input-group">
             <input class="form-control no-spin"
                        ref={input}
-                       id={props.idContext ? useContext(props.idContext) : undefined}
+                       id={id}
                        type="number"
                        disabled={props.onValue === undefined}
                        onInput={props.onValue === undefined ? undefined : (e) => props.onValue(parseInt((e.target as HTMLInputElement).value, 10))}
