@@ -51,7 +51,7 @@ export function RtcCronTriggerComponent(trigger: CronTrigger): CronComponent {
     })
 
     return {
-        text: ret,
+        text: __("rtc.content.cron_translation_function")(value.mday, value.wday, value.hour, value.minute),
         fieldNames: fieldNames,
         fieldValues: fieldValues
     };
@@ -60,11 +60,10 @@ export function RtcCronTriggerComponent(trigger: CronTrigger): CronComponent {
 export function RtcCronTriggerConfigComponent(cron: Cron, trigger: CronTrigger) {
     const value = (trigger as RtcCronTrigger)[1];
 
-    let mdays: [string, string][] = [['-1','*']];
     let hours: [string, string][] = [['-1','*']];
     let minutes: [string, string][] = [['-1','*']];
-    const wdays: [string, string][] = [
-        ['-1','*'],
+    let days: [string, string][] = [
+        ['-1', __("rtc.content.every")],
         ['0', __("rtc.content.sunday")],
         ['1', __("rtc.content.monday")],
         ['2', __("rtc.content.tuesday")],
@@ -72,59 +71,63 @@ export function RtcCronTriggerConfigComponent(cron: Cron, trigger: CronTrigger) 
         ['4', __("rtc.content.thursday")],
         ['5', __("rtc.content.friday")],
         ['6', __("rtc.content.saturday")]
-
     ];
 
+    const date = new Date();
     for (let i = 0; i <= 59; i++) {
-        minutes.push([String(i), String(i)]);
+        const numString = i < 10 ? "0" + i : i.toString();
+        minutes.push([String(i), numString]);
         if (i != 0 && i <= 31) {
-            mdays.push([String(i), String(i)]);
+            days.push([String(i + 7), numString]);
         }
         if (i <= 23) {
-            hours.push([String(i), String(i)]);
+            date.setHours(i);
+            hours.push([String(i), date.toLocaleTimeString([], { hour: "2-digit" })]);
         }
     }
+
+    const day = value.mday != -1 ? value.mday + 7 : value.wday;
 
     return [
         {
             name: __("rtc.content.mday"),
             value: <InputSelect
-                    items={mdays}
-                    value={value.mday}
+                    items={days}
+                    value={day}
                     onValue={(v) => {
-                        value.mday = Number(v);
+                        const day = Number(v);
+                        if (day > 6) {
+                            value.mday = day - 7;
+                            value.wday = -1;
+                        } else {
+                            value.mday = -1;
+                            value.wday = day;
+                        }
                         cron.setTriggerFromComponent(trigger);
                     }} />
         },
         {
-            name: __("rtc.content.wday"),
-            value: <InputSelect
-                items={wdays}
-                value={value.wday}
-                onValue={(v) => {
-                    value.wday = Number(v);
-                    cron.setTriggerFromComponent(trigger);
-                }} />
-        },
-        {
-            name: __("rtc.content.hour"),
-            value: <InputSelect
-                items={hours}
-                value={value.hour}
-                onValue={(v) => {
-                    value.hour = Number(v);
-                    cron.setTriggerFromComponent(trigger);
-                }} />
-        },
-        {
-            name: __("rtc.content.minute"),
-            value: <InputSelect
-                items={minutes}
-                value={value.minute}
-                onValue={(v) => {
-                    value.minute = Number(v);
-                    cron.setTriggerFromComponent(trigger);
-                }} />
+            name: __("rtc.content.time"),
+            value:  <>
+                <div class="input-group mb-2">
+                    <InputSelect
+                        items={hours}
+                        value={value.hour}
+                        onValue={(v) => {
+                            value.hour = Number(v);
+                            cron.setTriggerFromComponent(trigger);
+                        }} />
+
+                    <InputSelect
+                    items={minutes}
+                    value={value.minute}
+                    onValue={(v) => {
+                        value.minute = Number(v);
+                        cron.setTriggerFromComponent(trigger);
+                    }} />
+                </div>
+                <span>{__("rtc.content.cron_translation_function")(value.mday, value.wday, value.hour, value.minute)}</span>
+            </>
         }
     ]
 }
@@ -146,6 +149,6 @@ export function init() {
         table_row: RtcCronTriggerComponent,
         config_builder: RtcCronTriggerFactory,
         config_component: RtcCronTriggerConfigComponent,
-        name: __("rtc.content.rtc")
+        name: __("rtc.content.clock")
     }
 }
