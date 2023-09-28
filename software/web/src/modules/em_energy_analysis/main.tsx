@@ -2097,7 +2097,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             all.push(this.update_wallbox_5min_cache(charger.uid, date));
         }
 
-        let result = await Promise<boolean[]>.all(all);
+        let result = await (Promise<boolean[]>).all(all);
 
         for (let success of result) {
             if (!success) {
@@ -2276,7 +2276,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             all.push(this.update_wallbox_daily_cache(charger.uid, date));
         }
 
-        let result = await Promise<boolean[]>.all(all);
+        let result = await (Promise<boolean[]>).all(all);
 
         for (let success of result) {
             if (!success) {
