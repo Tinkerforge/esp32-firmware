@@ -38,6 +38,8 @@ interface EventLogState {
 const TIMESTAMP_LEN = 25;
 const TIMESTAMP_REGEX = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}),(\d{3})  $/;
 const RELATIVE_TIME_REGEX = /^\s+(\d+),(\d{3})  $/;
+const LOG_MAX_LEN = 10 * 1024 * 1024;
+const LOG_CHUNK_LEN_DROPPED_WHEN_FULL = 1024 * 1024;
 
 export class EventLog extends Component<{}, EventLogState> {
     page_visible: boolean = false;
@@ -54,7 +56,7 @@ export class EventLog extends Component<{}, EventLogState> {
         });
 
         util.addApiEventListener("event_log/message", (ev) => {
-            this.setState({log: this.state.log + ev.data + "\n"});
+            this.set_log(this.state.log + ev.data + "\n");
         });
 
         // We have to use jquery here or else the events don't fire?
@@ -66,6 +68,13 @@ export class EventLog extends Component<{}, EventLogState> {
         $('#sidebar-event_log').on('hidden.bs.tab', () => {
             this.page_visible = false;
         });
+    }
+
+    set_log(log: string) {
+        if (log.length > LOG_MAX_LEN)
+            log = log.slice(log.indexOf("\n", LOG_CHUNK_LEN_DROPPED_WHEN_FULL) + 1)
+
+        this.setState({log: log});
     }
 
     get_line_date(line: string) {
