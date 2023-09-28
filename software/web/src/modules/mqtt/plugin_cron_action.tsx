@@ -13,7 +13,7 @@ export type MqttCronAction = [
 import { Cron } from "../cron/main";
 import { CronComponent, CronAction, cron_action_components } from "../cron/api";
 import { InputText } from "../../ts/components/input_text";
-import { h } from "preact"
+import { h, Fragment } from "preact"
 import { Switch } from "../../ts/components/switch";
 import { __ } from "../../ts/translation";
 import * as API from "../../ts/api"
@@ -63,12 +63,10 @@ export function MqttCronActionConfig(cron: Cron, action: CronAction) {
         },
         {
             name: __("mqtt.content.topic"),
-            value: <InputText
+            value: <>
+             <InputText
                 value={value.topic}
                 class={isInvalid ? "is-invalid" : undefined}
-                prefixChildren={
-                    value.use_prefix ? <InputText value={mqtt_config.global_topic_prefix + "/cron_action/"}></InputText> : undefined
-                }
                 onValue={(v) => {
                     value.topic = v;
                     if (value.topic.startsWith(mqtt_config.global_topic_prefix)) {
@@ -78,8 +76,12 @@ export function MqttCronActionConfig(cron: Cron, action: CronAction) {
                     }
                     cron.setActionFromComponent(action);
                 }}
-                invalidFeedback={__("mqtt.content.use_topic_prefix_invalid")}
-                />
+                invalidFeedback={__("mqtt.content.use_topic_prefix_invalid")}/>
+                <InputText
+                    class="mt-2"
+                    value={mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic}
+                    hidden={!value.use_prefix} />
+            </>
         },
         {
             name: __("mqtt.content.payload"),

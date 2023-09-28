@@ -10,7 +10,7 @@ export type MqttCronTrigger = [
     }
 ];
 
-import { h } from "preact"
+import { h, Fragment } from "preact"
 import { __ } from "../../ts/translation";
 import { CronComponent, CronTrigger, cron_trigger_components } from "../cron/api";
 import { Cron } from "../cron/main";
@@ -61,12 +61,10 @@ export function MqttCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
         },
         {
             name: __("mqtt.content.topic"),
-            value: <InputText
+            value: <>
+             <InputText
                 value={value.topic}
                 class={isInvalid ? "is-invalid" : undefined}
-                prefixChildren={
-                    value.use_prefix ? <InputText value={mqtt_config.global_topic_prefix + "/cron_trigger/"}></InputText> : undefined
-                }
                 onValue={(v) => {
                     value.topic = v;
                     if (value.topic.startsWith(mqtt_config.global_topic_prefix)) {
@@ -77,6 +75,11 @@ export function MqttCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
                     cron.setTriggerFromComponent(trigger);
                 }}
                 invalidFeedback={__("mqtt.content.use_topic_prefix_invalid")}/>
+                <InputText
+                    class="mt-2"
+                    value={mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic}
+                    hidden={!value.use_prefix} />
+            </>
         },
         {
             name: __("mqtt.content.payload"),
