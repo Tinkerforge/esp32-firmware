@@ -7,7 +7,7 @@ export function init() {
         return;
 
     let target = document.createElement("img");
-    (target.style as any) = "position: fixed; top:10px; left:0px; z-index: 10000;";
+    (target.style as any) = "position: fixed; top:10px; left:0px; z-index: 10000; pointer-events: none;";
     target.src = underconstruction_gif;
 
     parent.after(target);
