@@ -22,7 +22,6 @@
   },
   "devDependencies": {
     "@types/bootstrap": "^4.6.3",
-    "@types/chartist": "^0.11.0",
     "@types/feather-icons": "^4.7.0",
     "@types/jquery": "^3.5.1",
     "autoprefixer": "^10.0.0",
