@@ -1141,7 +1141,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, {force_render: number}
         // want to push them into the uplot graph immediately.
         // This only works if the wrapper component is already created.
         // Hide the form rows to fix any visual bugs instead.
-        let show = API.hasFeature('meter') && API.hasFeature("energy_manager");
+        let show = util.render_allowed() && API.hasFeature('meter') && API.hasFeature("energy_manager");
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
