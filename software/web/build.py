@@ -62,6 +62,8 @@ def main():
         '--metafile={}'.format(os.path.join(BUILD_DIR, 'meta.json')),
         '--bundle',
         '--minify',
+        '--target=es6',
+        '--alias:jquery=./node_modules/jquery/dist/jquery.slim.min',
         '--outfile={0}'.format(os.path.join(BUILD_DIR, 'bundle.min.js'))
     ]
 
