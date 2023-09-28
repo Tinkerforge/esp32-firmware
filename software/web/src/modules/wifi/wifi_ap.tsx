@@ -162,7 +162,8 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                 </ConfigForm>
 
                 <Modal show={state.show_modal} onHide={() => {this.dismissModal()}} centered>
-                    <Modal.Header closeButton>
+                    {/* There seems to be an incompatibility between preact's and react-bootstrap's typings*/ }
+                    <Modal.Header {...{closeButton: true} as any}>
                         <label class="modal-title form-label">{__("wifi.content.confirm_title")}</label>
                     </Modal.Header>
                     <Modal.Body>{__("wifi.content.confirm_content")}</Modal.Body>
