@@ -79,7 +79,7 @@ export function MqttCronActionConfig(cron: Cron, action: CronAction) {
                 invalidFeedback={__("mqtt.content.use_topic_prefix_invalid")}/>
                 <InputText
                     class="mt-2"
-                    value={mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic}
+                    value={mqtt_config.global_topic_prefix + "/cron_action/" + value.topic}
                     hidden={!value.use_prefix} />
             </>
         },
