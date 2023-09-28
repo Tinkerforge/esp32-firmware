@@ -123,8 +123,8 @@ void Meters::setup()
 
         IMeter *meter = new_meter_of_class(configured_meter_class, slot, meter_state, meter_conf, meter_errors);
         if (!meter) {
-            logger.printfln("meters: Failed to create meter of class %u.", static_cast<uint32_t>(configured_meter_class));
-            continue;
+            logger.printfln("meters: Failed to create meter of class %u in slot %u.", static_cast<uint32_t>(configured_meter_class), slot);
+            meter = new_meter_of_class(MeterClassID::None, slot, meter_state, meter_conf, meter_errors);
         }
         if (configured_meter_class != MeterClassID::None) {
             meter_slot.power_history.setup();
