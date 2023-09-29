@@ -78,6 +78,7 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
     websocket_cfg.ping_interval_sec = 0xFFFFFFFF;
     websocket_cfg.pingpong_timeout_sec = 0;
     websocket_cfg.disable_pingpong_discon = true;
+    websocket_cfg.task_stack = 8192;
 
     // Username and password are "Not supported for now".
     //websocket_cfg.username = basic_auth_user;
