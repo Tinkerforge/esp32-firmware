@@ -437,6 +437,15 @@ MeterClassID Meters::get_meter_class(uint32_t slot)
     return meter_slots[slot].meter->get_class();
 }
 
+bool Meters::meter_is_fresh(uint32_t slot, micros_t max_age_us)
+{
+    if (deadline_elapsed(meter_slots[slot].values_last_updated_at + max_age_us)) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
 Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, float *value_out, micros_t max_age)
 {
     if (slot >= METERS_SLOTS) {

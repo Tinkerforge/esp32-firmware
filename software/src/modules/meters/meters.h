@@ -78,6 +78,7 @@ public:
     IMeter *get_meter(uint32_t slot);
     uint32_t get_meters(MeterClassID meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
     MeterClassID get_meter_class(uint32_t slot);
+    bool meter_is_fresh(uint32_t slot, micros_t max_age_us);
 
     ValueAvailability get_power(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
     ValueAvailability get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age = 0_usec);
