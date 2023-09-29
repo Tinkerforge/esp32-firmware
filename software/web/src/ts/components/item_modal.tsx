@@ -77,7 +77,7 @@ export class ItemModal extends Component<ItemModalProps, any> {
                     await onSubmit();
                     await onHide();
                 }}>
-                    <Modal.Body>
+                    <Modal.Body className="pb-0">
                         {(toChildArray(children) as VNode[]).map(c => cloneElement(c, {idContext: this.idContext}))}
                     </Modal.Body>
                     <Modal.Footer>

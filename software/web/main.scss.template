@@ -575,3 +575,16 @@ table ul {
 .card-body th {
     border-top: none;
 }
+
+@media (min-width: 992px) {
+  .pt-lg-col-form-label {
+    padding-top: calc(.375rem + 1px) !important;
+  }
+}
+
+@media (min-width: 992px) {
+  .py-lg-col-form-label {
+    padding-top: calc(.375rem + 1px) !important;
+    padding-bottom: calc(.375rem + 1px) !important;
+  }
+}

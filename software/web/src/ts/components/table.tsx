@@ -228,11 +228,11 @@ export class Table extends Component<TableProps, TableState> {
                     no_text={__("component.table.abort")}
                     yes_text={__("component.table.add")}>
                     {state.showAddModal && props.onAddGetRows ?
-                        props.onAddGetRows().map((addRow, i, array) =>
+                        props.onAddGetRows().map((addRow, i) =>
                             addRow.name ?
-                        <FormGroup label={addRow.name} classList={i == array.length - 1 ? " mb-0" : ""} valueClassList={addRow.valueClassList}>
+                        <FormRow label={addRow.name}>
                             {addRow.value}
-                        </FormGroup> : addRow.value) : undefined}
+                        </FormRow> : addRow.value) : undefined}
                 </ItemModal>
 
                 <ItemModal
@@ -264,11 +264,11 @@ export class Table extends Component<TableProps, TableState> {
                     no_text={__("component.table.abort")}
                     yes_text={__("component.table.apply")}>
                     {state.showEditModal !== null && props.rows[state.showEditModal].onEditGetRows ?
-                        props.rows[state.showEditModal].onEditGetRows().map((editRow, i, array) =>
+                        props.rows[state.showEditModal].onEditGetRows().map((editRow, i) =>
                             editRow.name ?
-                        <FormGroup label={editRow.name} classList={i == array.length - 1 ? " mb-0" : ""} valueClassList={editRow.valueClassList}>
+                        <FormRow label={editRow.name}>
                             {editRow.value}
-                        </FormGroup> : editRow.value) : undefined}
+                        </FormRow> : editRow.value) : undefined}
                 </ItemModal>
             </>
         );
