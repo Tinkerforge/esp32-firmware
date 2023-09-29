@@ -57,7 +57,7 @@ export class ItemModal extends Component<ItemModalProps, any> {
         let {onCheck, onSubmit, onHide, show, title, children, no_variant, no_text, yes_variant, yes_text, ...p} = props;
 
         return (
-            <Modal show={show} onHide={() => onHide()} centered {...p}>
+            <Modal size={"xl"} show={show} onHide={() => onHide()} centered {...p}>
                 {/* There seems to be an incompatibility between preact's and react-bootstrap's typings*/ }
                 <Modal.Header {...{closeButton: true} as any}>
                     <label class="modal-title form-label">{title}</label>
