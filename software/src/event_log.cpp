@@ -22,8 +22,8 @@
 #include <time.h>
 
 #include "config.h"
+#include "event_log_dependencies.h"
 #include "tools.h"
-#include "modules.h"
 #include "web_server.h"
 #include "TFJson.h"
 

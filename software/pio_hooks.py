@@ -646,6 +646,7 @@ def main():
     })
 
     print("Generating module_dependencies.h from module.ini", flush=True)
+    generate_module_dependencies_header('src/event_log_dependencies.ini', 'src/event_log_dependencies.h', None, backend_modules, all_mods)
     generate_module_dependencies_header('src/web_dependencies.ini', 'src/web_dependencies.h', None, backend_modules, all_mods)
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
