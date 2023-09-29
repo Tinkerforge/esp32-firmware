@@ -615,15 +615,15 @@ String Wifi::get_scan_results()
 
     for (int i = 0; i < network_count; ++i) {
         // Print SSID and RSSI for each network found
-        result += "{\"ssid\": \"";
+        result += "{\"ssid\":\"";
         result += WiFi.SSID(i);
-        result += "\", \"bssid\": \"";
+        result += "\",\"bssid\":\"";
         result += WiFi.BSSIDstr(i);
-        result += "\", \"rssi\": ";
+        result += "\",\"rssi\":";
         result += WiFi.RSSI(i);
-        result += ", \"channel\": ";
+        result += ",\"channel\":";
         result += WiFi.channel(i);
-        result += ", \"encryption\": ";
+        result += ",\"encryption\":";
         result += WiFi.encryptionType(i);
         result += "}";
         if (i != network_count - 1)
