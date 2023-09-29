@@ -25,6 +25,7 @@
 #include "tools.h"
 #include "modules.h"
 #include "web_server.h"
+#include "TFJson.h"
 
 // Global definition here to match the declaration in event_log.h.
 EventLog logger;
