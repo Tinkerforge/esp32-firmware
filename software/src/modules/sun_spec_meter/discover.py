@@ -41,7 +41,7 @@ class Reader:
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
+        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
         result = decoder.decode_16bit_int()
 
         if result == -0x8000:
@@ -57,7 +57,7 @@ class Reader:
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
+        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
         result = decoder.decode_16bit_uint()
 
         if result == 0xFFFF:
@@ -73,7 +73,7 @@ class Reader:
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
+        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
         result = decoder.decode_32bit_int()
 
         if result == -0x80000000:
@@ -89,7 +89,7 @@ class Reader:
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
+        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
         result = decoder.decode_32bit_uint()
 
         if result == 0xFFFFFFFF:
@@ -105,7 +105,7 @@ class Reader:
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
+        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
         result = decoder.decode_32bit_uint()
 
         if result == 0:
@@ -121,7 +121,7 @@ class Reader:
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
+        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
         result = decoder.decode_32bit_float()
 
         if math.isnan(result):
@@ -138,7 +138,7 @@ class Reader:
         if isinstance(result, (ExceptionResponse, ModbusException)):
             raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.Big)
+        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
         self.address += length_registers
 
         return decoder.decode_string(length_bytes).rstrip(b'\x00').decode('utf-8')
