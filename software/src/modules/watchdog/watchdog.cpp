@@ -25,7 +25,8 @@
 #include "tools.h"
 
 #define WATCHDOG_MAX_REGS 10
-#define WATCHDOG_STACK_SIZE 1000
+// Highest observed stack usage was 616.
+#define WATCHDOG_STACK_SIZE 768
 
 static StaticTask_t xTaskBuffer;
 static StackType_t xStack[ WATCHDOG_STACK_SIZE ];
@@ -93,11 +94,6 @@ void Watchdog::pre_setup()
         xStack,
         &xTaskBuffer,
         1);
-}
-
-void Watchdog::setup()
-{
-    initialized = true;
 }
 
 int Watchdog::add(const char *name, const char *message, uint32_t timeout_ms, uint32_t initial_deadline_ms)
