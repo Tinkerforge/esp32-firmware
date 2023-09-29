@@ -30,6 +30,7 @@ interface OutputFloatProps {
     unit: string
     maxFractionalDigitsOnPage?: number
     maxUnitLengthOnPage?: number
+    small?: boolean
 }
 
 export function OutputFloat(props: OutputFloatProps) {
@@ -39,7 +40,7 @@ export function OutputFloat(props: OutputFloatProps) {
     let val = util.toLocaleFixed(props.value / pow10, props.digits);
 
     let maxFracDigits = props.maxFractionalDigitsOnPage === undefined ? 3 : props.maxFractionalDigitsOnPage;
-    let maxUnitLength = props.maxUnitLengthOnPage === undefined ? 2.5 : props.maxUnitLengthOnPage; // Hand-tuned at the moment to fit kvarh
+    let maxUnitLength = props.maxUnitLengthOnPage === undefined ? (props.small ? 1.75 : 2.5) : props.maxUnitLengthOnPage; // Hand-tuned at the moment to fit kvarh
 
     let pad_right = "padding-right: min(" +
         "calc(100% - 2px " + // border
@@ -49,18 +50,17 @@ export function OutputFloat(props: OutputFloatProps) {
         `), calc(${props.digits == 0 ? (maxFracDigits > 0 ? maxFracDigits + 1 : 0) : (maxFracDigits-props.digits)}ch + .75rem));`;
 
     return (
-        <div class="input-group">
-            <input class="form-control no-spin text-right text-monospace"
+        <div class={"input-group" + (props.small ? " input-group-sm" : "")}>
+            <input class={"form-control" + (props.small ? " form-control-sm" : "") + " no-spin text-right text-monospace"}
                     style={pad_right}
                        id={id}
                        type="text"
                        disabled
                        value={val}/>
             <div class="input-group-append">
-                <div class="form-control input-group-text" style={`width: ${maxUnitLength + 1.5}rem;`}>
+                <div class={"form-control" + (props.small ? " form-control-sm" : "") + " input-group-text"} style={`width: ${maxUnitLength + 1.5}rem;`}>
                     {this.props.unit}
                 </div>
-
             </div>
         </div>
     );

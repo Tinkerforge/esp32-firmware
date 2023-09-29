@@ -91,6 +91,10 @@ body {
     line-height: 1.2;
 }
 
+.form-label-sm {
+    font-size: 1rem;
+}
+
 /*
 * Sidebar
 */
@@ -287,6 +291,11 @@ body {
 
 .text-muted {
     color: rgba(0,0,0,.66) !important;
+}
+
+.text-muted-sm {
+    color: rgba(0,0,0,.66) !important;
+    font-size: 0.75rem;
 }
 
 .btn-outline-primary.disabled, .btn-outline-primary:disabled {

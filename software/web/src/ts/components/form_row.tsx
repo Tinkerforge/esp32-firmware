@@ -34,6 +34,7 @@ export interface FormRowProps {
     label_suffix ?: VNode
     help?: ComponentChildren
     error?: ComponentChildren
+    small?: boolean
 }
 
 let id_counter = 0;
@@ -70,16 +71,16 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
 
         return (
             <div class="form-group row" hidden={props.hidden == undefined ? false : props.hidden}>
-                <label for={this.id} class={"col-form-label " + (props.labelColClasses === undefined ? "col-lg-3" : props.labelColClasses)}>
+                <label for={this.id} class={"col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label " + (props.labelColClasses === undefined ? "col-lg-3" : props.labelColClasses)}>
                     <div class="row mx-lg-0">
                         <div class="col px-lg-0">
-                    {props.label_prefix ? props.label_prefix : <></>}
-                    {props.label ? <span class={"form-label" + (props.label_muted && !props.label_infix ? " pr-2" : "")}>{props.label}</span> : ""}
-                    {props.label_infix ? props.label_infix : <></>}
-                    {props.label_muted ? <span class="text-muted">{props.label_muted}</span> : ""}
-                    {props.label_suffix ? props.label_suffix : <></>}
+                    {props.label_prefix ? props.label_prefix : undefined}
+                    {props.label ? <span class={"form-label" + (props.small ? " form-label-sm" : "") + (props.label_muted && !props.label_infix ? " pr-2" : "")}>{props.label}</span> : undefined}
+                    {props.label_infix ? props.label_infix : undefined}
+                    {props.label_muted ? <span class={"text-muted" + (props.small ? " text-muted-sm" : "")}>{props.label_muted}</span> : undefined}
+                    {props.label_suffix ? props.label_suffix : undefined}
                     </div>
-                    {props.help ? <span class="col-auto px-lg-0" onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:"btn-outline-secondary", style:"border-radius: 50%;"} as any}/></span> : <></>}
+                    {props.help ? <span class="col-auto px-lg-0" onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:"btn-outline-secondary", style:"border-radius: 50%;"} as any}/></span> : undefined}
                     </div>
                 </label>
                 {inner}
