@@ -65,6 +65,8 @@ void factory_reset(bool restart_esp)
         return;
     factory_reset_running = true;
 
+    logger.printfln("Starting factory reset");
+
     if (green_led_pin >= 0)
         xTaskCreate(blinky,
             "fctyrst_blink",
