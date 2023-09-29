@@ -24,15 +24,26 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __, translate_unchecked } from "../../ts/translation";
 import { h, render, createRef, Fragment, Component, RefObject, ComponentChild } from "preact";
-import { PageHeader } from "../../ts/components/page_header";
+import { Button, ButtonGroup, Collapse, Card } from "react-bootstrap";
+import { HelpCircle, Zap, ZapOff, ChevronRight } from "react-feather";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
-import { CollapsedSection } from "../../ts/components/collapsed_section";
+import { FormSeparator } from "../../ts/components/form_separator";
 import { ConfigComponent } from "../../ts/components/config_component";
+import { ConfigForm } from "../../ts/components/config_form";
 import { OutputFloat } from "../../ts/components/output_float";
 import uPlot from 'uplot';
 import { SubPage } from "../../ts/components/sub_page";
-import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS } from "./meter_value_id";
+import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS, METER_VALUE_ORDER } from "./meter_value_id";
+import { MeterClassID } from "./meters_defs";
+import { MeterConfig, MeterConfigPlugin } from "./types";
+import { Table, TableModalRow } from "../../ts/components/table";
+import { plugins_init } from "./plugins";
+
+const PHASE_CONNECTED_VOLTAGE_THRESHOLD = 180.0 // V
+const PHASE_ACTIVE_CURRENT_THRESHOLD = 0.3 // A
+
+let config_plugins: {[meter_class: number]: MeterConfigPlugin} = {};
 
 interface CachedData {
     timestamps: number[];
@@ -483,9 +494,13 @@ interface MetersProps {
 }
 
 interface MetersState {
-    state: {[meter_slot: number]: Readonly<API.getType['meters/0/state']>};
+    states: {[meter_slot: number]: Readonly<API.getType['meters/0/state']>};
+    configs: {[meter_slot: number]: MeterConfig};
     values_by_id: {[meter_slot: number]: ValuesByID};
     chart_selected: "history"|"live";
+    addMeter: MeterConfig;
+    editMeter: MeterConfig;
+    extraShow: boolean[/*meter_slot*/];
 }
 
 function calculate_live_data(offset: number, samples_per_second: number, samples: number[/*meter_slot*/][]): CachedData {
@@ -596,10 +611,16 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
         this.status_ref = props.status_ref;
 
         this.state = {
-            state: {},
+            states: {},
+            configs: {},
             values_by_id: {},
             chart_selected: "history",
+            addMeter: [0, null],
+            editMeter: [0, null],
+            extraShow: new Array<boolean>(7),
         } as any;
+
+        this.state.extraShow.fill(false);
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             this.live_data.samples.push([]);
@@ -613,7 +634,25 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             util.addApiEventListener_unchecked(`meters/${meter_slot}/state`, () => {
-                this.setState({state: API.get_maybe(`meters/${meter_slot}/state`)});
+                let state = API.get_maybe(`meters/${meter_slot}/state`);
+
+                this.setState((prevState) => ({
+                    states: {
+                        ...prevState.states,
+                        [meter_slot]: state
+                    }
+                }));
+            });
+
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
+                let config = API.get_maybe(`meters/${meter_slot}/config`);
+
+                this.setState((prevState) => ({
+                    configs: {
+                        ...prevState.configs,
+                        [meter_slot]: config
+                    }
+                }));
             });
 
             util.addApiEventListener_unchecked(`meters/${meter_slot}/value_ids`, () => {
@@ -853,65 +892,213 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
         }
     }
 
+    hackToAllowSave() {
+        document.getElementById("meters_config_form").dispatchEvent(new Event('input'));
+    }
+
     render(props: {}, state: Readonly<MetersState>) {
         if (!util.render_allowed()) {
             return (<></>);
         }
 
+        let active_configs = Object.keys(state.configs).filter((meter_slot_str) => state.configs[parseInt(meter_slot_str)][0] != MeterClassID.None);
+
         return (
             <SubPage colClasses="col-xl-10">
-                <PageHeader title={__("meters.content.meters")}>
-                    <div>
-                        <InputSelect value={this.state.chart_selected} onValue={(v) => {
-                            let chart_selected: "live"|"history" = v as any;
+                <ConfigForm id="meters_config_form" title={__("meters.content.meters")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                    <FormSeparator heading={__("meters.status.power_history")} first={true} colClasses={"justify-content-between align-items-center col"} extraClasses={"pr-0 pr-lg-3"} >
+                        <div class="mb-2">
+                            <InputSelect value={this.state.chart_selected} onValue={(v) => {
+                                let chart_selected: "live"|"history" = v as any;
 
-                            this.setState({chart_selected: chart_selected}, () => {
-                                if (chart_selected == 'live') {
-                                    this.uplot_wrapper_live_ref.current.set_show(true);
-                                    this.uplot_wrapper_history_ref.current.set_show(false);
-                                }
-                                else {
-                                    this.uplot_wrapper_history_ref.current.set_show(true);
-                                    this.uplot_wrapper_live_ref.current.set_show(false);
+                                this.setState({chart_selected: chart_selected}, () => {
+                                    if (chart_selected == 'live') {
+                                        this.uplot_wrapper_live_ref.current.set_show(true);
+                                        this.uplot_wrapper_history_ref.current.set_show(false);
+                                    }
+                                    else {
+                                        this.uplot_wrapper_history_ref.current.set_show(true);
+                                        this.uplot_wrapper_live_ref.current.set_show(false);
+                                    }
+
+                                    this.update_uplot();
+                                });
+                            }}
+                                items={[
+                                    ["history", __("meters.content.history")],
+                                    ["live", __("meters.content.live")],
+                                ]}/>
+                        </div>
+                    </FormSeparator>
+
+                    <UplotWrapper ref={this.uplot_wrapper_live_ref}
+                                    id="meters_chart_live"
+                                    class="meters-chart"
+                                    sidebar_id="meters"
+                                    show={false}
+                                    legend_time_with_seconds={true}
+                                    aspect_ratio={3}
+                                    x_height={30}
+                                    x_include_date={false}
+                                    y_diff_min={100} />
+                    <UplotWrapper ref={this.uplot_wrapper_history_ref}
+                                    id="meters_chart_history"
+                                    class="meters-chart"
+                                    sidebar_id="meters"
+                                    show={true}
+                                    legend_time_with_seconds={false}
+                                    aspect_ratio={3}
+                                    x_height={50}
+                                    x_include_date={true}
+                                    y_min={0}
+                                    y_max={1500} />
+
+                    <FormSeparator heading={__("meters.content.settings")}/>
+
+                    <div class="mb-3">
+                        <Table
+                            tableTill="md"
+                            columnNames={[__("meters.content.table_name"), __("meters.content.table_power"), __("meters.content.table_energy"), __("meters.content.table_phases")]}
+                            rows={active_configs.map((meter_slot_str) => {
+                                let meter_slot = parseInt(meter_slot_str);
+                                let config = state.configs[meter_slot];
+                                let power: number = null;
+                                let energy: number = null;
+                                let phases: ["?"|"d"|"c"|"a", "?"|"d"|"c"|"a", "?"|"d"|"c"|"a"] = ["?", "?", "?"]; // [d]isconected, [c]onnected, [a]ctive
+                                let values_by_id = state.values_by_id[meter_slot];
+
+                                if (util.hasValue(values_by_id)) {
+                                    power = values_by_id[MeterValueID.PowerActiveLSumImExDiff];
+                                    energy = values_by_id[MeterValueID.EnergyActiveLSumImExSumResettable];
+
+                                    if (!util.hasValue(energy)) {
+                                        energy = values_by_id[MeterValueID.EnergyActiveLSumImExSum];
+                                    }
+
+                                    let voltage_L1 = values_by_id[MeterValueID.VoltageL1N];
+                                    let voltage_L2 = values_by_id[MeterValueID.VoltageL2N];
+                                    let voltage_L3 = values_by_id[MeterValueID.VoltageL3N];
+
+                                    let current_L1_import = values_by_id[MeterValueID.CurrentL1Import];
+                                    let current_L2_import = values_by_id[MeterValueID.CurrentL2Import];
+                                    let current_L3_import = values_by_id[MeterValueID.CurrentL3Import];
+
+                                    let current_L1_export = values_by_id[MeterValueID.CurrentL1Export];
+                                    let current_L2_export = values_by_id[MeterValueID.CurrentL2Export];
+                                    let current_L3_export = values_by_id[MeterValueID.CurrentL3Export];
+
+                                    let current_L1_im_ex_sum = values_by_id[MeterValueID.CurrentL1ImExSum];
+                                    let current_L2_im_ex_sum = values_by_id[MeterValueID.CurrentL2ImExSum];
+                                    let current_L3_im_ex_sum = values_by_id[MeterValueID.CurrentL3ImExSum];
+
+                                    if (util.hasValue(voltage_L1)) {
+                                        phases[0] = voltage_L1 > PHASE_CONNECTED_VOLTAGE_THRESHOLD ? "c" : "d";
+                                    }
+
+                                    if (util.hasValue(voltage_L2)) {
+                                        phases[1] = voltage_L2 > PHASE_CONNECTED_VOLTAGE_THRESHOLD ? "c" : "d";
+                                    }
+
+                                    if (util.hasValue(voltage_L3)) {
+                                        phases[2] = voltage_L3 > PHASE_CONNECTED_VOLTAGE_THRESHOLD ? "c" : "d";
+                                    }
+
+                                    if ((util.hasValue(current_L1_import) && current_L1_import > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                        || (util.hasValue(current_L1_export) && current_L1_export > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                        || (util.hasValue(current_L1_im_ex_sum) && current_L1_im_ex_sum > PHASE_ACTIVE_CURRENT_THRESHOLD)) {
+                                        phases[0] = "a";
+                                    }
+
+                                    if ((util.hasValue(current_L2_import) && current_L2_import > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                        || (util.hasValue(current_L2_export) && current_L2_export > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                        || (util.hasValue(current_L2_im_ex_sum) && current_L2_im_ex_sum > PHASE_ACTIVE_CURRENT_THRESHOLD)) {
+                                        phases[1] = "a";
+                                    }
+
+                                    if ((util.hasValue(current_L3_import) && current_L3_import > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                        || (util.hasValue(current_L3_export) && current_L3_export > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                        || (util.hasValue(current_L3_im_ex_sum) && current_L3_im_ex_sum > PHASE_ACTIVE_CURRENT_THRESHOLD)) {
+                                        phases[2] = "a";
+                                    }
                                 }
 
-                                this.update_uplot();
-                            });
-                        }}
-                            items={[
-                                ["history", __("meters.content.history")],
-                                ["live", __("meters.content.live")],
-                            ]}/>
+                                let phase_variant = {
+                                    "?": "dark",
+                                    "d": "dark",
+                                    "c": "primary",
+                                    "a": "success",
+                                };
+
+                                let phase_icon = {
+                                    "?": <HelpCircle/>,
+                                    "d": <ZapOff/>,
+                                    "c": <Zap/>,
+                                    "a": <Zap/>,
+                                };
+
+                                return {
+                                    columnValues: [
+                                        <><Button className="mr-2" size="sm"
+                                            onClick={() => {
+                                                this.setState({extraShow: state.extraShow.map((show, i) => meter_slot == i ? !show : show)});
+                                            }}>
+                                            <ChevronRight {...{id:`meter-${meter_slot}-chevron`, class: state.extraShow[meter_slot] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
+                                            </Button>{`Meter #${meter_slot}`}</>,
+                                        util.hasValue(power) ? util.toLocaleFixed(power, 0) + " W" : undefined,
+                                        util.hasValue(energy) ? util.toLocaleFixed(energy, 3) + " kWh" : undefined,
+                                        util.compareArrays(phases, ["?", "?", "?"]) ? undefined : <ButtonGroup>
+                                            {phases.map((phase) =>
+                                                <Button disabled size="sm" variant={phase_variant[phase]}>
+                                                    {phase_icon[phase]}
+                                                </Button>
+                                            )}
+                                        </ButtonGroup>
+                                    ],
+                                    extraShow: this.state.extraShow[meter_slot],
+                                    extraFieldName: __("meters.content.detailed_values"),
+                                    extraValue:
+                                        METER_VALUE_ORDER.filter((foobar) => foobar.ids.filter((id) => util.hasValue(state.values_by_id[meter_slot][id])).length > 0)
+                                            .map((foobar) => foobar.group ?
+                                                <FormRow label={translate_unchecked(`meters.content.group_${foobar.group}`)} label_muted={foobar.phases} small={true}>
+                                                    <div class="row mx-n1 mx-xl-n3">
+                                                    {foobar.ids.filter((id) => util.hasValue(state.values_by_id[meter_slot][id])).map((id) =>
+                                                        <div class="col-sm-4 px-1 px-xl-3">
+                                                            <OutputFloat value={this.state.values_by_id[meter_slot][id]} digits={METER_VALUE_INFOS[id].digits} scale={0} unit={METER_VALUE_INFOS[id].unit} small={true}/>
+                                                        </div>)}
+                                                    </div>
+                                                </FormRow>
+                                                : <FormRow label={translate_unchecked(`meters.content.value_${foobar.ids[0]}`)} small={true}>
+                                                    <div class="row mx-n1 mx-xl-n3"><div class="col-sm-4 px-1 px-xl-3">
+                                                        <OutputFloat value={this.state.values_by_id[meter_slot][foobar.ids[0]]} digits={METER_VALUE_INFOS[foobar.ids[0]].digits} scale={0} unit={METER_VALUE_INFOS[foobar.ids[0]].unit} small={true}/>
+                                                    </div></div>
+                                                </FormRow>),
+                                    fieldWithBox: [true, true, true, false],
+                                    editTitle: __("meters.content.edit_meter_title"),
+                                    onEditStart: async () => this.setState({editMeter: config_plugins[config[0]].clone(config)}),
+                                    onEditGetRows: () => [/* FIXME */],
+                                    onEditCommit: async () => {
+                                        // FIXME
+                                        this.hackToAllowSave();
+                                    },
+                                    onEditAbort: async () => this.setState({editMeter: [0, null]}),
+                                    onRemoveClick: async () => {
+                                        this.setState({configs: {...state.configs, [meter_slot]: [0, null]}});
+                                        this.hackToAllowSave();
+                                    }
+                                }
+                            })}
+                            addEnabled={active_configs.length < METERS_SLOTS}
+                            addTitle={__("meters.content.add_meter_title")}
+                            addMessage={__("meters.content.add_meter_prefix") + active_configs.length + __("meters.content.add_meter_infix") + METERS_SLOTS + __("meters.content.add_meter_suffix")}
+                            onAddStart={async () => this.setState({addMeter: [0, null]})}
+                            onAddGetRows={() => [/* FIXME */]}
+                            onAddCommit={async () => {
+                                // FIXME
+                                this.hackToAllowSave();
+                            }}
+                            onAddAbort={async () => this.setState({addMeter: [0, null]})} />
                     </div>
-                </PageHeader>
-                <UplotWrapper ref={this.uplot_wrapper_live_ref}
-                                id="meters_chart_live"
-                                class="meters-chart"
-                                sidebar_id="meters"
-                                show={false}
-                                legend_time_with_seconds={true}
-                                aspect_ratio={3}
-                                x_height={30}
-                                x_include_date={false}
-                                y_diff_min={100} />
-                <UplotWrapper ref={this.uplot_wrapper_history_ref}
-                                id="meters_chart_history"
-                                class="meters-chart"
-                                sidebar_id="meters"
-                                show={true}
-                                legend_time_with_seconds={false}
-                                aspect_ratio={3}
-                                x_height={50}
-                                x_include_date={true}
-                                y_min={0}
-                                y_max={1500} />
-
-                {[...Array(METERS_SLOTS).keys()].map((meter_slot) =>
-                <CollapsedSection label={__("meters.content.detailed_values")}>
-                    {METER_VALUE_IDS.filter((id) => util.hasValue(this.state.values_by_id[meter_slot][id])).map((id) => <FormRow label={translate_unchecked(`meters.content.detailed_${id}`)} label_muted="?">
-                        <div class="row"><div class="col-sm-4"><OutputFloat value={this.state.values_by_id[meter_slot][id]} digits={METER_VALUE_INFOS[id].digits} scale={0} unit={METER_VALUE_INFOS[id].unit}/></div></div>
-                    </FormRow>)}
-                </CollapsedSection>)}
+                </ConfigForm>
             </SubPage>
         )
     }
@@ -992,6 +1179,17 @@ render(<MetersStatus ref={status_ref} />, $('#status-meters')[0]);
 render(<Meters status_ref={status_ref} />, $('#meters')[0]);
 
 export function init() {
+    let result = plugins_init();
+
+    for (let plugins of result) {
+        for (let i in plugins) {
+            if (config_plugins[i]) {
+                console.log('Meter: Overwriting class ID ' + i);
+            }
+
+            config_plugins[i] = plugins[i];
+        }
+    }
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
