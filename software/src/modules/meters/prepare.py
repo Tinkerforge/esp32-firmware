@@ -19,10 +19,37 @@ if 'software' not in sys.modules:
 
 from software import util
 
-enum_values = []
-enum_names = []
-enum_infos = []
-detailed_values = {'en': [], 'de': []}
+value_id_enum = []
+value_id_list = []
+value_id_infos = []
+value_id_order = []
+
+groupings = [
+    ('L1', 'L2', 'L3'),
+    ('L1 N', 'L2 N', 'L3 N'),
+    ('L1 L2', 'L2 L3', 'L3 L1'),
+]
+
+translation_values = {'en': [], 'de': []}
+translation_groups = {'en': [], 'de': []}
+
+with open('meter_value_group.csv', newline='') as f:
+    for row in csv.reader(f):
+        if row[0] == 'measurand':
+            # skip header
+            continue
+
+        if len(row[0]) == 0:
+            # skip empty
+            continue
+
+        name = ' '.join([part for part in row[:4] if len(part) > 0])
+        identifier = name.replace(' ', '_').lower()
+        display_name_en = row[4].replace('\"', '\\"')
+        display_name_de = row[5].replace('\"', '\\"')
+
+        translation_groups['en'].append(f'"group_{identifier}": "{display_name_en}"')
+        translation_groups['de'].append(f'"group_{identifier}": "{display_name_de}"')
 
 with open('meter_value_id.csv', newline='') as f:
     for row in csv.reader(f):
@@ -36,38 +63,81 @@ with open('meter_value_id.csv', newline='') as f:
 
         id_ = row[0]
         name = ' '.join([part for part in row[1:6] if len(part) > 0])
+        name_without_phase = ' '.join([part for part in (row[1:3] + row[4:6]) if len(part) > 0])
+        phase = row[3]
         identifier = name.replace(' ', '')
+        identifier_without_phase = name_without_phase.replace(' ', '_').lower()
         unit = row[6]
         digits = row[7]
+        display_name_en = row[8].replace('\"', '\\"') if len(row[8]) > 0 else name
+        display_name_de = row[9].replace('\"', '\\"') if len(row[9]) > 0 else name
 
-        enum_values.append(f'    {identifier} = {id_}, // {unit}\n')
-        enum_names.append(f'    MeterValueID.{identifier},\n')
-        enum_infos.append(f'    /* {identifier} */ {id_}: {{unit: "{unit}", digits: {digits}}},\n')
-        detailed_values['en'].append(f'"detailed_{id_}": "{name}"')
-        detailed_values['de'].append(f'"detailed_{id_}": "{name}"')
+        value_id_enum.append(f'    {identifier} = {id_}, // {unit}\n')
+        value_id_list.append(f'    MeterValueID.{identifier},\n')
+        value_id_infos.append(f'    /* {identifier} */ {id_}: {{unit: "{unit}", digits: {digits}}},\n')
+        translation_values['en'].append(f'"value_{id_}": "{display_name_en}"')
+        translation_values['de'].append(f'"value_{id_}": "{display_name_de}"')
+
+        for phases in groupings:
+            if phase in phases:
+                for foobar in value_id_order:
+                    if foobar[1] == identifier_without_phase and foobar[2] == phases:
+                        foobar[0].append(identifier)
+                        break
+                else:
+                    value_id_order.append([[identifier], identifier_without_phase, phases])
+
+                break
+        else:
+            value_id_order.append([[identifier], None, None])
+
+value_id_order_str = []
+
+for foobar in value_id_order:
+    foobar_str = f'    {{ids: [{", ".join([f"MeterValueID.{id_}" for id_ in foobar[0]])}], group: '
+
+    if foobar[1] != None:
+        foobar_str += f'"{foobar[1]}"'
+    else:
+        foobar_str += 'null'
+
+    foobar_str += ', phases: '
+
+    if foobar[2] != None:
+        foobar_str += f'"{"; ".join(foobar[2])}"'
+    else:
+        foobar_str += 'null'
+
+    foobar_str += '},\n'
+
+    value_id_order_str.append(foobar_str)
 
 with open('meter_value_id.h', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('#pragma once\n\n')
     f.write('enum class MeterValueID {\n')
-    f.write(''.join(enum_values))
+    f.write(''.join(value_id_enum))
     f.write('};\n')
 
 with open('../../../web/src/modules/meters/meter_value_id.ts', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('export const enum MeterValueID {\n')
-    f.write(''.join(enum_values))
+    f.write(''.join(value_id_enum))
     f.write('}\n\n')
     f.write('export const METER_VALUE_IDS: MeterValueID[] = [\n')
-    f.write(''.join(enum_names))
+    f.write(''.join(value_id_list))
     f.write('];\n\n')
     f.write('export const METER_VALUE_INFOS: {[id: number]: {unit: string, digits: 0|1|2|3}} = {\n')
-    f.write(''.join(enum_infos))
-    f.write('};\n')
+    f.write(''.join(value_id_infos))
+    f.write('};\n\n')
+    f.write('export const METER_VALUE_ORDER: {ids: MeterValueID[], group: string, phases: string}[] = [\n')
+    f.write(''.join(value_id_order_str))
+    f.write('];\n')
 
-for lang in detailed_values:
+for lang in translation_values:
     util.specialize_template(f'../../../web/src/modules/meters/translation_{lang}.json.template', f'../../../web/src/modules/meters/translation_{lang}.json', {
-        '{{{detailed_values}}}': ',\n            '.join(detailed_values[lang]),
+        '{{{values}}}': ',\n            '.join(translation_values[lang]),
+        '{{{groups}}}': ',\n            '.join(translation_groups[lang]),
     })
 
 # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!

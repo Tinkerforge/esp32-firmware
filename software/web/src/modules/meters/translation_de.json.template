@@ -13,7 +13,23 @@
             "live": "Live",
             "detailed_values": "Details",
 
-            {{{detailed_values}}}
+            {{{values}}},
+
+            {{{groups}}},
+
+            "table_name": "Name",
+            "table_power": "Leistungsaufnahme",
+            "table_energy": "Stromverbrauch",
+            "table_phases": "Phasen",
+
+            "add_meter_title": "Stromzähler hinzufügen",
+            "add_meter_prefix": "",
+            "add_meter_infix": " von ",
+            "add_meter_suffix": " Stromzählern konfiguriert",
+
+            "edit_meter_title": "Stromzähler bearbeiten",
+
+            "settings": "Einstellungen"
         },
         "script": {
             "time": "Uhrzeit",
