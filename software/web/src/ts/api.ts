@@ -28,9 +28,13 @@ export type EventMap = {
 }
 
 function update_cache_item(left: any, right: any) {
+    let keys_to_remove: any[] = [];
     for (var key in left) {
         if (!right.hasOwnProperty(key)) {
-            delete left[key];
+            if (Array.isArray(left))
+                keys_to_remove.push(key);
+            else
+                delete left[key];
             continue;
         }
 
@@ -46,6 +50,9 @@ function update_cache_item(left: any, right: any) {
 
         left[key] = right[key];
     }
+
+    if (Array.isArray(left))
+        left = left.filter((_value, i, _arr) => keys_to_remove.indexOf(i) >= 0)
 
     for (var key in right)
         if (!left.hasOwnProperty(key)) {
