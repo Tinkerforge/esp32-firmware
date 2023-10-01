@@ -1229,6 +1229,10 @@ interface Charger {
     name: string;
 }
 
+function array_last<T>(a: Array<T>): T {
+    return a[a.length - 1];
+}
+
 export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyAnalysisState> {
     uplot_sync = uPlot.sync('foobar');
     uplot_loader_5min_ref = createRef();
@@ -1969,7 +1973,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let last_energy_import: number = null;
 
                 if (energy_manager_previous_data) {
-                    last_energy_import = energy_manager_previous_data.energy_import[meter_slot][energy_manager_previous_data.energy_import.length - 1];
+                    last_energy_import = array_last(energy_manager_previous_data.energy_import[meter_slot]);
                 }
 
                 energy_import_5min_total[meter_slot] = new Array(energy_manager_data.energy_import[meter_slot].length);
@@ -2008,7 +2012,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let last_energy_export: number = null;
 
                 if (energy_manager_previous_data) {
-                    last_energy_export = energy_manager_previous_data.energy_export[meter_slot][energy_manager_previous_data.energy_export[meter_slot].length - 1];
+                    last_energy_export = array_last(energy_manager_previous_data.energy_export[meter_slot]);
                 }
 
                 energy_export_5min_total[meter_slot] = new Array(energy_manager_data.energy_export[meter_slot].length);
@@ -2080,7 +2084,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     let energy_daily_total: number = null;
 
                     if (wallbox_previous_data) {
-                        last_energy = wallbox_previous_data.energy[wallbox_previous_data.energy.length - 1];
+                        last_energy = array_last(wallbox_previous_data.energy);
                     }
 
                     for (let timestamp_slot = 0; timestamp_slot < wallbox_data.energy.length; ++timestamp_slot) {
