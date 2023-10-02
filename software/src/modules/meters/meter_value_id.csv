@@ -1,4 +1,4 @@
-"id","measurand","submeasurand","phase","direction","kind","unit","digits","display_name_de","display_name_en","desc_de","desc_en","comment"
+"id","measurand","submeasurand","phase","direction","kind","unit","digits","display_name_en","display_name_de","desc_en","desc_de","comment"
 0,"Voltage",,"L1 N",,,"V",1,,,,,
 1,"Voltage",,"L2 N",,,"V",1,,,,,
 2,"Voltage",,"L3 N",,,"V",1,,,,,
