@@ -24,6 +24,10 @@
 
 void MetersEM::pre_setup()
 {
+    config_prototype = Config::Object({
+        {"display_name", Config::Str("", 0, 32)}
+    });
+
     state_prototype = Config::Object({
         {"type",  Config::Uint(0)}  // 0 - not available, 1 - sdm72, 2 - sdm630, 3 - sdm72v2, ... see meter.h
     });
@@ -56,9 +60,10 @@ IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config * /*config*/, 
     return meter_instance;
 }
 
+_ATTRIBUTE((const))
 const Config * MetersEM::get_config_prototype()
 {
-    return Config::Null();
+    return &config_prototype;
 }
 
 _ATTRIBUTE((const))

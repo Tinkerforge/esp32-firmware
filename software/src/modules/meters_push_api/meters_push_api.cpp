@@ -26,6 +26,7 @@
 void MetersPushAPI::pre_setup()
 {
     config_prototype = Config::Object({
+        {"display_name", Config::Str("", 0, 32)},
         {"value_ids", Config::Array({},
             meters.get_config_uint_max_prototype(),
             0, METER_PUSH_API_MAX_VALUES, Config::type_id<Config::ConfUint>()

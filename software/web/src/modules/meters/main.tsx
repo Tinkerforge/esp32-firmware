@@ -592,6 +592,8 @@ function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
     return a.slice(-tail);
 }
 
+type MetersConfig = API.getType['meters/config'];
+
 export class Meters extends ConfigComponent<'meters/config', MetersProps, MetersState> {
     live_data: CachedData = {timestamps: [], samples: []};
     pending_live_data: CachedData;
@@ -843,7 +845,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                 for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
                     if (this.live_data.samples[meter_slot].length > 0) {
                         live_data.keys.push('meter_' + meter_slot);
-                        live_data.names.push('Meter #' + meter_slot); // FIXME: use meter display name
+                        live_data.names.push(get_meter_name(this.state.configs, meter_slot));
                         live_data.values.push(this.live_data.samples[meter_slot]);
                     }
                 }
@@ -862,7 +864,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                 for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
                     if (this.history_data.samples[meter_slot].length > 0) {
                         history_data.keys.push('meter_' + meter_slot);
-                        history_data.names.push('Meter #' + meter_slot); // FIXME: use meter display name
+                        history_data.names.push(get_meter_name(this.state.configs, meter_slot));
                         history_data.values.push(this.history_data.samples[meter_slot]);
                     }
                 }
@@ -884,7 +886,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 
             if (this.history_data.samples[this.state.meter_slot_status].length > 0) {
                 status_data.keys.push('meter_' + this.state.meter_slot_status);
-                status_data.names.push('Meter #' + this.state.meter_slot_status); // FIXME: use meter display name
+                status_data.names.push(get_meter_name(this.state.configs, this.state.meter_slot_status));
                 status_data.values.push(this.history_data.samples[this.state.meter_slot_status]);
             }
 
@@ -1043,7 +1045,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                                 this.setState({extraShow: state.extraShow.map((show, i) => meter_slot == i ? !show : show)});
                                             }}>
                                             <ChevronRight {...{id:`meter-${meter_slot}-chevron`, class: state.extraShow[meter_slot] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
-                                            </Button>{`Meter #${meter_slot}`}</>,
+                                            </Button>{get_meter_name(state.configs, meter_slot)}</>,
                                         util.hasValue(power) ? util.toLocaleFixed(power, 0) + " W" : undefined,
                                         util.hasValue(energy) ? util.toLocaleFixed(energy, 3) + " kWh" : undefined,
                                         util.compareArrays(phases, ["?", "?", "?"]) ? undefined : <ButtonGroup>
@@ -1105,7 +1107,18 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 }
 
 interface MeterStatusState {
-    meter_slot: number
+    meter_slot: number,
+    meter_configs: {[meter_slot: number]: MeterConfig},
+}
+
+function get_meter_name(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
+    let meter_name = `Meter #${util.hasValue(meter_slot) ? meter_slot : '?'}`;
+
+    if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
+        meter_name = meter_configs[meter_slot][1].display_name;
+    }
+
+    return meter_name;
 }
 
 export class MetersStatus extends Component<{}, MeterStatusState> {
@@ -1117,6 +1130,19 @@ export class MetersStatus extends Component<{}, MeterStatusState> {
         this.state = {
             meter_slot: 0,
         } as any;
+
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
+                let config = API.get_maybe(`meters/${meter_slot}/config`);
+
+                this.setState((prevState) => ({
+                    meter_configs: {
+                        ...prevState.meter_configs,
+                        [meter_slot]: config
+                    }
+                }));
+            });
+        }
 
         util.addApiEventListener("meters/config", () => {
             let config = API.get("meters/config");
@@ -1164,7 +1190,7 @@ export class MetersStatus extends Component<{}, MeterStatusState> {
                                       y_max={1500} />
                     </div>
                 </FormRow>
-                <FormRow label={__("meters.status.current_power")} label_muted={`Meter #${state.meter_slot}`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("meters.status.current_power")} label_muted={get_meter_name(state.meter_configs, state.meter_slot)} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                 </FormRow>
             </>
