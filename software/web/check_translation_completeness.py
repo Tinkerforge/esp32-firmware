@@ -124,6 +124,10 @@ def main():
     if len(unused) > 0:
         unused_filtered = []
         invisible = [
+            '.debug.content.spi0',
+            '.debug.content.spi1',
+            '.debug.content.spi2',
+            '.debug.content.spi3',
             '.em_debug.content.debug_description',
             '.em_debug.content.debug_description_muted',
             '.em_debug.content.debug_start',
