@@ -24,6 +24,7 @@ import { TableModalRow } from "../../ts/components/table";
 export type PushAPIMetersConfig = [
     MeterClassID.PushAPI,
     {
+        display_name: string
         value_ids: number[],
     }
 ];

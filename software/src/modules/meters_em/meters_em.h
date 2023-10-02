@@ -44,13 +44,14 @@ public:
     // for MeterGenerator
     MeterClassID get_class() const override _ATTRIBUTE((const));
     virtual IMeter *new_meter(uint32_t slot, Config *state, Config *config, Config *errors) override;
-    virtual const Config *get_config_prototype() override;
+    virtual const Config *get_config_prototype() override _ATTRIBUTE((const));
     virtual const Config *get_state_prototype()  override _ATTRIBUTE((const));
     virtual const Config *get_errors_prototype() override _ATTRIBUTE((const));
 
     void update_from_em_all_data(EnergyManagerAllData &all_data);
 
 private:
+    Config config_prototype;
     Config state_prototype;
     Config errors_prototype;
 

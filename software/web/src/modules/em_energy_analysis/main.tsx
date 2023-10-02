@@ -36,6 +36,7 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import uPlot from "uplot";
 import { uPlotTimelinePlugin } from "../../ts/uplot-plugins";
 import { MeterValueID } from "../meters/meter_value_id";
+import { MeterConfig } from "../meters/types";
 
 interface CachedData {
     update_timestamp: number;
@@ -1117,6 +1118,17 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 interface EMEnergyAnalysisStatusState {
     force_render: number,
     meter_slot: number,
+    meter_configs: {[meter_slot: number]: MeterConfig},
+}
+
+function get_meter_name(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
+    let meter_name = `Meter #${util.hasValue(meter_slot) ? meter_slot : '?'}`;
+
+    if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
+        meter_name = meter_configs[meter_slot][1].display_name;
+    }
+
+    return meter_name;
 }
 
 export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatusState> {
@@ -1139,6 +1151,19 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
 
             this.setState({force_render: Date.now()});
         });
+
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
+                let config = API.get_maybe(`meters/${meter_slot}/config`);
+
+                this.setState((prevState) => ({
+                    meter_configs: {
+                        ...prevState.meter_configs,
+                        [meter_slot]: config
+                    }
+                }));
+            });
+        }
 
         util.addApiEventListener("energy_manager/config", () => {
             let config = API.get("energy_manager/config");
@@ -1200,7 +1225,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                         </div>
                     </div>
                 </FormRow>
-                <FormRow label={__("em_energy_analysis_status.status.current_power")} label_muted={`Meter #${state.meter_slot}`} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <FormRow label={__("em_energy_analysis_status.status.current_power")} label_muted={get_meter_name(state.meter_configs, state.meter_slot)} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                 </FormRow>
             </>
@@ -1215,6 +1240,7 @@ interface EMEnergyAnalysisProps {
 interface EMEnergyAnalysisState {
     force_render: number,
     meter_slot_status: number,
+    meter_configs: {[meter_slot: number]: MeterConfig};
     data_type: '5min'|'daily';
     current_5min_date: Date;
     current_daily_date: Date;
@@ -1326,6 +1352,19 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 }
             }
         });
+
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
+                let config = API.get_maybe(`meters/${meter_slot}/config`);
+
+                this.setState((prevState) => ({
+                    meter_configs: {
+                        ...prevState.meter_configs,
+                        [meter_slot]: config
+                    }
+                }));
+            });
+        }
 
         util.addApiEventListener('energy_manager/history_wallbox_5min_changed', () => {
             let changed = API.get('energy_manager/history_wallbox_5min_changed');
@@ -1596,7 +1635,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power[meter_slot].length);
 
                     uplot_data.keys.push('em_power_' + meter_slot);
-                    uplot_data.names.push(`Meter #${meter_slot}`); // FIXME: use meter display name instead
+                    uplot_data.names.push(get_meter_name(this.state.meter_configs, meter_slot));
                     uplot_data.values.push(energy_manager_data.power[meter_slot]);
                     uplot_data.extras.push(null);
                     uplot_data.stacked.push(false);
@@ -1875,7 +1914,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power[this.state.meter_slot_status].length)
 
             uplot_data.keys.push('em_power_' + this.state.meter_slot_status);
-            uplot_data.names.push(`Meter #${this.state.meter_slot_status}`); // FIXME: use meter display name instead
+            uplot_data.names.push(get_meter_name(this.state.meter_configs, this.state.meter_slot_status));
             uplot_data.values.push(energy_manager_data.power[this.state.meter_slot_status]);
             uplot_data.stacked.push(false);
             uplot_data.bars.push(false);
@@ -2002,7 +2041,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 //        meters. they would have to be shown side by side, but there is no space
                 if (meter_slot == 0) {
                     uplot_data.keys.push('em_energy_import_' + meter_slot);
-                    uplot_data.names.push(`Meter #${meter_slot} Import`); // FIXME: use meter display name instead
+                    uplot_data.names.push(`${get_meter_name(this.state.meter_configs, meter_slot)} Import`); // FIXME: translate import
                     uplot_data.values.push(energy_import);
                     uplot_data.stacked.push(false);
                     uplot_data.bars.push(true);
@@ -2045,7 +2084,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 //        meters. they would have to be shown side by side, but there is no space
                 if (meter_slot == 0) {
                     uplot_data.keys.push('em_energy_export_' + meter_slot);
-                    uplot_data.names.push(`Meter #${meter_slot} Export`); // FIXME: use meter display name instead
+                    uplot_data.names.push(`${get_meter_name(this.state.meter_configs, meter_slot)} Export`); // FIXME: translate export
                     uplot_data.values.push(energy_export);
                     uplot_data.stacked.push(false);
                     uplot_data.bars.push(true);
@@ -2688,7 +2727,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                     if (has_import || has_export) {
                         rows.push(
-                            <FormRow label={`Meter #${meter_slot} Import / Export`}>
+                            <FormRow label={`${get_meter_name(this.state.meter_configs, meter_slot)} Import / Export`/* FIXME: translate import / export */}>
                                 <div class="row">
                                     <div class="col-md-6">
                                         {has_import ?
@@ -2742,7 +2781,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                     if (has_import || has_export) {
                         rows.push(
-                            <FormRow label={`Meter #${meter_slot} Import / Export`}>
+                            <FormRow label={`${get_meter_name(this.state.meter_configs, meter_slot)} Import / Export`/* FIXME: translate import / export */}>
                                 <div class="row">
                                     <div class="col-md-6">
                                         {has_import ?

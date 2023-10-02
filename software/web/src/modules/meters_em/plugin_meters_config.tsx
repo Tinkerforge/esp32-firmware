@@ -24,6 +24,7 @@ import { TableModalRow } from "../../ts/components/table";
 export type EMMetersConfig = [
     MeterClassID.EM,
     {
+        display_name: string
     }
 ];
 
