@@ -341,9 +341,9 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         }
 
         esp_mqtt_client_disable_receive(client, 100);
-        api.callCommandNonBlocking(reg, data, data_len, [this](String error){
+        api.callCommandNonBlocking(reg, data, data_len, [this, reg](String error){
             if (error != "")
-                logger.printfln("MQTT: %s", error.c_str());
+                logger.printfln("MQTT: On %s: %s", reg.path.c_str(), error.c_str());
             esp_mqtt_client_enable_receive(this->client);
         });
 
@@ -366,7 +366,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         task_scheduler.scheduleOnce([this, reg, data_cpy, data_len](){
             String error = reg.callback(data_cpy, data_len);
             if (error != "")
-                logger.printfln("MQTT: %s", error.c_str());
+                logger.printfln("MQTT: On %s: %s", reg.path.c_str(), error.c_str());
 
             free(data_cpy);
             esp_mqtt_client_enable_receive(this->client);
