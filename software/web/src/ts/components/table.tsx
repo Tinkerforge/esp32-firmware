@@ -208,18 +208,18 @@ export class Table extends Component<TableProps, TableState> {
                         return true;
                     }}
                     onSubmit={async () => {
-                        if (props.onAddCommit) {
-                            await props.onAddCommit();
-                        }
-
-                        this.setState({showAddModal: false});
+                        this.setState({showAddModal: false}, async () => {
+                            if (props.onAddCommit) {
+                                await props.onAddCommit();
+                            }
+                        });
                     }}
                     onHide={async () => {
-                        if (props.onAddAbort) {
-                            await props.onAddAbort();
-                        }
-
-                        this.setState({showAddModal: false});
+                        this.setState({showAddModal: false}, async () => {
+                            if (props.onAddAbort) {
+                                await props.onAddAbort();
+                            }
+                        });
                     }}
                     show={state.showAddModal}
                     no_variant="secondary"
@@ -244,18 +244,18 @@ export class Table extends Component<TableProps, TableState> {
                         return true;
                     }}
                     onSubmit={async () => {
-                        if (props.rows[state.showEditModal].onEditCommit) {
-                            await props.rows[state.showEditModal].onEditCommit();
-                        }
-
-                        this.setState({showEditModal: null});
+                        this.setState({showEditModal: null}, async () => {
+                            if (props.rows[state.showEditModal].onEditCommit) {
+                                await props.rows[state.showEditModal].onEditCommit();
+                            }
+                        });
                     }}
                     onHide={async () => {
-                        if (props.rows[state.showEditModal].onEditAbort) {
-                            await props.rows[state.showEditModal].onEditAbort();
-                        }
-
-                        this.setState({showEditModal: null});
+                        this.setState({showEditModal: null}, async () => {
+                            if (props.rows[state.showEditModal].onEditAbort) {
+                                await props.rows[state.showEditModal].onEditAbort();
+                            }
+                        });
                     }}
                     show={state.showEditModal !== null}
                     no_variant="secondary"
