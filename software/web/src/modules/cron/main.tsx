@@ -92,13 +92,10 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
         let triggerSelector: TableModalRow[] = [{
             name: __("cron.content.condition"),
             value: <InputSelect
+                        required
                         placeholder={__("cron.content.select")}
                         items={trigger}
                         onValue={(v) => {
-                            if (v == "0") {
-                                this.setState({displayed_trigger: this.state.displayed_trigger})
-                                return;
-                            }
                             this.setState(
                             {
                                 displayed_trigger: Number(v),
@@ -120,13 +117,10 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
             name: __("cron.content.action"),
             value: <>
             <InputSelect
-                        items={action}
+                        required
                         placeholder={__("cron.content.select")}
+                        items={action}
                         onValue={(v) => {
-                            if (v == "0") {
-                                this.setState({displayed_action: this.state.displayed_action});
-                                return;
-                            }
                             this.setState(
                             {
                                 displayed_action: Number(v),
@@ -195,10 +189,6 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                     return this.createSelectors();
                 },
                 onEditCommit: async () => {
-                    if (this.state.displayed_action == 0 || this.state.displayed_trigger == 0) {
-                        return;
-                    }
-
                     this.setState({tasks: this.state.tasks.map((task, k) => k === idx ? this.state.edit_task : task)});
                     this.hackToAllowSave();
                 },
@@ -247,13 +237,9 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                             return this.createSelectors()
                         }}
                         onAddCommit={async () => {
-                            if (this.state.displayed_action == 0 || this.state.displayed_trigger == 0) {
-                                return;
-                            }
                             this.setState({tasks: this.state.tasks.concat([this.state.edit_task])});
                             this.hackToAllowSave();
                         }}
-
                         />
                     </div>
             </ConfigForm>
