@@ -102,7 +102,7 @@ export class EventLog extends Component<{}, EventLogState> {
                     return;
 
                 if (!this.state.log) {
-                    this.setState({log: text});
+                    this.set_log(text);
                     return;
                 }
 
@@ -111,7 +111,7 @@ export class EventLog extends Component<{}, EventLogState> {
                 let first_new_date = null;
 
                 if (new_lines.length == 0) {
-                    this.setState({log: text});
+                    this.set_log(text);
                     return;
                 } else {
                     first_new_line = new_lines[0]
@@ -119,7 +119,7 @@ export class EventLog extends Component<{}, EventLogState> {
                 }
 
                 if (first_new_date == null) {
-                    this.setState({log: text});
+                    this.set_log(text);
                     return;
                 }
 
@@ -154,7 +154,7 @@ export class EventLog extends Component<{}, EventLogState> {
                 }
 
                 if (i < 0) {
-                    this.setState({log: text});
+                    this.set_log(text);
                     return;
                 }
 
@@ -167,7 +167,7 @@ export class EventLog extends Component<{}, EventLogState> {
                     new_log += "-".repeat(TIMESTAMP_LEN - 2) + "  [WebSocket reconnect]\n";
                 new_log += text;
 
-                this.setState({log: new_log});
+                this.set_log(new_log);
             })
             .catch(e => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), e.message))
     }
