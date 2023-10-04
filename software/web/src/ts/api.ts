@@ -60,10 +60,13 @@ function update_cache_item(left: any, right: any) {
         }
     }
 }
+
+function is_primitive(x: any) {
+    return x === null || x === undefined || typeof(x) !== "object";
 }
 
 export function update<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T]) {
-    if (api_cache[topic] === null || api_cache[topic] === undefined || typeof(api_cache[topic]) !== "object")
+    if (is_primitive(api_cache[topic]) || is_primitive(payload))
         (api_cache[topic] as any) = payload;
     else
         update_cache_item(api_cache[topic], payload);
