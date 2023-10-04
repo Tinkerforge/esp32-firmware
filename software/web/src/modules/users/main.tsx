@@ -513,11 +513,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                 });
                             }}
                             onAddCommit={async () => {
-                                this.setState({
-                                    users: state.users.concat({...state.addUser, id: -1, roles: 0xFFFF}),
-                                    addUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0},
-                                });
-
+                                this.setState({users: state.users.concat({...state.addUser, id: -1, roles: 0xFFFF})});
                                 this.hackToAllowSave();
                             }}
                             />

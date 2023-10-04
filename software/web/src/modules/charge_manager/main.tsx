@@ -434,11 +434,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                     }
                                 ],
                                 onEditCommit: async () => {
-                                    this.setState({
-                                        chargers: state.chargers.map((charger, k) => i === k ? state.editCharger : charger),
-                                        editCharger: {name: "", host: ""}
-                                    });
-
+                                    this.setState({chargers: state.chargers.map((charger, k) => i === k ? state.editCharger : charger)});
                                     this.hackToAllowSave();
                                 },
                                 onRemoveClick: !energyManagerMode && (charger.host == '127.0.0.1' || charger.host == 'localhost') ? undefined : async () => {
@@ -500,13 +496,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                             }
                         ]}
                         onAddCommit={async () => {
-                            window.clearInterval(this.intervalID);
-
-                            this.setState({
-                                chargers: state.chargers.concat({name: state.addCharger.name.trim(), host: state.addCharger.host.trim()}),
-                                addCharger: {name: "", host: ""}
-                            });
-
+                            this.setState({chargers: state.chargers.concat({name: state.addCharger.name.trim(), host: state.addCharger.host.trim()})});
                             this.hackToAllowSave();
                         }}
                         onAddHide={async () => {

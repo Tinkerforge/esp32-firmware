@@ -243,11 +243,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                 },
                             ]}
                             onAddCommit={async () => {
-                                this.setState({
-                                    authorized_tags: state.authorized_tags.concat({tag_id: state.addTag.tag_id, user_id: state.addTag.user_id, tag_type: state.addTag.tag_type}),
-                                    addTag: {tag_id: "", user_id: 0, tag_type: "" as any}
-                                });
-
+                                this.setState({authorized_tags: state.authorized_tags.concat({tag_id: state.addTag.tag_id, user_id: state.addTag.user_id, tag_type: state.addTag.tag_type})});
                                 this.hackToAllowSave();
                             }}
                             />
