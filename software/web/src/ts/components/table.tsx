@@ -19,9 +19,9 @@
 
 import { __ } from "../translation";
 import { h, Component, Fragment, VNode, ComponentChild } from "preact";
-import { Card, Button } from "react-bootstrap";
+import { Card, Button, Collapse } from "react-bootstrap";
 import { Plus, Edit3, Trash2 } from "react-feather";
-import { FormGroup } from "./form_group";
+import { FormRow } from "./form_row";
 import { ItemModal } from "./item_modal";
 import * as util from "../../ts/util";
 
@@ -29,13 +29,16 @@ export interface TableModalRow {
     name: string
     // FormRow only accepts VNodes, not other ComponentChild variants.
     value: VNode
-    valueClassList?: string
 }
 
 export interface TableRow {
     columnValues: ComponentChild[]
+    extraShow?: boolean
+    extraFieldName?: string
+    extraValue?: ComponentChild
     fieldNames?: string[]
     fieldValues?: ComponentChild[]
+    fieldWithBox?: boolean[]
     editTitle?: string
     onEditStart?: () => Promise<void>
     onEditGetRows?: () => TableModalRow[]
@@ -83,6 +86,24 @@ export class Table extends Component<TableProps, TableState> {
         } as any;
     }
 
+    get_card_fields(row: TableRow) {
+        let names = (util.hasValue(row.fieldNames) ? row.fieldNames : this.props.columnNames).slice(1);
+        let values = (util.hasValue(row.fieldValues) ? row.fieldValues : row.columnValues).slice(1);
+
+        while (values.length > 0 && !util.hasValue(values[values.length - 1])) {
+            names.pop();
+            values.pop();
+        }
+
+        return names.map((name, i) => name ?
+            <FormRow label={name}>
+                {!util.hasValue(row.fieldWithBox) || row.fieldWithBox[i + 1] ?
+                    <span class="form-control" style="height: unset;" readonly>{value_or_else(values[i], <>&nbsp;</>)}</span>
+                    : <>{values[i]}</>}
+            </FormRow>
+            : (value_or_else(values[i], undefined)));
+    }
+
     render(props: TableProps, state: TableState) {
         return (
             <>
@@ -101,12 +122,12 @@ export class Table extends Component<TableProps, TableState> {
                         </tr>
                     </thead>
                     <tbody>
-                        {props.rows.map((row, i) =>
+                        {props.rows.map((row, i) => <>
                             <tr>
                                 {row.columnValues.map((value) => (
-                                    <td class="text-break" style="vertical-align: middle;">{value}</td>
+                                    <td class={"text-break" + (row.extraValue ? " pb-0" : "")} style="vertical-align: middle;">{value}</td>
                                 ))}
-                                <td style="width: 1%; white-space: nowrap; vertical-align: middle;">
+                                <td class={row.extraValue ? "pb-0" : undefined} style="width: 1%; white-space: nowrap; vertical-align: middle;">
                                     <Button variant="primary"
                                             size="sm"
                                             className="mr-2"
@@ -124,7 +145,19 @@ export class Table extends Component<TableProps, TableState> {
                                         <Trash2/>
                                     </Button>
                                 </td>
-                            </tr>)}
+                            </tr>
+                            {row.extraValue ?
+                                <tr>
+                                    <td colSpan={props.columnNames.length + 1} class="pt-0" style="border-top: none;">
+                                        <Collapse in={row.extraShow}>
+                                            <div>
+                                                <Card className="mt-3"><Card.Body className="pb-0" style="padding: 1rem;">{row.extraValue}</Card.Body></Card>
+                                            </div>
+                                        </Collapse>
+                                    </td>
+                                </tr>
+                                : undefined}
+                        </>)}
                         {props.onAddStart ?
                         <tr scope="col">
                             <td colSpan={props.columnNames.length} style="vertical-align: middle; width: 100%;">
@@ -171,13 +204,21 @@ export class Table extends Component<TableProps, TableState> {
                                 </Button>
                             </div>
                         </div>
-                        <Card.Body style="padding: 1rem;">
-                        {(util.hasValue(row.fieldNames) ? row.fieldNames : props.columnNames).slice(1).map((fieldOrColumnName, i, array) =>
-                            fieldOrColumnName ?
-                        <FormGroup label={fieldOrColumnName} classList={i == array.length - 1 ? " mb-0" : ""}>
-                            <span class="form-control" style="height: unset;" readonly>{util.hasValue(row.fieldValues) ? value_or_else(row.fieldValues[1 + i], <>&nbsp;</>) : value_or_else(row.columnValues[1 + i], <>&nbsp;</>)}</span>
-                        </FormGroup> : (util.hasValue(row.fieldValues) ? value_or_else(row.fieldValues[1 + i], <>&nbsp;</>) : value_or_else(row.columnValues[1 + i], <>&nbsp;</>)))}
-                    </Card.Body></Card>)}
+                        <Card.Body className="pb-0" style="padding: 1rem;">
+                            {this.get_card_fields(row)}
+                            {row.extraValue ?
+                                <Collapse in={row.extraShow}>
+                                    <div>
+                                        {row.extraFieldName ?
+                                            <FormRow label={row.extraFieldName}>
+                                                <Card><Card.Body className="pb-0" style="padding: 1rem;">{row.extraValue}</Card.Body></Card>
+                                            </FormRow>
+                                            : <Card><Card.Body className="pb-0" style="padding: 1rem;">{row.extraValue}</Card.Body></Card>}
+                                    </div>
+                                </Collapse>
+                                : undefined}
+                        </Card.Body>
+                    </Card>)}
                     {props.onAddStart ?
                     <Card className="mb-0">
                         <div class="card-body d-flex justify-content-between align-items-center" style="padding: 1rem;">
