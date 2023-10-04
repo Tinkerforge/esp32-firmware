@@ -14,7 +14,6 @@ import { h, Fragment } from "preact"
 import { __ } from "../../ts/translation";
 import { CronComponent, CronTrigger, cron_trigger_components } from "../cron/api";
 import { Cron } from "../cron/main";
-import { InputNumber } from "src/ts/components/input_number";
 import { InputSelect } from "src/ts/components/input_select";
 
 export function RtcCronTriggerComponent(trigger: CronTrigger): CronComponent {
