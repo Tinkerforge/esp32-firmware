@@ -1082,7 +1082,6 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                         // FIXME
                                         this.hackToAllowSave();
                                     },
-                                    onEditAbort: async () => this.setState({editMeter: [0, null]}),
                                     onRemoveClick: async () => {
                                         this.setState({configs: {...state.configs, [meter_slot]: [0, null]}});
                                         this.hackToAllowSave();
@@ -1098,7 +1097,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                 // FIXME
                                 this.hackToAllowSave();
                             }}
-                            onAddAbort={async () => this.setState({addMeter: [0, null]})} />
+                            />
                     </div>
                 </ConfigForm>
             </SubPage>
