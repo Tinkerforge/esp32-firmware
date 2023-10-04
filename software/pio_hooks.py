@@ -907,14 +907,21 @@ def main():
 
         while rmtree_tries > 0:
             try:
-                shutil.rmtree('web/node_modules')
-                break
-            except FileNotFoundError:
-                break
+                if os.path.exists('web/node_modules'):
+                    with os.scandir('web/node_modules') as entries:
+                        for entry in entries:
+                            if entry.is_dir() and not entry.is_symlink():
+                                shutil.rmtree(entry.path)
+                            else:
+                                os.remove(entry.path)
+                    if len(os.listdir('web/node_modules')) == 0:
+                        break
+                    else:
+                        raise Exception('web/node_modules not empty')
             except:
-                # on windows for some unknown reason sometimes a directory stays
-                # or becomes non-empty during the shutil.rmtree call and and
-                # cannot be removed anymore. if that happens jus try again
+                # On Windows, for some unknown reason, sometimes a directory
+                # stays or becomes non-empty during the shutil.rmtree call and
+                # cannot be removed anymore. If that happens, just try again.
                 time.sleep(0.5)
 
                 rmtree_tries -= 1
