@@ -587,12 +587,19 @@ void Mqtt::register_events() {
 #if MODULE_ETHERNET_AVAILABLE()
     start_immediately = ethernet.get_connection_state() == EthernetState::CONNECTED;
 #endif
-    if (start_immediately)
+    if (start_immediately) {
         esp_mqtt_client_start(client);
-    else
+#if MODULE_DEBUG_AVAILABLE()
+        debug.register_task("mqtt_task", 6144); // stack size from mqtt_config.h
+#endif
+    } else {
         task_scheduler.scheduleOnce([this]() {
             esp_mqtt_client_start(client);
+#if MODULE_DEBUG_AVAILABLE()
+            debug.register_task("mqtt_task", 6144); // stack size from mqtt_config.h
+#endif
         }, 20000);
+    }
 }
 
 #if MODULE_CRON_AVAILABLE()

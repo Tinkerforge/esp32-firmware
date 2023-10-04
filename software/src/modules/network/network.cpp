@@ -17,10 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "module_dependencies.h"
 #include "network.h"
 
 #include "api.h"
 #include "build.h"
+#include "sdkconfig.h"
 #include "task_scheduler.h"
 
 #include <ESPmDNS.h>
@@ -60,4 +62,8 @@ void Network::register_urls()
         logger.printfln("mDNS responder started");
     }
     MDNS.addService("http", "tcp", 80);
+
+#if MODULE_DEBUG_AVAILABLE()
+    debug.register_task("mdns", CONFIG_MDNS_TASK_STACK_SIZE);
+#endif
 }

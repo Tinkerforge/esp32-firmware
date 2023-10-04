@@ -35,6 +35,8 @@
 // Global definition here to match the declaration in web_server.h.
 WebServer server;
 
+#define HTTPD_STACK_SIZE 8192
+
 void WebServer::start()
 {
     if (this->httpd != nullptr) {
@@ -43,7 +45,7 @@ void WebServer::start()
 
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.lru_purge_enable = true;
-    config.stack_size = 8192;
+    config.stack_size = HTTPD_STACK_SIZE;
     config.max_uri_handlers = MAX_URI_HANDLERS;
     config.global_user_ctx = this;
     config.max_open_sockets = 10;
@@ -68,6 +70,10 @@ void WebServer::start()
         logger.printfln("Failed to start web server! %s (%d)", esp_err_to_name(result), result);
         return;
     }
+
+#if MODULE_DEBUG_AVAILABLE()
+    debug.register_task("httpd", HTTPD_STACK_SIZE);
+#endif
 }
 
 struct UserCtx {

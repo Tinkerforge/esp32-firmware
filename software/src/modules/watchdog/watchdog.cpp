@@ -16,6 +16,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+
+#include "module_dependencies.h"
 #include "watchdog.h"
 
 #include <esp_task.h>
@@ -94,6 +96,15 @@ void Watchdog::pre_setup()
         xStack,
         &xTaskBuffer,
         1);
+}
+
+void Watchdog::setup()
+{
+    initialized = true;
+
+#if MODULE_DEBUG_AVAILABLE()
+    debug.register_task(xTask, WATCHDOG_STACK_SIZE);
+#endif
 }
 
 int Watchdog::add(const char *name, const char *message, uint32_t timeout_ms, uint32_t initial_deadline_ms)
