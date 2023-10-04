@@ -41,7 +41,9 @@
             "trigger_charge_any": "Ladevorgang Start/Stopp",
             "trigger_charge_start": "Ladevorgang Start",
             "trigger_charge_stop": "Ladevorgang Stopp",
-            "tag_action": "Tag Aktion"
+            "tag_action": "Tag Aktion",
+
+            "last_seen_and_known_tags": "Zuletzt erkannte und bekannte Tags"
         },
         "script": {
             "not_seen": "Unbekannt",

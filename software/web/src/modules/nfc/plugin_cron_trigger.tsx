@@ -14,6 +14,9 @@ import { CronComponent, CronTrigger, cron_trigger_components } from "../cron/api
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
+import { ListGroup, ListGroupItem } from "react-bootstrap";
+import * as API from "../../ts/api";
+import * as util from "../../ts/util";
 
 export function NFCCronTriggerComponent(trigger: CronTrigger): CronComponent {
     const value = (trigger as NfcCronTrigger)[1];
@@ -43,8 +46,49 @@ function NfcCronTriggerFactory(): CronTrigger {
 }
 
 export function NFCCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
-    let value = (trigger as NfcCronTrigger)[1];
+    const value = (trigger as NfcCronTrigger)[1];
+    const tags = API.get("nfc/seen_tags");
+    const known_tags = API.get("nfc/config").authorized_tags;
+    const seen_tags = tags.filter(t => t.tag_id != "" && !known_tags.find(tag => t.tag_id == tag.tag_id)).map(t => <ListGroupItem action type="button" onClick={() => {
+        if (t.tag_id != "") {
+            value.tag_id = t.tag_id;
+            value.tag_type = t.tag_type;
+            cron.setTriggerFromComponent(trigger);
+        }
+        }}>
+            <h5 class="mb-1 pr-2">{t.tag_id}</h5>
+            <div class="d-flex w-100 justify-content-between">
+                <span>{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
+                <span>{__("nfc.content.last_seen") + util.format_timespan(Math.floor(t.last_seen / 1000)) + __("nfc.content.last_seen_suffix")}</span>
+            </div>
+        </ListGroupItem>);
+
+    const users = API.get("users/config").users;
+    const known_items = API.get("nfc/config").authorized_tags.map(t => <ListGroupItem action type="button" onClick={() => {
+        if (t.tag_id != "") {
+            value.tag_id = t.tag_id;
+            value.tag_type = t.tag_type;
+            cron.setTriggerFromComponent(trigger);
+        }
+        }}>
+            <h5 class="mb-1 pr-2">{t.tag_id}</h5>
+            <div class="d-flex w-100 justify-content-between">
+                <span>{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
+                <span>{__("nfc.content.table_user_id") + ": " + users.find(u => u.id == t.user_id).display_name}</span>
+            </div>
+        </ListGroupItem>);
+
+    const all_tags = known_items.concat(seen_tags);
+
     return [
+        {
+            name: __("nfc.content.last_seen_and_known_tags"),
+            value: all_tags.length == 0
+                ? <span>{__("nfc.content.add_tag_description")}</span>
+                : <ListGroup>{
+                    all_tags
+                }</ListGroup>
+        },
         {
             name: __("nfc.content.table_tag_id"),
             value: <InputText

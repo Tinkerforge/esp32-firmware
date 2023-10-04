@@ -41,7 +41,9 @@
             "trigger_charge_any": "Charge start/stop",
             "trigger_charge_start": "Charge start",
             "trigger_charge_stop": "Charge stop",
-            "tag_action": "Tag action"
+            "tag_action": "Tag action",
+
+            "last_seen_and_known_tags": "Last seen tags and known tags"
         },
         "script": {
             "not_seen": "Unknown",
