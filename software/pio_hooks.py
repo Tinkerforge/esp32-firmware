@@ -279,12 +279,7 @@ TSX_FUNCTION_PATTERN = re.compile(r'/\*[SF]FN\*/.*?/\*NF\*/', re.MULTILINE | re.
 
 TSX_FUNCTION_ARGS_PATTERN = re.compile(r'FN\*/\s*\(([^\)]*)\)', re.MULTILINE | re.DOTALL)
 
-TSX_JSON_REPLACEMENTS = [
-    ('"', '\\"'),
-    ('\t', '\\t'),
-    ('\n', '\\n'),
-    ('\r', '\\r'),
-    # Escape nested fragments in functions
+TSX_JSON_REPLACEMENTS = [# Escape nested fragments in functions
     ('<>', '___START_FRAGMENT___'),
     ('</>', '___END_FRAGMENT___'),
 ]
@@ -295,7 +290,7 @@ def tsx_to_json(match):
     for old, new in TSX_JSON_REPLACEMENTS:
         s = s.replace(old, new)
 
-    return '"' + s + '"'
+    return json.dumps(s)
 
 def json_to_tsx(s):
     for old, new in TSX_JSON_REPLACEMENTS:
@@ -836,7 +831,7 @@ def main():
                         string = json_to_tsx(value)
                     elif is_string_function or is_fragment_function:
                         # removeprefix/suffix are new in Python 3.9. We have to support 3.8.
-                        string = json_to_tsx(value)[len("/*SFN*/"):-len("/*NF*/")]
+                        string = json_to_tsx(value)#[len("/*SFN*/"):-len("/*NF*/")]
                     else:
                         string = '"{0}"'.format(value.replace('"', '\\"'))
 
