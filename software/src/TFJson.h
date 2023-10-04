@@ -74,6 +74,7 @@ struct TFJsonDeserializer {
         ExpectingFalse,
         InvalidEscapeSequence,
         UnescapedControlCharacter,
+        ForbiddenNullInString,
         NestingTooDeep,
         InlineNullByte,
         InvalidUTF8StartByte,
@@ -81,6 +82,7 @@ struct TFJsonDeserializer {
     };
 
     const size_t nesting_depth_max;
+    const bool allow_null_in_string;
     size_t nesting_depth;
     size_t utf8_count;
     char *buf;
@@ -105,7 +107,7 @@ struct TFJsonDeserializer {
     std::function<bool(bool)> bool_handler;
     std::function<bool(void)> null_handler;
 
-    TFJsonDeserializer(size_t nesting_depth_max);
+    TFJsonDeserializer(size_t nesting_depth_max, bool allow_null_in_string = true);
 
     static const char *getErrorName(Error error);
 
@@ -163,6 +165,16 @@ private:
 #include <errno.h>
 #include <inttypes.h>
 #include <assert.h>
+#include <limits.h> // for CHAR_MIN
+
+static bool isctrl(char c) {
+    // JSON allows 0x7F unescaped
+#if CHAR_MIN == 0
+    return c <= 0x1F;
+#else
+    return c <= 0x1F && c >= 0; // UTF-8 compatibility
+#endif
+}
 
 #if 0
 #define debugf(...) printf("TFJsonDeserializer: " __VA_ARGS__)
@@ -377,11 +389,7 @@ void TFJsonSerializer::write(const char *c, size_t len) {
                 write('t');
                 break;
             default:
-#if CHAR_MIN == 0
-                if (*c <= 0x1F) {
-#else
-                if (*c <= 0x1F && *c >= 0/*UTF-8 compatibility*/) {
-#endif
+                if (isctrl(*c)) {
                     char x = *c;
 
                     write('\\');
@@ -454,7 +462,7 @@ void TFJsonSerializer::writeFmt(const char *fmt, ...) {
     return;
 }
 
-TFJsonDeserializer::TFJsonDeserializer(size_t nesting_depth_max) : nesting_depth_max(nesting_depth_max) {}
+TFJsonDeserializer::TFJsonDeserializer(size_t nesting_depth_max, bool allow_null_in_string) : nesting_depth_max(nesting_depth_max), allow_null_in_string(allow_null_in_string) {}
 
 const char *TFJsonDeserializer::getErrorName(Error error) {
     switch (error) {
@@ -476,6 +484,7 @@ const char *TFJsonDeserializer::getErrorName(Error error) {
         case Error::ExpectingFalse: return "ExpectingFalse";
         case Error::InvalidEscapeSequence: return "InvalidEscapeSequence";
         case Error::UnescapedControlCharacter: return "UnescapedControlCharacter";
+        case Error::ForbiddenNullInString: return "ForbiddenNullInString";
         case Error::NestingTooDeep: return "NestingTooDeep";
         case Error::InlineNullByte: return "InlineNullByte";
         case Error::InvalidUTF8StartByte: return "InvalidUTF8StartByte";
@@ -668,12 +677,7 @@ bool TFJsonDeserializer::isHexDigit() {
 }
 
 bool TFJsonDeserializer::isControl() {
-    // JSON allows 0x7F unescaped
-#if CHAR_MIN == 0
-    return cur <= 0x1F;
-#else
-    return cur >= 0x00 && cur <= 0x1F;
-#endif
+    return isctrl(cur);
 }
 
 bool TFJsonDeserializer::skipWhitespace() {
@@ -1067,9 +1071,12 @@ bool TFJsonDeserializer::parseString(bool report_as_member) {
                 }
             }
 
-            okay();
-
             uint32_t code_point = strtoul(hex, nullptr, 16);
+
+            if (!allow_null_in_string && code_point == 0) {
+                reportError(Error::ForbiddenNullInString);
+                return false;
+            }
 
             if (code_point <= 0x7F) {
                 *end++ = (char)code_point;
@@ -1093,6 +1100,8 @@ bool TFJsonDeserializer::parseString(bool report_as_member) {
                 reportError(Error::InvalidEscapeSequence);
                 return false;
             }
+
+            okay();
 
             continue;
         }
