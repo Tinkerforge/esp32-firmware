@@ -50,7 +50,7 @@ export function EvseStateCronComponent(trigger: CronTrigger): CronComponent {
     ];
 
     return {
-        text: __("evse.content.status") + ": " + names[value.charger_state],
+        text: __("evse.content.cron_state_change_trigger")(names[value.charger_state][0]),
         fieldNames,
         fieldValues
     }

@@ -39,10 +39,8 @@ import * as util from "../../ts/util";
 
 export function NFCCronTriggerComponent(trigger: CronTrigger): CronComponent {
     const value = (trigger as NfcCronTrigger)[1];
-    let ret = __("nfc.content.table_tag_id") + ": \"" + value.tag_id + "\",\n";
-    ret += __("nfc.content.table_tag_type") + ": " + translate_unchecked("nfc.content.type_" + value.tag_type);
     return {
-        text: ret,
+        text: __("nfc.content.cron_trigger_text")(value.tag_id, translate_unchecked("nfc.content.type_" + value.tag_type)),
         fieldNames: [
             __("nfc.content.table_tag_id"),
             __("nfc.content.table_tag_type")

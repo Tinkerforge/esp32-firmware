@@ -58,7 +58,7 @@ export function MqttCronActionComponent(action: CronAction): CronComponent {
         ret += name + ": \"" + fieldValues[idx] + "\"" + (idx != fieldNames.length - 1 ? ", " : "");
     });
     return {
-        text: ret,
+        text: __("mqtt.content.cron_action_text")(topic, value.payload, value.retain),
         fieldNames: fieldNames,
         fieldValues: fieldValues
     };

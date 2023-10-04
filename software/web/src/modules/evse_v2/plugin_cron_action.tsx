@@ -35,7 +35,7 @@ import { Cron } from "../cron/main";
 function EvseGpioOutputCronActionComponent(action: CronAction): CronComponent {
     const value = (action as EvseGpOutputCronAction)[1];
     return {
-        text: value.state ? __("evse.content.gpio_out_high") : __("evse.content.gpio_out_low"),
+        text: __("evse.content.cron_gpout_action_text")(value.state),
         fieldNames: [],
         fieldValues: [
             value.state ? __("evse.content.gpio_out_high") : __("evse.content.gpio_out_low")

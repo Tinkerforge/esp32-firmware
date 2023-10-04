@@ -3,15 +3,15 @@ import { h } from "preact";
 let x = {
     "cron": {
         "navbar": {
-            "cron": "Events"
+            "cron": "Automation"
         },
         "content": {
-            "cron": "Events",
-            "task": "Task",
+            "cron": "Automation",
+            "rule": "Rule",
             "condition": "Condition",
             "action": "Action",
-            "add_rule": "Regel hinzufügen",
-            "edit_rule": "Edit Rule",
+            "add_rule": "Add rule",
+            "edit_rule": "Edit rule",
             "select": "Select..."
         }
     }

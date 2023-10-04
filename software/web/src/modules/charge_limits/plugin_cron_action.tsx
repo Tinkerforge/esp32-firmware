@@ -57,16 +57,13 @@ function ChargeLimitsCronActionComponent(action: CronAction): CronComponent {
     let fieldValues = [
         durations[value.duration]
     ];
-    let ret =  __("charge_limits.content.duration") + ": " + durations[value.duration];
     if (API.hasFeature("meter")) {
         fieldNames = fieldNames.concat([__("charge_limits.content.energy")]);
         fieldValues = fieldValues.concat([(value.energy_wh != 0 ? value.energy_wh / 1000 + " kWh" : __("charge_limits.content.unlimited"))]);
-
-        ret += ", " + __("charge_limits.content.energy") + ": " + (value.energy_wh != 0 ? value.energy_wh / 1000 + " kWh" : __("charge_limits.content.unlimited"));
     }
 
     return {
-        text: ret,
+        text: __("charge_limits.content.cron_action_text")(durations[value.duration], value.energy_wh),
         fieldNames: fieldNames,
         fieldValues: fieldValues
     };

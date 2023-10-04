@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "nfc": {
         "status": {
         },
@@ -43,7 +45,20 @@
             "trigger_charge_stop": "Charge stop",
             "tag_action": "Tag action",
 
-            "last_seen_and_known_tags": "Last seen tags and known tags"
+            "last_seen_and_known_tags": "Last seen tags and known tags",
+
+            "cron_action_text": /*SFN*/(tag_id: string, tag_type: string, tag_action: number) => {
+                let ret = "fake the presence of the NFC tag '" + tag_id + "' (" + tag_type + ")";
+                if (tag_action == 1) {
+                    ret += " to start a charge.";
+                } else if (tag_action == 2) {
+                    ret += " to stop a charge.";
+                };
+                return ret;
+            }/*NF*/,
+            "cron_trigger_text": /*SFN*/(tag_id: string, tag_type: string) => {
+                return "If NFC tag '" + tag_id + "' (" + tag_type + ") is detected, ";
+            }/*NF*/
         },
         "script": {
             "not_seen": "Unknown",

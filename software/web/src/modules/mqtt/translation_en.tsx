@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "mqtt": {
         "status": {
             "connection": "MQTT connection",
@@ -42,7 +44,22 @@
             "auto_discovery_prefix": "Discovery topic prefix",
             "auto_discovery_prefix_invalid": "The topic prefix can not start with $, contain a # or +, or be empty.",
             "yes": "Yes",
-            "no": "No"
+            "no": "No",
+
+            "cron_action_text": /*SFN*/(topic: string, payload: string, retain: boolean) => {
+                let ret = "send MQTT message '" + payload + "' to topic '" + topic + "'";
+                if (retain) {
+                    ret += " and retain it.";
+                }
+                return ret;
+            }/*NF*/,
+            "cron_trigger_text": /*SFN*/(topic: string, payload: string, retained: boolean) => {
+                let ret = "When MQTT message '" + payload + "' is received on topic '" + topic;
+                if (retained) {
+                    ret += " (Retained messages are accepted)";
+                }
+                return ret + ", ";
+            }/*NF*/
         },
         "script": {
             "save_failed": "Failed to save the MQTT settings.",

@@ -88,7 +88,7 @@ let x = {
             "debug_description": "Ladeprotokoll erstellen",
             "debug_description_muted": "zur Diagnose bei Ladeproblemen",
             "active_high": "Wenn geöffnet",
-            "active_low": "Wenn geschlossen",
+            "active_low": "Wenn stromlos",
             "gpio_state": "Status",
             "gpio_out_high": "Hochohmig",
             "gpio_out_low": "Verbunden mit Masse",
@@ -123,6 +123,15 @@ let x = {
             "enable_led_api": "Status-LED Steuerung",
             "enable_led_api_desc": "Erlaubt die externe Steuerung der Status-LED.",
             "api_must_be_enabled": "Die API muss aktiviert sein, um die Status-LED steuern zu können.",
+            "cron_state_change_trigger": /*SFN*/(state: string) => {
+                return "Wenn der Ladecontroller in den Zustand '" + state + "' wechselt, ";
+            }/*NF*/,
+            "cron_action_text": /*SFN*/(current: number) => {
+                return "setze den erlaubten Ladestrom auf " + current + " A.";
+            }/*NF*/,
+            "cron_led_action_text": /*SFN*/(state: string, duration: number) => {
+                return "schalte die Status-LED für " + duration + " ms " + state + ".";
+            }/*NF*/,
 
             "slot_0": "Zuleitung",
             "slot_1": "Typ-2-Ladekabel",

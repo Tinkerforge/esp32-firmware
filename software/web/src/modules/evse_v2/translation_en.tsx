@@ -52,7 +52,39 @@ let x = {
             "abort": "Abort",
             "reset": "Reset",
             "trigger_dc_fault_test": "Test DC fault protector",
-            "time_since_dc_fault_check": "Time since last DC fault protector test"
+            "time_since_dc_fault_check": "Time since last DC fault protector test",
+            "cron_sd_trigger_text": /*SFN*/(state: boolean) => {
+                let ret = "If the shutdown input switches to ";
+                if (state) {
+                    ret += "open, ";
+                } else {
+                    ret += "closed, ";
+                }
+                return ret;
+            }/*NF*/,
+            "cron_gpin_trigger_text": /*SFN*/(state: boolean) => {
+                let ret = "If the General Purpose input switches to ";
+                if (state) {
+                    ret += "open, ";
+                } else {
+                    ret += "closed, ";
+                }
+                return ret;
+            }/*NF*/,
+            "cron_button_trigger_text": /*SFN*/(state: boolean) => {
+                if (state) {
+                    return "If the button is pressed, ";
+                } else {
+                    return "If the button is released, ";
+                }
+            }/*NF*/,
+            "cron_gpout_action_text": /*SFN*/(state: number) => {
+                if (state) {
+                    return "connect general purpose output to ground.";
+                } else {
+                    return "set general purpose output to high impedance.";
+                }
+            }/*NF*/
         },
         "script": {
             "reset_dc_fault_current_failed": "Reset of the DC fault protector failed",

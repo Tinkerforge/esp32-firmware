@@ -48,7 +48,7 @@ export type EvseButtonCronTrigger = [
 function EvseButtonCronTriggerComponent(trigger: CronTrigger): CronComponent {
     const value = (trigger as EvseButtonCronTrigger)[1];
     return {
-        text: value.button_pressed ? __("evse.content.button_pressed") : __("evse.content.button_released"),
+        text: __("evse.content.cron_button_trigger_text")(value.button_pressed),
         fieldNames: [
 
         ],
@@ -89,7 +89,7 @@ function EvseButtonCronTriggerFactory(): CronTrigger {
 function EvseShutdownTriggerComponent(trigger: CronTrigger): CronComponent {
     const value = (trigger as EvseSdCronTrigger)[1];
     return {
-        text: value.high ? __("evse.content.active_high") : __("evse.content.active_low"),
+        text: __("evse.content.cron_sd_trigger_text")(value.high),
         fieldNames: [
             __("evse.content.gpio_state")
         ],
@@ -130,7 +130,7 @@ function EvseShutdownTriggerFactory(): CronTrigger {
 function EvseGpioInputCronTriggerComponent(trigger: CronTrigger): CronComponent {
     const value = (trigger as EvseGpioCronTrigger)[1];
     return {
-        text: value.high ? __("evse.content.active_high") : __("evse.content.active_low"),
+        text: __("evse.content.cron_gpin_trigger_text")(value.high),
         fieldNames: [
             __("evse.content.gpio_state")
         ],

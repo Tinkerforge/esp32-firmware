@@ -183,7 +183,9 @@
             "detailed_export_kvarh_desc": "L1, L2, L3; transferred from vehicle",
 
             "detailed_total_kvarh": "Total reactive energies",
-            "detailed_total_kvarh_desc": "L1, L2, L3; sum of import and export"
+            "detailed_total_kvarh_desc": "L1, L2, L3; sum of import and export",
+
+            "cron_action_text": "reset energy consumption."
         },
         "script": {
             "time": "Time of day",

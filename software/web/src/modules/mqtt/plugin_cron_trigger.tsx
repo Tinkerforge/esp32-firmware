@@ -44,11 +44,8 @@ export function MqttCronTriggerComponent(trigger: CronTrigger): CronComponent {
 
     const topic = value.use_prefix ? mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic : value.topic;
 
-    let ret = __("mqtt.content.topic") + ": \"" + topic + "\",\n";
-    ret += __("mqtt.content.payload") + ": \"" + value.payload + "\",\n";
-    ret += __("mqtt.content.retain") + ": " + (value.retain ? __("mqtt.content.yes") : __("mqtt.content.no"));
     return {
-        text: ret,
+        text: __("mqtt.content.cron_trigger_text")(topic, value.payload, value.retain),
         fieldNames: [
             __("mqtt.content.topic"),
             __("mqtt.content.payload"),

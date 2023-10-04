@@ -45,7 +45,7 @@ import { InputNumber } from "../../ts/components/input_number"
 function EvseSetCurrentCronActionComponent(action: CronAction): CronComponent {
     const value = (action as EvseCronAction)[1];
     return {
-        text: __("evse.content.allowed_charging_current") + ": " + value.current / 1000 + " A",
+        text: __("evse.content.cron_action_text")(value.current / 1000),
         fieldNames: [__("evse.content.allowed_charging_current")],
         fieldValues: [value.current / 1000 + " A"]
     };
@@ -81,7 +81,6 @@ function EvseSetCurrentCronActionConfigFactory(): CronAction {
 
 function EvseLedCronActionComponent(action: CronAction): CronComponent {
     const value = (action as EvseLedCronAction)[1];
-    let ret = __("evse.content.led_state") + ": ";
     const fieldNames = [
         __("evse.content.led_state"),
         __("evse.content.led_duration"),
@@ -117,9 +116,8 @@ function EvseLedCronActionComponent(action: CronAction): CronComponent {
         value.duration + " ms",
         state
     ];
-    ret = ret + state + ",\n" + __("evse.content.led_duration") + ": " + value.duration + " ms"
     return {
-        text: ret,
+        text: __("evse.content.cron_led_action_text")(state, value.duration),
         fieldNames: fieldNames,
         fieldValues: fieldValues
     }

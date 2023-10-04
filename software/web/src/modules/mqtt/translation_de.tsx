@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "mqtt": {
         "status": {
             "connection": "MQTT-Verbindung",
@@ -42,7 +44,23 @@
             "auto_discovery_prefix": "Discovery-Topic-Präfix",
             "auto_discovery_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, ein # oder + enthalten oder leer sein.",
             "yes": "Ja",
-            "no": "Nein"
+            "no": "Nein",
+
+            "cron_action_text": /*SFN*/(topic: string, payload: string, retain: boolean) => {
+                let ret = "sende MQTT-Nachricht '" + payload + "' an Topic '" + topic + "'";
+                if (retain) {
+                    ret += " und speichere sie.";
+                }
+                return ret;
+            }/*NF*/,
+            "cron_trigger_text": /*SFN*/(topic: string, payload: string, retained: boolean) => {
+                let ret = "Wenn MQTT-Nachricht '" + payload + "' an Topic '" + topic + "' empfangen wird ";
+                if (retained) {
+                    ret += "(Gespeicherte Nachrichten werden akzeptiert)";
+                }
+                return ret + ", ";
+            }/*NF*/
+
         },
         "script": {
             "save_failed": "Speichern der MQTT-Einstellungen fehlgeschlagen.",

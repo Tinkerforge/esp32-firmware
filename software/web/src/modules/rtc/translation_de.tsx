@@ -27,10 +27,6 @@ let x = {
                 * It works by checking whether hour output contains AM ('1 AM' or '01 h')
                 * based on the user's preferred language
                 */
-                const isBrowserLocale24h = () => !new Intl.DateTimeFormat(navigator.language, { hour: "numeric" })
-                    .format(0)
-                    .match(/AM/);
-
                 const wdays = [
                     "Sonntags",
                     "Montags",
@@ -71,7 +67,7 @@ let x = {
                     ret += ", minütlich";
                 }
 
-                return ret;
+                return ret + ", ";
             }/*NF*/,
             "live_date": "Aktuelle Zeit der Echtzeituhr",
             "set_time": "Zeit setzen",

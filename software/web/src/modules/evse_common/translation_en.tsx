@@ -123,6 +123,15 @@ let x = {
             "enable_led_api": "Status-LED control",
             "enable_led_api_desc": "Allows an external source to control the Status-LED.",
             "api_must_be_enabled": "API must be enabled to use this feature.",
+            "cron_state_change_trigger": /*SFN*/(state: string) => {
+                return "When Charger state changes to '" + state + "', ";
+            }/*NF*/,
+            "cron_action_text": /*SFN*/(current: number) => {
+                return "set the allowed charging current to " + current + " A.";
+            }/*NF*/,
+            "cron_led_action_text": /*SFN*/(state: string, duration: number) => {
+                return "turn the Status-LED " + state + " for " +duration + " ms.";
+            }/*NF*/,
 
             "slot_0": "Supply cable",
             "slot_1": "Type 2 charging cable",

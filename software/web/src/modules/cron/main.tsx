@@ -165,14 +165,12 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
 
             let row: TableRow = {
                 columnValues: [
-                    idx + 1,
-                    trigger_component.name,
-                    trigger_row.text,
-                    action_component.name,
-                    action_row.text
+                    [idx + 1],
+                    [trigger_row.text],
+                    [action_row.text]
                 ],
-                fieldNames: [""].concat(trigger_row.fieldNames.concat(action_row.fieldNames)),
-                fieldValues: [__("cron.content.task") + " #" + (idx + 1) as ComponentChild].concat(trigger_row.fieldValues.concat(action_row.fieldValues)),
+                fieldNames: ["", "", ""],
+                fieldValues: [__("cron.content.rule") + " #" + (idx + 1) as ComponentChild, trigger_row.text, action_row.text],
                 onEditStart: async () => {
                     this.setState({
                         displayed_trigger: task.trigger[0] as number,
@@ -218,9 +216,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                         columnNames={[
                             "#",
                             __("cron.content.condition"),
-                            "",
-                            __("cron.content.action"),
-                            ""]}
+                            __("cron.content.action")]}
                         rows={this.assembleTable()}
                         addEnabled={this.state.tasks.length < 20}
                         addTitle={__("cron.content.add_rule")}

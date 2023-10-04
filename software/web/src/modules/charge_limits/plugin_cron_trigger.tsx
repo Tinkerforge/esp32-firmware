@@ -32,7 +32,7 @@ import { CronComponent, CronTrigger } from "../cron/types";
 // TODO: Think about a nice explanation why this does not need a config
 function ChargeLimitsCronTriggerComponent(_: CronTrigger): CronComponent {
     return {
-        text: "",
+        text: __("charge_limits.content.cron_trigger_text"),
         fieldNames: [],
         fieldValues: []
     };

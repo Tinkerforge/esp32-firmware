@@ -183,7 +183,9 @@
             "detailed_export_kvarh_desc": "L1, L2, L3; ins Netz eingespeist",
 
             "detailed_total_kvarh": "Gesamtblindenergie",
-            "detailed_total_kvarh_desc": "L1, L2, L3; Summe aus Import und Export"
+            "detailed_total_kvarh_desc": "L1, L2, L3; Summe aus Import und Export",
+
+            "cron_action_text": "setze den Stromverbrauchswert zurück."
         },
         "script": {
             "time": "Uhrzeit",

@@ -52,7 +52,39 @@ let x = {
             "abort": "Abbrechen",
             "reset": "Zurücksetzen",
             "trigger_dc_fault_test": "DC-Fehlerschutz testen",
-            "time_since_dc_fault_check": "Zeit seit dem letzten DC-Fehlerschutztest"
+            "time_since_dc_fault_check": "Zeit seit dem letzten DC-Fehlerschutztest",
+            "cron_sd_trigger_text": /*SFN*/(state: boolean) => {
+                let ret = "Wenn der Abschalteingang ";
+                if (state) {
+                    ret += "geöffnet wird, ";
+                } else {
+                    ret += "geschlossen wird, ";
+                }
+                return ret;
+            }/*NF*/,
+            "cron_gpin_trigger_text": /*SFN*/(state: boolean) => {
+                let ret = "Wenn der Konfigurierbare Eingang ";
+                if (state) {
+                    ret += "geöffnet wird, ";
+                } else {
+                    ret += "geschlossen wird, ";
+                }
+                return ret;
+            } /*NF*/,
+            "cron_button_trigger_text": /*SFN*/(state: boolean) => {
+                if (state) {
+                    return "Wenn der Fronttaster gedrückt wird, ";
+                } else {
+                    return "Wenn der Fronttaster losgelassen wird, ";
+                }
+            }/*NF*/,
+            "cron_gpout_action_text": /*SFN*/(state: number) => {
+                if (state) {
+                    return "verbinde den Konfigurierbaren Ausgang mit Masse.";
+                } else {
+                    return "schalte den Konfigurierbaren Ausgang hochohmig.";
+                }
+            }/*NF*/
         },
         "script": {
             "reset_dc_fault_current_failed": "Zurücksetzen des DC-Fehlerstromschutzmoduls fehlgeschlagen",

@@ -69,7 +69,7 @@ let x = {
                     ret += ", every minute";
                 }
 
-                return ret;
+                return ret + ", ";
             }/*NF*/,
             "live_date": "Current time on real-time clock",
             "set_time": "Set time",

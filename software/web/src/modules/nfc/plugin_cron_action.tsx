@@ -44,10 +44,8 @@ const TRIGGER_CHARGE_STOP = 2;
 
 function NFCTagInjectCronActionComponent(action: CronAction): CronComponent {
     const value = (action as NfcCronAction)[1];
-    let ret = __("nfc.content.table_tag_id") + ": \"" + value.tag_id + "\",\n";
-    ret += __("nfc.content.table_tag_type") + ": " + translate_unchecked("nfc.content.type_" + value.tag_type) + ",\n";
-    ret += __("nfc.content.tag_action") + ": ";
-    let tag_action = ""
+    let tag_action = "";
+
     switch (value.tag_action) {
         case TRIGGER_CHARGE_ANY:
             tag_action = __("nfc.content.trigger_charge_any");
@@ -59,9 +57,11 @@ function NFCTagInjectCronActionComponent(action: CronAction): CronComponent {
 
         case TRIGGER_CHARGE_STOP:
             tag_action = __("nfc.content.trigger_charge_stop");
+            break;
     }
+
     return {
-        text: ret + tag_action,
+        text: __("nfc.content.cron_action_text")(value.tag_id, translate_unchecked("nfc.content.type_" + value.tag_type), value.tag_action),
         fieldNames: [
             __("nfc.content.table_tag_id"),
             __("nfc.content.table_tag_type"),

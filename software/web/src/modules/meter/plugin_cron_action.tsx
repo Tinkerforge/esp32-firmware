@@ -31,7 +31,7 @@ import { CronComponent, CronAction } from "../cron/types";
 
 function MeterResetCronActionComponent(_: CronAction): CronComponent {
     return {
-        text: "",
+        text: __("meter.content.cron_action_text"),
         fieldNames: [],
         fieldValues: []
     };

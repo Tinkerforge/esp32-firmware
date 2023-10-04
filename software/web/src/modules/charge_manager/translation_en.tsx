@@ -77,7 +77,10 @@ let x = {
 
             "host_exists": "Host already exists",
 
-            "set_charge_manager": "Charge Manager"
+            "set_charge_manager": "Charge Manager",
+            "cron_action_text": /*SFN*/(current: number) => {
+                return "set the maximum total current to " + current / 1000 + " A.";
+            }/*NF*/
         },
         "script": {
             "charge_state_0": "No vehicle connected",
