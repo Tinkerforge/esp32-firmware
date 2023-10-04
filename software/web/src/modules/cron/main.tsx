@@ -28,13 +28,14 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { Table, TableModalRow, TableRow } from "../../ts/components/table";
 import { InputSelect } from "../../ts/components/input_select";
 import { __ } from "../../ts/translation";
+import { CronTriggerID, CronActionID } from "./cron_defs";
 import { CronAction, CronTrigger, Task, CronTriggerComponents, CronActionComponents } from "./types";
 import { plugins_init } from "./plugins";
 
 type CronState = {
-    edit_task: Task,
     displayed_trigger: number,
-    displayed_action: number
+    displayed_action: number,
+    edit_task: Task,
 };
 
 let cron_trigger_components: CronTriggerComponents = {};
@@ -47,12 +48,12 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
         __("charge_manager.script.reboot_content_changed"));
         this.state = {
             tasks: [],
+            displayed_trigger: CronTriggerID.None,
+            displayed_action: CronActionID.None,
             edit_task: {
-                trigger: [0, null],
-                action: [0, null]
-            },
-            displayed_action: 0,
-            displayed_trigger: 0
+                trigger: [CronTriggerID.None, null],
+                action: [CronActionID.None, null]
+            }
         }
     }
 
@@ -96,18 +97,17 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                         placeholder={__("cron.content.select")}
                         items={trigger}
                         onValue={(v) => {
-                            this.setState(
-                            {
-                                displayed_trigger: Number(v),
+                            this.setState({
+                                displayed_trigger: parseInt(v),
                                 edit_task: {
-                                    trigger: cron_trigger_components[Number(v)].config_builder(),
+                                    trigger: cron_trigger_components[parseInt(v)].config_builder(),
                                     action: this.state.edit_task.action
                                 }
                             })
                         }}
                         value={this.state.displayed_trigger.toString()}/>
         }];
-        if (this.state.displayed_trigger != 0) {
+        if (this.state.displayed_trigger != CronTriggerID.None) {
             const trigger_config = cron_trigger_components[this.state.displayed_trigger].config_component(this, this.state.edit_task.trigger);
             triggerSelector = triggerSelector.concat(trigger_config);
         }
@@ -121,19 +121,18 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                         placeholder={__("cron.content.select")}
                         items={action}
                         onValue={(v) => {
-                            this.setState(
-                            {
-                                displayed_action: Number(v),
+                            this.setState({
+                                displayed_action: parseInt(v),
                                 edit_task: {
-                                    action: cron_action_components[Number(v)].config_builder(),
-                                    trigger: this.state.edit_task.trigger
+                                    trigger: this.state.edit_task.trigger,
+                                    action: cron_action_components[parseInt(v)].config_builder()
                                 }
                             });
                         }}
                         value={this.state.displayed_action.toString()}/></>
         }]
 
-        if (this.state.displayed_action != 0) {
+        if (this.state.displayed_action != CronActionID.None) {
             const action_config = cron_action_components[this.state.displayed_action].config_component(this, this.state.edit_task.action);
             actionSelector = actionSelector.concat(action_config);
         }
@@ -144,15 +143,15 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
     assembleTable() {
         let rows: TableRow[] = [];
         this.state.tasks.forEach((task, idx) => {
-            let action_id: number = task.action[0];
             let trigger_id: number = task.trigger[0];
+            let action_id: number = task.action[0];
 
-            const action_component = cron_action_components[action_id];
             const trigger_component = cron_trigger_components[trigger_id];
+            const action_component = cron_action_components[action_id];
 
             const task_copy: Task = {
-                action: action_component.clone(task.action),
-                trigger: trigger_component.clone(task.trigger)
+                trigger: trigger_component.clone(task.trigger),
+                action: action_component.clone(task.action)
             };
             const trigger_row = trigger_component.table_row(task.trigger);
             const action_row = action_component.table_row(task.action);
@@ -175,15 +174,14 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                 fieldNames: [""].concat(trigger_row.fieldNames.concat(action_row.fieldNames)),
                 fieldValues: [__("cron.content.task") + " #" + (idx + 1) as ComponentChild].concat(trigger_row.fieldValues.concat(action_row.fieldValues)),
                 onEditStart: async () => {
-                    this.setState(
-                        {
-                            edit_task: {
-                                action: task_copy.action,
-                                trigger: task_copy.trigger
-                            },
-                            displayed_trigger: task.trigger[0] as number,
-                            displayed_action: task.action[0] as number
-                        })
+                    this.setState({
+                        displayed_trigger: task.trigger[0] as number,
+                        displayed_action: task.action[0] as number,
+                        edit_task: {
+                            trigger: task_copy.trigger,
+                            action: task_copy.action
+                        }
+                    });
                 },
                 onEditGetRows: () => {
                     return this.createSelectors();
@@ -227,12 +225,16 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                         addEnabled={this.state.tasks.length < 20}
                         addTitle={__("cron.content.add_rule")}
                         addMessage={__("cron.content.add_rule")}
-                        onAddStart={async () => this.setState(
-                            {
-                                edit_task: {trigger: [0, null], action: [0, null]},
-                                displayed_action: 0,
-                                displayed_trigger: 0
-                            })}
+                        onAddStart={async () => {
+                            this.setState({
+                                displayed_trigger: CronTriggerID.None,
+                                displayed_action: CronActionID.None,
+                                edit_task: {
+                                    trigger: [CronTriggerID.None, null],
+                                    action: [CronActionID.None, null]
+                                }
+                            });
+                        }}
                         onAddGetRows={() => {
                             return this.createSelectors()
                         }}
