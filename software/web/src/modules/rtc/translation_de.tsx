@@ -57,7 +57,7 @@ let x = {
                     date.setMinutes(minute);
                     date.setHours(hour);
                     ret += " um " + date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-                    if (!ret.endsWith("AM")) {
+                    if (!ret.endsWith("AM") && !ret.endsWith("PM")) {
                         ret += " Uhr";
                     }
                 } else if (hour != -1) {
