@@ -22,8 +22,12 @@
             "dram": "DRAM",
             "iram": "IRAM",
             "psram": "PSRAM",
-            "main_stack_hwm": "Main Stack Hochwassermarke",
-            "main_stack_hwm_muted": "geringster freier Stack-Speicher",
+
+            "stack_hwm_header": "Stack-Hochwassermarken",
+            "task_name": "Taskname",
+            "free_stack": "Freier Stack",
+            "used_stack": "Genutzter Stack",
+            "stack_size": "Stackgröße",
 
             "heap_integrity_header": "Heap-Integrität",
             "heap_integrity_result": "Prüfergebnis",

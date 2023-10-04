@@ -22,8 +22,12 @@
             "dram": "DRAM",
             "iram": "IRAM",
             "psram": "PSRAM",
-            "main_stack_hwm": "Main stack high water mark",
-            "main_stack_hwm_muted": "lowest free space on stack",
+
+            "stack_hwm_header": "Stack high water marks",
+            "task_name": "Task name",
+            "free_stack": "Free stack",
+            "used_stack": "Used stack",
+            "stack_size": "Stack size",
 
             "heap_integrity_header": "Heap integrity",
             "heap_integrity_result": "Check result",

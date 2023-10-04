@@ -21,7 +21,9 @@
 
 #include <Arduino.h>
 #include "esp_system.h"
+#include "esp_task.h"
 #include "LittleFS.h"
+#include "lwipopts.h"
 #include "soc/dport_reg.h"
 #include "soc/rtc_cntl_reg.h"
 #include "soc/spi_reg.h"
@@ -104,7 +106,7 @@ void Debug::pre_setup()
             new Config{Config::Object({
                 {"clk",          Config::Uint32(0)},
                 {"dummy_cycles", Config::Uint32(0)},
-                {"spi_mode",     Config::Str("", 0, 8)}
+                {"spi_mode",     Config::Str("", 0, 14)}
             })},
             0, 4, Config::type_id<Config::ConfObject>()
         )},
@@ -114,16 +116,8 @@ void Debug::pre_setup()
     });
 
     for (uint32_t i = 0; i < 4; i++) {
-        uint32_t spi_clk;
-        uint32_t dummy_cyclelen;
-        const char *spi_mode;
-
-        get_spi_settings(i, apb_clk, &spi_clk, &dummy_cyclelen, &spi_mode);
-
-        Config *conf = static_cast<Config *>(state_static.get("spi_buses")->add());
-        conf->get("clk")->updateUint(spi_clk);
-        conf->get("dummy_cycles")->updateUint(dummy_cyclelen);
-        conf->get("spi_mode")->updateString(spi_mode);
+        // add() can trigger a move of ConfObjects, so get() must be called inside the loop.
+        state_static.get("spi_buses")->add();
     }
 
     state_fast = Config::Object({
@@ -133,15 +127,41 @@ void Debug::pre_setup()
         {"free_psram", Config::Uint32(0)},
         {"heap_check_time_avg", Config::Uint32(0)},
         {"heap_check_time_max", Config::Uint32(0)},
-        {"cpu_usage",  Config::Float(0)},
+        {"cpu_usage",  Config::Uint32(0)},
     });
 
     state_slow = Config::Object({
         {"largest_free_dram_block",  Config::Uint32(0)},
         {"largest_free_psram_block", Config::Uint32(0)},
         {"heap_integrity_ok", Config::Bool(true)},
-        {"main_stack_hwm", Config::Uint32(0)},
     });
+
+    state_hwm = Config::Array({},
+        new Config{Config::Object({
+            {"task_name",  Config::Str("", 0, CONFIG_FREERTOS_MAX_TASK_NAME_LEN)},
+            {"hwm",        Config::Uint32(0)},
+            {"stack_size", Config::Uint32(0)},
+        })},
+        0, 64, Config::type_id<Config::ConfObject>()
+    );
+
+
+    task_handles.reserve(16);
+    register_task(xTaskGetCurrentTaskHandle(),      getArduinoLoopTaskStackSize());
+    register_task(xTaskGetIdleTaskHandleForCPU(0),  sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
+    register_task(xTaskGetIdleTaskHandleForCPU(1),  sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
+    register_task(xTimerGetTimerDaemonTaskHandle(), sizeof(StackType_t) * configTIMER_TASK_STACK_DEPTH);
+    register_task("esp_timer",                      ESP_TASK_TIMER_STACK);
+
+// Copied from esp_ipc.c
+#if CONFIG_COMPILER_OPTIMIZATION_NONE
+#define IPC_STACK_SIZE (CONFIG_ESP_IPC_TASK_STACK_SIZE + 0x100)
+#else
+#define IPC_STACK_SIZE (CONFIG_ESP_IPC_TASK_STACK_SIZE)
+#endif //CONFIG_COMPILER_OPTIMIZATION_NONE
+
+    register_task("ipc0", IPC_STACK_SIZE);
+    register_task("ipc1", IPC_STACK_SIZE);
 }
 
 void Debug::setup()
@@ -162,7 +182,16 @@ void Debug::setup()
         state_slow.get("largest_free_dram_block")->updateUint(dram_info.largest_free_block);
         state_slow.get("largest_free_psram_block")->updateUint(psram_info.largest_free_block);
 
-        state_slow.get("main_stack_hwm")->updateUint(uxTaskGetStackHighWaterMark(nullptr));
+
+        uint32_t task_count = this->task_handles.size();
+        for (uint16_t i = 0; i < task_count; i++) {
+            uint32_t hwm = uxTaskGetStackHighWaterMark(this->task_handles[i]);
+            Config *conf_task_hwm = static_cast<Config *>(this->state_hwm.get(i));
+            if (conf_task_hwm->get("hwm")->updateUint(hwm) && hwm < 400 && this->show_hwm_changes) {
+                logger.printfln("debug: HWM of task '%s' changed: %u", conf_task_hwm->get("task_name")->asUnsafeCStr(), hwm);
+            }
+        }
+
 
         uint32_t runtime_avg;
         if (this->integrity_check_runs == 0) {
@@ -175,14 +204,19 @@ void Debug::setup()
 
         micros_t now = now_us();
         uint32_t time_since_last_update_us = static_cast<uint32_t>(static_cast<int64_t>(now - this->last_state_update));
-        float heap_check_cpu_usage = static_cast<float>(this->integrity_check_runtime_sum) / static_cast<float>(time_since_last_update_us);
-        state_fast.get("cpu_usage")->updateFloat(1 - heap_check_cpu_usage);
+        uint32_t integrity_check_cpu_usage = 100 * this->integrity_check_runtime_sum / time_since_last_update_us;
+        state_fast.get("cpu_usage")->updateUint(100 - integrity_check_cpu_usage);
         this->last_state_update = now;
 
         this->integrity_check_runs = 0;
         this->integrity_check_runtime_sum = 0;
         this->integrity_check_runtime_max = 0;
     }, 1000, 1000);
+
+    // Don't show HWM changes during the first two minutes after boot.
+    task_scheduler.scheduleOnce([this](){
+        this->show_hwm_changes = true;
+    }, 2 * 60 * 1000);
 
     last_state_update = now_us();
 
@@ -194,6 +228,7 @@ void Debug::register_urls()
     api.addState("debug/state_static", &state_static);
     api.addState("debug/state_fast", &state_fast);
     api.addState("debug/state_slow", &state_slow);
+    api.addState("debug/state_hwm", &state_hwm);
 
     server.on_HTTPThread("/debug/crash", HTTP_GET, [this](WebServerRequest req) {
         esp_system_abort("Crash requested");
@@ -294,6 +329,48 @@ void Debug::register_urls()
 #endif
 }
 
+void Debug::register_events()
+{
+    // Query SPI buses and tasks here after everything else has been set up.
+
+    uint32_t apb_clk = state_static.get("apb_clk")->asUint();
+    Config *conf_spi_buses = static_cast<Config *>(state_static.get("spi_buses"));
+
+    for (uint16_t i = 0; i < 4; i++) {
+        uint32_t spi_clk;
+        uint32_t dummy_cyclelen;
+        const char *spi_mode;
+
+        get_spi_settings(i, apb_clk, &spi_clk, &dummy_cyclelen, &spi_mode);
+
+        Config *conf = static_cast<Config *>(conf_spi_buses->get(i));
+        conf->get("clk")->updateUint(spi_clk);
+        conf->get("dummy_cycles")->updateUint(dummy_cyclelen);
+        conf->get("spi_mode")->updateString(spi_mode);
+    }
+
+    register_task("tiT",            TCPIP_THREAD_STACKSIZE);
+    register_task("emac_rx",        2048); // stack size from esp_eth_mac.h
+    register_task("wifi",           0);    // stack size unknown, from closed source libpp
+    register_task("sys_evt",        ESP_TASKD_EVENT_STACK); // created in WiFiGeneric.cpp
+    register_task("arduino_events", 4096); // stack size from WiFiGeneric.cpp
+
+    register_task("async_udp",       0, false);
+    register_task("btm_rrm_t",       0, false);
+    register_task("console_repl",    0, false);
+    register_task("https_ota_task",  0, false);
+    register_task("ksz8851snl_tsk",  0, false);
+    register_task("l2tap_clean_tas", 0, false);
+    register_task("main",            0, false);
+    register_task("ot_cli",          0, false);
+    register_task("protocomm_conso", 0, false);
+    register_task("rmt_rx_task",     0, false);
+    register_task("sc_ack_send_tas", 0, false);
+    register_task("tcpip_thread",    0, false);
+    register_task("uart_event_task", 0, false);
+    register_task("wpsT",            0, false);
+}
+
 void Debug::loop()
 {
     micros_t start = now_us();
@@ -311,6 +388,42 @@ void Debug::loop()
         state_slow.get("heap_integrity_ok")->updateBool(false);
         integrity_check_print_errors = false;
     }
+}
+
+void Debug::register_task(const char *task_name, uint32_t stack_size, bool expect_present)
+{
+    TaskHandle_t handle = xTaskGetHandle(task_name);
+    if (!handle) {
+        if (expect_present) {
+            logger.printfln("debug: Can't find task '%s'", task_name);
+        }
+        return;
+    }
+    if (!expect_present) {
+        logger.printfln("debug: Found task '%s'", task_name);
+    }
+    register_task(handle, stack_size);
+}
+
+void Debug::register_task(TaskHandle_t handle, uint32_t stack_size)
+{
+    if (!handle) {
+        logger.printfln("debug: register_task called with invalid handle.");
+        return;
+    }
+
+    const char *task_name = pcTaskGetName(handle);
+    if (!task_name) {
+        logger.printfln("debug: register_task couldn't find task.");
+        return;
+    }
+
+    task_handles.push_back(handle);
+
+    Config *conf = static_cast<Config *>(state_hwm.add());
+    conf->get("task_name")->updateString(task_name);
+    conf->get("hwm")->updateUint(uxTaskGetStackHighWaterMark(handle));
+    conf->get("stack_size")->updateUint(stack_size);
 }
 
 static float benchmark_area(uint8_t *start_address, size_t max_length)
@@ -356,7 +469,7 @@ static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_c
     uint32_t mode_count = fread_qio + fread_dio + fread_quad + fread_dual;
 
     if (mode_count == 0) {
-        *spi_mode = "unknown";
+        *spi_mode = "four-wire";
     } else if (mode_count == 1) {
         if (fread_qio) {
             *spi_mode = "qio";
@@ -368,8 +481,8 @@ static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_c
             *spi_mode = "dual";
         }
     } else {
-        *spi_mode = "invalid";
-        logger.printfln("fread_qio=%u fread_dio=%u fread_quad=%u fread_dual=%u", fread_qio, fread_dio, fread_quad, fread_dual);
+        *spi_mode = "invalid mode";
+        logger.printfln("debug: fread_qio=%u fread_dio=%u fread_quad=%u fread_dual=%u", fread_qio, fread_dio, fread_quad, fread_dual);
     }
 
     // Clock
@@ -386,11 +499,11 @@ static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_c
     uint32_t clk_conf_sum = clkdiv_pre + clkcnt_n + clkcnt_h + clkcnt_l;
     if (clk_equ_sysclk == 0) {
         if (clk_conf_sum == 0) {
-            *spi_mode = "zero clk";
+            *spi_mode = "zero clock";
         }
     } else {
         if (clk_conf_sum != 0) {
-            *spi_mode = "bad clk";
+            *spi_mode = "invalid clock";
         }
     }
 }

@@ -42,6 +42,7 @@ export class Debug extends Component
         let state_static = API.get('debug/state_static');
         let state_fast   = API.get('debug/state_fast');
         let state_slow   = API.get('debug/state_slow');
+        let state_hwm    = API.get('debug/state_hwm');
 
         return (
             <SubPage>
@@ -52,7 +53,29 @@ export class Debug extends Component
                 </FormRow>
 
                 <FormRow label={__("debug.content.cpu_usage")} label_muted={__("debug.content.cpu_usage_muted")}>
-                    <OutputFloat value={state_fast.cpu_usage * 100} digits={0} scale={0} unit="%"/>
+                    <OutputFloat value={state_fast.cpu_usage} digits={0} scale={0} unit="%"/>
+                </FormRow>
+
+                <FormSeparator heading={__("debug.content.heap_integrity_header")} first={false} />
+
+                <FormRow label={__("debug.content.heap_integrity_result")}>
+                    <IndicatorGroup
+                        value={state_slow.heap_integrity_ok ? 0 : 1} // intentionally inverted, OK is first
+                        items={[
+                            ["success", __("debug.content.heap_integrity_ok")],
+                            ["danger", __("debug.content.heap_integrity_fail")],
+                        ]} />
+                </FormRow>
+
+                <FormRow label={__("debug.content.heap_integrity_runtime")} label_muted={__("debug.content.heap_integrity_runtime_muted")}>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-6">
+                            <OutputFloat value={state_fast.heap_check_time_avg} digits={3} scale={3} unit="ms"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-6">
+                            <OutputFloat value={state_fast.heap_check_time_max} digits={3} scale={3} unit="ms"/>
+                        </div>
+                    </div>
                 </FormRow>
 
                 <FormSeparator heading={__("debug.content.memory_header")} first={false} />
@@ -154,35 +177,39 @@ export class Debug extends Component
                     </div>
                 </FormRow>
 
-                <FormRow label={__("debug.content.main_stack_hwm")} label_muted={__("debug.content.main_stack_hwm_muted")}>
+                <FormSeparator heading={__("debug.content.stack_hwm_header")} first={false} />
+
+                <FormRow label={__("debug.content.task_name")}>
                     <div class="row">
-                        <div class="col-sm-4">
-                            <OutputFloat value={state_slow.main_stack_hwm} digits={0} scale={0} unit="B"/>
+                        <div class="col-12 col-sm-4">
+                            <p class="mb-0 mt-2 form-label text-center">{__("debug.content.free_stack")}</p>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <p class="mb-0 mt-2 form-label text-center">{__("debug.content.used_stack")}</p>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <p class="mb-0 mt-2 form-label text-center">{__("debug.content.stack_size")}</p>
                         </div>
                     </div>
                 </FormRow>
 
-                <FormSeparator heading={__("debug.content.heap_integrity_header")} first={false} />
-
-                <FormRow label={__("debug.content.heap_integrity_result")}>
-                    <IndicatorGroup
-                        value={state_slow.heap_integrity_ok ? 0 : 1} // intentionally inverted, OK is first
-                        items={[
-                            ["success", __("debug.content.heap_integrity_ok")],
-                            ["danger", __("debug.content.heap_integrity_fail")],
-                        ]} />
-                </FormRow>
-
-                <FormRow label={__("debug.content.heap_integrity_runtime")} label_muted={__("debug.content.heap_integrity_runtime_muted")}>
-                    <div class="row">
-                        <div class="mb-1 col-12 col-sm-6">
-                            <OutputFloat value={state_fast.heap_check_time_avg} digits={3} scale={3} unit="ms"/>
+                {state_hwm.map((task_hwm) => {
+                    return <FormRow label={task_hwm.task_name}>
+                        <div class="row">
+                            <div class="mb-1 col-12 col-sm-4">
+                                <OutputFloat value={task_hwm.hwm} digits={0} scale={0} unit="B"/>
+                            </div>
+                            {task_hwm.stack_size != 0 ? <>
+                                <div class="mb-1 col-12 col-sm-4">
+                                    <OutputFloat value={task_hwm.stack_size - task_hwm.hwm} digits={0} scale={0} unit="B"/>
+                                </div>
+                                <div class="mb-1 col-12 col-sm-4">
+                                    <OutputFloat value={task_hwm.stack_size} digits={0} scale={0} unit="B"/>
+                                </div>
+                            </>:<></>}
                         </div>
-                        <div class="mb-1 col-12 col-sm-6">
-                            <OutputFloat value={state_fast.heap_check_time_max} digits={3} scale={3} unit="ms"/>
-                        </div>
-                    </div>
-                </FormRow>
+                    </FormRow>
+                })}
 
                 <FormSeparator heading={__("debug.content.clocks_buses_header")} first={false} />
 

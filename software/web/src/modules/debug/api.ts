@@ -31,5 +31,12 @@ export interface state_slow {
     largest_free_dram_block: number;
     largest_free_psram_block: number;
     heap_integrity_ok: boolean;
-    main_stack_hwm: number;
 }
+
+interface task_hwm {
+    task_name: string;
+    hwm: number;
+    stack_size: number;
+}
+
+export type state_hwm = task_hwm[];

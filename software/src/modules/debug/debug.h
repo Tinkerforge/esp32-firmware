@@ -21,6 +21,9 @@
 
 #include "config.h"
 
+#include <stdint.h>
+#include <vector>
+
 #include "module.h"
 #include "tools.h"
 
@@ -31,12 +34,20 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
     void loop() override;
+
+    void register_task(const char *task_name, uint32_t stack_size, bool expect_present=true);
+    void register_task(TaskHandle_t handle, uint32_t stack_size);
 
 private:
     ConfigRoot state_static;
     ConfigRoot state_fast;
     ConfigRoot state_slow;
+    ConfigRoot state_hwm;
+
+    std::vector<TaskHandle_t> task_handles;
+    bool show_hwm_changes = false;
 
     micros_t last_state_update;
     uint32_t integrity_check_runs = 0;
