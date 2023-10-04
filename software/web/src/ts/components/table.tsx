@@ -87,7 +87,7 @@ export class Table extends Component<TableProps, TableState> {
         return (
             <>
                 <Card className={`d-none d-${props.tableTill ? props.tableTill : 'sm'}-block`}><Card.Body style="padding: 0;">
-                <table class="table table-responsive" style="font-size: 1rem; margin-bottom: 0;">
+                <table class="table" style="font-size: 1rem; margin-bottom: 0;">
                     <thead>
                         <tr>
                             {props.columnNames.map((columnName) => (
