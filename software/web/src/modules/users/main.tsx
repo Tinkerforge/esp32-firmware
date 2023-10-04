@@ -451,7 +451,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                         this.setState({editUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}});
                                         this.hackToAllowSave();
                                     },
-                                    onEditAbort: async () => this.setState({editUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}}),
                                     onRemoveClick: async () => {
                                         this.setState({users: state.users.filter((v, idx) => idx != i + 1)});
                                         this.hackToAllowSave();
@@ -521,7 +520,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
                                 this.hackToAllowSave();
                             }}
-                            onAddAbort={async () => this.setState({addUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}})}
                             />
                     </FormRow>
                 </ConfigForm>

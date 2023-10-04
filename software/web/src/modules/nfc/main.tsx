@@ -176,7 +176,6 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
 
                                         this.hackToAllowSave();
                                     },
-                                    onEditAbort: async () => this.setState({editTag: {tag_id: "", user_id: 0, tag_type: "" as any}}),
                                     onRemoveClick: async () => {
                                         this.setState({authorized_tags: state.authorized_tags.filter((v, idx) => idx != i)});
                                         this.hackToAllowSave();
@@ -251,7 +250,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
 
                                 this.hackToAllowSave();
                             }}
-                            onAddAbort={async () => this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}})} />
+                            />
                     </div>
                 </ConfigForm>
             </SubPage>

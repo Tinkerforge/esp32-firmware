@@ -202,7 +202,6 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                     this.setState({tasks: this.state.tasks.map((task, k) => k === idx ? this.state.edit_task : task)});
                     this.hackToAllowSave();
                 },
-                onEditAbort: async () => {},
                 onRemoveClick: async () => {
                     this.setState({tasks: this.state.tasks.filter((_, k) => idx != k)})
                     this.hackToAllowSave();

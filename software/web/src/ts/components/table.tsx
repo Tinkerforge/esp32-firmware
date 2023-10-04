@@ -41,7 +41,7 @@ export interface TableRow {
     onEditGetRows?: () => TableModalRow[]
     onEditCheck?: () => Promise<boolean>
     onEditCommit?: () => Promise<void>
-    onEditAbort?: () => Promise<void>
+    onEditHide?: () => Promise<void>
     onRemoveClick?: () => Promise<void>
 }
 
@@ -55,7 +55,7 @@ export interface TableProps {
     onAddGetRows?: () => TableModalRow[]
     onAddCheck?: () => Promise<boolean>
     onAddCommit?: () => Promise<void>
-    onAddAbort?: () => Promise<void>
+    onAddHide?: () => Promise<void>
     tableTill?: string
 }
 
@@ -216,8 +216,8 @@ export class Table extends Component<TableProps, TableState> {
                     }}
                     onHide={async () => {
                         this.setState({showAddModal: false}, async () => {
-                            if (props.onAddAbort) {
-                                await props.onAddAbort();
+                            if (props.onAddHide) {
+                                await props.onAddHide();
                             }
                         });
                     }}
@@ -252,8 +252,8 @@ export class Table extends Component<TableProps, TableState> {
                     }}
                     onHide={async () => {
                         this.setState({showEditModal: null}, async () => {
-                            if (props.rows[state.showEditModal].onEditAbort) {
-                                await props.rows[state.showEditModal].onEditAbort();
+                            if (props.rows[state.showEditModal].onEditHide) {
+                                await props.rows[state.showEditModal].onEditHide();
                             }
                         });
                     }}

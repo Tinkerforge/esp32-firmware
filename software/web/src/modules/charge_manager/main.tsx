@@ -441,7 +441,6 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
                                     this.hackToAllowSave();
                                 },
-                                onEditAbort: async () => this.setState({editCharger: {name: "", host: ""}}),
                                 onRemoveClick: !energyManagerMode && (charger.host == '127.0.0.1' || charger.host == 'localhost') ? undefined : async () => {
                                     this.setState({chargers: state.chargers.filter((v, idx) => idx != i)});
                                     this.hackToAllowSave();
@@ -510,9 +509,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
                             this.hackToAllowSave();
                         }}
-                        onAddAbort={async () => {
+                        onAddHide={async () => {
                             window.clearInterval(this.intervalID);
-                            this.setState({addCharger: {name: "", host: ""}});
                         }} />
             </FormRow>
 
