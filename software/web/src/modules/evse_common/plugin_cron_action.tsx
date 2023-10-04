@@ -20,7 +20,7 @@ import { CronComponent, CronAction, cron_action_components } from "../cron/api"
 import { Cron } from "../cron/main"
 import { InputSelect } from "../../ts/components/input_select"
 import { InputFloat } from "../../ts/components/input_float"
-import { h } from 'preact'
+import { h, Fragment } from 'preact'
 import { InputNumber } from "../../ts/components/input_number"
 
 function EvseSetCurrentCronActionComponent(action: CronAction): CronComponent {
@@ -88,13 +88,17 @@ function EvseLedCronActionComponent(action: CronAction): CronComponent {
         case 1003:
             state = __("evse.content.led_state_breathing");
             break;
+
+        case 2001:
+            state = __("evse.content.led_state_error");
+            break;
     }
 
     const fieldValues = [
         value.duration + " ms",
         state
     ];
-    ret = ret + "\n" + __("evse.content.led_duration") + ": " + value.duration + " ms"
+    ret = ret + state + ",\n" + __("evse.content.led_duration") + ": " + value.duration + " ms"
     return {
         text: ret,
         fieldNames: fieldNames,
@@ -114,7 +118,8 @@ function EvseLedCronActionConfigComponent(cron: Cron, action: CronAction) {
                     ["255", __("evse.content.led_state_on")],
                     ["1001", __("evse.content.led_state_blinking")],
                     ["1002", __("evse.content.led_state_flickering")],
-                    ["1003", __("evse.content.led_state_breathing")]
+                    ["1003", __("evse.content.led_state_breathing")],
+                    ["2001", __("evse.content.led_state_error")]
                 ]}
                 value={value.state.toString()}
                 onValue={(v) => {
@@ -124,13 +129,15 @@ function EvseLedCronActionConfigComponent(cron: Cron, action: CronAction) {
         },
         {
             name: __("evse.content.led_duration"),
-            value: <InputNumber
+            value: <> <InputNumber
                 value={value.duration}
                 unit="ms"
                 onValue={(v) => {
                     value.duration = v;
                     cron.setActionFromComponent(action);
                 }} />
+                <span class="text-muted mt-1">{__("evse.content.api_must_be_enabled")}</span>
+            </>
         }
     ]
 }

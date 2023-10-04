@@ -71,6 +71,7 @@ let x = {
             "led_state_blinking": "Blinkend",
             "led_state_flickering": "Flackernd",
             "led_state_breathing": "Atmend",
+            "led_state_error": "Fehler",
             "led_state_api": "API",
             "led_duration": "Dauer",
             "cp_pwm_dc": "CP-PWM-Tastverhältnis",
@@ -121,6 +122,7 @@ let x = {
 
             "enable_led_api": "Status-LED Steuerung",
             "enable_led_api_desc": "Erlaubt die externe Steuerung der Status-LED.",
+            "api_must_be_enabled": "Die API muss aktiviert sein, um die Status-LED steuern zu können.",
 
             "slot_0": "Zuleitung",
             "slot_1": "Typ-2-Ladekabel",
