@@ -12,9 +12,9 @@ export type RtcCronTrigger = [
 
 import { h, Fragment } from "preact"
 import { __ } from "../../ts/translation";
-import { CronComponent, CronTrigger, cron_trigger_components } from "../cron/api";
+import { CronComponent, CronTrigger } from "../cron/types";
 import { Cron } from "../cron/main";
-import { InputSelect } from "src/ts/components/input_select";
+import { InputSelect } from "../../ts/components/input_select";
 
 export function RtcCronTriggerComponent(trigger: CronTrigger): CronComponent {
     const value = (trigger as RtcCronTrigger)[1];
@@ -144,10 +144,15 @@ function RtcCronTriggerFactory(): RtcCronTrigger {
 }
 
 export function init() {
-    cron_trigger_components[CronTriggerID.Cron] = {
-        table_row: RtcCronTriggerComponent,
-        config_builder: RtcCronTriggerFactory,
-        config_component: RtcCronTriggerConfigComponent,
-        name: __("rtc.content.clock")
+    return {
+        trigger_components: {
+            [CronTriggerID.Cron]: {
+                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
+                table_row: RtcCronTriggerComponent,
+                config_builder: RtcCronTriggerFactory,
+                config_component: RtcCronTriggerConfigComponent,
+                name: __("rtc.content.clock")
+            }
+        }
     }
 }
