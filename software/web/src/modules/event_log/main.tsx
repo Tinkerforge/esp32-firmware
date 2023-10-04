@@ -56,6 +56,10 @@ export class EventLog extends Component<{}, EventLogState> {
         });
 
         util.addApiEventListener("event_log/message", (ev) => {
+            // If we have not seen the complete log yet, don't add updates.
+            if (!this.state.log)
+                return;
+
             this.set_log(this.state.log + ev.data + "\n");
         });
 
