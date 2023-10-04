@@ -54,10 +54,12 @@ function update_cache_item(left: any, right: any) {
     if (Array.isArray(left))
         left = left.filter((_value, i, _arr) => keys_to_remove.indexOf(i) >= 0)
 
-    for (var key in right)
+    for (var key in right) {
         if (!left.hasOwnProperty(key)) {
             left[key] = right[key];
         }
+    }
+}
 }
 
 export function update<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T]) {
