@@ -487,7 +487,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     }
 }
 
-type ValuesByID = {[id: number]: number};
+type NumberToNumber = {[id: number]: number};
 
 interface MetersProps {
     status_ref: RefObject<MetersStatus>;
@@ -496,7 +496,7 @@ interface MetersProps {
 interface MetersState {
     states: {[meter_slot: number]: Readonly<API.getType['meters/0/state']>};
     configs: {[meter_slot: number]: MeterConfig};
-    values_by_id: {[meter_slot: number]: ValuesByID};
+    values_by_id: {[meter_slot: number]: NumberToNumber};
     chart_selected: "history"|"live";
     addMeter: MeterConfig;
     editMeter: MeterConfig;
@@ -602,6 +602,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
     uplot_wrapper_history_ref = createRef();
     status_ref: RefObject<MetersStatus> = null;
     value_ids: {[meter_slot: number]: Readonly<number[]>} = {};
+    value_idx_by_id: {[meter_slot: number]: NumberToNumber} = {};
     values: {[meter_slot: number]: Readonly<number[]>} = {};
 
     constructor(props: MetersProps) {
@@ -659,17 +660,22 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 
             util.addApiEventListener_unchecked(`meters/${meter_slot}/value_ids`, () => {
                 this.value_ids[meter_slot] = API.get_maybe(`meters/${meter_slot}/value_ids`);
-                let values_by_id: ValuesByID = {};
+                let value_idx_by_id: NumberToNumber = {};
+                let values_by_id: NumberToNumber = {};
 
-                if (this.values[meter_slot]) {
-                    for (let id of METER_VALUE_IDS) {
-                        let idx = this.value_ids[meter_slot].indexOf(id);
+                for (let id of METER_VALUE_IDS) {
+                    let idx = this.value_ids[meter_slot].indexOf(id);
 
-                        if (idx >= 0) {
+                    if (idx >= 0) {
+                        value_idx_by_id[id] = idx;
+
+                        if (this.values[meter_slot]) {
                             values_by_id[id] = this.values[meter_slot][idx];
                         }
                     }
                 }
+
+                this.value_idx_by_id[meter_slot] = value_idx_by_id;
 
                 this.setState((prevState) => ({
                     values_by_id: {
@@ -681,15 +687,13 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 
             util.addApiEventListener_unchecked(`meters/${meter_slot}/values`, () => {
                 this.values[meter_slot] = API.get_maybe(`meters/${meter_slot}/values`);
-                let values_by_id: ValuesByID = {};
+                let values_by_id: NumberToNumber = {};
 
-                if (this.value_ids[meter_slot]) {
-                    for (let id of METER_VALUE_IDS) {
-                        let idx = this.value_ids[meter_slot].indexOf(id);
+                if (this.value_idx_by_id[meter_slot]) {
+                    for (let id in this.value_idx_by_id[meter_slot]) {
+                        let idx = this.value_idx_by_id[meter_slot][id];
 
-                        if (idx >= 0) {
-                            values_by_id[id] = this.values[meter_slot][idx];
-                        }
+                        values_by_id[id] = this.values[meter_slot][idx];
                     }
                 }
 
