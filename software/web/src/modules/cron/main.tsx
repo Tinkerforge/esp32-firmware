@@ -32,6 +32,8 @@ import { CronTriggerID, CronActionID } from "./cron_defs";
 import { CronAction, CronTrigger, Task, CronTriggerComponents, CronActionComponents } from "./types";
 import { plugins_init } from "./plugins";
 
+const MAXRULES = 10;
+
 type CronState = {
     displayed_trigger: number,
     displayed_action: number,
@@ -218,9 +220,9 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                             __("cron.content.condition"),
                             __("cron.content.action")]}
                         rows={this.assembleTable()}
-                        addEnabled={this.state.tasks.length < 20}
+                        addEnabled={this.state.tasks.length < MAXRULES}
                         addTitle={__("cron.content.add_rule")}
-                        addMessage={__("cron.content.add_rule")}
+                        addMessage={__("cron.content.add_rule_text")(this.state.tasks.length, MAXRULES)}
                         onAddStart={async () => {
                             this.setState({
                                 displayed_trigger: CronTriggerID.None,
