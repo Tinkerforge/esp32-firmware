@@ -12,7 +12,7 @@ let x = {
             "action": "Aktion",
             "add_rule": "Regel hinzufügen",
             "add_rule_text": /*SFN*/(count: number, max: number) => {
-                return "Es sind " + count + " von " + max + " Regeln konfiguriert.";
+                return count + " von " + max + " Regeln konfiguriert.";
             }/*NF*/,
             "edit_rule": "Regel bearbeiten",
             "select": "Auswählen..."

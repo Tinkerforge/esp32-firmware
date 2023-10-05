@@ -12,7 +12,7 @@ let x = {
             "action": "Action",
             "add_rule": "Add rule",
             "add_rule_text": /*SFN*/(count: number, max: number) => {
-                return "There are " + count + " of " + max + " rules configured.";
+                return count + " of " + max + " rules configured.";
             }/*NF*/,
             "edit_rule": "Edit rule",
             "select": "Select..."
