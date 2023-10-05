@@ -640,6 +640,7 @@ private:
     }
 
 public:
+    bool clearString();
     bool updateString(const String &value);
     bool updateInt(int32_t value);
     bool updateUint(uint32_t value);

@@ -92,6 +92,8 @@ void Certs::register_urls()
             logger.printfln("Written %u; size %u", written, cert.length());
         }
 
+        // Cert is written into flash. Drop from config to free memory.
+        add.get("cert")->clearString();
 
         this->update_state();
         return "";

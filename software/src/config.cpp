@@ -405,6 +405,17 @@ const std::vector<Config> &Config::asArray() const
     return *this->get<ConfArray>()->getVal();
 }
 
+bool Config::clearString() {
+    if (!this->is<ConfString>()) {
+        logger.printfln("Config is not a string!");
+        esp_system_abort("");
+    }
+    CoolString *val = this->get<ConfString>()->getVal();
+    val->clear();
+    val->shrinkToFit();
+    return true;
+}
+
 bool Config::updateString(const String &value)
 {
     return update_value<String, ConfString>(value, "String");
