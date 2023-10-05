@@ -75,10 +75,13 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
 
             if (!isNaN(ip) && !isNaN(subnet) && !isNaN(gateway) && subnet != 0){
                 gateway_out_of_subnet = gateway != 0 && (ip & subnet) != (gateway & subnet);
-                const network = (ip & subnet) >>> 0
-                const broadcast = ((ip & subnet) | ~subnet) >>> 0;
-                ip_is_network_addr = ip == network;
-                ip_is_broadcast_addr = ip == broadcast;
+                if (((subnet + 1) >>> 0) != 0xFFFFFFFF >>> 0)
+                {
+                    const network = (ip & subnet) >>> 0
+                    const broadcast = ((ip & subnet) | ~subnet) >>> 0;
+                    ip_is_network_addr = ip == network;
+                    ip_is_broadcast_addr = ip == broadcast;
+                }
 
                 if (props.forbidNetwork) {
                     for (let net of props.forbidNetwork) {
