@@ -62,7 +62,11 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
     constructor() {
         super('wifi/sta_config',
               __("wifi.script.sta_save_failed"),
-              __("wifi.script.sta_reboot_content_changed"));
+              __("wifi.script.sta_reboot_content_changed"), {
+                passphrase_placeholder: __("component.input_password.unchanged"),
+                passphrase_required: false,
+                scan_running: false
+            });
 
         util.addApiEventListener('wifi/scan_results', (e) => {
             if (e.data == "scan in progress")
@@ -80,10 +84,6 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
             if (typeof e.data !== "string")
                 this.setState({scan_running: false, scan_results: e.data});
         }, false);
-
-        this.state = {passphrase_placeholder: __("component.input_password.unchanged"),
-                      passphrase_required: false,
-                      scan_running: false} as any;
     }
 
     override async isSaveAllowed(cfg: STAConfig) {

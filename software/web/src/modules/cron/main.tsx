@@ -46,17 +46,16 @@ let cron_action_components: CronActionComponents = {};
 export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
     constructor() {
         super('cron/config',
-        __("charge_manager.script.save_failed"),
-        __("charge_manager.script.reboot_content_changed"));
-        this.state = {
-            tasks: [],
-            displayed_trigger: CronTriggerID.None,
-            displayed_action: CronActionID.None,
-            edit_task: {
-                trigger: [CronTriggerID.None, null],
-                action: [CronActionID.None, null]
-            }
-        }
+              __("charge_manager.script.save_failed"),
+              __("charge_manager.script.reboot_content_changed"), {
+                  tasks: [],
+                  displayed_trigger: CronTriggerID.None,
+                  displayed_action: CronActionID.None,
+                  edit_task: {
+                      trigger: [CronTriggerID.None, null],
+                      action: [CronActionID.None, null]
+                  }
+             });
     }
 
     setTriggerFromComponent(update: CronTrigger) {

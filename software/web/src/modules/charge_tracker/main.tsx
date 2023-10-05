@@ -96,8 +96,12 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
 export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, ChargeTrackerState & ChargetrackerConfig> {
     constructor() {
         super('charge_tracker/config',
-                __("charge_tracker.script.save_failed"),
-                __("charge_tracker.script.reboot_content_changed"));
+              __("charge_tracker.script.save_failed"),
+              __("charge_tracker.script.reboot_content_changed"), {
+                  user_filter: "-2",
+                  file_type: "0",
+                  csv_flavor: 'excel'
+              });
 
         util.addApiEventListener('users/config', () => {
             let user_filter_items: [string, string][] = API.get('users/config').users.map(x => [x.id.toString(), (x.display_name == "Anonymous" && x.id == 0) ? __("charge_tracker.script.unknown_users") : x.display_name]);
@@ -118,12 +122,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
             let conf = API.get('charge_tracker/config');
             this.setState({electricity_price: conf.electricity_price});
         });
-
-        this.state = {
-            user_filter: "-2",
-            file_type: "0",
-            csv_flavor: 'excel'
-        } as any
     }
 
     get_last_charges(charges: Readonly<Charge[]>, price: number) {

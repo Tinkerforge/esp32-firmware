@@ -58,15 +58,13 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
     constructor() {
         super('charge_manager/config',
               __("charge_manager.script.save_failed"),
-              __("charge_manager.script.reboot_content_changed"));
-
-        this.state = {
-            addCharger: {host: "", name: ""},
-            editCharger: {host: "", name: ""},
-            managementEnabled: false,
-            showExpert: false,
-            scanResult: []
-        } as any;
+              __("charge_manager.script.reboot_content_changed"), {
+                  addCharger: {host: "", name: ""},
+                  editCharger: {host: "", name: ""},
+                  managementEnabled: false,
+                  showExpert: false,
+                  scanResult: []
+              });
 
         // Does not check if the event exists, in case the evse module is not compiled in.
         util.addApiEventListener_unchecked('evse/management_enabled', () => {

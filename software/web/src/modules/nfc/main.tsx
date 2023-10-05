@@ -46,7 +46,18 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
     constructor() {
         super('nfc/config',
               __("nfc.script.save_failed"),
-              __("nfc.script.reboot_content_changed"));
+              __("nfc.script.reboot_content_changed"), {
+                addTag: {
+                    tag_id: "",
+                    user_id: 0,
+                    tag_type: "" as any
+                },
+                editTag: {
+                    tag_id: "",
+                    user_id: 0,
+                    tag_type: "" as any
+                }
+            });
 
         util.addApiEventListener('users/config', () => {
             this.setState({userCfg: API.get('users/config')});
@@ -65,19 +76,6 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
 
             this.setState({seen_tags: x});
         });*/
-
-        this.state = {
-            addTag: {
-                tag_id: "",
-                user_id: 0,
-                tag_type: "" as any
-            },
-            editTag: {
-                tag_id: "",
-                user_id: 0,
-                tag_type: "" as any
-            }
-        } as any;
     }
 
     render(props: {}, state: NfcConfig & NfcState) {

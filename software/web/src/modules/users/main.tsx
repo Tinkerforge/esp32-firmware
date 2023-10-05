@@ -91,31 +91,29 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     constructor() {
         super('users/config',
               __("users.script.save_failed"),
-              __("users.script.reboot_content_changed"));
-
-        this.state = {
-            userSlotEnabled: false,
-            addUser: {
-                id: -1,
-                roles: 0xFFFF,
-                username: "",
-                display_name: "",
-                current: 32000,
-                digest_hash: "",
-                password: "",
-                is_invalid: 0,
-            },
-            editUser: {
-                id: -1,
-                roles: 0xFFFF,
-                username: "",
-                display_name: "",
-                current: 32000,
-                digest_hash: "",
-                password: "",
-                is_invalid: 0,
-            },
-        } as any;
+              __("users.script.reboot_content_changed"), {
+                userSlotEnabled: false,
+                addUser: {
+                    id: -1,
+                    roles: 0xFFFF,
+                    username: "",
+                    display_name: "",
+                    current: 32000,
+                    digest_hash: "",
+                    password: "",
+                    is_invalid: 0,
+                },
+                editUser: {
+                    id: -1,
+                    roles: 0xFFFF,
+                    username: "",
+                    display_name: "",
+                    current: 32000,
+                    digest_hash: "",
+                    password: "",
+                    is_invalid: 0,
+                },
+            });
 
         util.addApiEventListener('evse/slots', () => {
             this.setState({userSlotEnabled: API.get('evse/slots')[EVSE_SLOT_USER].active});
