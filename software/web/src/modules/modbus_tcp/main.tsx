@@ -51,10 +51,9 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                 __("modbus_tcp.script.save_failed"),
                 __("modbus_tcp.script.reboot_content_changed"));
 
-                util.addApiEventListener('evse/slots', () => {
-                    this.setState({evse_enable: API.get('evse/slots')[EVSE_SLOT_MODBUS_TCP].active});
-                });
-
+        util.addApiEventListener('evse/slots', () => {
+            this.setState({evse_enable: API.get('evse/slots')[EVSE_SLOT_MODBUS_TCP].active});
+        });
     }
 
     override async sendSave(t: "modbus_tcp/config", cfg: config & ModbusTCPConfig) {

@@ -36,7 +36,7 @@ export class MqttMeter extends ConfigComponent<'mqtt_meter/config'> {
         super('mqtt_meter/config',
             __("mqtt_meter.script.save_failed"),
             __("mqtt_meter.script.reboot_content_changed"));
-        }
+    }
 
     render(props: {}, state: Readonly<API.getType['mqtt_meter/config']>) {
         if (!util.render_allowed())

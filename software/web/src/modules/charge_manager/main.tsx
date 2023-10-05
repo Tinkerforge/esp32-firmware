@@ -513,36 +513,35 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                             {minimum_current}
                             {chargers}
                         </>
-                    :
-                    <Collapse in={state.enable_charge_manager}>
-                        <div>
-                            <FormRow label={__("charge_manager.content.configuration_mode")} label_muted={__("charge_manager.content.configuration_mode_muted")}>
-                                <Button className="form-control" onClick={() => this.setState({showExpert: !state.showExpert})}>
-                                    {state.showExpert ? __("component.collapsed_section.hide") : __("component.collapsed_section.show")}
-                                </Button>
-                            </FormRow>
+                        : <Collapse in={state.enable_charge_manager}>
+                            <div>
+                                <FormRow label={__("charge_manager.content.configuration_mode")} label_muted={__("charge_manager.content.configuration_mode_muted")}>
+                                    <Button className="form-control" onClick={() => this.setState({showExpert: !state.showExpert})}>
+                                        {state.showExpert ? __("component.collapsed_section.hide") : __("component.collapsed_section.show")}
+                                    </Button>
+                                </FormRow>
 
-                            <Collapse in={state.showExpert}>
-                                <div>
-                                    {verbose}
-                                    {watchdog}
-                                    {maximum_available_current}
-                                    {default_available_current}
-                                    {requested_current_threshold}
-                                    {requested_current_margin}
-                                </div>
-                            </Collapse>
+                                <Collapse in={state.showExpert}>
+                                    <div>
+                                        {verbose}
+                                        {watchdog}
+                                        {maximum_available_current}
+                                        {default_available_current}
+                                        {requested_current_threshold}
+                                        {requested_current_margin}
+                                    </div>
+                                </Collapse>
 
-                            <Collapse in={!state.showExpert}>
-                                <div>
-                                    {available_current}
-                                </div>
-                            </Collapse>
+                                <Collapse in={!state.showExpert}>
+                                    <div>
+                                        {available_current}
+                                    </div>
+                                </Collapse>
 
-                            {minimum_current}
-                            {chargers}
-                        </div>
-                    </Collapse>
+                                {minimum_current}
+                                {chargers}
+                            </div>
+                        </Collapse>
                     }
                 </ConfigForm>
             </SubPage>
@@ -633,7 +632,6 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                     </div>
         });
 
-
         return <>
             <FormRow label={__("charge_manager.status.charge_manager")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                 <IndicatorGroup
@@ -667,7 +665,6 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
             </FormRow>
         </>
     }
-
 }
 
 render(<ChargeManagerStatus />, $("#status-charge_manager")[0]);
