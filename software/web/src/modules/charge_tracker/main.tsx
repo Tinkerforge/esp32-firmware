@@ -40,7 +40,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { useMemo } from "preact/hooks";
 
 type Charge = API.getType['charge_tracker/last_charges'][0];
-type ChargetrackerConfig = API.getType['charge_tracker/config'];
+type ChargeTrackerConfig = API.getType['charge_tracker/config'];
 
 interface S {
     user_filter: string
@@ -93,7 +93,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
     </ListGroupItem>
 }
 
-export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, ChargeTrackerState & ChargetrackerConfig> {
+export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, ChargeTrackerState & ChargeTrackerConfig> {
     constructor() {
         super('charge_tracker/config',
               __("charge_tracker.script.save_failed"),
@@ -271,11 +271,11 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
             .catch(err => util.add_alert("download-charge-log", "alert-danger", __("charge_tracker.script.download_charge_log_failed"), err));
     }
 
-    override async isSaveAllowed(cfg: ChargetrackerConfig) {
+    override async isSaveAllowed(cfg: ChargeTrackerConfig) {
         return cfg.electricity_price == 0 || cfg.electricity_price >= 100
     }
 
-    render(props: {}, state: Readonly<ChargeTrackerState> & ChargetrackerConfig) {
+    render(props: {}, state: Readonly<ChargeTrackerState> & ChargeTrackerConfig) {
         if (!util.render_allowed())
             return <></>
 
