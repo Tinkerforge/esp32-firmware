@@ -42,13 +42,9 @@ import { InputFloat } from "../../ts/components/input_float"
 import { h, Fragment } from 'preact'
 import { InputNumber } from "../../ts/components/input_number"
 
-function EvseSetCurrentCronActionComponent(action: CronAction): CronComponent {
+function EvseSetCurrentCronActionComponent(action: CronAction): string {
     const value = (action as EvseCronAction)[1];
-    return {
-        text: __("evse.content.cron_action_text")(value.current / 1000),
-        fieldNames: [__("evse.content.allowed_charging_current")],
-        fieldValues: [value.current / 1000 + " A"]
-    };
+    return __("evse.content.cron_action_text")(value.current / 1000);
 }
 
 function EvseSetCurrentCronActionConfigComponent(cron: Cron, action: CronAction) {
@@ -79,12 +75,8 @@ function EvseSetCurrentCronActionConfigFactory(): CronAction {
     ]
 }
 
-function EvseLedCronActionComponent(action: CronAction): CronComponent {
+function EvseLedCronActionComponent(action: CronAction): string {
     const value = (action as EvseLedCronAction)[1];
-    const fieldNames = [
-        __("evse.content.led_state"),
-        __("evse.content.led_duration"),
-    ];
     let state = ""
     switch (value.state) {
         case 0:
@@ -112,15 +104,7 @@ function EvseLedCronActionComponent(action: CronAction): CronComponent {
             break;
     }
 
-    const fieldValues = [
-        value.duration + " ms",
-        state
-    ];
-    return {
-        text: __("evse.content.cron_led_action_text")(state, value.duration),
-        fieldNames: fieldNames,
-        fieldValues: fieldValues
-    }
+    return __("evse.content.cron_led_action_text")(state, value.duration)
 }
 
 function EvseLedCronActionConfigComponent(cron: Cron, action: CronAction) {

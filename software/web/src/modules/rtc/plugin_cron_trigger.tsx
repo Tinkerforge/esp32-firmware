@@ -16,44 +16,10 @@ import { CronComponent, CronTrigger } from "../cron/types";
 import { Cron } from "../cron/main";
 import { InputSelect } from "../../ts/components/input_select";
 
-export function RtcCronTriggerComponent(trigger: CronTrigger): CronComponent {
+export function RtcCronTriggerComponent(trigger: CronTrigger): string {
     const value = (trigger as RtcCronTrigger)[1];
 
-    const fieldNames = [
-        __("rtc.content.mday"),
-        __("rtc.content.wday"),
-        __("rtc.content.hour"),
-        __("rtc.content.minute")
-    ];
-
-    const wdays: [string, string][] = [
-        ['-1','*'],
-        ['0', __("rtc.content.sunday")],
-        ['1', __("rtc.content.monday")],
-        ['2', __("rtc.content.tuesday")],
-        ['3', __("rtc.content.wednesday")],
-        ['4', __("rtc.content.thursday")],
-        ['5', __("rtc.content.friday")],
-        ['6', __("rtc.content.saturday")]
-
-    ];
-    const fieldValues = [
-        value.mday,
-        wdays[value.wday + 1][1],
-        value.hour,
-        value.minute
-    ];
-
-    let ret = "";
-    fieldNames.map((val, idx) => {
-        ret += val + ": " + (fieldValues[idx] == -1 ? "*" : fieldValues[idx]) + (idx != fieldValues.length - 1 ? ", " : "");
-    })
-
-    return {
-        text: __("rtc.content.cron_translation_function")(value.mday, value.wday, value.hour, value.minute),
-        fieldNames: fieldNames,
-        fieldValues: fieldValues
-    };
+    return __("rtc.content.cron_translation_function")(value.mday, value.wday, value.hour, value.minute)
 }
 
 export function RtcCronTriggerConfigComponent(cron: Cron, trigger: CronTrigger) {

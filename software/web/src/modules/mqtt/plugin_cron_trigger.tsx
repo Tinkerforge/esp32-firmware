@@ -38,25 +38,13 @@ import { Switch } from "../../ts/components/switch";
 import * as API from "../../ts/api"
 import { useState } from "preact/hooks";
 
-export function MqttCronTriggerComponent(trigger: CronTrigger): CronComponent {
+export function MqttCronTriggerComponent(trigger: CronTrigger): string {
     const value = (trigger as MqttCronTrigger)[1];
     const mqtt_config = API.get("mqtt/config");
 
     const topic = value.use_prefix ? mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic : value.topic;
 
-    return {
-        text: __("mqtt.content.cron_trigger_text")(topic, value.payload, value.retain),
-        fieldNames: [
-            __("mqtt.content.topic"),
-            __("mqtt.content.payload"),
-            __("mqtt.content.retain")
-        ],
-        fieldValues: [
-            value.topic,
-            value.payload,
-            value.retain ? __("mqtt.content.yes") : __("mqtt.content.no")
-        ]
-    };
+    return __("mqtt.content.cron_trigger_text")(topic, value.payload, value.retain);
 }
 
 export function MqttCronTriggerConfig(cron: Cron, trigger: CronTrigger) {

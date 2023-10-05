@@ -35,7 +35,7 @@ import { Cron } from "../cron/main";
 import { CronComponent, CronAction } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
 
-function ChargeLimitsCronActionComponent(action: CronAction): CronComponent {
+function ChargeLimitsCronActionComponent(action: CronAction): string {
     const value = (action as ChargeLimitsCronAction)[1];
     const durations = [
         __("charge_limits.content.unlimited"),
@@ -51,22 +51,7 @@ function ChargeLimitsCronActionComponent(action: CronAction): CronComponent {
         __("charge_limits.content.h12")
     ]
 
-    let fieldNames = [
-        __("charge_limits.content.duration")
-    ];
-    let fieldValues = [
-        durations[value.duration]
-    ];
-    if (API.hasFeature("meter")) {
-        fieldNames = fieldNames.concat([__("charge_limits.content.energy")]);
-        fieldValues = fieldValues.concat([(value.energy_wh != 0 ? value.energy_wh / 1000 + " kWh" : __("charge_limits.content.unlimited"))]);
-    }
-
-    return {
-        text: __("charge_limits.content.cron_action_text")(durations[value.duration], value.energy_wh),
-        fieldNames: fieldNames,
-        fieldValues: fieldValues
-    };
+    return __("charge_limits.content.cron_action_text")(durations[value.duration], value.energy_wh);
 }
 
 function ChargeLimitsCronActionConfig(cron: Cron, action: CronAction) {

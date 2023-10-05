@@ -38,30 +38,12 @@ import { __ } from "../../ts/translation";
 import * as API from "../../ts/api"
 import { useState } from "preact/hooks";
 
-export function MqttCronActionComponent(action: CronAction): CronComponent {
+export function MqttCronActionComponent(action: CronAction): string {
     const value = (action as MqttCronAction)[1];
     const mqtt_config = API.get("mqtt/config");
     const topic = value.use_prefix ? mqtt_config.global_topic_prefix + "/cron_action/" + value.topic : value.topic;
 
-    const fieldNames = [
-        __("mqtt.content.topic"),
-        __("mqtt.content.payload"),
-        __("mqtt.content.accept_retain")
-    ];
-    const fieldValues = [
-        topic,
-        value.payload,
-        value.retain ? __("mqtt.content.yes") : __("mqtt.content.no")
-    ]
-    let ret = "";
-    fieldNames.map((name, idx) => {
-        ret += name + ": \"" + fieldValues[idx] + "\"" + (idx != fieldNames.length - 1 ? ", " : "");
-    });
-    return {
-        text: __("mqtt.content.cron_action_text")(topic, value.payload, value.retain),
-        fieldNames: fieldNames,
-        fieldValues: fieldValues
-    };
+    return __("mqtt.content.cron_action_text")(topic, value.payload, value.retain);
 }
 
 export function MqttCronActionConfig(cron: Cron, action: CronAction) {

@@ -29,12 +29,8 @@ import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
 import { CronComponent, CronAction } from "../cron/types";
 
-function MeterResetCronActionComponent(_: CronAction): CronComponent {
-    return {
-        text: __("meter.content.cron_action_text"),
-        fieldNames: [],
-        fieldValues: []
-    };
+function MeterResetCronActionComponent(_: CronAction): string {
+    return __("meter.content.cron_action_text");
 }
 
 function MeterResetCronActionConfigComponent(_: Cron, __: CronAction): TableModalRow[] {

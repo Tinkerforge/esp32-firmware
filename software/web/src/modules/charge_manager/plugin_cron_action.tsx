@@ -32,13 +32,9 @@ import { Cron } from "../cron/main";
 import { CronComponent, CronAction } from "../cron/types";
 import { InputFloat } from "../../ts/components/input_float";
 
-export function ChargeManagerCronComponent(action: CronAction): CronComponent {
+export function ChargeManagerCronComponent(action: CronAction): string {
     let value = (action as ChargeManagerCronAction)[1];
-    return {
-        text: __("charge_manager.content.cron_action_text")(value.current),
-        fieldNames: [__("charge_manager.content.maximum_available_current")],
-        fieldValues: [value.current / 1000 + " A"]
-    }
+    return __("charge_manager.content.cron_action_text")(value.current);
 }
 
 export function ChargeManagerCronConfigComponent(cron: Cron, action: CronAction) {

@@ -37,19 +37,9 @@ import { ListGroup, ListGroupItem } from "react-bootstrap";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
-export function NFCCronTriggerComponent(trigger: CronTrigger): CronComponent {
+export function NFCCronTriggerComponent(trigger: CronTrigger): string {
     const value = (trigger as NfcCronTrigger)[1];
-    return {
-        text: __("nfc.content.cron_trigger_text")(value.tag_id, translate_unchecked("nfc.content.type_" + value.tag_type)),
-        fieldNames: [
-            __("nfc.content.table_tag_id"),
-            __("nfc.content.table_tag_type")
-        ],
-        fieldValues: [
-            value.tag_id,
-            translate_unchecked("nfc.content.type_" + value.tag_type)
-        ]
-    }
+    return __("nfc.content.cron_trigger_text")(value.tag_id, translate_unchecked("nfc.content.type_" + value.tag_type))
 }
 
 function NfcCronTriggerFactory(): CronTrigger {

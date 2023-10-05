@@ -32,15 +32,9 @@ import { h } from 'preact'
 import { InputSelect } from "../../ts/components/input_select";
 import { Cron } from "../cron/main";
 
-function EvseGpioOutputCronActionComponent(action: CronAction): CronComponent {
+function EvseGpioOutputCronActionComponent(action: CronAction): string {
     const value = (action as EvseGpOutputCronAction)[1];
-    return {
-        text: __("evse.content.cron_gpout_action_text")(value.state),
-        fieldNames: [],
-        fieldValues: [
-            value.state ? __("evse.content.gpio_out_high") : __("evse.content.gpio_out_low")
-        ]
-    }
+    return __("evse.content.cron_gpout_action_text")(value.state);
 }
 
 function EvseGpioOutputCronActionConfigComponent(cron: Cron, action: CronAction) {

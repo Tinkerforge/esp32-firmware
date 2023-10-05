@@ -45,17 +45,9 @@ export type EvseButtonCronTrigger = [
     }
 ];
 
-function EvseButtonCronTriggerComponent(trigger: CronTrigger): CronComponent {
+function EvseButtonCronTriggerComponent(trigger: CronTrigger): string {
     const value = (trigger as EvseButtonCronTrigger)[1];
-    return {
-        text: __("evse.content.cron_button_trigger_text")(value.button_pressed),
-        fieldNames: [
-
-        ],
-        fieldValues: [
-            value.button_pressed ? __("evse.content.button_pressed") : __("evse.content.button_released")
-        ]
-    }
+    return __("evse.content.cron_button_trigger_text")(value.button_pressed);
 }
 
 function EvseButtonCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
@@ -86,17 +78,9 @@ function EvseButtonCronTriggerFactory(): CronTrigger {
     ]
 }
 
-function EvseShutdownTriggerComponent(trigger: CronTrigger): CronComponent {
+function EvseShutdownTriggerComponent(trigger: CronTrigger): string {
     const value = (trigger as EvseShutdownCronTrigger)[1];
-    return {
-        text: __("evse.content.cron_sd_trigger_text")(value.high),
-        fieldNames: [
-            __("evse.content.gpio_state")
-        ],
-        fieldValues: [
-            value.high ? __("evse.content.active_high") : __("evse.content.active_low")
-        ]
-    }
+    return __("evse.content.cron_sd_trigger_text")(value.high);
 }
 
 function EvseShutdownTriggerConfig(cron: Cron, trigger: CronTrigger) {
@@ -127,17 +111,9 @@ function EvseShutdownTriggerFactory(): CronTrigger {
     ];
 }
 
-function EvseGpioInputCronTriggerComponent(trigger: CronTrigger): CronComponent {
+function EvseGpioInputCronTriggerComponent(trigger: CronTrigger): string {
     const value = (trigger as EvseGpioCronTrigger)[1];
-    return {
-        text: __("evse.content.cron_gpin_trigger_text")(value.high),
-        fieldNames: [
-            __("evse.content.gpio_state")
-        ],
-        fieldValues: [
-            value.high ? __("evse.content.active_high") : __("evse.content.active_low")
-        ]
-    }
+    return __("evse.content.cron_gpin_trigger_text")(value.high);
 }
 
 function EvseGpioInputCrontTriggerConfigComponent(cron: Cron, trigger: CronTrigger) {

@@ -32,7 +32,7 @@ import { CronComponent, CronTrigger } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { h } from "preact"
 
-export function EvseStateCronComponent(trigger: CronTrigger): CronComponent {
+export function EvseStateCronComponent(trigger: CronTrigger): string {
     let value = (trigger as EvseStateCronTrigger)[1];
     const names = [
         [ __("evse.status.not_connected")],
@@ -42,18 +42,7 @@ export function EvseStateCronComponent(trigger: CronTrigger): CronComponent {
         [__("evse.status.error")]
     ]
 
-    const fieldNames = [
-        __("evse.content.status")
-    ];
-    const fieldValues = [
-        names[value.charger_state]
-    ];
-
-    return {
-        text: __("evse.content.cron_state_change_trigger")(names[value.charger_state][0]),
-        fieldNames,
-        fieldValues
-    }
+    return __("evse.content.cron_state_change_trigger")(names[value.charger_state][0]);
 }
 
 function EvseStateCronFactory(): CronTrigger {
