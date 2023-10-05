@@ -1076,9 +1076,9 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                                 </FormRow>),
                                     fieldWithBox: [true, true, true, false],
                                     editTitle: __("meters.content.edit_meter_title"),
-                                    onEditStart: async () => this.setState({editMeter: config_plugins[config[0]].clone(config)}),
+                                    onEditShow: async () => this.setState({editMeter: config_plugins[config[0]].clone(config)}),
                                     onEditGetRows: () => [/* FIXME */],
-                                    onEditCommit: async () => {
+                                    onEditSubmit: async () => {
                                         // FIXME
                                         this.setDirty(true);
                                     },
@@ -1091,9 +1091,9 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                             addEnabled={active_meter_slots.length < METERS_SLOTS}
                             addTitle={__("meters.content.add_meter_title")}
                             addMessage={__("meters.content.add_meter_prefix") + active_meter_slots.length + __("meters.content.add_meter_infix") + METERS_SLOTS + __("meters.content.add_meter_suffix")}
-                            onAddStart={async () => this.setState({addMeter: [0, null]})}
+                            onAddShow={async () => this.setState({addMeter: [0, null]})}
                             onAddGetRows={() => [/* FIXME */]}
-                            onAddCommit={async () => {
+                            onAddSubmit={async () => {
                                 // FIXME
                                 this.setDirty(true);
                             }}
