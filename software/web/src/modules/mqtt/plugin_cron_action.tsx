@@ -30,15 +30,15 @@ export type MqttCronAction = [
 ];
 
 import { Cron } from "../cron/main";
-import { CronComponent, CronAction } from "../cron/types";
+import { CronAction } from "../cron/types";
 import { InputText } from "../../ts/components/input_text";
-import { h, Fragment } from "preact"
+import { h, Fragment, VNode } from "preact"
 import { Switch } from "../../ts/components/switch";
 import { __ } from "../../ts/translation";
 import * as API from "../../ts/api"
 import { useState } from "preact/hooks";
 
-export function MqttCronActionComponent(action: CronAction): string {
+export function MqttCronActionComponent(action: CronAction): VNode {
     const value = (action as MqttCronAction)[1];
     const mqtt_config = API.get("mqtt/config");
     const topic = value.use_prefix ? mqtt_config.global_topic_prefix + "/cron_action/" + value.topic : value.topic;

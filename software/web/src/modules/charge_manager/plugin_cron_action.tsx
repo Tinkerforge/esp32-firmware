@@ -26,13 +26,13 @@ export type ChargeManagerCronAction = [
     }
 ];
 
-import { h } from "preact"
+import { VNode, h } from "preact"
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, CronAction } from "../cron/types";
+import { CronAction } from "../cron/types";
 import { InputFloat } from "../../ts/components/input_float";
 
-export function ChargeManagerCronComponent(action: CronAction): string {
+export function ChargeManagerCronComponent(action: CronAction): VNode {
     let value = (action as ChargeManagerCronAction)[1];
     return __("charge_manager.content.cron_action_text")(value.current);
 }

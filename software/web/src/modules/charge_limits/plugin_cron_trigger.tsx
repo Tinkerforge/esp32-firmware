@@ -27,10 +27,12 @@ export type ChargeLimitsCronTrigger = [
 
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, CronTrigger } from "../cron/types";
+import { CronTrigger } from "../cron/types";
+import { VNode } from "preact";
 
-function ChargeLimitsCronTriggerComponent(_: CronTrigger): string {
-    return __("charge_limits.content.cron_trigger_text");
+function ChargeLimitsCronTriggerComponent(_: CronTrigger): VNode {
+    // for whatever reason, wrapping the text in a Fragment crashes.
+    return __("charge_limits.content.cron_trigger_text") as any as VNode;
 }
 
 function ChargeLimitsCronTriggerConfig(_: Cron, __: CronTrigger): TableModalRow[] {

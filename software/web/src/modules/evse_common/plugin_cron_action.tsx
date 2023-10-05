@@ -35,14 +35,14 @@ export type EvseLedCronAction = [
 ];
 
 import { __ } from "../../ts/translation"
-import { CronComponent, CronAction } from "../cron/types"
+import { CronAction } from "../cron/types"
 import { Cron } from "../cron/main"
 import { InputSelect } from "../../ts/components/input_select"
 import { InputFloat } from "../../ts/components/input_float"
-import { h, Fragment } from 'preact'
+import { h, Fragment, VNode } from 'preact'
 import { InputNumber } from "../../ts/components/input_number"
 
-function EvseSetCurrentCronActionComponent(action: CronAction): string {
+function EvseSetCurrentCronActionComponent(action: CronAction): VNode {
     const value = (action as EvseCronAction)[1];
     return __("evse.content.cron_action_text")(value.current / 1000);
 }
@@ -75,7 +75,7 @@ function EvseSetCurrentCronActionConfigFactory(): CronAction {
     ]
 }
 
-function EvseLedCronActionComponent(action: CronAction): string {
+function EvseLedCronActionComponent(action: CronAction): VNode {
     const value = (action as EvseLedCronAction)[1];
     let state = ""
     switch (value.state) {

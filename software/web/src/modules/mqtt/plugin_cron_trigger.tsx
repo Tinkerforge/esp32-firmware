@@ -29,16 +29,16 @@ export type MqttCronTrigger = [
     }
 ];
 
-import { h, Fragment } from "preact"
+import { h, Fragment, VNode } from "preact"
 import { __ } from "../../ts/translation";
-import { CronComponent, CronTrigger } from "../cron/types";
+import { CronTrigger } from "../cron/types";
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { Switch } from "../../ts/components/switch";
 import * as API from "../../ts/api"
 import { useState } from "preact/hooks";
 
-export function MqttCronTriggerComponent(trigger: CronTrigger): string {
+export function MqttCronTriggerComponent(trigger: CronTrigger): VNode {
     const value = (trigger as MqttCronTrigger)[1];
     const mqtt_config = API.get("mqtt/config");
 

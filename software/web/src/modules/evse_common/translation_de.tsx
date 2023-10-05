@@ -123,15 +123,27 @@ let x = {
             "enable_led_api": "Status-LED Steuerung",
             "enable_led_api_desc": "Erlaubt die externe Steuerung der Status-LED.",
             "api_must_be_enabled": "Die API muss aktiviert sein, um die Status-LED steuern zu können.",
-            "cron_state_change_trigger": /*SFN*/(state: string) => {
-                return "Wenn der Ladecontroller in den Zustand '" + state + "' wechselt, ";
-            }/*NF*/,
-            "cron_action_text": /*SFN*/(current: number) => {
-                return "setze den erlaubten Ladestrom auf " + current + " A.";
-            }/*NF*/,
-            "cron_led_action_text": /*SFN*/(state: string, duration: number) => {
-                return "schalte die Status-LED für " + duration + " ms " + state + ".";
-            }/*NF*/,
+            "cron_state_change_trigger": /*FFN*/(state: string) => {
+                return (
+                  <>
+                    Wenn der Ladecontroller in den Zustand "<b>{state}</b>" wechselt,{" "}
+                  </>
+                );
+              }/*NF*/,
+              "cron_action_text": /*FFN*/(current: number) => {
+                return (
+                  <>
+                    setze den erlaubten Ladestrom auf <b>{current} A</b>.
+                  </>
+                );
+              }/*NF*/,
+              "cron_led_action_text": /*FFN*/(state: string, duration: number) => {
+                return (
+                  <>
+                    schalte die Status-LED für <b>{duration} ms</b> <b>{state}</b>.
+                  </>
+                );
+              }/*NF*/,
 
             "slot_0": "Zuleitung",
             "slot_1": "Typ-2-Ladekabel",

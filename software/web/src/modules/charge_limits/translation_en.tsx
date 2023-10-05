@@ -26,18 +26,17 @@ let x = {
             "h8": "8 Hours",
             "h12": "12 Hours",
             "cron_trigger_text": "If the charge limit is reached, ",
-            "cron_action_text": /*SFN*/(duration: string, energy: number) => {
-                let ret = "set the charge limit to ";
-                if (duration != "Unlimited") {
-                    ret += duration;
-                }
-                if (duration != "Unlimited" && energy != 0) {
-                    ret += " and ";
-                }
-                if (energy != 0) {
-                    ret += energy / 1000 + " kWh";
-                }
-                return ret;
+            "cron_action_text": /*FFN*/(duration: string, energy: number) => {
+                return (
+                  <>
+                    set the charge limit to{" "}
+                    {duration !== "Unlimited" && <b>{duration}</b>}
+                    {duration !== "Unlimited" && energy !== 0 && " and "}
+                    {energy !== 0 && <b>{energy / 1000} kWh</b>}
+                    {duration === "Unlimited" && energy === 0 && "unlimited"}
+                    {"."}
+                  </>
+                );
             }/*NF*/
         },
         "script": {

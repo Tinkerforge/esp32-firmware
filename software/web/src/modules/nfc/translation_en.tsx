@@ -47,17 +47,15 @@ let x = {
 
             "last_seen_and_known_tags": "Last seen tags and known tags",
 
-            "cron_action_text": /*SFN*/(tag_id: string, tag_type: string, tag_action: number) => {
-                let ret = "fake the presence of the NFC tag '" + tag_id + "' (" + tag_type + ")";
-                if (tag_action == 1) {
-                    ret += " to start a charge.";
-                } else if (tag_action == 2) {
-                    ret += " to stop a charge.";
-                };
-                return ret;
+            "cron_action_text": /*FFN*/(tag_id: string, tag_type: string, tag_action: number) => {
+                return <>
+                    fake the presence of the NFC tag <b>{tag_id}</b> ({tag_type}) to {tag_action == 1 ? "start a charge." : tag_action == 2 ? "stop a charge." : "."}
+                </>
             }/*NF*/,
-            "cron_trigger_text": /*SFN*/(tag_id: string, tag_type: string) => {
-                return "If NFC tag '" + tag_id + "' (" + tag_type + ") is detected, ";
+            "cron_trigger_text": /*FFN*/(tag_id: string, tag_type: string) => {
+                return <>
+                    If NFC tag '<b>{tag_id}</b>' ({tag_type}) is detected,{" "}
+                </>
             }/*NF*/
         },
         "script": {

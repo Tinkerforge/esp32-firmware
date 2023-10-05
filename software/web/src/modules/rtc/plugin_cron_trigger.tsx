@@ -10,16 +10,16 @@ export type RtcCronTrigger = [
     }
 ];
 
-import { h, Fragment } from "preact"
+import { h, Fragment, VNode } from "preact"
 import { __ } from "../../ts/translation";
-import { CronComponent, CronTrigger } from "../cron/types";
+import { CronTrigger } from "../cron/types";
 import { Cron } from "../cron/main";
 import { InputSelect } from "../../ts/components/input_select";
 
-export function RtcCronTriggerComponent(trigger: CronTrigger): string {
+export function RtcCronTriggerComponent(trigger: CronTrigger): VNode {
     const value = (trigger as RtcCronTrigger)[1];
 
-    return __("rtc.content.cron_translation_function")(value.mday, value.wday, value.hour, value.minute)
+    return <>{__("rtc.content.cron_translation_function")(value.mday, value.wday, value.hour, value.minute)}</>
 }
 
 export function RtcCronTriggerConfigComponent(cron: Cron, trigger: CronTrigger) {

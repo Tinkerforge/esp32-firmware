@@ -18,7 +18,7 @@
  */
 
 import * as API from "../../ts/api";
-import { ComponentChild } from 'preact'
+import { ComponentChild, VNode } from 'preact'
 import { Cron } from './main'
 import { TableModalRow } from '../../ts/components/table'
 
@@ -27,15 +27,9 @@ export type Task = CronConfig["tasks"][0];
 export type CronTrigger = Task["trigger"];
 export type CronAction = Task["action"];
 
-export interface CronComponent {
-    fieldNames: string[],
-    fieldValues: ComponentChild[],
-    text: string
-}
-
 export interface CronTriggerComponent {
     clone: (trigger: CronTrigger) => CronTrigger,
-    table_row: (trigger: CronTrigger) => string,
+    table_row: (trigger: CronTrigger) => VNode,
     config_component: (cron: Cron, trigger: CronTrigger) => TableModalRow[],
     config_builder: () => CronTrigger,
     name: string,
@@ -44,7 +38,7 @@ export interface CronTriggerComponent {
 
 export interface CronActionComponent {
     clone: (action: CronAction) => CronAction,
-    table_row: (action: CronAction) => string,
+    table_row: (action: CronAction) => VNode,
     config_component: (cron: Cron, action: CronAction) => TableModalRow[],
     config_builder: () => CronAction,
     name: string,

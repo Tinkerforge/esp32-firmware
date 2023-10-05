@@ -28,9 +28,9 @@ export type NfcCronAction = [
     }
 ];
 
-import { h } from "preact"
+import { VNode, h } from "preact"
 import { __, translate_unchecked } from "../../ts/translation";
-import { CronComponent, CronAction } from "../cron/types";
+import { CronAction } from "../cron/types";
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
@@ -42,9 +42,8 @@ const TRIGGER_CHARGE_ANY = 0;
 const TRIGGER_CHARGE_START = 1;
 const TRIGGER_CHARGE_STOP = 2;
 
-function NFCTagInjectCronActionComponent(action: CronAction): string {
+function NFCTagInjectCronActionComponent(action: CronAction): VNode {
     const value = (action as NfcCronAction)[1];
-    let tag_action = "";
 
     return __("nfc.content.cron_action_text")(value.tag_id, translate_unchecked("nfc.content.type_" + value.tag_type), value.tag_action);
 }

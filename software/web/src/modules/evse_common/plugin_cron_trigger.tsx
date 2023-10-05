@@ -28,11 +28,11 @@ export type EvseStateCronTrigger = [
 
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, CronTrigger } from "../cron/types";
+import { CronTrigger } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
-import { h } from "preact"
+import { VNode, h } from "preact"
 
-export function EvseStateCronComponent(trigger: CronTrigger): string {
+export function EvseStateCronComponent(trigger: CronTrigger): VNode {
     let value = (trigger as EvseStateCronTrigger)[1];
     const names = [
         [ __("evse.status.not_connected")],

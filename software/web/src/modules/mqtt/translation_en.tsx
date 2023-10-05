@@ -46,19 +46,15 @@ let x = {
             "yes": "Yes",
             "no": "No",
 
-            "cron_action_text": /*SFN*/(topic: string, payload: string, retain: boolean) => {
-                let ret = "send MQTT message '" + payload + "' to topic '" + topic + "'";
-                if (retain) {
-                    ret += " and retain it.";
-                }
-                return ret;
+            "cron_action_text": /*FFN*/(topic: string, payload: string, retain: boolean) => {
+                return <>
+                    send MQTT message '<b>{payload}</b>' to topic '<b>{topic}</b>'{retain ? " and retain it." : "."}
+                </>
             }/*NF*/,
-            "cron_trigger_text": /*SFN*/(topic: string, payload: string, retained: boolean) => {
-                let ret = "When MQTT message '" + payload + "' is received on topic '" + topic;
-                if (retained) {
-                    ret += " (Retained messages are accepted)";
-                }
-                return ret + ", ";
+            "cron_trigger_text": /*FFN*/(topic: string, payload: string, retained: boolean) => {
+                return <>
+                    If MQTT message '<b>{payload}</b>' is received on topic '<b>{topic}</b>' {retained ? "(Retained messages are accepted)" : ""} {", "}
+                </>
             }/*NF*/
         },
         "script": {

@@ -18,8 +18,8 @@
  */
 
 import { CronTriggerID } from "../cron/cron_defs";
-import { CronComponent, CronTrigger } from "../cron/types"
-import { h } from 'preact'
+import { CronTrigger } from "../cron/types"
+import { VNode, h } from 'preact'
 import { Cron } from "../cron/main"
 import { __ } from "../../ts/translation"
 import { InputSelect } from "../../ts/components/input_select"
@@ -45,7 +45,7 @@ export type EvseButtonCronTrigger = [
     }
 ];
 
-function EvseButtonCronTriggerComponent(trigger: CronTrigger): string {
+function EvseButtonCronTriggerComponent(trigger: CronTrigger): VNode {
     const value = (trigger as EvseButtonCronTrigger)[1];
     return __("evse.content.cron_button_trigger_text")(value.button_pressed);
 }
@@ -78,7 +78,7 @@ function EvseButtonCronTriggerFactory(): CronTrigger {
     ]
 }
 
-function EvseShutdownTriggerComponent(trigger: CronTrigger): string {
+function EvseShutdownTriggerComponent(trigger: CronTrigger): VNode {
     const value = (trigger as EvseShutdownCronTrigger)[1];
     return __("evse.content.cron_sd_trigger_text")(value.high);
 }
@@ -111,7 +111,7 @@ function EvseShutdownTriggerFactory(): CronTrigger {
     ];
 }
 
-function EvseGpioInputCronTriggerComponent(trigger: CronTrigger): string {
+function EvseGpioInputCronTriggerComponent(trigger: CronTrigger): VNode {
     const value = (trigger as EvseGpioCronTrigger)[1];
     return __("evse.content.cron_gpin_trigger_text")(value.high);
 }

@@ -79,7 +79,11 @@ let x = {
 
             "set_charge_manager": "Lastmanagement",
             "cron_action_text": /*SFN*/(current: number) => {
-                return "setze den maximalen Gesamtstrom auf " + current / 1000 + " A.";
+                return (
+                  <>
+                    setze den maximalen Gesamtstrom auf <b>{current / 1000} A</b>.
+                  </>
+                );
             }/*NF*/
         },
         "script": {

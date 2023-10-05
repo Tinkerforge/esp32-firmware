@@ -53,36 +53,44 @@ let x = {
             "reset": "Zurücksetzen",
             "trigger_dc_fault_test": "DC-Fehlerschutz testen",
             "time_since_dc_fault_check": "Zeit seit dem letzten DC-Fehlerschutztest",
-            "cron_sd_trigger_text": /*SFN*/(state: boolean) => {
-                let ret = "Wenn der Abschalteingang ";
+            "cron_sd_trigger_text": /*FFN*/(state: boolean) => {
+                let ret = "";
                 if (state) {
-                    ret += "geöffnet wird, ";
+                    ret += "geöffnet";
                 } else {
-                    ret += "geschlossen wird, ";
+                    ret += "geschlossen";
                 }
-                return ret;
+                return <>
+                    Wenn der Abschalteingang <b>{ret}</b> wird,{" "}
+                </>
             }/*NF*/,
-            "cron_gpin_trigger_text": /*SFN*/(state: boolean) => {
-                let ret = "Wenn der Konfigurierbare Eingang ";
+            "cron_gpin_trigger_text": /*FFN*/(state: boolean) => {
+                let ret = "";
                 if (state) {
-                    ret += "geöffnet wird, ";
+                    ret = "geöffnet";
                 } else {
-                    ret += "geschlossen wird, ";
+                    ret = "geschlossen";
                 }
-                return ret;
+                return <>
+                    Wenn der Konfigurierbare Eingang <b>{ret}</b> wird,{" "}
+                </>
             } /*NF*/,
-            "cron_button_trigger_text": /*SFN*/(state: boolean) => {
+            "cron_button_trigger_text": /*FFN*/(state: boolean) => {
+                let ret = "";
                 if (state) {
-                    return "Wenn der Fronttaster gedrückt wird, ";
+                    ret = "gedrückt";
                 } else {
-                    return "Wenn der Fronttaster losgelassen wird, ";
+                    ret = "losgelassen";
                 }
+                return <>
+                    Wenn der Fronttaster <b>{ret}</b> wird,{" "}
+                </>
             }/*NF*/,
-            "cron_gpout_action_text": /*SFN*/(state: number) => {
+            "cron_gpout_action_text": /*FFN*/(state: number) => {
                 if (state) {
-                    return "schalte den Konfigurierbaren Ausgang hochohmig.";
+                    return <><b>schalte</b> den Konfigurierbaren Ausgang <b>hochohmig</b>.</>;
                 } else {
-                    return "verbinde den Konfigurierbaren Ausgang mit Masse.";
+                    return <><b>verbinde</b> den Konfigurierbaren Ausgang <b>mit Masse</b>.</>;
                 }
             }/*NF*/
         },

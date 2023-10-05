@@ -29,13 +29,13 @@ export type ChargeLimitsCronAction = [
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api"
-import { h } from "preact"
+import { VNode, h } from "preact"
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, CronAction } from "../cron/types";
+import { CronAction } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
 
-function ChargeLimitsCronActionComponent(action: CronAction): string {
+function ChargeLimitsCronActionComponent(action: CronAction): VNode {
     const value = (action as ChargeLimitsCronAction)[1];
     const durations = [
         __("charge_limits.content.unlimited"),

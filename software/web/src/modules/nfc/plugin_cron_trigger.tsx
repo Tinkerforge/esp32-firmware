@@ -27,9 +27,9 @@ export type NfcCronTrigger = [
     }
 ];
 
-import { h } from "preact"
+import { VNode, h } from "preact"
 import { __, translate_unchecked } from "../../ts/translation";
-import { CronComponent, CronTrigger } from "../cron/types";
+import { CronTrigger } from "../cron/types";
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
@@ -37,7 +37,7 @@ import { ListGroup, ListGroupItem } from "react-bootstrap";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
-export function NFCCronTriggerComponent(trigger: CronTrigger): string {
+export function NFCCronTriggerComponent(trigger: CronTrigger): VNode {
     const value = (trigger as NfcCronTrigger)[1];
     return __("nfc.content.cron_trigger_text")(value.tag_id, translate_unchecked("nfc.content.type_" + value.tag_type))
 }

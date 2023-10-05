@@ -27,12 +27,12 @@ export type EvseGpOutputCronAction = [
 ];
 
 import { __ } from "../../ts/translation";
-import { CronComponent, CronAction } from "../cron/types";
-import { h } from 'preact'
+import { CronAction } from "../cron/types";
+import { VNode, h } from 'preact'
 import { InputSelect } from "../../ts/components/input_select";
 import { Cron } from "../cron/main";
 
-function EvseGpioOutputCronActionComponent(action: CronAction): string {
+function EvseGpioOutputCronActionComponent(action: CronAction): VNode {
     const value = (action as EvseGpOutputCronAction)[1];
     return __("evse.content.cron_gpout_action_text")(value.state);
 }

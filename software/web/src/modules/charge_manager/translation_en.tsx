@@ -78,8 +78,12 @@ let x = {
             "host_exists": "Host already exists",
 
             "set_charge_manager": "Charge Manager",
-            "cron_action_text": /*SFN*/(current: number) => {
-                return "set the maximum total current to " + current / 1000 + " A.";
+            "cron_action_text": /*FFN*/(current: number) => {
+              return (
+                <>
+                  set the maximum total current to <b>{current / 1000} A</b>.
+                </>
+              );
             }/*NF*/
         },
         "script": {

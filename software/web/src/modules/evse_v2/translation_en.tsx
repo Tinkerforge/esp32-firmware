@@ -53,36 +53,44 @@ let x = {
             "reset": "Reset",
             "trigger_dc_fault_test": "Test DC fault protector",
             "time_since_dc_fault_check": "Time since last DC fault protector test",
-            "cron_sd_trigger_text": /*SFN*/(state: boolean) => {
-                let ret = "If the shutdown input switches to ";
+            "cron_sd_trigger_text": /*FFN*/(state: boolean) => {
+                let ret = "";
                 if (state) {
-                    ret += "open, ";
+                    ret += "open";
                 } else {
-                    ret += "closed, ";
+                    ret += "closed";
                 }
-                return ret;
+                return <>
+                    If the shutdown input switches to <b>{ret}</b>{" "}
+                </>
             }/*NF*/,
-            "cron_gpin_trigger_text": /*SFN*/(state: boolean) => {
-                let ret = "If the General Purpose input switches to ";
+            "cron_gpin_trigger_text": /*FFN*/(state: boolean) => {
+                let ret = "";
                 if (state) {
-                    ret += "open, ";
+                    ret += "open";
                 } else {
-                    ret += "closed, ";
+                    ret += "closed";
                 }
-                return ret;
+                return <>
+                    If the General Purpose input switches to <b>{ret}</b>{" "}
+                </>
             }/*NF*/,
-            "cron_button_trigger_text": /*SFN*/(state: boolean) => {
+            "cron_button_trigger_text": /*FFN*/(state: boolean) => {
+                let ret = "";
                 if (state) {
-                    return "If the button is pressed, ";
+                    ret = "pressed";
                 } else {
-                    return "If the button is released, ";
+                    ret = "released";
                 }
+                return <>
+                    If the button is <b>{ret}</b>{" "}
+                </>
             }/*NF*/,
-            "cron_gpout_action_text": /*SFN*/(state: number) => {
+            "cron_gpout_action_text": /*FFN*/(state: number) => {
                 if (state) {
-                    return "set general purpose output to high impedance.";
+                    return <>set general purpose output to <b>high impedance</b>.</>;
                 } else {
-                    return "connect general purpose output to ground.";
+                    return <><b>connect</b> general purpose output <b>to ground</b>.</>;
                 }
             }/*NF*/
         },
