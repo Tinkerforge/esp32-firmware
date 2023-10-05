@@ -25,33 +25,33 @@ import * as util from "../../ts/util";
 import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 
-import { SubPage } from "src/ts/components/sub_page";
+import { SubPage } from "../../ts/components/sub_page";
 import { PageHeader } from "../../ts/components/page_header";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { Button } from "react-bootstrap";
 
-interface SunSpecMeterState {
+interface MetersSunSpecState {
     host: string;
     port: number;
     device_address: number;
     discovery_log: string;
 }
 
-export class SunSpecMeter extends Component<{}, SunSpecMeterState> {
+export class MetersSunSpec extends Component<{}, MetersSunSpecState> {
     constructor()
     {
         super();
 
         this.state = {
-            host: 'batti.ddns.net',//'192.168.0.64',
-            port: 5002,//502,
+            host: '192.168.0.17',
+            port: 502,
             device_address: 1,
             discovery_log: ''
         } as any;
 
-        util.addApiEventListener('sun_spec_meter/discovery_log', (e) => {
+        util.addApiEventListener('meters_sun_spec/discovery_log', (e) => {
             if (e.data == '<<<clear_discovery_log>>>') {
                 this.setState({discovery_log: ''})
             }
@@ -61,15 +61,15 @@ export class SunSpecMeter extends Component<{}, SunSpecMeterState> {
         }, false);
     }
 
-    render(props: {}, state: SunSpecMeterState) {
+    render(props: {}, state: MetersSunSpecState) {
         if (!util.render_allowed())
             return <></>
 
         return (
             <SubPage>
-                <PageHeader title={__("sun_spec_meter.content.sun_spec_meter")}/>
+                <PageHeader title={__("meters_sun_spec.content.meters_sun_spec")}/>
 
-                <FormRow label={__("sun_spec_meter.content.host")}>
+                <FormRow label={__("meters_sun_spec.content.host")}>
                     <InputText maxLength={32}
                                 required
                                 value={state.host}
@@ -78,7 +78,7 @@ export class SunSpecMeter extends Component<{}, SunSpecMeterState> {
                 </FormRow>
 
 
-                <FormRow label={__("sun_spec_meter.content.port")} label_muted={__("sun_spec_meter.content.port_muted")}>
+                <FormRow label={__("meters_sun_spec.content.port")} label_muted={__("meters_sun_spec.content.port_muted")}>
                     <InputNumber required
                                 min={1}
                                 max={65535}
@@ -87,7 +87,7 @@ export class SunSpecMeter extends Component<{}, SunSpecMeterState> {
                                 />
                 </FormRow>
 
-                <FormRow label={__("sun_spec_meter.content.device_address")} label_muted={__("sun_spec_meter.content.device_address_muted")}>
+                <FormRow label={__("meters_sun_spec.content.device_address")} label_muted={__("meters_sun_spec.content.device_address_muted")}>
                     <InputNumber required
                                 min={0}
                                 max={247}
@@ -96,7 +96,7 @@ export class SunSpecMeter extends Component<{}, SunSpecMeterState> {
                                 />
                 </FormRow>
 
-                <FormRow label={__("sun_spec_meter.content.discovery_log")}>
+                <FormRow label={__("meters_sun_spec.content.discovery_log")}>
                     <textarea class="text-monospace mb-1 form-control"
                               readonly
                               rows={20}
@@ -109,11 +109,11 @@ export class SunSpecMeter extends Component<{}, SunSpecMeterState> {
                     <Button variant="primary"
                             className="form-control"
                             onClick={() => {
-                                API.call('sun_spec_meter/start_discovery',
+                                API.call('meters_sun_spec/start_discovery',
                                         {host: state.host, port: state.port, device_address: state.device_address},
-                                        __("sun_spec_meter.content.start_discovery_failed"));
+                                        __("meters_sun_spec.content.start_discovery_failed"));
                             }}>
-                        {__("sun_spec_meter.content.start_discovery")}
+                        {__("meters_sun_spec.content.start_discovery")}
                     </Button>
                 </FormRow>
             </SubPage>
@@ -121,12 +121,12 @@ export class SunSpecMeter extends Component<{}, SunSpecMeterState> {
     }
 }
 
-render(<SunSpecMeter/>, $('#sun_spec_meter')[0])
+render(<MetersSunSpec/>, $('#meters_sun_spec')[0])
 
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function init() {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-sun_spec_meter').prop('hidden', !module_init.sun_spec_meter);
+    $('#sidebar-meters_sun_spec').prop('hidden', !module_init.meters_sun_spec);
 }
