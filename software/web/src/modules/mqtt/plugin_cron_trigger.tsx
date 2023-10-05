@@ -79,6 +79,8 @@ export function MqttCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
             name: __("mqtt.content.topic"),
             value: <>
              <InputText
+                required
+                maxLength={64}
                 value={value.topic}
                 class={isInvalid ? "is-invalid" : undefined}
                 onValue={(v) => {
@@ -100,6 +102,8 @@ export function MqttCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
         {
             name: __("mqtt.content.payload"),
             value: <InputText
+                required
+                maxLength={64}
                 value={value.payload}
                 onValue={(v) => {
                     value.payload = v;

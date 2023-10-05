@@ -122,11 +122,15 @@ function NFCTagInjectCronActionConfig(cron: Cron, action: CronAction) {
         {
             name: __("nfc.content.table_tag_id"),
             value: <InputText
-            value={value.tag_id}
+                required
+                value={value.tag_id}
                 onValue={(v) => {
                     value.tag_id = v;
                     cron.setActionFromComponent(action);
-                }}/>
+                }}
+                minLength={8} maxLength={29}
+                pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
+                invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}/>
         },
         {
             name: __("nfc.content.table_tag_type"),

@@ -84,8 +84,10 @@ export function MqttCronActionConfig(cron: Cron, action: CronAction) {
             name: __("mqtt.content.topic"),
             value: <>
              <InputText
+                required
                 value={value.topic}
                 class={isInvalid ? "is-invalid" : undefined}
+                maxLength={64}
                 onValue={(v) => {
                     value.topic = v;
                     if (value.topic.startsWith(mqtt_config.global_topic_prefix)) {
@@ -105,6 +107,8 @@ export function MqttCronActionConfig(cron: Cron, action: CronAction) {
         {
             name: __("mqtt.content.payload"),
             value: <InputText
+                required
+                maxLength={64}
                 value={value.payload}
                 onValue={(v) => {
                     value.payload = v;
