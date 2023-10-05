@@ -161,7 +161,7 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
                 ],
                 fieldNames: ["", ""],
                 fieldValues: [__("cron.content.rule") + " #" + (idx + 1) as ComponentChild, <div class="pb-3">{trigger_row}{action_row}</div>],
-                onEditStart: async () => {
+                onEditShow: async () => {
                     this.setState({
                         displayed_trigger: task.trigger[0] as number,
                         displayed_action: task.action[0] as number,
@@ -174,7 +174,7 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
                 onEditGetRows: () => {
                     return this.createSelectors();
                 },
-                onEditCommit: async () => {
+                onEditSubmit: async () => {
                     this.setState({tasks: this.state.tasks.map((task, k) => k === idx ? this.state.edit_task : task)});
                     this.setDirty(true);
                 },
@@ -225,7 +225,7 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
                         onAddGetRows={() => {
                             return this.createSelectors()
                         }}
-                        onAddCommit={async () => {
+                        onAddSubmit={async () => {
                             this.setState({tasks: this.state.tasks.concat([this.state.edit_task])});
                             this.setDirty(true);
                         }}

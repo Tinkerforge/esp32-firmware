@@ -42,10 +42,10 @@ export interface TableRow {
     fieldValues?: ComponentChild[]
     fieldWithBox?: boolean[]
     editTitle?: string
-    onEditStart?: () => Promise<void>
+    onEditShow?: () => Promise<void>
     onEditGetRows?: () => TableModalRow[]
     onEditCheck?: () => Promise<boolean>
-    onEditCommit?: () => Promise<void>
+    onEditSubmit?: () => Promise<void>
     onEditHide?: () => Promise<void>
     onRemoveClick?: () => Promise<void>
 }
@@ -56,10 +56,10 @@ export interface TableProps {
     addEnabled?: boolean
     addMessage?: string
     addTitle?: string
-    onAddStart?: () => Promise<void>
+    onAddShow?: () => Promise<void>
     onAddGetRows?: () => TableModalRow[]
     onAddCheck?: () => Promise<boolean>
-    onAddCommit?: () => Promise<void>
+    onAddSubmit?: () => Promise<void>
     onAddHide?: () => Promise<void>
     tableTill?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
     nestingDepth?: number
@@ -135,10 +135,10 @@ export class Table extends Component<TableProps, TableState> {
                                             size="sm"
                                             className="mr-2"
                                             onClick={async () => {
-                                                await row.onEditStart();
+                                                await row.onEditShow();
                                                 this.setState({showEditModal: i});
                                             }}
-                                            disabled={!row.onEditStart}>
+                                            disabled={!row.onEditShow}>
                                         <Edit3/>
                                     </Button>
                                     <Button variant="danger"
@@ -161,7 +161,7 @@ export class Table extends Component<TableProps, TableState> {
                                 </tr>
                                 : undefined}
                         </>)}
-                        {props.onAddStart ?
+                        {props.onAddSubmit ?
                         <tr>
                             <td colSpan={props.columnNames.length} style="vertical-align: middle; width: 100%;">
                                 {props.addMessage}
@@ -170,7 +170,7 @@ export class Table extends Component<TableProps, TableState> {
                                 <Button variant="primary"
                                         size="sm"
                                         onClick={async () => {
-                                            await props.onAddStart();
+                                            await props.onAddShow();
                                             this.setState({showAddModal: true});
                                         }}
                                         disabled={!props.addEnabled}>
@@ -192,10 +192,10 @@ export class Table extends Component<TableProps, TableState> {
                                         size="sm"
                                         className="ml-2"
                                         onClick={async () => {
-                                            await row.onEditStart();
+                                            await row.onEditShow();
                                             this.setState({showEditModal: i});
                                         }}
-                                        disabled={!row.onEditStart}>
+                                        disabled={!row.onEditShow}>
                                     <Edit3/>
                                 </Button>
                                 <Button variant="danger"
@@ -222,7 +222,7 @@ export class Table extends Component<TableProps, TableState> {
                                 : undefined}
                         </Card.Body>
                     </Card>)}
-                    {props.onAddStart ?
+                    {props.onAddShow ?
                     <Card className="mb-0">
                         <div class="card-body d-flex justify-content-between align-items-center p-2d5">
                             <span class="text-break" style="font-size: 1rem;">{props.addMessage}</span>
@@ -231,7 +231,7 @@ export class Table extends Component<TableProps, TableState> {
                                     size="sm"
                                     className="ml-2"
                                     onClick={async () => {
-                                        await props.onAddStart();
+                                        await props.onAddShow();
                                         this.setState({showAddModal: true});
                                     }}
                                     disabled={!props.addEnabled}>
@@ -252,8 +252,8 @@ export class Table extends Component<TableProps, TableState> {
                         return true;
                     }}
                     onSubmit={async () => {
-                        if (props.onAddCommit) {
-                            await props.onAddCommit();
+                        if (props.onAddSubmit) {
+                            await props.onAddSubmit();
                         }
                     }}
                     onHide={async () => {
@@ -290,8 +290,8 @@ export class Table extends Component<TableProps, TableState> {
                         return true;
                     }}
                     onSubmit={async () => {
-                        if (props.rows[state.showEditModal].onEditCommit) {
-                            await props.rows[state.showEditModal].onEditCommit();
+                        if (props.rows[state.showEditModal].onEditSubmit) {
+                            await props.rows[state.showEditModal].onEditSubmit();
                         }
                     }}
                     onHide={async () => {

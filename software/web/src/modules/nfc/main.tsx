@@ -128,7 +128,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                         auth_seen_ids.indexOf(i) >= 0 ? __("nfc.content.last_seen") + util.format_timespan_ms(auth_seen_tags[auth_seen_ids.indexOf(i)].last_seen) + __("nfc.content.last_seen_suffix") : __("nfc.script.not_seen")
                                     ],
                                     editTitle: __("nfc.content.edit_tag_title"),
-                                    onEditStart: async () => this.setState({editTag: {tag_id: tag.tag_id, user_id: tag.user_id, tag_type: tag.tag_type}}),
+                                    onEditShow: async () => this.setState({editTag: {tag_id: tag.tag_id, user_id: tag.user_id, tag_type: tag.tag_type}}),
                                     onEditGetRows: () => [
                                         {
                                             name: __("nfc.content.edit_tag_tag_id"),
@@ -179,7 +179,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                             addEnabled={state.authorized_tags.length < MAX_AUTHORIZED_TAGS}
                             addTitle={__("nfc.content.add_tag_title")}
                             addMessage={__("nfc.content.add_tag_prefix") + state.authorized_tags.length + __("nfc.content.add_tag_infix") + MAX_AUTHORIZED_TAGS + __("nfc.content.add_tag_suffix")}
-                            onAddStart={async () => this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}})}
+                            onAddShow={async () => this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}})}
                             onAddGetRows={() => [
                                 {
                                     name: __("nfc.content.add_tag_seen_tags"),
@@ -236,7 +236,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                             <div class="mt-2" style={state.addTag.user_id == 0 ? undefined : 'visibility: hidden'}>{__("nfc.script.not_assigned_desc")}</div></>
                                 },
                             ]}
-                            onAddCommit={async () => {
+                            onAddSubmit={async () => {
                                 this.setState({authorized_tags: state.authorized_tags.concat({tag_id: state.addTag.tag_id, user_id: state.addTag.user_id, tag_type: state.addTag.tag_type})});
                                 this.setDirty(true);
                             }}
