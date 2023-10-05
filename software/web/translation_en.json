@@ -44,6 +44,8 @@
             "gateway_out_of_subnet": "Gateway address not in the configured subnet",
             "subnet_captures_prefix": "Specified IP address and subnet mask not allowed: Would capture ",
             "subnet_captures_suffix": ".",
+            "ip_is_broadcast": "IP-address must not be the broadcast address!",
+            "ip_is_network": "IP-address must not be the network address!",
             "wifi_ap": "the WiFi access point",
             "wifi_sta": "the WiFi connection",
             "ethernet": "the Ethernet connection",

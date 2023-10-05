@@ -44,6 +44,8 @@
             "gateway_out_of_subnet": "Gateway-Adresse liegt außerhalb des konfigurierten Subnetzes!",
             "subnet_captures_prefix": "Kombination aus IP-Adresse und Subnetzmaske nicht erlaubt, da sie ",
             "subnet_captures_suffix": " übernehmen würde.",
+            "ip_is_broadcast": "Die IP-Adresse darf nicht die Broadcast-Adresse des Subnetzes sein!",
+            "ip_is_network": "Die IP-Adresse darf nicht die Netzwerk-Adresse des Subnetzes sein!",
             "wifi_ap": "den WLAN-Access-Point",
             "wifi_sta": "die WLAN-Verbindung",
             "ethernet": "die LAN-Verbindung",

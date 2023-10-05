@@ -64,6 +64,8 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
     render(props: IPConfigurationProps, state: Readonly<{}>) {
         let dhcp = props.value.ip == "0.0.0.0";
         let gateway_out_of_subnet = false;
+        let ip_is_network_addr = false;
+        let ip_is_broadcast_addr = false;
         let captured_subnet_name = "";
         let captured_subnet_ip = "";
         if (!dhcp && props.value.ip !== undefined) { //ip is undefined if we render before the web socket connection is established.
@@ -73,6 +75,10 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
 
             if (!isNaN(ip) && !isNaN(subnet) && !isNaN(gateway) && subnet != 0){
                 gateway_out_of_subnet = gateway != 0 && (ip & subnet) != (gateway & subnet);
+                const network = (ip & subnet) >>> 0
+                const broadcast = ((ip & subnet) | ~subnet) >>> 0;
+                ip_is_network_addr = ip == network;
+                ip_is_broadcast_addr = ip == broadcast;
 
                 if (props.forbidNetwork) {
                     for (let net of props.forbidNetwork) {
@@ -85,11 +91,22 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
             }
         }
 
-        this.props.setValid(!(gateway_out_of_subnet || captured_subnet_name != ""))
+
+        this.props.setValid(!(gateway_out_of_subnet || captured_subnet_name != "" || ip_is_network_addr || ip_is_broadcast_addr))
+
+        let ip_invalid_feedback = "";
+        if (ip_is_broadcast_addr) {
+            ip_invalid_feedback = __("component.ip_configuration.ip_is_broadcast");
+        } else if (ip_is_network_addr) {
+            ip_invalid_feedback = __("component.ip_configuration.ip_is_network");
+        } else {
+            ip_invalid_feedback = __("component.ip_configuration.static_ip_invalid");
+        }
 
         let inner = (<>
             <FormRow label={props.ip_label ? props.ip_label : __("component.ip_configuration.static_ip")}>
-                <InputIP invalidFeedback={__("component.ip_configuration.static_ip_invalid")}
+                <InputIP invalidFeedback={ip_invalid_feedback}
+                         moreClasses={ip_is_network_addr || ip_is_broadcast_addr ? ["is-invalid"] : [""]}
                          required={!props.showDhcp || !dhcp}
                          value={!props.showAnyAddress && props.value.ip == "0.0.0.0" ? "" : props.value.ip}
                          onValue={(v) => this.onUpdate("ip", !props.showAnyAddress && v == "" ? "0.0.0.0" : v)}/>
