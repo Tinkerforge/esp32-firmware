@@ -48,7 +48,7 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
     error_string?: string;
     reboot_string?: string;
 
-    constructor(t: Config, error_string?: string, reboot_string?: string, initial_state?: Partial<API.getType[Config] & S>)) {
+    constructor(t: Config, error_string?: string, reboot_string?: string, initial_state?: Partial<API.getType[Config] & S>) {
         super();
         this.t = t;
         this.error_string = error_string;
