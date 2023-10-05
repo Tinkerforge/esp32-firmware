@@ -54,7 +54,7 @@ void Cron::pre_setup() {
                 {"trigger", trigger_prototype},
                 {"action", action_prototype}
             })
-        }, 0, 20, Config::type_id<Config::ConfObject>());
+        }, 0, 10, Config::type_id<Config::ConfObject>());
 
     config = ConfigRoot(Config::Object({
         {"tasks", config}

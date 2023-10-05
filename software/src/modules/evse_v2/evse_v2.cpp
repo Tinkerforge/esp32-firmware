@@ -28,6 +28,8 @@
 #include "tools.h"
 #include "web_server.h"
 
+extern EVSEV2 evse_v2;
+
 extern bool firmware_update_allowed;
 
 extern void evse_v2_button_recovery_handler();
