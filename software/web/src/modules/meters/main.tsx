@@ -608,20 +608,20 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
     constructor(props: MetersProps) {
         super('meters/config',
               __("meters.script.save_failed"),
-              __("meters.script.reboot_content_changed"),
+              __("meters.script.reboot_content_changed"), {
+                  states: {},
+                  configs: {},
+                  values_by_id: {},
+                  chart_selected: "history",
+                  addMeterSlot: null,
+                  addMeter: [MeterClassID.None, null],
+                  editMeterSlot: null,
+                  editMeter: [MeterClassID.None, null],
+                  extraShow: new Array<boolean>(7),
+              },
               props);
 
         this.status_ref = props.status_ref;
-
-        this.state = {
-            states: {},
-            configs: {},
-            values_by_id: {},
-            chart_selected: "history",
-            addMeter: [0, null],
-            editMeter: [0, null],
-            extraShow: new Array<boolean>(7),
-        } as any;
 
         this.state.extraShow.fill(false);
 
