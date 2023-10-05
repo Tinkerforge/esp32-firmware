@@ -68,10 +68,12 @@ let x = {
             "led_state": "LED state",
             "led_state_off": "Off",
             "led_state_on": "On",
-            "led_state_blinking": "Blinking",
-            "led_state_flickering": "Flickering",
-            "led_state_breathing": "Breathing",
-            "led_state_error": "Error",
+            "led_state_blinking": "Acknowledge blinking",
+            "led_state_flickering": "Rejecting blinking",
+            "led_state_breathing": "Demanding blinking",
+            "led_state_error": /*SFN*/(count: number) => {
+                return "Blinking (" + count + " x)";
+            }/*NF*/,
             "led_state_api": "API",
             "led_duration": "Duration",
             "cp_pwm_dc": "CP PWM duty cycle",
@@ -126,21 +128,26 @@ let x = {
             "cron_state_change_trigger": /*FFN*/(state: string) => {
                 return (
                   <>
-                    Wenn der Ladestatus auf "<b>{state}</b>" wechselt,{" "}
+                    If the charge status changes to "<b>{state}</b>",{" "}
                   </>
                 );
               }/*NF*/,
               "cron_action_text": /*FFN*/(current: number) => {
                 return (
                   <>
-                    setze den erlaubten Ladestrom auf <b>{current} A</b>.
+                    set the allowed charging current to <b>{current} A</b>.
                   </>
                 );
               }/*NF*/,
               "cron_led_action_text": /*FFN*/(state: string, duration: number) => {
+                if (state == "An" || state == "Aus") {
+                  return <>
+                    turn the status-LED <b>{state}</b> for <b>{duration} seconds</b>.
+                  </>
+                }
                 return (
                   <>
-                    schalte die Status-LED für <b>{duration} ms</b> <b>{state}</b>.
+                    show <b>{state}</b> for <b>{duration / 1000} seconds</b> on the status-LED.
                   </>
                 );
               }/*NF*/,

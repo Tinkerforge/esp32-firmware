@@ -98,10 +98,9 @@ function EvseLedCronActionComponent(action: CronAction): VNode {
         case 1003:
             state = __("evse.content.led_state_breathing");
             break;
-
-        case 2001:
-            state = __("evse.content.led_state_error");
-            break;
+    }
+    if (value.state > 2000 && value.state < 2011) {
+        state = __("evse.content.led_state_error")(value.state - 2000);
     }
 
     return __("evse.content.cron_led_action_text")(state, value.duration)
@@ -109,19 +108,20 @@ function EvseLedCronActionComponent(action: CronAction): VNode {
 
 function EvseLedCronActionConfigComponent(cron: Cron, action: CronAction) {
     const value = (action as EvseLedCronAction)[1];
+    const items: [string, string][] = [
+        ["0", __("evse.content.led_state_off")],
+        ["255", __("evse.content.led_state_on")],
+        ["1001", __("evse.content.led_state_blinking")],
+        ["1002", __("evse.content.led_state_flickering")],
+        ["1003", __("evse.content.led_state_breathing")]];
+    for (let i = 1; i <= 10; i++) {
+        items.push([String(2000 + i), __("evse.content.led_state_error")(i)]);
+    }
     return [
         {
             name: __("evse.content.led_state"),
             value: <InputSelect
-                items={[
-                    // TODO: Add more led-states
-                    ["0", __("evse.content.led_state_off")],
-                    ["255", __("evse.content.led_state_on")],
-                    ["1001", __("evse.content.led_state_blinking")],
-                    ["1002", __("evse.content.led_state_flickering")],
-                    ["1003", __("evse.content.led_state_breathing")],
-                    ["2001", __("evse.content.led_state_error")]
-                ]}
+                items={items}
                 value={value.state.toString()}
                 onValue={(v) => {
                     value.state = parseInt(v);
@@ -131,10 +131,10 @@ function EvseLedCronActionConfigComponent(cron: Cron, action: CronAction) {
         {
             name: __("evse.content.led_duration"),
             value: <> <InputNumber
-                value={value.duration}
-                unit="ms"
+                value={value.duration / 1000}
+                unit="s"
                 onValue={(v) => {
-                    value.duration = v;
+                    value.duration = v * 1000;
                     cron.setActionFromComponent(action);
                 }} />
                 <span class="text-muted mt-1">{__("evse.content.api_must_be_enabled")}</span>

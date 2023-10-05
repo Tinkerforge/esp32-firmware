@@ -68,10 +68,12 @@ let x = {
             "led_state": "LED-Zustand",
             "led_state_off": "Aus",
             "led_state_on": "An",
-            "led_state_blinking": "Blinkend",
-            "led_state_flickering": "Flackernd",
-            "led_state_breathing": "Atmend",
-            "led_state_error": "Fehler",
+            "led_state_blinking": "Bestätigendes Blinken",
+            "led_state_flickering": "Ablehnendes Blinken",
+            "led_state_breathing": "Auffordendes Blinken",
+            "led_state_error": /*SFN*/(count: number) => {
+                return "Blinken (" + count + "x)";
+            }/*NF*/,
             "led_state_api": "API",
             "led_duration": "Dauer",
             "cp_pwm_dc": "CP-PWM-Tastverhältnis",
@@ -138,11 +140,16 @@ let x = {
                 );
               }/*NF*/,
               "cron_led_action_text": /*FFN*/(state: string, duration: number) => {
-                return (
-                  <>
-                    schalte die Status-LED für <b>{duration} ms</b> <b>{state}</b>.
-                  </>
-                );
+                if (state == "An" || state == "Aus") {
+                  return (
+                    <>
+                      schalte die Status-LED für <b>{duration / 1000} Sekunden</b> <b>{state}</b>.
+                    </>
+                  );
+                }
+                return <>
+                  zeige <b>{state}</b> für <b>{duration / 1000} Sekunden</b> auf der Status-LED.
+                </>
               }/*NF*/,
 
             "slot_0": "Zuleitung",
