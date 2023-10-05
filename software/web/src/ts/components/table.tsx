@@ -32,10 +32,12 @@ export interface TableModalRow {
 }
 
 export interface TableRow {
+    key?: string
     columnValues: ComponentChild[]
     extraShow?: boolean
     extraFieldName?: string
     extraValue?: ComponentChild
+    extraKey?: string
     fieldNames?: string[]
     fieldValues?: ComponentChild[]
     fieldWithBox?: boolean[]
@@ -123,7 +125,7 @@ export class Table extends Component<TableProps, TableState> {
                     </thead>
                     <tbody>
                         {props.rows.map((row, i) => <>
-                            <tr>
+                            <tr key={row.key}>
                                 {row.columnValues.map((value) => (
                                     <td class={"text-break" + (row.extraValue ? " pb-0" : "")} style="vertical-align: middle;">{value}</td>
                                 ))}
@@ -147,7 +149,7 @@ export class Table extends Component<TableProps, TableState> {
                                 </td>
                             </tr>
                             {row.extraValue ?
-                                <tr>
+                                <tr key={row.extraKey}>
                                     <td colSpan={props.columnNames.length + 1} class="pt-0" style="border-top: none;">
                                         <Collapse in={row.extraShow}>
                                             <div>
