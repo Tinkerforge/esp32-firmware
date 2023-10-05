@@ -1,12 +1,14 @@
-{
-    "sun_spec_meter": {
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
+    "meters_sun_spec": {
         "status": {
         },
         "navbar": {
-            "sun_spec_meter": "SunSpec Meter"
+            "meters_sun_spec": "SunSpec Meter"
         },
         "content": {
-            "sun_spec_meter": "SunSpec Meter",
+            "meters_sun_spec": "SunSpec Meter",
             "host": "Host",
             "port": "Port",
             "port_muted": "typically 502",
@@ -14,7 +16,13 @@
             "device_address_muted": "For 0 all addresses from 1 to 247 are checked.",
             "discovery_log": "Discovery log",
             "start_discovery": "Start discovery",
-            "start_discovery_failed": "Could not start discovery"
+            "start_discovery_failed": "Could not start discovery",
+
+            "meter_class": "SunSpec",
+
+            "config_display_name": "Name",
+            "config_host": "Host",
+            "config_host_invalid": "Host is invalid"
         },
         "script": {
         }
