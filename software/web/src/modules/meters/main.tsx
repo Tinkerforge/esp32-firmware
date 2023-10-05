@@ -898,10 +898,6 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
         }
     }
 
-    hackToAllowSave() {
-        document.getElementById("meters_config_form").dispatchEvent(new Event('input'));
-    }
-
     render(props: {}, state: Readonly<MetersState>) {
         if (!util.render_allowed()) {
             return (<></>);
@@ -911,7 +907,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 
         return (
             <SubPage colClasses="col-xl-10">
-                <ConfigForm id="meters_config_form" title={__("meters.content.meters")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="meters_config_form" title={__("meters.content.meters")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormSeparator heading={__("meters.status.power_history")} first={true} colClasses={"justify-content-between align-items-center col"} extraClasses={"pr-0 pr-lg-3"} >
                         <div class="mb-2">
                             <InputSelect value={this.state.chart_selected} onValue={(v) => {
@@ -1084,11 +1080,11 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                     onEditGetRows: () => [/* FIXME */],
                                     onEditCommit: async () => {
                                         // FIXME
-                                        this.hackToAllowSave();
+                                        this.setDirty(true);
                                     },
                                     onRemoveClick: async () => {
                                         this.setState({configs: {...state.configs, [meter_slot]: [0, null]}});
-                                        this.hackToAllowSave();
+                                        this.setDirty(true);
                                     }
                                 }
                             })}
@@ -1099,7 +1095,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                             onAddGetRows={() => [/* FIXME */]}
                             onAddCommit={async () => {
                                 // FIXME
-                                this.hackToAllowSave();
+                                this.setDirty(true);
                             }}
                             />
                     </div>
