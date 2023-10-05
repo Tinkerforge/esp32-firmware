@@ -87,7 +87,7 @@ function EvseButtonCronTriggerFactory(): CronTrigger {
 }
 
 function EvseShutdownTriggerComponent(trigger: CronTrigger): CronComponent {
-    const value = (trigger as EvseSdCronTrigger)[1];
+    const value = (trigger as EvseShutdownCronTrigger)[1];
     return {
         text: __("evse.content.cron_sd_trigger_text")(value.high),
         fieldNames: [
