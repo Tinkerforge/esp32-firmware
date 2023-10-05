@@ -907,7 +907,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
             return (<></>);
         }
 
-        let active_configs = Object.keys(state.configs).filter((meter_slot_str) => state.configs[parseInt(meter_slot_str)][0] != MeterClassID.None);
+        let active_meter_slots = Object.keys(state.configs).filter((meter_slot_str) => state.configs[parseInt(meter_slot_str)][0] != MeterClassID.None);
 
         return (
             <SubPage colClasses="col-xl-10">
@@ -965,7 +965,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                         <Table
                             tableTill="md"
                             columnNames={[__("meters.content.table_name"), __("meters.content.table_power"), __("meters.content.table_energy"), __("meters.content.table_phases")]}
-                            rows={active_configs.map((meter_slot_str) => {
+                            rows={active_meter_slots.map((meter_slot_str) => {
                                 let meter_slot = parseInt(meter_slot_str);
                                 let config = state.configs[meter_slot];
                                 let power: number = null;
@@ -1092,9 +1092,9 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                     }
                                 }
                             })}
-                            addEnabled={active_configs.length < METERS_SLOTS}
+                            addEnabled={active_meter_slots.length < METERS_SLOTS}
                             addTitle={__("meters.content.add_meter_title")}
-                            addMessage={__("meters.content.add_meter_prefix") + active_configs.length + __("meters.content.add_meter_infix") + METERS_SLOTS + __("meters.content.add_meter_suffix")}
+                            addMessage={__("meters.content.add_meter_prefix") + active_meter_slots.length + __("meters.content.add_meter_infix") + METERS_SLOTS + __("meters.content.add_meter_suffix")}
                             onAddStart={async () => this.setState({addMeter: [0, null]})}
                             onAddGetRows={() => [/* FIXME */]}
                             onAddCommit={async () => {
