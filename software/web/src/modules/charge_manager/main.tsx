@@ -70,14 +70,14 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
         // Does not check if the event exists, in case the evse module is not compiled in.
         util.addApiEventListener_unchecked('evse/management_enabled', () => {
-            let evse_enabled = API.get_maybe('evse/management_enabled');
+            let evse_enabled = API.get_unchecked('evse/management_enabled');
             if (evse_enabled != null) {
                 this.setState({managementEnabled: evse_enabled.enabled});
             }
         });
 
         util.addApiEventListener('charge_manager/scan_result', () => {
-            this.addScanResults( API.get('charge_manager/scan_result') as ScanCharger[]);
+            this.addScanResults(API.get('charge_manager/scan_result') as ScanCharger[]);
         });
     }
 
@@ -146,17 +146,17 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         }))
             return;
 
-        await API.save_maybe('evse/management_enabled', {"enabled": this.state.managementEnabled}, translate_unchecked("charge_manager.script.save_failed"));
+        await API.save_unchecked('evse/management_enabled', {"enabled": this.state.managementEnabled}, translate_unchecked("charge_manager.script.save_failed"));
         await super.sendSave(t, cfg);
     }
 
     override async sendReset(t: "charge_manager/config"){
-        await API.save_maybe('evse/management_enabled', {"enabled": false}, translate_unchecked("charge_manager.script.save_failed"));
+        await API.save_unchecked('evse/management_enabled', {"enabled": false}, translate_unchecked("charge_manager.script.save_failed"));
         await super.sendReset(t);
     }
 
     override getIsModified(t: "charge_manager/config"): boolean {
-        let evse_enabled = API.get_maybe("evse/management_enabled");
+        let evse_enabled = API.get_unchecked("evse/management_enabled");
         if (evse_enabled != null)
             if (evse_enabled.enabled)
                 return true;
@@ -209,11 +209,11 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
             return true;
 
         if (API.hasFeature("ethernet")) {
-            const eth_subnet = util.parseIP(API.get_maybe("ethernet/config").subnet);
-            const eth_ip = util.parseIP(API.get_maybe("ethernet/config").ip);
+            const eth_subnet = util.parseIP(API.get_unchecked("ethernet/config").subnet);
+            const eth_ip = util.parseIP(API.get_unchecked("ethernet/config").ip);
             const eth_network = eth_ip & eth_subnet;
             const eth_broadcast = (~eth_subnet) | eth_network;
-            if (API.get_maybe("ethernet/config")?.subnet != "255.255.255.254" && (v == this.intToIP(eth_broadcast) || v == this.intToIP(eth_network)))
+            if (API.get_unchecked("ethernet/config")?.subnet != "255.255.255.254" && (v == this.intToIP(eth_broadcast) || v == this.intToIP(eth_network)))
                 return true;
         }
 

@@ -808,7 +808,7 @@ export class MeterStatus extends Component<{}, {}> {
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
-        let power = API.get_maybe('meter/values')?.power ?? 0;
+        let power = API.get_unchecked('meter/values')?.power ?? 0;
 
         return (
             <>

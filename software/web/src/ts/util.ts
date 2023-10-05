@@ -420,7 +420,7 @@ export function downloadToFile(content: BlobPart, filename_prefix: string, exten
     const a = document.createElement('a');
     const file = new Blob([content], {type: contentType});
     let t = iso8601ButLocal(new Date()).replace(/:/gi, "-").replace(/\./gi, "-");
-    let name = API.get_maybe('info/name')?.name ?? "unknown_uid";
+    let name = API.get_unchecked('info/name')?.name ?? "unknown_uid";
 
     a.href= URL.createObjectURL(file);
     a.download = filename_prefix + "-" + name + "-" + t + "." + extension;

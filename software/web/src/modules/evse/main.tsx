@@ -206,7 +206,7 @@ export class EVSE extends Component<{}, EVSEState> {
                             variant = slot.max_current == min ? "warning" : "primary";
                         }
 
-                        let has_ocpp = API.get_maybe("ocpp/config") != null;
+                        let has_ocpp = API.get_unchecked("ocpp/config") != null;
 
                         if (i == EVSE_SLOT_GP_INPUT || i == EVSE_SLOT_SHUTDOWN_INPUT || (!has_ocpp && i == EVSE_SLOT_OCPP))
                             return <></>

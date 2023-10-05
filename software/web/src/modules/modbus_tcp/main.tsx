@@ -58,17 +58,17 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
     }
 
     override async sendSave(t: "modbus_tcp/config", cfg: config & ModbusTCPConfig) {
-        await API.save_maybe('evse/modbus_tcp_enabled', {enabled: this.state.evse_enable}, __("evse.script.save_failed"));
+        await API.save_unchecked('evse/modbus_tcp_enabled', {enabled: this.state.evse_enable}, __("evse.script.save_failed"));
         await super.sendSave(t, cfg);
     }
 
     override async sendReset(t: "modbus_tcp/config"){
-        await API.save_maybe('evse/modbus_tcp_enabled', {enabled: false}, __("evse.script.save_failed"));
+        await API.save_unchecked('evse/modbus_tcp_enabled', {enabled: false}, __("evse.script.save_failed"));
         await super.sendReset(t);
     }
 
     override getIsModified(t: "modbus_tcp/config"): boolean {
-        let evse = API.get_maybe("evse/modbus_tcp_enabled");
+        let evse = API.get_unchecked("evse/modbus_tcp_enabled");
         if (evse != null)
             if (evse.enabled)
                 return true;

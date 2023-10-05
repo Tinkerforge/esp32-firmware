@@ -92,7 +92,7 @@ export function is_dirty<T extends keyof ConfigMap>(topic: T): boolean {
     return (modified.modified & 1) == 1;
 }
 
-export function get_maybe<T extends string>(topic: T): (T extends keyof ConfigMap ? Readonly<ConfigMap[T]> : any) {
+export function get_unchecked<T extends string>(topic: T): (T extends keyof ConfigMap ? Readonly<ConfigMap[T]> : any) {
     if (topic in api_cache)
         return api_cache[topic as keyof ConfigMap] as any;
     return null as any;
@@ -136,7 +136,7 @@ export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T],
     return call(<any>(topic + "_update"), payload, error_string, reboot_string);
 }
 
-export function save_maybe<T extends string>(topic: T, payload: (T extends keyof ConfigMap ? ConfigMap[T] : any), error_string: string, reboot_string?: string) {
+export function save_unchecked<T extends string>(topic: T, payload: (T extends keyof ConfigMap ? ConfigMap[T] : any), error_string: string, reboot_string?: string) {
     if (topic in api_cache)
         return call(<any>(topic + "_update"), payload, error_string, reboot_string);
     return Promise.resolve();

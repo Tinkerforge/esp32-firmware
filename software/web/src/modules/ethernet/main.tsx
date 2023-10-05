@@ -80,13 +80,13 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
                                 {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
                             ].concat(
                                 !API.hasModule("wifi") ? [] :
-                                [{ip: util.parseIP(API.get_maybe("wifi/ap_config").ip),
-                                subnet: util.parseIP(API.get_maybe("wifi/ap_config").subnet),
+                                [{ip: util.parseIP(API.get_unchecked("wifi/ap_config").ip),
+                                subnet: util.parseIP(API.get_unchecked("wifi/ap_config").subnet),
                                 name: __("component.ip_configuration.wifi_ap")}]
                             ).concat(
-                                !API.hasModule("wireguard") || API.get_maybe("wireguard/config").internal_ip == "0.0.0.0" ? [] :
-                                [{ip: util.parseIP(API.get_maybe("wireguard/config").internal_ip),
-                                subnet: util.parseIP(API.get_maybe("wireguard/config").internal_subnet),
+                                !API.hasModule("wireguard") || API.get_unchecked("wireguard/config").internal_ip == "0.0.0.0" ? [] :
+                                [{ip: util.parseIP(API.get_unchecked("wireguard/config").internal_ip),
+                                subnet: util.parseIP(API.get_unchecked("wireguard/config").internal_subnet),
                                 name: __("component.ip_configuration.wireguard")}]
                             )
                         }

@@ -59,17 +59,17 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
     }
 
     override async sendSave(t: "ocpp/config", cfg: OcppConfig) {
-        await API.save_maybe('evse/ocpp_enabled', {enabled: this.state.enable}, __("evse.script.save_failed"));
+        await API.save_unchecked('evse/ocpp_enabled', {enabled: this.state.enable}, __("evse.script.save_failed"));
         await super.sendSave(t, cfg);
     }
 
     override async sendReset(t: "ocpp/config") {
-        await API.save_maybe('evse/ocpp_enabled', {enabled: false}, __("evse.script.save_failed"));
+        await API.save_unchecked('evse/ocpp_enabled', {enabled: false}, __("evse.script.save_failed"));
         await super.sendReset(t);
     }
 
     override getIsModified(t: "ocpp/config"): boolean {
-        let evse = API.get_maybe("evse/ocpp_enabled");
+        let evse = API.get_unchecked("evse/ocpp_enabled");
         if (evse != null)
             if (evse.enabled)
                 return true;
