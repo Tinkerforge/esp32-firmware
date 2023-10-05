@@ -39,9 +39,12 @@ function extract<T extends keyof ConfigMap, U extends API.getType[T]>(topic: T, 
     return result;
 }
 
-export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S = {}> extends Component<P, API.getType[Config] & S> {
+export interface ConfigComponentState {
+    internal_isDirty: boolean
+}
+
+export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S = {}> extends Component<P, API.getType[Config] & S & ConfigComponentState> {
     t: Config;
-    ignore_updates: boolean = false;
     error_string?: string;
     reboot_string?: string;
 
@@ -50,10 +53,14 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         this.t = t;
         this.error_string = error_string;
         this.reboot_string = reboot_string;
+        this.state = {
+            internal_isDirty: false
+        } as any;
 
         util.addApiEventListener(t, () => {
-            if (!this.ignore_updates)
-                this.setState(API.get(t) as Partial<API.getType[Config] & S>);
+            if (!this.state.internal_isDirty) {
+                this.setState(API.get(t) as Partial<API.getType[Config] & S & ConfigComponentState>);
+            }
         });
 
         util.addApiEventListener((t + "_modified") as Config, () => {
@@ -64,8 +71,8 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         })
     }
 
-    toggle(x: keyof PickByValue<API.getType[Config] & S, boolean>) {
-        return () => this.setState({ [x]: !this.state[x] } as unknown as Partial<API.getType[Config] & S>);
+    toggle(x: keyof PickByValue<API.getType[Config] & S & ConfigComponentState, boolean>) {
+        return () => this.setState({ [x]: !this.state[x] } as unknown as Partial<API.getType[Config] & S & ConfigComponentState>);
     }
 
     save = async () => {
@@ -96,8 +103,16 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         return this.getIsModified(this.t);
     }
 
-    set<T extends keyof (API.getType[Config] & S)>(x: T) {
-        return (s: (API.getType[Config] & S)[T]) => this.setState({ [x]: s } as unknown as Partial<API.getType[Config] & S>);
+    isDirty = () => {
+        return this.state.internal_isDirty;
+    }
+
+    setDirty = (dirty: boolean) => {
+        this.setState({internal_isDirty: dirty} as any);
+    }
+
+    set<T extends keyof (API.getType[Config] & S & ConfigComponentState)>(x: T) {
+        return (s: (API.getType[Config] & S & ConfigComponentState)[T]) => this.setState({ [x]: s } as unknown as Partial<API.getType[Config] & S & ConfigComponentState>);
     }
 
     // Override this to block saving on a condition

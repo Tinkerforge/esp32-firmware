@@ -128,10 +128,6 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         }, 12000);
     }
 
-    hackToAllowSave() {
-        document.getElementById("wifi_sta_config_form").dispatchEvent(new Event('input'));
-    }
-
     get_scan_results(state: Readonly<STAConfig & WifiSTAState>) {
         if (state.scan_running) {
             return <>
@@ -181,7 +177,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                 enable_sta: true,
                                 bssid_lock: enable_bssid_lock
                             });
-                            this.hackToAllowSave();
+                            this.setDirty(true);
                         }}
                         key={ap.bssid}>
                     {wifi_symbol(ap.rssi)}
@@ -206,10 +202,11 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
             <SubPage>
                 <ConfigForm id="wifi_sta_config_form"
                             title={__("wifi.content.sta_settings")}
+                            isModified={this.isModified()}
+                            isDirty={this.isDirty()}
                             onSave={this.save}
                             onReset={this.reset}
-                            onDirtyChange={(d) => this.ignore_updates = d}
-                            isModified={this.isModified()}>
+                            onDirtyChange={this.setDirty}>
                     <FormRow label={__("wifi.content.sta_enable_sta")}>
                         <Switch desc={__("wifi.content.sta_enable_sta_desc")}
                                 checked={state.enable_sta}

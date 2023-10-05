@@ -257,7 +257,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
         return (
             <SubPage>
-                <ConfigForm id="energy_manager_config_form" title={__("energy_manager.content.page_header")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="energy_manager_config_form" title={__("energy_manager.content.page_header")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
 
                     <FormSeparator heading={__("energy_manager.content.header_phase_switching")} first={true} />
                     <FormRow label={__("energy_manager.content.contactor_installed")}>

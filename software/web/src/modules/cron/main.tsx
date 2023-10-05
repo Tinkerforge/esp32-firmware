@@ -71,10 +71,6 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
         this.setState({edit_task: edit_task});
     }
 
-    hackToAllowSave() {
-        document.getElementById("cron-config-form").dispatchEvent(new Event('input'));
-    }
-
     createSelectors() {
         let trigger: [string, string][] = [];
         for (let i in cron_trigger_components) {
@@ -181,11 +177,11 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                 },
                 onEditCommit: async () => {
                     this.setState({tasks: this.state.tasks.map((task, k) => k === idx ? this.state.edit_task : task)});
-                    this.hackToAllowSave();
+                    this.setDirty(true);
                 },
                 onRemoveClick: async () => {
                     this.setState({tasks: this.state.tasks.filter((_, k) => idx != k)})
-                    this.hackToAllowSave();
+                    this.setDirty(true);
                 },
                 editTitle: __("cron.content.edit_rule")
             };
@@ -202,9 +198,10 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                 id="cron-config-form"
                 title={__("cron.content.cron")}
                 isModified={this.isModified()}
+                isDirty={this.isDirty()}
                 onSave={this.save}
                 onReset={this.reset}
-                onDirtyChange={(d) => this.ignore_updates = d}
+                onDirtyChange={this.setDirty}
                 >
                     <div class="col-xl-12">
                     <Table tableTill="md"
@@ -231,7 +228,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                         }}
                         onAddCommit={async () => {
                             this.setState({tasks: this.state.tasks.concat([this.state.edit_task])});
-                            this.hackToAllowSave();
+                            this.setDirty(true);
                         }}
                         />
                     </div>

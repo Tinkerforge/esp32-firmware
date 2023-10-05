@@ -65,7 +65,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
 
         return (
             <SubPage>
-                <ConfigForm id="em_meter_config_config_form" title={__("em_meter_config.content.em_meter_config")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="em_meter_config_config_form" title={__("em_meter_config.content.em_meter_config")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("em_meter_config.content.meter_source")} label_muted={__("em_meter_config.content.meter_source_muted")}>
                         <InputSelect
                             items={[

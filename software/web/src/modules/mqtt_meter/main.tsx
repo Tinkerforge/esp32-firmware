@@ -43,7 +43,7 @@ export class MqttMeter extends ConfigComponent<'mqtt_meter/config'> {
             return <></>
 
         return <SubPage>
-            <ConfigForm id="mqtt_meter_config_form" title={__("mqtt_meter.content.title")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+            <ConfigForm id="mqtt_meter_config_form" title={__("mqtt_meter.content.title")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                 <FormRow label={__("mqtt_meter.content.enable_meter")}>
                     <Switch desc={__("mqtt_meter.content.enable_meter_desc")}
                         checked={state.enable}

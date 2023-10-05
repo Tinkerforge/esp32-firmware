@@ -80,10 +80,6 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
         } as any;
     }
 
-    hackToAllowSave() {
-        document.getElementById("nfc_config_form").dispatchEvent(new Event('input'));
-    }
-
     render(props: {}, state: NfcConfig & NfcState) {
         if (!util.render_allowed() || !API.hasFeature("nfc"))
             return <></>
@@ -120,7 +116,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
 
         return (
             <SubPage>
-                <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <div class="mb-3">
                         <Table
                             tableTill="md"
@@ -174,11 +170,11 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                             editTag: {tag_id: "", user_id: 0, tag_type: "" as any}
                                         });
 
-                                        this.hackToAllowSave();
+                                        this.setDirty(true);
                                     },
                                     onRemoveClick: async () => {
                                         this.setState({authorized_tags: state.authorized_tags.filter((v, idx) => idx != i)});
-                                        this.hackToAllowSave();
+                                        this.setDirty(true);
                                     }
                                 }})
                             }
@@ -244,7 +240,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                             ]}
                             onAddCommit={async () => {
                                 this.setState({authorized_tags: state.authorized_tags.concat({tag_id: state.addTag.tag_id, user_id: state.addTag.user_id, tag_type: state.addTag.tag_type})});
-                                this.hackToAllowSave();
+                                this.setDirty(true);
                             }}
                             />
                     </div>

@@ -23,7 +23,7 @@ import { h, Component, Fragment, JSX, ComponentChildren } from "preact";
 import { __ } from "../translation";
 
 interface ConfigFormState {
-    saveDisabled: boolean
+    saveInProgress: boolean
     wasValidated: boolean
     showSpinner: boolean
 }
@@ -33,24 +33,26 @@ interface ConfigFormProps {
     id: string
     title: ComponentChildren
     isModified: boolean
+    isDirty: boolean
     onSave: () => Promise<void>
     onReset: () => Promise<void>
     onDirtyChange: (dirty: boolean) => void
 }
 
-export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
+export class ConfigForm extends Component<ConfigFormProps, ConfigFormState> {
     constructor() {
         super();
-        this.state = {saveDisabled: true, wasValidated: false, showSpinner: false}
+        this.state = {saveInProgress: false, wasValidated: false, showSpinner: false}
     }
+
     submit = (e: Event) => {
         e.preventDefault();
         e.stopPropagation();
 
-        this.setState({saveDisabled: true, wasValidated: false});
+        this.setState({saveInProgress: true, wasValidated: false});
 
         if (!(e.target as HTMLFormElement).checkValidity()) {
-            this.setState({saveDisabled: false, wasValidated: true});
+            this.setState({saveInProgress: false, wasValidated: true});
             return;
         }
 
@@ -58,21 +60,21 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
 
         this.props.onSave().then(() => {
             window.clearTimeout(spinnerTimeout);
-            this.setState({saveDisabled: true, wasValidated: false, showSpinner: false});
+            this.setState({saveInProgress: true, wasValidated: false, showSpinner: false});
             this.props.onDirtyChange(false);
         }).catch(() => {
             window.clearTimeout(spinnerTimeout);
-            this.setState({saveDisabled: false, wasValidated: false, showSpinner: false});
+            this.setState({saveInProgress: false, wasValidated: false, showSpinner: false});
         });
     }
 
     resetButton = () => this.props.onReset ?
             <button onClick={async () => {await this.props.onReset()}} class="btn btn-danger mb-2 ml-sm-2 col" disabled={!this.props.isModified}>
                 {__("component.config_form.reset")}
-                <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner} ></span>
+                <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner}></span>
             </button> : <></>
 
-    override render (props: ConfigFormProps, state: Readonly<ConfigFormState>) {
+    override render(props: ConfigFormProps, state: Readonly<ConfigFormState>) {
         return (
             <>
                 <div class="row sticky-under-top mb-3 pt-3">
@@ -81,7 +83,7 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
                             <h1 class="page-header col-12 col-sm text-center text-sm-left text-nowrap">{props.title}</h1>
                             <div class="col-12 col-sm row no-gutters">
                                 {this.resetButton()}
-                                <button type="submit" form={props.id} class="btn btn-primary col mb-2 ml-2 ml-md-3 mr-0" disabled={state.saveDisabled}>
+                                <button type="submit" form={props.id} class="btn btn-primary col mb-2 ml-2 ml-md-3 mr-0" disabled={state.saveInProgress || !props.isDirty}>
                                     {__("component.config_form.save")}
                                     <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
                                 </button>
@@ -92,7 +94,7 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
                 <form id={props.id}
                       class={"needs-validation" + (state.wasValidated ? " was-validated" : "")}
                       noValidate
-                      onInput={() => {this.setState({saveDisabled: false}); this.props.onDirtyChange(true);}}
+                      onInput={() => this.props.onDirtyChange(true)}
                       onSubmit={this.submit}>
                     {props.children}
                 </form>

@@ -115,10 +115,6 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         this.setState({chargers: chargers});
     }
 
-    hackToAllowSave() {
-        document.getElementById("charge_manager_config_form").dispatchEvent(new Event('input'));
-    }
-
     override async isSaveAllowed(cfg: ChargeManagerConfig): Promise<boolean> {
         for (let i = 0; i < cfg.chargers.length; i++)
             for (let a = i + 1; a < cfg.chargers.length; a++)
@@ -435,11 +431,11 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                 ],
                                 onEditCommit: async () => {
                                     this.setState({chargers: state.chargers.map((charger, k) => i === k ? state.editCharger : charger)});
-                                    this.hackToAllowSave();
+                                    this.setDirty(true);
                                 },
                                 onRemoveClick: !energyManagerMode && (charger.host == '127.0.0.1' || charger.host == 'localhost') ? undefined : async () => {
                                     this.setState({chargers: state.chargers.filter((v, idx) => idx != i)});
-                                    this.hackToAllowSave();
+                                    this.setDirty(true);
                                 }
                             }})
                         }
@@ -497,7 +493,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                         ]}
                         onAddCommit={async () => {
                             this.setState({chargers: state.chargers.concat({name: state.addCharger.name.trim(), host: state.addCharger.host.trim()})});
-                            this.hackToAllowSave();
+                            this.setDirty(true);
                         }}
                         onAddHide={async () => {
                             window.clearInterval(this.intervalID);
@@ -506,7 +502,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
         return (
             <SubPage>
-                <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     {!energyManagerMode || warpUltimateMode ?
                         charge_manager_mode
                     :

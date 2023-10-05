@@ -61,7 +61,7 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
 
         return (
             <SubPage>
-                <ConfigForm id="auth_config_form" title={__("authentication.content.authentication")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="auth_config_form" title={__("authentication.content.authentication")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("authentication.content.enable_authentication")}>
                         <Switch desc={__("authentication.content.enable_authentication_desc")}
                                 checked={state.enable_auth}

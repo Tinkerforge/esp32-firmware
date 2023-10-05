@@ -59,10 +59,11 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
             <SubPage>
                 <ConfigForm id="ethernet_config_form"
                             title={__("ethernet.content.ethernet")}
+                            isModified={this.isModified()}
+                            isDirty={this.isDirty()}
                             onSave={this.save}
                             onReset={this.reset}
-                            onDirtyChange={(d) => this.ignore_updates = d}
-                            isModified={this.isModified()}>
+                            onDirtyChange={this.setDirty}>
                     <FormRow label={__("ethernet.content.enable")}>
                         <Switch desc={__("ethernet.content.enable_desc")}
                                 checked={state.enable_ethernet}
