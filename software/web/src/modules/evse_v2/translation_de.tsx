@@ -80,9 +80,9 @@ let x = {
             }/*NF*/,
             "cron_gpout_action_text": /*SFN*/(state: number) => {
                 if (state) {
-                    return "verbinde den Konfigurierbaren Ausgang mit Masse.";
-                } else {
                     return "schalte den Konfigurierbaren Ausgang hochohmig.";
+                } else {
+                    return "verbinde den Konfigurierbaren Ausgang mit Masse.";
                 }
             }/*NF*/
         },

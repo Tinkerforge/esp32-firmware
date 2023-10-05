@@ -88,7 +88,7 @@ let x = {
             "debug_description": "Ladeprotokoll erstellen",
             "debug_description_muted": "zur Diagnose bei Ladeproblemen",
             "active_high": "Wenn geöffnet",
-            "active_low": "Wenn stromlos",
+            "active_low": "Wenn geschlossen",
             "gpio_state": "Status",
             "gpio_out_high": "Hochohmig",
             "gpio_out_low": "Verbunden mit Masse",

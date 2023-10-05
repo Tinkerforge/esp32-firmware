@@ -80,9 +80,9 @@ let x = {
             }/*NF*/,
             "cron_gpout_action_text": /*SFN*/(state: number) => {
                 if (state) {
-                    return "connect general purpose output to ground.";
-                } else {
                     return "set general purpose output to high impedance.";
+                } else {
+                    return "connect general purpose output to ground.";
                 }
             }/*NF*/
         },
