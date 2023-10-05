@@ -171,8 +171,8 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
                     [trigger_row.text],
                     [action_row.text]
                 ],
-                fieldNames: ["", "", ""],
-                fieldValues: [__("cron.content.rule") + " #" + (idx + 1) as ComponentChild, trigger_row.text, action_row.text],
+                fieldNames: ["", ""],
+                fieldValues: [__("cron.content.rule") + " #" + (idx + 1) as ComponentChild, <div class="pb-3">{trigger_row.text}{action_row.text}</div>],
                 onEditStart: async () => {
                     this.setState({
                         displayed_trigger: task.trigger[0] as number,
