@@ -406,15 +406,17 @@ export const win1252Encode = (input: string) => {
 };
 
 export function parseIP(ip: string) {
-    return ip.split(".").map((x, i, _) => parseInt(x, 10) * (1 << (8 * (3 - i)))).reduce((a, b) => a+b);
+    // >>> 0 to force unsigned 32 bit integers
+    return ip.split(".").map((x, i, _) => parseInt(x, 10) * (1 << (8 * (3 - i)))).reduce((a, b) => a+b) >>> 0;
 };
 
 export function unparseIP(ip: number) {
-    return ((ip >> 24) & 0xFF).toString() + "." +
-           ((ip >> 16) & 0xFF).toString() + "." +
-           ((ip >> 8 ) & 0xFF).toString() + "." +
-           ((ip >> 0 ) & 0xFF).toString();
+    return ((ip >>> 24) & 0xFF).toString() + "." +
+           ((ip >>> 16) & 0xFF).toString() + "." +
+           ((ip >>> 8 ) & 0xFF).toString() + "." +
+           ((ip >>> 0 ) & 0xFF).toString();
 }
+
 
 export function downloadToFile(content: BlobPart, filename_prefix: string, extension: string, contentType: string) {
     const a = document.createElement('a');
