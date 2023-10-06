@@ -19,7 +19,6 @@
 
 import { h, JSX, Context, ComponentChildren } from "preact";
 import { useContext, useState } from "preact/hooks";
-
 import * as util from "../../ts/util";
 
 export interface SwitchProps {
