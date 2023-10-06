@@ -39,8 +39,8 @@ struct WebSocketsClient {
     int fd;
     WebSockets *ws;
 
-    void send(const char *payload, size_t payload_len);
-    void sendOwned(char *payload, size_t payload_len);
+    bool send(const char *payload, size_t payload_len);
+    bool sendOwned(char *payload, size_t payload_len);
 };
 
 struct ws_work_item {
@@ -66,10 +66,10 @@ public:
     {
     }
 
-    void sendToClient(const char *payload, size_t payload_len, int sock);
-    void sendToClientOwned(char *payload, size_t payload_len, int sock);
-    void sendToAll(const char *payload, size_t payload_len);
-    void sendToAllOwned(char *payload, size_t payload_len);
+    bool sendToClient(const char *payload, size_t payload_len, int sock);
+    bool sendToClientOwned(char *payload, size_t payload_len, int sock);
+    bool sendToAll(const char *payload, size_t payload_len);
+    bool sendToAllOwned(char *payload, size_t payload_len);
 
     bool haveFreeSlot();
     bool haveActiveClient();

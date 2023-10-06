@@ -352,24 +352,25 @@ void WebSockets::receivedPong(int fd)
     }
 }
 
-void WebSocketsClient::send(const char *payload, size_t payload_len)
+bool WebSocketsClient::send(const char *payload, size_t payload_len)
 {
-    ws->sendToClient(payload, payload_len, fd);
+    return ws->sendToClient(payload, payload_len, fd);
 }
 
-void WebSocketsClient::sendOwned(char *payload, size_t payload_len)
+bool WebSocketsClient::sendOwned(char *payload, size_t payload_len)
 {
-    ws->sendToClientOwned(payload, payload_len, fd);
+    return ws->sendToClientOwned(payload, payload_len, fd);
 }
 
-void WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
+bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
 {
+    // Connection was closed -> message was "sent", as in it has not to be resent
     if (httpd_ws_get_fd_info(server.httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET)
-        return;
+        return true;
 
     char *payload_copy = (char *)malloc(payload_len * sizeof(char));
     if (payload_copy == nullptr) {
-        return;
+        return false;
     }
 
     memcpy(payload_copy, payload, payload_len);
@@ -377,26 +378,28 @@ void WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     if (queueFull()) {
         free(payload_copy);
-        return;
+        return false;
     }
 
     work_queue.push_back({server.httpd, {fd, -1, -1, -1, -1}, payload_copy, payload_len});
+    return true;
 }
 
-void WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd)
+bool WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd)
 {
     if (httpd_ws_get_fd_info(server.httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
         free(payload);
-        return;
+        return true;
     }
 
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     if (queueFull()) {
         free(payload);
-        return;
+        return false;
     }
 
     work_queue.push_back({server.httpd, {fd, -1, -1, -1, -1}, payload, payload_len});
+    return true;
 }
 
 bool WebSockets::haveActiveClient()
@@ -419,11 +422,11 @@ bool WebSockets::haveFreeSlot()
     return false;
 }
 
-void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
+bool WebSockets::sendToAllOwned(char *payload, size_t payload_len)
 {
     if (!this->haveActiveClient()) {
         free(payload);
-        return;
+        return true;
     }
 
     // Copy over to not hold both mutexes at the same time.
@@ -436,20 +439,21 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     if (queueFull()) {
         free(payload);
-        return;
+        return false;
     }
     work_queue.push_back({server.httpd, {}, payload, payload_len});
     memcpy(work_queue.back().fds, fds, sizeof(fds));
+    return true;
 }
 
-void WebSockets::sendToAll(const char *payload, size_t payload_len)
+bool WebSockets::sendToAll(const char *payload, size_t payload_len)
 {
     if (!this->haveActiveClient())
-        return;
+        return true;
 
     char *payload_copy = (char *)malloc(payload_len * sizeof(char));
     if (payload_copy == nullptr) {
-        return;
+        return false;
     }
     memcpy(payload_copy, payload, payload_len);
 
@@ -463,11 +467,12 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len)
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     if (queueFull()) {
         free(payload_copy);
-        return;
+        return false;
     }
 
     work_queue.push_back({server.httpd, {}, payload_copy, payload_len});
     memcpy(work_queue.back().fds, fds, sizeof(fds));
+    return true;
 }
 
 static uint32_t last_worker_run = 0;

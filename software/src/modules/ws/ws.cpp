@@ -125,9 +125,7 @@ bool WS::pushStateUpdate(size_t stateIdx, const String &payload, const String &p
     memcpy(ptr, suffix, suffix_len);
     ptr += suffix_len;
 
-    web_sockets.sendToAllOwned(to_send, to_send_len);
-
-    return true;
+    return web_sockets.sendToAllOwned(to_send, to_send_len);
 }
 
 bool WS::pushRawStateUpdate(const String &payload, const String &path)
