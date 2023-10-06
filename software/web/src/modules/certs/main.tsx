@@ -34,10 +34,11 @@ import { InputSelect } from "src/ts/components/input_select";
 
 interface State {
     editCert: API.getType['certs/add'] & {'file': File}
-    addCert: Omit<API.getType['certs/add'], 'id'> & {'file': File}
+    addCert: Omit<API.getType['certs/add'], 'id'> & {file: File, file_too_large: boolean}
 }
 
 const MAX_CERTS = 8;
+const MAX_CERT_LENGTH = 4096;
 
 
 export class Certs extends Component<{}, State> {
@@ -82,14 +83,9 @@ export class Certs extends Component<{}, State> {
                                         await API.call('certs/modify', {
                                             id: state.editCert.id,
                                             name: state.editCert.name,
-                                            cert: await state.editCert.file.text()
+                                            cert: state.editCert.file == null ? null : await state.editCert.file.text()
                                         }, "error_string");
-
-                                        this.setState({
-                                            editCert: {id: 0, name: "", cert: "", file: null}
-                                        });
                                     },
-                                    onEditAbort: async () => this.setState({editCert: {id: 0, name: "", cert: "", file: null}}),
                                     onRemoveClick: async () => { await API.call('certs/remove', {id: cert.id}, "error_string"); }
                                 }})
                             }
@@ -97,7 +93,7 @@ export class Certs extends Component<{}, State> {
                             addTitle={__("certs.content.add_cert_title")}
                             addMessage={__("certs.content.add_cert_message")(API.get('certs/state').certs.length, MAX_CERTS)}
                             onAddStart={async () => {
-                                this.setState({addCert: {name: "", cert: "", file: null}});
+                                this.setState({addCert: {name: "", cert: "", file: null, file_too_large: false}});
                             }}
                             onAddGetRows={() => [
                                 {
@@ -109,12 +105,20 @@ export class Certs extends Component<{}, State> {
                                 },
                                 {
                                     name: __("certs.content.cert_file"),
-                                    value: <div class="custom-file">
-                                                <input type="file" class="custom-file-input form-control" accept={"application/pem-certificate-chain"}
-                                                    onChange={(ev) => this.setState({addCert: {...state.addCert, file: (ev.target as HTMLInputElement).files[0]}})}/>
+                                    value: <>
+                                            <div class="custom-file">
+                                                <input type="file"
+                                                       class={"custom-file-input form-control" + (this.state.addCert.file_too_large ? " is-invalid" : "")}
+                                                       accept="application/pem-certificate-chain"
+                                                    onChange={(ev) => {
+                                                        let file = (ev.target as HTMLInputElement).files[0];
+                                                        this.setState({addCert: {...state.addCert, file: file, file_too_large: file.size > MAX_CERT_LENGTH}});
+                                                    }}/>
                                                 <label class="custom-file-label form-control rounded-left"
                                                     data-browse={"browse"}>{state.addCert.file ? state.addCert.file.name : "select file"}</label>
+                                                <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_LENGTH)}</div>
                                             </div>
+                                          </>
                                 }
                             ]}
                             onAddCommit={async () => {
@@ -131,13 +135,9 @@ export class Certs extends Component<{}, State> {
                                     id: next_free_id,
                                     name: state.addCert.name,
                                     cert: await state.addCert.file.text()
-                                }, "error_string");
-
-                                this.setState({
-                                    addCert: {name: "",  cert: "", file: null}
-                                });
+                                }, __("certs.script.add_cert_failed"));
                             }}
-                            onAddAbort={async () => this.setState({addCert: {name: "",  cert: "", file: null}})} />
+                            />
                     </div>
             </SubPage>
         )

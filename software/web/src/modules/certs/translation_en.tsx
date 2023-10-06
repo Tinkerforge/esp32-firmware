@@ -22,7 +22,9 @@ let x = {
         },
         "script": {
             "save_failed": "Failed to save certificate configuration",
-            "reboot_content_changed": "Certificate configuration"
+            "reboot_content_changed": "Certificate configuration",
+            "add_cert_failed": "Failed to add certificate",
+            "cert_too_large": /*SFN*/(max_length: number) => `Certificate file too large! Maximum file size is ${max_length} bytes.`/*NF*/
         }
     }
 }
