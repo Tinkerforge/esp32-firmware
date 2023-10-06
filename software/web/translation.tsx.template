@@ -49,7 +49,7 @@ export function select_language() {
     for (let language of navigator.languages) {
         language = language.substr(0, 2);
 
-        if (translation.hasOwnProperty(language)) {
+        if (language in translation) {
             active_translation = translation[language];
             break;
         }

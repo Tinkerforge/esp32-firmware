@@ -29,7 +29,7 @@ export type EventMap = {
 
 function update_cache_item(left: any, right: any) {
     for (let key in left) {
-        if (!right.hasOwnProperty(key)) {
+        if (!(key in right)) {
             if (Array.isArray(left))
                 left.splice(parseInt(key), 1)
             else
@@ -51,7 +51,7 @@ function update_cache_item(left: any, right: any) {
     }
 
     for (let key in right) {
-        if (!left.hasOwnProperty(key)) {
+        if (!(key in left)) {
             left[key] = right[key];
         }
     }
@@ -166,5 +166,5 @@ export function hasModule(module: string) {
     let modules = get('info/modules');
     if (modules === null)
         return false;
-    return modules?.hasOwnProperty(module) && (modules as any)[module];
+    return module in modules && modules[module as keyof typeof modules];
 }
