@@ -1,0 +1,3 @@
+npm install eslint
+npm install eslint-config-react-app
+npx eslint src
