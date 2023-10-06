@@ -126,13 +126,13 @@ with open('../../../web/src/modules/meters/meter_value_id.ts', 'w') as f:
     f.write('}\n\n')
     f.write('export const METER_VALUE_IDS: MeterValueID[] = [\n')
     f.write(''.join(value_id_list))
-    f.write('];\n\n')
+    f.write(']\n\n')
     f.write('export const METER_VALUE_INFOS: {[id: number]: {unit: string, digits: 0|1|2|3}} = {\n')
     f.write(''.join(value_id_infos))
-    f.write('};\n\n')
+    f.write('}\n\n')
     f.write('export const METER_VALUE_ORDER: {ids: MeterValueID[], group: string, phases: string}[] = [\n')
     f.write(''.join(value_id_order_str))
-    f.write('];\n')
+    f.write(']\n')
 
 for lang in translation_values:
     util.specialize_template(f'../../../web/src/modules/meters/translation_{lang}.json.template', f'../../../web/src/modules/meters/translation_{lang}.json', {
@@ -170,4 +170,4 @@ with open('../../../web/src/modules/meters/meters_defs.ts', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('export const enum MeterClassID {\n')
     f.write(''.join(class_values))
-    f.write('};\n')
+    f.write('}\n')
