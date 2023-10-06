@@ -121,12 +121,12 @@ export class MetersSunSpec extends Component<{}, MetersSunSpecState> {
     }
 }
 
-render(<MetersSunSpec/>, $('#meters_sun_spec')[0])
+render(<MetersSunSpec />, $("#meters_sun_spec")[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function init() {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-meters_sun_spec').prop('hidden', !module_init.meters_sun_spec);
+    $("#sidebar-meters_sun_spec").prop("hidden", !module_init.meters_sun_spec);
 }

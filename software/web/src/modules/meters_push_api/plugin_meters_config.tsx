@@ -24,9 +24,9 @@ import { TableModalRow } from "../../ts/components/table";
 export type PushAPIMetersConfig = [
     MeterClassID.PushAPI,
     {
-        display_name: string
-        value_ids: number[],
-    }
+        display_name: string;
+        value_ids: number[];
+    },
 ];
 
 export function init() {
@@ -38,7 +38,7 @@ export function init() {
             },
             get_add_rows: (config: MeterConfig, on_value: (key: string, value: any) => void): TableModalRow[] => {
                 return []
-            }
-        }
+            },
+        },
     };
 }

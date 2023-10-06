@@ -24,8 +24,8 @@ import { TableModalRow } from "../../ts/components/table";
 export type EMMetersConfig = [
     MeterClassID.EM,
     {
-        display_name: string
-    }
+        display_name: string;
+    },
 ];
 
 export function init() {
@@ -37,7 +37,7 @@ export function init() {
             },
             get_add_rows: (config: MeterConfig, on_value: (key: string, value: any) => void): TableModalRow[] => {
                 return []
-            }
-        }
+            },
+        },
     };
 }

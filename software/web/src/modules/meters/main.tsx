@@ -32,7 +32,7 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { OutputFloat } from "../../ts/components/output_float";
-import uPlot from 'uplot';
+import uPlot from "uplot";
 import { SubPage } from "../../ts/components/sub_page";
 import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS, METER_VALUE_ORDER } from "./meter_value_id";
 import { MeterClassID } from "./meters_defs";
@@ -1191,15 +1191,15 @@ export class MetersStatus extends Component<{}, MeterStatusState> {
                     <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                 </FormRow>
             </>
-        )
+        );
     }
 }
 
 let status_ref = createRef();
 
-render(<MetersStatus ref={status_ref} />, $('#status-meters')[0]);
+render(<MetersStatus ref={status_ref} />, $("#status-meters")[0]);
 
-render(<Meters status_ref={status_ref} />, $('#meters')[0]);
+render(<Meters status_ref={status_ref} />, $("#meters")[0]);
 
 export function init() {
     let result = plugins_init();
@@ -1219,5 +1219,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-meters').prop('hidden', !module_init.meters);
+    $("#sidebar-meters").prop("hidden", !module_init.meters);
 }

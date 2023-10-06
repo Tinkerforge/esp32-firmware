@@ -20,7 +20,7 @@
 import * as API from "../../ts/api";
 import { TableModalRow } from "../../ts/components/table";
 
-export type MeterConfig = API.getType['meters/0/config'];
+export type MeterConfig = API.getType["meters/0/config"];
 
 export type MeterConfigPlugin = {
     clone: (config: MeterConfig) => MeterConfig
