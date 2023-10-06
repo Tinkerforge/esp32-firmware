@@ -163,7 +163,7 @@ export class Table extends Component<TableProps, TableState> {
                                 </tr>
                                 : undefined}
                         </>)}
-                        {props.onAddSubmit ?
+                        {props.onAddShow ?
                         <tr>
                             <td colSpan={props.columnNames.length} style={"vertical-align: middle; width: 100%;" + (props.rows.length == 0 ? " border-top: none;" : "")}>
                                 {props.addMessage}

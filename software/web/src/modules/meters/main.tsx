@@ -24,7 +24,7 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __, translate_unchecked } from "../../ts/translation";
 import { h, render, createRef, Fragment, Component, RefObject, ComponentChild } from "preact";
-import { Button, ButtonGroup, Collapse, Card } from "react-bootstrap";
+import { Button, ButtonGroup } from "react-bootstrap";
 import { HelpCircle, Zap, ZapOff, ChevronRight } from "react-feather";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
@@ -37,7 +37,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS, METER_VALUE_ORDER } from "./meter_value_id";
 import { MeterClassID } from "./meters_defs";
 import { MeterConfig, MeterConfigPlugin } from "./types";
-import { Table, TableModalRow } from "../../ts/components/table";
+import { Table } from "../../ts/components/table";
 import { plugins_init } from "./plugins";
 
 const PHASE_CONNECTED_VOLTAGE_THRESHOLD = 180.0 // V
@@ -48,7 +48,7 @@ let config_plugins: {[meter_class: number]: MeterConfigPlugin} = {};
 interface CachedData {
     timestamps: number[];
     samples: number[/*meter_slot*/][];
-};
+}
 
 interface UplotData {
     keys: string[];
@@ -591,8 +591,6 @@ function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
 
     return a.slice(-tail);
 }
-
-type MetersConfig = API.getType['meters/config'];
 
 export class Meters extends ConfigComponent<'meters/config', MetersProps, MetersState> {
     live_data: CachedData = {timestamps: [], samples: []};
