@@ -271,7 +271,7 @@ export class Table extends Component<TableProps, TableState> {
                     no_text={__("component.table.abort")}
                     yes_text={__("component.table.add")}>
                     {state.showAddModal && props.onAddGetRows ?
-                        props.onAddGetRows().map((addRow, i) =>
+                        props.onAddGetRows().map((addRow) =>
                             addRow.name ?
                         <FormRow label={addRow.name}>
                             {addRow.value}
@@ -307,7 +307,7 @@ export class Table extends Component<TableProps, TableState> {
                     no_text={__("component.table.abort")}
                     yes_text={__("component.table.apply")}>
                     {state.showEditModal !== null && props.rows[state.showEditModal].onEditGetRows ?
-                        props.rows[state.showEditModal].onEditGetRows().map((editRow, i) =>
+                        props.rows[state.showEditModal].onEditGetRows().map((editRow) =>
                             editRow.name ?
                         <FormRow label={editRow.name}>
                             {editRow.value}
