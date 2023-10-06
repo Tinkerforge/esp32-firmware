@@ -24,14 +24,14 @@
 #include <time.h>
 #include <new>
 
-#include "config.h"
-
 #include "bindings/hal_common.h"
 
 #include "esp_log.h"
+#include "FS.h"
 #include "driver/i2c.h"
 #include "lwip/dns.h"
 
+#include "event_log.h"
 #include "strong_typedef.h"
 
 #define MACRO_NAME_TO_STRING(x) #x
