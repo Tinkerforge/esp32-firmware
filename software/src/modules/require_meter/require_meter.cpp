@@ -54,6 +54,9 @@ void RequireMeter::register_urls() {
         // We've never seen an energy meter.
         // Listen to info/features in case a meter shows up.
         event.registerEvent("info/features", {}, [this](Config *_ignored){
+            if (config.get("config")->asUint() != WARP_SMART)
+                return;
+
             if (api.hasFeature("meter")) {
                 config.get("config")->updateUint(WARP_PRO_ENABLED);
                 api.writeConfig("require_meter/config", &config);
