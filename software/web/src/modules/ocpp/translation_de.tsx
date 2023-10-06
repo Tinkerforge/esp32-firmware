@@ -22,6 +22,8 @@ let x = {
             "enable_auth": "Autorisierung aktiviert",
             "enable_auth_desc": "Sendet das Passwort oder den 40 Zeichen langen Hex-Key zur Autorisierung beim OCPP-Server",
             "pass": "Passwort oder Hex-Key",
+            "tls_cert": "TLS-Zertifikat",
+            "use_cert_bundle": "Eingebettetes Zertifikatsbundle",
 
             "reset": "Zurücksetzen",
             "reset_muted": "Setzt den gesamten OCPP-Zustand zurück",

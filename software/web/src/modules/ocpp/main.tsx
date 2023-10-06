@@ -91,22 +91,6 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}/>
                     </FormRow>
-                    <FormRow label={"Cert config"}>
-                        <InputSelect items={[
-                                ["-1", "Use cert bundle"],
-                                ["0", "Use cert 0"],
-                                ["1", "Use cert 1"],
-                                ["2", "Use cert 2"],
-                                ["3", "Use cert 3"],
-                                ["4", "Use cert 4"],
-                                ["5", "Use cert 5"],
-                                ["6", "Use cert 6"],
-                                ["7", "Use cert 7"]
-                            ]}
-                            value={state.cert_id}
-                            onValue={(v) => this.setState({cert_id: parseInt(v)})}
-                        />
-                    </FormRow>
                     <FormRow label={__("ocpp.content.endpoint_url")}>
                         <InputText required
                                    maxLength={128}
@@ -114,6 +98,16 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                                    onValue={this.set("url")}
                                    pattern="wss?:\/\/.*[^\/]"
                                    invalidFeedback={__("ocpp.content.endpoint_url_invalid")}/>
+                    </FormRow>
+                    <FormRow label={__("ocpp.content.tls_cert")}>
+                        <InputSelect items={[
+                                ["-1", __("ocpp.content.use_cert_bundle")],
+                            ].concat(API.get('certs/state').certs.map(c => [c.id.toString(), c.name])) as [string, string][]
+                            }
+                            value={state.cert_id}
+                            onValue={(v) => this.setState({cert_id: parseInt(v)})}
+                            disabled={!state.url.startsWith("wss://")}
+                        />
                     </FormRow>
                     <FormRow label={__("ocpp.content.identity")}>
                         <InputText required
