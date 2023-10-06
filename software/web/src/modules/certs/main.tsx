@@ -131,7 +131,7 @@ export class Certs extends Component<{}, State> {
                                         break;
                                     }
                                 }
-                                //TODO size check
+
                                 await API.call('certs/add', {
                                     id: next_free_id,
                                     name: state.addCert.name,
