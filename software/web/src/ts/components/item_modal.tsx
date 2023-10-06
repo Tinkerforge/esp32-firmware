@@ -62,11 +62,11 @@ export class ItemModal extends Component<ItemModalProps, any> {
                     e.preventDefault();
                     e.stopPropagation();
 
-                    if (onCheck && !await onCheck()) {
+                    if (!(e.target as HTMLFormElement).checkValidity() || (e.target as HTMLFormElement).querySelector(".is-invalid")) {
                         return;
                     }
 
-                    if (!(e.target as HTMLFormElement).checkValidity() || (e.target as HTMLFormElement).querySelector(".is-invalid")) {
+                    if (onCheck && !await onCheck()) {
                         return;
                     }
 
