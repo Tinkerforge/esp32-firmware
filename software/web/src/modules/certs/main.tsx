@@ -55,6 +55,7 @@ export class Certs extends Component<{}, State> {
                             columnNames={[__("certs.content.cert_name")]}
                             rows={API.get('certs/state').certs.map((cert, i) =>
                                 { return {
+                                    key: cert.id.toString(),
                                     columnValues: [
                                         [cert.name]
                                     ],
