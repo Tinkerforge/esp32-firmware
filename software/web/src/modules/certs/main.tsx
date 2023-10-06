@@ -34,7 +34,7 @@ import { InputSelect } from "src/ts/components/input_select";
 
 interface State {
     editCert: API.getType['certs/add'] & {'file': File}
-    addCert: API.getType['certs/add'] & {'file': File}
+    addCert: Omit<API.getType['certs/add'], 'id'> & {'file': File}
 }
 
 const MAX_CERTS = 8;
@@ -51,26 +51,24 @@ export class Certs extends Component<{}, State> {
                     <div class="mb-3">
                         <Table
                             tableTill="md"
-                            columnNames={["name", "size"]}
+                            columnNames={[__("certs.content.cert_name")]}
                             rows={API.get('certs/state').certs.map((cert, i) =>
                                 { return {
                                     columnValues: [
-                                        [cert.name],
-                                        [cert.size]
+                                        [cert.name]
                                     ],
-                                    editTitle: __("nfc.content.edit_tag_title"),
+                                    editTitle: __("certs.content.edit_cert_title"),
                                     onEditStart: async () => this.setState({editCert: {id: cert.id, name: cert.name, cert: "", file: null}}),
                                     onEditGetRows: () => [
                                         {
-                                            name: __("nfc.content.edit_tag_tag_id"),
+                                            name: __("certs.content.cert_name"),
                                             value: <InputText value={state.editCert.name}
                                                             onValue={(v) => this.setState({editCert: {...state.editCert, name: v}})}
                                                             maxLength={32}
-                                                            invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}
                                                             required/>
                                         },
                                         {
-                                            name: "Select cert",
+                                            name: __("certs.content.cert_file"),
                                             value: <div class="custom-file">
                                                         <input type="file" class="custom-file-input form-control" accept={"application/pem-certificate-chain"}
                                                             onChange={(ev) => this.setState({editCert: {...state.editCert, file: (ev.target as HTMLInputElement).files[0]}})}/>
@@ -92,40 +90,25 @@ export class Certs extends Component<{}, State> {
                                         });
                                     },
                                     onEditAbort: async () => this.setState({editCert: {id: 0, name: "", cert: "", file: null}}),
-                                    onRemoveClick: async () => API.call('certs/remove', {id: cert.id}, "error_string")
+                                    onRemoveClick: async () => { await API.call('certs/remove', {id: cert.id}, "error_string"); }
                                 }})
                             }
                             addEnabled={API.get('certs/state').certs.length < MAX_CERTS}
-                            addTitle={__("nfc.content.add_tag_title")}
-                            addMessage={__("nfc.content.add_tag_prefix") + API.get('certs/state').certs.length + __("nfc.content.add_tag_infix") + MAX_CERTS + __("nfc.content.add_tag_suffix")}
-                            onAddStart={async () => this.setState({addCert: {id: 0, name: "", cert: "", file: null}})}
+                            addTitle={__("certs.content.add_cert_title")}
+                            addMessage={__("certs.content.add_cert_message")(API.get('certs/state').certs.length, MAX_CERTS)}
+                            onAddStart={async () => {
+                                this.setState({addCert: {name: "", cert: "", file: null}});
+                            }}
                             onAddGetRows={() => [
                                 {
-                                    name: __("nfc.content.add_tag_tag_id"),
+                                    name: __("certs.content.cert_name"),
                                     value: <InputText value={state.addCert.name}
                                                     onValue={(v) => this.setState({addCert: {...state.addCert, name: v}})}
                                                     maxLength={32}
-                                                    invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}
                                                     required/>
                                 },
                                 {
-                                    name: __("nfc.content.add_tag_tag_type"),
-                                    value: <InputSelect items={[
-                                            ["0","0"],
-                                            ["1","1"],
-                                            ["2","2"],
-                                            ["3","3"],
-                                            ["4","4"],
-                                            ["5","5"],
-                                            ["6","6"],
-                                            ["7","7"],
-                                        ]}
-                                        value={state.addCert.id.toString()}
-                                        onValue={(v) => this.setState({addCert: {...state.addCert, id: parseInt(v)}})}
-                                        />
-                                },
-                                {
-                                    name: "Select cert",
+                                    name: __("certs.content.cert_file"),
                                     value: <div class="custom-file">
                                                 <input type="file" class="custom-file-input form-control" accept={"application/pem-certificate-chain"}
                                                     onChange={(ev) => this.setState({addCert: {...state.addCert, file: (ev.target as HTMLInputElement).files[0]}})}/>
@@ -135,18 +118,26 @@ export class Certs extends Component<{}, State> {
                                 }
                             ]}
                             onAddCommit={async () => {
+                                let ids = API.get('certs/state').certs.map(c => c.id);
+                                let next_free_id = -1;
+                                for(let i = 0; i < 8; ++i) {
+                                    if (ids.indexOf(i) < 0) {
+                                        next_free_id = i;
+                                        break;
+                                    }
+                                }
                                 //TODO size check
                                 await API.call('certs/add', {
-                                    id: state.addCert.id,
+                                    id: next_free_id,
                                     name: state.addCert.name,
                                     cert: await state.addCert.file.text()
                                 }, "error_string");
 
                                 this.setState({
-                                    addCert: {id: 0, name: "",  cert: "", file: null}
+                                    addCert: {name: "",  cert: "", file: null}
                                 });
                             }}
-                            onAddAbort={async () => this.setState({addCert: {id: 0, name: "",  cert: "", file: null}})} />
+                            onAddAbort={async () => this.setState({addCert: {name: "",  cert: "", file: null}})} />
                     </div>
             </SubPage>
         )
