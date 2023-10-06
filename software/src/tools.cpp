@@ -804,6 +804,40 @@ err_t dns_gethostbyname_addrtype_lwip_ctx(const char *hostname, ip_addr_t *addr,
     return esp_netif_tcpip_exec(gethostbyname_addrtype_lwip_ctx, &parameters);
 }
 
+static void gethostbyname_addrtype_lwip_ctx_async(const char */*hostname*/, const ip_addr_t *addr, void *callback_arg)
+{
+    dns_gethostbyname_addrtype_lwip_ctx_async_data *data = static_cast<dns_gethostbyname_addrtype_lwip_ctx_async_data *>(callback_arg);
+
+    data->err = ERR_OK; // ERR_OK because we got a response. Response might be negative and ipaddr a nullptr, though.
+
+    if (addr != nullptr) {
+        data->addr = *addr;
+        data->addr_ptr = &data->addr;
+    }
+    else {
+        data->addr_ptr = nullptr;
+    }
+
+    task_scheduler.scheduleOnce([data]() {
+        data->found_callback(data);
+    }, 0);
+}
+
+void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
+                                               void (*found_callback)(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg),
+                                               dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg,
+                                               u8_t dns_addrtype)
+{
+    callback_arg->found_callback = found_callback;
+    callback_arg->err = dns_gethostbyname_addrtype_lwip_ctx(hostname, &callback_arg->addr, gethostbyname_addrtype_lwip_ctx_async, callback_arg, dns_addrtype);
+
+    if (callback_arg->err != ERR_INPROGRESS) {
+        callback_arg->addr_ptr = &callback_arg->addr;
+
+        found_callback(callback_arg);
+    }
+}
+
 void trigger_reboot(const char *initiator)
 {
     task_scheduler.scheduleOnce([initiator]() {
