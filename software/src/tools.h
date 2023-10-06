@@ -79,6 +79,10 @@ void remove_directory(const char *path);
 bool is_in_subnet(IPAddress ip, IPAddress subnet, IPAddress to_check);
 bool is_valid_subnet_mask(IPAddress subnet);
 
+extern TaskHandle_t mainTaskHandle;
+void set_main_task_handle();
+inline bool running_in_main_task() {return mainTaskHandle == xTaskGetCurrentTaskHandle();}
+
 void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms);
 
 uint16_t internet_checksum(const uint8_t* data, size_t length);

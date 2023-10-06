@@ -29,7 +29,6 @@
 #include "task_scheduler.h"
 
 extern TF_HAL hal;
-extern TaskHandle_t mainTaskHandle;
 
 // Global definition here to match the declaration in api.h.
 API api;
@@ -209,7 +208,7 @@ void API::addRawCommand(const String &path, std::function<String(char *, size_t)
 }
 
 void API::callResponse(ResponseRegistration &reg, char *payload, size_t len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id) {
-    if (mainTaskHandle != xTaskGetCurrentTaskHandle()) {
+    if (!running_in_main_task()) {
         logger.printfln("Don't use API::callResponse in non-main thread!");
         return;
     }
@@ -405,7 +404,7 @@ size_t API::registerBackend(IAPIBackend *backend)
 }
 
 String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
-    if (mainTaskHandle == xTaskGetCurrentTaskHandle()) {
+    if (running_in_main_task()) {
         return "Use ConfUpdate overload of callCommand in main thread!";
     }
 
@@ -435,7 +434,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
 }
 
 void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(String)> done_cb) {
-    if (mainTaskHandle == xTaskGetCurrentTaskHandle()) {
+    if (running_in_main_task()) {
         done_cb("callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!");
         return;
     }
@@ -470,7 +469,7 @@ void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t
 
 String API::callCommand(const char *path, Config::ConfUpdate payload)
 {
-    if (mainTaskHandle != xTaskGetCurrentTaskHandle()) {
+    if (!running_in_main_task()) {
         return "Use char *, size_t overload of callCommand in non-main thread!";
     }
 

@@ -98,7 +98,6 @@ Task *TaskQueue::findByTaskID(uint64_t task_id) {
 
 void TaskScheduler::pre_setup()
 {
-    mainThreadHandle = xTaskGetCurrentTaskHandle();
 }
 
 void TaskScheduler::setup()
@@ -201,7 +200,7 @@ TaskScheduler::CancelResult TaskScheduler::cancel(uint64_t task_id) {
 uint64_t TaskScheduler::currentTaskId() {
     // currentTaskId is intended to write a self-canceling task.
     // Don't allow other threads to cancel tasks without knowing their ID.
-    if (this->mainThreadHandle != xTaskGetCurrentTaskHandle()) {
+    if (!running_in_main_task()) {
         logger.printfln("Calling TaskScheduler::currentTask is only allowed in the main thread!");
         return 0;
     }
@@ -220,7 +219,7 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t milli
 
     TaskHandle_t thisThread = xTaskGetCurrentTaskHandle();
 
-    if (this->mainThreadHandle == thisThread) {
+    if (mainTaskHandle == thisThread) {
         logger.printfln("Calling TaskScheduler::await is not allowed in the main thread!");
         return TaskScheduler::AwaitResult::Error;
     }

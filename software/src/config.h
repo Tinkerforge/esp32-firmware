@@ -24,8 +24,9 @@
 #include "ArduinoJson.h"
 #include "FS.h"
 
-#include "event_log.h"
 #include "cool_string.h"
+#include "event_log.h"
+#include "tools.h"
 
 #define STRICT_VARIANT_ASSUME_MOVE_NOTHROW true
 #include "strict_variant/variant.hpp"
@@ -34,9 +35,8 @@
 #include "config/owned_config.h"
 
 #ifdef DEBUG_FS_ENABLE
-extern TaskHandle_t mainTaskHandle;
 #define ASSERT_MAIN_THREAD() do { \
-        if (mainTaskHandle != xTaskGetCurrentTaskHandle()) { \
+        if (!running_in_main_task()) { \
             esp_system_abort("Accessing the config is only allowed in the main thread!"); \
         } \
     } while (0)
