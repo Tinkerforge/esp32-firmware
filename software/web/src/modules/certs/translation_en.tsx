@@ -14,11 +14,14 @@ let x = {
             "edit_cert_title": "Edit TLS certificate",
             "cert_name": "Display name",
             "cert_file": "Certificate file",
+            "cert_file_muted": "(PEM format)",
 
             "add_cert_id": "Certificate ID",
 
-            "add_cert_message": /*SFN*/(have: number, max: number) => `${have} of ${max} certificates configured.`/*NF*/
+            "add_cert_message": /*SFN*/(have: number, max: number) => `${have} of ${max} certificates configured.`/*NF*/,
 
+            "browse": "Browse",
+            "select_file": "Select file"
         },
         "script": {
             "save_failed": "Failed to save certificate configuration",

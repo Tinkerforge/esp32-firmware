@@ -14,11 +14,14 @@ let x = {
             "edit_cert_title": "TLS-Zertifikat bearbeiten",
             "cert_name": "Zertifikatsname",
             "cert_file": "Zertifikatsdatei",
+            "cert_file_muted": "(PEM-Format)",
 
             "add_cert_id": "Zertifikats-ID",
 
-            "add_cert_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Zertifikaten konfiguriert.`/*NF*/
+            "add_cert_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Zertifikaten konfiguriert.`/*NF*/,
 
+            "browse": "Durchsuchen",
+            "select_file": "Datei auswählen"
         },
         "script": {
             "save_failed": "Speichern der Zertifikatseinstellungen fehlgeschlagen",

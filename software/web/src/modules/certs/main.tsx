@@ -80,7 +80,7 @@ export class Certs extends Component<{}, State> {
                                                                 this.setState({editCert: {...state.editCert, file: file, file_too_large: file.size > MAX_CERT_LENGTH}})
                                                             }}/>
                                                         <label class="custom-file-label form-control rounded-left"
-                                                            data-browse={"browse"}>{state.editCert.file ? state.editCert.file.name : "select file"}</label>
+                                                            data-browse={__('certs.content.browse')}>{state.editCert.file ? state.editCert.file.name : __('certs.content.select_file')}</label>
                                                         <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_LENGTH)}</div>
                                                     </div>
                                         }
@@ -121,7 +121,7 @@ export class Certs extends Component<{}, State> {
                                                         this.setState({addCert: {...state.addCert, file: file, file_too_large: file.size > MAX_CERT_LENGTH}});
                                                     }}/>
                                                 <label class="custom-file-label form-control rounded-left"
-                                                    data-browse={"browse"}>{state.addCert.file ? state.addCert.file.name : "select file"}</label>
+                                                    data-browse={__('certs.content.browse')}>{state.addCert.file ? state.addCert.file.name : __('certs.content.select_file')}</label>
                                                 <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_LENGTH)}</div>
                                             </div>
                                           </>
