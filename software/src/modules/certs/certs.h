@@ -26,6 +26,7 @@
 
 #define MAX_CERTS 8
 #define MAX_CERT_SIZE 4096
+#define MAX_CERT_NAME 32
 
 class Certs final : public IModule
 {
@@ -40,7 +41,6 @@ public:
 private:
     void update_state();
 
-    ConfigRoot config, config_in_use;
     ConfigRoot state;
     ConfigRoot add;
     ConfigRoot remove;

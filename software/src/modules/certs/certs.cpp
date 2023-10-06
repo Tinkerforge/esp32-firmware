@@ -31,7 +31,7 @@ void Certs::pre_setup() {
         {"certs", Config::Array({},
             new Config(Config::Object({
                 {"id", Config::Uint(0, 0, MAX_CERTS)},
-                {"name", Config::Str("", 0, 32)},
+                {"name", Config::Str("", 0, MAX_CERT_NAME)},
                 {"size", Config::Uint16(0)},
             })),
             0, MAX_CERTS, Config::type_id<Config::ConfObject>())
@@ -54,7 +54,7 @@ void Certs::update_state() {
 
     for(uint8_t i = 0; i < MAX_CERTS; ++i) {
         String path = String("/certs/") + i;
-        logger.printfln("Checking %s", path.c_str());
+
         if (!LittleFS.exists(path))
             continue;
         File f = LittleFS.open(path, "r");
@@ -66,9 +66,6 @@ void Certs::update_state() {
 }
 
 void Certs::setup() {
-    api.restorePersistentConfig("certs/config", &config);
-    config_in_use = config;
-
     LittleFS.mkdir("/certs");
     update_state();
 
@@ -78,7 +75,6 @@ void Certs::setup() {
 void Certs::register_urls()
 {
     api.addState("certs/state", &state, {}, 1000);
-    api.addPersistentConfig("certs/config", &config, {}, 1000);
 
     api.addCommand("certs/add", &add, {}, [this]() {
         // TODO: fail if already exists.
