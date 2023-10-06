@@ -32,7 +32,6 @@ void Certs::pre_setup() {
             new Config(Config::Object({
                 {"id", Config::Uint(0, 0, MAX_CERTS)},
                 {"name", Config::Str("", 0, MAX_CERT_NAME)},
-                {"size", Config::Uint16(0)},
             })),
             0, MAX_CERTS, Config::type_id<Config::ConfObject>())
         }
@@ -57,10 +56,14 @@ void Certs::update_state() {
 
         if (!LittleFS.exists(path))
             continue;
+
         File f = LittleFS.open(path, "r");
+        char name[MAX_CERT_NAME + 1] = {0};
+        size_t written = f.readBytesUntil('\n', name, MAX_CERT_NAME);
+        String cert_name{name, written};
+
         auto new_cfg = certs.state.get("certs")->add();
-        new_cfg->get("name")->updateString(f.name());
-        new_cfg->get("size")->updateUint(f.size());
+        new_cfg->get("name")->updateString(cert_name);
         new_cfg->get("id")->updateUint(i);
     }
 }
@@ -83,10 +86,15 @@ void Certs::register_urls()
         {
             File f = LittleFS.open(String("/certs/") + cert_id, "w");
 
-            auto &cert = add.get("cert")->asString();
+            auto cert_name = add.get("name")->asString();
+            cert_name.replace('\n', ' ');
+            cert_name += '\n';
+            f.write((const uint8_t *) cert_name.c_str(), cert_name.length());
 
             // TODO: more robust writing
+            auto &cert = add.get("cert")->asString();
             size_t written = f.write((const uint8_t *) cert.c_str(), cert.length());
+
             logger.printfln("Written %u; size %u", written, cert.length());
         }
 
@@ -105,10 +113,15 @@ void Certs::register_urls()
         {
             File f = LittleFS.open(String("/certs/") + cert_id, "w");
 
-            auto &cert = add.get("cert")->asString();
+            auto cert_name = add.get("name")->asString();
+            cert_name.replace('\n', ' ');
+            cert_name += '\n';
+            f.write((const uint8_t *) cert_name.c_str(), cert_name.length());
 
             // TODO: more robust writing
+            auto &cert = add.get("cert")->asString();
             size_t written = f.write((const uint8_t *) cert.c_str(), cert.length());
+
             logger.printfln("Written %u; size %u", written, cert.length());
         }
 
@@ -141,9 +154,11 @@ std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t id, size_t *out_cert_le
 
     File f = LittleFS.open(path, "r");
     auto result = heap_alloc_array<unsigned char>(f.size());
+    f.readStringUntil('\n');
     size_t buf_size = f.size();
     while (f.available())
         buf_size -= f.read(result.get(), buf_size);
+
     *out_cert_len = f.size();
     return result;
 }
