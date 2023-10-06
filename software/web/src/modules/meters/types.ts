@@ -23,7 +23,9 @@ import { TableModalRow } from "../../ts/components/table";
 export type MeterConfig = API.getType["meters/0/config"];
 
 export type MeterConfigPlugin = {
+    name: string
+    init: () => MeterConfig
     clone: (config: MeterConfig) => MeterConfig
-    get_edit_rows: (config: MeterConfig, on_value: (key: string, value: any) => void) => TableModalRow[]
-    get_add_rows: (config: MeterConfig, on_value: (key: string, value: any) => void) => TableModalRow[]
+    get_edit_rows: (config: MeterConfig, on_value: (config: MeterConfig) => void) => TableModalRow[]
+    get_add_rows?: (config: MeterConfig, on_value: (config: MeterConfig) => void) => TableModalRow[]
 };

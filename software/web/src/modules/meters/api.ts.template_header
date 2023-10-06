@@ -1,7 +1,8 @@
+import { MeterClassID } from "./meters_defs";
 {{{imports}}}
 
 type MeterConfig =
-    [0, null]{{{configs}}};
+    [MeterClassID.None, null]{{{configs}}};
 
 //APIPath:meters/
 export interface config {

@@ -37,7 +37,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS, METER_VALUE_ORDER } from "./meter_value_id";
 import { MeterClassID } from "./meters_defs";
 import { MeterConfig, MeterConfigPlugin } from "./types";
-import { Table } from "../../ts/components/table";
+import { Table, TableModalRow } from "../../ts/components/table";
 import { plugins_init } from "./plugins";
 
 const PHASE_CONNECTED_VOLTAGE_THRESHOLD = 180.0 // V
@@ -498,7 +498,9 @@ interface MetersState {
     configs: {[meter_slot: number]: MeterConfig};
     values_by_id: {[meter_slot: number]: NumberToNumber};
     chart_selected: "history"|"live";
+    addMeterSlot: number;
     addMeter: MeterConfig;
+    editMeterSlot: number;
     editMeter: MeterConfig;
     extraShow: boolean[/*meter_slot*/];
 }
@@ -592,6 +594,8 @@ function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
     return a.slice(-tail);
 }
 
+type MetersConfig = API.getType['meters/config'];
+
 export class Meters extends ConfigComponent<'meters/config', MetersProps, MetersState> {
     live_data: CachedData = {timestamps: [], samples: []};
     pending_live_data: CachedData;
@@ -611,9 +615,9 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                   configs: {},
                   values_by_id: {},
                   chart_selected: "history",
-                  //addMeterSlot: null,
+                  addMeterSlot: null,
                   addMeter: [MeterClassID.None, null],
-                  //editMeterSlot: null,
+                  editMeterSlot: null,
                   editMeter: [MeterClassID.None, null],
                   extraShow: new Array<boolean>(7),
               },
@@ -896,6 +900,14 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
         }
     }
 
+    override async sendSave(t: "meters/config", new_config: MetersConfig) {
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            await API.save_maybe(`meters/${meter_slot}/config`, this.state.configs[meter_slot], __("meters.script.save_failed"));
+        }
+
+        await API.save(t, new_config, this.error_string, this.reboot_string);
+    }
+
     render(props: {}, state: Readonly<MetersState>) {
         if (!util.render_allowed()) {
             return (<></>);
@@ -1074,14 +1086,65 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                                 </FormRow>),
                                     fieldWithBox: [true, true, true, false],
                                     editTitle: __("meters.content.edit_meter_title"),
-                                    onEditShow: async () => this.setState({editMeter: config_plugins[config[0]].clone(config)}),
-                                    onEditGetRows: () => [/* FIXME */],
+                                    onEditShow: async () => this.setState({editMeterSlot: meter_slot, editMeter: config_plugins[config[0]].clone(config)}),
+                                    onEditGetRows: () => {
+                                        let slots: [string, string][] = [];
+                                        let classes: [string, string][] = [];
+
+                                        for (let free_meter_slot = 0; free_meter_slot < METERS_SLOTS; ++free_meter_slot) {
+                                            if (state.configs[free_meter_slot][0] == MeterClassID.None || free_meter_slot == meter_slot) {
+                                                slots.push([free_meter_slot.toString(), free_meter_slot.toString()]);
+                                            }
+                                        }
+
+                                        for (let meter_class in config_plugins) {
+                                            classes.push([meter_class.toString(), config_plugins[meter_class].name])
+                                        }
+
+                                        let rows: TableModalRow[] = [{
+                                            name: __("meters.content.edit_meter_slot"),
+                                            value: <InputSelect
+                                                        items={slots}
+                                                        onValue={(v) => this.setState({editMeterSlot: parseInt(v)})}
+                                                        value={state.editMeterSlot.toString()}/>
+                                        },
+                                        {
+                                            name: __("meters.content.edit_meter_class"),
+                                            value: <InputSelect
+                                                        placeholder={__("meters.content.edit_meter_class_select")}
+                                                        items={classes}
+                                                        onValue={(v) => {
+                                                            let meter_class = parseInt(v);
+
+                                                            if (meter_class != state.editMeter[0]) {
+                                                                if (meter_class == MeterClassID.None) {
+                                                                    this.setState({editMeter: [MeterClassID.None, null]});
+                                                                }
+                                                                else {
+                                                                    this.setState({editMeter: config_plugins[meter_class].init()});
+                                                                }
+                                                            }
+                                                        }}
+                                                        value={state.editMeter[0].toString()}/>
+                                        }]
+
+                                        if (state.editMeter[0] != MeterClassID.None) {
+                                            rows = rows.concat(config_plugins[state.editMeter[0]].get_edit_rows(state.editMeter, (meter_config) => this.setState({editMeter: meter_config})));
+                                        }
+
+                                        return rows;
+                                    },
                                     onEditSubmit: async () => {
-                                        // FIXME
+                                        this.setState({
+                                            configs: {...state.configs, [meter_slot]: [MeterClassID.None, null], [state.editMeterSlot]: state.editMeter},
+                                            editMeterSlot: null,
+                                            editMeter: [MeterClassID.None, null],
+                                        });
                                         this.setDirty(true);
+                                        this.update_uplot(); // update plot color, that depends on the name of the meter
                                     },
                                     onRemoveClick: async () => {
-                                        this.setState({configs: {...state.configs, [meter_slot]: [0, null]}});
+                                        this.setState({configs: {...state.configs, [meter_slot]: [MeterClassID.None, null]}});
                                         this.setDirty(true);
                                     }
                                 }
@@ -1089,10 +1152,73 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                             addEnabled={active_meter_slots.length < METERS_SLOTS}
                             addTitle={__("meters.content.add_meter_title")}
                             addMessage={__("meters.content.add_meter_prefix") + active_meter_slots.length + __("meters.content.add_meter_infix") + METERS_SLOTS + __("meters.content.add_meter_suffix")}
-                            onAddShow={async () => this.setState({addMeter: [0, null]})}
-                            onAddGetRows={() => [/* FIXME */]}
+                            onAddShow={async () => {
+                                let addMeterSlot = null;
+
+                                for (let free_meter_slot = 0; free_meter_slot < METERS_SLOTS; ++free_meter_slot) {
+                                    if (state.configs[free_meter_slot][0] == MeterClassID.None) {
+                                        addMeterSlot = free_meter_slot;
+                                        break;
+                                    }
+                                }
+
+                                this.setState({addMeterSlot: addMeterSlot, addMeter: [MeterClassID.None, null]});
+                            }}
+                            onAddGetRows={() => {
+                                let slots: [string, string][] = [];
+                                let classes: [string, string][] = [];
+
+                                for (let free_meter_slot = 0; free_meter_slot < METERS_SLOTS; ++free_meter_slot) {
+                                    if (state.configs[free_meter_slot][0] == MeterClassID.None) {
+                                        slots.push([free_meter_slot.toString(), free_meter_slot.toString()]);
+                                    }
+                                }
+
+                                for (let meter_class in config_plugins) {
+                                    classes.push([meter_class.toString(), config_plugins[meter_class].name])
+                                }
+
+                                let rows: TableModalRow[] = [{
+                                    name: __("meters.content.add_meter_slot"),
+                                    value: <InputSelect
+                                                items={slots}
+                                                onValue={(v) => this.setState({addMeterSlot: parseInt(v)})}
+                                                value={state.addMeterSlot.toString()}/>
+                                },
+                                {
+                                    name: __("meters.content.add_meter_class"),
+                                    value: <InputSelect
+                                                placeholder={__("meters.content.add_meter_class_select")}
+                                                items={classes}
+                                                onValue={(v) => {
+                                                    let meter_class = parseInt(v);
+
+                                                    if (meter_class != state.addMeter[0]) {
+                                                        if (meter_class == MeterClassID.None) {
+                                                            this.setState({addMeter: [MeterClassID.None, null]});
+                                                        }
+                                                        else {
+                                                            this.setState({addMeter: config_plugins[meter_class].init()});
+                                                        }
+                                                    }
+                                                }}
+                                                value={this.state.addMeter[0].toString()}/>
+                                }];
+
+                                if (state.addMeter[0] != MeterClassID.None) {
+                                    let get_add_rows = config_plugins[state.addMeter[0]].get_add_rows;
+
+                                    if (!get_add_rows) {
+                                        get_add_rows = config_plugins[state.addMeter[0]].get_edit_rows;
+                                    }
+
+                                    rows = rows.concat(get_add_rows(state.addMeter, (meter_config) => this.setState({addMeter: meter_config})));
+                                }
+
+                                return rows;
+                            }}
                             onAddSubmit={async () => {
-                                // FIXME
+                                this.setState({configs: {...state.configs, [state.addMeterSlot]: state.addMeter}});
                                 this.setDirty(true);
                             }}
                             />
