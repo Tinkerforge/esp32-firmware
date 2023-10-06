@@ -254,19 +254,19 @@ void Debug::register_urls()
             return request.endChunkedResponse();
         } else {
             request.beginChunkedResponse(200, "text/html");
-            String header = "<h1>" + String(f.path()) + "</h1><br>";
+            String header = "<h1>" + String(f.path()) + "</h1><br>\n";
             request.sendChunk(header.c_str(), static_cast<ssize_t>(header.length()));
 
             if (path.length() > 1) {
                 int idx = path.lastIndexOf('/');
-                String up = "<a href=\"/debug/fs" + path.substring(0, static_cast<unsigned int>(idx + 1)) + "\">..</a><br>";
+                String up = "<button type=\"button\" onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/debug/fs" + path.substring(0, static_cast<unsigned int>(idx + 1)) + "\">..</a><br>\n";
 
                 request.sendChunk(up.c_str(), static_cast<ssize_t>(up.length()));
             }
 
             File file = f.openNextFile();
             while(file) {
-                String s = "<a href=\"/debug/fs" + String(file.path()) + "\">"+ file.name() +"</a><button type=\"button\" onclick=\"fetch('/debug/fs" + String(file.path()) + "', {method: 'DELETE'})\">Delete</button><br>";
+                String s = "<button type=\"button\" onclick=\"if (window.confirm('Delete file?')) {fetch('/debug/fs" + String(file.path()) + "', {method: 'DELETE'})}\">Delete</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/debug/fs" + String(file.path()) + "\">"+ file.name() +"</a><br>\n";
                 request.sendChunk(s.c_str(), static_cast<ssize_t>(s.length()));
                 file = f.openNextFile();
             }
