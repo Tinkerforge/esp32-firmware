@@ -81,17 +81,17 @@ void Certs::update_state() {
     for(uint8_t i = 0; i < MAX_CERTS; ++i) {
         String path = String("/certs/") + i;
 
-        if (!LittleFS.exists(path))
+        if (!LittleFS.exists(path) || !LittleFS.exists(path + "_name"))
             continue;
 
-        File f = LittleFS.open(path, "r");
-        char name[MAX_CERT_NAME + 1] = {0};
-        size_t written = f.readBytesUntil('\n', name, MAX_CERT_NAME);
-        String cert_name{name, written};
-
         auto new_cfg = certs.state.get("certs")->add();
-        new_cfg->get("name")->updateString(cert_name);
         new_cfg->get("id")->updateUint(i);
+
+        File f = LittleFS.open(path + "_name", "r");
+        char name[MAX_CERT_NAME + 1] = {0};
+        size_t written = f.readBytes(name, MAX_CERT_NAME);
+        String cert_name{name, written};
+        new_cfg->get("name")->updateString(cert_name);
     }
 }
 
@@ -106,18 +106,31 @@ void Certs::register_urls()
 {
     api.addState("certs/state", &state, {}, 1000);
 
-    api.addCommand("certs/add", &add, {}, [this]() {
-        // TODO: fail if already exists.
+    api.addCommand("certs/add", &add, {}, [this](String &error) {
+        error = "";
+
+        if (add.get("cert")->asString().length() == 0) {
+            error = "Adding an empty certificate is not allowed. Did you mean to call certs/modify?";
+            return;
+        }
+
         uint8_t cert_id = add.get("id")->asUint();
+
+        for (const auto &cert: state.get("certs")) {
+            if (cert.get("id")->asUint() == cert_id) {
+                error = String("A certificate with ID ") + cert_id + " does already exist! Did you mean to call certs/modify?";
+                return;
+            }
+        }
+
+        {
+            File f = LittleFS.open(String("/certs/") + cert_id + "_name", "w");
+            auto cert_name = add.get("name")->asString();
+            f.write((const uint8_t *) cert_name.c_str(), cert_name.length());
+        }
 
         {
             File f = LittleFS.open(String("/certs/") + cert_id, "w");
-
-            auto cert_name = add.get("name")->asString();
-            cert_name.replace('\n', ' ');
-            cert_name += '\n';
-            f.write((const uint8_t *) cert_name.c_str(), cert_name.length());
-
             // TODO: more robust writing
             auto &cert = add.get("cert")->asString();
             size_t written = f.write((const uint8_t *) cert.c_str(), cert.length());
@@ -129,15 +142,32 @@ void Certs::register_urls()
         add.get("cert")->clearString();
 
         this->update_state();
-        return "";
     }, true);
 
-    api.addCommand("certs/modify", &add, {}, [this]() {
+    api.addCommand("certs/modify", &add, {}, [this](String &error) {
         // TODO: fail if not already existing.
+        error = "";
 
         uint8_t cert_id = add.get("id")->asUint();
+        bool found = false;
+        for (const auto &cert: state.get("certs")) {
+            if (cert.get("id")->asUint() == cert_id) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            error = String("No cert with ID ") + cert_id + " found! Did you mean to call certs/add?";
+        }
 
         {
+            File f = LittleFS.open(String("/certs/") + cert_id + "_name", "w");
+            auto cert_name = add.get("name")->asString();
+            f.write((const uint8_t *) cert_name.c_str(), cert_name.length());
+        }
+
+        if (add.get("cert")->asString().length() != 0) {
             File f = LittleFS.open(String("/certs/") + cert_id, "w");
 
             auto cert_name = add.get("name")->asString();
@@ -156,20 +186,23 @@ void Certs::register_urls()
         add.get("cert")->clearString();
 
         this->update_state();
-        return "";
     }, true);
 
-    api.addCommand("certs/remove", &remove, {}, [this]() {
-        //TODO: signal cert users that cert was deleted.
-        String path = String("/certs/") + remove.get("id")->asUint();
-        logger.printfln("Removing %s", path.c_str());
+    api.addCommand("certs/remove", &remove, {}, [this](String &error) {
+        error = "";
 
-        if (!LittleFS.exists(path))
-            return "Not found";
+        uint8_t cert_id = remove.get("id")->asUint();
+
+        String path = String("/certs/") + cert_id;
+
+        if (!LittleFS.exists(path)) {
+            error = String("No cert with ID ") + cert_id + " found!";
+            return;
+        }
 
         LittleFS.remove(path);
+        LittleFS.remove(path + "_name");
         this->update_state();
-        return "";
     }, true);
 }
 
@@ -181,7 +214,6 @@ std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t id, size_t *out_cert_le
 
     File f = LittleFS.open(path, "r");
     auto result = heap_alloc_array<unsigned char>(f.size());
-    f.readStringUntil('\n');
     size_t buf_size = f.size();
     while (f.available())
         buf_size -= f.read(result.get(), buf_size);
