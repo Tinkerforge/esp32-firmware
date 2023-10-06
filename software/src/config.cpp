@@ -278,7 +278,7 @@ Config::Wrap Config::add() {
     children = this->asArray();
 
     children.push_back(std::move(copy));
-
+    this->set_updated(0xFF);
     return Wrap(&children.back());
 }
 
@@ -295,6 +295,7 @@ bool Config::removeLast()
         return false;
 
     children.pop_back();
+    this->set_updated(0xFF);
     return true;
 }
 
@@ -309,7 +310,7 @@ bool Config::removeAll()
     std::vector<Config> &children = this->asArray();
 
     children.clear();
-
+    this->set_updated(0xFF);
     return true;
 }
 
@@ -326,6 +327,7 @@ bool Config::remove(size_t i)
         return false;
 
     children.erase(children.begin() + i);
+    this->set_updated(0xFF);
     return true;
 }
 
