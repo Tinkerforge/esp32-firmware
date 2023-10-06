@@ -251,11 +251,9 @@ export class Table extends Component<TableProps, TableState> {
                         return true;
                     }}
                     onSubmit={async () => {
-                        this.setState({showAddModal: false}, async () => {
-                            if (props.onAddCommit) {
-                                await props.onAddCommit();
-                            }
-                        });
+                        if (props.onAddCommit) {
+                            await props.onAddCommit();
+                        }
                     }}
                     onHide={async () => {
                         this.setState({showAddModal: false}, async () => {
@@ -287,11 +285,9 @@ export class Table extends Component<TableProps, TableState> {
                         return true;
                     }}
                     onSubmit={async () => {
-                        this.setState({showEditModal: null}, async () => {
-                            if (props.rows[state.showEditModal].onEditCommit) {
-                                await props.rows[state.showEditModal].onEditCommit();
-                            }
-                        });
+                        if (props.rows[state.showEditModal].onEditCommit) {
+                            await props.rows[state.showEditModal].onEditCommit();
+                        }
                     }}
                     onHide={async () => {
                         this.setState({showEditModal: null}, async () => {
