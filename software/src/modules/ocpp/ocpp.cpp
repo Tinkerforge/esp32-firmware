@@ -131,6 +131,33 @@ static uint8_t hex_digit_to_byte(char digit) {
     return 0xFF;
 }
 
+bool Ocpp::start_client() {
+    if (!config_in_use.get("enable_auth")->asBool()) {
+        return cp->start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), nullptr, 0);
+    }
+
+    String pass = config_in_use.get("pass")->asString();
+    bool pass_is_hex = pass.length() == 40;
+    if (pass_is_hex) {
+        for(size_t i = 0; i < 40; ++i) {
+            if (!isxdigit(pass[i])) {
+                pass_is_hex = false;
+                break;
+            }
+        }
+    }
+
+    if (!pass_is_hex) {
+        return cp->start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), (const uint8_t *)pass.c_str(), pass.length());
+    }
+
+    uint8_t pass_bytes[20] = {};
+    for(size_t i = 0; i < 20; ++i) {
+        pass_bytes[i] = hex_digit_to_byte(pass[2*i]) << 4 | hex_digit_to_byte(pass[2*i + 1]);
+    }
+    return cp->start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes, 20);
+}
+
 void Ocpp::setup()
 {
     initialized = true;
@@ -146,38 +173,15 @@ void Ocpp::setup()
     cp = std::unique_ptr<OcppChargePoint>(new OcppChargePoint());
 
     task_scheduler.scheduleOnce([this](){
-        // Make sure every code path calls cp->start!
+        if (!start_client()) {
+            state.get("charge_point_state")->updateUint(6);
+            logger.printfln("Failed to start OCPP client. Check configuration!");
+            return;
+        }
 
         task_scheduler.scheduleWithFixedDelay([this](){
             cp->tick();
         }, 100, 100);
-
-        if (!config_in_use.get("enable_auth")->asBool()) {
-            cp->start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), nullptr, 0);
-            return;
-        }
-
-        String pass = config_in_use.get("pass")->asString();
-        bool pass_is_hex = pass.length() == 40;
-        if (pass_is_hex) {
-            for(size_t i = 0; i < 40; ++i) {
-                if (!isxdigit(pass[i])) {
-                    pass_is_hex = false;
-                    break;
-                }
-            }
-        }
-
-        if (!pass_is_hex) {
-            cp->start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), (const uint8_t *)pass.c_str(), pass.length());
-            return;
-        }
-
-        uint8_t pass_bytes[20] = {};
-        for(size_t i = 0; i < 20; ++i) {
-            pass_bytes[i] = hex_digit_to_byte(pass[2*i]) << 4 | hex_digit_to_byte(pass[2*i + 1]);
-        }
-        cp->start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes, 20);
     }, 5000);
 }
 

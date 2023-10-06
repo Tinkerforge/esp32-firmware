@@ -80,6 +80,10 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
     else {
         size_t cert_len = 0;
         auto cert = certs.get_cert(cert_id, &cert_len);
+        if (cert == nullptr) {
+            logger.printfln("OCPP platform: Configured TLS certificate does not exist!");
+            return nullptr;
+        }
 
         // Release the cert buffer unique_ptr's ownership.
         // This effectively leaks the buffer, but as per the

@@ -44,4 +44,6 @@ public:
     ConfigRoot state;
     ConfigRoot configuration;
     ConfigRoot change_configuration;
+private:
+    bool start_client();
 };
