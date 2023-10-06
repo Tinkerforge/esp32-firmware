@@ -59,11 +59,12 @@ public:
     bool supports_currents()      override {return true;}
 
     void check_ip(const ip_addr_t *ip, int err);
-    void poll_next();
-    void handle_data();
 
 private:
     void start_connection();
+    void connect_to_ip();
+    void poll_next();
+    void handle_data();
 
     uint32_t slot;
     Config *config;

@@ -26,6 +26,7 @@
 #include "event_log.h"
 //#include "modules/meters/meter_value_id.h"
 #include "task_scheduler.h"
+#include "tools.h"
 
 #include "gcc_warnings.h"
 
@@ -50,11 +51,8 @@ void MeterModbusTCP::setup()
 
 static void dns_callback(const char * /*name*/, const ip_addr_t *ipaddr, void *callback_arg)
 {
-    // Callback executed in lwIP context, need to go back to our task.
-    task_scheduler.scheduleOnce([ipaddr, callback_arg](){
-        MeterModbusTCP *this_ = static_cast<MeterModbusTCP *>(callback_arg);
-        this_->check_ip(ipaddr, ERR_OK); // ERR_OK because we got a response. Response might be negative and ipaddr a nullptr, though.
-    }, 0);
+    MeterModbusTCP *mmbt = static_cast<MeterModbusTCP *>(callback_arg);
+    mmbt->check_ip(ipaddr, ERR_OK); // ERR_OK because we got a response. Response might be negative and ipaddr a nullptr, though.
 }
 
 void MeterModbusTCP::start_connection()
@@ -70,6 +68,7 @@ void MeterModbusTCP::start_connection()
     check_ip(&ip, err);
 }
 
+// May be executed by the loop task or TCP/IP task.
 void MeterModbusTCP::check_ip(const ip_addr_t *ip, int err)
 {
     if (err != ERR_OK || !ip || ip->type != IPADDR_TYPE_V4) {
@@ -92,6 +91,18 @@ void MeterModbusTCP::check_ip(const ip_addr_t *ip, int err)
 
     host_ip = ip->u_addr.ip4.addr;
 
+    if (running_in_main_task()) {
+        connect_to_ip();
+    } else {
+        // Callback executed in lwIP context, need to go back to our task.
+        task_scheduler.scheduleOnce([this]() {
+            this->connect_to_ip();
+        }, 0);
+    }
+}
+
+void MeterModbusTCP::connect_to_ip()
+{
     errno = ENOTRECOVERABLE; // Set to something known because connect() might leave errno unchanged on some errors.
     if (!mb->connect(host_ip)) {
         if (!connect_error_printed) {
