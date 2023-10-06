@@ -17,17 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <Arduino.h>
+#include "modbus_tcp_meter.h"
 
-#include "esp_modbus_common.h"
-#include "esp_modbus_master.h"
+#include <Arduino.h>
 #include "esp_netif.h"
 
 #include "api.h"
-#include "modules.h"
 #include "task_scheduler.h"
-
-#include "modbus_tcp_meter.h"
 
 const char* get_modbus_result_code_name(Modbus::ResultCode event)
 {
@@ -58,6 +54,15 @@ ModbusTcpMeter::ModbusTcpMeter() {}
 
 void ModbusTcpMeter::pre_setup()
 {
+    Config *register_element = new Config{Config::Object({
+        //{"role", Config::Uint16(0)},
+        {"ra", Config::Uint32(0)},  // register address
+        {"rt", Config::Uint8(0)},   // register type: input, holding, coil, discrete
+        {"vt", Config::Uint8(0)},   // value type: uint16, int16, uint32, int32, etc...
+        {"s", Config::Float(1.0)},  // scale
+        {"o", Config::Float(0.0)},  // offset
+    })};
+
     Config *config_element = new Config{Config::Object({
         {"enable", Config::Bool(false)},
         //{"display_name", Config::Str("", 0, 32)},
@@ -65,14 +70,7 @@ void ModbusTcpMeter::pre_setup()
         {"port", Config::Uint16(502)},
         {"register_set", Config::Array(
             {},
-            new Config{Config::Object({
-                //{"role", Config::Uint16(0)},
-                {"register", Config::Uint32(0)},
-                {"register_type", Config::Uint8(0)}, // input, holding, coil, discrete
-                {"value_type", Config::Uint8(0)},    // uint16, int16, uint32, int32, etc...
-                {"scale", Config::Float(1.0)},
-                {"offset", Config::Float(0.0)},
-            })},
+            register_element,
             0,
             MODBUS_TCP_METER_REGISTER_COUNT_MAX,
             Config::type_id<Config::ConfObject>()
@@ -168,12 +166,12 @@ void ModbusTcpMeter::read_register(const char *host, const Config *register_conf
     // Set in_progress. We only read one register at a time
     in_progress = true;
 
-    const uint8_t  register_type    = register_config->get("register_type")->asUint();
-    const uint32_t register_address = register_config->get("register")->asUint();
-    const uint8_t  value_type       = register_config->get("value_type")->asUint();
+    const uint8_t  register_type    = register_config->get("rt")->asUint();
+    const uint32_t register_address = register_config->get("ra")->asUint();
+    const uint8_t  value_type       = register_config->get("vt")->asUint();
     const uint8_t  register_length  = get_length_from_type(value_type);
 
-    logger.printfln("Read register host %s, type %u, address %u, length %u", host, register_type, register_address, register_length);
+    //logger.printfln("Read register host %s, type %u, address %u, length %u", host, register_type, register_address, register_length);
 
     zero_results();
     switch(register_type) {
@@ -197,7 +195,7 @@ void ModbusTcpMeter::read_register(const char *host, const Config *register_conf
                     for(int i = 0; i < MODBUS_TCP_METER_REGISTER_COUNT_MAX; i++) {
                         result[i] = result_in_progress_uint[i];
                     }
-                    logger.printfln("Read holding result %d %d %d %d", result[0], result[1], result[2], result[3]);
+                    //logger.printfln("Read holding result %d %d %d %d", result[0], result[1], result[2], result[3]);
                 }
                 return true;
             });
@@ -258,7 +256,9 @@ void ModbusTcpMeter::loop()
             read_register(host, register_config, results[current_meter][current_register]);
             next_register();
         } else {
-            mb.connect(host); // Try to connect if no connection
+            if (!mb.connect(host)) { // Try to connect if no connection
+                logger.printfln("modbus_tcp_meter: Failed to connect to %s", host);
+            }
         }
     }
     mb.task();
@@ -276,9 +276,9 @@ float ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t register_
     }
 
     Config *register_config = (Config*)config_in_use.get(current_meter)->get("register_set")->get(current_register);
-    const uint8_t  value_type = register_config->get("value_type")->asUint();
-    const float    scale      = register_config->get("scale")->asFloat();
-    const float    offset     = register_config->get("offset")->asFloat();
+    const uint8_t  value_type = register_config->get("vt")->asUint();
+    const float    scale      = register_config->get("s")->asFloat();
+    const float    offset     = register_config->get("o")->asFloat();
 
     float result = 0;
 
