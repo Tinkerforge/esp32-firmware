@@ -74,6 +74,7 @@ private:
     ModbusTCP *mb;
 
     String host_name;
+    dns_gethostbyname_addrtype_lwip_ctx_async_data host_data;
     IPAddress host_ip;
     uint16_t port = 0;
     uint8_t address = 0;

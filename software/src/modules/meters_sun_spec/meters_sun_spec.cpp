@@ -127,31 +127,6 @@ void MetersSunSpec::register_urls()
     }, true);
 }
 
-static void dns_callback(const char * /*name*/, const ip_addr_t *ipaddr, void *callback_arg)
-{
-    // Callback executed in lwIP context, need to go back to our task.
-    task_scheduler.scheduleOnce([ipaddr, callback_arg](){
-        MetersSunSpec *this_ = static_cast<MetersSunSpec *>(callback_arg);
-
-        if (ipaddr == nullptr) {
-            this_->discovery_printfln("Could not resolve %s", this_->discovery_host.c_str());
-
-            ++this_->discovery_read_cookie;
-            this_->discovery_state = MetersSunSpec::DiscoveryState::Idle;
-        }
-        else if (ipaddr->type != IPADDR_TYPE_V4) {
-            this_->discovery_printfln("Could not resolve %s to an IPv4 address", this_->discovery_host.c_str());
-
-            ++this_->discovery_read_cookie;
-            this_->discovery_state = MetersSunSpec::DiscoveryState::Idle;
-        }
-        else {
-            this_->discovery_ipaddr = ipaddr->u_addr.ip4.addr;
-            this_->discovery_state = MetersSunSpec::DiscoveryState::Connect;
-        }
-    }, 0);
-}
-
 void MetersSunSpec::loop()
 {
     if (discovery_new && discovery_state != DiscoveryState::Idle) {
@@ -192,38 +167,44 @@ void MetersSunSpec::loop()
 
         break;
 
-    case DiscoveryState::Resolve: {
-            discovery_printfln("Resolving %s", discovery_host.c_str());
+    case DiscoveryState::Resolve:
+        discovery_printfln("Resolving %s", discovery_host.c_str());
 
-            ip_addr_t ipaddr;
-            int err = dns_gethostbyname_addrtype_lwip_ctx(discovery_host.c_str(), &ipaddr, dns_callback, this, LWIP_DNS_ADDRTYPE_IPV4);
+        discovery_host_data.user = this;
+        discovery_state = DiscoveryState::Resolving;
 
-            if (err == ERR_OK) {
-                if (ipaddr.type != IPADDR_TYPE_V4) {
-                    discovery_printfln("Could not resolve %s to an IPv4 address", discovery_host.c_str());
+        dns_gethostbyname_addrtype_lwip_ctx_async(discovery_host.c_str(), [](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+            MetersSunSpec *mss = static_cast<MetersSunSpec *>(data->user);
 
-                    ++discovery_read_cookie;
-                    discovery_state = DiscoveryState::Idle;
+            if (data->err == ERR_OK) {
+                if (data->addr_ptr == nullptr) {
+                    mss->discovery_printfln("Could not resolve %s", mss->discovery_host.c_str());
+
+                    ++mss->discovery_read_cookie;
+                    mss->discovery_state = MetersSunSpec::DiscoveryState::Idle;
+                }
+                else if (data->addr_ptr->type != IPADDR_TYPE_V4) {
+                    mss->discovery_printfln("Could not resolve %s to an IPv4 address", mss->discovery_host.c_str());
+
+                    ++mss->discovery_read_cookie;
+                    mss->discovery_state = MetersSunSpec::DiscoveryState::Idle;
                 }
                 else {
-                    discovery_ipaddr = ipaddr.u_addr.ip4.addr;
-                    discovery_state = DiscoveryState::Connect;
+                    mss->discovery_host_address = data->addr_ptr->u_addr.ip4.addr;
+                    mss->discovery_state = MetersSunSpec::DiscoveryState::Connect;
                 }
-            }
-            else if (err == ERR_INPROGRESS) {
-                discovery_state = DiscoveryState::Resolving;
             }
             else {
-                if (err == ERR_VAL) {
-                    discovery_printfln("Could not resolve %s, no DNS server is configured", discovery_host.c_str());
+                if (data->err == ERR_VAL) {
+                    mss->discovery_printfln("Could not resolve %s, no DNS server is configured", mss->discovery_host.c_str());
                 } else {
-                    discovery_printfln("Could not resolve %s (error: %d)", discovery_host.c_str(), err);
+                    mss->discovery_printfln("Could not resolve %s (error: %d)", mss->discovery_host.c_str(), data->err);
                 }
 
-                ++discovery_read_cookie;
-                discovery_state = DiscoveryState::Idle;
+                ++mss->discovery_read_cookie;
+                mss->discovery_state = MetersSunSpec::DiscoveryState::Idle;
             }
-        }
+        }, &discovery_host_data, LWIP_DNS_ADDRTYPE_IPV4);
 
         break;
 
@@ -233,7 +214,7 @@ void MetersSunSpec::loop()
     case DiscoveryState::Connect:
         discovery_printfln("Connecting to %s:%u", discovery_host.c_str(), discovery_port);
 
-        if (!modbus.connect(discovery_ipaddr, discovery_port)) {
+        if (!modbus.connect(discovery_host_address, discovery_port)) {
             discovery_printfln("Could not connect to %s:%u", discovery_host.c_str(), discovery_port);
 
             ++discovery_read_cookie;
@@ -248,7 +229,7 @@ void MetersSunSpec::loop()
     case DiscoveryState::Disconnect:
         discovery_printfln("Disconnecting from %s", discovery_host.c_str());
 
-        if (!modbus.disconnect(discovery_ipaddr)) {
+        if (!modbus.disconnect(discovery_host_address)) {
             discovery_printfln("Could not disconnect from %s", discovery_host.c_str());
         }
 
@@ -300,7 +281,7 @@ void MetersSunSpec::loop()
 
             discovery_state = DiscoveryState::Reading;
 
-            modbus.readHreg(discovery_ipaddr, discovery_read_address, &discovery_read_buffer[discovery_read_index], read_chunk_size,
+            modbus.readHreg(discovery_host_address, discovery_read_address, &discovery_read_buffer[discovery_read_index], read_chunk_size,
             [this, cookie, read_chunk_size](Modbus::ResultCode event, uint16_t transactionId, void *data) -> bool {
                 if (discovery_state != DiscoveryState::Reading || cookie != discovery_read_cookie) {
                     return true;

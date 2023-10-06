@@ -95,7 +95,8 @@ public:
     bool discovery_log_idle = false;
     DiscoveryState discovery_state = DiscoveryState::Idle;
     String discovery_host = "";
-    IPAddress discovery_ipaddr;
+    dns_gethostbyname_addrtype_lwip_ctx_async_data discovery_host_data;
+    IPAddress discovery_host_address;
     uint16_t discovery_port = 0;
     uint8_t discovery_device_address = 0;
     uint8_t discovery_device_address_next = 0;
