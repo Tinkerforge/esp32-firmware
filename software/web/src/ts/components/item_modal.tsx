@@ -19,8 +19,6 @@
 
 import { h, Component, Context, createContext, toChildArray, VNode, cloneElement } from "preact";
 import { Button, Modal, ModalProps } from "react-bootstrap";
-import { __ } from "../translation";
-
 
 interface ItemModalProps extends ModalProps {
     onCheck?: () => Promise<boolean>
@@ -38,13 +36,11 @@ interface ItemModalProps extends ModalProps {
     yes_text: string
 }
 
-
 let id_counter = 0;
 
 export class ItemModal extends Component<ItemModalProps, any> {
     idContext: Context<string>;
     id: string;
-
 
     constructor() {
         super();

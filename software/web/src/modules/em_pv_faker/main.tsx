@@ -28,7 +28,6 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm      } from "../../ts/components/config_form";
 import { FormRow         } from "../../ts/components/form_row";
 import { InputFloat      } from "../../ts/components/input_float";
-import { InputNumber     } from "../../ts/components/input_number";
 import { InputText       } from "../../ts/components/input_text";
 import { OutputFloat     } from "../../ts/components/output_float";
 import { Switch          } from "../../ts/components/switch";
@@ -58,7 +57,6 @@ export class EmPvFakerStatus extends Component {
 }
 
 render(<EmPvFakerStatus/>, $('#status-em_pv_faker')[0])
-
 
 export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.getType['em_pv_faker/runtime_config']> {
     constructor() {

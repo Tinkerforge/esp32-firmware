@@ -17,7 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { h } from "preact"
+import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
+import { Cron } from "../cron/main";
+import { CronComponent, CronTrigger } from "../cron/types";
+import { InputSelect } from "../../ts/components/input_select";
 
 export type EvseStateCronTrigger = [
     CronTriggerID.IECChange,
@@ -25,12 +30,6 @@ export type EvseStateCronTrigger = [
         charger_state: number
     }
 ];
-
-import { __ } from "../../ts/translation";
-import { Cron } from "../cron/main";
-import { CronTrigger } from "../cron/types";
-import { InputSelect } from "../../ts/components/input_select";
-import { VNode, h } from "preact"
 
 export function EvseStateCronComponent(trigger: CronTrigger): VNode {
     let value = (trigger as EvseStateCronTrigger)[1];

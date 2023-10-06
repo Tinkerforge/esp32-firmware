@@ -17,9 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import * as util from "../../ts/util";
-
-import { h, Component, Fragment, JSX, ComponentChildren } from "preact";
+import { h, Component, Fragment, ComponentChildren } from "preact";
 import { __ } from "../translation";
 
 interface ConfigFormState {

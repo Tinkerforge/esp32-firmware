@@ -57,7 +57,7 @@ function update_modules() {
 
     if (first_module_init) {
         let hash = window.location.hash;
-        var elem = $(`a[href="${hash}"]`);
+        let elem = $(`a[href="${hash}"]`);
         if (hash == "#meter") {
             // FIXME: brute force solution to allow hidden meter module in
             //        energy manager firmware. should be solved in a better way
@@ -82,8 +82,6 @@ export function registerEvents(eventSource: API.APIEventTarget) {
     }
 }
 
-let last_shown_tab = null;
-
 // This is the part of the initialization to be done
 // if we are authenticated (or authentication is deactivated)
 function init() {
@@ -95,8 +93,8 @@ function init() {
 }
 
 function login() {
-    let username = (<HTMLInputElement>document.getElementById("main_login_username")).value;
-    let password = (<HTMLInputElement>document.getElementById("main_login_password")).value;
+    let username = (document.getElementById("main_login_username") as HTMLInputElement).value;
+    let password = (document.getElementById("main_login_password") as HTMLInputElement).value;
 
     let xhr = new XMLHttpRequest();
     let result = false;
@@ -136,8 +134,8 @@ function setup_login() {
     $('#sidebar-login').addClass('active');
     $('#login').addClass(['show', 'active']);
 
-    let show_password = <HTMLInputElement>document.getElementById('main_login_show_password');
-    let password = <HTMLInputElement>document.getElementById('main_login_password');
+    let show_password = document.getElementById('main_login_show_password') as HTMLInputElement;
+    let password = document.getElementById('main_login_password') as HTMLInputElement;
     show_password.addEventListener("change", () => {
         if (password.type == 'password')
             password.type = 'text';
@@ -145,7 +143,7 @@ function setup_login() {
             password.type = 'password';
     });
 
-    let form = <HTMLFormElement>document.getElementById('main_login_form');
+    let form = document.getElementById('main_login_form') as HTMLFormElement;
     form.addEventListener('submit', function (event: Event) {
         event.preventDefault();
         event.stopPropagation();
@@ -178,14 +176,14 @@ $(window).on('pageshow', (ev) => {
     });*/
 
     $('a[data-toggle="tab"]').on('show.bs.tab', () => {
-        $('a[data-toggle="tab"]').not(<Element>event.target).removeClass("active");
-        $('a[data-toggle="tab"]').not(<Element>event.target).trigger("hidden.bs.tab");
+        $('a[data-toggle="tab"]').not(event.target as Element).removeClass("active");
+        $('a[data-toggle="tab"]').not(event.target as Element).trigger("hidden.bs.tab");
     });
 
     window.addEventListener("hashchange", (event) => {
         if (event.oldURL != event.newURL) {
             let hash = window.location.hash;
-            var elem = $(`a[href="${hash}"]`);
+            let elem = $(`a[href="${hash}"]`);
             if (hash == "#meter") {
                 // FIXME: brute force solution to allow hidden meter module in
                 //        energy manager firmware. should be solved in a better way

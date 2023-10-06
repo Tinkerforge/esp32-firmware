@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Context, Fragment } from "preact";
-import {useContext, useState} from "preact/hooks";
+import { h, Context } from "preact";
+import { useState } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 
 import * as util from "../../ts/util";

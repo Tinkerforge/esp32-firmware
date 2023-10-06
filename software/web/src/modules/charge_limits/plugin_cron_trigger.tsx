@@ -17,6 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { __ } from "../../ts/translation";
+import { Cron } from "../cron/main";
+import { CronComponent, CronTrigger } from "../cron/types";
 import { CronTriggerID } from "../cron/cron_defs";
 import { TableModalRow } from '../../ts/components/table'
 
@@ -24,11 +27,6 @@ export type ChargeLimitsCronTrigger = [
     CronTriggerID.ChargeLimits,
     {}
 ];
-
-import { __ } from "../../ts/translation";
-import { Cron } from "../cron/main";
-import { CronTrigger } from "../cron/types";
-import { VNode } from "preact";
 
 function ChargeLimitsCronTriggerComponent(_: CronTrigger): VNode {
     // for whatever reason, wrapping the text in a Fragment crashes.

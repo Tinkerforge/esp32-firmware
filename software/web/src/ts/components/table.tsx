@@ -161,7 +161,7 @@ export class Table extends Component<TableProps, TableState> {
                                 : undefined}
                         </>)}
                         {props.onAddStart ?
-                        <tr scope="col">
+                        <tr>
                             <td colSpan={props.columnNames.length} style="vertical-align: middle; width: 100%;">
                                 {props.addMessage}
                             </td>

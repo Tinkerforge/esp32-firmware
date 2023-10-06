@@ -19,12 +19,9 @@
 
 import { h, Component, render, ComponentChildren } from "preact";
 import { Button, Modal } from "react-bootstrap";
-import { __ } from "../translation";
-
 import * as util from "../../ts/util";
 
 interface AsyncModalProps {
-
 }
 
 interface AsyncModalStrings {

@@ -59,13 +59,13 @@ interface Wallbox5minData extends CachedData {
     complete: boolean;
     flags: number[]; // bit 0-2 = charger state, bit 7 = no data
     power: number[];
-};
+}
 
 interface WallboxDailyData extends CachedData {
     empty: boolean;
     complete: boolean;
     energy: number[]; // kWh
-};
+}
 
 interface EnergyManager5minData extends CachedData {
     empty: boolean;
@@ -74,7 +74,7 @@ interface EnergyManager5minData extends CachedData {
     power_grid: number[]; // W
     power_grid_empty: boolean;
     power_general: number[][]; // W
-};
+}
 
 interface EnergyManagerDailyData extends CachedData {
     empty: boolean;
@@ -83,7 +83,7 @@ interface EnergyManagerDailyData extends CachedData {
     energy_grid_out: number[]; // kWh
     energy_general_in: number[][]; // kWh
     energy_general_out: number[][]; // kWh
-};
+}
 
 // https://seaborn.pydata.org/tutorial/color_palettes.html#qualitative-color-palettes
 // sns.color_palette("tab10")
@@ -209,7 +209,7 @@ interface UplotLoaderProps {
     show: boolean;
     marker_class: 'h3'|'h4';
     children: ComponentChildren;
-};
+}
 
 class UplotLoader extends Component<UplotLoaderProps, {}> {
     no_data_ref = createRef();
@@ -474,7 +474,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
         }
 
         this.uplot.setSize(size);
-    };
+    }
 
     get_size() {
         let div = this.div_ref.current;
@@ -883,7 +883,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         }
 
         this.uplot.setSize(size);
-    };
+    }
 
     get_size() {
         let div = this.div_ref.current;

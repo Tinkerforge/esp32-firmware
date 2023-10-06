@@ -18,7 +18,7 @@
  */
 
 import { h, Component, createContext, Context, VNode, cloneElement, toChildArray, Fragment, ComponentChildren } from "preact";
-import { Button, Collapse } from "react-bootstrap";
+import { Collapse } from "react-bootstrap";
 import { HelpCircle } from "react-feather";
 
 export interface FormRowProps {

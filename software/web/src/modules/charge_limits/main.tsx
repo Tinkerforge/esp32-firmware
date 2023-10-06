@@ -128,7 +128,7 @@ function ChargeLimitsStatus() {
         let energy_placeholder = __("charge_limits.content.unlimited");
 
         if (config_in_use.energy_wh != 0)
-            energy_placeholder = util.toLocaleFixed(config_in_use.energy_wh / 1000, 0) + " kWh" + " | " + get_energy_left() + __("charge_limits.content.left");
+            energy_placeholder = util.toLocaleFixed(config_in_use.energy_wh / 1000, 0) + " kWh | " + get_energy_left() + __("charge_limits.content.left");
 
         let conf_idx = energy_items.findIndex(x => x[0] == config.energy_wh.toString());
         if (conf_idx == -1)

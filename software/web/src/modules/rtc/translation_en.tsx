@@ -23,15 +23,6 @@ let x = {
             "sunday": "Sunday",
             "every": "Every",
             "cron_translation_function": /*SFN*/(mday: number, wday: number, hour: number, minute: number) => {
-                /*
-                * Detects navigator locale 24h time preference
-                * It works by checking whether hour output contains AM ('1 AM' or '01 h')
-                * based on the user's preferred language
-                */
-                const isBrowserLocale24h = !new Intl.DateTimeFormat(navigator.language, { hour: "numeric" })
-                    .format(0)
-                    .match(/AM/);
-
                 const wdays = [
                     "Sundays",
                     "Mondays",

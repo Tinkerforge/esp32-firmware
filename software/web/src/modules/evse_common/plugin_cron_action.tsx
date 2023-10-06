@@ -17,7 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { h, Fragment } from 'preact'
+import { __ } from "../../ts/translation"
 import { CronActionID } from "../cron/cron_defs";
+import { CronComponent, CronAction } from "../cron/types"
+import { Cron } from "../cron/main"
+import { InputSelect } from "../../ts/components/input_select"
+import { InputFloat } from "../../ts/components/input_float"
+import { InputNumber } from "../../ts/components/input_number"
 
 export type EvseCronAction = [
     CronActionID.SetCurrent,
@@ -33,14 +40,6 @@ export type EvseLedCronAction = [
         duration: number
     }
 ];
-
-import { __ } from "../../ts/translation"
-import { CronAction } from "../cron/types"
-import { Cron } from "../cron/main"
-import { InputSelect } from "../../ts/components/input_select"
-import { InputFloat } from "../../ts/components/input_float"
-import { h, Fragment, VNode } from 'preact'
-import { InputNumber } from "../../ts/components/input_number"
 
 function EvseSetCurrentCronActionComponent(action: CronAction): VNode {
     const value = (action as EvseCronAction)[1];

@@ -145,16 +145,16 @@ export function setNumericInput(id: string, i: number, fractionDigits: number) {
     // does not raise an exception, instead only a warning on the console is shown.
     // So to make everyone happy, we use user agent detection.
     if (navigator.userAgent.indexOf("Gecko/") >= 0) {
-        (<HTMLInputElement> document.getElementById(id)).value = toLocaleFixed(i, fractionDigits);
+        (document.getElementById(id) as HTMLInputElement).value = toLocaleFixed(i, fractionDigits);
     } else {
-        (<HTMLInputElement> document.getElementById(id)).value = i.toFixed(fractionDigits);
+        (document.getElementById(id) as HTMLInputElement).value = i.toFixed(fractionDigits);
     }
 }
 
 export function toggle_password_fn(input_name: string) {
     return (ev: Event) => {
-        let input = <HTMLInputElement>$(input_name)[0];
-        let x = <HTMLInputElement>ev.target;
+        let input = $(input_name)[0] as HTMLInputElement;
+        let x = ev.target as HTMLInputElement;
 
         if (x.checked)
             input.type = 'text';
@@ -165,7 +165,7 @@ export function toggle_password_fn(input_name: string) {
 
 export function clear_password_fn(input_name: string, to_be_cleared: string = __("util.to_be_cleared"), unchanged: string = __("util.unchanged")) {
     return (ev: Event) => {
-        let x = <HTMLInputElement>ev.target;
+        let x = ev.target as HTMLInputElement;
         if (x.checked) {
             $(input_name).val('');
             $(input_name).attr('placeholder', to_be_cleared);
@@ -403,12 +403,12 @@ export const win1252Encode = (input: string) => {
 		}
 	}
 	return result;
-};
+}
 
 export function parseIP(ip: string) {
     // >>> 0 to force unsigned 32 bit integers
     return ip.split(".").map((x, i, _) => parseInt(x, 10) * (1 << (8 * (3 - i)))).reduce((a, b) => a+b) >>> 0;
-};
+}
 
 export function unparseIP(ip: number) {
     return ((ip >>> 24) & 0xFF).toString() + "." +
@@ -429,7 +429,7 @@ export function downloadToFile(content: BlobPart, filename_prefix: string, exten
     a.click();
 
     URL.revokeObjectURL(a.href);
-};
+}
 
 export function getShowRebootModalFn(changed_value_name: string) {
     return () => {

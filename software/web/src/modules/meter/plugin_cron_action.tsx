@@ -17,6 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { __ } from "../../ts/translation";
+import { Cron } from "../cron/main";
+import { CronComponent, CronAction } from "../cron/types";
 import { CronActionID } from "../cron/cron_defs";
 import { TableModalRow } from '../../ts/components/table'
 
@@ -24,11 +27,6 @@ export type MeterCronAction = [
     CronActionID.MeterReset,
     {}
 ]
-
-import { __ } from "../../ts/translation";
-import { Cron } from "../cron/main";
-import { CronAction } from "../cron/types";
-import { VNode } from "preact";
 
 function MeterResetCronActionComponent(_: CronAction): VNode {
     return __("meter.content.cron_action_text") as any as VNode;

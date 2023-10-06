@@ -17,7 +17,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { h } from "preact"
+import { __, translate_unchecked } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
+import { CronComponent, CronAction } from "../cron/types";
+import { Cron } from "../cron/main";
+import { InputText } from "../../ts/components/input_text";
+import { InputSelect } from "../../ts/components/input_select";
+import { ListGroup, ListGroupItem } from "react-bootstrap";
+import * as API from "../../ts/api";
+import * as util from "../../ts/util";
 
 export type NfcCronAction = [
     CronActionID.NFCInjectTag,
@@ -27,16 +36,6 @@ export type NfcCronAction = [
         tag_action: number
     }
 ];
-
-import { VNode, h } from "preact"
-import { __, translate_unchecked } from "../../ts/translation";
-import { CronAction } from "../cron/types";
-import { Cron } from "../cron/main";
-import { InputText } from "../../ts/components/input_text";
-import { InputSelect } from "../../ts/components/input_select";
-import { ListGroup, ListGroupItem } from "react-bootstrap";
-import * as API from "../../ts/api";
-import * as util from "../../ts/util";
 
 const TRIGGER_CHARGE_ANY = 0;
 const TRIGGER_CHARGE_START = 1;

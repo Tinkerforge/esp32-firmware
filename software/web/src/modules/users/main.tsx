@@ -35,7 +35,7 @@ import { InputText } from "../../ts/components/input_text";
 import { InputFloat } from "../../ts/components/input_float";
 import { Switch } from "../../ts/components/switch";
 import { InputPassword } from "../../ts/components/input_password";
-import { Slash, User } from "react-feather";
+import { Slash } from "react-feather";
 import { EVSE_SLOT_USER } from "../evse_common/api";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
@@ -202,7 +202,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
     http_auth_allowed() {
         return (this.state as Readonly<UsersState & UsersConfig & ConfigComponentState>).users.some(u => this.user_has_password(u))
-    };
+    }
 
     override async sendSave(t: "users/config", new_config: UsersConfig) {
         let old_config = API.get('users/config');

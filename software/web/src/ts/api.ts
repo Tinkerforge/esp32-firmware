@@ -29,7 +29,7 @@ export type EventMap = {
 
 function update_cache_item(left: any, right: any) {
     let keys_to_remove: any[] = [];
-    for (var key in left) {
+    for (let key in left) {
         if (!right.hasOwnProperty(key)) {
             if (Array.isArray(left))
                 keys_to_remove.push(key);
@@ -54,7 +54,7 @@ function update_cache_item(left: any, right: any) {
     if (Array.isArray(left))
         left = left.filter((_value, i, _arr) => keys_to_remove.indexOf(i) >= 0)
 
-    for (var key in right) {
+    for (let key in right) {
         if (!left.hasOwnProperty(key)) {
             left[key] = right[key];
         }
@@ -133,17 +133,17 @@ export function trigger_unchecked<T extends keyof ConfigMap>(topic: string, even
 }
 
 export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
-    return call(<any>(topic + "_update"), payload, error_string, reboot_string);
+    return call((topic + "_update") as any, payload, error_string, reboot_string);
 }
 
 export function save_unchecked<T extends string>(topic: T, payload: (T extends keyof ConfigMap ? ConfigMap[T] : any), error_string: string, reboot_string?: string) {
     if (topic in api_cache)
-        return call(<any>(topic + "_update"), payload, error_string, reboot_string);
+        return call((topic + "_update") as any, payload, error_string, reboot_string);
     return Promise.resolve();
 }
 
 export function reset<T extends keyof ConfigMap>(topic: T, error_string: string, reboot_string?: string) {
-    return call(<any>(topic + "_reset"), null, error_string, reboot_string);
+    return call((topic + "_reset") as any, null, error_string, reboot_string);
 }
 
 export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string, timeout_ms: number = 5000) {

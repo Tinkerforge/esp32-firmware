@@ -17,7 +17,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { h, Fragment } from "preact"
+import { useState } from "preact/hooks";
+import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
+import { Cron } from "../cron/main";
+import { CronComponent, CronAction } from "../cron/types";
+import { InputText } from "../../ts/components/input_text";
+import { Switch } from "../../ts/components/switch";
+import * as API from "../../ts/api"
 
 export type MqttCronAction = [
     CronActionID.MQTT,
@@ -28,15 +36,6 @@ export type MqttCronAction = [
         use_prefix: boolean
     }
 ];
-
-import { Cron } from "../cron/main";
-import { CronAction } from "../cron/types";
-import { InputText } from "../../ts/components/input_text";
-import { h, Fragment, VNode } from "preact"
-import { Switch } from "../../ts/components/switch";
-import { __ } from "../../ts/translation";
-import * as API from "../../ts/api"
-import { useState } from "preact/hooks";
 
 export function MqttCronActionComponent(action: CronAction): VNode {
     const value = (action as MqttCronAction)[1];

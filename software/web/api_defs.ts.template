@@ -22,7 +22,7 @@ export interface ConfigMap {
     'info/features': Features
     'info/keep_alive': KeepAlive
     'reboot': {}
-};
+}
 
 export type ConfigModifiedKey = `${keyof ConfigMap}_modified`;
 
