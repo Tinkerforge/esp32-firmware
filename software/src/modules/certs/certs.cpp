@@ -26,6 +26,9 @@
 
 #include "modules.h"
 
+#include <mbedtls/pem.h>
+#include <mbedtls/error.h>
+
 void Certs::pre_setup() {
     state = Config::Object({
         {"certs", Config::Array({},
@@ -41,11 +44,35 @@ void Certs::pre_setup() {
         {"id", Config::Uint(0, 0, MAX_CERTS)}
     });
 
-    add = Config::Object({
+    add = ConfigRoot{Config::Object({
         {"id", Config::Uint(0, 0, MAX_CERTS)},
         {"name", Config::Str("", 0, 32)},
         {"cert", Config::Str("", 0, MAX_CERT_SIZE)}
-    });
+    }), [](Config &cfg) -> String {
+        const auto &cert = cfg.get("cert")->asString();
+        if (cert.length() == 0)
+            return "";
+
+        mbedtls_pem_context ctx;
+        mbedtls_pem_init(&ctx);
+        defer {mbedtls_pem_free(&ctx);};
+
+        size_t ignored;
+        auto result = mbedtls_pem_read_buffer(
+                        &ctx,
+                        "-----BEGIN CERTIFICATE-----",
+                        "-----END CERTIFICATE-----",
+                        (const unsigned char *)cert.c_str(),
+                        nullptr, 0,
+                        &ignored);
+        if (result != 0) {
+            char buf[256] = {0};
+            mbedtls_strerror(result, buf, sizeof(buf));
+            return String("Failed to parse certificate: ") + buf;
+        }
+
+        return "";
+    }};
 }
 
 void Certs::update_state() {
