@@ -107,6 +107,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                             value={state.cert_id}
                             onValue={(v) => this.setState({cert_id: parseInt(v)})}
                             disabled={!state.url.startsWith("wss://")}
+                            required={state.url.startsWith("wss://")}
                         />
                     </FormRow>
                     <FormRow label={__("ocpp.content.identity")}>
