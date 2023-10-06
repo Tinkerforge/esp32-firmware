@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from "preact"
+import { h, Fragment } from "preact";
 import { useState } from "preact/hooks";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
@@ -25,7 +25,7 @@ import { CronComponent, CronTrigger } from "../cron/types";
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { Switch } from "../../ts/components/switch";
-import * as API from "../../ts/api"
+import * as API from "../../ts/api";
 
 export type MqttCronTrigger = [
     CronTriggerID.MQTT,
@@ -116,9 +116,9 @@ function MqttCronTriggerFactory(): CronTrigger {
             topic: "",
             payload: "",
             retain: false,
-            use_prefix: false
-        }
-    ]
+            use_prefix: false,
+        },
+    ];
 }
 
 export function init() {
@@ -129,8 +129,8 @@ export function init() {
                 table_row: MqttCronTriggerComponent,
                 config_builder: MqttCronTriggerFactory,
                 config_component: MqttCronTriggerConfig,
-                name: __("mqtt.content.mqtt")
-            }
-        }
+                name: __("mqtt.content.mqtt"),
+            },
+        },
     };
 }

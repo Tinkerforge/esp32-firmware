@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from "preact"
+import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronComponent, CronTrigger } from "../cron/types";
@@ -122,8 +122,8 @@ function RtcCronTriggerFactory(): RtcCronTrigger {
             mday: -1,
             wday: -1,
             hour: -1,
-            minute: -1
-        }
+            minute: -1,
+        },
     ];
 }
 
@@ -135,8 +135,8 @@ export function init() {
                 table_row: RtcCronTriggerComponent,
                 config_builder: RtcCronTriggerFactory,
                 config_component: RtcCronTriggerConfigComponent,
-                name: __("rtc.content.clock")
-            }
-        }
-    }
+                name: __("rtc.content.clock"),
+            },
+        },
+    };
 }

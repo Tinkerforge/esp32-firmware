@@ -18,7 +18,7 @@
  */
 
 import { h, JSX, Context, ComponentChildren } from "preact";
-import {useContext, useId,} from "preact/hooks";
+import { useContext, useId } from "preact/hooks";
 
 export interface SwitchProps {
     idContext?: Context<string>

@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact"
+import { h } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronComponent, CronTrigger } from "../cron/types";
@@ -135,8 +135,8 @@ export function init() {
                 config_builder: NfcCronTriggerFactory,
                 config_component: NFCCronTriggerConfig,
                 table_row: NFCCronTriggerComponent,
-                name: __("nfc.content.nfc")
-            }
-        }
+                name: __("nfc.content.nfc"),
+            },
+        },
     };
 }

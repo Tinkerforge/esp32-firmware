@@ -33,7 +33,7 @@ import { InputPassword } from "../../ts/components/input_password";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 
-type APConfig = API.getType['wifi/ap_config'];
+type APConfig = API.getType["wifi/ap_config"];
 
 type WifiAPState = {show_modal: boolean};
 

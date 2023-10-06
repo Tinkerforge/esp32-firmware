@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact"
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
 import { Cron } from "../cron/main";
@@ -27,8 +27,8 @@ import { InputFloat } from "../../ts/components/input_float";
 export type ChargeManagerCronAction = [
     CronActionID.SetManagerCurrent,
     {
-        current: number
-    }
+        current: number;
+    },
 ];
 
 export function ChargeManagerCronComponent(action: CronAction): VNode {
@@ -55,9 +55,9 @@ function ChargeManagerCronActionFactory(): CronAction {
     return [
         CronActionID.SetManagerCurrent,
         {
-            current: 0
-        }
-    ]
+            current: 0,
+        },
+    ];
 }
 
 export function init() {
@@ -68,8 +68,8 @@ export function init() {
                 config_builder: ChargeManagerCronActionFactory,
                 config_component: ChargeManagerCronConfigComponent,
                 table_row: ChargeManagerCronComponent,
-                name: __("charge_manager.content.set_charge_manager")
-            }
-        }
+                name: __("charge_manager.content.set_charge_manager"),
+            },
+        },
     };
 }

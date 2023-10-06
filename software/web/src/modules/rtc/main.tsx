@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
-import { h, render, Fragment} from "preact";
+import { h, render, Fragment } from "preact";
 
 import { ConfigComponent } from "../../ts/components/config_component";
 import { OutputDatetime } from "../../ts/components/output_datetime";
@@ -123,7 +123,7 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
         }
 }
 
-render(<Rtc/>, $('#rtc')[0])
+render(<Rtc />, $("#rtc")[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('info/features', () => $('#sidebar-rtc').prop('hidden', !API.hasFeature('rtc')));

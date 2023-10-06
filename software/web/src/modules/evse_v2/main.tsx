@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render, Fragment, Component} from "preact";
+import { h, render, Fragment, Component } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 
@@ -33,7 +33,7 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import { InputText } from "../../ts/components/input_text";
 import { InputIndicator } from "../../ts/components/input_indicator";
 import { Switch } from "../../ts/components/switch";
-import { Button} from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { EVSE_SLOT_EXTERNAL } from "../evse_common/api";

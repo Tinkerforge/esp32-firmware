@@ -43,7 +43,7 @@ type CronState = {
 let cron_trigger_components: CronTriggerComponents = {};
 let cron_action_components: CronActionComponents = {};
 
-export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
+export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
     constructor() {
         super('cron/config',
               __("charge_manager.script.save_failed"),
@@ -235,7 +235,7 @@ export class Cron extends ConfigComponent<'cron/config', {}, CronState> {
     }
 }
 
-render(<Cron/>, $('#cron')[0]);
+render(<Cron />, $("#cron")[0]);
 
 export function init() {
     let result = plugins_init();
@@ -267,5 +267,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-cron').prop('hidden', !module_init.cron);
+    $("#sidebar-cron").prop("hidden", !module_init.cron);
 }

@@ -101,13 +101,13 @@ export class WifiStatus extends Component<{}, WifiStatusState>
     }
 }
 
-render(<WifiStatus/>, $('#status-wifi')[0]);
+render(<WifiStatus />, $("#status-wifi")[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function init() {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-wifi-sta').prop('hidden', !module_init.wifi);
-    $('#sidebar-wifi-ap').prop('hidden', !module_init.wifi);
+    $("#sidebar-wifi-sta").prop("hidden", !module_init.wifi);
+    $("#sidebar-wifi-ap").prop("hidden", !module_init.wifi);
 }

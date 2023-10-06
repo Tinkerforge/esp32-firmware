@@ -33,7 +33,7 @@ import { InputPassword } from "../../ts/components/input_password";
 import { Lock, Unlock } from "react-feather";
 import { SubPage } from "../../ts/components/sub_page";
 
-type STAConfig = API.getType['wifi/sta_config'];
+type STAConfig = API.getType["wifi/sta_config"];
 
 type WifiSTAState = {
     scan_running: boolean

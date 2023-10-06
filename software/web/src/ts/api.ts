@@ -19,7 +19,7 @@
 
 import {ConfigMap, api_cache, Modules, ConfigModified, ConfigModifiedKey} from './api_defs';
 
-import * as util from './util';
+import * as util from "./util";
 
 export {type ConfigMap as getType, type Modules};
 

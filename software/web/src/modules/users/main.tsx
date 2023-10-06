@@ -24,7 +24,6 @@ import * as API from "../../ts/api";
 
 import YaMD5 from "../../ts/yamd5";
 
-
 import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 
@@ -514,11 +513,11 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                     </FormRow>
                 </ConfigForm>
             </SubPage>
-        )
+        );
     }
 }
 
-render(<Users/>, $('#users')[0])
+render(<Users />, $("#users")[0]);
 
 export function getAllUsernames() {
     return util.download('/users/all_usernames')
@@ -555,5 +554,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-users').prop('hidden', !module_init.users);
+    $("#sidebar-users").prop("hidden", !module_init.users);
 }

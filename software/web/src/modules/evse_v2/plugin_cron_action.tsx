@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from 'preact'
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
 import { CronComponent, CronAction } from "../cron/types";
@@ -27,8 +27,8 @@ import { Cron } from "../cron/main";
 export type EvseGpOutputCronAction = [
     CronActionID.EVSEGPOutput,
     {
-        state: number
-    }
+        state: number;
+    },
 ];
 
 function EvseGpioOutputCronActionComponent(action: CronAction): VNode {
@@ -59,8 +59,8 @@ function EvseGpioOutputCronActionConfigFactory(): CronAction {
     return [
         CronActionID.EVSEGPOutput,
         {
-            state: 0
-        }
+            state: 0,
+        },
     ];
 }
 
@@ -73,8 +73,8 @@ export function init() {
                 config_component: EvseGpioOutputCronActionConfigComponent,
                 table_row: EvseGpioOutputCronActionComponent,
                 name: __("evse.content.gpio_out"),
-                require_feature: "button_configuration"
-            }
-        }
+                require_feature: "button_configuration",
+            },
+        },
     };
 }

@@ -24,7 +24,7 @@ import { FormRow } from "./form_row";
 import { InputIP } from "./input_ip";
 import { parseIP, unparseIP } from "../util";
 
-import Collapse from 'react-bootstrap/Collapse';
+import Collapse from "react-bootstrap/Collapse";
 import { InputSelect } from "./input_select";
 import { InputSubnet } from "./input_subnet";
 

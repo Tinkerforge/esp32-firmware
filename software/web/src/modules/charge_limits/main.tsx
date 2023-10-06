@@ -174,7 +174,7 @@ function ChargeLimitsStatus() {
         </>
 }
 
-render(<ChargeLimitsStatus/>, $('#charge_limits_override')[0]);
+render(<ChargeLimitsStatus />, $("#charge_limits_override")[0]);
 
 export function init()
 {
@@ -187,5 +187,5 @@ export function add_event_listeners()
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-charge_limits').prop('hidden', !module_init.charge_limits);
+    $("#sidebar-charge_limits").prop("hidden", !module_init.charge_limits);
 }

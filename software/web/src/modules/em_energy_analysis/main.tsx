@@ -31,7 +31,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
-import uPlot from 'uplot';
+import uPlot from "uplot";
 import { InputText } from "../../ts/components/input_text";
 import { uPlotTimelinePlugin } from "../../ts/uplot-plugins";
 

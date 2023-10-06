@@ -39,7 +39,7 @@ import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputSubnet } from "../../ts/components/input_subnet";
 import { SubPage } from "../../ts/components/sub_page";
 
-type WireGuardConfig = API.getType['wireguard/config'];
+type WireGuardConfig = API.getType["wireguard/config"];
 
 export class WireGuard extends ConfigComponent<'wireguard/config'> {
     ipconfig_valid: boolean = true;
@@ -183,12 +183,12 @@ function WireGuardStatus()
         </>;
 }
 
-render(<WireGuardStatus/>, $('#status-wireguard')[0]);
+render(<WireGuardStatus />, $("#status-wireguard")[0]);
 
 export function init() {}
 
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-wireguard').prop('hidden', !module_init.wireguard);
+    $("#sidebar-wireguard").prop("hidden", !module_init.wireguard);
 }

@@ -31,7 +31,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { OutputFloat } from "../../ts/components/output_float";
 import { Zap, ZapOff } from "react-feather";
-import uPlot from 'uplot';
+import uPlot from "uplot";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { SubPage } from "../../ts/components/sub_page";
 
@@ -834,7 +834,7 @@ export class MeterStatus extends Component<{}, {}> {
     }
 }
 
-render(<MeterStatus />, $('#status-meter')[0]);
+render(<MeterStatus />, $("#status-meter")[0]);
 
 export function init() {
 }

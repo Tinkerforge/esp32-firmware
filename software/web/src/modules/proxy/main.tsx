@@ -22,12 +22,12 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
-import { h, render, Fragment} from "preact";
+import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
-import { Table} from "react-bootstrap";
+import { Table } from "react-bootstrap";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { InputPassword } from "../../ts/components/input_password";
@@ -135,16 +135,16 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
                     </FormRow>
                 </ConfigForm>
             </SubPage>
-        )
+        );
     }
 }
 
-render(<Proxy />, $('#proxy')[0]);
+render(<Proxy />, $("#proxy")[0]);
 
 export function init() {}
 
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-proxy').prop('hidden', !module_init.proxy);
+    $("#sidebar-proxy").prop("hidden", !module_init.proxy);
 }

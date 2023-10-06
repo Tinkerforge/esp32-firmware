@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from 'preact'
-import { __ } from "../../ts/translation"
+import { h, Fragment } from "preact";
+import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
 import { CronComponent, CronAction } from "../cron/types"
 import { Cron } from "../cron/main"
@@ -29,16 +29,16 @@ import { InputNumber } from "../../ts/components/input_number"
 export type EvseCronAction = [
     CronActionID.SetCurrent,
     {
-        current: number
-    }
+        current: number;
+    },
 ];
 
 export type EvseLedCronAction = [
     CronActionID.LED,
     {
-        state: number,
-        duration: number
-    }
+        state: number;
+        duration: number;
+    },
 ];
 
 function EvseSetCurrentCronActionComponent(action: CronAction): VNode {
@@ -69,14 +69,14 @@ function EvseSetCurrentCronActionConfigFactory(): CronAction {
     return [
         CronActionID.SetCurrent,
         {
-            current: 0
-        }
-    ]
+            current: 0,
+        },
+    ];
 }
 
 function EvseLedCronActionComponent(action: CronAction): VNode {
     const value = (action as EvseLedCronAction)[1];
-    let state = ""
+    let state = "";
     switch (value.state) {
         case 0:
             state = __("evse.content.led_state_off");
@@ -147,9 +147,9 @@ function EvseLedCronActionConfigFactory(): CronAction {
         CronActionID.LED,
         {
             duration: 0,
-            state: 0
-        }
-    ]
+            state: 0,
+        },
+    ];
 }
 
 export function init() {
@@ -160,15 +160,15 @@ export function init() {
                 config_builder: EvseSetCurrentCronActionConfigFactory,
                 config_component: EvseSetCurrentCronActionConfigComponent,
                 table_row: EvseSetCurrentCronActionComponent,
-                name: __("evse.content.allowed_charging_current")
+                name: __("evse.content.allowed_charging_current"),
             },
             [CronActionID.LED]: {
                 clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 config_builder: EvseLedCronActionConfigFactory,
                 config_component: EvseLedCronActionConfigComponent,
                 table_row: EvseLedCronActionComponent,
-                name: __("evse.content.led_state")
-            }
-        }
+                name: __("evse.content.led_state"),
+            },
+        },
     };
 }

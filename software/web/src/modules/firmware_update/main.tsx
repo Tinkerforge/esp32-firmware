@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render, Fragment, Component} from "preact";
+import { h, render, Fragment, Component } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 
@@ -32,7 +32,7 @@ import { InputFile } from "../../ts/components/input_file";
 import { Button } from "react-bootstrap";
 import { SubPage } from "../../ts/components/sub_page";
 
-type FirmwareUpdateConfig = API.getType['info/version'];
+type FirmwareUpdateConfig = API.getType["info/version"];
 
 export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
     constructor() {
@@ -207,12 +207,12 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
     }
 }
 
-render(<FirmwareUpdate/>, $('#flash')[0])
+render(<FirmwareUpdate />, $("#flash")[0]);
 
 export function init() {}
 
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-flash').prop('hidden', !module_init.firmware_update);
+    $("#sidebar-flash").prop("hidden", !module_init.firmware_update);
 }

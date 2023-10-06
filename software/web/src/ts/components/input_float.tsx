@@ -20,7 +20,7 @@
 import * as util from "../util";
 
 import { h, Context, Fragment } from "preact";
-import {useContext, useId, useRef, useState} from "preact/hooks";
+import { useContext, useId, useRef, useState } from "preact/hooks";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
 

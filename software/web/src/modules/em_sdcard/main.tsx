@@ -19,9 +19,9 @@
 
 import $ from "../../ts/jq";
 
-import * as API  from "../../ts/api";
+import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { __ }    from "../../ts/translation";
+import { __ } from "../../ts/translation";
 
 import { h, render, Fragment, Component } from "preact";
 import { Button         } from "react-bootstrap";
@@ -34,7 +34,7 @@ import { SubPage } from "../../ts/components/sub_page";
 export class EMSDcard extends Component {
     render() {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
-            return <></>
+            return <></>;
 
         let state = API.get('energy_manager/sdcard_state');
 
@@ -163,15 +163,15 @@ export class EMSDcard extends Component {
                     }}>{__("em_sdcard.content.format_sdcard")}</Button>
                 </FormRow>
             </SubPage>
-        )
+        );
     }
 }
 
-render(<EMSDcard/>, $('#em_sdcard')[0])
+render(<EMSDcard />, $("#em_sdcard")[0]);
 
 export function init() {}
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-em_sdcard').prop('hidden', !module_init.energy_manager);
+    $("#sidebar-em_sdcard").prop("hidden", !module_init.energy_manager);
 }

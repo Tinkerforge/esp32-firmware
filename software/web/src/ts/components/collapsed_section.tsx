@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, Fragment, ComponentChildren} from "preact";
+import { h, Component, Fragment, ComponentChildren } from "preact";
 import { Button, Collapse } from "react-bootstrap";
 import { __ } from "../../ts/translation";
 

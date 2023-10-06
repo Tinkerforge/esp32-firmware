@@ -38,7 +38,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 
-type ChargeManagerConfig = API.getType['charge_manager/config'];
+type ChargeManagerConfig = API.getType["charge_manager/config"];
 type ChargerConfig = ChargeManagerConfig["chargers"][0];
 type ScanCharger = Exclude<API.getType['charge_manager/scan_result'], string>[0];
 
@@ -670,7 +670,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 
 }
 
-render(<ChargeManagerStatus/>, $('#status-charge_manager')[0]);
+render(<ChargeManagerStatus />, $("#status-charge_manager")[0]);
 
 export function init() {
 }
@@ -679,5 +679,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-charge_manager').prop('hidden', !module_init.charge_manager);
+    $("#sidebar-charge_manager").prop("hidden", !module_init.charge_manager);
 }

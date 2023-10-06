@@ -21,7 +21,7 @@ import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
 import { CronComponent, CronAction } from "../cron/types";
 import { CronActionID } from "../cron/cron_defs";
-import { TableModalRow } from '../../ts/components/table'
+import { TableModalRow } from "../../ts/components/table";
 
 export type MeterCronAction = [
     CronActionID.MeterReset,
@@ -52,8 +52,8 @@ export function init() {
                 config_component: MeterResetCronActionConfigComponent,
                 table_row: MeterResetCronActionComponent,
                 name: __("meter.content.meter_reset"),
-                require_feature: "meter"
-            }
-        }
-    }
+                require_feature: "meter",
+            },
+        },
+    };
 }

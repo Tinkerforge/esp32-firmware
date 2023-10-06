@@ -22,10 +22,9 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render, Fragment, Component} from "preact";
+import { h, render, Fragment, Component } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
-
 
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { FormRow } from "../../ts/components/form_row";
@@ -584,14 +583,14 @@ class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, E
     }
 }
 
-render(<EVSESettings/>, $('#evse-settings')[0])
+render(<EVSESettings />, $("#evse-settings")[0]);
 
 export function init(){}
 
 export function add_event_listeners(){}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-evse').prop('hidden', !module_init.evse);
-    $('#sidebar-evse-settings').prop('hidden', !module_init.evse);
-    $('#status-evse').prop('hidden', !module_init.evse);
+    $("#sidebar-evse").prop("hidden", !module_init.evse);
+    $("#sidebar-evse-settings").prop("hidden", !module_init.evse);
+    $("#status-evse").prop("hidden", !module_init.evse);
 }

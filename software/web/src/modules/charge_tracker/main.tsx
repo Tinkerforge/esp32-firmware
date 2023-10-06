@@ -39,8 +39,8 @@ import { InputFloat } from "../../ts/components/input_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { useMemo } from "preact/hooks";
 
-type Charge = API.getType['charge_tracker/last_charges'][0];
-type ChargeTrackerConfig = API.getType['charge_tracker/config'];
+type Charge = API.getType["charge_tracker/last_charges"][0];
+type ChargeTrackerConfig = API.getType["charge_tracker/config"];
 
 interface S {
     user_filter: string
@@ -189,7 +189,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                         default:
                             return x != user_filter;
                     }
-                }
+                };
 
                 if (start <= end) {
                     for(let i = 0; i < buffer.byteLength; i += 16) {
@@ -218,7 +218,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                         let filtered = users_config.users.filter(x => x.id == user_id);
 
                         let display_name = "";
-                        let username = ""
+                        let username = "";
                         if (user_id == 0) {
                             if (filtered[0].display_name == "Anonymous")
                                 display_name = __("charge_tracker.script.unknown_user");
@@ -521,12 +521,12 @@ function ChargeTrackerStatus() {
         </>;
 }
 
-render(<ChargeTrackerStatus/>, $('#status-charge_tracker')[0]);
+render(<ChargeTrackerStatus />, $("#status-charge_tracker")[0]);
 
 export function init() {}
 
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-charge_tracker').prop('hidden', !module_init.charge_tracker);
+    $("#sidebar-charge_tracker").prop("hidden", !module_init.charge_tracker);
 }

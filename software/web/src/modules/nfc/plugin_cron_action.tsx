@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact"
+import { h } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
 import { CronComponent, CronAction } from "../cron/types";
@@ -143,9 +143,9 @@ function NfCTagInjectCronActionFactory(): CronAction {
         {
             tag_id: "",
             tag_type: 0,
-            tag_action: 0
-        }
-    ]
+            tag_action: 0,
+        },
+    ];
 }
 
 export function init() {
@@ -156,8 +156,8 @@ export function init() {
                 table_row: NFCTagInjectCronActionComponent,
                 config_builder: NfCTagInjectCronActionFactory,
                 config_component: NFCTagInjectCronActionConfig,
-                name: __("nfc.content.nfc")
-            }
-        }
+                name: __("nfc.content.nfc"),
+            },
+        },
     };
 }

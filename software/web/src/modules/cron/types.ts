@@ -18,11 +18,11 @@
  */
 
 import * as API from "../../ts/api";
-import { ComponentChild, VNode } from 'preact'
-import { Cron } from './main'
-import { TableModalRow } from '../../ts/components/table'
+import { ComponentChild, VNode } from "preact";
+import { Cron } from "./main";
+import { TableModalRow } from "../../ts/components/table";
 
-type CronConfig = API.getType['cron/config'];
+type CronConfig = API.getType["cron/config"];
 export type Task = CronConfig["tasks"][0];
 export type CronTrigger = Task["trigger"];
 export type CronAction = Task["action"];

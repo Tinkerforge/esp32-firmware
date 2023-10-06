@@ -34,7 +34,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { EVSE_SLOT_MODBUS_TCP } from "../evse_common/api";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 
-type ModbusTCPConfig = API.getType['modbus_tcp/config'];
+type ModbusTCPConfig = API.getType["modbus_tcp/config"];
 
 interface config {
     evse_enable: boolean
@@ -125,7 +125,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
     }
 }
 
-render(<ModbusTCP/>, $('#modbus_tcp')[0])
+render(<ModbusTCP />, $("#modbus_tcp")[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {
 }
@@ -134,5 +134,5 @@ export function init() {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-modbus_tcp').prop('hidden', !module_init.modbus_tcp);
+    $("#sidebar-modbus_tcp").prop("hidden", !module_init.modbus_tcp);
 }

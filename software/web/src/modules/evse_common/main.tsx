@@ -17,14 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery"
+import $ from "jquery";
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, Component, Fragment, render } from "preact"
+import { h, Component, Fragment, render } from "preact";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
-import { __, translate_unchecked } from "../../ts/translation"
+import { __, translate_unchecked } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { Button } from "react-bootstrap";
 import { InputFloat } from "../../ts/components/input_float";
@@ -159,7 +159,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
     }
 }
 
-render(<EVSEStatus/>, $('#status-evse')[0]);
+render(<EVSEStatus />, $("#status-evse")[0]);
 
 export function init(){}
 export function add_event_listeners(){}

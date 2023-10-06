@@ -19,9 +19,9 @@
 
 import $ from "../../ts/jq";
 
-import * as API  from "../../ts/api";
+import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { __ }    from "../../ts/translation";
+import { __ } from "../../ts/translation";
 
 import { h, render, Fragment, Component } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -126,11 +126,11 @@ export class EthernetStatus extends Component
     }
 }
 
-render(<EthernetStatus/>, $('#status-ethernet')[0]);
+render(<EthernetStatus />, $("#status-ethernet")[0]);
 
 export function init() {}
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-ethernet').prop('hidden', !module_init.ethernet);
+    $("#sidebar-ethernet").prop("hidden", !module_init.ethernet);
 }

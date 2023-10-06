@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { Component} from "preact";
+import { Component } from "preact";
 import { ConfigMap } from "../api_defs";
 import { __ } from "../translation";
 import * as API from "../api";
@@ -40,7 +40,7 @@ function extract<T extends keyof ConfigMap, U extends API.getType[T]>(topic: T, 
 }
 
 export interface ConfigComponentState {
-    internal_isDirty: boolean
+    internal_isDirty: boolean;
 }
 
 export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S = {}> extends Component<P, API.getType[Config] & S & ConfigComponentState> {
@@ -55,7 +55,7 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         this.reboot_string = reboot_string;
         this.state = {
             ...(initial_state ? initial_state : {}),
-            internal_isDirty: false
+            internal_isDirty: false,
         } as any;
 
         util.addApiEventListener(t, () => {
@@ -69,7 +69,7 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
             // (which changes _modified because it removes the config saved in the ESPs flash)
             // re-renders the component to disable the reset button.
             this.forceUpdate();
-        })
+        });
     }
 
     toggle(x: keyof PickByValue<API.getType[Config] & S & ConfigComponentState, boolean>) {

@@ -18,7 +18,7 @@
  */
 
 import { h, Context, Fragment, ComponentChildren } from "preact";
-import {useContext, useId} from "preact/hooks";
+import { useContext, useId } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 
 interface InputIPProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "minLength" | "maxLength" | "size" | "pattern" | "onInput"> {

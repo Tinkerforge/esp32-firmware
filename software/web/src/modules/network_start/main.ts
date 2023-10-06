@@ -31,5 +31,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-network-group').prop('hidden', false);
+    $("#sidebar-network-group").prop("hidden", false);
 }

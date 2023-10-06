@@ -36,7 +36,7 @@ import { InputPassword } from "../../ts/components/input_password";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { SubPage } from "../../ts/components/sub_page";
 
-type OcppConfig = API.getType['ocpp/config']
+type OcppConfig = API.getType["ocpp/config"];
 
 interface OcppState {
     state: API.getType['ocpp/state'];
@@ -324,12 +324,12 @@ export class OcppStatus extends Component<{}, OcppStatusState>
     }
 }
 
-render(<OcppStatus/>, $('#status-ocpp')[0]);
+render(<OcppStatus />, $("#status-ocpp")[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function init() {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-ocpp').prop('hidden', !module_init.ocpp);
+    $("#sidebar-ocpp").prop("hidden", !module_init.ocpp);
 }

@@ -23,14 +23,14 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __ } from "../../ts/translation";
 
-import { h, render, Fragment, } from "preact";
+import { h, render, Fragment } from "preact";
 
 import { InputText } from "../../ts/components/input_text";
 import { Button } from "react-bootstrap";
 import { Save } from "react-feather";
 import { ConfigComponent } from "../../ts/components/config_component";
 
-export class DeviceName extends ConfigComponent<'info/display_name'> {
+export class DeviceName extends ConfigComponent<"info/display_name"> {
     constructor() {
         super('info/display_name', __("device_name.script.save_failed"));
     }
@@ -67,7 +67,7 @@ export class DeviceName extends ConfigComponent<'info/display_name'> {
     }
 }
 
-render(<DeviceName/>, $('#status-device_name')[0]);
+render(<DeviceName />, $("#status-device_name")[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {
 }

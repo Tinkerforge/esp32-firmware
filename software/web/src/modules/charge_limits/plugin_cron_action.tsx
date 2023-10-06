@@ -17,10 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact"
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
-import * as API from "../../ts/api"
+import * as API from "../../ts/api";
 import { Cron } from "../cron/main";
 import { CronActionID } from "../cron/cron_defs";
 import { CronComponent, CronAction } from "../cron/types";
@@ -47,7 +47,7 @@ function ChargeLimitsCronActionComponent(action: CronAction): VNode {
         __("charge_limits.content.h4"),
         __("charge_limits.content.h6"),
         __("charge_limits.content.h8"),
-        __("charge_limits.content.h12")
+        __("charge_limits.content.h12"),
     ]
 
     return __("charge_limits.content.cron_action_text")(durations[value.duration], value.energy_wh);
@@ -69,7 +69,7 @@ function ChargeLimitsCronActionConfig(cron: Cron, action: CronAction) {
         ["70000", util.toLocaleFixed(70, 0) + " kWh"],
         ["80000", util.toLocaleFixed(80, 0) + " kWh"],
         ["90000", util.toLocaleFixed(90, 0) + " kWh"],
-        ["100000", util.toLocaleFixed(100, 0) + " kWh"]
+        ["100000", util.toLocaleFixed(100, 0) + " kWh"],
     ];
 
     const duration_items: [string, string][] = [
@@ -83,7 +83,7 @@ function ChargeLimitsCronActionConfig(cron: Cron, action: CronAction) {
         ["7", __("charge_limits.content.h4")],
         ["8", __("charge_limits.content.h6")],
         ["9", __("charge_limits.content.h8")],
-        ["10", __("charge_limits.content.h12")]
+        ["10", __("charge_limits.content.h12")],
     ];
 
     const meter_entry = API.hasFeature("meter") ? [
@@ -114,8 +114,8 @@ function ChargeLimitsCronActionFactory(): CronAction {
         CronActionID.ChargeLimits,
         {
             duration: 0,
-            energy_wh: 0
-        }
+            energy_wh: 0,
+        },
     ];
 }
 
@@ -127,8 +127,8 @@ export function init() {
                 config_builder: ChargeLimitsCronActionFactory,
                 config_component: ChargeLimitsCronActionConfig,
                 table_row: ChargeLimitsCronActionComponent,
-                name: __("charge_limits.content.charge_limits")
-            }
-        }
+                name: __("charge_limits.content.charge_limits"),
+            },
+        },
     };
 }

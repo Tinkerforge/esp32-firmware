@@ -19,7 +19,7 @@
 
 import $ from "../../ts/jq";
 
-import YaMD5 from '../../ts/yamd5';
+import YaMD5 from "../../ts/yamd5";
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
@@ -107,16 +107,16 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
                     </FormRow>
                 </ConfigForm>
             </SubPage>
-        )
+        );
     }
 }
 
-render(<Authentication/>, $('#authentication')[0])
+render(<Authentication />, $("#authentication")[0]);
 
 export function init() {}
 
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-authentication').prop('hidden', !module_init.authentication);
+    $("#sidebar-authentication").prop("hidden", !module_init.authentication);
 }

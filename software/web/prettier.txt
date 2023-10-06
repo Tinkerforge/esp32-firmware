@@ -1,0 +1,2 @@
+npm install prettier
+npx prettier src --write

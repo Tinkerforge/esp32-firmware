@@ -19,7 +19,7 @@
 
 import $ from "../../ts/jq";
 
-import * as API  from "../../ts/api";
+import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __, translate_unchecked } from "../../ts/translation";
 
@@ -33,8 +33,7 @@ import { OutputFloat    } from "../../ts/components/output_float";
 import { PageHeader     } from "../../ts/components/page_header";
 import { SubPage        } from "../../ts/components/sub_page";
 
-export class Debug extends Component
-{
+export class Debug extends Component {
     render() {
         if (!util.render_allowed())
             return <></>
@@ -295,15 +294,15 @@ export class Debug extends Component
                     </div>
                 </FormRow>
             </SubPage>
-        )
+        );
     }
 }
 
-render(<Debug/>, $('#debug')[0]);
+render(<Debug />, $("#debug")[0]);
 
 export function init() {}
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-debug').prop('hidden', !module_init.debug);
+    $("#sidebar-debug").prop("hidden", !module_init.debug);
 }

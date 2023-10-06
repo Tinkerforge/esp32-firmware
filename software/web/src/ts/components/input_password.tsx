@@ -18,7 +18,7 @@
  */
 
 import { h, Component, Context, Fragment } from "preact";
-import {useContext, useId} from "preact/hooks";
+import { useContext, useId } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { Eye, EyeOff, Trash2 } from "react-feather";

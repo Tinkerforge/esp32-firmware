@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact"
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { Cron } from "../cron/main";
@@ -27,8 +27,8 @@ import { InputSelect } from "../../ts/components/input_select";
 export type EvseStateCronTrigger = [
     CronTriggerID.IECChange,
     {
-        charger_state: number
-    }
+        charger_state: number;
+    },
 ];
 
 export function EvseStateCronComponent(trigger: CronTrigger): VNode {
@@ -48,9 +48,9 @@ function EvseStateCronFactory(): CronTrigger {
     return [
         CronTriggerID.IECChange,
         {
-            charger_state: 0
-        }
-    ]
+            charger_state: 0,
+        },
+    ];
 }
 
 export function EvseStateCronConfig(cron: Cron, trigger: CronTrigger) {
@@ -81,8 +81,8 @@ export function init() {
                 config_builder: EvseStateCronFactory,
                 config_component: EvseStateCronConfig,
                 table_row: EvseStateCronComponent,
-                name: __("evse.content.state_change")
-            }
-        }
+                name: __("evse.content.state_change"),
+            },
+        },
     };
 }

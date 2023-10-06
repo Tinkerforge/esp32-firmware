@@ -19,9 +19,9 @@
 
 import $ from "../../ts/jq";
 
-import * as API  from "../../ts/api";
+import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { __ }    from "../../ts/translation";
+import { __ } from "../../ts/translation";
 
 import { h, render, Fragment, Component } from "preact";
 import { DebugLogger    } from "../../ts/components/debug_logger";
@@ -213,15 +213,15 @@ export class EMDebug extends Component {
                     <OutputFloat value={ll_state.input_voltage} digits={3} scale={3} unit={'V'} />
                 </FormRow>
             </SubPage>
-        )
+        );
     }
 }
 
-render(<EMDebug/>, $('#em_debug')[0]);
+render(<EMDebug />, $("#em_debug")[0]);
 
 export function init() {}
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-em_debug').prop('hidden', !module_init.energy_manager);
+    $("#sidebar-em_debug").prop("hidden", !module_init.energy_manager);
 }

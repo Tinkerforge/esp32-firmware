@@ -244,11 +244,11 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                     </div>
                 </ConfigForm>
             </SubPage>
-        )
+        );
     }
 }
 
-render(<Nfc/>, $('#nfc')[0]);
+render(<Nfc />, $("#nfc")[0]);
 
 export function init() {
 }
@@ -257,5 +257,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-nfc').prop('hidden', !module_init.nfc);
+    $("#sidebar-nfc").prop("hidden", !module_init.nfc);
 }

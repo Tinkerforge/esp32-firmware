@@ -20,7 +20,7 @@
 import * as util from "../../ts/util";
 
 import { h, Context, Fragment } from "preact";
-import {useContext, useId, useState} from "preact/hooks";
+import { useContext, useId, useState } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { __ } from "../../ts/translation";

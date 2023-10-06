@@ -21,7 +21,7 @@ import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
 import { CronComponent, CronTrigger } from "../cron/types";
 import { CronTriggerID } from "../cron/cron_defs";
-import { TableModalRow } from '../../ts/components/table'
+import { TableModalRow } from "../../ts/components/table";
 
 export type ChargeLimitsCronTrigger = [
     CronTriggerID.ChargeLimits,
@@ -52,8 +52,8 @@ export function init() {
                 config_builder: ChargeLimitsCronTriggerFactory,
                 config_component: ChargeLimitsCronTriggerConfig,
                 table_row: ChargeLimitsCronTriggerComponent,
-                name: __("charge_limits.content.charge_limits_expiration")
-            }
-        }
-    }
+                name: __("charge_limits.content.charge_limits_expiration"),
+            },
+        },
+    };
 }

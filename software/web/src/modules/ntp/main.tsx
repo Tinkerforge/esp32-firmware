@@ -36,7 +36,7 @@ import { InputText } from "../../ts/components/input_text";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { SubPage } from "../../ts/components/sub_page";
 
-type NTPConfig = API.getType['ntp/config'];
+type NTPConfig = API.getType["ntp/config"];
 
 export class NTP extends ConfigComponent<'ntp/config'> {
     constructor() {
@@ -184,7 +184,7 @@ export class NTPStatus extends Component<{}, NTPStatusState>
     }
 }
 
-render(<NTPStatus/>, $('#status-ntp')[0]);
+render(<NTPStatus />, $("#status-ntp")[0]);
 
 export function init() {
 
@@ -193,5 +193,5 @@ export function init() {
 export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-ntp').prop('hidden', !module_init.ntp);
+    $("#sidebar-ntp").prop("hidden", !module_init.ntp);
 }
