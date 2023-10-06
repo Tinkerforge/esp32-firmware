@@ -145,7 +145,6 @@ void Certs::register_urls()
     }, true);
 
     api.addCommand("certs/modify", &add, {}, [this](String &error) {
-        // TODO: fail if not already existing.
         error = "";
 
         uint8_t cert_id = add.get("id")->asUint();
