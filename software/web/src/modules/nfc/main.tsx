@@ -125,7 +125,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                         tag.tag_id,
                                         translate_unchecked(`nfc.content.type_${tag.tag_type}`),
                                         tag.user_id == 0 ? __("nfc.script.not_assigned") : state.userCfg.users.filter((user) => user.id == tag.user_id)[0].display_name,
-                                        auth_seen_ids.indexOf(i) >= 0 ? __("nfc.content.last_seen") + util.format_timespan(Math.floor(auth_seen_tags[auth_seen_ids.indexOf(i)].last_seen / 1000)) + __("nfc.content.last_seen_suffix") : __("nfc.script.not_seen")
+                                        auth_seen_ids.indexOf(i) >= 0 ? __("nfc.content.last_seen") + util.format_timespan_ms(auth_seen_tags[auth_seen_ids.indexOf(i)].last_seen) + __("nfc.content.last_seen_suffix") : __("nfc.script.not_seen")
                                     ],
                                     editTitle: __("nfc.content.edit_tag_title"),
                                     onEditStart: async () => this.setState({editTag: {tag_id: tag.tag_id, user_id: tag.user_id, tag_type: tag.tag_type}}),
@@ -190,7 +190,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                                         <h5 class="mb-1 pr-2">{t.tag_id}</h5>
                                                         <div class="d-flex w-100 justify-content-between">
                                                             <span>{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
-                                                            <span>{__("nfc.content.last_seen") + util.format_timespan(Math.floor(t.last_seen / 1000)) + __("nfc.content.last_seen_suffix")}</span>
+                                                            <span>{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</span>
                                                         </div>
                                                         </ListGroupItem>)
                                                 }</ListGroup>

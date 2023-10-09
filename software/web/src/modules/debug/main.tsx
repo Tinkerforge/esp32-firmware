@@ -48,7 +48,7 @@ export class Debug extends Component {
                 <PageHeader title={__("debug.content.debug")} />
 
                 <FormRow label={__("debug.content.uptime")}>
-                    <InputText value={util.format_timespan(Math.round(state_fast.uptime / 1000))}/>
+                    <InputText value={util.format_timespan_ms(state_fast.uptime)}/>
                 </FormRow>
 
                 <FormRow label={__("debug.content.cpu_usage")} label_muted={__("debug.content.cpu_usage_muted")}>

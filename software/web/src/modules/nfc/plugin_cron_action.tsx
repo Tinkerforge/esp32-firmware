@@ -61,7 +61,7 @@ function NFCTagInjectCronActionConfig(cron: Cron, action: CronAction) {
             <h5 class="mb-1 pr-2">{t.tag_id}</h5>
             <div class="d-flex w-100 justify-content-between">
                 <span>{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
-                <span>{__("nfc.content.last_seen") + util.format_timespan(Math.floor(t.last_seen / 1000)) + __("nfc.content.last_seen_suffix")}</span>
+                <span>{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</span>
             </div>
         </ListGroupItem>);
 

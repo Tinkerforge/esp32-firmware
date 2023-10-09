@@ -74,7 +74,13 @@ export function remove_alert(id: string) {
     $(`#alert_${id}`).remove();
 }
 
+export function format_timespan_ms(ms: number) {
+    return format_timespan(ms / 1000);
+}
+
 export function format_timespan(secs: number) {
+    secs = Math.floor(secs);
+
     let days = 0;
     let hours = 0;
     let mins = 0;

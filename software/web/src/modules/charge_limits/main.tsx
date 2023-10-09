@@ -47,11 +47,11 @@ function ChargeLimitsStatus() {
             let duration: number;
             duration = state.target_timestamp_ms;
             if (state.start_timestamp_ms != 0)
-                duration = Math.floor((state.target_timestamp_ms - evse_uptime));
+                duration = state.target_timestamp_ms - evse_uptime;
             if (state.target_timestamp_ms - evse_uptime < 0 && state.start_timestamp_ms != 0)
                 duration = 0;
 
-            ret = util.format_timespan(Math.floor(duration / 1000));
+            ret = util.format_timespan_ms(duration);
         }
 
         return ret;

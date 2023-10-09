@@ -213,11 +213,11 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                     </div>
 
                     <FormRow label={__("evse.content.time_since_state_change")}>
-                        <InputText value={util.format_timespan(Math.floor(ll_state.time_since_state_change / 1000.0))}/>
+                        <InputText value={util.format_timespan_ms(ll_state.time_since_state_change)}/>
                     </FormRow>
 
                     <FormRow label={__("evse.content.uptime")}>
-                        <InputText value={util.format_timespan(Math.floor(ll_state.uptime / 1000.0))}/>
+                        <InputText value={util.format_timespan_ms(ll_state.uptime)}/>
                     </FormRow>
 
 
@@ -384,11 +384,11 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                         </div>
 
                         <FormRow label={__("evse.content.charging_time")}>
-                            <InputText value={util.format_timespan(Math.floor(ll_state.charging_time / 1000))}/>
+                            <InputText value={util.format_timespan_ms(ll_state.charging_time)}/>
                         </FormRow>
 
                         <FormRow label={__("evse.content.time_since_dc_fault_check")}>
-                            <InputText value={util.format_timespan(Math.floor(ll_state.time_since_dc_fault_check / 1000.0))}/>
+                            <InputText value={util.format_timespan_ms(ll_state.time_since_dc_fault_check)}/>
                         </FormRow>
 
                         <FormRow label={__("evse.content.reset_description")} label_muted={__("evse.content.reset_description_muted")}>
