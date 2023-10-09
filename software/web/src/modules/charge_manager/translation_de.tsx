@@ -78,13 +78,7 @@ let x = {
             "host_exists": "Host existiert bereits",
 
             "set_charge_manager": "Lastmanagement",
-            "cron_action_text": /*SFN*/(current: number) => {
-                return (
-                  <>
-                    setze den maximalen Gesamtstrom auf <b>{current / 1000} A</b>.
-                  </>
-                );
-            }/*NF*/
+            "cron_action_text": /*FFN*/(current: number) => <>setze den maximalen Gesamtstrom auf <b>{current / 1000} A</b>.</> /*NF*/
         },
         "script": {
             "charge_state_0": "Kein Fahrzeug angeschlossen",
