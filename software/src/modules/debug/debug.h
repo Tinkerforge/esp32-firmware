@@ -30,6 +30,12 @@
 class Debug final : public IModule
 {
 public:
+    enum TaskAvailability {
+        ExpectPresent,
+        Optional,
+        ExpectMissing,
+    };
+
     Debug(){}
     void pre_setup() override;
     void setup() override;
@@ -37,7 +43,7 @@ public:
     void register_events() override;
     void loop() override;
 
-    void register_task(const char *task_name, uint32_t stack_size, bool expect_present=true);
+    void register_task(const char *task_name, uint32_t stack_size, TaskAvailability availability=ExpectPresent);
     void register_task(TaskHandle_t handle, uint32_t stack_size);
 
 private:

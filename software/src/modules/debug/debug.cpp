@@ -24,8 +24,7 @@
 #include "esp_task.h"
 #include "LittleFS.h"
 #include "lwipopts.h"
-#include "soc/dport_reg.h"
-#include "soc/rtc_cntl_reg.h"
+#include "soc/rtc.h"
 #include "soc/spi_reg.h"
 
 #include "api.h"
@@ -73,35 +72,16 @@ void Debug::pre_setup()
 
     float flash_speed = benchmark_area(&_text_start, 128*1024); // 128KiB at the beginning of the code
 
-    uint32_t rtc_cntl_clk_conf_reg = *reinterpret_cast<uint32_t *>(RTC_CNTL_CLK_CONF_REG);
-    uint32_t soc_clk_sel = rtc_cntl_clk_conf_reg >> RTC_CNTL_SOC_CLK_SEL_S & RTC_CNTL_SOC_CLK_SEL_V;
-
-    uint32_t cpu_per_conf_reg = *reinterpret_cast<uint32_t *>(DPORT_CPU_PER_CONF_REG);
-    uint32_t cpuperiod_sel = cpu_per_conf_reg >> DPORT_CPUPERIOD_SEL_S & DPORT_CPUPERIOD_SEL_V;
-
-    uint32_t cpu_clk = 0;
-    uint32_t apb_clk = 0;
-
-    if (soc_clk_sel == 1) { // PLL_CLK
-        if (cpuperiod_sel == 0) {
-            cpu_clk =  80000000;
-        } else if (cpuperiod_sel == 1) {
-            cpu_clk = 160000000;
-        } else if (cpuperiod_sel == 2) {
-            cpu_clk = 240000000;
-        }
-        apb_clk = 80000000;
-    } else {
-        logger.printfln("Unexpected CPU clock source RTC_CNTL_SOC_CLK_SEL=%u", soc_clk_sel);
-    }
+    rtc_cpu_freq_config_t cpu_freq_conf;
+    rtc_clk_cpu_freq_get_config(&cpu_freq_conf);
 
     state_static = Config::Object({
         {"heap_dram",  Config::Uint32(dram_heap_size)},
         {"heap_iram",  Config::Uint32(iram_heap_size)},
         {"heap_psram", Config::Uint32(psram_heap_size)},
         {"psram_size", Config::Uint32(psram_size)},
-        {"cpu_clk",    Config::Uint32(cpu_clk)},
-        {"apb_clk",    Config::Uint32(apb_clk)},
+        {"cpu_clk",    Config::Uint32(cpu_freq_conf.freq_mhz * 1000000)},
+        {"apb_clk",    Config::Uint32(rtc_clk_apb_freq_get())},
         {"spi_buses",  Config::Array({},
             new Config{Config::Object({
                 {"clk",          Config::Uint32(0)},
@@ -350,25 +330,23 @@ void Debug::register_events()
     }
 
     register_task("tiT",            TCPIP_THREAD_STACKSIZE);
-    register_task("emac_rx",        2048); // stack size from esp_eth_mac.h
-    register_task("wifi",           0);    // stack size unknown, from closed source libpp
+    register_task("emac_rx",        2048, Optional); // stack size from esp_eth_mac.h
+    register_task("wifi",           0,    Optional); // stack size unknown, from closed source libpp
     register_task("sys_evt",        ESP_TASKD_EVENT_STACK); // created in WiFiGeneric.cpp
     register_task("arduino_events", 4096); // stack size from WiFiGeneric.cpp
 
-    register_task("async_udp",       0, false);
-    register_task("btm_rrm_t",       0, false);
-    register_task("console_repl",    0, false);
-    register_task("https_ota_task",  0, false);
-    register_task("ksz8851snl_tsk",  0, false);
-    register_task("l2tap_clean_tas", 0, false);
-    register_task("main",            0, false);
-    register_task("ot_cli",          0, false);
-    register_task("protocomm_conso", 0, false);
-    register_task("rmt_rx_task",     0, false);
-    register_task("sc_ack_send_tas", 0, false);
-    register_task("tcpip_thread",    0, false);
-    register_task("uart_event_task", 0, false);
-    register_task("wpsT",            0, false);
+    register_task("async_udp",       0, ExpectMissing);
+    register_task("btm_rrm_t",       0, ExpectMissing);
+    register_task("console_repl",    0, ExpectMissing);
+    register_task("https_ota_task",  0, ExpectMissing);
+    register_task("l2tap_clean_tas", 0, ExpectMissing);
+    register_task("main",            0, ExpectMissing);
+    register_task("ot_cli",          0, ExpectMissing);
+    register_task("protocomm_conso", 0, ExpectMissing);
+    register_task("sc_ack_send_tas", 0, ExpectMissing);
+    register_task("tcpip_thread",    0, ExpectMissing);
+    register_task("uart_event_task", 0, ExpectMissing);
+    register_task("wpsT",            0, ExpectMissing);
 }
 
 void Debug::loop()
@@ -390,16 +368,16 @@ void Debug::loop()
     }
 }
 
-void Debug::register_task(const char *task_name, uint32_t stack_size, bool expect_present)
+void Debug::register_task(const char *task_name, uint32_t stack_size, TaskAvailability availability)
 {
     TaskHandle_t handle = xTaskGetHandle(task_name);
     if (!handle) {
-        if (expect_present) {
+        if (availability == ExpectPresent) {
             logger.printfln("debug: Can't find task '%s'", task_name);
         }
         return;
     }
-    if (!expect_present) {
+    if (availability == ExpectMissing) {
         logger.printfln("debug: Found task '%s'", task_name);
     }
     register_task(handle, stack_size);
