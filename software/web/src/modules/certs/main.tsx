@@ -38,7 +38,7 @@ interface State {
 }
 
 const MAX_CERTS = 8;
-const MAX_CERT_LENGTH = 4096;
+const MAX_CERT_SIZE = 4096;
 
 
 export class Certs extends Component<{}, State> {
@@ -77,11 +77,11 @@ export class Certs extends Component<{}, State> {
                                                                accept={"application/pem-certificate-chain"}
                                                             onChange={(ev) => {
                                                                 let file = (ev.target as HTMLInputElement).files[0];
-                                                                this.setState({editCert: {...state.editCert, file: file, file_too_large: file.size > MAX_CERT_LENGTH}})
+                                                                this.setState({editCert: {...state.editCert, file: file, file_too_large: file.size > MAX_CERT_SIZE}})
                                                             }}/>
                                                         <label class="custom-file-label form-control rounded-left"
-                                                            data-browse={__('certs.content.browse')}>{state.editCert.file ? state.editCert.file.name : __('certs.content.select_file')}</label>
-                                                        <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_LENGTH)}</div>
+                                                            data-browse={__("certs.content.browse")}>{state.editCert.file ? state.editCert.file.name : __("certs.content.select_file")}</label>
+                                                        <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_SIZE)}</div>
                                                     </div>
                                         }
                                     ],
@@ -118,11 +118,11 @@ export class Certs extends Component<{}, State> {
                                                        accept="application/pem-certificate-chain"
                                                     onChange={(ev) => {
                                                         let file = (ev.target as HTMLInputElement).files[0];
-                                                        this.setState({addCert: {...state.addCert, file: file, file_too_large: file.size > MAX_CERT_LENGTH}});
+                                                        this.setState({addCert: {...state.addCert, file: file, file_too_large: file.size > MAX_CERT_SIZE}});
                                                     }}/>
                                                 <label class="custom-file-label form-control rounded-left"
-                                                    data-browse={__('certs.content.browse')}>{state.addCert.file ? state.addCert.file.name : __('certs.content.select_file')}</label>
-                                                <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_LENGTH)}</div>
+                                                    data-browse={__("certs.content.browse")}>{state.addCert.file ? state.addCert.file.name : __("certs.content.select_file")}</label>
+                                                <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_SIZE)}</div>
                                             </div>
                                           </>
                                 }
