@@ -91,7 +91,7 @@ private:
     PollState poll_state;
     uint16_t poll_count;
     uint16_t *register_buffer;
-    uint32_t register_buffer_size = 178;
+    uint32_t register_buffer_size = 99;
 
     micros_t request_start;
     micros_t all_start;

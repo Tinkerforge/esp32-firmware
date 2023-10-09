@@ -60,7 +60,6 @@ void MeterModbusTCP::start_connection()
     }, &host_data, LWIP_DNS_ADDRTYPE_IPV4);
 }
 
-// May be executed by the loop task or TCP/IP task.
 void MeterModbusTCP::check_ip(const ip_addr_t *ip, int err)
 {
     if (err != ERR_OK || !ip || ip->type != IPADDR_TYPE_V4) {
@@ -108,8 +107,8 @@ void MeterModbusTCP::check_ip(const ip_addr_t *ip, int err)
         logger.printfln("meter_modbus_tcp: Connected to '%s'", host_name.c_str());
     }
 
-    poll_state = PollState::Combined;
-    poll_count = 99;
+    poll_state = PollState::Single;
+    poll_count = 0;
     all_start = now_us();
     worst_runtime = 0;
     best_runtime = UINT32_MAX;
@@ -182,17 +181,17 @@ void MeterModbusTCP::handle_data()
             logger.printfln("meter_modbus_tcp: New best runtime: %u", runtime32);
         }
 
-        if (runtime32 > 8000) {
+        if (runtime32 > 50000) { // 50ms
             logger.printfln("meter_modbus_tcp: Long runtime: %u", runtime32);
         }
 
-        //logger.printfln("meter_modbus_tcp: Combined run with %u values: %u us", poll_count, runtime32);
+        logger.printfln("meter_modbus_tcp: Combined run with %u values: %u us", poll_count, runtime32);
 
-        //poll_count++;
-        //if (poll_count >= 100) {
-        //    poll_state = PollState::Done;
-        //    poll_count = 0;
-        //}
+        poll_count++;
+        if (poll_count >= 100) {
+            poll_state = PollState::Done;
+            poll_count = 0;
+        }
     } else {
         logger.printfln("meter_modbus_tcp: Shouldn't be here.");
         return;
