@@ -110,7 +110,9 @@ void EventLog::write(const char *buf, size_t len)
     }
 
     CoolString payload;
-    payload.reserve(2 + TIMESTAMP_LEN + req_len + 1); // 2 - \"\"; 1 - \0
+    if (!payload.reserve(2 + TIMESTAMP_LEN + req_len + 1)) // 2 - \"\"; 1 - \0
+        return;
+
     payload += '"';
 
     payload.concat(timestamp_buf);
