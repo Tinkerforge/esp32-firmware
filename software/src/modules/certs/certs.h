@@ -25,7 +25,7 @@
 #include <memory>
 
 #define MAX_CERTS 8
-#define MAX_CERT_SIZE 4096
+#define MAX_CERT_SIZE 4030
 #define MAX_CERT_NAME 32
 
 class Certs final : public IModule

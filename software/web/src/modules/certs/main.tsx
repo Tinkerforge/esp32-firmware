@@ -38,7 +38,7 @@ interface State {
 }
 
 const MAX_CERTS = 8;
-const MAX_CERT_SIZE = 4096;
+const MAX_CERT_SIZE = 4030;
 
 
 export class Certs extends Component<{}, State> {
