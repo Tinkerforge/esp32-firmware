@@ -174,7 +174,7 @@ void Ocpp::setup()
 
     task_scheduler.scheduleOnce([this](){
         if (!start_client()) {
-            state.get("charge_point_state")->updateUint(6);
+            state.get("charge_point_state")->updateUint((uint32_t)OcppState::Faulted);
             logger.printfln("Failed to start OCPP client. Check configuration!");
             return;
         }
