@@ -898,8 +898,8 @@ void platform_update_connection_state(CallAction message_in_flight_type,
     ocpp.state.get("status_queue_depth")->updateUint(status_notification_queue_depth);
     ocpp.state.get("connected")->updateBool(connected);
     ocpp.state.get("connected_change_time")->updateUint(connected_change_time);
-    ocpp.state.get("last_ping_sent")->updateUint(last_ping_sent);
-    ocpp.state.get("pong_deadline")->updateUint(pong_deadline);
+    ocpp.state.get("last_ping_sent")->updateUint(millis() - last_ping_sent);
+    ocpp.state.get("pong_deadline")->updateUint(pong_deadline - millis());
 }
 
 void platform_update_config_state(ConfigKey key,

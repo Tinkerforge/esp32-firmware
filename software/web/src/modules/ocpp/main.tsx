@@ -218,6 +218,18 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                         <FormRow label={__("ocpp.content.txn_msg_queue_depth")}>
                             <InputText value={state.state.txn_msg_queue_depth} />
                         </FormRow>
+                        <FormRow label={__("ocpp.content.is_connected")}>
+                            <InputText value={state.state.connected ? __("ocpp.content.connected") : __("ocpp.content.not_connected")} />
+                        </FormRow>
+                        <FormRow label={__("ocpp.content.connected_change_time")}>
+                            <InputText value={util.timestamp_sec_to_date(state.state.connected_change_time)} />
+                        </FormRow>
+                        <FormRow label={__("ocpp.content.last_ping_sent")}>
+                            <InputText value={util.format_timespan_ms(state.state.last_ping_sent)} />
+                        </FormRow>
+                        <FormRow label={__("ocpp.content.pong_deadline")}>
+                            <InputText value={util.format_timespan_ms(state.state.pong_deadline)} />
+                        </FormRow>
                     </CollapsedSection>
 
                     <CollapsedSection label={__("ocpp.content.configuration")}>
@@ -265,13 +277,14 @@ export class OcppStatus extends Component<{}, OcppStatusState>
     }
 
     getConnectionState() {
+        // TODO: we need some mechanism to get access to backend module magic numbers/defines/enums.
         switch(this.state.state.charge_point_state) {
             case 0:
             case 1:
             case 3:
                 return 0;
             case 2:
-                return 1;
+                return this.state.state.connected ? 1 : 0;
             case 4:
             case 5:
             case 6:

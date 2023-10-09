@@ -59,6 +59,12 @@ let x = {
             "message_queue_depth": "Messages enqueued",
             "status_queue_depth": "StatusNotifications enqueued",
             "txn_msg_queue_depth": "Transaction messages enqueued",
+            "is_connected": "Connection state",
+            "connected": "Connected",
+            "not_connected": "Not connected",
+            "connected_change_time": "Letzte Verbindungszustandsänderung",
+            "last_ping_sent": "Letzter WS Ping gesendet",
+            "pong_deadline": "WS-Pong-Deadline",
 
             "charge_point_state_0": "Power on",
             "charge_point_state_1": "Flush persistent messages",

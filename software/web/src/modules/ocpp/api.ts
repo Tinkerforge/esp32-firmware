@@ -35,6 +35,10 @@ export interface state {
     message_queue_depth: number,
     status_queue_depth: number,
     txn_msg_queue_depth: number,
+    connected: boolean,
+    connected_change_time: number,
+    last_ping_sent: number,
+    pong_deadline: number
 }
 
 export interface configuration {
