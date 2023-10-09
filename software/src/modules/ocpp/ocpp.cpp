@@ -84,7 +84,7 @@ void Ocpp::pre_setup()
 
     const uint16_t BOOL_LEN = 5;
     const uint16_t INT_LEN = 11;
-    const uint16_t STR_LEN = 11;
+    const uint16_t STR_LEN = 500;
 
     configuration = Config::Object({
         {"AuthorizeRemoteTxRequests", Config::Str("", 0, BOOL_LEN)},
