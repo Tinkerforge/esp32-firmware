@@ -111,7 +111,7 @@ struct default_validator {
 struct to_json {
     void operator()(const Config::ConfString &x)
     {
-        insertHere.set(*x.getVal());
+        insertHere.set(x.getVal()->c_str());
     }
     void operator()(const Config::ConfFloat &x)
     {
@@ -161,7 +161,7 @@ struct to_json {
         JsonObject obj = insertHere.as<JsonObject>();
         for (size_t i = 0; i < size; ++i) {
             const auto &val_pair = (*val)[i];
-            const String &key = val_pair.first;
+            const char *key = val_pair.first.c_str();
             const Config &child = val_pair.second;
 
             if (child.is<Config::ConfObject>()) {
@@ -175,9 +175,11 @@ struct to_json {
             Config::apply_visitor(to_json{obj[key], keys_to_censor}, child.value);
         }
 
-        for (const String &key : keys_to_censor)
+        for (const String &key_string : keys_to_censor) {
+            const char *key = key_string.c_str();
             if (obj.containsKey(key) && !(obj[key].is<String>() && obj[key].as<String>().length() == 0))
                 obj[key] = nullptr;
+        }
     }
 
     void operator()(const Config::ConfUnion &x) {

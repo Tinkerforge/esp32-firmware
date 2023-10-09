@@ -489,7 +489,7 @@ size_t Config::max_string_length() const
 }
 
 DynamicJsonDocument Config::to_json(const std::vector<String> &keys_to_censor) const {
-    DynamicJsonDocument doc(json_size(false));
+    DynamicJsonDocument doc(json_size(true));
 
     JsonVariant var;
     if (is<Config::ConfObject>()) {
