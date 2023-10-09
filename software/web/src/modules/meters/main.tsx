@@ -650,6 +650,10 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
             });
 
             util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
+                if (this.isDirty()) {
+                    return;
+                }
+
                 let config = API.get_maybe(`meters/${meter_slot}/config`);
 
                 this.setState((prevState) => ({
