@@ -45,6 +45,13 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
+#if MODBUSIP_MAXFRAME < MODBUS_MAX_WORDS * 2 + 2
+//#warning MODBUSIP_MAXFRAME should be increased to MODBUS_MAX_WORDS * 2 + 2
+#define METERS_MODBUSTCP_MAX_HREG_WORDS ((MODBUSIP_MAXFRAME - 2) / 2)
+#else
+#define METERS_MODBUSTCP_MAX_HREG_WORDS (MODBUS_MAX_WORDS)
+#endif
+
 class MeterModbusTCP final : public IMeter
 {
 public:
@@ -91,15 +98,13 @@ private:
     PollState poll_state;
     uint16_t poll_count;
     uint16_t *register_buffer;
-    uint32_t register_buffer_size = 99;
+    uint32_t register_buffer_size = METERS_MODBUSTCP_MAX_HREG_WORDS;
 
     micros_t request_start;
     micros_t all_start;
     uint32_t worst_runtime;
     uint32_t best_runtime;
 };
-
-const char* get_modbus_result_code_name(Modbus::ResultCode event) _ATTRIBUTE((const));
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop

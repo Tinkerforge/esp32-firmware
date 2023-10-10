@@ -59,9 +59,6 @@ void MetersModbusTCP::pre_setup()
     });
 
     meters.register_meter_generator(get_class(), this);
-
-    logger.printfln("meters register_element json_size=%u max_string_length=%u", register_element.json_size(false), register_element.max_string_length());
-    logger.printfln("meters config_prototype json_size=%u max_string_length=%u", config_prototype.json_size(false), config_prototype.max_string_length());
 }
 
 void MetersModbusTCP::setup()
@@ -71,9 +68,7 @@ void MetersModbusTCP::setup()
 
 void MetersModbusTCP::loop()
 {
-    if (instance_count > 0) {
-        mb.task();
-    }
+    mb.task();
 }
 
 _ATTRIBUTE((const))
@@ -105,4 +100,9 @@ const Config * MetersModbusTCP::get_state_prototype()
 const Config * MetersModbusTCP::get_errors_prototype()
 {
     return &errors_prototype;
+}
+
+ModbusTCP *MetersModbusTCP::get_modbustcp_handle()
+{
+    return &mb;
 }
