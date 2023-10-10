@@ -1,5 +1,6 @@
-<!DOCTYPE html lang="en">
-
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Recovery interface</title>
 <style>
@@ -8,7 +9,7 @@
         margin-bottom: 0.5rem;
     }
 </style>
-<link rel="icon" href="data:," />
+<link rel="icon" href="data:,">
 
 <h3 style="margin-top: 0.5rem;">Firmware update</h3>
 <form>
@@ -35,8 +36,8 @@
 
 <h3>API</h3>
 <form>
-    <textarea id="api" rows=12 cols=40 placeholder='Type an API call as a JSON object with method, url and payload (as nested JSON). For example {"method":"PUT", "url":"/evse/auto_start_charging_update", "payload":{"auto_start_charging":true}}'></textarea><br/><br/>
-    <button type="button" onclick='call_api()'>Call API</button><br/><br/>
+    <textarea id="api" rows=12 cols=40 placeholder='Type an API call as a JSON object with method, url and payload (as nested JSON). For example {"method":"PUT", "url":"/evse/auto_start_charging_update", "payload":{"auto_start_charging":true}}'></textarea><br><br>
+    <button type="button" onclick='call_api()'>Call API</button><br><br>
     <textarea id="api_result" rows=12 cols=40 placeholder="API call result"></textarea>
 </form>
 <script>
