@@ -153,7 +153,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                             <InputText value={translate_unchecked(`ocpp.content.status_${state.state.charge_point_status}`)} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.next_profile_eval")}>
-                            <InputText value={new Date(state.state.next_profile_eval * 1000).toLocaleString()} />
+                            <InputText value={util.timestamp_sec_to_date(state.state.next_profile_eval)} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.connector_state")}>
                             <InputText value={translate_unchecked(`ocpp.content.connector_state_${state.state.connector_state}`)} />
@@ -168,22 +168,22 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                             <InputText value={state.state.parent_tag_id} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.tag_expiry_date")}>
-                            <InputText value={new Date(state.state.tag_expiry_date * 1000).toLocaleString()} />
+                            <InputText value={util.timestamp_sec_to_date(state.state.tag_expiry_date, __('ocpp.content.no_tag_seen'))} />
                         </FormRow>
-                        <FormRow label={__("ocpp.content.tag_deadline")}>
-                            <InputText value={state.state.tag_timeout} />
+                        <FormRow label={__("ocpp.content.tag_timeout")}>
+                            <InputText value={util.format_timespan_ms(state.state.tag_timeout, {replace_u32max_with: __("ocpp.content.not_waiting_for_tag")})} />
                         </FormRow>
-                        <FormRow label={__("ocpp.content.cable_deadline")}>
-                            <InputText value={state.state.cable_timeout} />
+                        <FormRow label={__("ocpp.content.cable_timeout")}>
+                            <InputText value={util.format_timespan_ms(state.state.cable_timeout, {replace_u32max_with: __("ocpp.content.not_waiting_for_cable")})} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.txn_id")}>
-                            <InputText value={state.state.txn_id} />
+                            <InputText value={state.state.txn_id == 0x7FFFFFFF ?  __('ocpp.content.no_transaction_running') : state.state.txn_id} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.txn_confirmed_time")}>
-                            <InputText value={new Date(state.state.txn_confirmed_time * 1000).toLocaleString()} />
+                            <InputText value={util.timestamp_sec_to_date(state.state.txn_confirmed_time, __('ocpp.content.no_transaction_running'))} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.txn_start_time")}>
-                            <InputText value={new Date(state.state.txn_start_time * 1000).toLocaleString()} />
+                            <InputText value={util.timestamp_sec_to_date(state.state.txn_start_time, __('ocpp.content.no_transaction_running'))} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.current")}>
                             <InputText value={state.state.current / 1000.0 + " A"} />
@@ -203,11 +203,11 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                         <FormRow label={__("ocpp.content.message_in_flight_len")}>
                             <InputText value={state.state.message_in_flight_len} />
                         </FormRow>
-                        <FormRow label={__("ocpp.content.message_deadline")}>
-                            <InputText value={state.state.message_timeout} />
+                        <FormRow label={__("ocpp.content.message_timeout")}>
+                            <InputText value={util.format_timespan_ms(state.state.message_timeout, {replace_u32max_with: __("ocpp.content.no_message_in_flight")})} />
                         </FormRow>
-                        <FormRow label={__("ocpp.content.txn_msg_retry_deadline")}>
-                            <InputText value={state.state.txn_msg_retry_timeout} />
+                        <FormRow label={__("ocpp.content.txn_msg_retry_timeout")}>
+                            <InputText value={util.format_timespan_ms(state.state.txn_msg_retry_timeout, {replace_u32max_with: __("ocpp.content.no_message_in_flight")})} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.message_queue_depth")}>
                             <InputText value={state.state.message_queue_depth} />
@@ -222,13 +222,13 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                             <InputText value={state.state.connected ? __("ocpp.content.connected") : __("ocpp.content.not_connected")} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.connected_change_time")}>
-                            <InputText value={util.timestamp_sec_to_date(state.state.connected_change_time)} />
+                            <InputText value={util.timestamp_sec_to_date(state.state.connected_change_time, __('ocpp.content.never_connected_since_reboot'))} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.last_ping_sent")}>
-                            <InputText value={util.format_timespan_ms(state.state.last_ping_sent)} />
+                            <InputText value={util.format_timespan_ms(state.state.last_ping_sent, {replace_u32max_with: __("ocpp.content.no_ping_sent")})} />
                         </FormRow>
-                        <FormRow label={__("ocpp.content.pong_deadline")}>
-                            <InputText value={util.format_timespan_ms(state.state.pong_deadline)} />
+                        <FormRow label={__("ocpp.content.pong_timeout")}>
+                            <InputText value={util.format_timespan_ms(state.state.pong_timeout, {replace_u32max_with: __("ocpp.content.no_ping_sent")})} />
                         </FormRow>
                     </CollapsedSection>
 
@@ -319,7 +319,7 @@ export class OcppStatus extends Component<{}, OcppStatusState>
     }
 
     getStatusLine() {
-        // TODO add cable/tag deadline info here
+        // TODO add cable/tag timeout info here
         return this.getStatusPrefix();
     }
 

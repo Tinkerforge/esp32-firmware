@@ -38,7 +38,7 @@ export interface state {
     connected: boolean,
     connected_change_time: number,
     last_ping_sent: number,
-    pong_deadline: number
+    pong_timeout: number
 }
 
 export interface configuration {

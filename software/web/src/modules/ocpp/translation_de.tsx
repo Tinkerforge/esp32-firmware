@@ -7,7 +7,7 @@ let x = {
             "connecting": "Verbinde",
             "connected": "Verbunden",
             "error": "Fehler",
-            "status": "Status"
+            "status": "OCPP-Status"
         },
         "navbar": {
             "ocpp": "OCPP"
@@ -43,8 +43,8 @@ let x = {
             "tag_id": "Tag-ID",
             "parent_tag_id": "Tag-Gruppen-ID",
             "tag_expiry_date": "Tag gültig bis",
-            "tag_deadline": "Tag-Deadline",
-            "cable_deadline": "Kabel-Deadline",
+            "tag_timeout": "Tag-Timeout",
+            "cable_timeout": "Kabel-Timeout",
             "txn_id": "Transaktions-ID",
             "txn_confirmed_time": "Transaktion bestätigt seit",
             "txn_start_time": "Transaktions-Startzeit",
@@ -54,8 +54,8 @@ let x = {
             "message_in_flight_type": "Typ der aktuellen Nachricht",
             "message_in_flight_id": "ID der aktuellen Nachricht",
             "message_in_flight_len": "Länge der aktuellen Nachricht",
-            "message_deadline": "Nachrichts-Deadline",
-            "txn_msg_retry_deadline": "Transaktions-Nachrichts-Deadline",
+            "message_timeout": "Nachrichts-Timeout",
+            "txn_msg_retry_timeout": "Transaktions-Nachrichts-Timeout",
             "message_queue_depth": "Nachrichten in Queue",
             "status_queue_depth": "StatusNotifications in Queue",
             "txn_msg_queue_depth": "Transaktions-Nachrichten in Queue",
@@ -63,8 +63,16 @@ let x = {
             "connected": "Verbunden",
             "not_connected": "Nicht verbunden",
             "connected_change_time": "Letzte Verbindungszustandsänderung",
-            "last_ping_sent": "Letzter WS Ping gesendet",
-            "pong_deadline": "WS-Pong-Deadline",
+            "last_ping_sent": "Letzter WS-Ping gesendet",
+            "pong_timeout": "WS-Pong-Timeout",
+
+            "not_waiting_for_tag": "Kein Tag erwartet",
+            "not_waiting_for_cable": "Kein Kabel erwartet",
+            "no_message_in_flight": "Keine Nachricht gesendet",
+            "no_ping_sent": "Kein WS-Ping gesendet",
+            "no_tag_seen": "Kein Tag erkannt",
+            "no_transaction_running": "Keine Transaktion aktiv",
+            "never_connected_since_reboot": "Seit Neustart nie verbunden",
 
             "charge_point_state_0": "Starte",
             "charge_point_state_1": "Sende persistente Nachrichten",
