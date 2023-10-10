@@ -866,8 +866,8 @@ void platform_update_connector_state(int32_t connector_id,
     ocpp.state.get("tag_id")->updateString(auth_for.tagId);
     ocpp.state.get("parent_tag_id")->updateString(auth_for.parentTagId);
     ocpp.state.get("tag_expiry_date")->updateInt((int32_t)auth_for.expiryDate);
-    ocpp.state.get("tag_timeout")->updateUint(tag_deadline - millis());
-    ocpp.state.get("cable_timeout")->updateUint(cable_deadline - millis());
+    ocpp.state.get("tag_timeout")->updateUint(tag_deadline == 0 ? 0xFFFFFFFF : (tag_deadline - millis()));
+    ocpp.state.get("cable_timeout")->updateUint(cable_deadline == 0 ? 0xFFFFFFFF : (cable_deadline - millis()));
     ocpp.state.get("txn_id")->updateInt(txn_id);
     ocpp.state.get("txn_confirmed_time")->updateInt((int32_t)transaction_confirmed_timestamp);
     ocpp.state.get("txn_start_time")->updateInt((int32_t)transaction_start_time);
@@ -892,14 +892,14 @@ void platform_update_connection_state(CallAction message_in_flight_type,
     ocpp.state.get("message_in_flight_id_high")->updateUint(message_in_flight_id >> 32);
     ocpp.state.get("message_in_flight_id_low")->updateUint(message_in_flight_id & (0xFFFFFFFF));
     ocpp.state.get("message_in_flight_len")->updateUint(message_in_flight_len);
-    ocpp.state.get("message_timeout")->updateUint(message_timeout_deadline - millis());
-    ocpp.state.get("txn_msg_retry_timeout")->updateUint(txn_msg_retry_deadline - millis());
+    ocpp.state.get("message_timeout")->updateUint(message_timeout_deadline == 0 ? 0xFFFFFFFF : (message_timeout_deadline - millis()));
+    ocpp.state.get("txn_msg_retry_timeout")->updateUint(txn_msg_retry_deadline == 0 ? 0xFFFFFFFF : (txn_msg_retry_deadline - millis()));
     ocpp.state.get("message_queue_depth")->updateUint(message_queue_depth);
     ocpp.state.get("status_queue_depth")->updateUint(status_notification_queue_depth);
     ocpp.state.get("connected")->updateBool(connected);
     ocpp.state.get("connected_change_time")->updateUint(connected_change_time);
     ocpp.state.get("last_ping_sent")->updateUint(millis() - last_ping_sent);
-    ocpp.state.get("pong_deadline")->updateUint(pong_deadline - millis());
+    ocpp.state.get("pong_timeout")->updateUint(pong_deadline == 0 ? 0xFFFFFFFF : (pong_deadline - millis()));
 }
 
 void platform_update_config_state(ConfigKey key,

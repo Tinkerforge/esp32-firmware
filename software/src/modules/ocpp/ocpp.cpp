@@ -79,7 +79,7 @@ void Ocpp::pre_setup()
         {"connected", Config::Bool(false)},
         {"connected_change_time", Config::Uint32(0)},
         {"last_ping_sent", Config::Uint32(0)},
-        {"pong_deadline", Config::Uint32(0)},
+        {"pong_timeout", Config::Uint32(0)},
     });
 
     const uint16_t BOOL_LEN = 5;
