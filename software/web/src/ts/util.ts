@@ -74,7 +74,13 @@ export function remove_alert(id: string) {
     $(`#alert_${id}`).remove();
 }
 
-export function format_timespan_ms(ms: number) {
+export function format_timespan_ms(ms: number, opts?: {replace_zero_with?: string, replace_u32max_with?: string}) {
+    if (opts !== undefined && opts.replace_zero_with !== undefined && ms == 0)
+        return opts.replace_zero_with;
+
+    if (opts !== undefined && opts.replace_u32max_with !== undefined && ms == 0xFFFFFFFF)
+        return opts.replace_u32max_with;
+
     return format_timespan(ms / 1000);
 }
 
