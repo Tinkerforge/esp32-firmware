@@ -474,15 +474,19 @@ function timestamp_to_date(timestamp: number, time_fmt: any) {
     return result;
 }
 
-export function timestamp_min_to_date(timestamp_minutes: number, unsynced_string: string) {
-    if (timestamp_minutes == 0) {
+export function timestamp_min_to_date(timestamp_minutes: number, unsynced_string?: string) {
+    if (unsynced_string !== undefined && timestamp_minutes == 0) {
         return unsynced_string;
     }
 
     return timestamp_to_date(timestamp_minutes * 60000, {hour: '2-digit', minute: '2-digit'});
 }
 
-export function timestamp_sec_to_date(timestamp_seconds: number) {
+export function timestamp_sec_to_date(timestamp_seconds: number, unsynced_string?: string) {
+    if (unsynced_string !== undefined && timestamp_seconds == 0) {
+        return unsynced_string;
+    }
+
     return timestamp_to_date(timestamp_seconds * 1000, {hour: '2-digit', minute: '2-digit', second: '2-digit'});
 }
 

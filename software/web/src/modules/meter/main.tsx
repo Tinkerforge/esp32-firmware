@@ -188,7 +188,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                 return util.timestamp_sec_to_date(rawValue)
                             }
                             else {
-                                return util.timestamp_min_to_date((rawValue / 60), '???');
+                                return util.timestamp_min_to_date(rawValue / 60);
                             }
                         }
 

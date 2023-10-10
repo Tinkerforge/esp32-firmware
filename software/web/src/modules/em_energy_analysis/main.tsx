@@ -323,7 +323,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     value: (self: uPlot, rawValue: number) => {
                         if (rawValue !== null) {
                             if (this.props.legend_time_with_minutes) {
-                                return util.timestamp_min_to_date((rawValue / 60), '???');
+                                return util.timestamp_min_to_date(rawValue / 60);
                             }
                             else {
                                 return new Date(rawValue * 1000).toLocaleDateString([], {year: 'numeric', month: '2-digit', day: '2-digit'});
@@ -674,7 +674,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     value: (self: uPlot, rawValue: number) => {
                         if (rawValue !== null) {
                             if (this.props.legend_time_with_minutes) {
-                                return util.timestamp_min_to_date((rawValue / 60), '???');
+                                return util.timestamp_min_to_date(rawValue / 60);
                             }
                             else {
                                 return new Date(rawValue * 1000).toLocaleDateString([], {year: 'numeric', month: '2-digit', day: '2-digit'});
