@@ -69,7 +69,8 @@ void WS::register_urls()
 
             size_t len;
             char *p = to_send.releaseOwnership(&len);
-            client.sendOwnedBlocking_HTTPThread(p, len);
+            if (!client.sendOwnedBlocking_HTTPThread(p, len))
+                return;
         }
 
         for (auto &callback : on_connect_callbacks) {

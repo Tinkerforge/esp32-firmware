@@ -85,30 +85,41 @@ bool WebSockets::queueFull()
     return false;
 }
 
+static bool send_ws_work_item(WebSockets *ws, ws_work_item wi) {
+    httpd_ws_frame_t ws_pkt;
+    memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
+
+    ws_pkt.payload = (uint8_t *)wi.payload;
+    ws_pkt.len = wi.payload_len;
+    ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : HTTPD_WS_TYPE_TEXT;
+
+    bool result = true;
+
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (wi.fds[i] == -1) {
+            continue;
+        }
+
+        if (httpd_ws_get_fd_info(wi.hd, wi.fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
+            continue;
+        }
+
+        if (httpd_ws_send_frame_async(wi.hd, wi.fds[i], &ws_pkt) != ESP_OK) {
+            ws->keepAliveCloseDead(wi.fds[i]);
+            result = false;
+        }
+    }
+
+    return result;
+}
+
 static void work(void *arg)
 {
     WebSockets *ws = (WebSockets *)arg;
 
     ws_work_item wi;
     while (ws->haveWork(&wi)) {
-        httpd_ws_frame_t ws_pkt;
-        memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
-
-        ws_pkt.payload = (uint8_t *)wi.payload;
-        ws_pkt.len = wi.payload_len;
-        ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : HTTPD_WS_TYPE_TEXT;
-
-        for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-            if (wi.fds[i] == -1) {
-                continue;
-            }
-            if (httpd_ws_get_fd_info(wi.hd, wi.fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
-                continue;
-            }
-            if (httpd_ws_send_frame_async(wi.hd, wi.fds[i], &ws_pkt) != ESP_OK) {
-                ws->keepAliveCloseDead(wi.fds[i]);
-            }
-        }
+        send_ws_work_item(ws, wi);
         clear_ws_work_item(&wi);
     }
 
@@ -344,7 +355,10 @@ void WebSockets::receivedPong(int fd)
 
 bool WebSocketsClient::sendOwnedBlocking_HTTPThread(char *payload, size_t payload_len)
 {
-    return ws->sendToClientOwned(payload, payload_len, fd);
+    ws_work_item wi{server.httpd, {this->fd, -1, -1, -1, -1}, payload, payload_len};
+    bool result = send_ws_work_item(ws, wi);
+    clear_ws_work_item(&wi);
+    return result;
 }
 
 void WebSocketsClient::close_HTTPThread() {
