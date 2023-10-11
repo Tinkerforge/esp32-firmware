@@ -495,7 +495,8 @@ interface MetersProps {
 
 interface MetersState {
     states: {[meter_slot: number]: Readonly<API.getType['meters/0/state']>};
-    configs: {[meter_slot: number]: MeterConfig};
+    configs_plot: {[meter_slot: number]: MeterConfig};
+    configs_table: {[meter_slot: number]: MeterConfig};
     values_by_id: {[meter_slot: number]: NumberToNumber};
     chart_selected: "history"|"live";
     addMeterSlot: number;
@@ -612,7 +613,8 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
               __("meters.script.save_failed"),
               __("meters.script.reboot_content_changed"), {
                   states: {},
-                  configs: {},
+                  configs_plot: {},
+                  configs_table: {},
                   values_by_id: {},
                   chart_selected: "history",
                   addMeterSlot: null,
@@ -650,18 +652,23 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
             });
 
             util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
-                if (this.isDirty()) {
-                    return;
-                }
-
                 let config = API.get_maybe(`meters/${meter_slot}/config`);
 
                 this.setState((prevState) => ({
-                    configs: {
-                        ...prevState.configs,
+                    configs_plot: {
+                        ...prevState.configs_plot,
                         [meter_slot]: config
                     }
                 }));
+
+                if (!this.isDirty()) {
+                    this.setState((prevState) => ({
+                        configs_table: {
+                            ...prevState.configs_table,
+                            [meter_slot]: config
+                        }
+                    }));
+                }
             });
 
             util.addApiEventListener_unchecked(`meters/${meter_slot}/value_ids`, () => {
@@ -855,7 +862,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                 for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
                     if (this.live_data.samples[meter_slot].length > 0) {
                         live_data.keys.push('meter_' + meter_slot);
-                        live_data.names.push(get_meter_name(this.state.configs, meter_slot));
+                        live_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
                         live_data.values.push(this.live_data.samples[meter_slot]);
                     }
                 }
@@ -874,7 +881,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                 for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
                     if (this.history_data.samples[meter_slot].length > 0) {
                         history_data.keys.push('meter_' + meter_slot);
-                        history_data.names.push(get_meter_name(this.state.configs, meter_slot));
+                        history_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
                         history_data.values.push(this.history_data.samples[meter_slot]);
                     }
                 }
@@ -896,7 +903,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 
             if (this.history_data.samples[this.state.meter_slot_status].length > 0) {
                 status_data.keys.push('meter_' + this.state.meter_slot_status);
-                status_data.names.push(get_meter_name(this.state.configs, this.state.meter_slot_status));
+                status_data.names.push(get_meter_name(this.state.configs_plot, this.state.meter_slot_status));
                 status_data.values.push(this.history_data.samples[this.state.meter_slot_status]);
             }
 
@@ -906,7 +913,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 
     override async sendSave(t: "meters/config", new_config: MetersConfig) {
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            await API.save_maybe(`meters/${meter_slot}/config`, this.state.configs[meter_slot], __("meters.script.save_failed"));
+            await API.save_maybe(`meters/${meter_slot}/config`, this.state.configs_table[meter_slot], __("meters.script.save_failed"));
         }
 
         await API.save(t, new_config, this.error_string, this.reboot_string);
@@ -917,7 +924,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
             return (<></>);
         }
 
-        let active_meter_slots = Object.keys(state.configs).filter((meter_slot_str) => state.configs[parseInt(meter_slot_str)][0] != MeterClassID.None);
+        let active_meter_slots = Object.keys(state.configs_table).filter((meter_slot_str) => state.configs_table[parseInt(meter_slot_str)][0] != MeterClassID.None);
 
         return (
             <SubPage colClasses="col-xl-10">
@@ -977,7 +984,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                             columnNames={[__("meters.content.table_name"), __("meters.content.table_power"), __("meters.content.table_energy"), __("meters.content.table_phases")]}
                             rows={active_meter_slots.map((meter_slot_str) => {
                                 let meter_slot = parseInt(meter_slot_str);
-                                let config = state.configs[meter_slot];
+                                let config = state.configs_table[meter_slot];
                                 let power: number = null;
                                 let energy: number = null;
                                 let phases: ["?"|"d"|"c"|"a", "?"|"d"|"c"|"a", "?"|"d"|"c"|"a"] = ["?", "?", "?"]; // [d]isconected, [c]onnected, [a]ctive
@@ -1059,7 +1066,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                                 this.setState({extraShow: state.extraShow.map((show, i) => meter_slot == i ? !show : show)});
                                             }}>
                                             <ChevronRight {...{id:`meter-${meter_slot}-chevron`, class: state.extraShow[meter_slot] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
-                                            </Button>{get_meter_name(state.configs, meter_slot)}</>,
+                                            </Button>{get_meter_name(state.configs_table, meter_slot)}</>,
                                         util.hasValue(power) ? util.toLocaleFixed(power, 0) + " W" : undefined,
                                         util.hasValue(energy) ? util.toLocaleFixed(energy, 3) + " kWh" : undefined,
                                         util.compareArrays(phases, ["?", "?", "?"]) ? undefined : <ButtonGroup>
@@ -1096,7 +1103,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                         let classes: [string, string][] = [];
 
                                         for (let free_meter_slot = 0; free_meter_slot < METERS_SLOTS; ++free_meter_slot) {
-                                            if (state.configs[free_meter_slot][0] == MeterClassID.None || free_meter_slot == meter_slot) {
+                                            if (state.configs_table[free_meter_slot][0] == MeterClassID.None || free_meter_slot == meter_slot) {
                                                 slots.push([free_meter_slot.toString(), free_meter_slot.toString()]);
                                             }
                                         }
@@ -1139,12 +1146,11 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                         return rows;
                                     },
                                     onEditSubmit: async () => {
-                                        this.setState({configs: {...state.configs, [meter_slot]: [MeterClassID.None, null], [state.editMeterSlot]: state.editMeter}});
+                                        this.setState({configs_table: {...state.configs_table, [meter_slot]: [MeterClassID.None, null], [state.editMeterSlot]: state.editMeter}});
                                         this.setDirty(true);
-                                        this.update_uplot(); // update plot color, that depends on the name of the meter
                                     },
                                     onRemoveClick: async () => {
-                                        this.setState({configs: {...state.configs, [meter_slot]: [MeterClassID.None, null]}});
+                                        this.setState({configs_table: {...state.configs_table, [meter_slot]: [MeterClassID.None, null]}});
                                         this.setDirty(true);
                                     }
                                 }
@@ -1156,7 +1162,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                 let addMeterSlot = null;
 
                                 for (let free_meter_slot = 0; free_meter_slot < METERS_SLOTS; ++free_meter_slot) {
-                                    if (state.configs[free_meter_slot][0] == MeterClassID.None) {
+                                    if (state.configs_table[free_meter_slot][0] == MeterClassID.None) {
                                         addMeterSlot = free_meter_slot;
                                         break;
                                     }
@@ -1169,7 +1175,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                 let classes: [string, string][] = [];
 
                                 for (let free_meter_slot = 0; free_meter_slot < METERS_SLOTS; ++free_meter_slot) {
-                                    if (state.configs[free_meter_slot][0] == MeterClassID.None) {
+                                    if (state.configs_table[free_meter_slot][0] == MeterClassID.None) {
                                         slots.push([free_meter_slot.toString(), free_meter_slot.toString()]);
                                     }
                                 }
@@ -1218,7 +1224,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                 return rows;
                             }}
                             onAddSubmit={async () => {
-                                this.setState({configs: {...state.configs, [state.addMeterSlot]: state.addMeter}});
+                                this.setState({configs_table: {...state.configs_table, [state.addMeterSlot]: state.addMeter}});
                                 this.setDirty(true);
                             }}
                             />
