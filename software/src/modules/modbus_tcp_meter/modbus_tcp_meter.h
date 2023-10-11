@@ -25,14 +25,7 @@
 
 #define MODBUSIP_USE_DNS 1
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wvla"
-#endif
 #include <ModbusTCP.h>
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
 
 #define MODBUS_TCP_METER_COUNT_MAX 2
 #define MODBUS_TCP_METER_REGISTER_COUNT_MAX 10

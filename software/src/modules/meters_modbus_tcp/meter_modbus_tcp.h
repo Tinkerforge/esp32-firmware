@@ -26,14 +26,7 @@
 // Connect attempts are blocking. Use a low timeout that should usually work and just try again if it doesn't.
 #define MODBUSIP_CONNECT_TIMEOUT 500
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wvla"
-#endif
 #include "ModbusTCP.h"
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
 
 #include "config.h"
 #include "modules/meters/imeter.h"

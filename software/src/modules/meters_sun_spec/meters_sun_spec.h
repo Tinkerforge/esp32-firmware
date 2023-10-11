@@ -21,14 +21,7 @@
 
 #include <stdint.h>
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wvla"
-#endif
 #include "ModbusTCP.h"
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
 
 #include "config.h"
 #include "modules/meters/meter_generator.h"
