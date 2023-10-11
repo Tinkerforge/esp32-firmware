@@ -903,31 +903,38 @@ def main():
 
         util.remove_digest('web', 'node_modules', env=env)
 
-        rmtree_tries = 10
 
-        while rmtree_tries > 0:
-            try:
-                if os.path.exists('web/node_modules'):
-                    with os.scandir('web/node_modules') as entries:
-                        for entry in entries:
-                            if entry.is_dir() and not entry.is_symlink():
-                                shutil.rmtree(entry.path)
-                            else:
-                                os.remove(entry.path)
-                    if len(os.listdir('web/node_modules')) == 0:
-                        break
+        def clear_directory(path):
+            if not os.path.exists(path):
+                return
+
+            with os.scandir(path) as entries:
+                for entry in entries:
+                    if entry.is_dir() and not entry.is_symlink():
+                        shutil.rmtree(entry.path)
                     else:
-                        raise Exception('web/node_modules not empty')
+                        os.remove(entry.path)
+
+            if len(os.listdir(path)) == 0:
+                return
+
+            raise Exception('Failed to clear ' + path)
+
+        # On Windows, for some unknown reason, sometimes a directory
+        # stays or becomes non-empty during the shutil.rmtree call and
+        # cannot be removed anymore. If that happens, just try again.
+        #
+        # Only clear (not remove) the node_modules directory,
+        # in case it is a mount point, soft-, hardlink or in some other way special.
+        attempts = 10
+        for i in range(attempts):
+            try:
+                clear_directory('web/node_modules')
                 break
             except:
-                # On Windows, for some unknown reason, sometimes a directory
-                # stays or becomes non-empty during the shutil.rmtree call and
-                # cannot be removed anymore. If that happens, just try again.
                 time.sleep(0.5)
 
-                rmtree_tries -= 1
-
-                if rmtree_tries == 0:
+                if i == attempts - 1:
                     raise
 
         with ChangedDirectory('web'):
