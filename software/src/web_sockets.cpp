@@ -342,11 +342,6 @@ void WebSockets::receivedPong(int fd)
     }
 }
 
-bool WebSocketsClient::send(const char *payload, size_t payload_len)
-{
-    return ws->sendToClient(payload, payload_len, fd);
-}
-
 bool WebSocketsClient::sendOwnedBlocking_HTTPThread(char *payload, size_t payload_len)
 {
     return ws->sendToClientOwned(payload, payload_len, fd);
