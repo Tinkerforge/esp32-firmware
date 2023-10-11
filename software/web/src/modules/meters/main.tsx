@@ -1139,11 +1139,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                         return rows;
                                     },
                                     onEditSubmit: async () => {
-                                        this.setState({
-                                            configs: {...state.configs, [meter_slot]: [MeterClassID.None, null], [state.editMeterSlot]: state.editMeter},
-                                            editMeterSlot: null,
-                                            editMeter: [MeterClassID.None, null],
-                                        });
+                                        this.setState({configs: {...state.configs, [meter_slot]: [MeterClassID.None, null], [state.editMeterSlot]: state.editMeter}});
                                         this.setDirty(true);
                                         this.update_uplot(); // update plot color, that depends on the name of the meter
                                     },
