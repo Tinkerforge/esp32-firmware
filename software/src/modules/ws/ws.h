@@ -32,7 +32,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void addOnConnectCallback(std::function<void(WebSocketsClient)> callback);
+    void addOnConnectCallback_HTTPThread(std::function<void(WebSocketsClient)> callback);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;

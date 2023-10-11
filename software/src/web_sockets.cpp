@@ -347,12 +347,12 @@ bool WebSocketsClient::send(const char *payload, size_t payload_len)
     return ws->sendToClient(payload, payload_len, fd);
 }
 
-bool WebSocketsClient::sendOwned(char *payload, size_t payload_len)
+bool WebSocketsClient::sendOwnedBlocking_HTTPThread(char *payload, size_t payload_len)
 {
     return ws->sendToClientOwned(payload, payload_len, fd);
 }
 
-void WebSocketsClient::close() {
+void WebSocketsClient::close_HTTPThread() {
     ws->keepAliveCloseDead(fd);
 }
 
@@ -585,7 +585,7 @@ void WebSockets::start(const char *uri)
     api.addState("info/ws", &state, {}, 1000);
 }
 
-void WebSockets::onConnect(std::function<void(WebSocketsClient)> fn)
+void WebSockets::onConnect_HTTPThread(std::function<void(WebSocketsClient)> fn)
 {
     on_client_connect_fn = fn;
 }

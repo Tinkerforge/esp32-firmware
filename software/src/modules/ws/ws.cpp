@@ -39,7 +39,7 @@ void WS::setup()
 
 void WS::register_urls()
 {
-    web_sockets.onConnect([this](WebSocketsClient client) {
+    web_sockets.onConnect_HTTPThread([this](WebSocketsClient client) {
         CoolString to_send;
         auto result = task_scheduler.await([&to_send](){
             size_t required = 1; // \0
@@ -63,13 +63,13 @@ void WS::register_urls()
 
         if (result == TaskScheduler::AwaitResult::Done) {
             if (to_send.length() == 0) {
-                client.close();
+                client.close_HTTPThread();
                 return;
             }
 
             size_t len;
             char *p = to_send.releaseOwnership(&len);
-            client.sendOwned(p, len);
+            client.sendOwnedBlocking_HTTPThread(p, len);
         }
 
         for (auto &callback : on_connect_callbacks) {
@@ -87,7 +87,7 @@ void WS::register_urls()
     }, 1000, 1000);
 }
 
-void WS::addOnConnectCallback(std::function<void(WebSocketsClient)> callback)
+void WS::addOnConnectCallback_HTTPThread(std::function<void(WebSocketsClient)> callback)
 {
     on_connect_callbacks.push_back(callback);
 }

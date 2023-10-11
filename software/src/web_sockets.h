@@ -40,8 +40,8 @@ struct WebSocketsClient {
     WebSockets *ws;
 
     bool send(const char *payload, size_t payload_len);
-    bool sendOwned(char *payload, size_t payload_len);
-    void close();
+    bool sendOwnedBlocking_HTTPThread(char *payload, size_t payload_len);
+    void close_HTTPThread();
 };
 
 struct ws_work_item {
@@ -81,7 +81,7 @@ public:
     void cleanUpQueue();
     bool queueFull();
 
-    void onConnect(std::function<void(WebSocketsClient)> fn);
+    void onConnect_HTTPThread(std::function<void(WebSocketsClient)> fn);
 
     void triggerHttpThread();
     bool haveWork(ws_work_item *item);
