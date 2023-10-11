@@ -7,7 +7,9 @@ let x = {
             "connecting": "Verbinde",
             "connected": "Verbunden",
             "error": "Fehler",
-            "status": "OCPP-Status"
+            "status": "OCPP-Status",
+            "waiting_for_tag": "Warte auf NFC-Tag ",
+            "waiting_for_cable": "Warte auf Ladekabel-Verbindung "
         },
         "navbar": {
             "ocpp": "OCPP"
@@ -87,7 +89,7 @@ let x = {
             "status_0": "Verfügbar",
             "status_1": "Bereite vor",
             "status_2": "Lade",
-            "status_3": "Pausiert durch EV",
+            "status_3": "Pausiert durch Fahrzeug",
             "status_4": "Pausiert durch Wallbox",
             "status_5": "Fertigstellen",
             "status_6": "Reserviert",

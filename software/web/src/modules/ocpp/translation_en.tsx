@@ -7,7 +7,9 @@ let x = {
             "connecting": "Connecting",
             "connected": "Connected",
             "error": "Error",
-            "status": "OCPP state"
+            "status": "OCPP state",
+            "waiting_for_tag": "Waiting for NFC tag ",
+            "waiting_for_cable": "Waiting for Cable connection "
         },
         "navbar": {
             "ocpp": "OCPP"
@@ -87,8 +89,8 @@ let x = {
             "status_0": "Available",
             "status_1": "Preparing",
             "status_2": "Charging",
-            "status_3": "SuspendedEV",
-            "status_4": "SuspendedEVSE",
+            "status_3": "Suspended by vehicle",
+            "status_4": "Suspended by charger",
             "status_5": "Finishing",
             "status_6": "Reserved",
             "status_7": "Unavailable",

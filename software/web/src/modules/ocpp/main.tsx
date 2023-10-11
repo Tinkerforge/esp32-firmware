@@ -319,8 +319,14 @@ export class OcppStatus extends Component<{}, OcppStatusState>
     }
 
     getStatusLine() {
-        // TODO add cable/tag timeout info here
-        return this.getStatusPrefix();
+        let result = this.getStatusPrefix();
+
+        if (this.state.state.tag_timeout != 0xFFFFFFFF)
+            result = __("ocpp.status.waiting_for_tag") + util.format_timespan_ms(this.state.state.tag_timeout)
+        if (this.state.state.cable_timeout != 0xFFFFFFFF)
+            result = __("ocpp.status.waiting_for_cable") + util.format_timespan_ms(this.state.state.cable_timeout)
+
+        return result;
     }
 
     render(props: {}, state: OcppStatusState)
