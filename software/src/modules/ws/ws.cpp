@@ -51,7 +51,10 @@ void WS::register_urls()
                 required += 2;
             }
 
-            to_send.reserve(required);
+            if (!to_send.reserve(required)) {
+                return;
+            }
+
 
             for (auto &reg : api.states) {
                 to_send += "{\"topic\":\"" + reg.path + "\",\"payload\":" + reg.config->to_string_except(reg.keys_to_censor) + "}\n";
@@ -59,6 +62,11 @@ void WS::register_urls()
         });
 
         if (result == TaskScheduler::AwaitResult::Done) {
+            if (to_send.length() == 0) {
+                client.close();
+                return;
+            }
+
             size_t len;
             char *p = to_send.releaseOwnership(&len);
             client.sendOwned(p, len);

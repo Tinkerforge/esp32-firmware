@@ -362,6 +362,10 @@ bool WebSocketsClient::sendOwned(char *payload, size_t payload_len)
     return ws->sendToClientOwned(payload, payload_len, fd);
 }
 
+void WebSocketsClient::close() {
+    ws->keepAliveCloseDead(fd);
+}
+
 bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
 {
     // Connection was closed -> message was "sent", as in it has not to be resent

@@ -41,6 +41,7 @@ struct WebSocketsClient {
 
     bool send(const char *payload, size_t payload_len);
     bool sendOwned(char *payload, size_t payload_len);
+    void close();
 };
 
 struct ws_work_item {
