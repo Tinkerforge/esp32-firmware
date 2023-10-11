@@ -38,12 +38,6 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 {
     tf_websocket_event_data_t *data = (tf_websocket_event_data_t *)event_data;
     switch (event_id) {
-    case WEBSOCKET_EVENT_CONNECTED:
-        logger.printfln("OCPP WEBSOCKET CONNECTED");
-        break;
-    case WEBSOCKET_EVENT_DISCONNECTED:
-        logger.printfln("OCPP WEBSOCKET DISCONNECTED");
-        break;
     case WEBSOCKET_EVENT_DATA:
         if (data->payload_len == 0)
             return;
