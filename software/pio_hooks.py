@@ -918,6 +918,7 @@ def main():
                         break
                     else:
                         raise Exception('web/node_modules not empty')
+                break
             except:
                 # On Windows, for some unknown reason, sometimes a directory
                 # stays or becomes non-empty during the shutil.rmtree call and
