@@ -85,15 +85,12 @@ bool WebSockets::queueFull()
     return false;
 }
 
-const char *work_state = "";
 static void work(void *arg)
 {
-    work_state = "start";
     WebSockets *ws = (WebSockets *)arg;
 
     ws_work_item wi;
     while (ws->haveWork(&wi)) {
-        work_state = "have_work";
         httpd_ws_frame_t ws_pkt;
         memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
 
@@ -101,27 +98,20 @@ static void work(void *arg)
         ws_pkt.len = wi.payload_len;
         ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : HTTPD_WS_TYPE_TEXT;
 
-        work_state = "loop";
         for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
             if (wi.fds[i] == -1) {
                 continue;
             }
-            work_state = "get_info";
             if (httpd_ws_get_fd_info(wi.hd, wi.fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
                 continue;
             }
-            work_state = "send";
             if (httpd_ws_send_frame_async(wi.hd, wi.fds[i], &ws_pkt) != ESP_OK) {
-                work_state = "close_dead";
                 ws->keepAliveCloseDead(wi.fds[i]);
             }
-            work_state = "send_done";
         }
-        work_state = "clear";
         clear_ws_work_item(&wi);
-        work_state = "loop_end";
     }
-    work_state = "done";
+
     ws->worker_start_errors = 0;
     ws->worker_active = false;
 #if MODULE_WATCHDOG_AVAILABLE()
