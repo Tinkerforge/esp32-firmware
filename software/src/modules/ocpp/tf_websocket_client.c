@@ -803,9 +803,9 @@ static esp_err_t tf_websocket_client_close_with_optional_body(tf_websocket_clien
     }
 
     if (send_body) {
-        tf_websocket_client_send_close(client, code, data, len + 2, portMAX_DELAY); // len + 2 -> always sending the code
+        tf_websocket_client_send_close(client, code, data, len + 2, timeout); // len + 2 -> always sending the code
     } else {
-        tf_websocket_client_send_close(client, 0, NULL, 0, portMAX_DELAY); // only opcode frame
+        tf_websocket_client_send_close(client, 0, NULL, 0, timeout); // only opcode frame
     }
 
     // Set closing bit to prevent from sending PING frames while connected
