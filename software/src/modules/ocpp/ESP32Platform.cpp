@@ -88,7 +88,7 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
         websocket_cfg.cert_pem = (const char *)cert.release();
     }
 
-    websocket_cfg.disable_auto_reconnect = false;
+    websocket_cfg.disable_auto_reconnect = true;
 
     // We can't completely disable sending pings.
     websocket_cfg.ping_interval_sec = 0xFFFFFFFF;
@@ -143,7 +143,7 @@ void platform_disconnect(void *ctx) {
 }
 
 void platform_reconnect(void *ctx) {
-    tf_websocket_client_close(client, pdMS_TO_TICKS(1000));
+    tf_websocket_client_stop(client);
     tf_websocket_client_start(client);
 }
 
