@@ -18,8 +18,10 @@
  */
 
 import { h, Context } from "preact";
-import { useContext, useId } from "preact/hooks";
+import { useContext, useState } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
+
+import * as util from "../../ts/util";
 
 interface OutputDatetimeProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>, "value" | "class" | "id" | "type" | "onInput" | "disabled"> {
     idContext?: Context<string>
@@ -43,7 +45,7 @@ function toIsoString(date: Date) {
 }
 
 export function OutputDatetime(props: OutputDatetimeProps) {
-    const id = !props.idContext ? useId() : useContext(props.idContext);
+    const id = !props.idContext ? util.useId() : useContext(props.idContext);
 
     let inner = <input class={"form-control " + props.className}
                 id={id}

@@ -26,6 +26,7 @@ import { __ } from "./translation";
 import { AsyncModal } from "./components/async_modal";
 import { api_cache } from "./api_defs";
 import { batch, signal, Signal } from "@preact/signals-core";
+import { useState } from "preact/hooks";
 
 export function reboot() {
     API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
@@ -641,4 +642,18 @@ export function hasValue(a: any): boolean
 export function compareArrays(a: Array<any>, b: Array<any>): boolean
 {
     return a.length === b.length && a.every((element, index) => element === b[index]);
+}
+
+// https://stackoverflow.com/a/1535650
+export let nextId = (function() {
+    var id = 0;
+    return function() {return "ID-" + (++id).toString();};
+})();
+
+// Preact's useId does not work with multiple roots:
+// https://github.com/preactjs/preact/issues/3781
+// Once the port to preact is complete,
+// we can switch back to Preact's useId.
+export function useId() {
+    return useState(nextId())[0];
 }

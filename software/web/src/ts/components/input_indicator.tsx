@@ -18,9 +18,11 @@
  */
 
 import { h, Context } from "preact";
-import { useContext, useId } from "preact/hooks";
+import { useContext, useState } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
+
+import * as util from "../../ts/util";
 
 type variant = "primary" | "secondary" | "success" | "warning" | "danger" | "light" | "link"
 
@@ -36,7 +38,7 @@ interface InputIndicatorProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputE
 }
 
 export function InputIndicator(props: InputIndicatorProps) {
-    const id = !props.idContext ? useId() : useContext(props.idContext);
+    const id = !props.idContext ? util.useId() : useContext(props.idContext);
 
     let inner = (
         <input class={`form-control input-indicator input-indicator-${props.variant}`}

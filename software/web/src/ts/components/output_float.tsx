@@ -20,7 +20,7 @@
 import * as util from "../util";
 
 import { h, Context } from "preact";
-import { useContext, useId } from "preact/hooks";
+import { useContext, useState } from "preact/hooks";
 
 interface OutputFloatProps {
     idContext?: Context<string>
@@ -34,7 +34,7 @@ interface OutputFloatProps {
 }
 
 export function OutputFloat(props: OutputFloatProps) {
-    const id = !props.idContext ? useId() : useContext(props.idContext);
+    const id = !props.idContext ? util.useId() : useContext(props.idContext);
     let pow10 = Math.pow(10, props.scale);
 
     let val = util.toLocaleFixed(props.value / pow10, props.digits);
