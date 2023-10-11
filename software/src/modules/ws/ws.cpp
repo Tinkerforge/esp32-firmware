@@ -42,6 +42,17 @@ void WS::register_urls()
     web_sockets.onConnect([this](WebSocketsClient client) {
         CoolString to_send;
         auto result = task_scheduler.await([&to_send](){
+            size_t required = 1; // \0
+            for (auto &reg : api.states) {
+                required += 10;
+                required += reg.path.length();
+                required += 12;
+                required += reg.config->string_length();
+                required += 2;
+            }
+
+            to_send.reserve(required);
+
             for (auto &reg : api.states) {
                 to_send += "{\"topic\":\"" + reg.path + "\",\"payload\":" + reg.config->to_string_except(reg.keys_to_censor) + "}\n";
             }

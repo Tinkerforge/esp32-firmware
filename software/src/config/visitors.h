@@ -202,7 +202,7 @@ struct to_json {
     const std::vector<String> &keys_to_censor;
 };
 
-struct string_length_visitor {
+struct max_string_length_visitor {
     size_t operator()(const Config::ConfString &x)
     {
         return (x.getSlot()->maxChars) + 2; // ""
@@ -232,7 +232,7 @@ struct string_length_visitor {
     {
         const auto *slot = x.getSlot();
 
-        return Config::apply_visitor(string_length_visitor{}, slot->prototype->value) * slot->maxElements +
+        return Config::apply_visitor(max_string_length_visitor{}, slot->prototype->value) * slot->maxElements +
                (slot->maxElements + 1); // [,] and n-1 ,
     }
     size_t operator()(const Config::ConfObject &x)
@@ -243,8 +243,8 @@ struct string_length_visitor {
         size_t sum = 2; // { and }
         for (size_t i = 0; i < size; ++i) {
             const auto &val_pair = (*val)[i];
-            sum += val_pair.first.length() + 2; // ""
-            sum += Config::apply_visitor(string_length_visitor{}, val_pair.second.value);
+            sum += val_pair.first.length() + 3; // "":
+            sum += Config::apply_visitor(max_string_length_visitor{}, val_pair.second.value);
         }
         return sum;
     }
@@ -252,11 +252,69 @@ struct string_length_visitor {
     size_t operator()(const Config::ConfUnion &x) {
         const auto *slot = x.getSlot();
 
-        size_t max_len = Config::apply_visitor(string_length_visitor{}, x.getVal()->value);
+        size_t max_len = Config::apply_visitor(max_string_length_visitor{}, x.getVal()->value);
         for (size_t i = 0; i < slot->prototypes_len; ++i) {
-            max_len = std::max(max_len, Config::apply_visitor(string_length_visitor{}, slot->prototypes[i].config.value));
+            max_len = std::max(max_len, Config::apply_visitor(max_string_length_visitor{}, slot->prototypes[i].config.value));
         }
         return max_len + 6; // [255,]
+    }
+};
+
+
+struct string_length_visitor {
+    size_t operator()(const Config::ConfString &x)
+    {
+        return (x.getVal()->length()) + 2; // ""
+    }
+    size_t operator()(const Config::ConfFloat &x)
+    {
+        // Educated guess, FLT_MAX is ~3*10^38 however it is unlikely that a user will send enough float values longer than 20.
+        return 20;
+    }
+    size_t operator()(const Config::ConfInt &x)
+    {
+        return 11; // -2^31
+    }
+    size_t operator()(const Config::ConfUint &x)
+    {
+        return 10; //2^32-1
+    }
+    size_t operator()(const Config::ConfBool &x)
+    {
+        return 5; //false
+    }
+    size_t operator()(const Config::ConfVariant::Empty &x)
+    {
+        return 4; //null
+    }
+    size_t operator()(const Config::ConfArray &x)
+    {
+        const auto *val = x.getVal();
+        const auto size = val->size();
+
+        size_t sum = 2; // []
+        for (size_t i = 0; i < size; ++i) {
+            sum += Config::apply_visitor(string_length_visitor{}, (*val)[i].value) + 1; // ,
+        }
+
+        return sum;
+    }
+    size_t operator()(const Config::ConfObject &x)
+    {
+        const auto *val = x.getVal();
+        const auto size = val->size();
+
+        size_t sum = 2; // { and }
+        for (size_t i = 0; i < size; ++i) {
+            const auto &val_pair = (*val)[i];
+            sum += val_pair.first.length() + 3; // "":
+            sum += Config::apply_visitor(string_length_visitor{}, val_pair.second.value);
+        }
+        return sum;
+    }
+
+    size_t operator()(const Config::ConfUnion &x) {
+        return Config::apply_visitor(string_length_visitor{}, x.getVal()->value) + 6; // [255,]
     }
 };
 

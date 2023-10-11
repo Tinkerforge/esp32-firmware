@@ -485,6 +485,11 @@ size_t Config::json_size(bool zero_copy) const
 
 size_t Config::max_string_length() const
 {
+    return Config::apply_visitor(max_string_length_visitor{}, value);
+}
+
+size_t Config::string_length() const
+{
     return Config::apply_visitor(string_length_visitor{}, value);
 }
 

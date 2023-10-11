@@ -685,6 +685,7 @@ public:
 
     size_t json_size(bool zero_copy) const;
     size_t max_string_length() const;
+    size_t string_length() const;
 
     void save_to_file(File &file);
 
