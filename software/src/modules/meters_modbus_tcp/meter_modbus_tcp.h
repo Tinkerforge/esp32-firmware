@@ -19,18 +19,12 @@
 
 #pragma once
 
-#include <IPAddress.h>
+#include "generic_modbus_tcp_client.h"
+
 #include <stdint.h>
-#include "lwip/ip_addr.h"
-
-// Connect attempts are blocking. Use a low timeout that should usually work and just try again if it doesn't.
-#define MODBUSIP_CONNECT_TIMEOUT 500
-
-#include "ModbusTCP.h"
 
 #include "config.h"
 #include "modules/meters/imeter.h"
-#include "tools.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -38,19 +32,12 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-#if MODBUSIP_MAXFRAME < MODBUS_MAX_WORDS * 2 + 2
-//#warning MODBUSIP_MAXFRAME should be increased to MODBUS_MAX_WORDS * 2 + 2
-#define METERS_MODBUSTCP_MAX_HREG_WORDS ((MODBUSIP_MAXFRAME - 2) / 2)
-#else
-#define METERS_MODBUSTCP_MAX_HREG_WORDS (MODBUS_MAX_WORDS)
-#endif
-
-class MeterModbusTCP final : public IMeter
+class MeterModbusTCP final : protected GenericModbusTCPClient, public IMeter
 {
 public:
-    MeterModbusTCP(uint32_t slot_, Config *config_, Config *state_, Config *errors_, ModbusTCP *mb_) : slot(slot_), config(config_), state(state_), errors(errors_), mb(mb_) {}
+    MeterModbusTCP(uint32_t slot_, const Config *config_, Config *state_, Config *errors_, ModbusTCP *mb_) : GenericModbusTCPClient(mb_), slot(slot_), config(config_), state(state_), errors(errors_) {}
 
-    MeterClassID get_class() const override;
+    MeterClassID get_class() const override _ATTRIBUTE((const));
     void setup() override;
 
     bool supports_power()         override {return true;}
@@ -58,30 +45,15 @@ public:
     bool supports_energy_export() override {return true;}
     bool supports_currents()      override {return true;}
 
-    void check_ip(const ip_addr_t *ip, int err);
-
 private:
-    void start_connection();
-    void connect_to_ip();
+    void connect_callback() override;
     void poll_next();
     void handle_data();
 
-    uint32_t slot;
-    Config *config;
-    Config *state;
-    Config *errors;
-
-    ModbusTCP *mb;
-
-    String host_name;
-    dns_gethostbyname_addrtype_lwip_ctx_async_data host_data;
-    IPAddress host_ip;
-    uint16_t port = 0;
-    uint8_t address = 0;
-
-    uint32_t connect_backoff_ms = 1000;
-    bool resolve_error_printed = false;
-    bool connect_error_printed = false;
+    const uint32_t slot;
+    const Config *config;
+    Config * const state;
+    Config * const errors;
 
     enum PollState {
         Single,

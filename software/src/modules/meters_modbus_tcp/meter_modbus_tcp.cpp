@@ -21,9 +21,6 @@
 #include "modbus_tcp_tools.h"
 #include "module_dependencies.h"
 
-#include <errno.h>
-#include <string.h>
-
 #include "event_log.h"
 //#include "modules/meters/meter_value_id.h"
 #include "task_scheduler.h"
@@ -31,7 +28,6 @@
 
 #include "gcc_warnings.h"
 
-_ATTRIBUTE((const))
 MeterClassID MeterModbusTCP::get_class() const
 {
     return MeterClassID::ModbusTCP;
@@ -39,9 +35,10 @@ MeterClassID MeterModbusTCP::get_class() const
 
 void MeterModbusTCP::setup()
 {
-    host_name = config->get("host")->asString();
-    port      = static_cast<uint16_t>(config->get("port")->asUint());
-    address   = static_cast<uint8_t>(config->get("address")->asUint());
+    host_name      = config->get("host")->asString();
+    port           = static_cast<uint16_t>(config->get("port")->asUint());
+    modbus_address = static_cast<uint8_t>(config->get("address")->asUint());
+    config         = nullptr;
 
     register_buffer = static_cast<uint16_t *>(malloc(register_buffer_size * sizeof(uint16_t)));
 
@@ -50,64 +47,8 @@ void MeterModbusTCP::setup()
     }, 0);
 }
 
-void MeterModbusTCP::start_connection()
+void MeterModbusTCP::connect_callback()
 {
-    host_data.user = this;
-
-    dns_gethostbyname_addrtype_lwip_ctx_async(host_name.c_str(), [](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
-        MeterModbusTCP *mmbt = static_cast<MeterModbusTCP *>(data->user);
-
-        mmbt->check_ip(data->addr_ptr, data->err);
-    }, &host_data, LWIP_DNS_ADDRTYPE_IPV4);
-}
-
-void MeterModbusTCP::check_ip(const ip_addr_t *ip, int err)
-{
-    if (err != ERR_OK || !ip || ip->type != IPADDR_TYPE_V4) {
-        if (!resolve_error_printed) {
-            if (err == ERR_VAL) {
-                logger.printfln("meter_modbus_tcp: Meter configured with hostname '%s', but no DNS server is configured!", host_name.c_str());
-            } else {
-                logger.printfln("modbus_meter_tcp: Couldn't resolve hostname '%s', error %i", host_name.c_str(), err);
-            }
-            resolve_error_printed = true;
-        }
-
-        task_scheduler.scheduleOnce([this](){
-            this->start_connection();
-        }, 10 * 1000);
-
-        return;
-    }
-    resolve_error_printed = false;
-
-    host_ip = ip->u_addr.ip4.addr;
-
-    errno = ENOTRECOVERABLE; // Set to something known because connect() might leave errno unchanged on some errors.
-    if (!mb->connect(host_ip)) {
-        if (!connect_error_printed) {
-            if (errno == EINPROGRESS) { // WiFiClient::connect() doesn't set errno and incorrectly returns EINPROGRESS despite being blocking.
-                logger.printfln("meter_modbus_tcp: Connection to '%s' failed.", host_name.c_str());
-            } else {
-                logger.printfln("meter_modbus_tcp: Connection to '%s' failed: %s (%i)", host_name.c_str(), strerror(errno), errno);
-            }
-            connect_error_printed = true;
-        }
-
-        task_scheduler.scheduleOnce([this](){
-            this->start_connection();
-        }, connect_backoff_ms);
-
-        connect_backoff_ms *= 2;
-        if (connect_backoff_ms > 16000) {
-            connect_backoff_ms = 16000;
-        }
-    } else {
-        connect_backoff_ms = 1000;
-        connect_error_printed = false;
-        logger.printfln("meter_modbus_tcp: Connected to '%s'", host_name.c_str());
-    }
-
     poll_state = PollState::Single;
     poll_count = 0;
     all_start = now_us();
