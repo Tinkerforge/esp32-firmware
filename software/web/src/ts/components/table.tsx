@@ -62,6 +62,7 @@ export interface TableProps {
     onAddCommit?: () => Promise<void>
     onAddHide?: () => Promise<void>
     tableTill?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+    nestingDepth?: number
 }
 
 interface TableState {
@@ -267,7 +268,11 @@ export class Table extends Component<TableProps, TableState> {
                     yes_variant="primary"
                     title={props.addTitle}
                     no_text={__("component.table.abort")}
-                    yes_text={__("component.table.add")}>
+                    yes_text={__("component.table.add")}
+                    backdropClassName={props.nestingDepth === undefined ? undefined : ("modal-backdrop-" + props.nestingDepth)}
+                    className={props.nestingDepth === undefined ? undefined : ("modal-" + props.nestingDepth)}
+                    size={props.nestingDepth === undefined ? "xl" : {0:"xl",1:"lg",2: "md", 3:"sm"}[props.nestingDepth] as 'xl' | 'lg' | 'sm'}
+                    >
                     {state.showAddModal && props.onAddGetRows ?
                         props.onAddGetRows().map((addRow) =>
                             addRow.name ?
@@ -301,7 +306,10 @@ export class Table extends Component<TableProps, TableState> {
                     yes_variant="primary"
                     title={state.showEditModal !== null ? props.rows[state.showEditModal].editTitle : ''}
                     no_text={__("component.table.abort")}
-                    yes_text={__("component.table.apply")}>
+                    yes_text={__("component.table.apply")}
+                    backdropClassName={props.nestingDepth === undefined ? undefined : ("modal-backdrop-" + props.nestingDepth)}
+                    className={props.nestingDepth === undefined ? undefined : ("modal-" + props.nestingDepth)}
+                    size={props.nestingDepth === undefined ? "xl" : {0:"xl",1:"lg",2: "md", 3:"sm"}[props.nestingDepth] as 'xl' | 'lg' | 'sm'}>
                     {state.showEditModal !== null && props.rows[state.showEditModal].onEditGetRows ?
                         props.rows[state.showEditModal].onEditGetRows().map((editRow) =>
                             editRow.name ?

@@ -588,3 +588,25 @@ table ul {
     padding-bottom: calc(.375rem + 1px) !important;
   }
 }
+
+// This is the _second_ nested modal!
+.modal-backdrop-1 {
+    z-index: 1051 !important;
+}
+.modal-1 {
+    z-index: 1052 !important;
+}
+
+.modal-backdrop-2 {
+    z-index: 1053 !important;
+}
+.modal-2 {
+    z-index: 1054 !important;
+}
+
+.modal-backdrop-3 {
+    z-index: 1055 !important;
+}
+.modal-3 {
+    z-index: 1056 !important;
+}
