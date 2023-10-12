@@ -82,6 +82,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
             return <></>
 
         let ocpp_debug = API.hasFeature("ocpp_debug");
+        let msg_in_flight = state.state.message_in_flight_id_high != 0 || state.state.message_in_flight_id_low != 0;
 
         return (
             <SubPage>
@@ -195,13 +196,17 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                             <InputText value={state.state.unavailable_requested ? "true" : "false"} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.message_in_flight_type")}>
-                            <InputText value={translate_unchecked(`ocpp.content.message_in_flight_type_${state.state.message_in_flight_type}`)} />
+                            <InputText value={!msg_in_flight ? __("ocpp.content.no_message_in_flight") : translate_unchecked(`ocpp.content.message_in_flight_type_${state.state.message_in_flight_type}`)} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.message_in_flight_id")}>
-                            <InputText value={state.state.message_in_flight_id_high == 0 ? state.state.message_in_flight_id_low : "0x" + state.state.message_in_flight_id_high.toString(16) + state.state.message_in_flight_id_low.toString(16)} />
+                            <InputText value={!msg_in_flight ?
+                                                __("ocpp.content.no_message_in_flight") :
+                                                (state.state.message_in_flight_id_high == 0 ?
+                                                    state.state.message_in_flight_id_low :
+                                                    ("0x" + state.state.message_in_flight_id_high.toString(16) + state.state.message_in_flight_id_low.toString(16)))} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.message_in_flight_len")}>
-                            <InputText value={state.state.message_in_flight_len} />
+                            <InputText value={!msg_in_flight ? __("ocpp.content.no_message_in_flight") : state.state.message_in_flight_len} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.message_timeout")}>
                             <InputText value={util.format_timespan_ms(state.state.message_timeout, {replace_u32max_with: __("ocpp.content.no_message_in_flight")})} />
@@ -219,10 +224,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                             <InputText value={state.state.txn_msg_queue_depth} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.is_connected")}>
-                            <InputText value={state.state.connected ? __("ocpp.content.connected") : __("ocpp.content.not_connected")} />
-                        </FormRow>
-                        <FormRow label={__("ocpp.content.connected_change_time")}>
-                            <InputText value={util.timestamp_sec_to_date(state.state.connected_change_time, __('ocpp.content.never_connected_since_reboot'))} />
+                            <InputText value={__("ocpp.content.connection_state_since")(state.state.connected, util.timestamp_sec_to_date(state.state.connected_change_time, __('ocpp.content.never_connected_since_reboot')))} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.last_ping_sent")}>
                             <InputText value={util.format_timespan_ms(state.state.last_ping_sent, {replace_u32max_with: __("ocpp.content.no_ping_sent")})} />

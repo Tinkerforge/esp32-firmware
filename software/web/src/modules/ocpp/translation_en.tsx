@@ -50,7 +50,7 @@ let x = {
             "txn_id": "Transaction ID",
             "txn_confirmed_time": "Transaction confirmed since",
             "txn_start_time": "Transaction start time",
-            "current": "Charge current",
+            "current": "Charge current in transaction",
             "txn_with_invalid_id": "Transaction with invalid ID",
             "unavailable_requested": "Change to \"unavailable\" requested",
             "message_in_flight_type": "Type of message in flight",
@@ -67,6 +67,7 @@ let x = {
             "connected_change_time": "Last connection state change time",
             "last_ping_sent": "Last WS ping sent",
             "pong_timeout": "WS pong timeout",
+            "connection_state_since": /*SFN*/ (connected: boolean, date: string) => (connected ? "Connected" : "Not connected") + " since " + date /*NF*/,
 
             "not_waiting_for_tag": "No tag expected",
             "not_waiting_for_cable": "No cable expected",
@@ -74,7 +75,7 @@ let x = {
             "no_ping_sent": "No WS ping sent",
             "no_tag_seen": "No tag seen",
             "no_transaction_running": "No transaction running",
-            "never_connected_since_reboot": "Never connected since reboot",
+            "never_connected_since_reboot": "reboot",
 
             "charge_point_state_0": "Power on",
             "charge_point_state_1": "Flush persistent messages",
