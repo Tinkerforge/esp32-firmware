@@ -315,6 +315,9 @@ export class OcppStatus extends Component<{}, OcppStatusState>
             if (ocpp.connector_state != 8)
                 return translate_unchecked(`ocpp.content.connector_state_${ocpp.connector_state}`);
 
+            if (ocpp.txn_with_invalid_id)
+                return __("ocpp.content.txn_with_invalid_id");
+
             // txn running
             return translate_unchecked(`ocpp.content.status_${ocpp.connector_status}`);
         }
