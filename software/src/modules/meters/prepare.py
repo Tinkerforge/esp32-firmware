@@ -18,11 +18,13 @@ if 'software' not in sys.modules:
     create_software_module()
 
 from software import util
+from collections import OrderedDict
 
 value_id_enum = []
 value_id_list = []
 value_id_infos = []
 value_id_order = []
+value_id_dict = OrderedDict()
 
 groupings = [
     ('L1', 'L2', 'L3'),
@@ -71,6 +73,32 @@ with open('meter_value_id.csv', newline='') as f:
         digits = row[7]
         display_name_en = row[8].replace('\"', '\\"') if len(row[8]) > 0 else name
         display_name_de = row[9].replace('\"', '\\"') if len(row[9]) > 0 else name
+
+        # FIXME: I need to clean this up.
+        if row[1] not in value_id_dict:
+            value_id_dict[row[1]] = OrderedDict()[row[3]] = OrderedDict()
+        elif row[3] not in value_id_dict[row[1]]:
+            value_id_dict[row[1]].update({row[3]: OrderedDict()})
+
+        if not value_id_dict[row[1]].get(row[3]):
+            value_id_dict[row[1]][row[3]] = OrderedDict()[row[2]] = OrderedDict()
+        elif row[2] not in value_id_dict[row[1]][row[3]]:
+            value_id_dict[row[1]][row[3]].update({row[2]: OrderedDict()})
+
+        if not value_id_dict[row[1]][row[3]].get(row[2]):
+            value_id_dict[row[1]][row[3]][row[2]] = OrderedDict()[row[4]] = OrderedDict()
+        elif row[4] not in value_id_dict[row[1]][row[3]][row[2]]:
+            value_id_dict[row[1]][row[3]][row[2]].update({row[4]: OrderedDict()})
+
+        if row[5] == "":
+            index = "Acute"
+        else:
+            index = row[5]
+        if not value_id_dict[row[1]][row[3]][row[2]].get(row[4]):
+            value_id_dict[row[1]][row[3]][row[2]][row[4]] = OrderedDict()[index] = OrderedDict()
+            value_id_dict[row[1]][row[3]][row[2]][row[4]][index] = identifier
+        elif index not in value_id_dict[row[1]][row[3]][row[2]][row[4]]:
+            value_id_dict[row[1]][row[3]][row[2]][row[4]].update({index: identifier})
 
         value_id_enum.append(f'    {identifier} = {id_}, // {unit}\n')
         value_id_list.append(f'    MeterValueID.{identifier},\n')
@@ -133,6 +161,31 @@ with open('../../../web/src/modules/meters/meter_value_id.ts', 'w') as f:
     f.write('export const METER_VALUE_ORDER: {ids: MeterValueID[], group: string, phases: string}[] = [\n')
     f.write(''.join(value_id_order_str))
     f.write(']\n')
+
+    text = 'export const METER_VALUE_ITEMS = {\n'
+    for a in value_id_dict:
+        text += "    '" + a + "': {\n"
+        for b in value_id_dict[a]:
+            if (b != ""):
+                text += "        '" + b + "': {\n"
+            for c in value_id_dict[a][b]:
+                if (c != ""):
+                    text += "            '" + c + "': {\n"
+                for d in value_id_dict[a][b][c]:
+                    if (d != ""):
+                        text += "                '" + d + "': {\n"
+                    for e in value_id_dict[a][b][c][d]:
+                        print(value_id_dict[a][b][c][d])
+                        text += "                    '" + e + "': MeterValueID." + value_id_dict[a][b][c][d][e] + ",\n"
+                    if (d != ""):
+                        text += "                },\n"
+                if (c != ""):
+                    text += "            },\n"
+            if (b != ""):
+                text += "        },\n"
+        text += "    },\n"
+
+    f.write(text + '}\n')
 
 for lang in translation_values:
     util.specialize_template(f'../../../web/src/modules/meters/translation_{lang}.json.template', f'../../../web/src/modules/meters/translation_{lang}.json', {
