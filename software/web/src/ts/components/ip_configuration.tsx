@@ -122,7 +122,7 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                          onValue={(v) => this.onUpdate("gateway", !props.showAnyAddress && v == "" ? "0.0.0.0" : v)}/>
             </FormRow>
             <FormRow label={props.subnet_label ? props.subnet_label : __("component.ip_configuration.subnet")}>
-                <InputSubnet classList={captured_subnet_name != "" ? "is-invalid" : ""}
+                <InputSubnet className={captured_subnet_name != "" ? "is-invalid" : ""}
                         required={!props.showDhcp || !dhcp}
                         value={props.value.subnet}
                         onValue={(v) => this.onUpdate("subnet", v)}
