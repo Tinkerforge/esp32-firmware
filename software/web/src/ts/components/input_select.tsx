@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Context } from "preact";
+import { h, Context, Fragment } from "preact";
 import { useContext, useState } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 
@@ -30,6 +30,7 @@ export interface InputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSe
     placeholder?: string
     className?: string
     style?: string
+    invalidFeedback?: string
 }
 
 export function InputSelect(props: InputSelectProps) {
@@ -56,24 +57,28 @@ export function InputSelect(props: InputSelectProps) {
             placeholder = undefined;
         }
     }
+    const invalidFeedback = props.invalidFeedback ? <div class="invalid-feedback" hidden={props.hidden} >{props.invalidFeedback}</div> : undefined;
 
     return (
-        <select
-               readOnly={onValue === undefined}
-               disabled={onValue === undefined}
-               value={value}
-               {...p}
-               class={(className ?? "") + " custom-select"}
-               style={style ?? ""}
-               id={id}
-               onChange={onValue === undefined ? undefined : (e) => onValue((e.target as HTMLSelectElement).value)}
-               >
-            {
-                 (placeholder ? [<option value="" disabled selected>{placeholder}</option>] : [])
-                    .concat(
-                        items.map((k) =>
-                            <option value={k[0].endsWith("disabled") ? "" : k[0]} key={k[0]} disabled={k[0].endsWith("disabled")}>{k[1]}</option>))
-            }
-        </select>
+        <>
+            <select
+                readOnly={onValue === undefined}
+                disabled={onValue === undefined}
+                value={value}
+                {...p}
+                class={(className ?? "") + " custom-select"}
+                style={style ?? ""}
+                id={id}
+                onChange={onValue === undefined ? undefined : (e) => onValue((e.target as HTMLSelectElement).value)}
+                >
+                {
+                    (placeholder ? [<option value="" disabled selected>{placeholder}</option>] : [])
+                        .concat(
+                            items.map((k) =>
+                                <option value={k[0].endsWith("disabled") ? "" : k[0]} key={k[0]} disabled={k[0].endsWith("disabled")}>{k[1]}</option>))
+                }
+            </select>
+            {invalidFeedback}
+        </>
     );
 }
