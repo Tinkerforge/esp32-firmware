@@ -19,8 +19,8 @@
 
 extern TF_HAL hal;
 
-#define GREEN_LED 2
-#define BLUE_LED 15
+extern int8_t blue_led_pin;
+extern int8_t green_led_pin;
 
 void evse_v2_button_recovery_handler() {
     if (!esp32_ethernet_brick.initHAL())
@@ -32,9 +32,6 @@ void evse_v2_button_recovery_handler() {
         return;
 
     uint32_t start = millis();
-
-    pinMode(GREEN_LED, OUTPUT);
-    pinMode(BLUE_LED, OUTPUT);
 
     uint32_t button_press_time = BUTTON_IS_PRESSED;
     bool first = true;
@@ -49,8 +46,8 @@ void evse_v2_button_recovery_handler() {
             logger.printfln("Button is pressed. Waiting for release.");
             first = false;
         } else {
-            led_blink(BLUE_LED, 200, 1, 0);
-            led_blink(GREEN_LED, 200, 1, 0);
+            led_blink(blue_led_pin, 200, 1, 0);
+            led_blink(green_led_pin, 200, 1, 0);
         }
     }
 
