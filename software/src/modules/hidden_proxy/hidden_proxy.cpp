@@ -39,8 +39,6 @@ const int resolution = 8;
 
 static void blinky(void *arg)
 {
-    ledcSetup(ledChannel, freq, resolution);
-    ledcAttachPin(green_led_pin, ledChannel);
     for (;;) {
         digitalWrite(green_led_pin, true);
         delay(200);
