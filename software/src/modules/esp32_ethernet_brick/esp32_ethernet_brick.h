@@ -31,6 +31,7 @@ public:
     bool initHAL();
     void initI2C();
 
+    void pre_init() override;
     void setup() override;
 
     bool is_warp_esp_ethernet_brick = false;

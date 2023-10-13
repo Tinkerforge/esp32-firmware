@@ -42,7 +42,8 @@
 #endif
 
 #define GREEN_LED 2
-#define BLUE_LED 2
+#define BLUE_LED_WARP_ESP32_ETHERNET 2
+#define BLUE_LED_ESP32_ETHERNET_BRICK 15
 #define BUTTON 0
 
 #define I2C_MASTER_SCL_IO 4
@@ -159,22 +160,7 @@ bool ESP32EthernetBrick::initHAL() {
 static uint8_t tmp_cmd_buf[I2C_LINK_RECOMMENDED_SIZE(2)] = {};
 static uint8_t tmp_read_buf[2] = {};
 
-void ESP32EthernetBrick::setup()
-{
-    read_efuses(&local_uid_num, local_uid_str, passphrase);
-    logger.printfln("ESP32 Ethernet Brick UID: %s", local_uid_str);
-
-    pinMode(GREEN_LED, OUTPUT);
-    pinMode(BLUE_LED, OUTPUT);
-    pinMode(BUTTON, INPUT);
-
-    green_led_pin = GREEN_LED;
-    blue_led_pin = BLUE_LED;
-    button_pin = BUTTON;
-
-#if defined(BUILD_NAME_ENERGY_MANAGER) && MODULE_FIRMWARE_UPDATE_AVAILABLE()
-    check_for_factory_reset();
-#endif
+void ESP32EthernetBrick::pre_init() {
     initI2C();
 
     auto tmp_cmd_handle = i2c_master_prepare_write_read_device(I2C_TMP1075N_ADDR,
@@ -183,6 +169,31 @@ void ESP32EthernetBrick::setup()
                                          tmp_read_buf, ARRAY_SIZE(tmp_read_buf));
     int ret = i2c_master_cmd_begin(I2C_NUM_0, tmp_cmd_handle, I2C_TMP1075N_TIMEOUT_MS  / portTICK_PERIOD_MS);
     this->is_warp_esp_ethernet_brick = ret == ESP_OK;
+
+    button_pin = BUTTON;
+
+    if (this->is_warp_esp_ethernet_brick) {
+        blue_led_pin = BLUE_LED_WARP_ESP32_ETHERNET;
+        // green LED is connected directly to 3.3 V
+    } else {
+        blue_led_pin = BLUE_LED_ESP32_ETHERNET_BRICK;
+
+        green_led_pin = GREEN_LED;
+        pinMode(green_led_pin, OUTPUT);
+    }
+
+    pinMode(blue_led_pin, OUTPUT);
+    pinMode(button_pin, INPUT);
+}
+
+void ESP32EthernetBrick::setup()
+{
+    read_efuses(&local_uid_num, local_uid_str, passphrase);
+    logger.printfln("ESP32 Ethernet Brick UID: %s", local_uid_str);
+
+#if defined(BUILD_NAME_ENERGY_MANAGER) && MODULE_FIRMWARE_UPDATE_AVAILABLE()
+    check_for_factory_reset();
+#endif
 
     initHAL();
 
@@ -200,7 +211,7 @@ void ESP32EthernetBrick::setup()
     static int watchdog_handle = watchdog.add("esp_ethernet_led_blink", "Main thread blocked");
     watchdog.reset(watchdog_handle);
 #endif
-        led_blink(BLUE_LED, 2000, 1, 0);
+        led_blink(blue_led_pin, 2000, 1, 0);
     }, 0, 100);
 
     initialized = true;
