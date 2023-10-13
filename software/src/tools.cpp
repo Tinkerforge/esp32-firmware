@@ -728,6 +728,9 @@ void set_main_task_handle() {
 }
 
 void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms) {
+    if (led_pin < 0)
+        return;
+
     int t_in_second = millis() % interval;
     if (off_time_ms != 0 && (interval - t_in_second <= off_time_ms)) {
         digitalWrite(led_pin, 1);
