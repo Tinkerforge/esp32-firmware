@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "modules/meters/imeter.h"
+#include "modules/meters_modbus_tcp/generic_modbus_tcp_client.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -30,16 +31,31 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-class MeterSunSpec final : public IMeter
+class MeterSunSpec final : protected GenericModbusTCPClient, public IMeter
 {
 public:
-    MeterSunSpec(uint32_t slot_, Config *config_) : slot(slot_), config(config_) {}
+    MeterSunSpec(uint32_t slot_, Config *config_, Config *state_, Config *errors_, ModbusTCP *mb_) : GenericModbusTCPClient(mb_), slot(slot_), config(config_), state(state_), errors(errors_) {}
 
-    MeterClassID get_class() const override;
+    MeterClassID get_class() const override _ATTRIBUTE((const));
+    void setup() override;
+    //void register_urls(const String &base_url) override;
+
+    bool supports_power()         override {return true;}
+    bool supports_energy_import() override {return true;}
+    bool supports_energy_export() override {return true;}
+    bool supports_currents()      override {return true;}
+
+    void read_done_callback();
 
 private:
+    void connect_callback() override;
+
     uint32_t slot;
     Config *config;
+    Config *state;
+    Config *errors;
+
+    bool access_in_progress = false;
 };
 
 #if defined(__GNUC__)
