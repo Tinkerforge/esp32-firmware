@@ -152,7 +152,7 @@ export class Table extends Component<TableProps, TableState> {
                                 </td>
                             </tr>
                             {row.extraValue ?
-                                <tr key={row.extraKey}>
+                                <tr key={row.extraKey} class="table-extra-value">
                                     <td colSpan={props.columnNames.length + 1} class="pt-0" style="border-top: none;">
                                         <Collapse in={row.extraShow}>
                                             <div>

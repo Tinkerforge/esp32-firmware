@@ -612,7 +612,8 @@ table ul {
     z-index: 1056 !important;
 }
 
-.table-card-mode .card-body .form-group {
+.table-card-mode .card-body .form-group,
+.table-extra-value .card-body .form-group {
     margin-bottom: 0.75rem;
 }
 
