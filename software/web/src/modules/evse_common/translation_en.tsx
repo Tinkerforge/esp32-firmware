@@ -125,48 +125,102 @@ let x = {
             "enable_led_api": "Status-LED control",
             "enable_led_api_desc": "Allows an external source to control the Status-LED.",
             "api_must_be_enabled": "API must be enabled to use this feature.",
-            "cron_state_change_trigger": /*FFN*/(state: string) => {
-                return (
-                  <>
-                    If the charge status changes to "<b>{state}</b>",{" "}
-                  </>
-                );
-              }/*NF*/,
-              "cron_action_text": /*FFN*/(current: number) => {
-                return (
-                  <>
-                    set the allowed charging current to <b>{current} A</b>.
-                  </>
-                );
-              }/*NF*/,
-              "cron_led_action_text": /*FFN*/(state: string, duration: number) => {
-                if (state == "An" || state == "Aus") {
-                  return <>
-                    turn the status-LED <b>{state}</b> for <b>{duration} seconds</b>.
-                  </>
-                }
-                return (
-                  <>
-                    show <b>{state}</b> for <b>{duration / 1000} seconds</b> on the status-LED.
-                  </>
-                );
-              }/*NF*/,
+            "cron_state_change_trigger": /*FFN*/(state: string) => <>If the charge status changes to "<b>{state}</b>",{" "}</>/*NF*/,
+            "cron_action_text": /*FFN*/(current: number) => <>set the allowed charging current to <b>{current} A</b>.</>/*NF*/,
+            "cron_led_action_text": /*FFN*/(state: string, duration: number) => state == "An" || state == "Aus" ? <>turn the status-LED <b>{state}</b> for <b>{duration} seconds</b>.</> : <>show <b>{state}</b> for <b>{duration / 1000} seconds</b> on the status-LED.</>/*NF*/,
 
-            "slot_0": "Supply cable",
-            "slot_1": "Type 2 charging cable",
-            "slot_2": "Shutdown input",
-            "slot_3": "Configurable input",
-            "slot_4": "Manual charge release",
-            "slot_5": "Configuration",
-            "slot_6": "User/NFC",
-            "slot_7": "Charge manager",
-            "slot_8": "External control",
-            "slot_9": "Modbus TCP current",
-            "slot_10": "Modbus TCP clearance",
-            "slot_11": "OCPP",
-            "slot_12": "Energy/Time limit",
-            "slot_13": "Meter monitoring",
-            "slot_14": "Cron"
+            "slot": /*SFN*/(i: number) => { return {
+                0: "Supply cable",
+                1: "Type 2 charging cable",
+                2: "Shutdown input",
+                3: "Configurable input",
+                4: "Manual charge release",
+                5: "Configuration",
+                6: "User/NFC",
+                7: "Charge manager",
+                8: "External control",
+                9: "Modbus TCP current",
+                10: "Modbus TCP clearance",
+                11: "OCPP",
+                12: "Energy/Time limit",
+                13: "Meter monitoring",
+                14: "Cron"
+            }[i];}/*NF*/,
+
+            // EVSE V1 only
+            "gpio_names": "input, output, motor input switch, relay, motor fault",
+            "user_calibration": "Calibration state",
+            "user_calibration_state_disabled": "Factory settings",
+            "user_calibration_state_enabled": "Modified",
+            "voltage_calibration": "Voltage calibration",
+            "voltage_calibration_names": "diff, mul, div",
+            "resistance_2700": "Resistance calibration 2700Ω",
+            "resistance_880": "Resistance calibration 880Ω",
+            "user_calibration_description": "Calibration",
+            "user_calibration_description_muted": "",
+            "user_calibration_download": "Download",
+            "user_calibration_upload": "Upload",
+            "user_calibration_browse": "Browse",
+            "user_calibration_select_file": "Select calibration file",
+            "user_calibration_reset": "Reset",
+
+            // EVSE V2 only
+            "energy_meter_type": "Energy meter type",
+            "gpio_names_0": "current configuration 0, motor fault, DC fault, current configuration 1",
+            "gpio_names_1": "DC fault protector test, shutdown, button, CP-PWM",
+            "gpio_names_2": "motor input switch, contactor, GP output, CP separation",
+            "gpio_names_3": "motor active, motor phase, contactor check before, contactor check behind",
+            "gpio_names_4": "GP input, DC X6, DC X30, LED",
+            "gpio_names_5": "unused",
+            "gpio_shutdown_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
+            "gpio_shutdown_not_configured": "Not configured",
+            "gpio_shutdown_on_open": "Shut down on open",
+            "gpio_shutdown_on_close": "Shut down on close",
+            "not_configured": "Not configured",
+            "active_low_blocked": "Blocks if closed",
+            "active_low_prefix": "Limits charge current to ",
+            "active_low_suffix": " if closed",
+            "active_high_blocked": "Blocks if open",
+            "active_high_prefix": "Limits charge current to ",
+            "active_high_suffix": " if open",
+
+            "todo": "Have a feature request? Write an e-mail to info@tinkerforge.com",
+            "gpio_in_muted": "Readable on GPIO 16",
+            "gpio_out_muted": <><a href="https://en.wikipedia.org/wiki/Open_collector">open collector</a></>,
+            "button_configuration_muted": "Action to be executed when the button is pressed",
+            "button_configuration_deactivated": "No action",
+            "button_configuration_start_charging": "Start charging",
+            "button_configuration_stop_charging": "Stop charging",
+            "button_configuration_start_and_stop_charging": "Start or stop charging",
+
+            "ev_wakeup_desc": "EV Wakeup",
+            "ev_wakeup_desc_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
+            "ev_wakeup": "Attempts to wake up the charge controller of the connected vehicle by fake-un and -re-plugging the charge cable.",
+
+            "dc_fault_current_state": "DC fault protector state",
+            "dc_fault_current_state_desc": "",
+            "dc_fault_current_ok": "OK",
+            "dc_fault_current_6_ma": "DC fault",
+            "dc_fault_current_system": "System error",
+            "dc_fault_current_unknown": "Unknown error",
+            "dc_fault_current_calibration": "Calibration error",
+            "dc_fault_current_reset": "Reset",
+
+            "reset_dc_fault_title": "Reset the DC fault protector",
+            "reset_dc_fault_content": <>Resetting the DC fault protector restores the ability to charge. <b>Ensure that the reason why the DC fault protector triggered is resolved!</b> <a href="{{{manual_url}}}">See manual for details.</a> Really reset the DC fault protector?</>,
+            "abort": "Abort",
+            "reset": "Reset",
+            "trigger_dc_fault_test": "Test DC fault protector",
+            "time_since_dc_fault_check": "Time since last DC fault protector test",
+            "cron_sd_trigger_text": /*FFN*/(state: boolean) => <>If the shutdown input switches to <b>{state ? "open" : "closed"}</b>{" "}</>/*NF*/,
+            "cron_gpin_trigger_text": /*FFN*/(state: boolean) => <>If the General Purpose input switches to <b>{state ? "open" : "closed"}</b>{" "}</>/*NF*/,
+            "cron_button_trigger_text": /*FFN*/(state: boolean) => <>If the button is <b>{state ? "pressed" : "released"}</b>{" "}</>/*NF*/,
+            "cron_gpout_action_text": /*FFN*/(state: number) => state ? <>set general purpose output to <b>high impedance</b>.</> : <><b>connect</b> general purpose output <b>to ground</b>.</>/*NF*/,
+
+            // EVSE version specific value for common placeholder
+            "error_2": /*SFN*/(is_evse_v2: boolean) => is_evse_v2 ? "DC fault protector error" : "Calibration error"/*NF*/,
+            "adc_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail</> : <>CP/PE, PP/PE</>/*NF*/,
+            "voltage_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail</> : <>CP/PE, PP/PE,<br/> CP/PE (high)</>/*NF*/
         },
         "script": {
             "error_code": "Error code",
@@ -196,21 +250,38 @@ let x = {
             "slot_blocks": "Blocks",
             "slot_no_limit": "Released",
 
-            "slot_0": "supply cable",
-            "slot_1": "charging cable",
-            "slot_2": "shutdown input",
-            "slot_3": "general purpose input",
-            "slot_5": "configuration",
-            "slot_6": "user/NFC",
-            "slot_7": "charge management",
-            "slot_8": "external control",
-            "slot_9": "Modbus TCP",
-            "slot_10": "Modbus TCP clearance",
-            "slot_11": "OCPP",
-            "slot_12": "energy/time limit",
-            "slot_13": "meter monitoring",
+            "slot": /*SFN*/(i: number, is_evse_v2: boolean) => {return {
+                0: "supply cable",
+                1: "charging cable",
+                2: "shutdown input",
+                3: "general purpose input",
+                4: is_evse_v2 ? "Auto-start or button" : "Auto-start, button or key switch",
+                5: "configuration",
+                6: "user/NFC",
+                7: "charge management",
+                8: "external control",
+                9: "Modbus TCP",
+                10: "Modbus TCP clearance",
+                11: "OCPP",
+                12: "energy/time limit",
+                13: "meter monitoring",
+                14: "cron"
+            }[i];}/*NF*/,
 
-            "reboot_content_changed": "charge settings"
+            "reboot_content_changed": "charge settings",
+
+            // EVSE V1 only
+            "user_calibration_upload_failed": "Updating the calibration failed",
+
+            // EVSE V2 only
+            "reset_dc_fault_current_failed": "Reset of the DC fault protector failed",
+            "gpio_configuration_failed": "Updating the GPIO configuration failed",
+
+            "meter_type_0": "No energy meter found",
+            "meter_type_1": "SDM72",
+            "meter_type_2": "SDM630",
+            "meter_type_3": "SDM72V2",
+            "meter_type_254": "internal"
         }
     }
 }

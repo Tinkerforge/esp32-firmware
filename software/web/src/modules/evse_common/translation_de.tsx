@@ -125,48 +125,103 @@ let x = {
             "enable_led_api": "Status-LED Steuerung",
             "enable_led_api_desc": "Erlaubt die externe Steuerung der Status-LED.",
             "api_must_be_enabled": "Die API muss aktiviert sein, um die Status-LED steuern zu können.",
-            "cron_state_change_trigger": /*FFN*/(state: string) => {
-                return (
-                  <>
-                    Wenn der Ladecontroller in den Zustand "<b>{state}</b>" wechselt,{" "}
-                  </>
-                );
-              }/*NF*/,
-              "cron_action_text": /*FFN*/(current: number) => {
-                return (
-                  <>
-                    setze den erlaubten Ladestrom auf <b>{current} A</b>.
-                  </>
-                );
-              }/*NF*/,
-              "cron_led_action_text": /*FFN*/(state: string, duration: number) => {
-                if (state == "An" || state == "Aus") {
-                  return (
-                    <>
-                      schalte die Status-LED für <b>{duration / 1000} Sekunden</b> <b>{state}</b>.
-                    </>
-                  );
-                }
-                return <>
-                  zeige <b>{state}</b> für <b>{duration / 1000} Sekunden</b> auf der Status-LED.
-                </>
-              }/*NF*/,
+            "cron_state_change_trigger": /*FFN*/(state: string) => <>Wenn der Ladecontroller in den Zustand "<b>{state}</b>" wechselt,{" "}</>/*NF*/,
+            "cron_action_text": /*FFN*/(current: number) => <>setze den erlaubten Ladestrom auf <b>{current} A</b>.</>/*NF*/,
+            "cron_led_action_text": /*FFN*/(state: string, duration: number) => (state == "An" || state == "Aus") ? <>schalte die Status-LED für <b>{duration / 1000} Sekunden</b> <b>{state}</b>.</> : <>zeige <b>{state}</b> für <b>{duration / 1000} Sekunden</b> auf der Status-LED.</>/*NF*/,
 
-            "slot_0": "Zuleitung",
-            "slot_1": "Typ-2-Ladekabel",
-            "slot_2": "Abschalteingang",
-            "slot_3": "Konfigurierbarer Eingang",
-            "slot_4": "Manuelle Ladefreigabe",
-            "slot_5": "Konfiguration",
-            "slot_6": "Benutzer/NFC",
-            "slot_7": "Lastmanagement",
-            "slot_8": "Externe Steuerung",
-            "slot_9": "Modbus TCP-Strom",
-            "slot_10": "Modbus TCP-Freigabe",
-            "slot_11": "OCPP",
-            "slot_12": "Energie-/Zeitlimit",
-            "slot_13": "Zählerüberwachung",
-            "slot_14": "Cron"
+            "slot": /*SFN*/(i: number) => { return {
+                0: "Zuleitung",
+                1: "Typ-2-Ladekabel",
+                2: "Abschalteingang",
+                3: "Konfigurierbarer Eingang",
+                4: "Manuelle Ladefreigabe",
+                5: "Konfiguration",
+                6: "Benutzer/NFC",
+                7: "Lastmanagement",
+                8: "Externe Steuerung",
+                9: "Modbus TCP-Strom",
+                10: "Modbus TCP-Freigabe",
+                11: "OCPP",
+                12: "Energie-/Zeitlimit",
+                13: "Zählerüberwachung",
+                14: "Cron"
+            }[i];}/*NF*/,
+
+            // EVSE V1 only
+            "gpio_names": "Eingang, Ausgang, Motoreingangsschalter, Relais, Motorfehler",
+            "user_calibration": "Kalibrierungsstatus",
+            "user_calibration_state_disabled": "Werkseinstellungen",
+            "user_calibration_state_enabled": "Modifiziert",
+            "voltage_calibration": "Spannungskalibrierung",
+            "voltage_calibration_names": "Diff, Mul, Div",
+            "resistance_2700": "Widerstandskalibrierung 2700Ω",
+            "resistance_880": "Widerstandskalibrierung 880Ω",
+            "user_calibration_description": "Kalibrierung",
+            "user_calibration_description_muted": "",
+            "user_calibration_download": "Herunterladen",
+            "user_calibration_upload": "Hochladen",
+            "user_calibration_browse": "Durchsuchen",
+            "user_calibration_select_file": "Kalibrierungsdatei auswählen",
+            "user_calibration_reset": "Zurücksetzen",
+
+            // EVSE V2 only
+            "energy_meter_type": "Stromzählertyp",
+            "gpio_names_0": "Stromkonfiguration 0, Motorfehler, Gleichstromfehler, Stromkonfiguration 1",
+            "gpio_names_1": "DC-Fehlerstromschutz-Test, Abschaltung, Taster, CP-PWM",
+            "gpio_names_2": "Motoreingangsschalter, Schützsteuerung, Konfigurierbarer Ausgang, CP-Trennung",
+            "gpio_names_3": "Motor aktiv, Motor-Phase, Schützprüfung vorher, Schützprüfung nachher",
+            "gpio_names_4": "Konfigurierbarer Eingang, DC X6, DC X30, LED",
+            "gpio_names_5": "nicht belegt",
+            "gpio_shutdown_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
+            "gpio_shutdown_not_configured": "Nicht konfiguriert",
+            "gpio_shutdown_on_open": "Abschalten wenn geöffnet",
+            "gpio_shutdown_on_close": "Abschalten wenn geschlossen",
+            "not_configured": "Nicht konfiguriert",
+            "active_low_blocked": "Blockiert wenn geschlossen",
+            "active_low_prefix": "Limitiert Ladestrom auf ",
+            "active_low_suffix": " wenn geschlossen",
+            "active_high_blocked": "Blockiert wenn geöffnet",
+            "active_high_prefix": "Limitiert Ladestrom auf ",
+            "active_high_suffix": " wenn geöffnet",
+
+            "todo": "Ideen bzw. Wünsche? Schreib eine Mail an info@tinkerforge.com",
+            "gpio_in_muted": "Kann als GPIO 16 gelesen werden",
+            "gpio_out_muted": <><a href="https://de.wikipedia.org/wiki/Open-Collector-Ausgang">Open-Collector-Ausgang</a></>,
+            "button_configuration_muted": "Aktion, die bei Druck des Tasters ausgeführt wird.",
+            "button_configuration_deactivated": "Keine Aktion",
+            "button_configuration_start_charging": "Ladestart",
+            "button_configuration_stop_charging": "Ladestop",
+            "button_configuration_start_and_stop_charging": "Ladestart bzw. Ladestop",
+
+            "ev_wakeup_desc": "Fahrzeug-Weckruf",
+            "ev_wakeup_desc_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
+            "ev_wakeup": "Versucht die Ladeelektronik des Fahrzeugs aus einem Energiesparmodus zu wecken, indem ein Abziehen und Anstecken des Ladekabels vorgetäuscht wird.",
+
+            "dc_fault_current_state": "DC-Fehlerstromzustand",
+            "dc_fault_current_state_desc": "",
+            "dc_fault_current_ok": "OK",
+            "dc_fault_current_6_ma": "Gleichstromfehler",
+            "dc_fault_current_system": "Systemfehler",
+            "dc_fault_current_unknown": "Unbekannter Fehler",
+            "dc_fault_current_calibration": "Kalibrierungsfehler",
+            "dc_fault_current_reset": "Zurücksetzen",
+
+            "reset_dc_fault_title": "Zurücksetzen des DC-Fehlerstromschutzmoduls",
+            "reset_dc_fault_content": <>Durch das Zurücksetzen des Moduls kann wieder geladen werden. <b>Es muss sichergestellt sein, dass der Grund für das Auslösen des Moduls behoben wurde!</b> <a href="{{{manual_url}}}">Siehe Betriebsanleitung für Details.</a> Soll das DC-Fehlerstromschutzmodul wirklich zurückgesetzt werden?</>,
+            "abort": "Abbrechen",
+            "reset": "Zurücksetzen",
+            "trigger_dc_fault_test": "DC-Fehlerschutz testen",
+            "time_since_dc_fault_check": "Zeit seit dem letzten DC-Fehlerschutztest",
+
+            "cron_sd_trigger_text": /*FFN*/(state: boolean) => <>Wenn der Abschalteingang <b>{state ? "geöffnet" : "geschlossen"}</b> wird,{" "}</>/*NF*/,
+            "cron_gpin_trigger_text": /*FFN*/(state: boolean) => <>Wenn der Konfigurierbare Eingang <b>{state ? "geöffnet" : "geschlossen"}</b> wird,{" "}</>/*NF*/,
+            "cron_button_trigger_text": /*FFN*/(state: boolean) => <>Wenn der Fronttaster <b>{state ? "gedrückt" : "losgelassen"}</b> wird,{" "}</>/*NF*/,
+            "cron_gpout_action_text": /*FFN*/(state: number) => state ? <><b>schalte</b> den Konfigurierbaren Ausgang <b>hochohmig</b>.</> : <><b>verbinde</b> den Konfigurierbaren Ausgang <b>mit Masse</b>.</>/*NF*/,
+
+            // EVSE version specific value for common placeholder
+            "error_2": /*SFN*/(is_evse_v2: boolean) => is_evse_v2 ? "DC-Fehlerstromschutz" : "Kalibrierung"  /*NF*/,
+            "adc_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail</> : <>CP/PE, PP/PE</> /*NF*/,
+            "voltage_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail</> : <>CP/PE, PP/PE,<br/> CP/PE (high)</> /*NF*/
         },
         "script": {
             "error_code": "Fehlercode",
@@ -196,21 +251,38 @@ let x = {
             "slot_blocks": "Blockiert",
             "slot_no_limit": "Freigegeben",
 
-            "slot_0": "Zuleitung",
-            "slot_1": "Ladekabel",
-            "slot_2": "Abschalteingang",
-            "slot_3": "konfigurierbaren Eingang",
-            "slot_5": "Konfiguration",
-            "slot_6": "Benutzer/NFC",
-            "slot_7": "Lastmanagement",
-            "slot_8": "externe Steuerung",
-            "slot_9": "Modbus TCP",
-            "slot_10": "Modbus TCP-Freigabe",
-            "slot_11": "OCPP",
-            "slot_12": "Energie-/Zeitlimit",
-            "slot_13": "Zählerüberwachung",
+            "slot": /*SFN*/(i: number, is_evse_v2: boolean) => {return {
+                0: "Zuleitung",
+                1: "Ladekabel",
+                2: "Abschalteingang",
+                3: "konfigurierbaren Eingang",
+                4: is_evse_v2 ? "Manuelle Ladefreigabe oder Taster" : "Manuelle Ladefreigabe, Taster oder Schlüsselschalter",
+                5: "Konfiguration",
+                6: "Benutzer/NFC",
+                7: "Lastmanagement",
+                8: "externe Steuerung",
+                9: "Modbus TCP",
+                10: "Modbus TCP-Freigabe",
+                11: "OCPP",
+                12: "Energie-/Zeitlimit",
+                13: "Zählerüberwachung",
+                14: "Cron"
+            }[i];}/*NF*/,
 
-            "reboot_content_changed": "Ladeeinstellungen"
+            "reboot_content_changed": "Ladeeinstellungen",
+
+            // EVSE V1 only
+            "user_calibration_upload_failed": "Aktualisieren der Kalibrierung fehlgeschlagen",
+
+            // EVSE V2 only
+            "reset_dc_fault_current_failed": "Zurücksetzen des DC-Fehlerstromschutzmoduls fehlgeschlagen",
+            "gpio_configuration_failed": "Speichern der GPIO-Konfiguration fehlgeschlagen",
+
+            "meter_type_0": "Kein Stromzähler angeschlossen",
+            "meter_type_1": "SDM72",
+            "meter_type_2": "SDM630",
+            "meter_type_3": "SDM72V2",
+            "meter_type_254": "intern"
         }
     }
 }
