@@ -55,8 +55,6 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     case WEBSOCKET_EVENT_PONG:
         task_scheduler.await([](){pong_cb(pong_cb_userdata);});
         break;
-    case WEBSOCKET_EVENT_ERROR:
-        break;
     }
 }
 
