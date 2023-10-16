@@ -37,7 +37,7 @@ void MeterModbusTCP::setup()
 {
     host_name      = config->get("host")->asString();
     port           = static_cast<uint16_t>(config->get("port")->asUint());
-    modbus_address = static_cast<uint8_t>(config->get("address")->asUint());
+    device_address = static_cast<uint8_t>(config->get("address")->asUint());
     config         = nullptr;
 
     register_buffer = static_cast<uint16_t *>(malloc(register_buffer_size * sizeof(uint16_t)));
