@@ -112,25 +112,27 @@ export class Table extends Component<TableProps, TableState> {
             <>
                 <Card className={`d-none d-${props.tableTill ? props.tableTill : 'sm'}-block`}><Card.Body style="padding: 0;">
                 <table class="table" style="font-size: 1rem; margin-bottom: 0;">
-                    <thead>
-                        <tr>
-                            {props.columnNames.map((columnName) => (
-                                <th scope="col" style="vertical-align: middle;">{columnName}</th>
-                            ))}
-                            <th scope="col">
-                                <Button size="sm" disabled={true} style="visibility: hidden;">
-                                    <Trash2/>
-                                </Button>
-                            </th>
-                        </tr>
-                    </thead>
+                    {props.columnNames.filter((name) => name.length > 0).length > 0 ?
+                        <thead>
+                            <tr>
+                                {props.columnNames.map((columnName) => (
+                                    <th scope="col" style="vertical-align: middle;">{columnName}</th>
+                                ))}
+                                <th scope="col">
+                                    <Button size="sm" disabled={true} style="visibility: hidden;">
+                                        <Trash2/>
+                                    </Button>
+                                </th>
+                            </tr>
+                        </thead>
+                        : undefined}
                     <tbody>
                         {props.rows.map((row, i) => <>
                             <tr key={row.key}>
                                 {row.columnValues.map((value) => (
-                                    <td class={"text-break" + (row.extraValue ? " pb-0" : "")} style="vertical-align: middle;">{value}</td>
+                                    <td class={"text-break" + (row.extraValue ? " pb-0" : "")} style={"vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>{value}</td>
                                 ))}
-                                <td class={row.extraValue ? "pb-0" : undefined} style="width: 1%; white-space: nowrap; vertical-align: middle;">
+                                <td class={row.extraValue ? "pb-0" : undefined} style={"width: 1%; white-space: nowrap; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>
                                     <Button variant="primary"
                                             size="sm"
                                             className="mr-2"
