@@ -169,7 +169,7 @@ void EventLog::register_urls()
         auto chunk_buf = heap_alloc_array<char>(CHUNK_SIZE);
         auto used = event_buf.used();
 
-        request.beginChunkedResponse(200, "text/plain");
+        request.beginChunkedResponse(200);
 
         for (int index = 0; index < used; index += CHUNK_SIZE) {
             size_t to_write = MIN(CHUNK_SIZE, used - index);

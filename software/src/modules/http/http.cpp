@@ -37,7 +37,7 @@ public:
 
     void begin(bool success)
     {
-        request->beginChunkedResponse(success ? 200 : 400, "text/plain");
+        request->beginChunkedResponse(success ? 200 : 400);
     }
 
     void alive()
@@ -163,9 +163,9 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     }
 
     if (message == "") {
-        return req.send(200, "text/html", "");
+        return req.send(200);
     }
-    return req.send(400, "text/html", message.c_str());
+    return req.send(400, "text/plain; charset=utf-8", message.c_str());
 }
 
 // strcmp is safe here: both String::c_str() and req.uriCStr() return null terminated strings.
@@ -184,7 +184,7 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
             response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
         });
         if (result == TaskScheduler::AwaitResult::Timeout)
-            return req.send(500, "text/html", "Failed to get config. Task timed out.");
+            return req.send(500, "text/plain", "Failed to get config. Task timed out.");
 
         return req.send(200, "application/json; charset=utf-8", response.c_str());
     }
@@ -195,7 +195,7 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
     // This was probably a raw command or a command that requires a payload. Return 405 - Method not allowed
-    return req.send(405, "text/html", "Request method for this URI is not handled by server");
+    return req.send(405, "text/plain", "Request method for this URI is not handled by server");
 }
 
 WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
@@ -223,12 +223,12 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
             message = api.raw_commands[i].callback(recv_buf, bytes_written);
         });
         if (result == TaskScheduler::AwaitResult::Timeout)
-            return req.send(500, "text/html", "Failed to call raw command. Task timed out.");
+            return req.send(500, "text/plain", "Failed to call raw command. Task timed out.");
 
         if (message == "") {
-            return req.send(200, "text/html", "");
+            return req.send(200);
         }
-        return req.send(400, "text/html", message.c_str());
+        return req.send(400, "text/plain; charset=utf-8", message.c_str());
     }
 
     for (size_t i = 0; i < api.responses.size(); i++)
@@ -268,7 +268,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
     }
 
     if (req.uri().endsWith("_update")) {
-        return req.send(405, "text/html", "Request method for this URI is not handled by server");
+        return req.send(405, "text/plain", "Request method for this URI is not handled by server");
     }
 
     for (size_t i = 0; i < api.states.size(); i++)
@@ -284,7 +284,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
     // This was probably a raw command or a command that requires a payload. Return 405 - Method not allowed
-    return req.send(405, "text/html", "Request method for this URI is not handled by server");
+    return req.send(405, "text/plain", "Request method for this URI is not handled by server");
 }
 
 void Http::register_urls()

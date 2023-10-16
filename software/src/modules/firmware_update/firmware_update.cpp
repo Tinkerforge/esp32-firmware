@@ -215,7 +215,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
     if (chunk_index + chunk_length >= FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
         String error = this->check_firmware_info(firmware_info_found, false, true);
         if (error != "") {
-            request.send(400, "text/plain", error.c_str());
+            request.send(400, "application/json", error.c_str());
             Update.abort();
             update_aborted = true;
             return true;
@@ -262,12 +262,12 @@ void FirmwareUpdate::register_urls()
         req.addResponseHeader("ETag", "dontcachemeplease");
         // Intentionally don't handle the If-None-Match header:
         // This makes sure that a cached version is never used.
-        return req.send(200, "text/html", recovery_html_data, recovery_html_length);
+        return req.send(200, "text/html; charset=utf-8", recovery_html_data, recovery_html_length);
     });
 
     server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request){
         if (!this->info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
-            return request.send(400, "text/plain", "{\"error\":\"firmware_update.script.no_info_page\"}");
+            return request.send(400, "application/json", "{\"error\":\"firmware_update.script.no_info_page\"}");
         }
         return request.send(200);
     },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
@@ -280,7 +280,7 @@ void FirmwareUpdate::register_urls()
         firmware_update_allowed_check_required = energy_manager.disallow_fw_update_with_vehicle_connected();
 #endif
         if (firmware_update_allowed_check_required && !firmware_update_allowed) {
-            request.send(400, "text/plain", "{\"error\":\"firmware_update.script.vehicle_connected\"}");
+            request.send(400, "application/json", "{\"error\":\"firmware_update.script.vehicle_connected\"}");
             return false;
         }
 
@@ -294,7 +294,7 @@ void FirmwareUpdate::register_urls()
         if (index + len >= FIRMWARE_INFO_LENGTH) {
             String error = this->check_firmware_info(firmware_info_found, true, false);
             if (error != "") {
-                request.send(400, "text/plain", error.c_str());
+                request.send(400, "application/json", error.c_str());
             }
         }
 

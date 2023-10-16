@@ -98,7 +98,7 @@ static WebServerRequestReturnProtect send_index_html(WebServerRequest &request) 
         return request.send(304);
     }
 
-    return request.send(200, "text/html", index_html_data, index_html_length);
+    return request.send(200, "text/html; charset=utf-8", index_html_data, index_html_length);
 }
 
 static void register_default_urls(void) {
@@ -115,7 +115,7 @@ static void register_default_urls(void) {
 
     server.on_HTTPThread("/force_reboot", HTTP_GET, [](WebServerRequest request) {
         ESP.restart();
-        return request.send(200, "text/html", "Forced reboot.");
+        return request.send(200, "text/plain", "Forced reboot.");
     });
 
     server.onNotAuthorized_HTTPThread([](WebServerRequest request) {

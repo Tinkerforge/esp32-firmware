@@ -212,7 +212,7 @@ void Debug::register_urls()
 
     server.on_HTTPThread("/debug/crash", HTTP_GET, [this](WebServerRequest req) {
         esp_system_abort("Crash requested");
-        return req.send(200, "text/plain", "ok");
+        return req.send(200);
     });
 #ifdef DEBUG_FS_ENABLE
     server.on_HTTPThread("/debug/fs/*", HTTP_GET, [this](WebServerRequest request) {
@@ -226,14 +226,14 @@ void Debug::register_urls()
         File f = LittleFS.open(path);
         if (!f.isDirectory()) {
             char buf[256];
-            request.beginChunkedResponse(200, "text/plain");
+            request.beginChunkedResponse(200);
             while(f.available()) {
                 size_t read = f.read(reinterpret_cast<uint8_t *>(buf), ARRAY_SIZE(buf));
                 request.sendChunk(buf, static_cast<ssize_t>(read));
             }
             return request.endChunkedResponse();
         } else {
-            request.beginChunkedResponse(200, "text/html");
+            request.beginChunkedResponse(200, "text/html; charset=utf-8");
             String header = "<h1>" + String(f.path()) + "</h1><br>\n";
             request.sendChunk(header.c_str(), static_cast<ssize_t>(header.length()));
 
