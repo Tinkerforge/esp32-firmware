@@ -125,6 +125,7 @@ export function MeterValueIDSelector(state: {value_id: {value_id: number}, value
         if (item.length > 1) {
             return <div class={i > 0 ? "mt-2" : ""}>
                     <InputSelect
+                        required
                         items={item}
                         onValue={(v) => {
                             const stage = getStage(i, stages, METER_VALUE_ITEMS);
