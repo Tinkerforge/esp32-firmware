@@ -186,8 +186,12 @@ export class Table extends Component<TableProps, TableState> {
                 </Card.Body></Card>
 
                 <div class={`d-block d-${props.tableTill ? props.tableTill : 'sm'}-none` + " table-card-mode"}>
-                    {props.rows.map((row, i) => <Card className="mb-3">
-                        <div class="card-header d-flex justify-content-between align-items-center p-2d5">
+                    {props.rows.map((row, i) => {
+                        let card_fields = this.get_card_fields(row);
+                        let needs_body = card_fields.length > 0 || row.extraValue;
+
+                        return <><Card className="mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center p-2d5" style={needs_body ? "" : "border-bottom: 0;"}>
                             <h5 class="text-break" style="margin-bottom: 0;">{util.hasValue(row.fieldValues) ? row.fieldValues[0] : row.columnValues[0]}</h5>
                             <div style="white-space: nowrap; vertical-align: middle;">
                                 <Button variant="primary"
@@ -209,21 +213,24 @@ export class Table extends Component<TableProps, TableState> {
                                 </Button>
                             </div>
                         </div>
-                        <Card.Body className="p-2d5 pb-0">
-                            {this.get_card_fields(row)}
-                            {row.extraValue ?
-                                <Collapse in={row.extraShow}>
-                                    <div>
-                                        {row.extraFieldName ?
-                                            <FormRow label={row.extraFieldName}>
-                                                <Card><Card.Body className="p-2d5 pb-0">{row.extraValue}</Card.Body></Card>
-                                            </FormRow>
-                                            : <Card><Card.Body className="p-2d5 pb-0">{row.extraValue}</Card.Body></Card>}
-                                    </div>
-                                </Collapse>
-                                : undefined}
-                        </Card.Body>
-                    </Card>)}
+                        {needs_body ?
+                            <Card.Body className="p-2d5 pb-0">
+                                {card_fields}
+                                {row.extraValue ?
+                                    <Collapse in={row.extraShow}>
+                                        <div>
+                                            {row.extraFieldName ?
+                                                <FormRow label={row.extraFieldName}>
+                                                    <Card><Card.Body className="p-2d5 pb-0">{row.extraValue}</Card.Body></Card>
+                                                </FormRow>
+                                                : <Card><Card.Body className="p-2d5 pb-0">{row.extraValue}</Card.Body></Card>}
+                                        </div>
+                                    </Collapse>
+                                    : undefined}
+                            </Card.Body>
+                            : undefined}
+                        </Card></>
+                    })}
                     {props.onAddShow ?
                     <Card className="mb-0">
                         <div class="card-body d-flex justify-content-between align-items-center p-2d5">
