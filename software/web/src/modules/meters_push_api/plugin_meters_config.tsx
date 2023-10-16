@@ -210,7 +210,7 @@ export function init() {
                                     }
                                     return row
                                 })}
-                                columnNames={[__("meters_push_api.content.selected_config_ids")]}
+                                columnNames={[""]}
                                 addEnabled={true}
                                 addMessage={__("meters_push_api.content.add_value_count")(config[1].value_ids.length, MAX_VALUES)}
                                 addTitle={__("meters_push_api.content.add_value_title")}
