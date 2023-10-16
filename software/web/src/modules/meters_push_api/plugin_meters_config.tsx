@@ -27,6 +27,8 @@ import { Table, TableModalRow, TableRow } from "../../ts/components/table";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from 'src/ts/components/input_select';
 
+const MAX_VALUES = 100;
+
 export type PushAPIMetersConfig = [
     MeterClassID.PushAPI,
     {
@@ -121,7 +123,7 @@ export function MeterValueIDSelector(state: {value_id: {value_id: number}, value
 
     const inputSelects = items.map((item, i) => {
         if (item.length > 1) {
-            return <div class="mb-2">
+            return <div class={i > 0 ? "mt-2" : ""}>
                     <InputSelect
                         items={item}
                         onValue={(v) => {
@@ -200,24 +202,25 @@ export function init() {
                                         },
                                         onEditGetRows: () => {
                                             return [{
-                                                name: __("meters_push_api.content.add"),
+                                                name: __("meters_push_api.content.config_value_id"),
                                                 value: <MeterValueIDSelector value_id={value_id_obj} value_id_vec={config[1].value_ids} stages={stages} />
                                             }]
                                         },
+                                        editTitle: __("meters_push_api.content.edit_value_title"),
                                     }
                                     return row
                                 })}
                                 columnNames={[__("meters_push_api.content.selected_config_ids")]}
                                 addEnabled={true}
-                                addMessage={__("meters_push_api.content.add")}
-                                addTitle={__("meters_push_api.content.add")}
+                                addMessage={__("meters_push_api.content.add_value_count")(config[1].value_ids.length, MAX_VALUES)}
+                                addTitle={__("meters_push_api.content.add_value_title")}
                                 onAddShow={async () => {
                                     value_id_obj.value_id = -1;
                                     clearStagesFrom(0, stages);
                                 }}
                                 onAddGetRows={() => {
                                     return [{
-                                        name: __("meters_push_api.content.add"),
+                                        name: __("meters_push_api.content.config_value_id"),
                                         value: <MeterValueIDSelector value_id={value_id_obj} value_id_vec={config[1].value_ids} stages={stages} />
                                     }]
                                 }}

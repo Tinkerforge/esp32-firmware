@@ -7,10 +7,12 @@ let x = {
 
             "config_display_name": "Name",
             "config_value_ids": "Werte",
+            "config_value_id": "Wert",
             "invalid_feedback": "Bereits ausgewählt",
-            "placeholder": "Auswählen",
-            "selected_config_ids": "Ausgewählte Werte",
-            "add": "Wert Hinzufügen"
+            "placeholder": "Auswählen...",
+            "add_value_title": "Wert hinzufügen",
+            "add_value_count": /*SFN*/(x: number, max: number) => x + " von " + max + " Werten konfiguriert"/*NF*/,
+            "edit_value_title": "Wert bearbeiten"
         }
     }
 }
