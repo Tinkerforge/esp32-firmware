@@ -97,11 +97,6 @@ void ValueHistory::register_urls(String base_url_)
     base_url = base_url_;
 
     server.on(("/" + base_url + "/history").c_str(), HTTP_GET, [this](WebServerRequest request) {
-        /*if (!initialized) {
-            request.send(400, "text/html", "not initialized");
-            return;
-        }*/
-
         const size_t buf_size = RING_BUF_SIZE * chars_per_value + 100;
         std::unique_ptr<char[]> buf{new char[buf_size]};
         size_t buf_written = format_history(buf.get(), buf_size);
@@ -110,11 +105,6 @@ void ValueHistory::register_urls(String base_url_)
     });
 
     server.on(("/" + base_url + "/live").c_str(), HTTP_GET, [this](WebServerRequest request) {
-        /*if (!initialized) {
-            request.send(400, "text/html", "not initialized");
-            return;
-        }*/
-
         const size_t buf_size = RING_BUF_SIZE * chars_per_value + 100;
         std::unique_ptr<char[]> buf{new char[buf_size]};
         size_t buf_written = format_live(buf.get(), buf_size);
