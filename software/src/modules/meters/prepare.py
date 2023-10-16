@@ -53,6 +53,14 @@ with open('meter_value_group.csv', newline='') as f:
         translation_groups['en'].append(f'"group_{identifier}": "{display_name_en}"')
         translation_groups['de'].append(f'"group_{identifier}": "{display_name_de}"')
 
+def update_value_id_dict(sub_dict, sub_id):
+    key = sub_id[0]
+
+    if len(sub_id) > 2:
+        update_value_id_dict(sub_dict.setdefault(key, OrderedDict()), sub_id[1:])
+    else:
+        sub_dict[key] = sub_id[1]
+
 with open('meter_value_id.csv', newline='') as f:
     for row in csv.reader(f):
         if row[0] == 'id':
@@ -74,31 +82,12 @@ with open('meter_value_id.csv', newline='') as f:
         display_name_en = row[8].replace('\"', '\\"') if len(row[8]) > 0 else name
         display_name_de = row[9].replace('\"', '\\"') if len(row[9]) > 0 else name
 
-        # FIXME: I need to clean this up.
-        if row[1] not in value_id_dict:
-            value_id_dict[row[1]] = OrderedDict()[row[3]] = OrderedDict()
-        elif row[3] not in value_id_dict[row[1]]:
-            value_id_dict[row[1]].update({row[3]: OrderedDict()})
+        foobar = row[1:6]
 
-        if not value_id_dict[row[1]].get(row[3]):
-            value_id_dict[row[1]][row[3]] = OrderedDict()[row[2]] = OrderedDict()
-        elif row[2] not in value_id_dict[row[1]][row[3]]:
-            value_id_dict[row[1]][row[3]].update({row[2]: OrderedDict()})
+        if foobar[4] == "":
+            foobar[4] = "Acute" # FIXME
 
-        if not value_id_dict[row[1]][row[3]].get(row[2]):
-            value_id_dict[row[1]][row[3]][row[2]] = OrderedDict()[row[4]] = OrderedDict()
-        elif row[4] not in value_id_dict[row[1]][row[3]][row[2]]:
-            value_id_dict[row[1]][row[3]][row[2]].update({row[4]: OrderedDict()})
-
-        if row[5] == "":
-            index = "Acute"
-        else:
-            index = row[5]
-        if not value_id_dict[row[1]][row[3]][row[2]].get(row[4]):
-            value_id_dict[row[1]][row[3]][row[2]][row[4]] = OrderedDict()[index] = OrderedDict()
-            value_id_dict[row[1]][row[3]][row[2]][row[4]][index] = identifier
-        elif index not in value_id_dict[row[1]][row[3]][row[2]][row[4]]:
-            value_id_dict[row[1]][row[3]][row[2]][row[4]].update({index: identifier})
+        update_value_id_dict(value_id_dict, [part for part in foobar if len(part) > 0] + [identifier])
 
         value_id_enum.append(f'    {identifier} = {id_}, // {unit}\n')
         value_id_list.append(f'    MeterValueID.{identifier},\n')
@@ -147,6 +136,19 @@ with open('meter_value_id.h', 'w') as f:
     f.write(''.join(value_id_enum))
     f.write('};\n')
 
+def format_value_id_dict(sub_dict, indent):
+    result = ''
+
+    for sub_id in sub_dict.items():
+        result += f"{'    ' * (indent + 1)}'{sub_id[0]}': "
+
+        if isinstance(sub_id[1], dict):
+            result += f"{{\n{format_value_id_dict(sub_id[1], indent + 1)}{'    ' * (indent + 1)}}},\n"
+        else:
+            result += f"MeterValueID.{sub_id[1]},\n"
+
+    return result
+
 with open('../../../web/src/modules/meters/meter_value_id.ts', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('export const enum MeterValueID {\n')
@@ -160,32 +162,10 @@ with open('../../../web/src/modules/meters/meter_value_id.ts', 'w') as f:
     f.write('}\n\n')
     f.write('export const METER_VALUE_ORDER: {ids: MeterValueID[], group: string, phases: string}[] = [\n')
     f.write(''.join(value_id_order_str))
-    f.write(']\n')
-
-    text = 'export const METER_VALUE_ITEMS = {\n'
-    for a in value_id_dict:
-        text += "    '" + a + "': {\n"
-        for b in value_id_dict[a]:
-            if (b != ""):
-                text += "        '" + b + "': {\n"
-            for c in value_id_dict[a][b]:
-                if (c != ""):
-                    text += "            '" + c + "': {\n"
-                for d in value_id_dict[a][b][c]:
-                    if (d != ""):
-                        text += "                '" + d + "': {\n"
-                    for e in value_id_dict[a][b][c][d]:
-                        print(value_id_dict[a][b][c][d])
-                        text += "                    '" + e + "': MeterValueID." + value_id_dict[a][b][c][d][e] + ",\n"
-                    if (d != ""):
-                        text += "                },\n"
-                if (c != ""):
-                    text += "            },\n"
-            if (b != ""):
-                text += "        },\n"
-        text += "    },\n"
-
-    f.write(text + '}\n')
+    f.write(']\n\n')
+    f.write('export const METER_VALUE_ITEMS = {\n')
+    f.write(format_value_id_dict(value_id_dict, 0))
+    f.write('}\n')
 
 for lang in translation_values:
     util.specialize_template(f'../../../web/src/modules/meters/translation_{lang}.json.template', f'../../../web/src/modules/meters/translation_{lang}.json', {
