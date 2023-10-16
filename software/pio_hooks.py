@@ -274,6 +274,8 @@ TSX_HEADER = """/** @jsxImportSource preact */
 import { h } from "preact";
 let x = """
 
+TSX_LINE_COMMENT_PATTERN = re.compile(r'^[ \t]*//.*$', re.MULTILINE)
+
 TSX_FRAGMENT_PATTERN = re.compile(r'<>.*?</>', re.MULTILINE | re.DOTALL)
 TSX_FUNCTION_PATTERN = re.compile(r'/\*[SF]FN\*/.*?/\*NF\*/', re.MULTILINE | re.DOTALL)
 
@@ -314,6 +316,7 @@ def collect_translation(path, override=False):
             content = f.read()
             if is_tsx:
                 content = content.replace(TSX_HEADER, "", 1)
+                content = re.sub(TSX_LINE_COMMENT_PATTERN, "", content)
                 content = re.sub(TSX_FUNCTION_PATTERN,
                                  tsx_to_json,
                                  content)
@@ -324,6 +327,8 @@ def collect_translation(path, override=False):
             try:
                 translation[language] = json.loads(content)
             except:
+                with open("/tmp/out.json", "w") as f:
+                    f.write(content)
                 print('JSON error in', translation_path)
                 raise
 
