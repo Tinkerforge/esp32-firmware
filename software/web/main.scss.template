@@ -611,3 +611,11 @@ table ul {
 .modal-3 {
     z-index: 1056 !important;
 }
+
+.table-card-mode .card-body .form-group {
+    margin-bottom: 0.75rem;
+}
+
+.p-2d5 {
+    padding: 0.75rem;
+}
