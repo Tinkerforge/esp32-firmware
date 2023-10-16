@@ -18,12 +18,15 @@
  */
 
 #include "generic_modbus_tcp_client.h"
+#include "modbus_tcp_tools.h"
 
 #include <errno.h>
 #include <string.h>
 
 #include "event_log.h"
 #include "task_scheduler.h"
+
+#include "gcc_warnings.h"
 
 void GenericModbusTCPClient::start_connection()
 {
@@ -84,4 +87,82 @@ void GenericModbusTCPClient::check_ip(const ip_addr_t *ip, int err)
     }
 
     connect_callback();
+}
+
+void GenericModbusTCPClient::start_generic_read()
+{
+    read_buffer_num = 0;
+    registers_done_count = 0;
+
+    if (generic_read_request.register_count == 0) {
+        generic_read_request.result_code = Modbus::ResultCode::EX_DATA_MISMACH;
+        generic_read_request.done_callback(generic_read_request.done_callback_arg);
+        return;
+    }
+
+    int32_t read_blocks = (generic_read_request.register_count + METERS_MODBUSTCP_MAX_HREG_WORDS - 1) / METERS_MODBUSTCP_MAX_HREG_WORDS;
+    read_block_size = static_cast<uint16_t>((generic_read_request.register_count + read_blocks - 1) / read_blocks);
+
+    read_next();
+}
+
+void GenericModbusTCPClient::read_next()
+{
+    // data is always a nullptr.
+    // Return value doesn't matter. The caller discards it.
+    cbTransaction read_done_cb = [this](Modbus::ResultCode result_code, uint16_t /*transaction_id*/, void * /*data*/)->bool {
+        if (result_code != Modbus::ResultCode::EX_SUCCESS) {
+            logger.printfln("meter_modbus_tcp: readHreg failed: %s (0x%02x) host=%s device_address=%u rtype=%i start_address=%u register_count=%u", get_modbus_result_code_name(result_code), static_cast<uint32_t>(result_code),
+                host_ip.toString().c_str(), device_address, generic_read_request.register_type, generic_read_request.start_address, generic_read_request.register_count);
+
+            generic_read_request.result_code = result_code;
+            generic_read_request.done_callback(generic_read_request.done_callback_arg);
+            return false;
+        }
+
+        registers_done_count = static_cast<uint16_t>(registers_done_count + read_block_size);
+
+        if (registers_done_count >= generic_read_request.register_count) {
+            // buffer done
+            if (generic_read_request.read_twice && read_buffer_num == 0) {
+                // Two reads requested and first read is done. -> Next buffer.
+                read_buffer_num = 1;
+                registers_done_count = 0;
+            } else {
+                // Only one read requested or second buffer done. -> All done.
+                generic_read_request.done_callback(generic_read_request.done_callback_arg);
+                return true;
+            }
+        }
+
+        read_next();
+
+        return true;
+    };
+
+    uint16_t *target_buffer = generic_read_request.data[read_buffer_num] + registers_done_count;
+    uint16_t read_start_address  = static_cast<uint16_t>(generic_read_request.start_address  + registers_done_count);
+    uint16_t registers_remaining = static_cast<uint16_t>(generic_read_request.register_count - registers_done_count);
+    uint16_t read_count = registers_remaining < read_block_size ? registers_remaining : read_block_size;
+
+    uint16_t ret;
+    switch (generic_read_request.register_type) {
+    case TAddress::RegType::HREG: ret = mb->readHreg(host_ip, read_start_address, target_buffer, read_count, read_done_cb, device_address); break;
+    case TAddress::RegType::IREG: ret = mb->readIreg(host_ip, read_start_address, target_buffer, read_count, read_done_cb, device_address); break;
+    case TAddress::RegType::COIL:
+    case TAddress::RegType::ISTS:
+    case TAddress::RegType::NONE:
+    default:
+        esp_system_abort("generic_modbus_tcp_client: Unsupported register type to read.");
+    }
+
+    if (ret == 0) {
+        logger.printfln("meter_modbus_tcp: Modbus read failed. host=%s device_address=%u rtype=%i read_start_address=%u read_count=%u",
+            host_ip.toString().c_str(), device_address, generic_read_request.register_type, read_start_address, read_count);
+
+        generic_read_request.result_code = Modbus::ResultCode::EX_GENERAL_FAILURE;
+        generic_read_request.done_callback(generic_read_request.done_callback_arg);
+    }
+
+    // Read successfully dispatched, will continue in callback.
 }

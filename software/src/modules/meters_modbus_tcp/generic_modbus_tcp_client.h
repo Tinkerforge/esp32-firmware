@@ -46,26 +46,45 @@
 class GenericModbusTCPClient
 {
 protected:
+    struct read_request {
+        TAddress::RegType register_type;
+        uint16_t start_address;
+        uint16_t register_count;
+        uint16_t *data[2];
+        bool read_twice;
+        Modbus::ResultCode result_code;
+        void (*done_callback)(void *arg);
+        void *done_callback_arg;
+    };
+
     GenericModbusTCPClient(ModbusTCP *mb_) : mb(mb_) {}
     virtual ~GenericModbusTCPClient() = default;
 
     void start_connection();
+    void start_generic_read();
 
     ModbusTCP * const mb;
 
     String host_name;
     IPAddress host_ip;
     uint16_t port = 0;
-    uint8_t modbus_address = 0;
+    uint8_t device_address = 0;
+
+    read_request generic_read_request;
 
 private:
     void check_ip(const ip_addr_t *ip, int err);
     virtual void connect_callback() = 0;
+    void read_next();
 
     dns_gethostbyname_addrtype_lwip_ctx_async_data host_data;
     uint32_t connect_backoff_ms = 1000;
     bool resolve_error_printed = false;
     bool connect_error_printed = false;
+
+    uint8_t read_buffer_num;
+    uint16_t read_block_size;
+    uint16_t registers_done_count;
 };
 
 #if defined(__GNUC__)
