@@ -38,6 +38,7 @@ import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS, METER_VALUE_ORDER } f
 import { MeterClassID } from "./meters_defs";
 import { MeterConfig, MeterConfigPlugin } from "./types";
 import { Table, TableModalRow } from "../../ts/components/table";
+import { PageHeader } from "../../ts/components/page_header";
 import { plugins_init } from "./plugins";
 
 const PHASE_CONNECTED_VOLTAGE_THRESHOLD = 180.0 // V
@@ -928,56 +929,56 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 
         return (
             <SubPage colClasses="col-xl-10">
-                <ConfigForm id="meters_config_form" title={__("meters.content.meters")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    <FormSeparator heading={__("meters.status.power_history")} first={true} colClasses={"justify-content-between align-items-center col"} extraClasses={"pr-0 pr-lg-3"} >
-                        <div class="mb-2">
-                            <InputSelect value={this.state.chart_selected} onValue={(v) => {
-                                let chart_selected: "live"|"history" = v as any;
+                <PageHeader title={__("meters.content.meters")}/>
 
-                                this.setState({chart_selected: chart_selected}, () => {
-                                    if (chart_selected == 'live') {
-                                        this.uplot_wrapper_live_ref.current.set_show(true);
-                                        this.uplot_wrapper_history_ref.current.set_show(false);
-                                    }
-                                    else {
-                                        this.uplot_wrapper_history_ref.current.set_show(true);
-                                        this.uplot_wrapper_live_ref.current.set_show(false);
-                                    }
+                <FormSeparator heading={__("meters.status.power_history")} first={true} colClasses={"justify-content-between align-items-center col"} extraClasses={"pr-0 pr-lg-3"} >
+                    <div class="mb-2">
+                        <InputSelect value={this.state.chart_selected} onValue={(v) => {
+                            let chart_selected: "live"|"history" = v as any;
 
-                                    this.update_uplot();
-                                });
-                            }}
-                                items={[
-                                    ["history", __("meters.content.history")],
-                                    ["live", __("meters.content.live")],
-                                ]}/>
-                        </div>
-                    </FormSeparator>
+                            this.setState({chart_selected: chart_selected}, () => {
+                                if (chart_selected == 'live') {
+                                    this.uplot_wrapper_live_ref.current.set_show(true);
+                                    this.uplot_wrapper_history_ref.current.set_show(false);
+                                }
+                                else {
+                                    this.uplot_wrapper_history_ref.current.set_show(true);
+                                    this.uplot_wrapper_live_ref.current.set_show(false);
+                                }
 
-                    <UplotWrapper ref={this.uplot_wrapper_live_ref}
-                                    id="meters_chart_live"
-                                    class="meters-chart"
-                                    sidebar_id="meters"
-                                    show={false}
-                                    legend_time_with_seconds={true}
-                                    aspect_ratio={3}
-                                    x_height={30}
-                                    x_include_date={false}
-                                    y_diff_min={100} />
-                    <UplotWrapper ref={this.uplot_wrapper_history_ref}
-                                    id="meters_chart_history"
-                                    class="meters-chart"
-                                    sidebar_id="meters"
-                                    show={true}
-                                    legend_time_with_seconds={false}
-                                    aspect_ratio={3}
-                                    x_height={50}
-                                    x_include_date={true}
-                                    y_min={0}
-                                    y_max={1500} />
+                                this.update_uplot();
+                            });
+                        }}
+                            items={[
+                                ["history", __("meters.content.history")],
+                                ["live", __("meters.content.live")],
+                            ]}/>
+                    </div>
+                </FormSeparator>
 
-                    <FormSeparator heading={__("meters.content.settings")}/>
+                <UplotWrapper ref={this.uplot_wrapper_live_ref}
+                                id="meters_chart_live"
+                                class="meters-chart"
+                                sidebar_id="meters"
+                                show={false}
+                                legend_time_with_seconds={true}
+                                aspect_ratio={3}
+                                x_height={30}
+                                x_include_date={false}
+                                y_diff_min={100} />
+                <UplotWrapper ref={this.uplot_wrapper_history_ref}
+                                id="meters_chart_history"
+                                class="meters-chart"
+                                sidebar_id="meters"
+                                show={true}
+                                legend_time_with_seconds={false}
+                                aspect_ratio={3}
+                                x_height={50}
+                                x_include_date={true}
+                                y_min={0}
+                                y_max={1500} />
 
+                <ConfigForm id="meters_config_form" title={__("meters.content.settings")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty} small={true}>
                     <div class="mb-3">
                         <Table
                             tableTill="md"
