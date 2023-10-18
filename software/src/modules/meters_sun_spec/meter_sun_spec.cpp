@@ -57,12 +57,6 @@ void MeterSunSpec::setup()
     }, 2000, 1000);
 }
 
-static void read_done_cb(void *arg)
-{
-    MeterSunSpec *mss = static_cast<MeterSunSpec *>(arg);
-    mss->read_done_callback();
-}
-
 void MeterSunSpec::connect_callback()
 {
     // Perform re-discovery magic here. I tell you 203, you tell me 40069.
@@ -83,8 +77,11 @@ void MeterSunSpec::connect_callback()
     generic_read_request.data[1] = buffer + model_regcount;
     generic_read_request.read_twice = true;
 
-    generic_read_request.done_callback = &read_done_cb;
     generic_read_request.done_callback_arg = this;
+    generic_read_request.done_callback = [](void *arg) {
+        MeterSunSpec *mss = static_cast<MeterSunSpec *>(arg);
+        mss->read_done_callback();
+    };
 
     start_generic_read();
 }
