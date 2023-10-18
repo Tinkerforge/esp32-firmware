@@ -44,7 +44,6 @@ struct WebSocketsClient {
 };
 
 struct ws_work_item {
-    httpd_handle_t hd;
     int fds[MAX_WEB_SOCKET_CLIENTS];
     char *payload;
     size_t payload_len;

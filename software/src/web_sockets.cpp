@@ -95,16 +95,18 @@ static bool send_ws_work_item(WebSockets *ws, ws_work_item wi) {
 
     bool result = true;
 
+    struct httpd_data *hd = (struct httpd_data *)server.httpd;
+
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (wi.fds[i] == -1) {
             continue;
         }
 
-        if (httpd_ws_get_fd_info(wi.hd, wi.fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
+        if (httpd_ws_get_fd_info(hd, wi.fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
             continue;
         }
 
-        if (httpd_ws_send_frame_async(wi.hd, wi.fds[i], &ws_pkt) != ESP_OK) {
+        if (httpd_ws_send_frame_async(hd, wi.fds[i], &ws_pkt) != ESP_OK) {
             ws->keepAliveCloseDead(wi.fds[i]);
             result = false;
         }
@@ -325,7 +327,7 @@ void WebSockets::pingActiveClients()
         return;
     }
 
-    work_queue.push_back({server.httpd, {}, nullptr, 0});
+    work_queue.push_back({{}, nullptr, 0});
     memcpy(work_queue.back().fds, fds, sizeof(fds));
 }
 
@@ -355,7 +357,7 @@ void WebSockets::receivedPong(int fd)
 
 bool WebSocketsClient::sendOwnedBlocking_HTTPThread(char *payload, size_t payload_len)
 {
-    ws_work_item wi{server.httpd, {this->fd, -1, -1, -1, -1}, payload, payload_len};
+    ws_work_item wi{{this->fd, -1, -1, -1, -1}, payload, payload_len};
     bool result = send_ws_work_item(ws, wi);
     clear_ws_work_item(&wi);
     return result;
@@ -384,7 +386,7 @@ bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
         return false;
     }
 
-    work_queue.push_back({server.httpd, {fd, -1, -1, -1, -1}, payload_copy, payload_len});
+    work_queue.push_back({{fd, -1, -1, -1, -1}, payload_copy, payload_len});
     return true;
 }
 
@@ -401,7 +403,7 @@ bool WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd)
         return false;
     }
 
-    work_queue.push_back({server.httpd, {fd, -1, -1, -1, -1}, payload, payload_len});
+    work_queue.push_back({{fd, -1, -1, -1, -1}, payload, payload_len});
     return true;
 }
 
@@ -444,7 +446,7 @@ bool WebSockets::sendToAllOwned(char *payload, size_t payload_len)
         free(payload);
         return false;
     }
-    work_queue.push_back({server.httpd, {}, payload, payload_len});
+    work_queue.push_back({{}, payload, payload_len});
     memcpy(work_queue.back().fds, fds, sizeof(fds));
     return true;
 }
@@ -473,7 +475,7 @@ bool WebSockets::sendToAll(const char *payload, size_t payload_len)
         return false;
     }
 
-    work_queue.push_back({server.httpd, {}, payload_copy, payload_len});
+    work_queue.push_back({{}, payload_copy, payload_len});
     memcpy(work_queue.back().fds, fds, sizeof(fds));
     return true;
 }
