@@ -79,7 +79,7 @@ public:
     virtual const Config *get_state_prototype()  override _ATTRIBUTE((const));
     virtual const Config *get_errors_prototype() override _ATTRIBUTE((const));
 
-    ModbusTCP *get_modbustcp_handle() _ATTRIBUTE((const));
+    ModbusTCP *get_modbus_tcp_handle() _ATTRIBUTE((const));
 
 private:
     Config register_element;

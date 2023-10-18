@@ -604,7 +604,7 @@ MeterClassID MetersSunSpec::get_class() const
 IMeter * MetersSunSpec::new_meter(uint32_t slot, Config *state, Config *config, Config *errors)
 {
     // Must get ModbusTCP handle here because IMeters are created before our setup() ran.
-    return new MeterSunSpec(slot, config, state, errors, meters_modbus_tcp.get_modbustcp_handle());
+    return new MeterSunSpec(slot, config, state, errors, meters_modbus_tcp.get_modbus_tcp_handle());
 }
 
 _ATTRIBUTE((const))
