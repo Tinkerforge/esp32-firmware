@@ -79,7 +79,7 @@ void MetersSunSpec::pre_setup()
 
 void MetersSunSpec::setup()
 {
-    modbus = meters_modbus_tcp.get_modbustcp_handle();
+    modbus.client();
 
     initialized = true;
 }
@@ -190,7 +190,7 @@ void MetersSunSpec::loop()
     case DiscoveryState::Connect:
         discovery_printfln("Connecting to %s:%u", discovery_host.c_str(), discovery_port);
 
-        if (!modbus->connect(discovery_host_address, discovery_port)) {
+        if (!modbus.connect(discovery_host_address, discovery_port)) {
             discovery_printfln("Could not connect to %s:%u", discovery_host.c_str(), discovery_port);
 
             ++discovery_read_cookie;
@@ -205,7 +205,7 @@ void MetersSunSpec::loop()
     case DiscoveryState::Disconnect:
         discovery_printfln("Disconnecting from %s", discovery_host.c_str());
 
-        if (!modbus->disconnect(discovery_host_address)) {
+        if (!modbus.disconnect(discovery_host_address)) {
             discovery_printfln("Could not disconnect from %s", discovery_host.c_str());
         }
 
@@ -257,7 +257,7 @@ void MetersSunSpec::loop()
 
             discovery_state = DiscoveryState::Reading;
 
-            modbus->readHreg(discovery_host_address, static_cast<uint16_t>(discovery_read_address), &discovery_read_buffer[discovery_read_index], static_cast<uint16_t>(read_chunk_size),
+            modbus.readHreg(discovery_host_address, static_cast<uint16_t>(discovery_read_address), &discovery_read_buffer[discovery_read_index], static_cast<uint16_t>(read_chunk_size),
             [this, cookie, read_chunk_size](Modbus::ResultCode event, uint16_t transactionId, void *data) -> bool {
                 if (discovery_state != DiscoveryState::Reading || cookie != discovery_read_cookie) {
                     return true;
@@ -593,6 +593,8 @@ void MetersSunSpec::loop()
     default:
         esp_system_abort("meters_sun_spec: Invalid state.");
     }
+
+    modbus.task();
 }
 
 _ATTRIBUTE((const))

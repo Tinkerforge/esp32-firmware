@@ -84,7 +84,7 @@ public:
 
     Config config_prototype;
 
-    ModbusTCP *modbus;
+    ModbusTCP modbus;
     ConfigRoot start_discovery;
 
     bool discovery_new = false;
