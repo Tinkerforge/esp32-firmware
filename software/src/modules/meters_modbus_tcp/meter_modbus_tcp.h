@@ -63,7 +63,7 @@ private:
     PollState poll_state;
     uint16_t poll_count;
     uint16_t *register_buffer;
-    uint32_t register_buffer_size = METERS_MODBUSTCP_MAX_HREG_WORDS;
+    uint32_t register_buffer_size = METERS_MODBUS_TCP_MAX_HREG_WORDS;
 
     micros_t request_start;
     micros_t all_start;

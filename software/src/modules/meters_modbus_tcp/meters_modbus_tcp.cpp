@@ -102,7 +102,7 @@ const Config * MetersModbusTCP::get_errors_prototype()
     return &errors_prototype;
 }
 
-ModbusTCP *MetersModbusTCP::get_modbustcp_handle()
+ModbusTCP *MetersModbusTCP::get_modbus_tcp_handle()
 {
     return &mb;
 }
