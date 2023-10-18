@@ -107,10 +107,10 @@ public:
     uint16_t discovery_read_buffer[124];
     uint32_t discovery_read_cookie = 0;
     size_t discovery_read_index;
-    Modbus::ResultCode discovery_read_event;
+    Modbus::ResultCode discovery_read_result;
     DiscoveryState discovery_read_state;
-    size_t discovery_common_model_length;
-    size_t discovery_standard_model_length;
+    size_t discovery_common_block_length;
+    size_t discovery_standard_block_length;
 };
 
 #if defined(__GNUC__)

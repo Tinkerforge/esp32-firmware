@@ -258,16 +258,16 @@ void MetersSunSpec::loop()
             discovery_state = DiscoveryState::Reading;
 
             modbus.readHreg(discovery_host_address, static_cast<uint16_t>(discovery_read_address), &discovery_read_buffer[discovery_read_index], static_cast<uint16_t>(read_chunk_size),
-            [this, cookie, read_chunk_size](Modbus::ResultCode event, uint16_t transactionId, void *data) -> bool {
+            [this, cookie, read_chunk_size](Modbus::ResultCode result, uint16_t transactionId, void *data) -> bool {
                 if (discovery_state != DiscoveryState::Reading || cookie != discovery_read_cookie) {
                     return true;
                 }
 
                 discovery_read_address += read_chunk_size;
                 discovery_read_index += read_chunk_size;
-                discovery_read_event = event;
+                discovery_read_result = result;
 
-                if (discovery_read_event != Modbus::ResultCode::EX_SUCCESS || discovery_read_index >= discovery_read_size) {
+                if (discovery_read_result != Modbus::ResultCode::EX_SUCCESS || discovery_read_index >= discovery_read_size) {
                     discovery_read_index = 0;
                     discovery_state = discovery_read_state;
                 }
@@ -297,7 +297,7 @@ void MetersSunSpec::loop()
         break;
 
     case DiscoveryState::ReadSunSpecIDDone:
-        if (discovery_read_event == Modbus::ResultCode::EX_SUCCESS) {
+        if (discovery_read_result == Modbus::ResultCode::EX_SUCCESS) {
             uint32_t sun_spec_id = discovery_read_uint32();
 
             if (sun_spec_id == SUN_SPEC_ID) {
@@ -312,9 +312,9 @@ void MetersSunSpec::loop()
             }
         }
         else {
-            discovery_printfln("Could not read SunSpec ID: %s (%d)", get_modbus_result_code_name(discovery_read_event), discovery_read_event);
+            discovery_printfln("Could not read SunSpec ID: %s (%d)", get_modbus_result_code_name(discovery_read_result), discovery_read_result);
 
-            if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+            if (discovery_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
                 discovery_state = DiscoveryState::NextDeviceAddress;
             }
             else {
@@ -334,26 +334,26 @@ void MetersSunSpec::loop()
         break;
 
     case DiscoveryState::ReadCommonModelHeaderDone:
-        if (discovery_read_event == Modbus::ResultCode::EX_SUCCESS) {
+        if (discovery_read_result == Modbus::ResultCode::EX_SUCCESS) {
             uint16_t model_id = discovery_read_uint16();
-            uint16_t model_length = discovery_read_uint16();
+            uint16_t block_length = discovery_read_uint16();
 
-            if (model_id == COMMON_MODEL_ID && (model_length == 65 || model_length == 66)) {
+            if (model_id == COMMON_MODEL_ID && (block_length == 65 || block_length == 66)) {
                 discovery_printfln("Common Model found");
 
-                discovery_common_model_length = model_length;
+                discovery_common_block_length = block_length;
                 discovery_state = DiscoveryState::ReadCommonModelBlock;
             }
             else {
-                discovery_printfln("No Common Model found: %u %u", model_id, model_length);
+                discovery_printfln("No Common Model found: %u %u", model_id, block_length);
 
                 discovery_state = DiscoveryState::NextBaseAddress;
             }
         }
         else {
-            discovery_printfln("Could not read Common Model header: %s (%d)", get_modbus_result_code_name(discovery_read_event), discovery_read_event);
+            discovery_printfln("Could not read Common Model header: %s (%d)", get_modbus_result_code_name(discovery_read_result), discovery_read_result);
 
-            if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+            if (discovery_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
                 discovery_state = DiscoveryState::NextDeviceAddress;
             }
             else {
@@ -364,14 +364,14 @@ void MetersSunSpec::loop()
         break;
 
     case DiscoveryState::ReadCommonModelBlock:
-        discovery_read_size = discovery_common_model_length;
+        discovery_read_size = discovery_common_block_length;
         discovery_read_state = DiscoveryState::ReadCommonModelBlockDone;
         discovery_state = DiscoveryState::Read;
 
         break;
 
     case DiscoveryState::ReadCommonModelBlockDone:
-        if (discovery_read_event == Modbus::ResultCode::EX_SUCCESS) {
+        if (discovery_read_result == Modbus::ResultCode::EX_SUCCESS) {
             char manufacturer_name[32 + 1];
             char model_name[32 + 1];
             char options[16 + 1];
@@ -402,9 +402,9 @@ void MetersSunSpec::loop()
             discovery_state = DiscoveryState::ReadStandardModelHeader;
         }
         else {
-            discovery_printfln("Could not read Common Model block: %s (%d)", get_modbus_result_code_name(discovery_read_event), discovery_read_event);
+            discovery_printfln("Could not read Common Model block: %s (%d)", get_modbus_result_code_name(discovery_read_result), discovery_read_result);
 
-            if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+            if (discovery_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
                 discovery_state = DiscoveryState::NextDeviceAddress;
             }
             else {
@@ -424,38 +424,38 @@ void MetersSunSpec::loop()
         break;
 
     case DiscoveryState::ReadStandardModelHeaderDone:
-        if (discovery_read_event == Modbus::ResultCode::EX_SUCCESS) {
+        if (discovery_read_result == Modbus::ResultCode::EX_SUCCESS) {
             uint16_t model_id = discovery_read_uint16();
-            size_t model_length = discovery_read_uint16();
+            size_t block_length = discovery_read_uint16();
 
-            if (model_id == NON_IMPLEMENTED_UINT16 && model_length == 0) {
+            if (model_id == NON_IMPLEMENTED_UINT16 && block_length == 0) {
                 discovery_printfln("End Model found");
 
                 discovery_state = DiscoveryState::NextDeviceAddress;
             }
-            else if (model_id == INVERTER_3P_FLOAT_MODEL_ID && model_length == INVERTER_3P_FLOAT_BLOCK_LENGTH) {
+            else if (model_id == INVERTER_3P_FLOAT_MODEL_ID && block_length == INVERTER_3P_FLOAT_BLOCK_LENGTH) {
                 discovery_printfln("Inverter 3P (Float) Model found");
 
-                discovery_standard_model_length = model_length;
+                discovery_standard_block_length = block_length;
                 discovery_state = DiscoveryState::ReadInverter3PFloatModelBlock;
             }
-            else if (model_id == AC_METER_W3P_FLOAT_MODEL_ID && model_length == AC_METER_W3P_FLOAT_BLOCK_LENGTH) {
+            else if (model_id == AC_METER_W3P_FLOAT_MODEL_ID && block_length == AC_METER_W3P_FLOAT_BLOCK_LENGTH) {
                 discovery_printfln("AC Meter W3P (Float) Model found");
 
-                discovery_standard_model_length = model_length;
+                discovery_standard_block_length = block_length;
                 discovery_state = DiscoveryState::ReadACMeterW3PFloatModelBlock;
             }
             else {
-                discovery_printfln("Skipping Unknown Model: %u %u", model_id, model_length);
+                discovery_printfln("Skipping Unknown Model: %u %u", model_id, block_length);
 
-                discovery_read_address += model_length;
+                discovery_read_address += block_length;
                 discovery_state = DiscoveryState::ReadStandardModelHeader;
             }
         }
         else {
-            discovery_printfln("Could not read Standard Model header: %s (%d)", get_modbus_result_code_name(discovery_read_event), discovery_read_event);
+            discovery_printfln("Could not read Standard Model header: %s (%d)", get_modbus_result_code_name(discovery_read_result), discovery_read_result);
 
-            if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+            if (discovery_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
                 discovery_state = DiscoveryState::NextDeviceAddress;
             }
             else {
@@ -466,14 +466,14 @@ void MetersSunSpec::loop()
         break;
 
     case DiscoveryState::ReadInverter3PFloatModelBlock:
-        discovery_read_size = discovery_standard_model_length;
+        discovery_read_size = discovery_standard_block_length;
         discovery_read_state = DiscoveryState::ReadInverter3PFloatModelBlockDone;
         discovery_state = DiscoveryState::Read;
 
         break;
 
     case DiscoveryState::ReadInverter3PFloatModelBlockDone:
-        if (discovery_read_event == Modbus::ResultCode::EX_SUCCESS) {
+        if (discovery_read_result == Modbus::ResultCode::EX_SUCCESS) {
             float ac_current = discovery_read_float32();
             float ac_current_a = discovery_read_float32();
             float ac_current_b = discovery_read_float32();
@@ -513,9 +513,9 @@ void MetersSunSpec::loop()
             discovery_state = DiscoveryState::ReadStandardModelHeader;
         }
         else {
-            discovery_printfln("Could not read Inverter 3P (Float) Model block: %s (%d)", get_modbus_result_code_name(discovery_read_event), discovery_read_event);
+            discovery_printfln("Could not read Inverter 3P (Float) Model block: %s (%d)", get_modbus_result_code_name(discovery_read_result), discovery_read_result);
 
-            if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+            if (discovery_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
                 discovery_state = DiscoveryState::NextDeviceAddress;
             }
             else {
@@ -526,14 +526,14 @@ void MetersSunSpec::loop()
         break;
 
     case DiscoveryState::ReadACMeterW3PFloatModelBlock:
-        discovery_read_size = discovery_standard_model_length;
+        discovery_read_size = discovery_standard_block_length;
         discovery_read_state = DiscoveryState::ReadACMeterW3PFloatModelBlockDone;
         discovery_state = DiscoveryState::Read;
 
         break;
 
     case DiscoveryState::ReadACMeterW3PFloatModelBlockDone:
-        if (discovery_read_event == Modbus::ResultCode::EX_SUCCESS) {
+        if (discovery_read_result == Modbus::ResultCode::EX_SUCCESS) {
             float ac_current = discovery_read_float32();
             float ac_current_a = discovery_read_float32();
             float ac_current_b = discovery_read_float32();
@@ -579,9 +579,9 @@ void MetersSunSpec::loop()
             discovery_state = DiscoveryState::ReadStandardModelHeader;
         }
         else {
-            discovery_printfln("Could not read AC Meter W3P (Float) Model block: %s (%d)", get_modbus_result_code_name(discovery_read_event), discovery_read_event);
+            discovery_printfln("Could not read AC Meter W3P (Float) Model block: %s (%d)", get_modbus_result_code_name(discovery_read_result), discovery_read_result);
 
-            if (discovery_read_event == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+            if (discovery_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
                 discovery_state = DiscoveryState::NextDeviceAddress;
             }
             else {
