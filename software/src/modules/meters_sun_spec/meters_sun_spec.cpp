@@ -26,29 +26,17 @@
 #include "modules/meters_modbus_tcp/modbus_tcp_tools.h"
 #include "module_dependencies.h"
 #include "TFJson.h"
+#include "sun_spec_model_id.h"
 
 #include "gcc_warnings.h"
 
 #define MAX_READ_CHUNK_SIZE 10
 #define LAST_DEVICE_ADDRESS 247
+
 #define SUN_SPEC_ID 0x53756E53
+
 #define COMMON_MODEL_ID 1
-//#define INVERTER_1P_INT_MODEL_ID 101
-//#define INVERTER_SP_INT_MODEL_ID 102
-//#define INVERTER_3P_INT_MODEL_ID 103
-//#define INVERTER_1P_FLOAT_MODEL_ID 111
-//#define INVERTER_SP_FLOAT_MODEL_ID 112
-#define INVERTER_3P_FLOAT_MODEL_ID 113
-#define INVERTER_3P_FLOAT_BLOCK_LENGTH 60
-//#define AC_METER_1P_INT_MODEL_ID 201
-//#define AC_METER_SP_INT_MODEL_ID 202
-//#define AC_METER_W3P_INT_MODEL_ID 203
-//#define AC_METER_D3P_INT_MODEL_ID 204
-//#define AC_METER_1P_FLOAT_MODEL_ID 211
-//#define AC_METER_SP_FLOAT_MODEL_ID 212
-#define AC_METER_W3P_FLOAT_MODEL_ID 213
-#define AC_METER_W3P_FLOAT_BLOCK_LENGTH 124
-//#define AC_METER_D3P_FLOAT_MODEL_ID 214
+
 #define NON_IMPLEMENTED_UINT16 0xFFFF
 #define NON_IMPLEMENTED_UINT32 0xFFFFFFFF
 
@@ -443,23 +431,32 @@ void MetersSunSpec::loop()
 
                 discovery_state = DiscoveryState::NextDeviceAddress;
             }
-            else if (model_id == INVERTER_3P_FLOAT_MODEL_ID && block_length == INVERTER_3P_FLOAT_BLOCK_LENGTH) {
-                discovery_printfln("Inverter 3P (Float) Model found");
-
-                discovery_standard_block_length = block_length;
-                discovery_state = DiscoveryState::ReadInverter3PFloatModelBlock;
-            }
-            else if (model_id == AC_METER_W3P_FLOAT_MODEL_ID && block_length == AC_METER_W3P_FLOAT_BLOCK_LENGTH) {
-                discovery_printfln("AC Meter W3P (Float) Model found");
-
-                discovery_standard_block_length = block_length;
-                discovery_state = DiscoveryState::ReadACMeterW3PFloatModelBlock;
-            }
             else {
-                discovery_printfln("Skipping Unknown Model: %u %u", model_id, block_length);
+                bool found = false;
 
-                discovery_read_address += block_length;
-                discovery_state = DiscoveryState::ReadStandardModelHeader;
+                for (size_t i = 0; i < sun_spec_model_specs_length; ++i) {
+                    if (model_id == static_cast<uint16_t>(sun_spec_model_specs[i].model_id)) {
+                        discovery_printfln("%s Model found", sun_spec_model_specs[i].model_name);
+
+                        if (block_length != sun_spec_model_specs[i].block_length) {
+                            discovery_printfln("%s Model has unexpected length (actual: %zu, expected: %zu)",
+                                               sun_spec_model_specs[i].model_name, block_length, sun_spec_model_specs[i].block_length);
+                        }
+
+                        discovery_read_address += block_length;
+                        discovery_state = DiscoveryState::ReadStandardModelHeader;
+
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    discovery_printfln("Skipping Unknown Model (model-id: %u, block-length: %zu)", model_id, block_length);
+
+                    discovery_read_address += block_length;
+                    discovery_state = DiscoveryState::ReadStandardModelHeader;
+                }
             }
         }
         else {
@@ -475,7 +472,7 @@ void MetersSunSpec::loop()
 
         break;
 
-    case DiscoveryState::ReadInverter3PFloatModelBlock:
+    /*case DiscoveryState::ReadInverter3PFloatModelBlock:
         discovery_read_size = discovery_standard_block_length;
         discovery_read_state = DiscoveryState::ReadInverter3PFloatModelBlockDone;
         discovery_state = DiscoveryState::Read;
@@ -599,7 +596,8 @@ void MetersSunSpec::loop()
             }
         }
 
-        break;
+        break;*/
+
     default:
         esp_system_abort("meters_sun_spec: Invalid state.");
     }
