@@ -70,10 +70,10 @@ public:
         ReadCommonModelBlockDone,
         ReadStandardModelHeader,
         ReadStandardModelHeaderDone,
-        ReadInverter3PFloatModelBlock,
+        /*ReadInverter3PFloatModelBlock,
         ReadInverter3PFloatModelBlockDone,
         ReadACMeterW3PFloatModelBlock,
-        ReadACMeterW3PFloatModelBlockDone,
+        ReadACMeterW3PFloatModelBlockDone,*/
     };
 
     uint16_t discovery_read_uint16();
