@@ -399,6 +399,16 @@ void MetersSunSpec::loop()
                                serial_number,
                                device_address);
 
+            if (device_address < 1 || device_address > 247) {
+                if (discovery_device_address != discovery_device_address_next) {
+                    discovery_printfln("Invalid device address found, stopping device address scan");
+
+                    discovery_device_address = discovery_device_address_next;
+                } else {
+                    discovery_printfln("Invalid device address found");
+                }
+            }
+
             discovery_state = DiscoveryState::ReadStandardModelHeader;
         }
         else {
