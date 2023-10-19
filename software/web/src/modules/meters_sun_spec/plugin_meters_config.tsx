@@ -17,12 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from 'preact'
+import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterConfig } from "../meters/types";
 import { TableModalRow } from "../../ts/components/table";
 import { InputText } from "../../ts/components/input_text";
+import { InputNumber } from "../../ts/components/input_number";
 
 export type SunSpecMetersConfig = [
     MeterClassID.SunSpec,
@@ -66,6 +67,42 @@ export function init() {
                                 on_value(config);
                             }}
                             invalidFeedback={__("meters_sun_spec.content.config_host_invalid")}/>
+                    },
+                    {
+                        name: __("meters_sun_spec.content.config_port"),
+                        value: <InputNumber
+                            required
+                            min={1}
+                            max={65535}
+                            value={config[1].port}
+                            onValue={(v) => {
+                                config[1].port = v;
+                                on_value(config);
+                            }}/>
+                    },
+                    {
+                        name: __("meters_sun_spec.content.config_device_address"),
+                        value: <InputNumber
+                            required
+                            min={0}
+                            max={247}
+                            value={config[1].device_address}
+                            onValue={(v) => {
+                                config[1].device_address = v;
+                                on_value(config);
+                            }}/>
+                    },
+                    {
+                        name: __("meters_sun_spec.content.config_model_id"),
+                        value: <InputNumber
+                            required
+                            min={0}
+                            max={65535}
+                            value={config[1].model_id}
+                            onValue={(v) => {
+                                config[1].model_id = v;
+                                on_value(config);
+                            }}/>
                     },
                 ];
             },

@@ -22,7 +22,10 @@ let x = {
 
             "config_display_name": "Name",
             "config_host": "Host",
-            "config_host_invalid": "Host ist ungültig"
+            "config_host_invalid": "Host ist ungültig",
+            "config_port": "Port",
+            "config_device_address": "Device-Adresse",
+            "config_model_id": "Modell"
         },
         "script": {
         }
