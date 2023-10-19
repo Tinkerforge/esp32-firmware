@@ -15,6 +15,12 @@ import collections
 
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
 
+VERBOSE = False
+
+def log(*args, **kwargs):
+    if VERBOSE:
+        print(*args, **kwargs)
+
 class FlavoredName:
     def __init__(self, name):
         self.words = name.split(' ')
@@ -184,7 +190,7 @@ def embed_data_with_digest(data, dst_dir, var_name, var_type, data_filter=lambda
     h_path = os.path.join(dst_dir, var_name + '.embedded.h')
 
     if not needs_update and os.path.exists(cpp_path) and os.path.exists(h_path):
-        print('Embedded {0} is up-to-date'.format(var_name))
+        log('Embedded {0} is up-to-date'.format(var_name))
     else:
         if not os.path.exists(cpp_path) or not os.path.exists(h_path):
             reason = 'embedded file missing'

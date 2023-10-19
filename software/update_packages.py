@@ -10,9 +10,11 @@ import shutil
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 
+import util
+
 VERSION = '2.1.0'
 
-print('Updating packages')
+util.log('Updating packages')
 
 with open('packages/config.json', 'r', encoding='utf-8') as f:
     config_json = json.loads(f.read())
@@ -27,7 +29,7 @@ for name in sorted(os.listdir('packages')):
         continue
 
     if name.endswith('-dev'):
-        print('Ignoring {0}'.format(name))
+        util.log('Ignoring {0}'.format(name))
         continue
 
     if name not in config:
@@ -50,7 +52,7 @@ for name in sorted(os.listdir('packages')):
             if package_json == None:
                 print('Removing {0}'.format(name))
             else:
-                print('Clearing {0}'.format(name))
+                util.log('Clearing {0}'.format(name))
                 os.makedirs(package_path)
 
                 with open(package_json_path, 'w') as f:
@@ -70,7 +72,7 @@ for name in sorted(os.listdir('packages')):
             tinkerforge_json = json.loads(f.read())
 
             if tinkerforge_json.get('version') == VERSION and tinkerforge_json.get('url') == url:
-                print('Skipping {0}'.format(name))
+                util.log('Skipping {0}'.format(name))
                 continue
     except FileNotFoundError:
         pass

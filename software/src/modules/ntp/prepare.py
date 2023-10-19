@@ -98,11 +98,11 @@ try:
     with open(os.path.join(ZONES_DIR, "tzdata.zi"), "r") as f:
         installed_db_version = f.readline().split("version")[1].strip()
 except FileNotFoundError:
-    print("Skipping timezone database generation. No timezone information available")
+    util.log("Skipping timezone database generation. No timezone information available")
     sys.exit(0)
 
 if generated_db_version >= installed_db_version:
-    print("Skipping timezone database generation. Installed version {} is not newer than last generated version {}".format(installed_db_version, generated_db_version))
+    util.log("Skipping timezone database generation. Installed version {} is not newer than last generated version {}".format(installed_db_version, generated_db_version))
     sys.exit(0)
 
 timezones = OrderedDict(sorted(make_timezones_dict().items(), key=lambda x: x[0]))

@@ -606,7 +606,7 @@ def main():
         excluded_backend_modules.remove(backend_module.under)
 
         if os.path.exists(os.path.join(mod_path, "prepare.py")):
-            print('Preparing backend module:', backend_module.space)
+            util.log('Preparing backend module:', backend_module.space)
 
             environ = dict(os.environ)
             environ['PLATFORMIO_PROJECT_DIR'] = env.subst('$PROJECT_DIR')
@@ -645,7 +645,7 @@ def main():
         '{{{module_init_config}}}': ',\n        '.join('{{"{0}", Config::Bool({0}.initialized)}}'.format(x.under) for x in backend_modules if not x.under.startswith("hidden_")),
     })
 
-    print("Generating module_dependencies.h from module.ini", flush=True)
+    util.log("Generating module_dependencies.h from module.ini", flush=True)
     generate_module_dependencies_header('src/event_log_dependencies.ini', 'src/event_log_dependencies.h', None, backend_modules, all_mods)
     generate_module_dependencies_header('src/web_dependencies.ini', 'src/web_dependencies.h', None, backend_modules, all_mods)
     for backend_module in backend_modules:
@@ -676,7 +676,7 @@ def main():
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
 
         if os.path.exists(os.path.join(mod_path, "prepare.py")):
-            print('Preparing frontend module:', frontend_module.space)
+            util.log('Preparing frontend module:', frontend_module.space)
 
             environ = dict(os.environ)
             environ['PLATFORMIO_PROJECT_DIR'] = env.subst('$PROJECT_DIR')
@@ -876,19 +876,19 @@ def main():
     })
 
     # Check translation completeness
-    print('Checking translation completeness')
+    util.log('Checking translation completeness')
 
     with ChangedDirectory('web'):
         subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"] + [x.under for x in frontend_modules])
 
     # Check translation override completeness
-    print('Checking translation override completeness')
+    util.log('Checking translation override completeness')
 
     with ChangedDirectory('web'):
         subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"])
 
     # Generate web interface
-    print('Checking web interface dependencies')
+    util.log('Checking web interface dependencies')
 
     node_modules_src_paths = ['web/package-lock.json']
 
@@ -899,7 +899,7 @@ def main():
     node_modules_digest_paths = util.get_digest_paths('web', 'node_modules', env=env)
 
     if not node_modules_needs_update and os.path.exists('web/node_modules/tinkerforge.marker'):
-        print('Web interface dependencies are up-to-date')
+        util.log('Web interface dependencies are up-to-date')
     else:
         if not os.path.exists('web/node_modules/tinkerforge.marker'):
             node_modules_reason = 'marker file missing'
@@ -962,7 +962,7 @@ def main():
 
         util.store_digest(node_modules_digest, 'web', 'node_modules', env=env)
 
-    print('Checking web interface')
+    util.log('Checking web interface')
 
     index_html_src_paths = []
     index_html_src_datas = []
@@ -988,7 +988,7 @@ def main():
     index_html_needs_update, index_html_reason, index_html_digest = util.check_digest(index_html_src_paths, index_html_src_datas, 'src', 'index_html', env=env)
 
     if not index_html_needs_update and os.path.exists('src/index_html.embedded.h') and os.path.exists('src/index_html.embedded.cpp'):
-        print('Web interface is up-to-date')
+        util.log('Web interface is up-to-date')
     else:
         if not os.path.exists('src/index_html.embedded.h') or not os.path.exists('src/index_html.embedded.cpp'):
             index_html_reason = 'embedded file missing'
@@ -1029,7 +1029,7 @@ def main():
         util.embed_data(util.gzip_compress(html_bytes), 'src', 'index_html', 'char')
         util.store_digest(index_html_digest, 'src', 'index_html', env=env)
 
-    print("Checking HTML ID usage")
+    util.log("Checking HTML ID usage")
     with ChangedDirectory('web'):
         subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_id_usage.py"] + [x.under for x in frontend_modules])
 
