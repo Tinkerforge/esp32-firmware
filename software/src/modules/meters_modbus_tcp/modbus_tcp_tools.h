@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <stdint.h>
+#include <stdlib.h>
 #include "ModbusTCP.h"
 
 #if defined(__GNUC__)
@@ -32,3 +34,14 @@ const char* get_modbus_result_code_name(Modbus::ResultCode event) _ATTRIBUTE((co
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif
+
+struct ModbusDeserializer
+{
+    uint16_t *buf;
+    size_t idx;
+
+    uint16_t read_uint16();
+    uint32_t read_uint32();
+    float read_float32();
+    void read_string(char *string, size_t length);
+};

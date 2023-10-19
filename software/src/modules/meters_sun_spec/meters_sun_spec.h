@@ -25,6 +25,7 @@
 
 #include "config.h"
 #include "modules/meters/meter_generator.h"
+#include "modules/meters_modbus_tcp/modbus_tcp_tools.h"
 #include "module.h"
 #include "lwip/ip_addr.h"
 
@@ -76,10 +77,6 @@ public:
         ReadACMeterW3PFloatModelBlockDone,*/
     };
 
-    uint16_t discovery_read_uint16();
-    uint32_t discovery_read_uint32();
-    float discovery_read_float32();
-    void discovery_read_string(char *buffer, size_t length);
     void discovery_printfln(const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
 
     Config config_prototype;
@@ -106,6 +103,7 @@ public:
     size_t discovery_read_size;
     uint16_t discovery_read_buffer[124];
     uint32_t discovery_read_cookie = 0;
+    ModbusDeserializer discovery_deserializer;
     size_t discovery_read_index;
     Modbus::ResultCode discovery_read_result;
     DiscoveryState discovery_read_state;

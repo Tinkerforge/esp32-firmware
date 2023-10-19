@@ -23,7 +23,6 @@
 #include "event_log.h"
 #include "task_scheduler.h"
 #include "tools.h"
-#include "modules/meters_modbus_tcp/modbus_tcp_tools.h"
 #include "module_dependencies.h"
 #include "TFJson.h"
 #include "sun_spec_model_id.h"
@@ -258,6 +257,9 @@ void MetersSunSpec::loop()
                 if (discovery_read_result != Modbus::ResultCode::EX_SUCCESS || discovery_read_index >= discovery_read_size) {
                     discovery_read_index = 0;
                     discovery_state = discovery_read_state;
+
+                    discovery_deserializer.buf = discovery_read_buffer;
+                    discovery_deserializer.idx = 0;
                 }
                 else {
                     discovery_state = DiscoveryState::ReadNext;
@@ -286,7 +288,7 @@ void MetersSunSpec::loop()
 
     case DiscoveryState::ReadSunSpecIDDone:
         if (discovery_read_result == Modbus::ResultCode::EX_SUCCESS) {
-            uint32_t sun_spec_id = discovery_read_uint32();
+            uint32_t sun_spec_id = discovery_deserializer.read_uint32();
 
             if (sun_spec_id == SUN_SPEC_ID) {
                 discovery_printfln("SunSpec ID found");
@@ -323,8 +325,8 @@ void MetersSunSpec::loop()
 
     case DiscoveryState::ReadCommonModelHeaderDone:
         if (discovery_read_result == Modbus::ResultCode::EX_SUCCESS) {
-            uint16_t model_id = discovery_read_uint16();
-            uint16_t block_length = discovery_read_uint16();
+            uint16_t model_id = discovery_deserializer.read_uint16();
+            size_t block_length = discovery_deserializer.read_uint16();
 
             if (model_id == COMMON_MODEL_ID && (block_length == 65 || block_length == 66)) {
                 discovery_printfln("Common Model found");
@@ -367,12 +369,12 @@ void MetersSunSpec::loop()
             char serial_number[32 + 1];
             uint16_t device_address;
 
-            discovery_read_string(manufacturer_name, sizeof(manufacturer_name));
-            discovery_read_string(model_name, sizeof(model_name));
-            discovery_read_string(options, sizeof(options));
-            discovery_read_string(version, sizeof(version));
-            discovery_read_string(serial_number, sizeof(serial_number));
-            device_address = discovery_read_uint16();
+            discovery_deserializer.read_string(manufacturer_name, sizeof(manufacturer_name));
+            discovery_deserializer.read_string(model_name, sizeof(model_name));
+            discovery_deserializer.read_string(options, sizeof(options));
+            discovery_deserializer.read_string(version, sizeof(version));
+            discovery_deserializer.read_string(serial_number, sizeof(serial_number));
+            device_address = discovery_deserializer.read_uint16();
 
             discovery_printfln("Manufacturer Name: %s\n"
                                "Model Name: %s\n"
@@ -423,8 +425,8 @@ void MetersSunSpec::loop()
 
     case DiscoveryState::ReadStandardModelHeaderDone:
         if (discovery_read_result == Modbus::ResultCode::EX_SUCCESS) {
-            uint16_t model_id = discovery_read_uint16();
-            size_t block_length = discovery_read_uint16();
+            uint16_t model_id = discovery_deserializer.read_uint16();
+            size_t block_length = discovery_deserializer.read_uint16();
 
             if (model_id == NON_IMPLEMENTED_UINT16 && block_length == 0) {
                 discovery_printfln("End Model found");
@@ -439,7 +441,7 @@ void MetersSunSpec::loop()
                         discovery_printfln("%s Model found", sun_spec_model_specs[i].model_name);
 
                         if (block_length != sun_spec_model_specs[i].block_length) {
-                            discovery_printfln("%s Model has unexpected length (actual: %zu, expected: %zu)",
+                            discovery_printfln("%s Model has unexpected length (actual: %zu, expected: %u)",
                                                sun_spec_model_specs[i].model_name, block_length, sun_spec_model_specs[i].block_length);
                         }
 
@@ -481,10 +483,10 @@ void MetersSunSpec::loop()
 
     case DiscoveryState::ReadInverter3PFloatModelBlockDone:
         if (discovery_read_result == Modbus::ResultCode::EX_SUCCESS) {
-            float ac_current = discovery_read_float32();
-            float ac_current_a = discovery_read_float32();
-            float ac_current_b = discovery_read_float32();
-            float ac_current_c = discovery_read_float32();
+            float ac_current = discovery_deserializer.read_float32();
+            float ac_current_a = discovery_deserializer.read_float32();
+            float ac_current_b = discovery_deserializer.read_float32();
+            float ac_current_c = discovery_deserializer.read_float32();
 
             discovery_printfln("AC Current [A]: %f\n"
                                "AC Current A [A]: %f\n"
@@ -495,12 +497,12 @@ void MetersSunSpec::loop()
                                static_cast<double>(ac_current_b),
                                static_cast<double>(ac_current_c));
 
-            float ac_voltage_a_b = discovery_read_float32();
-            float ac_voltage_b_c = discovery_read_float32();
-            float ac_voltage_c_a = discovery_read_float32();
-            float ac_voltage_a_n = discovery_read_float32();
-            float ac_voltage_b_n = discovery_read_float32();
-            float ac_voltage_c_n = discovery_read_float32();
+            float ac_voltage_a_b = discovery_deserializer.read_float32();
+            float ac_voltage_b_c = discovery_deserializer.read_float32();
+            float ac_voltage_c_a = discovery_deserializer.read_float32();
+            float ac_voltage_a_n = discovery_deserializer.read_float32();
+            float ac_voltage_b_n = discovery_deserializer.read_float32();
+            float ac_voltage_c_n = discovery_deserializer.read_float32();
 
             discovery_printfln("AC Voltage A B [V]: %f\n"
                                "AC Voltage B C [V]: %f\n"
@@ -541,10 +543,10 @@ void MetersSunSpec::loop()
 
     case DiscoveryState::ReadACMeterW3PFloatModelBlockDone:
         if (discovery_read_result == Modbus::ResultCode::EX_SUCCESS) {
-            float ac_current = discovery_read_float32();
-            float ac_current_a = discovery_read_float32();
-            float ac_current_b = discovery_read_float32();
-            float ac_current_c = discovery_read_float32();
+            float ac_current = discovery_deserializer.read_float32();
+            float ac_current_a = discovery_deserializer.read_float32();
+            float ac_current_b = discovery_deserializer.read_float32();
+            float ac_current_c = discovery_deserializer.read_float32();
 
             discovery_printfln("AC Current [A]: %f\n"
                                "AC Current A [A]: %f\n"
@@ -555,14 +557,14 @@ void MetersSunSpec::loop()
                                static_cast<double>(ac_current_b),
                                static_cast<double>(ac_current_c));
 
-            float ac_voltage_l_n = discovery_read_float32();
-            float ac_voltage_a_n = discovery_read_float32();
-            float ac_voltage_b_n = discovery_read_float32();
-            float ac_voltage_c_n = discovery_read_float32();
-            float ac_voltage_l_l = discovery_read_float32();
-            float ac_voltage_a_b = discovery_read_float32();
-            float ac_voltage_b_c = discovery_read_float32();
-            float ac_voltage_c_a = discovery_read_float32();
+            float ac_voltage_l_n = discovery_deserializer.read_float32();
+            float ac_voltage_a_n = discovery_deserializer.read_float32();
+            float ac_voltage_b_n = discovery_deserializer.read_float32();
+            float ac_voltage_c_n = discovery_deserializer.read_float32();
+            float ac_voltage_l_l = discovery_deserializer.read_float32();
+            float ac_voltage_a_b = discovery_deserializer.read_float32();
+            float ac_voltage_b_c = discovery_deserializer.read_float32();
+            float ac_voltage_c_a = discovery_deserializer.read_float32();
 
             discovery_printfln("AC Voltage L N [V]: %f\n"
                                "AC Voltage A N [V]: %f\n"
@@ -633,54 +635,6 @@ _ATTRIBUTE((const))
 const Config * MetersSunSpec::get_errors_prototype()
 {
     return Config::Null();
-}
-
-uint16_t MetersSunSpec::discovery_read_uint16()
-{
-    uint16_t result = discovery_read_buffer[discovery_read_index];
-
-    discovery_read_index += 1;
-
-    return result;
-}
-
-uint32_t MetersSunSpec::discovery_read_uint32()
-{
-    uint32_t result = (static_cast<uint32_t>(discovery_read_buffer[discovery_read_index]) << 16) | discovery_read_buffer[discovery_read_index + 1];
-
-    discovery_read_index += 2;
-
-    return result;
-}
-
-float MetersSunSpec::discovery_read_float32()
-{
-    union {
-        float result;
-        uint32_t u32;
-    } uni;
-
-    uni.u32 = discovery_read_uint32();
-
-    // discovery_read_index advanced in discovery_read_uint32()
-
-    return uni.result;
-}
-
-// length must be one longer than the expected string length for NUL termination
-void MetersSunSpec::discovery_read_string(char *buffer, size_t length)
-{
-    for (size_t i = 0; i < length - 1; i += 2, ++discovery_read_index) {
-        uint16_t reg = discovery_read_buffer[discovery_read_index];
-
-        buffer[i] = static_cast<char>((reg >> 8) & 0xFF);
-
-        if (i + 1 < length) {
-            buffer[i + 1] = static_cast<char>(reg & 0xFF);
-        }
-    }
-
-    buffer[length - 1] = '\0';
 }
 
 void MetersSunSpec::discovery_printfln(const char *fmt, ...)
