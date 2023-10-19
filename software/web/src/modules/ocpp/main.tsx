@@ -169,7 +169,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                             <InputText value={state.state.parent_tag_id} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.tag_expiry_date")}>
-                            <InputText value={util.timestamp_sec_to_date(state.state.tag_expiry_date, __('ocpp.content.no_tag_seen'))} />
+                            <InputText value={util.timestamp_sec_to_date(state.state.tag_expiry_date, __("ocpp.content.no_tag_seen"))} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.tag_timeout")}>
                             <InputText value={util.format_timespan_ms(state.state.tag_timeout, {replace_u32max_with: __("ocpp.content.not_waiting_for_tag")})} />
@@ -178,13 +178,13 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                             <InputText value={util.format_timespan_ms(state.state.cable_timeout, {replace_u32max_with: __("ocpp.content.not_waiting_for_cable")})} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.txn_id")}>
-                            <InputText value={state.state.txn_id == 0x7FFFFFFF ?  __('ocpp.content.no_transaction_running') : state.state.txn_id} />
+                            <InputText value={state.state.txn_id == 0x7FFFFFFF ?  __("ocpp.content.no_transaction_running") : state.state.txn_id} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.txn_confirmed_time")}>
-                            <InputText value={util.timestamp_sec_to_date(state.state.txn_confirmed_time, __('ocpp.content.no_transaction_running'))} />
+                            <InputText value={util.timestamp_sec_to_date(state.state.txn_confirmed_time, __("ocpp.content.no_transaction_running"))} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.txn_start_time")}>
-                            <InputText value={util.timestamp_sec_to_date(state.state.txn_start_time, __('ocpp.content.no_transaction_running'))} />
+                            <InputText value={util.timestamp_sec_to_date(state.state.txn_start_time, __("ocpp.content.no_transaction_running"))} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.current")}>
                             <InputText value={state.state.current / 1000.0 + " A"} />
@@ -224,7 +224,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                             <InputText value={state.state.txn_msg_queue_depth} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.is_connected")}>
-                            <InputText value={__("ocpp.content.connection_state_since")(state.state.connected, util.timestamp_sec_to_date(state.state.connected_change_time, __('ocpp.content.never_connected_since_reboot')))} />
+                            <InputText value={__("ocpp.content.connection_state_since")(state.state.connected, util.timestamp_sec_to_date(state.state.connected_change_time, __("ocpp.content.never_connected_since_reboot")))} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.last_ping_sent")}>
                             <InputText value={util.format_timespan_ms(state.state.last_ping_sent, {replace_u32max_with: __("ocpp.content.no_ping_sent")})} />
