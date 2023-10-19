@@ -43,3 +43,51 @@ const char* get_modbus_result_code_name(Modbus::ResultCode rc)
         default:   return "Unkown error code";
     }
 }
+
+uint16_t ModbusDeserializer::read_uint16()
+{
+    uint16_t result = buf[idx];
+
+    idx += 1;
+
+    return result;
+}
+
+uint32_t ModbusDeserializer::read_uint32()
+{
+    uint32_t result = (static_cast<uint32_t>(buf[idx]) << 16) | buf[idx + 1];
+
+    idx += 2;
+
+    return result;
+}
+
+float ModbusDeserializer::read_float32()
+{
+    union {
+        float result;
+        uint32_t u32;
+    } uni;
+
+    uni.u32 = read_uint32();
+
+    // idx advanced in read_uint32()
+
+    return uni.result;
+}
+
+// length must be one longer than the expected string length for NUL termination
+void ModbusDeserializer::read_string(char *string, size_t length)
+{
+    for (size_t i = 0; i < length - 1; i += 2, ++idx) {
+        uint16_t reg = buf[idx];
+
+        string[i] = static_cast<char>((reg >> 8) & 0xFF);
+
+        if (i + 1 < length) {
+            string[i + 1] = static_cast<char>(reg & 0xFF);
+        }
+    }
+
+    string[length - 1] = '\0';
+}
