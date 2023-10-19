@@ -69,7 +69,7 @@ export function InputSelect(props: InputSelectProps) {
                 class={(className ?? "") + " custom-select"}
                 style={style ?? ""}
                 id={id}
-                onChange={onValue === undefined ? undefined : (e) => onValue((e.target as HTMLSelectElement).value)}
+                onInput={onValue === undefined ? undefined : (e) => {console.log((e.target as HTMLSelectElement).value); onValue((e.target as HTMLSelectElement).value);}}
                 >
                 {
                     (placeholder ? [<option value="" disabled selected>{placeholder}</option>] : [])
