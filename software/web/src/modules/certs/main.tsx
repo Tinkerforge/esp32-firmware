@@ -98,7 +98,7 @@ export class Certs extends Component<{}, State> {
                             addEnabled={API.get('certs/state').certs.length < MAX_CERTS}
                             addTitle={__("certs.content.add_cert_title")}
                             addMessage={__("certs.content.add_cert_message")(API.get('certs/state').certs.length, MAX_CERTS)}
-                            onAddStart={async () => {
+                            onAddShow={async () => {
                                 this.setState({addCert: {name: "", cert: "", file: null, file_too_large: false}});
                             }}
                             onAddGetRows={() => [
@@ -127,7 +127,7 @@ export class Certs extends Component<{}, State> {
                                           </>
                                 }
                             ]}
-                            onAddCommit={async () => {
+                            onAddSubmit={async () => {
                                 let ids = API.get('certs/state').certs.map(c => c.id);
                                 let next_free_id = -1;
                                 for(let i = 0; i < 8; ++i) {
