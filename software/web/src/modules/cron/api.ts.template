@@ -10,9 +10,7 @@ interface Task {
 }
 
 type CronTrigger =
-    [0, null]
-    | {{{triggers}}};
+    [0, null]{{{triggers}}};
 
 type CronAction =
-    [0, null]
-    | {{{actions}}};
+    [0, null]{{{actions}}};

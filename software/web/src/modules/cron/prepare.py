@@ -48,8 +48,8 @@ for plugin in util.find_frontend_plugins('Cron', 'Action'):
 
 util.specialize_template("api.ts.template", "api.ts", {
     "{{{imports}}}": '\n'.join(imports),
-    "{{{triggers}}}": '\n    | '.join(triggers),
-    "{{{actions}}}": '\n    | '.join(actions),
+    "{{{triggers}}}": ('\n    | ' if len(triggers) > 0 else '') + '\n    | '.join(triggers),
+    "{{{actions}}}": ('\n    | ' if len(actions) > 0 else '') + '\n    | '.join(actions),
 })
 
 util.specialize_template("plugins.tsx.template", "plugins.tsx", {
