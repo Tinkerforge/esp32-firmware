@@ -441,7 +441,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                     },
                                     onEditCommit: async () => {
                                         this.setUser(i + 1, state.editUser);
-                                        this.setState({editUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}});
                                         this.setDirty(true);
                                     },
                                     onRemoveClick: async () => {
