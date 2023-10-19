@@ -77,7 +77,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
 
             if (e.data == "scan failed") {
                 console.log("scan failed");
-                this.setState({scan_results: JSON.parse("[]")});
+                this.setState({scan_results: []});
                 return;
             }
 
