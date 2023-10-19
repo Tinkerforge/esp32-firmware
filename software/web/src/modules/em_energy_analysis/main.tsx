@@ -1154,7 +1154,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
-                let config = API.get_maybe(`meters/${meter_slot}/config`);
+                let config = API.get_unchecked(`meters/${meter_slot}/config`);
 
                 this.setState((prevState) => ({
                     meter_configs: {
@@ -1182,8 +1182,8 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
-        let value_ids = API.get_maybe(`meters/${state.meter_slot}/value_ids`);
-        let values = API.get_maybe(`meters/${state.meter_slot}/values`);
+        let value_ids = API.get_unchecked(`meters/${state.meter_slot}/value_ids`);
+        let values = API.get_unchecked(`meters/${state.meter_slot}/values`);
         let power = 0;
 
         if (value_ids && values.length > 0 && values && values.length > 0) {
@@ -1355,7 +1355,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
-                let config = API.get_maybe(`meters/${meter_slot}/config`);
+                let config = API.get_unchecked(`meters/${meter_slot}/config`);
 
                 this.setState((prevState) => ({
                     meter_configs: {

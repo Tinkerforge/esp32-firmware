@@ -226,7 +226,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
-                let meter_config = API.get_maybe(`meters/${meter_slot}/config`);
+                let meter_config = API.get_unchecked(`meters/${meter_slot}/config`);
 
                 this.setState((prevState) => ({
                     meter_configs: {

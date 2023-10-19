@@ -642,7 +642,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             util.addApiEventListener_unchecked(`meters/${meter_slot}/state`, () => {
-                let state = API.get_maybe(`meters/${meter_slot}/state`);
+                let state = API.get_unchecked(`meters/${meter_slot}/state`);
 
                 this.setState((prevState) => ({
                     states: {
@@ -653,7 +653,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
             });
 
             util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
-                let config = API.get_maybe(`meters/${meter_slot}/config`);
+                let config = API.get_unchecked(`meters/${meter_slot}/config`);
 
                 this.setState((prevState) => ({
                     configs_plot: {
@@ -673,7 +673,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
             });
 
             util.addApiEventListener_unchecked(`meters/${meter_slot}/value_ids`, () => {
-                this.value_ids[meter_slot] = API.get_maybe(`meters/${meter_slot}/value_ids`);
+                this.value_ids[meter_slot] = API.get_unchecked(`meters/${meter_slot}/value_ids`);
                 let value_idx_by_id: NumberToNumber = {};
                 let values_by_id: NumberToNumber = {};
 
@@ -700,7 +700,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
             });
 
             util.addApiEventListener_unchecked(`meters/${meter_slot}/values`, () => {
-                this.values[meter_slot] = API.get_maybe(`meters/${meter_slot}/values`);
+                this.values[meter_slot] = API.get_unchecked(`meters/${meter_slot}/values`);
                 let values_by_id: NumberToNumber = {};
 
                 if (this.value_idx_by_id[meter_slot]) {
@@ -914,7 +914,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 
     override async sendSave(t: "meters/config", new_config: MetersConfig) {
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            await API.save_maybe(`meters/${meter_slot}/config`, this.state.configs_table[meter_slot], __("meters.script.save_failed"));
+            await API.save_unchecked(`meters/${meter_slot}/config`, this.state.configs_table[meter_slot], __("meters.script.save_failed"));
         }
 
         await API.save(t, new_config, this.error_string, this.reboot_string);
@@ -1263,7 +1263,7 @@ export class MetersStatus extends Component<{}, MeterStatusState> {
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
-                let config = API.get_maybe(`meters/${meter_slot}/config`);
+                let config = API.get_unchecked(`meters/${meter_slot}/config`);
 
                 this.setState((prevState) => ({
                     meter_configs: {
@@ -1291,8 +1291,8 @@ export class MetersStatus extends Component<{}, MeterStatusState> {
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
-        let value_ids = API.get_maybe(`meters/${state.meter_slot}/value_ids`);
-        let values = API.get_maybe(`meters/${state.meter_slot}/values`);
+        let value_ids = API.get_unchecked(`meters/${state.meter_slot}/value_ids`);
+        let values = API.get_unchecked(`meters/${state.meter_slot}/values`);
         let power = 0;
 
         if (value_ids && values.length > 0 && values && values.length > 0) {
