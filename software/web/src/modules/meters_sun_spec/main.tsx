@@ -45,7 +45,7 @@ export class MetersSunSpec extends Component<{}, MetersSunSpecState> {
         super();
 
         this.state = {
-            host: '192.168.0.17',
+            host: '192.168.1.243',
             port: 502,
             device_address: 1,
             discovery_log: ''

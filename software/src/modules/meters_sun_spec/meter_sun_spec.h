@@ -24,6 +24,7 @@
 #include "config.h"
 #include "modules/meters/imeter.h"
 #include "modules/meters_modbus_tcp/generic_modbus_tcp_client.h"
+#include "modules/meters_modbus_tcp/modbus_tcp_tools.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -48,7 +49,21 @@ public:
     void read_done_callback();
 
 private:
+    enum class DiscoveryState {
+        Idle,
+        ReadSunSpecID,
+        ReadCommonModelHeader,
+        ReadCommonModelBlock,
+        ReadStandardModelHeader,
+    };
+
     void connect_callback() override;
+
+    void read_start(size_t model_start_address, size_t model_regcount);
+
+    void discovery_restart();
+    void discovery_start();
+    void discovery_next();
 
     uint32_t slot;
     Config *config;
@@ -56,6 +71,12 @@ private:
     Config *errors;
 
     bool access_in_progress = false;
+
+    uint16_t model_id;
+    size_t discovery_base_address_index;
+    DiscoveryState discovery_state;
+    DiscoveryState discovery_state_next;
+    ModbusDeserializer discovery_deserializer;
 };
 
 #if defined(__GNUC__)
