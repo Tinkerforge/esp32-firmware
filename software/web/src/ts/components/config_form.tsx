@@ -58,7 +58,7 @@ export class ConfigForm extends Component<ConfigFormProps, ConfigFormState> {
 
         this.props.onSave().then(() => {
             window.clearTimeout(spinnerTimeout);
-            this.setState({saveInProgress: true, wasValidated: false, showSpinner: false});
+            this.setState({saveInProgress: false, wasValidated: false, showSpinner: false});
             this.props.onDirtyChange(false);
         }).catch(() => {
             window.clearTimeout(spinnerTimeout);
