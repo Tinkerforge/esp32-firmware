@@ -100,7 +100,7 @@ void GenericModbusTCPClient::start_generic_read()
         return;
     }
 
-    int32_t read_blocks = (generic_read_request.register_count + METERS_MODBUS_TCP_MAX_HREG_WORDS - 1) / METERS_MODBUS_TCP_MAX_HREG_WORDS;
+    size_t read_blocks = (generic_read_request.register_count + METERS_MODBUS_TCP_MAX_HREG_WORDS - 1) / METERS_MODBUS_TCP_MAX_HREG_WORDS;
     read_block_size = static_cast<uint16_t>((generic_read_request.register_count + read_blocks - 1) / read_blocks);
 
     read_next();

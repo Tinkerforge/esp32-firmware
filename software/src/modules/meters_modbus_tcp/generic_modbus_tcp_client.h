@@ -48,8 +48,8 @@ class GenericModbusTCPClient
 protected:
     struct read_request {
         TAddress::RegType register_type;
-        uint16_t start_address;
-        uint16_t register_count;
+        size_t start_address;
+        size_t register_count;
         uint16_t *data[2];
         bool read_twice;
         Modbus::ResultCode result_code;
