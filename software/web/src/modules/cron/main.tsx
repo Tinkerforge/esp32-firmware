@@ -32,7 +32,7 @@ import { CronTriggerID, CronActionID } from "./cron_defs";
 import { CronAction, CronTrigger, Task, CronTriggerComponents, CronActionComponents } from "./types";
 import { plugins_init } from "./plugins";
 
-const MAXRULES = 10;
+const MAX_RULES = 20;
 
 type CronState = {
     displayed_trigger: number,
@@ -182,7 +182,7 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
                     this.setState({tasks: this.state.tasks.filter((_, k) => idx != k)})
                     this.setDirty(true);
                 },
-                editTitle: __("cron.content.edit_rule")
+                editTitle: __("cron.content.edit_rule_title")
             };
             rows.push(row);
         })
@@ -209,10 +209,10 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
                             __("cron.content.condition"),
                             __("cron.content.action")]}
                         rows={this.assembleTable()}
-                        addEnabled={this.state.tasks.length < MAXRULES}
-                        addTitle={__("cron.content.add_rule")}
-                        addMessage={__("cron.content.add_rule_text")(this.state.tasks.length, MAXRULES)}
-                        onAddStart={async () => {
+                        addEnabled={this.state.tasks.length < MAX_RULES}
+                        addTitle={__("cron.content.add_rule_title")}
+                        addMessage={__("cron.content.add_rule_count")(this.state.tasks.length, MAX_RULES)}
+                        onAddShow={async () => {
                             this.setState({
                                 displayed_trigger: CronTriggerID.None,
                                 displayed_action: CronActionID.None,

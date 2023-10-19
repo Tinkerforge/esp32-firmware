@@ -10,11 +10,9 @@ let x = {
             "rule": "Regel",
             "condition": "Bedingung",
             "action": "Aktion",
-            "add_rule": "Regel hinzufügen",
-            "add_rule_text": /*SFN*/(count: number, max: number) => {
-                return count + " von " + max + " Regeln konfiguriert.";
-            }/*NF*/,
-            "edit_rule": "Regel bearbeiten",
+            "add_rule_title": "Regel hinzufügen",
+            "add_rule_count": /*SFN*/(count: number, max: number) => count + " von " + max + " Regeln konfiguriert"/*NF*/,
+            "edit_rule_title": "Regel bearbeiten",
             "select": "Auswählen..."
         }
     }
