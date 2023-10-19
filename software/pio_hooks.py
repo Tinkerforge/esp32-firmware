@@ -358,7 +358,10 @@ def hyphenate(s):
                 s = s.replace(l, r)
                 break
         else:
-            if len(word) > HYPHENATE_THRESHOLD:
+            is_too_long = len(word) > HYPHENATE_THRESHOLD
+            is_camel_case = word[:1].islower() and not word[1:].islower()
+            is_snake_case = "_" in word
+            if is_too_long:# and not (is_camel_case or is_snake_case):
                 missing_hyphenations.append(word)
 
     return s
