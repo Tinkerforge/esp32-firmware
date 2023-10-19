@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact";
+import { VNode, h } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { Cron } from "../cron/main";
-import { CronComponent, CronTrigger } from "../cron/types";
+import { CronTrigger } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
 
 export type EvseStateCronTrigger = [

@@ -19,9 +19,10 @@
 
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, CronAction } from "../cron/types";
+import { CronAction } from "../cron/types";
 import { CronActionID } from "../cron/cron_defs";
 import { TableModalRow } from "../../ts/components/table";
+import { VNode } from "preact";
 
 export type MeterCronAction = [
     CronActionID.MeterReset,

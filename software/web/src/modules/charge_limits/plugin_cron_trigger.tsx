@@ -19,9 +19,10 @@
 
 import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
-import { CronComponent, CronTrigger } from "../cron/types";
+import { CronTrigger } from "../cron/types";
 import { CronTriggerID } from "../cron/cron_defs";
 import { TableModalRow } from "../../ts/components/table";
+import { VNode } from "preact";
 
 export type ChargeLimitsCronTrigger = [
     CronTriggerID.ChargeLimits,

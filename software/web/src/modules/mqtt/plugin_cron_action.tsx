@@ -17,12 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from "preact";
+import { h, Fragment, VNode } from "preact";
 import { useState } from "preact/hooks";
 import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
 import { Cron } from "../cron/main";
-import { CronComponent, CronAction } from "../cron/types";
+import { CronAction } from "../cron/types";
 import { InputText } from "../../ts/components/input_text";
 import { Switch } from "../../ts/components/switch";
 import * as API from "../../ts/api";

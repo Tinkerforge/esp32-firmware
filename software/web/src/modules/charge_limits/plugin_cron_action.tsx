@@ -17,13 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact";
+import { VNode, h } from "preact";
 import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { Cron } from "../cron/main";
 import { CronActionID } from "../cron/cron_defs";
-import { CronComponent, CronAction } from "../cron/types";
+import { CronAction } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
 
 export type ChargeLimitsCronAction = [
