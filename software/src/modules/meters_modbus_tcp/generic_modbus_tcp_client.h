@@ -57,7 +57,7 @@ protected:
         void *done_callback_arg;
     };
 
-    GenericModbusTCPClient(ModbusTCP *mb_) : mb(mb_) {}
+    GenericModbusTCPClient(ModbusTCP *mb_) : mb(mb_) { memset(&generic_read_request, 0, sizeof(generic_read_request)); }
     virtual ~GenericModbusTCPClient() = default;
 
     void start_connection();
