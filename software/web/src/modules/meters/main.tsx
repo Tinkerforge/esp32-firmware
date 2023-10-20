@@ -917,7 +917,23 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
             await API.save_unchecked(`meters/${meter_slot}/config`, this.state.configs_table[meter_slot], __("meters.script.save_failed"));
         }
 
-        await API.save(t, new_config, this.error_string, this.reboot_string);
+        await super.sendSave(t, new_config);
+    }
+
+    override async sendReset(t: "meters/config") {
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            await API.reset_unchecked(`meters/${meter_slot}/config`, super.error_string, super.reboot_string);
+        }
+
+        await super.sendReset(t);
+    }
+
+    override getIsModified(t: "meters/config"): boolean {
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            if (API.is_modified_unchecked(`meters/${meter_slot}/config`))
+                return true;
+        }
+        return super.isModified();
     }
 
     render(props: {}, state: Readonly<MetersState>) {
