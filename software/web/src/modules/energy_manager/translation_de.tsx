@@ -135,7 +135,8 @@ let x = {
         "script": {
             "save_failed": "Speichern der Energiemanager-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "Energiemanager-Einstellungen",
-            "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen."
+            "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen.",
+            "meter": /*SFN*/(slot: number|"?") => "Zähler #" + slot/*NF*/
         }
     }
 }

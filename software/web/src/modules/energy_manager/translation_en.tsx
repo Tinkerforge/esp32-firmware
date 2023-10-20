@@ -135,7 +135,8 @@ let x = {
         "script": {
             "save_failed": "Failed to save energy manager settings.",
             "reboot_content_changed": "energy manager settings",
-            "mode_change_failed": "Failed to change charging mode."
+            "mode_change_failed": "Failed to change charging mode.",
+            "meter": /*SFN*/(slot: number|"?") => "Meter #" + slot/*NF*/
         }
     }
 }
