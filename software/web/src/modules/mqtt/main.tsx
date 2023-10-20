@@ -59,6 +59,19 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
         await super.sendSave(t, cfg);
     }
 
+    override async sendReset(t: "mqtt/config") {
+        if (API.hasModule('mqtt_auto_discovery'))
+            await API.reset('mqtt/auto_discovery_config', super.error_string, super.reboot_string);
+
+        await super.sendReset(t);
+    }
+
+    override getIsModified(t: "mqtt/config"): boolean {
+        if (API.hasModule('mqtt_auto_discovery') && API.is_modified('mqtt/auto_discovery_config'))
+            return true;
+        return super.getIsModified(t);
+    }
+
     render(props: {}, state: Readonly<MqttConfig & MqttState>) {
         if (!util.render_allowed())
             return <></>

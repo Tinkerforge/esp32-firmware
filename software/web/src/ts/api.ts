@@ -81,6 +81,13 @@ export function is_modified<T extends keyof ConfigMap>(topic: T): boolean {
     return modified.modified > 1;
 }
 
+export function is_modified_unchecked(topic: string): boolean {
+    let modified = api_cache[(topic + "_modified") as ConfigModifiedKey] as ConfigModified;
+    if (modified === undefined || modified == null)
+        return false;
+    return modified.modified > 1;
+}
+
 export function is_dirty<T extends keyof ConfigMap>(topic: T): boolean {
     let modified = api_cache[(topic + "_modified") as ConfigModifiedKey] as ConfigModified;
     if (modified == null)
@@ -140,6 +147,13 @@ export function save_unchecked<T extends string>(topic: T, payload: (T extends k
 
 export function reset<T extends keyof ConfigMap>(topic: T, error_string: string, reboot_string?: string) {
     return call((topic + "_reset") as any, null, error_string, reboot_string);
+}
+
+
+export function reset_unchecked<T extends string>(topic: T, error_string: string, reboot_string?: string) {
+    if (topic in api_cache)
+        return call((topic + "_reset") as any, null, error_string, reboot_string);
+    return Promise.resolve();
 }
 
 export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string, timeout_ms: number = 5000) {
