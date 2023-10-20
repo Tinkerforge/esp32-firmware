@@ -109,7 +109,8 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
     }
 
     setDirty = (dirty: boolean) => {
-        this.setState({internal_isDirty: dirty} as any);
+        if (this.state.internal_isDirty != dirty)
+            this.setState({internal_isDirty: dirty} as any);
     }
 
     set<T extends keyof (API.getType[Config] & S & ConfigComponentState)>(x: T) {
