@@ -4,7 +4,7 @@ let x = {
     "charge_limits": {
         "content": {
             "charge_limits": "Charge limits",
-            "charge_limits_expiration": "Charge limit expiration",
+            "charge_limits_expiration": "Charge limit expired",
             "overridden": "(active)",
             "configured": "(configured)",
             "left": " left",

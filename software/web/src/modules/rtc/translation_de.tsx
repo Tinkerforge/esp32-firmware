@@ -20,7 +20,7 @@ let x = {
             "friday": "Freitag",
             "saturday": "Samstag",
             "sunday": "Sonntag",
-            "every": "Jeden",
+            "every": "Täglich",
             "cron_translation_function": /*SFN*/(mday: number, wday: number, hour: number, minute: number) => {
                 const wdays = [
                     "Sonntags",
@@ -39,7 +39,7 @@ let x = {
                 } else if (wday != -1) {
                     ret += wdays[wday];
                 } else {
-                    ret += "Jeden Tag";
+                    ret += "Täglich";
                 }
 
                 const date = new Date();

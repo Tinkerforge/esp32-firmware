@@ -97,7 +97,7 @@ export function MqttCronActionConfig(cron: Cron, action: CronAction) {
                 }}/>
         },
         {
-            name: __("mqtt.content.accept_retain"),
+            name: __("mqtt.content.retain"),
             value: <Switch
                 checked={value.retain}
                 onClick={() => {

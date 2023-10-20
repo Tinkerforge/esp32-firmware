@@ -56,7 +56,8 @@ let x = {
                 return <>
                     If NFC tag '<b>{tag_id}</b>' ({tag_type}) is detected,{" "}
                 </>
-            }/*NF*/
+            }/*NF*/,
+            "cron_trigger_nfc": "NFC tag seen"
         },
         "script": {
             "not_seen": "Unknown",

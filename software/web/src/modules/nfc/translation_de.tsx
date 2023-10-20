@@ -56,8 +56,9 @@ let x = {
                 <>
                     Wenn das NFC-Tag '<b>{tag_id}</b>' ({tag_type}) erkannt wird,{" "}
                 </>
-                );
-  }/*NF*/
+                )
+            }/*NF*/,
+            "cron_trigger_nfc": "NFC-Tag erkannt"
         },
         "script": {
             "not_seen": "Unbekannt",

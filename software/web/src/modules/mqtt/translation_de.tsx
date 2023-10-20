@@ -23,13 +23,13 @@ let x = {
             "username_muted": "optional",
             "password": "Broker-Passwort",
             "password_muted": "optional",
-            "topic": "Topic",
-            "payload": "Nachricht",
+            "topic": "Überwachtes Topic",
+            "payload": "Erwartete Nachricht",
             "retain": "Nachricht Speichern",
-            "accept_retain": "Gespeicherte Nachrichten akzeptieren",
+            "accept_retain": "Erlaube gespeicherte (retained) Nachrichten",
             "use_topic_prefix": "Topic-Präfix benutzen",
-            "use_topic_prefix_muted": "Der Topic Präfix lautet ",
-            "use_topic_prefix_invalid": "Der Topic Päfix darf nicht im topic stehen",
+            "use_topic_prefix_muted": "Konfigurierter Topic-Präfix: ",
+            "use_topic_prefix_invalid": "Das Topic darf nicht mit dem konfigurierten Topic-Präfix beginnen, es sei denn \"Topic-Präfix benutzen\" ist aktiviert.",
             "topic_prefix": "Topic-Präfix",
             "topic_prefix_muted": "optional",
             "topic_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, oder ein # oder + enthalten.",
@@ -55,7 +55,8 @@ let x = {
                 return <>
                     Wenn MQTT-Nachricht '<b>{payload}</b>' an Topic '<b>{topic}</b>' empfangen wird {retained ? "(Gespeicherte Nachrichten werden akzeptiert)" : ""} {", "}
                 </>
-            }/*NF*/
+            }/*NF*/,
+            "cron_trigger_mqtt": "MQTT-Nachricht empfangen"
 
         },
         "script": {

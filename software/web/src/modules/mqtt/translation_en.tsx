@@ -55,7 +55,8 @@ let x = {
                 return <>
                     If MQTT message '<b>{payload}</b>' is received on topic '<b>{topic}</b>' {retained ? "(Retained messages are accepted)" : ""} {", "}
                 </>
-            }/*NF*/
+            }/*NF*/,
+            "cron_trigger_mqtt": "MQTT message received"
         },
         "script": {
             "save_failed": "Failed to save the MQTT settings.",

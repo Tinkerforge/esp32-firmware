@@ -98,7 +98,7 @@ export function MqttCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
                 }}/>
         },
         {
-            name: __("mqtt.content.retain"),
+            name: __("mqtt.content.accept_retain"),
             value: <Switch
                 checked={value.retain}
                 onClick={() => {
@@ -129,7 +129,7 @@ export function init() {
                 table_row: MqttCronTriggerComponent,
                 config_builder: MqttCronTriggerFactory,
                 config_component: MqttCronTriggerConfig,
-                name: __("mqtt.content.mqtt"),
+                name: __("mqtt.content.cron_trigger_mqtt"),
             },
         },
     };

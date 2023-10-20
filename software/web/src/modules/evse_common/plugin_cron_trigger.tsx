@@ -56,7 +56,7 @@ function EvseStateCronFactory(): CronTrigger {
 export function EvseStateCronConfig(cron: Cron, trigger: CronTrigger) {
     let value = (trigger as EvseStateCronTrigger)[1];
     return [{
-        name: __("evse.content.status"),
+        name: "",
         value: <InputSelect
                     items={[
                         ["0", __("evse.status.not_connected")],

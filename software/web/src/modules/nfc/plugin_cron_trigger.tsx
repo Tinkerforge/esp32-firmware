@@ -135,7 +135,7 @@ export function init() {
                 config_builder: NfcCronTriggerFactory,
                 config_component: NFCCronTriggerConfig,
                 table_row: NFCCronTriggerComponent,
-                name: __("nfc.content.nfc"),
+                name: __("nfc.content.cron_trigger_nfc"),
             },
         },
     };

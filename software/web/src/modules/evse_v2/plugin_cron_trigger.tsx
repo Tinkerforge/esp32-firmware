@@ -87,11 +87,11 @@ function EvseShutdownTriggerConfig(cron: Cron, trigger: CronTrigger) {
     const value = (trigger as EvseShutdownCronTrigger)[1];
     return [
         {
-            name: __("evse.content.gpio_shutdown"),
+            name: "",
             value: <InputSelect
                 items={[
-                    ["0", __("evse.content.active_low")],
-                    ["1", __("evse.content.active_high")]
+                    ["0", __("evse.content.cron_trigger_active_low")],
+                    ["1", __("evse.content.cron_trigger_active_high")]
                 ]}
                 value={value.high ? "1" : "0"}
                 onValue={(v) => {
@@ -120,11 +120,11 @@ function EvseGpioInputCrontTriggerConfigComponent(cron: Cron, trigger: CronTrigg
     const value = (trigger as EvseGpioCronTrigger)[1];
     return [
         {
-            name: __("evse.content.gpio_in"),
+            name: "",
             value: <InputSelect
                 items={[
-                    ["0", __("evse.content.active_low")],
-                    ["1", __("evse.content.active_high")]
+                    ["0", __("evse.content.cron_trigger_active_low")],
+                    ["1", __("evse.content.cron_trigger_active_high")]
                 ]}
                 value={value.high ? "1" : "0"}
                 onValue={(v) => {
@@ -152,7 +152,7 @@ export function init() {
                 config_builder: EvseButtonCronTriggerFactory,
                 config_component: EvseButtonCronTriggerConfig,
                 table_row: EvseButtonCronTriggerComponent,
-                name: __("evse.content.button_configuration"),
+                name: __("evse.content.cron_trigger_button"),
                 require_feature: "button_configuration",
             },
             [CronTriggerID.EVSEShutdownInput]: {
@@ -160,7 +160,7 @@ export function init() {
                 config_component: EvseShutdownTriggerConfig,
                 table_row: EvseShutdownTriggerComponent,
                 config_builder: EvseShutdownTriggerFactory,
-                name: __("evse.content.gpio_shutdown"),
+                name: __("evse.content.cron_trigger_gpio_shutdown"),
                 require_feature: "button_configuration",
             },
             [CronTriggerID.EVSEGPInput]: {
@@ -168,7 +168,7 @@ export function init() {
                 config_builder: EvseGpioInputCronTriggerConfigFactory,
                 config_component: EvseGpioInputCrontTriggerConfigComponent,
                 table_row: EvseGpioInputCronTriggerComponent,
-                name: __("evse.content.gpio_in"),
+                name: __("evse.content.cron_trigger_gpio_in"),
                 require_feature: "button_configuration",
             },
         },
