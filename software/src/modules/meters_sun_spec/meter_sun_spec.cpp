@@ -89,12 +89,7 @@ void MeterSunSpec::read_start(size_t model_start_address, size_t model_regcount)
     generic_read_request.data[0] = buffer;
     generic_read_request.data[1] = buffer + model_regcount;
     generic_read_request.read_twice = true;
-
-    generic_read_request.done_callback_arg = this;
-    generic_read_request.done_callback = [](void *arg) {
-        MeterSunSpec *mss = static_cast<MeterSunSpec *>(arg);
-        mss->read_done_callback();
-    };
+    generic_read_request.done_callback = [this]{ read_done_callback(); };
 
     start_generic_read();
 }
@@ -137,20 +132,16 @@ void MeterSunSpec::discovery_start()
     generic_read_request.register_count = 2;
     generic_read_request.data[0] = buffer;
     generic_read_request.read_twice = false;
-
-    generic_read_request.done_callback_arg = this;
-    generic_read_request.done_callback = [](void *arg) {
-        MeterSunSpec *mss = static_cast<MeterSunSpec *>(arg);
-        mss->discovery_deserializer.idx = 0;
-        mss->discovery_state = mss->discovery_state_next;
-        mss->discovery_next();
-    };
+    generic_read_request.done_callback = [this]{ discovery_next(); };
 
     start_generic_read();
 }
 
 void MeterSunSpec::discovery_next()
 {
+    discovery_deserializer.idx = 0;
+    discovery_state = discovery_state_next;
+
     if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
         logger.printfln("meter_sun_spec: Modbus read error: %s (%d)", get_modbus_result_code_name(generic_read_request.result_code), generic_read_request.result_code);
         discovery_restart();

@@ -50,14 +50,13 @@ protected:
         TAddress::RegType register_type;
         size_t start_address;
         size_t register_count;
-        uint16_t *data[2];
+        uint16_t *data[2] = { nullptr, nullptr };
         bool read_twice;
         Modbus::ResultCode result_code;
-        void (*done_callback)(void *arg);
-        void *done_callback_arg;
+        std::function<void(void)> done_callback;
     };
 
-    GenericModbusTCPClient(ModbusTCP *mb_) : mb(mb_) { memset(&generic_read_request, 0, sizeof(generic_read_request)); }
+    GenericModbusTCPClient(ModbusTCP *mb_) : mb(mb_) {}
     virtual ~GenericModbusTCPClient() = default;
 
     void start_connection();

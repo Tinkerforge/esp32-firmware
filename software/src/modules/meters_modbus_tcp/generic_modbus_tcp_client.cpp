@@ -96,7 +96,7 @@ void GenericModbusTCPClient::start_generic_read()
 
     if (generic_read_request.register_count == 0) {
         generic_read_request.result_code = Modbus::ResultCode::EX_DATA_MISMACH;
-        generic_read_request.done_callback(generic_read_request.done_callback_arg);
+        generic_read_request.done_callback();
         return;
     }
 
@@ -116,7 +116,7 @@ void GenericModbusTCPClient::read_next()
                 host_ip.toString().c_str(), device_address, generic_read_request.register_type, generic_read_request.start_address, generic_read_request.register_count);
 
             generic_read_request.result_code = result_code;
-            generic_read_request.done_callback(generic_read_request.done_callback_arg);
+            generic_read_request.done_callback();
             return false;
         }
 
@@ -131,7 +131,7 @@ void GenericModbusTCPClient::read_next()
             } else {
                 // Only one read requested or second buffer done. -> All done.
                 generic_read_request.result_code = Modbus::ResultCode::EX_SUCCESS;
-                generic_read_request.done_callback(generic_read_request.done_callback_arg);
+                generic_read_request.done_callback();
                 return true;
             }
         }
@@ -162,7 +162,7 @@ void GenericModbusTCPClient::read_next()
             host_ip.toString().c_str(), device_address, generic_read_request.register_type, read_start_address, read_count);
 
         generic_read_request.result_code = Modbus::ResultCode::EX_GENERAL_FAILURE;
-        generic_read_request.done_callback(generic_read_request.done_callback_arg);
+        generic_read_request.done_callback();
     }
 
     // Read successfully dispatched, will continue in callback.
