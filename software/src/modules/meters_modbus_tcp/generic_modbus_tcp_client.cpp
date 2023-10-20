@@ -62,7 +62,7 @@ void GenericModbusTCPClient::check_ip(const ip_addr_t *ip, int err)
     host_ip = ip->u_addr.ip4.addr;
 
     errno = ENOTRECOVERABLE; // Set to something known because connect() might leave errno unchanged on some errors.
-    if (!mb->connect(host_ip)) {
+    if (!mb->connect(host_ip, port)) {
         if (!connect_error_printed) {
             if (errno == EINPROGRESS) { // WiFiClient::connect() doesn't set errno and incorrectly returns EINPROGRESS despite being blocking.
                 logger.printfln("generic_modbus_tcp_client: Connection to '%s' failed.", host_name.c_str());
@@ -112,8 +112,8 @@ void GenericModbusTCPClient::read_next()
     // Return value doesn't matter. The caller discards it.
     cbTransaction read_done_cb = [this](Modbus::ResultCode result_code, uint16_t /*transaction_id*/, void * /*data*/)->bool {
         if (result_code != Modbus::ResultCode::EX_SUCCESS) {
-            logger.printfln("meter_modbus_tcp: readHreg failed: %s (0x%02x) host=%s device_address=%u rtype=%i start_address=%u register_count=%u", get_modbus_result_code_name(result_code), static_cast<uint32_t>(result_code),
-                host_ip.toString().c_str(), device_address, generic_read_request.register_type, generic_read_request.start_address, generic_read_request.register_count);
+            logger.printfln("meter_modbus_tcp: readHreg failed: %s (0x%02x) host=%s port=%u device_address=%u rtype=%i start_address=%u register_count=%u", get_modbus_result_code_name(result_code), static_cast<uint32_t>(result_code),
+                host_ip.toString().c_str(), port, device_address, generic_read_request.register_type, generic_read_request.start_address, generic_read_request.register_count);
 
             generic_read_request.result_code = result_code;
             generic_read_request.done_callback();
@@ -158,8 +158,8 @@ void GenericModbusTCPClient::read_next()
     }
 
     if (ret == 0) {
-        logger.printfln("meter_modbus_tcp: Modbus read failed. host=%s device_address=%u rtype=%i read_start_address=%u read_count=%u",
-            host_ip.toString().c_str(), device_address, generic_read_request.register_type, read_start_address, read_count);
+        logger.printfln("meter_modbus_tcp: Modbus read failed. host=%s port=%u device_address=%u rtype=%i read_start_address=%u read_count=%u",
+            host_ip.toString().c_str(), port, device_address, generic_read_request.register_type, read_start_address, read_count);
 
         generic_read_request.result_code = Modbus::ResultCode::EX_GENERAL_FAILURE;
         generic_read_request.done_callback();
