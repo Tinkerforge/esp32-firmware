@@ -84,9 +84,8 @@ void GenericModbusTCPClient::check_ip(const ip_addr_t *ip, int err)
         connect_backoff_ms = 1000;
         connect_error_printed = false;
         logger.printfln("generic_modbus_tcp_client: Connected to '%s'", host_name.c_str());
+        connect_callback();
     }
-
-    connect_callback();
 }
 
 void GenericModbusTCPClient::start_generic_read()
