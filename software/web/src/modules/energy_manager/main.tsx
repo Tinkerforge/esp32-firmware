@@ -232,6 +232,22 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         await super.sendSave(t, cfg);
     }
 
+    override async sendReset(t: "energy_manager/config") {
+        if (API.hasModule("debug")) {
+            await API.reset('energy_manager/debug_config', super.error_string, super.reboot_string);
+        }
+
+        await super.sendReset(t);
+    }
+
+    override getIsModified(t: "energy_manager/config"): boolean {
+        if (API.hasModule("debug") && API.is_modified('energy_manager/debug_config')) {
+            return true;
+        }
+
+        return super.getIsModified(t);
+    }
+
     render(props: {}, s: Readonly<API.getType['energy_manager/config'] & API.getType['energy_manager/debug_config']>) {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
             return <></>
