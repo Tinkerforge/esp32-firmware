@@ -189,9 +189,23 @@ void MetersSunSpec::loop()
 
         break;
 
-    case ScanState::Done:
-        ++scan_read_cookie;
-        scan_state = ScanState::Idle;
+    case ScanState::Done: {
+            char buf[512];
+            TFJsonSerializer json{buf, sizeof(buf)};
+
+            json.addObject();
+            json.add("host", scan_host.c_str());
+            json.add("port", static_cast<uint64_t>(scan_port));
+            json.endObject();
+            json.end();
+
+            if (!ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_done")) {
+                break; // need report the scan as done before doing something else
+            }
+
+            ++scan_read_cookie;
+            scan_state = ScanState::Idle;
+        }
 
         break;
 
@@ -377,10 +391,17 @@ void MetersSunSpec::loop()
                           serial_number,
                           device_address);
 
+            if (strncmp(manufacturer_name, model_name, strlen(manufacturer_name)) != 0) {
+                snprintf(scan_display_name, sizeof(scan_display_name), "%s %s", manufacturer_name, model_name);
+            }
+            else {
+                snprintf(scan_display_name, sizeof(scan_display_name), "%s", model_name);
+            }
+
             if (device_address < DEVICE_ADDRESS_FIRST || device_address > DEVICE_ADDRESS_LAST) {
                 scan_printfln("Invalid device address found, stopping device address scan");
 
-                scan_device_address = scan_device_address_last;
+                scan_device_address_last = scan_device_address;
             }
 
             scan_state = ScanState::ReadStandardModelHeader;
@@ -429,6 +450,20 @@ void MetersSunSpec::loop()
                                           sun_spec_model_specs[i].model_name, block_length, sun_spec_model_specs[i].block_length);
                         }
                         else {
+                            char buf[512];
+                            TFJsonSerializer json{buf, sizeof(buf)};
+
+                            json.addObject();
+                            json.add("host", scan_host.c_str());
+                            json.add("port", static_cast<uint64_t>(scan_port));
+                            json.add("display_name", scan_display_name);
+                            json.add("device_address", static_cast<uint64_t>(scan_device_address));
+                            json.add("model_id", static_cast<uint64_t>(model_id));
+                            json.endObject();
+                            json.end();
+
+                            ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_result"); // FIXME: error handling
+
                             scan_read_address += block_length;
                             scan_state = ScanState::ReadStandardModelHeader;
 

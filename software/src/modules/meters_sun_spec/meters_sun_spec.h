@@ -104,6 +104,7 @@ public:
     ScanState scan_read_state;
     size_t scan_common_block_length;
     size_t scan_standard_block_length;
+    char scan_display_name[66]; // <manufacturer name> + " " + <model name> + "\0"
 };
 
 #if defined(__GNUC__)
