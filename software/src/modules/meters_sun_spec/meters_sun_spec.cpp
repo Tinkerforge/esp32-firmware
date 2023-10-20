@@ -75,6 +75,10 @@ void MetersSunSpec::setup()
 void MetersSunSpec::register_urls()
 {
     api.addCommand("meters_sun_spec/scan", &scan, {}, [this](){
+        if (scan_state != ScanState::Idle) {
+            return;
+        }
+
         scan_new = true;
         scan_new_host = scan.get("host")->asString();
         scan_new_port = static_cast<uint16_t>(scan.get("port")->asUint());
