@@ -71,9 +71,8 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
 
     override getIsModified(t: "ocpp/config"): boolean {
         let evse = API.get_unchecked("evse/ocpp_enabled");
-        if (evse != null)
-            if (evse.enabled)
-                return true;
+        if (evse != null && evse.enabled)
+            return true;
         return super.getIsModified(t);
     }
 

@@ -68,9 +68,8 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
 
     override getIsModified(t: "modbus_tcp/config"): boolean {
         let evse = API.get_unchecked("evse/modbus_tcp_enabled");
-        if (evse != null)
-            if (evse.enabled)
-                return true;
+        if (evse != null && evse.enabled)
+            return true;
         return super.getIsModified(t);
     }
 

@@ -151,9 +151,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
     override getIsModified(t: "charge_manager/config"): boolean {
         let evse_enabled = API.get_unchecked("evse/management_enabled");
-        if (evse_enabled != null)
-            if (evse_enabled.enabled)
-                return true;
+        if (evse_enabled != null && evse_enabled.enabled)
+            return true;
         return super.getIsModified(t);
     }
 
