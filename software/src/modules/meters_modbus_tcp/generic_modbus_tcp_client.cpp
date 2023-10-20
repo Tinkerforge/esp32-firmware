@@ -130,6 +130,7 @@ void GenericModbusTCPClient::read_next()
                 registers_done_count = 0;
             } else {
                 // Only one read requested or second buffer done. -> All done.
+                generic_read_request.result_code = Modbus::ResultCode::EX_SUCCESS;
                 generic_read_request.done_callback(generic_read_request.done_callback_arg);
                 return true;
             }
