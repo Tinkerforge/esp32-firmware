@@ -998,7 +998,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                     <div class="mb-3">
                         <Table
                             tableTill="md"
-                            columnNames={[__("meters.content.table_name"), __("meters.content.table_power"), __("meters.content.table_energy"), __("meters.content.table_phases")]}
+                            columnNames={[__("meters.content.table_display_name"), __("meters.content.table_power"), __("meters.content.table_energy"), __("meters.content.table_phases")]}
                             rows={active_meter_slots.map((meter_slot_str) => {
                                 let meter_slot = parseInt(meter_slot_str);
                                 let config = state.configs_table[meter_slot];

@@ -20,7 +20,7 @@ let x = {
 
             "meter_class": "SunSpec",
 
-            "config_display_name": "Name",
+            "config_display_name": "Display name",
             "config_host": "Host",
             "config_host_invalid": "Host is invalid",
             "config_port": "Port",
