@@ -600,7 +600,7 @@ export function range(stopOrStart: number, stop?: number) {
     return [...Array(len).keys()].map(i => i + stopOrStart);
 }
 
-export async function wait(t: number): Promise<void> {
+export async function wait(t: number) {
     return new Promise(resolve => setTimeout(resolve, t));
 }
 

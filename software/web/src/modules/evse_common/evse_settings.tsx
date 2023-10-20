@@ -99,7 +99,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         });
     }
 
-    override async sendSave(t: "charge_limits/default_limits", cfg: EVSESettingsState & ChargeLimitsConfig): Promise<void> {
+    override async sendSave(t: "charge_limits/default_limits", cfg: EVSESettingsState & ChargeLimitsConfig) {
         await API.save('evse/auto_start_charging', {"auto_start_charging": this.state.auto_start_charging.auto_start_charging}, __("evse.script.save_failed"));
         await API.save('evse/external_enabled', {"enabled": this.state.slots[EVSE_SLOT_EXTERNAL].active}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, __("evse.script.save_failed"));
@@ -117,7 +117,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
 
     //TODO: Substitute hardcoded values after evse-reset-api is available.
 
-    override async sendReset(t: "charge_limits/default_limits"): Promise<void> {
+    override async sendReset(t: "charge_limits/default_limits") {
         await API.save('evse/auto_start_charging', {"auto_start_charging": true}, __("evse.script.save_failed"));
         await API.save('evse/external_enabled', {"enabled": false}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": false}, __("evse.script.save_failed"));
