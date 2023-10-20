@@ -5,7 +5,7 @@ let x = {
         "content": {
             "meter_class": "Am Energy Manager angeschlossen",
 
-            "config_display_name": "Name"
+            "config_display_name": "Anzeigename"
         }
     }
 }
