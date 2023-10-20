@@ -12,9 +12,7 @@ let x = {
             "host": "Host",
             "port": "Port",
             "port_muted": "typischerweise 502",
-            "discovery_log": "Discovery-Log",
-            "start_discovery": "Discovery starten",
-            "start_discovery_failed": "Discovery konnte nicht gestartet werden",
+            "scan_log": "Scan-Log",
 
             "meter_class": "SunSpec",
 
@@ -23,7 +21,10 @@ let x = {
             "config_host_invalid": "Host ist ungültig",
             "config_port": "Port",
             "config_device_address": "Device-Adresse",
-            "config_model_id": "Modell"
+            "config_model_id": "Modell",
+
+            "scan": "Geräte suchen",
+            "scan_failed": "Konnte nicht nach Geräten suchen"
         },
         "script": {
         }

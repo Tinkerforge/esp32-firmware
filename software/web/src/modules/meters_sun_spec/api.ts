@@ -1,6 +1,8 @@
 
-export interface start_discovery {
+export interface scan {
+    host: string
+    port: number
 
 }
 
-export type discovery_log = string;
+export type scan_log = string;
