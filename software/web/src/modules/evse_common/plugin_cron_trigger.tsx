@@ -61,9 +61,9 @@ export function EvseStateCronConfig(cron: Cron, trigger: CronTrigger) {
                     items={[
                         ["0", __("evse.status.not_connected")],
                         ["1", __("evse.status.waiting_for_charge_release")],
-                        ["2",    __("evse.status.ready_to_charge")],
+                        ["2", __("evse.status.ready_to_charge")],
                         ["3", __("evse.status.charging")],
-                        ["4",  __("evse.status.error")]
+                        ["4", __("evse.status.error")]
                     ]}
                     value={value.charger_state.toString()}
                     onValue={(v) => {
