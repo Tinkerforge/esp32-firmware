@@ -132,14 +132,12 @@ void MetersSunSpec::loop()
                 if (data->addr_ptr == nullptr) {
                     mss->discovery_printfln("Could not resolve %s", mss->discovery_host.c_str());
 
-                    ++mss->discovery_read_cookie;
-                    mss->discovery_state = MetersSunSpec::DiscoveryState::Idle;
+                    mss->discovery_state = DiscoveryState::Done;
                 }
                 else if (data->addr_ptr->type != IPADDR_TYPE_V4) {
                     mss->discovery_printfln("Could not resolve %s to an IPv4 address", mss->discovery_host.c_str());
 
-                    ++mss->discovery_read_cookie;
-                    mss->discovery_state = MetersSunSpec::DiscoveryState::Idle;
+                    mss->discovery_state = DiscoveryState::Done;
                 }
                 else {
                     mss->discovery_host_address = data->addr_ptr->u_addr.ip4.addr;
@@ -153,8 +151,7 @@ void MetersSunSpec::loop()
                     mss->discovery_printfln("Could not resolve %s (error: %d)", mss->discovery_host.c_str(), data->err);
                 }
 
-                ++mss->discovery_read_cookie;
-                mss->discovery_state = MetersSunSpec::DiscoveryState::Idle;
+                mss->discovery_state = DiscoveryState::Done;
             }
         }, &discovery_host_data, LWIP_DNS_ADDRTYPE_IPV4);
 
@@ -169,8 +166,7 @@ void MetersSunSpec::loop()
         if (!modbus.connect(discovery_host_address, discovery_port)) {
             discovery_printfln("Could not connect to %s:%u", discovery_host.c_str(), discovery_port);
 
-            ++discovery_read_cookie;
-            discovery_state = DiscoveryState::Idle;
+            discovery_state = DiscoveryState::Done;
         }
         else {
             discovery_state = DiscoveryState::ReadSunSpecID;
@@ -185,6 +181,11 @@ void MetersSunSpec::loop()
             discovery_printfln("Could not disconnect from %s", discovery_host.c_str());
         }
 
+        discovery_state = DiscoveryState::Done;
+
+        break;
+
+    case DiscoveryState::Done:
         ++discovery_read_cookie;
         discovery_state = DiscoveryState::Idle;
 

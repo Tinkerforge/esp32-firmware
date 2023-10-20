@@ -58,6 +58,7 @@ public:
         Resolving,
         Connect,
         Disconnect,
+        Done,
         NextDeviceAddress,
         NextBaseAddress,
         Read,
