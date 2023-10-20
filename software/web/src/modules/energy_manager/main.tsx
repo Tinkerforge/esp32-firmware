@@ -263,6 +263,16 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         return super.getIsModified(t);
     }
 
+    get_meter_name(meter_slot: number) {
+        let meter_name = __("energy_manager.script.meter")(util.hasValue(meter_slot) ? meter_slot : '?');
+
+        if (util.hasValue(meter_slot) && util.hasValue(this.state.meter_configs) && util.hasValue(this.state.meter_configs[meter_slot]) && util.hasValue(this.state.meter_configs[meter_slot][1])) {
+            meter_name = this.state.meter_configs[meter_slot][1].display_name;
+        }
+
+        return meter_name;
+    }
+
     render(props: {}, s: Readonly<API.getType['energy_manager/config'] & API.getType['energy_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}>) {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
             return <></>
@@ -283,7 +293,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         let meter_slots: StringStringTuple[] = [];
         for (let i = 0; i < METERS_SLOTS; i++) {
             if (s.meter_configs[i][0] != MeterClassID.None) {
-                meter_slots.push([i.toString(), "Meter #" + i]); // FIXME: use meter display name instead
+                meter_slots.push([i.toString(), this.get_meter_name(i)]);
             }
         }
 
