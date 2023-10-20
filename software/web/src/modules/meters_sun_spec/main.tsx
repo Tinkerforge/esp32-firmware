@@ -47,7 +47,6 @@ export class MetersSunSpec extends Component<{}, MetersSunSpecState> {
         this.state = {
             host: '192.168.1.243',
             port: 502,
-            device_address: 1,
             discovery_log: ''
         } as any;
 
@@ -87,15 +86,6 @@ export class MetersSunSpec extends Component<{}, MetersSunSpecState> {
                                 />
                 </FormRow>
 
-                <FormRow label={__("meters_sun_spec.content.device_address")} label_muted={__("meters_sun_spec.content.device_address_muted")}>
-                    <InputNumber required
-                                min={0}
-                                max={247}
-                                value={state.device_address}
-                                onValue={(v) => this.setState({device_address: v})}
-                                />
-                </FormRow>
-
                 <FormRow label={__("meters_sun_spec.content.discovery_log")}>
                     <textarea class="text-monospace mb-1 form-control"
                               readonly
@@ -110,7 +100,7 @@ export class MetersSunSpec extends Component<{}, MetersSunSpecState> {
                             className="form-control"
                             onClick={() => {
                                 API.call('meters_sun_spec/start_discovery',
-                                        {host: state.host, port: state.port, device_address: state.device_address},
+                                        {host: state.host, port: state.port},
                                         __("meters_sun_spec.content.start_discovery_failed"));
                             }}>
                         {__("meters_sun_spec.content.start_discovery")}

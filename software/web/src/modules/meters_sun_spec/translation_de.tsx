@@ -12,8 +12,6 @@ let x = {
             "host": "Host",
             "port": "Port",
             "port_muted": "typischerweise 502",
-            "device_address": "Device-Adresse",
-            "device_address_muted": "Für 0 werden alle Adressen von 1 bis 247 geprüft.",
             "discovery_log": "Discovery-Log",
             "start_discovery": "Discovery starten",
             "start_discovery_failed": "Discovery konnte nicht gestartet werden",
