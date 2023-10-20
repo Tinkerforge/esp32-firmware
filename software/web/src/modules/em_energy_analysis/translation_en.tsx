@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "em_energy_analysis": {
         "status": {
         },
@@ -32,7 +34,8 @@
             "time_daily": "Date",
             "power": "Power",
             "energy": "Energy",
-            "total_energy": "Total energy"
+            "total_energy": "Total energy",
+            "meter": /*SFN*/(slot: number|"?") => "Meter #" + slot/*NF*/
         }
     }
 }

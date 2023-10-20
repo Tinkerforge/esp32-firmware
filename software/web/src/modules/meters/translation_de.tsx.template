@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "meters": {
         "status": {
             "power_history": null,
@@ -17,7 +19,7 @@
 
             {{{groups}}},
 
-            "table_name": "Name",
+            "table_display_name": "Anzeigename",
             "table_power": "Leistungsaufnahme",
             "table_energy": "Stromverbrauch",
             "table_phases": "Phasen",
@@ -41,7 +43,8 @@
             "time": "Uhrzeit",
             "power": "Leistung",
             "save_failed": "Speichern der Stromzähler-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Stromzähler-Einstellungen"
+            "reboot_content_changed": "Stromzähler-Einstellungen",
+            "meter": /*SFN*/(slot: number|"?") => "Zähler #" + slot/*NF*/
         }
     }
 }

@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "meters": {
         "status": {
             "power_history": null,
@@ -17,7 +19,7 @@
 
             {{{groups}}},
 
-            "table_name": "Name",
+            "table_display_name": "Display name",
             "table_power": "Power draw",
             "table_energy": "Energy draw",
             "table_phases": "Phases",
@@ -41,7 +43,8 @@
             "time": "Time of day",
             "power": "Power",
             "save_failed": "Failed to save the energy meters settings.",
-            "reboot_content_changed": "energy meters settings"
+            "reboot_content_changed": "energy meters settings",
+            "meter": /*SFN*/(slot: number|"?") => "Meter #" + slot/*NF*/
         }
     }
 }
