@@ -136,19 +136,19 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
     override getIsModified(t: "charge_limits/default_limits"): boolean {
         let result = false;
 
-        result |= API.is_modified('evse/auto_start_charging');
-        result |= API.is_modified('evse/external_enabled');
-        result |= API.is_modified('evse/boost_mode');
-        result |= API.is_modified('require_meter/config');
-        result |= API.is_modified('evse/led_configuration');
+        result ||= API.is_modified('evse/auto_start_charging');
+        result ||= API.is_modified('evse/external_enabled');
+        result ||= API.is_modified('evse/boost_mode');
+        result ||= API.is_modified('require_meter/config');
+        result ||= API.is_modified('evse/led_configuration');
 
         if (this.state.is_evse_v2) {
-            result |= API.is_modified('evse/button_configuration');
-            result |= API.is_modified('evse/gpio_configuration');
-            result |= API.is_modified('evse/ev_wakeup');
+            result ||= API.is_modified('evse/button_configuration');
+            result ||= API.is_modified('evse/gpio_configuration');
+            result ||= API.is_modified('evse/ev_wakeup');
         }
 
-        result |= super.getIsModified(t);
+        result ||= super.getIsModified(t);
         return result;
     }
 
