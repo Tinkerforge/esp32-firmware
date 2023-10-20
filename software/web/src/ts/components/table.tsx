@@ -165,10 +165,10 @@ export class Table extends Component<TableProps, TableState> {
                         </>)}
                         {props.onAddSubmit ?
                         <tr>
-                            <td colSpan={props.columnNames.length} style="vertical-align: middle; width: 100%;">
+                            <td colSpan={props.columnNames.length} style={"vertical-align: middle; width: 100%;" + (props.rows.length == 0 ? " border-top: none;" : "")}>
                                 {props.addMessage}
                             </td>
-                            <td style="text-align: right; vertical-align: middle;">
+                            <td style={"text-align: right; vertical-align: middle;" + (props.rows.length == 0 ? " border-top: none;" : "")}>
                                 <Button variant="primary"
                                         size="sm"
                                         onClick={async () => {
