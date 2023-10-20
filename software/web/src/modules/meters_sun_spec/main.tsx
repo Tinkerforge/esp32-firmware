@@ -35,8 +35,7 @@ import { Button } from "react-bootstrap";
 interface MetersSunSpecState {
     host: string;
     port: number;
-    device_address: number;
-    discovery_log: string;
+    scan_log: string;
 }
 
 export class MetersSunSpec extends Component<{}, MetersSunSpecState> {
@@ -47,15 +46,15 @@ export class MetersSunSpec extends Component<{}, MetersSunSpecState> {
         this.state = {
             host: '192.168.1.243',
             port: 502,
-            discovery_log: ''
+            scan_log: ''
         } as any;
 
-        util.addApiEventListener('meters_sun_spec/discovery_log', (e) => {
-            if (e.data == '<<<clear_discovery_log>>>') {
-                this.setState({discovery_log: ''})
+        util.addApiEventListener('meters_sun_spec/scan_log', (e) => {
+            if (e.data == '<<<clear_scan_log>>>') {
+                this.setState({scan_log: ''})
             }
             else {
-                this.setState({discovery_log: this.state.discovery_log + e.data + '\n'})
+                this.setState({scan_log: this.state.scan_log + e.data + '\n'})
             }
         }, false);
     }
@@ -86,12 +85,12 @@ export class MetersSunSpec extends Component<{}, MetersSunSpecState> {
                                 />
                 </FormRow>
 
-                <FormRow label={__("meters_sun_spec.content.discovery_log")}>
+                <FormRow label={__("meters_sun_spec.content.scan_log")}>
                     <textarea class="text-monospace mb-1 form-control"
                               readonly
                               rows={20}
                               style="resize: both; width: 100%; white-space: pre; line-height: 1.2; text-shadow: none; font-size: 0.875rem;">
-                        {state.discovery_log}
+                        {state.scan_log}
                     </textarea>
                 </FormRow>
 
@@ -99,11 +98,11 @@ export class MetersSunSpec extends Component<{}, MetersSunSpecState> {
                     <Button variant="primary"
                             className="form-control"
                             onClick={() => {
-                                API.call('meters_sun_spec/start_discovery',
-                                        {host: state.host, port: state.port},
-                                        __("meters_sun_spec.content.start_discovery_failed"));
+                                API.call('meters_sun_spec/scan',
+                                         {host: state.host, port: state.port},
+                                         __("meters_sun_spec.content.scan_failed"));
                             }}>
-                        {__("meters_sun_spec.content.start_discovery")}
+                        {__("meters_sun_spec.content.scan")}
                     </Button>
                 </FormRow>
             </SubPage>

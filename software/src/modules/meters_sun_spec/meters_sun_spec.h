@@ -52,7 +52,7 @@ public:
     virtual const Config *get_errors_prototype() override _ATTRIBUTE((const));
 
 //private:
-    enum class DiscoveryState {
+    enum class ScanState {
         Idle,
         Resolve,
         Resolving,
@@ -72,42 +72,38 @@ public:
         ReadCommonModelBlockDone,
         ReadStandardModelHeader,
         ReadStandardModelHeaderDone,
-        /*ReadInverter3PFloatModelBlock,
-        ReadInverter3PFloatModelBlockDone,
-        ReadACMeterW3PFloatModelBlock,
-        ReadACMeterW3PFloatModelBlockDone,*/
     };
 
-    void discovery_printfln(const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
+    void scan_printfln(const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
 
     Config config_prototype;
 
     ModbusTCP modbus;
-    ConfigRoot start_discovery;
+    ConfigRoot scan;
 
-    bool discovery_new = false;
-    String discovery_new_host = "";
-    uint16_t discovery_new_port = 0;
+    bool scan_new = false;
+    String scan_new_host = "";
+    uint16_t scan_new_port = 0;
 
-    bool discovery_log_idle = false;
-    DiscoveryState discovery_state = DiscoveryState::Idle;
-    String discovery_host = "";
-    dns_gethostbyname_addrtype_lwip_ctx_async_data discovery_host_data;
-    IPAddress discovery_host_address;
-    uint16_t discovery_port;
-    uint8_t discovery_device_address;
-    uint8_t discovery_device_address_last;
-    size_t discovery_base_address_index;
-    size_t discovery_read_address;
-    size_t discovery_read_size;
-    uint16_t discovery_read_buffer[124];
-    uint32_t discovery_read_cookie = 0;
-    ModbusDeserializer discovery_deserializer;
-    size_t discovery_read_index;
-    Modbus::ResultCode discovery_read_result;
-    DiscoveryState discovery_read_state;
-    size_t discovery_common_block_length;
-    size_t discovery_standard_block_length;
+    bool scan_log_idle = false;
+    ScanState scan_state = ScanState::Idle;
+    String scan_host = "";
+    dns_gethostbyname_addrtype_lwip_ctx_async_data scan_host_data;
+    IPAddress scan_host_address;
+    uint16_t scan_port;
+    uint8_t scan_device_address;
+    uint8_t scan_device_address_last;
+    size_t scan_base_address_index;
+    size_t scan_read_address;
+    size_t scan_read_size;
+    uint16_t scan_read_buffer[68];
+    uint32_t scan_read_cookie = 0;
+    ModbusDeserializer scan_deserializer;
+    size_t scan_read_index;
+    Modbus::ResultCode scan_read_result;
+    ScanState scan_read_state;
+    size_t scan_common_block_length;
+    size_t scan_standard_block_length;
 };
 
 #if defined(__GNUC__)
