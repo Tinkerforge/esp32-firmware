@@ -97,8 +97,11 @@ void MeterSunSpec::read_start(size_t model_start_address, size_t model_regcount)
 void MeterSunSpec::read_done_callback()
 {
     access_in_progress = false;
-    int16_t voltA = static_cast<int16_t>(generic_read_request.data[0][8]);
-    logger.printfln("read_done_cb called voltA=%i", voltA);
+
+    if (generic_read_request.result_code == Modbus::ResultCode::EX_SUCCESS) {
+        int16_t voltA = static_cast<int16_t>(generic_read_request.data[0][8]);
+        logger.printfln("read_done_cb called voltA=%i", voltA);
+    }
 }
 
 void MeterSunSpec::scan_restart()
