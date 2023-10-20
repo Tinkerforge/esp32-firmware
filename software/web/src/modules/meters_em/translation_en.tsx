@@ -3,7 +3,7 @@ import { h } from "preact";
 let x = {
     "meters_em": {
         "content": {
-            "meter_class": "Energy manager (locally connected)",
+            "meter_class": "Connected to energy manager",
 
             "config_display_name": "Name"
         }
