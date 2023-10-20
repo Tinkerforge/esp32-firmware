@@ -30,7 +30,7 @@
 _ATTRIBUTE((const))
 MeterClassID MeterEM::get_class() const
 {
-    return MeterClassID::EM;
+    return MeterClassID::EnergyManager;
 }
 
 void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)

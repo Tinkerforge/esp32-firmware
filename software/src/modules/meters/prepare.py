@@ -178,7 +178,7 @@ classes = [
     'None',
     'RS485 Bricklet',
     'EVSE V2',
-    'EM',
+    'Energy Manager',
     'Push API',
     'Sun Spec',
     'Modbus TCP',

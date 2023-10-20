@@ -389,7 +389,7 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     MeterClassID linked_meter_class = meters.get_meter_class(linked_meter_slot);
     if (linked_meter_class == MeterClassID::RS485Bricklet
         || linked_meter_class == MeterClassID::EVSEV2
-        || linked_meter_class == MeterClassID::EM) {
+        || linked_meter_class == MeterClassID::EnergyManager) {
         const String state_path = meters.get_path(linked_meter_slot, Meters::PathType::State);
         const Config *linked_state = api.getState(state_path);
         if (linked_state) {
