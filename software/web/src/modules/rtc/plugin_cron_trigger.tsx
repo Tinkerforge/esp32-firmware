@@ -47,13 +47,13 @@ export function RtcCronTriggerConfigComponent(cron: Cron, trigger: CronTrigger) 
     let minutes: [string, string][] = [['-1','*']];
     let days: [string, string][] = [
         ['-1', __("rtc.content.every")],
-        ['0', __("rtc.content.sunday")],
         ['1', __("rtc.content.monday")],
         ['2', __("rtc.content.tuesday")],
         ['3', __("rtc.content.wednesday")],
         ['4', __("rtc.content.thursday")],
         ['5', __("rtc.content.friday")],
-        ['6', __("rtc.content.saturday")]
+        ['6', __("rtc.content.saturday")],
+        ['0', __("rtc.content.sunday")],
     ];
 
     const date = new Date();
