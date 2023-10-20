@@ -168,7 +168,7 @@ with open('../../../web/src/modules/meters/meter_value_id.ts', 'w') as f:
     f.write('}\n')
 
 for lang in translation_values:
-    util.specialize_template(f'../../../web/src/modules/meters/translation_{lang}.json.template', f'../../../web/src/modules/meters/translation_{lang}.json', {
+    util.specialize_template(f'../../../web/src/modules/meters/translation_{lang}.tsx.template', f'../../../web/src/modules/meters/translation_{lang}.tsx', {
         '{{{values}}}': ',\n            '.join(translation_values[lang]),
         '{{{groups}}}': ',\n            '.join(translation_groups[lang]),
     })

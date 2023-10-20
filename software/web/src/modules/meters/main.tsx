@@ -1258,7 +1258,7 @@ interface MeterStatusState {
 }
 
 function get_meter_name(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
-    let meter_name = `Meter #${util.hasValue(meter_slot) ? meter_slot : '?'}`;
+    let meter_name = __("meters.script.meter")(util.hasValue(meter_slot) ? meter_slot : '?');
 
     if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
         meter_name = meter_configs[meter_slot][1].display_name;
