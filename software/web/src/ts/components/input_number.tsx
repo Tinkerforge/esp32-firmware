@@ -54,7 +54,13 @@ export function InputNumber(props: InputNumberProps) {
                         className="form-control px-1"
                         style="margin-right: .125rem !important;"
                         onClick={() => {
-                            props.onValue(util.clamp(props.min as number, props.value - 1, props.max as number));
+                            if (util.hasValue(props.value) && !isNaN(props.value)) {
+                                props.onValue(util.clamp(props.min as number, props.value - 1, props.max as number));
+                            }
+                            else {
+                                props.onValue(props.min as number);
+                            }
+
                             input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
                         }}>
                     <Minus/>
@@ -62,7 +68,13 @@ export function InputNumber(props: InputNumberProps) {
                 <Button variant="primary"
                         className="form-control px-1 rounded-right"
                         onClick={() => {
-                            props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number));
+                            if (util.hasValue(props.value) && !isNaN(props.value)) {
+                                props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number));
+                            }
+                            else {
+                                props.onValue(props.max as number);
+                            }
+
                             input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
                         }}>
                     <Plus/>
