@@ -49,7 +49,7 @@ public:
     void read_done_callback();
 
 private:
-    enum class DiscoveryState {
+    enum class ScanState {
         Idle,
         ReadSunSpecID,
         ReadCommonModelHeader,
@@ -61,9 +61,9 @@ private:
 
     void read_start(size_t model_start_address, size_t model_regcount);
 
-    void discovery_restart();
-    void discovery_start();
-    void discovery_next();
+    void scan_restart();
+    void scan_start();
+    void scan_next();
 
     uint32_t slot;
     Config *config;
@@ -73,10 +73,10 @@ private:
     bool access_in_progress = false;
 
     uint16_t model_id;
-    size_t discovery_base_address_index;
-    DiscoveryState discovery_state;
-    DiscoveryState discovery_state_next;
-    ModbusDeserializer discovery_deserializer;
+    size_t scan_base_address_index;
+    ScanState scan_state;
+    ScanState scan_state_next;
+    ModbusDeserializer scan_deserializer;
 };
 
 #if defined(__GNUC__)
