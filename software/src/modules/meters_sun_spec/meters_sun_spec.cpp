@@ -30,7 +30,9 @@
 #include "gcc_warnings.h"
 
 #define MAX_READ_CHUNK_SIZE 10
-#define LAST_DEVICE_ADDRESS 247
+
+#define DEVICE_ADDRESS_FIRST 1
+#define DEVICE_ADDRESS_LAST 247
 
 #define SUN_SPEC_ID 0x53756E53
 
@@ -60,7 +62,6 @@ void MetersSunSpec::pre_setup()
     start_discovery = ConfigRoot{Config::Object({
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(0)},
-        {"device_address", Config::Uint8(0)},
     })};
 }
 
@@ -77,16 +78,6 @@ void MetersSunSpec::register_urls()
         discovery_new = true;
         discovery_new_host = start_discovery.get("host")->asString();
         discovery_new_port = static_cast<uint16_t>(start_discovery.get("port")->asUint());
-
-        uint8_t device_address = static_cast<uint8_t>(start_discovery.get("device_address")->asUint());
-
-        if (device_address == 0) {
-            discovery_new_device_address = 1;
-            discovery_new_device_address_next = 2;
-        } else {
-            discovery_new_device_address = device_address;
-            discovery_new_device_address_next = device_address;
-        }
     }, true);
 }
 
@@ -116,16 +107,14 @@ void MetersSunSpec::loop()
             discovery_state = DiscoveryState::Resolve;
             discovery_host = discovery_new_host;
             discovery_port = discovery_new_port;
-            discovery_device_address = discovery_new_device_address;
-            discovery_device_address_next = discovery_new_device_address_next;
+            discovery_device_address = DEVICE_ADDRESS_FIRST;
+            discovery_device_address_last = DEVICE_ADDRESS_LAST;
             discovery_base_address_index = 0;
             ++discovery_read_cookie;
 
             discovery_new = false;
             discovery_new_host = "";
             discovery_new_port = 0;
-            discovery_new_device_address = 0;
-            discovery_new_device_address_next = 0;
         }
 
         break;
@@ -202,18 +191,12 @@ void MetersSunSpec::loop()
         break;
 
     case DiscoveryState::NextDeviceAddress:
-        discovery_base_address_index = 0;
-
-        if (discovery_device_address == discovery_device_address_next) {
+        if (discovery_device_address >= discovery_device_address_last) {
             discovery_state = DiscoveryState::Disconnect;
         }
         else {
-            discovery_device_address = discovery_device_address_next;
-
-            if (discovery_device_address_next < LAST_DEVICE_ADDRESS) {
-                ++discovery_device_address_next;
-            }
-
+            ++discovery_device_address;
+            discovery_base_address_index = 0;
             discovery_state = DiscoveryState::ReadSunSpecID;
         }
 
@@ -389,14 +372,10 @@ void MetersSunSpec::loop()
                                serial_number,
                                device_address);
 
-            if (device_address < 1 || device_address > 247) {
-                if (discovery_device_address != discovery_device_address_next) {
-                    discovery_printfln("Invalid device address found, stopping device address scan");
+            if (device_address < DEVICE_ADDRESS_FIRST || device_address > DEVICE_ADDRESS_LAST) {
+                discovery_printfln("Invalid device address found, stopping device address scan");
 
-                    discovery_device_address = discovery_device_address_next;
-                } else {
-                    discovery_printfln("Invalid device address found");
-                }
+                discovery_device_address = discovery_device_address_last;
             }
 
             discovery_state = DiscoveryState::ReadStandardModelHeader;

@@ -87,18 +87,16 @@ public:
     bool discovery_new = false;
     String discovery_new_host = "";
     uint16_t discovery_new_port = 0;
-    uint8_t discovery_new_device_address = 0;
-    uint8_t discovery_new_device_address_next = 0;
 
     bool discovery_log_idle = false;
     DiscoveryState discovery_state = DiscoveryState::Idle;
     String discovery_host = "";
     dns_gethostbyname_addrtype_lwip_ctx_async_data discovery_host_data;
     IPAddress discovery_host_address;
-    uint16_t discovery_port = 0;
-    uint8_t discovery_device_address = 0;
-    uint8_t discovery_device_address_next = 0;
-    size_t discovery_base_address_index = 0;
+    uint16_t discovery_port;
+    uint8_t discovery_device_address;
+    uint8_t discovery_device_address_last;
+    size_t discovery_base_address_index;
     size_t discovery_read_address;
     size_t discovery_read_size;
     uint16_t discovery_read_buffer[124];
