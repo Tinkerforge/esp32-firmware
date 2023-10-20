@@ -41,19 +41,19 @@ void MetersEM::pre_setup()
         {"slave_device_failure", Config::Uint32(0)},
     });
 
-    meters.register_meter_generator(MeterClassID::EM, this);
+    meters.register_meter_generator(MeterClassID::EnergyManager, this);
 }
 
 _ATTRIBUTE((const))
 MeterClassID MetersEM::get_class() const
 {
-    return MeterClassID::EM;
+    return MeterClassID::EnergyManager;
 }
 
 IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config * /*config*/, Config * errors)
 {
     if (meter_instance) {
-        logger.printfln("meters_em: Cannot create more than one meter of class LOCAL_EM.");
+        logger.printfln("meters_em: Cannot create more than one meter of class EnergyManager.");
         return nullptr;
     }
     meter_instance = new MeterEM(slot, state, errors);

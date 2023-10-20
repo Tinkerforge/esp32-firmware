@@ -25,7 +25,7 @@ import { TableModalRow } from "../../ts/components/table";
 import { InputText } from "../../ts/components/input_text";
 
 export type EMMetersConfig = [
-    MeterClassID.EM,
+    MeterClassID.EnergyManager,
     {
         display_name: string;
     },
@@ -33,9 +33,9 @@ export type EMMetersConfig = [
 
 export function init() {
     return {
-        [MeterClassID.EM]: {
+        [MeterClassID.EnergyManager]: {
             name: __("meters_em.content.meter_class"),
-            init: () => [MeterClassID.EM, {display_name: ""}] as MeterConfig,
+            init: () => [MeterClassID.EnergyManager, {display_name: ""}] as MeterConfig,
             clone: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_rows: (config: EMMetersConfig, on_value: (config: EMMetersConfig) => void): TableModalRow[] => {
                 return [
