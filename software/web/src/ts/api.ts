@@ -136,7 +136,8 @@ export function trigger_unchecked<T extends keyof ConfigMap>(topic: string, even
 }
 
 export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
-    return call((topic + "_update") as any, payload, error_string, reboot_string);
+    let extracted = extract(topic, payload);
+    return call((topic + "_update") as any, extracted, error_string, reboot_string);
 }
 
 export function save_unchecked<T extends string>(topic: T, payload: (T extends keyof ConfigMap ? ConfigMap[T] : any), error_string: string, reboot_string?: string) {
@@ -181,4 +182,14 @@ export function hasModule(module: string) {
     if (modules === null)
         return false;
     return module in modules && modules[module as keyof typeof modules];
+}
+
+//based on https://stackoverflow.com/a/50895613
+export function extract<T extends keyof ConfigMap, U extends ConfigMap[T]>(topic: T, value: Readonly<U>){
+    let stencil = get(topic)
+    let result = {} as ConfigMap[T];
+    for (const property of Object.keys(stencil) as Array<keyof ConfigMap[T]>) {
+        result[property] = value[property];
+    }
+    return result;
 }

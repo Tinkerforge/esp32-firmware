@@ -29,16 +29,6 @@ type PickByValue<T, ValueType> = Pick<
   { [Key in keyof T]-?: T[Key] extends ValueType ? Key : never }[keyof T]
 >;
 
-//based on https://stackoverflow.com/a/50895613
-function extract<T extends keyof ConfigMap, U extends API.getType[T]>(topic: T, value: Readonly<U>){
-    let stencil = API.get(topic)
-    let result = {} as API.getType[T];
-    for (const property of Object.keys(stencil) as Array<keyof API.getType[T]>) {
-        result[property] = value[property];
-    }
-    return result;
-}
-
 export interface ConfigComponentState {
     internal_isDirty: boolean;
 }
@@ -77,7 +67,7 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
     }
 
     save = async () => {
-        let cfg = extract(this.t, this.state);
+        let cfg = API.extract(this.t, this.state);
         if (!await this.isSaveAllowed(cfg))
             throw new Error("saving not allowed");
 
