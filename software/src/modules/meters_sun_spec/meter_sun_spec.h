@@ -52,9 +52,7 @@ private:
     enum class ScanState {
         Idle,
         ReadSunSpecID,
-        ReadCommonModelHeader,
-        ReadCommonModelBlock,
-        ReadStandardModelHeader,
+        ReadModelHeader,
     };
 
     void connect_callback() override;

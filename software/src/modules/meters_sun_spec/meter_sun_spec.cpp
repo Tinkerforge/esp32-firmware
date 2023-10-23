@@ -161,7 +161,7 @@ void MeterSunSpec::scan_next()
                 if (sun_spec_id == SUN_SPEC_ID) {
                     generic_read_request.start_address += generic_read_request.register_count;
                     generic_read_request.register_count = 2;
-                    scan_state_next = ScanState::ReadCommonModelHeader;
+                    scan_state_next = ScanState::ReadModelHeader;
 
                     start_generic_read();
                 }
@@ -169,7 +169,7 @@ void MeterSunSpec::scan_next()
                     ++scan_base_address_index;
 
                     if (scan_base_address_index >= ARRAY_SIZE(scan_base_addresses)) {
-                        logger.printfln("meter_sun_spec: No SunSpec device found");
+                        logger.printfln("meter_sun_spec: No SunSpec device found at %s:%u:%u", host_name.c_str(), port, device_address);
                         scan_restart();
                     }
                     else {
@@ -184,72 +184,15 @@ void MeterSunSpec::scan_next()
 
             break;
 
-        case ScanState::ReadCommonModelHeader: {
-                uint16_t common_model_id = scan_deserializer.read_uint16();
+        case ScanState::ReadModelHeader: {
+                uint16_t model_id_ = scan_deserializer.read_uint16();
                 size_t block_length = scan_deserializer.read_uint16();
 
-                if (common_model_id == COMMON_MODEL_ID && (block_length == 65 || block_length == 66)) {
-                    generic_read_request.start_address += generic_read_request.register_count;
-                    generic_read_request.register_count = block_length;
-                    scan_state_next = ScanState::ReadCommonModelBlock;
-
-                    start_generic_read();
-                }
-                else {
-                    logger.printfln("meter_sun_spec: No SunSpec Common Model found");
+                if (model_id_ == NON_IMPLEMENTED_UINT16 && block_length == 0) {
+                    logger.printfln("meter_sun_spec: Configured SunSpec model %u not found at %s:%u:%u", model_id, host_name.c_str(), port, device_address);
                     scan_restart();
                 }
-            }
-
-            break;
-
-        case ScanState::ReadCommonModelBlock: {
-                char manufacturer_name[32 + 1];
-                char model_name[32 + 1];
-                char options[16 + 1];
-                char version[16 + 1];
-                char serial_number[32 + 1];
-                uint16_t device_address_;
-
-                scan_deserializer.read_string(manufacturer_name, sizeof(manufacturer_name));
-                scan_deserializer.read_string(model_name, sizeof(model_name));
-                scan_deserializer.read_string(options, sizeof(options));
-                scan_deserializer.read_string(version, sizeof(version));
-                scan_deserializer.read_string(serial_number, sizeof(serial_number));
-                device_address_ = scan_deserializer.read_uint16();
-
-                logger.printfln("meter_sun_spec: Found Common Model:\n"
-                                "  Manufacturer Name: %s\n"
-                                "  Model Name: %s\n"
-                                "  Options: %s\n"
-                                "  Version: %s\n"
-                                "  Serial Number: %s\n"
-                                "  Device Address: %u",
-                                manufacturer_name,
-                                model_name,
-                                options,
-                                version,
-                                serial_number,
-                                device_address_);
-
-                generic_read_request.start_address += generic_read_request.register_count;
-                generic_read_request.register_count = 2;
-                scan_state_next = ScanState::ReadStandardModelHeader;
-
-                start_generic_read();
-            }
-
-            break;
-
-        case ScanState::ReadStandardModelHeader: {
-                uint16_t standard_model_id = scan_deserializer.read_uint16();
-                size_t block_length = scan_deserializer.read_uint16();
-
-                if (standard_model_id == NON_IMPLEMENTED_UINT16 && block_length == 0) {
-                    logger.printfln("meter_sun_spec: Configured SunSpec Standard Model not found");
-                    scan_restart();
-                }
-                else if (standard_model_id == model_id) {
+                else if (model_id_ == model_id) {
                     read_start(generic_read_request.start_address, 2 + block_length);
                 }
                 else {
