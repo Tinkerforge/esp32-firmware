@@ -42,7 +42,13 @@ export type SunSpecMetersConfig = [
 ];
 
 interface DeviceScannerResult {
+    unique_id: string
+    manufacturer_name: string
+    model_name: string
     display_name: string
+    options: string
+    version: string
+    serial_number: string
     device_address: number
     model_id: number
 }
@@ -85,12 +91,25 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         util.addApiEventListener('meters_sun_spec/scan_result', () => {
             let scan_result = API.get('meters_sun_spec/scan_result');
 
+            console.log('scan_result ' + JSON.stringify(scan_result));
+
             if (scan_result.host === this.props.host && scan_result.port === this.props.port) {
-                this.setState({scan_results: this.state.scan_results.concat({
-                    display_name: scan_result.display_name,
-                    device_address: scan_result.device_address,
-                    model_id: scan_result.model_id,
-                })});
+                // this combination must be unique according to sunspec specification
+                let unique_id = scan_result.manufacturer_name + scan_result.model_name + scan_result.serial_number;
+
+                if (this.state.scan_results.filter((other) => other.unique_id == unique_id && other.model_id == scan_result.model_id).length == 0) {
+                    this.setState({scan_results: this.state.scan_results.concat({
+                        unique_id: unique_id,
+                        manufacturer_name: scan_result.manufacturer_name,
+                        model_name: scan_result.model_name,
+                        display_name: scan_result.model_name.startsWith(scan_result.manufacturer_name) ? scan_result.model_name : scan_result.manufacturer_name + ' ' + scan_result.model_name,
+                        options: scan_result.options,
+                        version: scan_result.version,
+                        serial_number: scan_result.serial_number,
+                        device_address: scan_result.device_address,
+                        model_id: scan_result.model_id,
+                    })});
+                }
             }
         });
 

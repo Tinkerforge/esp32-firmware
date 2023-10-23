@@ -72,6 +72,7 @@ public:
         ReadCommonModelBlockDone,
         ReadStandardModelHeader,
         ReadStandardModelHeaderDone,
+        ReportStandardModelResult,
     };
 
     void scan_printfln(const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
@@ -92,7 +93,6 @@ public:
     IPAddress scan_host_address;
     uint16_t scan_port;
     uint8_t scan_device_address;
-    uint8_t scan_device_address_last;
     size_t scan_base_address_index;
     size_t scan_read_address;
     size_t scan_read_size;
@@ -103,8 +103,14 @@ public:
     Modbus::ResultCode scan_read_result;
     ScanState scan_read_state;
     size_t scan_common_block_length;
+    uint16_t scan_standard_model_id;
     size_t scan_standard_block_length;
-    char scan_display_name[66]; // <manufacturer name> + " " + <model name> + "\0"
+    char scan_common_manufacturer_name[32 + 1];
+    char scan_common_model_name[32 + 1];
+    char scan_common_options[16 + 1];
+    char scan_common_version[16 + 1];
+    char scan_common_serial_number[32 + 1];
+    uint16_t scan_common_device_address;
 };
 
 #if defined(__GNUC__)
