@@ -120,7 +120,7 @@ const MeterValueID sdm_helper_72v1_ids[3] = {
     MeterValueID::EnergyActiveLSumImExSum,
 };
 
-const uint32_t sdm_helper_72v2_all_value_indices[36] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,22,23,24,25,26,27,29,30,31,42,43,44,45,46,51,52,65,66};
+const uint32_t sdm_helper_72v2_all_value_indices[34] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,22,23,24,25,26,27,29,30,31,42,43,44,45,46,65,66};
 
 static void copy_value_ids(MeterValueID *dst, const MeterValueID *src, size_t *dst_len, size_t src_len)
 {
