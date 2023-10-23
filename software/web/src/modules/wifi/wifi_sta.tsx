@@ -83,7 +83,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
 
             if (typeof e.data !== "string")
                 this.setState({scan_running: false, scan_results: e.data});
-        }, false);
+        });
     }
 
     override async isSaveAllowed(cfg: STAConfig) {
