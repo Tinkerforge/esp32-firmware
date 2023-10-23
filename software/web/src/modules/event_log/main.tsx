@@ -130,6 +130,12 @@ export class EventLog extends Component<{}, EventLogState> {
                 // string.trimEnd is in es2019
                 // log starts with (relevant!) whitespace
                 const log = this.state.log.endsWith("\n") ? this.state.log.slice(0, -1) : this.state.log;
+
+                if (reboot) {
+                    this.set_log(log + "\n" + "-".repeat(TIMESTAMP_LEN - 2) + "  [Reboot]\n" + text);
+                    return;
+                }
+
                 const old_lines = log.split("\n");
 
                 let i = old_lines.length - 1;
@@ -153,10 +159,6 @@ export class EventLog extends Component<{}, EventLogState> {
                         break;
                 }
 
-                if (i <= 0 && reboot) {
-                    i = old_lines.length;
-                }
-
                 if (i < 0) {
                     this.set_log(text);
                     return;
@@ -165,9 +167,7 @@ export class EventLog extends Component<{}, EventLogState> {
                 let new_log = old_lines.slice(0, i).join("\n");
                 if (new_log.length > 0 && !new_log.endsWith("\n"))
                     new_log += "\n"
-                if (reboot)
-                    new_log += "-".repeat(TIMESTAMP_LEN - 2) + "  [Reboot]\n";
-                if (!reboot && i == old_lines.length)
+                if (i == old_lines.length)
                     new_log += "-".repeat(TIMESTAMP_LEN - 2) + "  [WebSocket reconnect]\n";
                 new_log += text;
 
