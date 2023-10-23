@@ -933,7 +933,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
             if (API.is_modified_unchecked(`meters/${meter_slot}/config`))
                 return true;
         }
-        return super.isModified();
+        return super.getIsModified(t);
     }
 
     render(props: {}, state: Readonly<MetersState>) {
