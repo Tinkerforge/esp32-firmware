@@ -197,7 +197,7 @@ let ws: WebSocket = null;
 const RECONNECT_TIME = 12000;
 
 export function addApiEventListener<T extends keyof API.EventMap>(type: T, listener: (this: API.APIEventTarget, ev: API.EventMap[T]) => any, options?: boolean | AddEventListenerOptions) {
-    eventTarget.addEventListener(type, listener);
+    eventTarget.addEventListener(type, listener, options);
     if (api_cache[type])
     {
         API.trigger(type, eventTarget);
