@@ -29,6 +29,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { Button, Spinner } from "react-bootstrap";
 import { Download } from 'react-feather';
 import { SubPage } from "../../ts/components/sub_page";
+import { OutputTextarea } from "../../ts/components/output_textarea";
 
 interface EventLogState {
     log: string
@@ -44,8 +45,6 @@ const LOG_CHUNK_LEN_DROPPED_WHEN_FULL = 1024 * 1024;
 export class EventLog extends Component<{}, EventLogState> {
     page_visible: boolean = false;
     last_boot_id = -1;
-    textarea_ref = createRef<HTMLTextAreaElement>();
-    auto_scroll: boolean = true;
 
     constructor() {
         super();
@@ -215,18 +214,6 @@ export class EventLog extends Component<{}, EventLogState> {
         }
     }
 
-    override componentDidUpdate() {
-        let ta = this.textarea_ref.current;
-
-        if (!ta)
-            return;
-
-        if (!this.auto_scroll)
-            return;
-
-        this.textarea_ref.current.scrollTop = this.textarea_ref.current.scrollHeight;
-    }
-
 
     render(props: {}, state: Readonly<EventLogState>) {
         if (!util.render_allowed())
@@ -237,19 +224,11 @@ export class EventLog extends Component<{}, EventLogState> {
                 <PageHeader title={__("event_log.content.event_log")} />
 
                 <FormRow label={__("event_log.content.event_log_desc")} label_muted={__("event_log.content.event_log_desc_muted")}>
-                    <textarea class="text-monospace mb-1 form-control"
-                              readonly
-                              id="event_log_content"
-                              rows={20}
-                              style="resize: both; width: 100%; white-space: pre; line-height: 1.2; text-shadow: none; font-size: 0.875rem;"
-                              placeholder={__("event_log.content.event_log_placeholder")}
-                              ref={this.textarea_ref}
-                              onScroll={(ev) => {
-                                let ta = ev.target as HTMLTextAreaElement;
-                                this.auto_scroll = ta.scrollHeight - Math.round(ta.scrollTop) === ta.clientHeight}
-                              }>
-                        {state.log}
-                    </textarea>
+                    <OutputTextarea
+                        value={state.log}
+                        moreClass="mb-1"
+                        placeholder={__("event_log.content.event_log_placeholder")}
+                        />
                 </FormRow>
 
                 <FormRow label={__("event_log.content.debug_report_desc")} label_muted={__("event_log.content.debug_report_desc_muted")}>
