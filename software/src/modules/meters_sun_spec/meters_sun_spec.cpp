@@ -112,7 +112,6 @@ void MetersSunSpec::loop()
             scan_host = scan_new_host;
             scan_port = scan_new_port;
             scan_device_address = DEVICE_ADDRESS_FIRST;
-            scan_device_address_last = DEVICE_ADDRESS_LAST;
             scan_base_address_index = 0;
             ++scan_read_cookie;
 
@@ -210,7 +209,7 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::NextDeviceAddress:
-        if (scan_device_address >= scan_device_address_last) {
+        if (scan_device_address >= DEVICE_ADDRESS_LAST) {
             scan_state = ScanState::Disconnect;
         }
         else {
@@ -364,19 +363,13 @@ void MetersSunSpec::loop()
 
     case ScanState::ReadCommonModelBlockDone:
         if (scan_read_result == Modbus::ResultCode::EX_SUCCESS) {
-            char manufacturer_name[32 + 1];
-            char model_name[32 + 1];
-            char options[16 + 1];
-            char version[16 + 1];
-            char serial_number[32 + 1];
-            uint16_t device_address;
+            scan_deserializer.read_string(scan_common_manufacturer_name, sizeof(scan_common_manufacturer_name));
+            scan_deserializer.read_string(scan_common_model_name, sizeof(scan_common_model_name));
+            scan_deserializer.read_string(scan_common_options, sizeof(scan_common_options));
+            scan_deserializer.read_string(scan_common_version, sizeof(scan_common_version));
+            scan_deserializer.read_string(scan_common_serial_number, sizeof(scan_common_serial_number));
 
-            scan_deserializer.read_string(manufacturer_name, sizeof(manufacturer_name));
-            scan_deserializer.read_string(model_name, sizeof(model_name));
-            scan_deserializer.read_string(options, sizeof(options));
-            scan_deserializer.read_string(version, sizeof(version));
-            scan_deserializer.read_string(serial_number, sizeof(serial_number));
-            device_address = scan_deserializer.read_uint16();
+            uint16_t device_address = scan_deserializer.read_uint16();
 
             scan_printfln("Manufacturer Name: %s\n"
                           "Model Name: %s\n"
@@ -384,25 +377,12 @@ void MetersSunSpec::loop()
                           "Version: %s\n"
                           "Serial Number: %s\n"
                           "Device Address: %u",
-                          manufacturer_name,
-                          model_name,
-                          options,
-                          version,
-                          serial_number,
+                          scan_common_manufacturer_name,
+                          scan_common_model_name,
+                          scan_common_options,
+                          scan_common_version,
+                          scan_common_serial_number,
                           device_address);
-
-            if (strncmp(manufacturer_name, model_name, strlen(manufacturer_name)) != 0) {
-                snprintf(scan_display_name, sizeof(scan_display_name), "%s %s", manufacturer_name, model_name);
-            }
-            else {
-                snprintf(scan_display_name, sizeof(scan_display_name), "%s", model_name);
-            }
-
-            if (device_address < DEVICE_ADDRESS_FIRST || device_address > DEVICE_ADDRESS_LAST) {
-                scan_printfln("Invalid device address found, stopping device address scan");
-
-                scan_device_address_last = scan_device_address;
-            }
 
             scan_state = ScanState::ReadStandardModelHeader;
         }
@@ -443,38 +423,26 @@ void MetersSunSpec::loop()
 
                 for (size_t i = 0; i < sun_spec_model_specs_length; ++i) {
                     if (model_id == static_cast<uint16_t>(sun_spec_model_specs[i].model_id)) {
-                        scan_printfln("%s Model found", sun_spec_model_specs[i].model_name);
+                        scan_printfln("%s Model [%u] found", sun_spec_model_specs[i].model_name, model_id);
 
                         if (block_length != sun_spec_model_specs[i].block_length) {
-                            scan_printfln("%s Model has unexpected length (actual: %zu, expected: %u)",
-                                          sun_spec_model_specs[i].model_name, block_length, sun_spec_model_specs[i].block_length);
+                            scan_printfln("%s Model [%u] has unexpected length (actual: %zu, expected: %u)",
+                                          sun_spec_model_specs[i].model_name, model_id, block_length, sun_spec_model_specs[i].block_length);
                         }
                         else {
-                            char buf[512];
-                            TFJsonSerializer json{buf, sizeof(buf)};
-
-                            json.addObject();
-                            json.add("host", scan_host.c_str());
-                            json.add("port", static_cast<uint64_t>(scan_port));
-                            json.add("display_name", scan_display_name);
-                            json.add("device_address", static_cast<uint64_t>(scan_device_address));
-                            json.add("model_id", static_cast<uint64_t>(model_id));
-                            json.endObject();
-                            json.end();
-
-                            ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_result"); // FIXME: error handling
-
-                            scan_read_address += block_length;
-                            scan_state = ScanState::ReadStandardModelHeader;
-
                             found = true;
                             break;
                         }
                     }
                 }
 
-                if (!found) {
-                    scan_printfln("Skipping Unknown Model (model-id: %u, block-length: %zu)", model_id, block_length);
+                if (found) {
+                    scan_standard_model_id = model_id;
+                    scan_standard_block_length = block_length;
+                    scan_state = ScanState::ReportStandardModelResult;
+                }
+                else {
+                    scan_printfln("Skipping Unknown Model [%u] with length %zu", model_id, block_length);
 
                     scan_read_address += block_length;
                     scan_state = ScanState::ReadStandardModelHeader;
@@ -490,6 +458,33 @@ void MetersSunSpec::loop()
             else {
                 scan_state = ScanState::NextBaseAddress;
             }
+        }
+
+        break;
+
+    case ScanState::ReportStandardModelResult: {
+            char buf[512];
+            TFJsonSerializer json{buf, sizeof(buf)};
+
+            json.addObject();
+            json.add("host", scan_host.c_str());
+            json.add("port", static_cast<uint64_t>(scan_port));
+            json.add("manufacturer_name", scan_common_manufacturer_name);
+            json.add("model_name", scan_common_model_name);
+            json.add("options", scan_common_options);
+            json.add("version", scan_common_version);
+            json.add("serial_number", scan_common_serial_number);
+            json.add("device_address", static_cast<uint64_t>(scan_device_address));
+            json.add("model_id", static_cast<uint64_t>(scan_standard_model_id));
+            json.endObject();
+            json.end();
+
+            if (!ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_result")) {
+                break; // need report the scan result before doing something else
+            }
+
+            scan_read_address += scan_standard_block_length;
+            scan_state = ScanState::ReadStandardModelHeader;
         }
 
         break;

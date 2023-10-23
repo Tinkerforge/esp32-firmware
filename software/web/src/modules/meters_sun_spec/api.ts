@@ -7,7 +7,11 @@ export interface scan {
 export interface scan_result {
     host: string
     port: number
-    display_name: string
+    manufacturer_name: string
+    model_name: string
+    options: string
+    version: string
+    serial_number: string
     device_address: number
     model_id: number
 }
