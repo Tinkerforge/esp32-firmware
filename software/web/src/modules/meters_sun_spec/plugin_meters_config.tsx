@@ -27,6 +27,7 @@ import { TableModalRow } from "../../ts/components/table";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { FormRow } from "../../ts/components/form_row";
+import { OutputTextarea } from "../../ts/components/output_textarea";
 import { Button, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
 
 export type SunSpecMetersConfig = [
@@ -123,12 +124,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             </FormRow>
 
             <FormRow label="">
-                <textarea class="text-monospace mb-1 form-control"
-                    readonly
-                    rows={20}
-                    style="resize: both; width: 100%; white-space: pre; line-height: 1.2; text-shadow: none; font-size: 0.875rem;">
-                    {this.state.scan_log}
-                </textarea>
+                <OutputTextarea moreClass="mb-1" value={this.state.scan_log} />
             </FormRow>
 
             {this.state.scan_results.length > 0 ?
