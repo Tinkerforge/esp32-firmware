@@ -332,7 +332,7 @@ void EnergyManager::setup()
     if ((config_in_use.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !config_in_use.get("contactor_installed")->asBool()) {
         logger.printfln("energy_manager: Invalid configuration: Automatic phase switching selected but no contactor installed.");
         set_config_error(CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK);
-        return;
+        return; // FIXME: this should not be fatal, because in this case the update_all_data doesn't run, but MeterEM::update_all_values runs resulting in 2.5 sec gaps in the meters data
     }
 
     bool power_meter_available = false;
