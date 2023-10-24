@@ -83,7 +83,7 @@ export function InputFile(props: InputFileProps) {
         <div hidden={!uploading}>
             <div class="form-progress mb-1">
                 <div class="progress-bar form-control progress-bar-no-transition"
-                    role="progressbar" style={"width: " + (progress * 100) + "%"} aria-valuenow={progress * 100} aria-valuemin={0}
+                    role="progressbar" style={"padding: 0; width: " + (progress * 100) + "%"} aria-valuenow={progress * 100} aria-valuemin={0}
                     aria-valuemax={100}></div>
             </div>
             <label>{__("component.input_file.uploading")}</label>
