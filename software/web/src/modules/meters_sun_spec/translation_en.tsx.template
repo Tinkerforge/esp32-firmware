@@ -15,9 +15,12 @@ let x = {
             "config_port": "Port",
             "config_device_address": "Device address",
             "config_model_id": "Model",
+            "config_model_id_select": "Select...",
 
             "scan": "Find devices",
-            "scan_failed": "Could not find devices"
+            "scan_failed": "Could not find devices",
+
+            {{{models}}}
         },
         "script": {
         }

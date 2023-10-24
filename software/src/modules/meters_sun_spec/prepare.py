@@ -2,7 +2,6 @@ import os
 import sys
 import importlib.util
 import importlib.machinery
-import csv
 
 software_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
@@ -18,32 +17,40 @@ if 'software' not in sys.modules:
     create_software_module()
 
 from software import util
+from collections import namedtuple
 
-model_ids = [
-    ('Inverter Single Phase (Integer)', 101, 50),
-    ('Inverter Split Phase (Integer)', 102, 50),
-    ('Inverter Three Phase (Integer)', 103, 50),
-    ('Inverter Single Phase (Float)', 111, 60),
-    ('Inverter Split Phase (Float)', 112, 60),
-    ('Inverter Three Phase (Float)', 113, 60),
-    ('AC Meter Single Phase (Integer)', 201, 105),
-    ('AC Meter Split Phase (Integer)', 202, 105),
-    ('AC Meter Wye Three Phase (Integer)', 203, 105),
-    ('AC Meter Delta Three Phase (Integer)', 204, 105),
-    ('AC Meter Single Phase (Float)', 211, 124),
-    ('AC Meter Split Phase (Float)', 212, 124),
-    ('AC Meter Wye Three Phase (Float)', 213, 124),
-    ('AC Meter Delta Three Phase (Float)', 214, 124),
+ModelSpec = namedtuple('ModelSpec', 'model_name display_name_en display_name_de model_id block_length')
+
+model_specs = [
+    ModelSpec('Inverter Single Phase Integer',   'Inverter Single Phase',   'Inverter Einphasig',            101, 50),
+    ModelSpec('Inverter Split Phase Integer',    'Inverter Split Phase',    'Inverter Einphasig-Dreileiter', 102, 50),
+    ModelSpec('Inverter Three Phase Integer',    'Inverter Three Phase',    'Inverter Dreiphasig',           103, 50),
+    ModelSpec('Inverter Single Phase Float',     'Inverter Single Phase',   'Inverter Einphasig',            111, 60),
+    ModelSpec('Inverter Split Phase Float',      'Inverter Split Phase',    'Inverter Einphasig-Dreileiter', 112, 60),
+    ModelSpec('Inverter Three Phase Float',      'Inverter Three Phase',    'Inverter Dreiphasig',           113, 60),
+    ModelSpec('Meter Single Phase Integer',      'Meter Single Phase ',     'Zähler Einphasig',              201, 105),
+    ModelSpec('Meter Split Phase Integer',       'Meter Split Phase',       'Zähler Einphasig-Dreileiter',   202, 105),
+    ModelSpec('Meter Wye Three Phase Integer',   'Meter Wye Three Phase',   'Zähler Stern-Dreiphasig',       203, 105),
+    ModelSpec('Meter Delta Three Phase Integer', 'Meter Delta Three Phase', 'Zähler Delta-Dreiphasig',       204, 105),
+    ModelSpec('Meter Single Phase Float',        'Meter Single Phase',      'Zähler Einphasig',              211, 124),
+    ModelSpec('Meter Split Phase Float',         'Meter Split Phase',       'Zähler Einphasig-Dreileiter',   212, 124),
+    ModelSpec('Meter Wye Three Phase Float',     'Meter Wye Three Phase',   'Zähler Stern-Dreiphasig',       213, 124),
+    ModelSpec('Meter Delta Three Phase Float',   'Meter Delta Three Phase', 'Zähler Delta-Dreiphasig',       214, 124),
 ]
 
 enum_values = []
 spec_values = []
+translation_values = {'en': [], 'de': []}
+model_ids = []
 
-for model_id in model_ids:
-    enum_key = model_id[0].replace(" ", "").replace("(", "").replace(")", "")
+for model_spec in model_specs:
+    enum_key = model_spec.model_name.replace(' ', '')
 
-    enum_values.append(f'    {enum_key} = {model_id[1]},\n')
-    spec_values.append(f'    {{\n        SunSpecModelID::{enum_key},\n        {model_id[2]},\n        "{model_id[0]}",\n    }},\n')
+    enum_values.append(f'    {enum_key} = {model_spec.model_id},\n')
+    spec_values.append(f'    {{\n        SunSpecModelID::{enum_key},\n        {model_spec.block_length},\n        "{model_spec.model_name}",\n    }},\n')
+    translation_values['en'].append(f'"model_{model_spec.model_id}": "{model_spec.display_name_en} [{model_spec.model_id}]"')
+    translation_values['de'].append(f'"model_{model_spec.model_id}": "{model_spec.display_name_de} [{model_spec.model_id}]"')
+    model_ids.append(f'    {model_spec.model_id},\n')
 
 with open('sun_spec_model_id.h', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
@@ -59,7 +66,7 @@ with open('sun_spec_model_id.h', 'w') as f:
     f.write('    const char *model_name;\n')
     f.write('};\n\n')
     f.write('extern SunSpecModelSpec sun_spec_model_specs[];\n\n')
-    f.write(f'extern size_t sun_spec_model_specs_length;\n')
+    f.write('extern size_t sun_spec_model_specs_length;\n')
 
 with open('sun_spec_model_id.cpp', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
@@ -67,4 +74,15 @@ with open('sun_spec_model_id.cpp', 'w') as f:
     f.write('SunSpecModelSpec sun_spec_model_specs[] = {\n')
     f.write(''.join(spec_values))
     f.write('};\n\n')
-    f.write(f'size_t sun_spec_model_specs_length = {len(model_ids)};\n')
+    f.write(f'size_t sun_spec_model_specs_length = {len(model_specs)};\n')
+
+for lang in translation_values:
+    util.specialize_template(f'../../../web/src/modules/meters_sun_spec/translation_{lang}.tsx.template', f'../../../web/src/modules/meters_sun_spec/translation_{lang}.tsx', {
+        '{{{models}}}': ',\n            '.join(translation_values[lang]),
+    })
+
+with open('../../../web/src/modules/meters_sun_spec/sun_spec_model_id.ts', 'w') as f:
+    f.write('// WARNING: This file is generated.\n\n')
+    f.write('export const SUN_SPEC_MODEL_IDS: number[] = [\n')
+    f.write(''.join(model_ids))
+    f.write('];\n')
