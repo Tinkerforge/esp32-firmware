@@ -1099,7 +1099,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                     extraValue:
                                         METER_VALUE_ORDER.filter((foobar) => foobar.ids.filter((id) => util.hasValue(state.values_by_id[meter_slot][id])).length > 0)
                                             .map((foobar) => foobar.group ?
-                                                <FormRow label={translate_unchecked(`meters.content.group_${foobar.group}`)} label_muted={foobar.phases} small={true}>
+                                                <FormRow label={translate_unchecked(`meters.content.group_${foobar.group}`)} label_muted={util.joinNonEmpty("; ", [translate_unchecked(`meters.content.group_${foobar.group}_muted`), foobar.phases])} small={true}>
                                                     <div class="row mx-n1 mx-xl-n3">
                                                     {foobar.ids.filter((id) => util.hasValue(state.values_by_id[meter_slot][id])).map((id) =>
                                                         <div class="col-sm-4 px-1 px-xl-3">
@@ -1107,7 +1107,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                                         </div>)}
                                                     </div>
                                                 </FormRow>
-                                                : <FormRow label={translate_unchecked(`meters.content.value_${foobar.ids[0]}`)} small={true}>
+                                                : <FormRow label={translate_unchecked(`meters.content.value_${foobar.ids[0]}`)} label_muted={translate_unchecked(`meters.content.value_${foobar.ids[0]}_muted`)} small={true}>
                                                     <div class="row mx-n1 mx-xl-n3"><div class="col-sm-4 px-1 px-xl-3">
                                                         <OutputFloat value={this.state.values_by_id[meter_slot][foobar.ids[0]]} digits={METER_VALUE_INFOS[foobar.ids[0]].digits} scale={0} unit={METER_VALUE_INFOS[foobar.ids[0]].unit} small={true}/>
                                                     </div></div>
