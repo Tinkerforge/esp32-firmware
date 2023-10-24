@@ -63,6 +63,7 @@ interface DeviceScannerState {
     scan_host: string
     scan_port: number
     scan_running: boolean
+    scan_progress: number
     scan_log: string
     scan_results: DeviceScannerResult[]
 }
@@ -75,6 +76,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             scan_host: '',
             scan_port: 0,
             scan_running: false,
+            scan_progress: 0,
             scan_log: '',
             scan_results: [],
         } as any;
@@ -86,6 +88,14 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             else {
                 this.setState({scan_log: this.state.scan_log + e.data + '\n'})
             }
+        });
+
+        util.addApiEventListener('meters_sun_spec/scan_progress', (e) => {
+            let scan_progress = API.get('meters_sun_spec/scan_progress');
+
+            console.log('scan_progress ' + JSON.stringify(scan_progress));
+
+            this.setState({scan_progress: scan_progress.progress});
         });
 
         util.addApiEventListener('meters_sun_spec/scan_result', () => {
@@ -128,7 +138,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                 <Button variant="primary"
                         className="form-control"
                         onClick={async () => {
-                            this.setState({scan_host: this.props.host, scan_port: this.props.port, scan_running: true, scan_results: []});
+                            this.setState({scan_host: this.props.host, scan_port: this.props.port, scan_running: true, scan_progress: 0, scan_results: []});
                             try {
                                 await API.call('meters_sun_spec/scan',
                                                {host: this.props.host, port: this.props.port},
@@ -141,6 +151,16 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                     {__("meters_sun_spec.content.scan")} <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!this.state.scan_running}/>
                 </Button>
             </FormRow>
+
+            {this.state.scan_running ?
+                <FormRow label="">
+                    <div class="form-progress mb-1">
+                        <div class="progress-bar form-control progress-bar-no-transition"
+                            role="progressbar" style={"width: " + this.state.scan_progress + "%"} aria-valuenow={this.state.scan_progress} aria-valuemin={0}
+                            aria-valuemax={100}></div>
+                    </div>
+                </FormRow>
+                : undefined}
 
             <FormRow label="">
                 <OutputTextarea moreClass="mb-1" value={this.state.scan_log} />
