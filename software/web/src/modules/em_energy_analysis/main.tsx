@@ -2880,7 +2880,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                             y_sync_ref={this.uplot_wrapper_5min_power_ref} />
                         <UplotWrapper ref={this.uplot_wrapper_5min_power_ref}
                                         id="em_energy_analysis_5min_power_chart"
-                                        class="em-energy-analysis-chart"
+                                        class="em-energy-analysis-chart pb-4"
                                         sidebar_id="em_energy_analysis"
                                         color_cache_group="analsyis"
                                         show={true}
@@ -2908,7 +2908,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                     marker_class={'h3'} >
                         <UplotWrapper ref={this.uplot_wrapper_daily_ref}
                                         id="em_energy_analysis_daily_chart"
-                                        class="em-energy-analysis-chart"
+                                        class="em-energy-analysis-chart pb-4"
                                         sidebar_id="em_energy_analysis"
                                         color_cache_group="analsyis"
                                         show={false}
