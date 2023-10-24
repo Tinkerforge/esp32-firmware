@@ -193,8 +193,8 @@ void MetersSunSpec::loop()
             TFJsonSerializer json{buf, sizeof(buf)};
 
             json.addObject();
-            json.add("host", scan_host.c_str());
-            json.add("port", static_cast<uint64_t>(scan_port));
+            json.addMemberString("host", scan_host.c_str());
+            json.addMemberNumber("port", scan_port);
             json.endObject();
             json.end();
 
@@ -467,15 +467,15 @@ void MetersSunSpec::loop()
             TFJsonSerializer json{buf, sizeof(buf)};
 
             json.addObject();
-            json.add("host", scan_host.c_str());
-            json.add("port", static_cast<uint64_t>(scan_port));
-            json.add("manufacturer_name", scan_common_manufacturer_name);
-            json.add("model_name", scan_common_model_name);
-            json.add("options", scan_common_options);
-            json.add("version", scan_common_version);
-            json.add("serial_number", scan_common_serial_number);
-            json.add("device_address", static_cast<uint64_t>(scan_device_address));
-            json.add("model_id", static_cast<uint64_t>(scan_standard_model_id));
+            json.addMemberString("host", scan_host.c_str());
+            json.addMemberNumber("port", scan_port);
+            json.addMemberString("manufacturer_name", scan_common_manufacturer_name);
+            json.addMemberString("model_name", scan_common_model_name);
+            json.addMemberString("options", scan_common_options);
+            json.addMemberString("version", scan_common_version);
+            json.addMemberString("serial_number", scan_common_serial_number);
+            json.addMemberNumber("device_address", scan_device_address);
+            json.addMemberNumber("model_id", scan_standard_model_id);
             json.endObject();
             json.end();
 
@@ -538,7 +538,7 @@ void MetersSunSpec::scan_printfln(const char *fmt, ...)
     char buf_json[512];
     TFJsonSerializer json{buf_json, sizeof(buf_json)};
 
-    json.add(buf);
+    json.addString(buf);
     json.end();
 
     scan_log_idle = false;
