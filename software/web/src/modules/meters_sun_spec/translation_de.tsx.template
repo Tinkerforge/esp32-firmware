@@ -13,11 +13,14 @@ let x = {
             "config_host": "Host",
             "config_host_invalid": "Host ist ungültig",
             "config_port": "Port",
-            "config_device_address": "Device-Adresse",
+            "config_device_address": "Geräteadresse",
             "config_model_id": "Modell",
+            "config_model_id_select": "Auswählen...",
 
             "scan": "Geräte suchen",
-            "scan_failed": "Konnte nicht nach Geräten suchen"
+            "scan_failed": "Konnte nicht nach Geräten suchen",
+
+            {{{models}}}
         },
         "script": {
         }

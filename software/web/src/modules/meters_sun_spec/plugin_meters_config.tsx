@@ -20,15 +20,17 @@
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { h, Fragment, Component } from "preact";
-import { __ } from "../../ts/translation";
+import { __, translate_unchecked } from "../../ts/translation";
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterConfig } from "../meters/types";
 import { TableModalRow } from "../../ts/components/table";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
+import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { OutputTextarea } from "../../ts/components/output_textarea";
 import { Button, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
+import { SUN_SPEC_MODEL_IDS } from "./sun_spec_model_id";
 
 export type SunSpecMetersConfig = [
     MeterClassID.SunSpec,
@@ -174,7 +176,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                                 <h5 class="mb-1 pr-2">{scan_result.display_name}</h5>
                                 <div class="d-flex w-100 justify-content-between">
                                     <span>{__("meters_sun_spec.content.config_device_address")}: {scan_result.device_address}</span>
-                                    <span>{__("meters_sun_spec.content.config_model_id")}: {scan_result.model_id}</span>
+                                    <span>{__("meters_sun_spec.content.config_model_id") + ": " + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)}</span>
                                 </div>
                             </ListGroupItem>)}
                     </ListGroup>
@@ -191,6 +193,12 @@ export function init() {
             init: () => [MeterClassID.SunSpec, {display_name: "", host: "", port: 502, device_address: null, model_id: null}] as MeterConfig,
             clone: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_rows: (config: SunSpecMetersConfig, on_value: (config: SunSpecMetersConfig) => void): TableModalRow[] => {
+                let model_ids: [string, string][] = [];
+
+                for (let id of SUN_SPEC_MODEL_IDS) {
+                    model_ids.push([id.toString(), translate_unchecked(`meters_sun_spec.content.model_${id}`)]);
+                }
+
                 return [
                     {
                         name: __("meters_sun_spec.content.config_host"),
@@ -255,13 +263,13 @@ export function init() {
                     },
                     {
                         name: __("meters_sun_spec.content.config_model_id"),
-                        value: <InputNumber
+                        value: <InputSelect
                             required
-                            min={2}
-                            max={65535}
-                            value={config[1].model_id}
+                            items={model_ids}
+                            placeholder={__("meters_sun_spec.content.config_model_id_select")}
+                            value={config[1].model_id.toString()}
                             onValue={(v) => {
-                                config[1].model_id = v;
+                                config[1].model_id = parseInt(v);
                                 on_value(config);
                             }}/>
                     },
