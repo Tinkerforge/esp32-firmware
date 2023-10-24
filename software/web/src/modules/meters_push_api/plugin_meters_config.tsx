@@ -108,7 +108,7 @@ export function MeterValueIDSelector(state: {value_id: {value_id: number}, value
         const stage = getStage(i, stages, METER_VALUE_ITEMS);
         const item = createItems(stage);
         if (item.length === 1) {
-            state.value_id.value_id = parseInt(stage["Acute"])
+            state.value_id.value_id = parseInt(stage["Register"])
             if (state.value_id_vec.find((v) => state.value_id.value_id === v) !== undefined && !stages[i - 1][0].isInvalid) {
                 stages[i - 1][1]({
                     state: stages[i - 1][0].state,
