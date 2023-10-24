@@ -274,15 +274,15 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
     }
 
     json.addObject();
-        json.add("hostname", entry->hostname);
+        json.addMemberString("hostname", entry->hostname);
 
         char buf[32] = "[no_address]";
         if (entry->addr && entry->addr->addr.type == IPADDR_TYPE_V4)
             esp_ip4addr_ntoa(&entry->addr->addr.u_addr.ip4, buf, ARRAY_SIZE(buf));
-        json.add("ip", buf);
+        json.addMemberString("ip", buf);
 
-        json.add("display_name", display_name);
-        json.add("error", (uint64_t)error);
+        json.addMemberString("display_name", display_name);
+        json.addMemberNumber("error", error);
     json.endObject();
 }
 

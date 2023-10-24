@@ -105,7 +105,7 @@ void EventLog::write(const char *buf, size_t len)
     size_t req_len = 0;
     {
         TFJsonSerializer json{nullptr, 0};
-        json.add(buf, len, false);
+        json.addString(buf, len, false);
         req_len = json.end();
     }
 
@@ -119,7 +119,7 @@ void EventLog::write(const char *buf, size_t len)
 
     {
         TFJsonSerializer json{payload.begin() + payload.length(), req_len + 1};
-        json.add(buf, len, false);
+        json.addString(buf, len, false);
         payload.setLength(payload.length() + json.end());
     }
 
