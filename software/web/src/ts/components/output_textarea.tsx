@@ -22,7 +22,8 @@ import { JSXInternal } from "preact/src/jsx";
 
 interface OutputTextareaProps extends Omit<JSXInternal.HTMLAttributes<HTMLTextAreaElement>, "readonly" | "onScroll" | "ref"> {
     value: string
-    moreClass: string
+    moreClass?: string
+    resize?: 'both' | 'horizontal' | 'vertical' | 'none'
 }
 
 export class OutputTextarea extends Component<OutputTextareaProps, {}> {
@@ -43,7 +44,8 @@ export class OutputTextarea extends Component<OutputTextareaProps, {}> {
 
     render(props: OutputTextareaProps, state: {}){
         let {rows = 20,
-             style="resize: both; width: 100%; white-space: pre; line-height: 1.2; text-shadow: none; font-size: 0.875rem;",
+             resize = 'both',
+             style=`resize: ${resize}; width: 100%; white-space: pre; line-height: 1.2; text-shadow: none; font-size: 0.875rem;`,
              ...rest} = props;
 
         return <textarea class={"text-monospace form-control " + (props.moreClass ?? "")}
