@@ -26,6 +26,7 @@
 #include "module_dependencies.h"
 #include "TFJson.h"
 #include "sun_spec_model_id.h"
+#include "esp_random.h"
 
 #include "gcc_warnings.h"
 
@@ -251,7 +252,15 @@ void MetersSunSpec::loop()
     case ScanState::Read:
         ++scan_read_cookie;
         scan_read_index = 0;
+        scan_read_retries = 5;
         scan_state = ScanState::ReadNext;
+
+        break;
+
+    case ScanState::ReadDelay:
+        if (deadline_elapsed(scan_read_delay_deadline)) {
+            scan_state = ScanState::ReadNext;
+        }
 
         break;
 
@@ -267,11 +276,21 @@ void MetersSunSpec::loop()
                     return true;
                 }
 
+                if (result == Modbus::ResultCode::EX_TIMEOUT && scan_read_retries > 0) {
+                    scan_printfln("Reading timed out, retrying");
+
+                    --scan_read_retries;
+                    scan_read_delay_deadline = now_us() + 1000000_usec + static_cast<micros_t>(esp_random() % 4000000);
+                    scan_state = ScanState::ReadDelay;
+
+                    return true;
+                }
+
                 scan_read_address += read_chunk_size;
                 scan_read_index += read_chunk_size;
                 scan_read_result = result;
 
-                if (scan_read_result != Modbus::ResultCode::EX_SUCCESS || scan_read_index >= scan_read_size) {
+                if (result != Modbus::ResultCode::EX_SUCCESS || scan_read_index >= scan_read_size) {
                     scan_read_index = 0;
                     scan_state = scan_read_state;
 
@@ -360,7 +379,12 @@ void MetersSunSpec::loop()
         else {
             scan_printfln("Could not read Common Model header: %s (%d)", get_modbus_result_code_name(scan_read_result), scan_read_result);
 
-            if (scan_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
+            if (scan_read_result == Modbus::ResultCode::EX_TIMEOUT) {
+                scan_read_size = 2;
+                scan_read_state = ScanState::ReadCommonModelHeaderDone;
+                scan_state = ScanState::Read;
+            }
+            else if (scan_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
                 scan_state = ScanState::NextDeviceAddress;
             }
             else {
