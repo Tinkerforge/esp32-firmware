@@ -101,7 +101,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         util.addApiEventListener('meters_sun_spec/scan_result', () => {
             let scan_result = API.get('meters_sun_spec/scan_result');
 
-            if (scan_result.host === this.props.host && scan_result.port === this.props.port) {
+            if (this.state.scan_running && scan_result.host === this.props.host && scan_result.port === this.props.port) {
                 // this combination must be unique according to sunspec specification
                 let unique_id = scan_result.manufacturer_name + scan_result.model_name + scan_result.serial_number;
 
