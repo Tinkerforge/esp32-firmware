@@ -161,7 +161,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                 : undefined}
 
             <FormRow label="">
-                <OutputTextarea moreClass="mb-1" value={this.state.scan_log} />
+                <OutputTextarea resize='vertical' moreClass="mb-1" value={this.state.scan_log} />
             </FormRow>
 
             {this.state.scan_results.length > 0 ?
