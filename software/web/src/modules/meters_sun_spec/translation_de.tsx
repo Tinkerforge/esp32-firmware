@@ -5,15 +5,8 @@ let x = {
         "status": {
         },
         "navbar": {
-            "meters_sun_spec": "SunSpec-Zähler"
         },
         "content": {
-            "meters_sun_spec": "SunSpec-Zähler",
-            "host": "Host",
-            "port": "Port",
-            "port_muted": "typischerweise 502",
-            "scan_log": "Scan-Log",
-
             "meter_class": "SunSpec",
 
             "config_display_name": "Anzeigename",
