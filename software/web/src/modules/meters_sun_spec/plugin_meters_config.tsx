@@ -95,15 +95,11 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         util.addApiEventListener('meters_sun_spec/scan_progress', (e) => {
             let scan_progress = API.get('meters_sun_spec/scan_progress');
 
-            console.log('scan_progress ' + JSON.stringify(scan_progress));
-
             this.setState({scan_progress: scan_progress.progress});
         });
 
         util.addApiEventListener('meters_sun_spec/scan_result', () => {
             let scan_result = API.get('meters_sun_spec/scan_result');
-
-            console.log('scan_result ' + JSON.stringify(scan_result));
 
             if (scan_result.host === this.props.host && scan_result.port === this.props.port) {
                 // this combination must be unique according to sunspec specification
