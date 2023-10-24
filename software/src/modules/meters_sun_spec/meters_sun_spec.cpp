@@ -31,8 +31,8 @@
 
 #define MAX_READ_CHUNK_SIZE 10
 
-#define DEVICE_ADDRESS_FIRST 1
-#define DEVICE_ADDRESS_LAST 247
+#define DEVICE_ADDRESS_FIRST 1u
+#define DEVICE_ADDRESS_LAST 247u
 
 #define SUN_SPEC_ID 0x53756E53
 
@@ -105,6 +105,8 @@ void MetersSunSpec::loop()
             if (!ws.pushRawStateUpdate("\"<<<clear_scan_log>>>\"", "meters_sun_spec/scan_log")) {
                 break; // need to clear the log before doing something else
             }
+
+            ws.pushRawStateUpdate("{\"progress\":0.0}", "meters_sun_spec/scan_progress"); // FIXME: error handling
 
             scan_printfln("Starting scan");
 
@@ -189,6 +191,8 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::Done: {
+            scan_printfln("Scan finished");
+
             char buf[512];
             TFJsonSerializer json{buf, sizeof(buf)};
 
@@ -213,6 +217,18 @@ void MetersSunSpec::loop()
             scan_state = ScanState::Disconnect;
         }
         else {
+            char buf[512];
+            TFJsonSerializer json{buf, sizeof(buf)};
+
+            json.addObject();
+            json.addMemberNumber("progress", static_cast<float>(scan_device_address + 1u - DEVICE_ADDRESS_FIRST) * 100.0f / static_cast<float>(DEVICE_ADDRESS_LAST - DEVICE_ADDRESS_FIRST));
+            json.endObject();
+            json.end();
+
+            if (!ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_progress")) {
+                break; // need report the scan as done before doing something else
+            }
+
             ++scan_device_address;
             scan_base_address_index = 0;
             scan_state = ScanState::ReadSunSpecID;

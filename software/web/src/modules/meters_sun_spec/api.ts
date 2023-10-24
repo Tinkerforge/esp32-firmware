@@ -4,6 +4,10 @@ export interface scan {
     port: number
 }
 
+export interface scan_progress {
+    progress: number
+}
+
 export interface scan_result {
     host: string
     port: number
