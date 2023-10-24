@@ -1,88 +1,88 @@
-"measurand","submeasurand","direction","kind","display_name_en","display_name_de"
-"Voltage",,,,"Voltage","Voltage"
-"Current",,"Import",,"Current Import","Current Import"
-"Current",,"Import","Interval Avg","Current Import Interval Avg","Current Import Interval Avg"
-"Current",,"Import","Interval Max","Current Import Interval Max","Current Import Interval Max"
-"Current",,"Export",,"Current Export","Current Export"
-"Current",,"Export","Interval Avg","Current Export Interval Avg","Current Export Interval Avg"
-"Current",,"Export","Interval Max","Current Export Interval Max","Current Export Interval Max"
-"Current",,"Im Ex Sum",,"Current Im Ex Sum","Current Im Ex Sum"
-"Current",,"Im Ex Sum","Interval Avg","Current Im Ex Sum Interval Avg","Current Im Ex Sum Interval Avg"
-"Current",,"Im Ex Sum","Interval Max","Current Im Ex Sum Interval Max","Current Im Ex Sum Interval Max"
-"Current",,"Im Ex Diff",,"Current Im Ex Diff","Current Im Ex Diff"
-"Current",,"Im Ex Diff","Interval Avg","Current Im Ex Diff Interval Avg","Current Im Ex Diff Interval Avg"
-"Current",,"Im Ex Diff","Interval Max","Current Im Ex Diff Interval Max","Current Im Ex Diff Interval Max"
-"Power","Active","Import",,"Power Active Import","Power Active Import"
-"Power","Active","Import","Interval Avg","Power Active Import Interval Avg","Power Active Import Interval Avg"
-"Power","Active","Import","Interval Max","Power Active Import Interval Max","Power Active Import Interval Max"
-"Power","Active","Export",,"Power Active Export","Power Active Export"
-"Power","Active","Export","Interval Avg","Power Active Export Interval Avg","Power Active Export Interval Avg"
-"Power","Active","Export","Interval Max","Power Active Export Interval Max","Power Active Export Interval Max"
-"Power","Active","Im Ex Sum",,"Power Active Im Ex Sum","Power Active Im Ex Sum"
-"Power","Active","Im Ex Sum","Interval Avg","Power Active Im Ex Sum Interval Avg","Power Active Im Ex Sum Interval Avg"
-"Power","Active","Im Ex Sum","Interval Max","Power Active Im Ex Sum Interval Max","Power Active Im Ex Sum Interval Max"
-"Power","Active","Im Ex Diff",,"Power Active Im Ex Diff","Power Active Im Ex Diff"
-"Power","Active","Im Ex Diff","Interval Avg","Power Active Im Ex Diff Interval Avg","Power Active Im Ex Diff Interval Avg"
-"Power","Active","Im Ex Diff","Interval Max","Power Active Im Ex Diff Interval Max","Power Active Im Ex Diff Interval Max"
-"Power","Reactive","Inductive",,"Power Reactive Inductive","Power Reactive Inductive"
-"Power","Reactive","Inductive","Interval Avg","Power Reactive Inductive Interval Avg","Power Reactive Inductive Interval Avg"
-"Power","Reactive","Inductive","Interval Max","Power Reactive Inductive Interval Max","Power Reactive Inductive Interval Max"
-"Power","Reactive","Capacitive",,"Power Reactive Capacitive","Power Reactive Capacitive"
-"Power","Reactive","Capacitive","Interval Avg","Power Reactive Capacitive Interval Avg","Power Reactive Capacitive Interval Avg"
-"Power","Reactive","Capacitive","Interval Max","Power Reactive Capacitive Interval Max","Power Reactive Capacitive Interval Max"
-"Power","Reactive","Ind Cap Sum",,"Power Reactive Ind Cap Sum","Power Reactive Ind Cap Sum"
-"Power","Reactive","Ind Cap Sum","Interval Avg","Power Reactive Ind Cap Sum Interval Avg","Power Reactive Ind Cap Sum Interval Avg"
-"Power","Reactive","Ind Cap Sum","Interval Max","Power Reactive Ind Cap Sum Interval Max","Power Reactive Ind Cap Sum Interval Max"
-"Power","Reactive","Ind Cap Diff",,"Power Reactive Ind Cap Diff","Power Reactive Ind Cap Diff"
-"Power","Reactive","Ind Cap Diff","Interval Avg","Power Reactive Ind Cap Diff Interval Avg","Power Reactive Ind Cap Diff Interval Avg"
-"Power","Reactive","Ind Cap Diff","Interval Max","Power Reactive Ind Cap Diff Interval Max","Power Reactive Ind Cap Diff Interval Max"
-"Power","Apparent",,,"Power Apparent","Power Apparent"
-"Power","Apparent",,"Interval Avg","Power Apparent Interval Avg","Power Apparent Interval Avg"
-"Power","Apparent",,"Interval Max","Power Apparent Interval Max","Power Apparent Interval Max"
-"Energy","Active","Import",,"Energy Active Import","Energy Active Import"
-"Energy","Active","Import","Resettable","Energy Active Import Resettable","Energy Active Import Resettable"
-"Energy","Active","Import","Interval","Energy Active Import Interval","Energy Active Import Interval"
-"Energy","Active","Export",,"Energy Active Export","Energy Active Export"
-"Energy","Active","Export","Resettable","Energy Active Export Resettable","Energy Active Export Resettable"
-"Energy","Active","Export","Interval","Energy Active Export Interval","Energy Active Export Interval"
-"Energy","Active","Im Ex Sum",,"Energy Active Im Ex Sum","Energy Active Im Ex Sum"
-"Energy","Active","Im Ex Sum","Resettable","Energy Active Im Ex Sum Resettable","Energy Active Im Ex Sum Resettable"
-"Energy","Active","Im Ex Sum","Interval","Energy Active Im Ex Sum Interval","Energy Active Im Ex Sum Interval"
-"Energy","Active","Im Ex Diff",,"Energy Active Im Ex Diff","Energy Active Im Ex Diff"
-"Energy","Active","Im Ex Diff","Resettable","Energy Active Im Ex Diff Resettable","Energy Active Im Ex Diff Resettable"
-"Energy","Active","Im Ex Diff","Interval","Energy Active Im Ex Diff Interval","Energy Active Im Ex Diff Interval"
-"Energy","Reactive","Inductive",,"Energy Reactive Inductive","Energy Reactive Inductive"
-"Energy","Reactive","Inductive","Resettable","Energy Reactive Inductive Resettable","Energy Reactive Inductive Resettable"
-"Energy","Reactive","Inductive","Interval","Energy Reactive Inductive Interval","Energy Reactive Inductive Interval"
-"Energy","Reactive","Capacitive",,"Energy Reactive Capacitive","Energy Reactive Capacitive"
-"Energy","Reactive","Capacitive","Resettable","Energy Reactive Capacitive Resettable","Energy Reactive Capacitive Resettable"
-"Energy","Reactive","Capacitive","Interval","Energy Reactive Capacitive Interval","Energy Reactive Capacitive Interval"
-"Energy","Reactive","Ind Cap Sum",,"Energy Reactive Ind Cap Sum","Energy Reactive Ind Cap Sum"
-"Energy","Reactive","Ind Cap Sum","Resettable","Energy Reactive Ind Cap Sum Resettable","Energy Reactive Ind Cap Sum Resettable"
-"Energy","Reactive","Ind Cap Sum","Interval","Energy Reactive Ind Cap Sum Interval","Energy Reactive Ind Cap Sum Interval"
-"Energy","Reactive","Ind Cap Diff",,"Energy Reactive Ind Cap Diff","Energy Reactive Ind Cap Diff"
-"Energy","Reactive","Ind Cap Diff","Resettable","Energy Reactive Ind Cap Diff Resettable","Energy Reactive Ind Cap Diff Resettable"
-"Energy","Reactive","Ind Cap Diff","Interval","Energy Reactive Ind Cap Diff Interval","Energy Reactive Ind Cap Diff Interval"
-"Energy","ReactiveQ1","Inductive",,"Energy ReactiveQ1 Inductive","Energy ReactiveQ1 Inductive"
-"Energy","ReactiveQ1","Inductive","Resettable","Energy ReactiveQ1 Inductive Resettable","Energy ReactiveQ1 Inductive Resettable"
-"Energy","ReactiveQ1","Inductive","Interval","Energy ReactiveQ1 Inductive Interval","Energy ReactiveQ1 Inductive Interval"
-"Energy","ReactiveQ2","Inductive",,"Energy ReactiveQ2 Inductive","Energy ReactiveQ2 Inductive"
-"Energy","ReactiveQ2","Inductive","Resettable","Energy ReactiveQ2 Inductive Resettable","Energy ReactiveQ2 Inductive Resettable"
-"Energy","ReactiveQ2","Inductive","Interval","Energy ReactiveQ2 Inductive Interval","Energy ReactiveQ2 Inductive Interval"
-"Energy","ReactiveQ3","Capacitive",,"Energy ReactiveQ3 Capacitive","Energy ReactiveQ3 Capacitive"
-"Energy","ReactiveQ3","Capacitive","Resettable","Energy ReactiveQ3 Capacitive Resettable","Energy ReactiveQ3 Capacitive Resettable"
-"Energy","ReactiveQ3","Capacitive","Interval","Energy ReactiveQ3 Capacitive Interval","Energy ReactiveQ3 Capacitive Interval"
-"Energy","ReactiveQ4","Capacitive",,"Energy ReactiveQ4 Capacitive","Energy ReactiveQ4 Capacitive"
-"Energy","ReactiveQ4","Capacitive","Resettable","Energy ReactiveQ4 Capacitive Resettable","Energy ReactiveQ4 Capacitive Resettable"
-"Energy","ReactiveQ4","Capacitive","Interval","Energy ReactiveQ4 Capacitive Interval","Energy ReactiveQ4 Capacitive Interval"
-"Energy","Apparent",,,"Energy Apparent","Energy Apparent"
-"Energy","Apparent",,"Resettable","Energy Apparent Resettable","Energy Apparent Resettable"
-"Energy","Apparent",,"Interval","Energy Apparent Interval","Energy Apparent Interval"
-"Power Factor",,,"Directional","Power Factor Directional","Power Factor Directional"
-"Power Factor",,,,"Power Factor","Power Factor"
-"Frequency",,,,"Frequency","Frequency"
-"Phase Angle",,,,"Phase Angle","Phase Angle"
-"Voltage THD",,,,"Voltage THD","Voltage THD"
-"Current THD",,,,"Current THD","Current THD"
-"Current Offered",,,,"Current Offered","Current Offered"
-"Power Offered",,,,"Power Offered","Power Offered"
+measurand,submeasurand,direction,kind,display_name_en,display_name_en_muted,display_name_de,display_name_de_muted,comment
+Voltage,,,,Voltage,,Spannung,,
+Current,,Import,,Current Import,,Strom (Bezug),,
+Current,,Import,Interval Avg,Current Import Interval Avg,,Strom (Bezug),Durchschnitt über Zeitintervall,
+Current,,Import,Interval Max,Current Import Interval Max,,Strom (Bezug),Maximum in Zeitintervall,
+Current,,Export,,Current Export,,Strom (Einspeisung),,
+Current,,Export,Interval Avg,Current Export Interval Avg,,Strom (Einspeisung),Durchschnitt über Zeitintervall,
+Current,,Export,Interval Max,Current Export Interval Max,,Strom (Einspeisung),Maximum in Zeitintervall,
+Current,,Im Ex Sum,,Current Im Ex Sum,,Strom,,"für Zähler, die immer einen positiven Strom melden, egal ob gerade bezogen oder eingespeist wird. Typischerweise kann die Richtung des Stromflusses dann am Leistungsfaktor o.Ä. abgelesen werden."
+Current,,Im Ex Sum,Interval Avg,Current Im Ex Sum Interval Avg,,Strom (Bezug + Einspeisung),Durchschnitt über Zeitintervall,
+Current,,Im Ex Sum,Interval Max,Current Im Ex Sum Interval Max,,Strom (Bezug + Einspeisung),Maximum in Zeitintervall,
+Current,,Im Ex Diff,,Current Im Ex Diff,,Strom,,
+Current,,Im Ex Diff,Interval Avg,Current Im Ex Diff Interval Avg,,Strom (Bezug - Einspeisung),Durchschnitt über Zeitintervall,
+Current,,Im Ex Diff,Interval Max,Current Im Ex Diff Interval Max,,Strom (Bezug - Einspeisung),Maximum in Zeitintervall,
+Power,Active,Import,,Power Active Import,,Wirkleistung (Bezug),,
+Power,Active,Import,Interval Avg,Power Active Import Interval Avg,,Wirkleistung (Bezug),Durchschnitt über Zeitintervall,
+Power,Active,Import,Interval Max,Power Active Import Interval Max,,Wirkleistung (Bezug),Maximum in Zeitintervall,
+Power,Active,Export,,Power Active Export,,Wirkleistung (Einspeisung),,
+Power,Active,Export,Interval Avg,Power Active Export Interval Avg,,Wirkleistung (Einspeisung),Durchschnitt über Zeitintervall,
+Power,Active,Export,Interval Max,Power Active Export Interval Max,,Wirkleistung (Einspeisung),Maximum in Zeitintervall,
+Power,Active,Im Ex Sum,,Power Active Im Ex Sum,,Wirkleistung (Bezug + Einspeisung),,"für Zähler, die immer einen positive Wirkleistung melden, egal ob gerade bezogen oder eingespeist wird. Typischerweise kann die Richtung des Stromflusses dann am Leistungsfaktor o.Ä. abgelesen werden."
+Power,Active,Im Ex Sum,Interval Avg,Power Active Im Ex Sum Interval Avg,,Wirkleistung (Bezug + Einspeisung),Durchschnitt über Zeitintervall,
+Power,Active,Im Ex Sum,Interval Max,Power Active Im Ex Sum Interval Max,,Wirkleistung (Bezug + Einspeisung),Maximum in Zeitintervall,
+Power,Active,Im Ex Diff,,Power Active Im Ex Diff,,Wirkleistung (Bezug - Einspeisung),,
+Power,Active,Im Ex Diff,Interval Avg,Power Active Im Ex Diff Interval Avg,,Wirkleistung (Bezug - Einspeisung),Durchschnitt über Zeitintervall,
+Power,Active,Im Ex Diff,Interval Max,Power Active Im Ex Diff Interval Max,,Wirkleistung (Bezug - Einspeisung),Maximum in Zeitintervall,
+Power,Reactive,Inductive,,Power Reactive Inductive,,Blindleistung (Induktiv),,
+Power,Reactive,Inductive,Interval Avg,Power Reactive Inductive Interval Avg,,Blindleistung (Induktiv),Durchschnitt über Zeitintervall,
+Power,Reactive,Inductive,Interval Max,Power Reactive Inductive Interval Max,,Blindleistung (Induktiv),Maximum in Zeitintervall,
+Power,Reactive,Capacitive,,Power Reactive Capacitive,,Blindleistung (Kapazitiv),,
+Power,Reactive,Capacitive,Interval Avg,Power Reactive Capacitive Interval Avg,,Blindleistung (Kapazitiv),Durchschnitt über Zeitintervall,
+Power,Reactive,Capacitive,Interval Max,Power Reactive Capacitive Interval Max,,Blindleistung (Kapazitiv),Maximum in Zeitintervall,
+Power,Reactive,Ind Cap Sum,,Power Reactive Ind Cap Sum,,Blindleistung (Induktiv + Kapazitiv),,
+Power,Reactive,Ind Cap Sum,Interval Avg,Power Reactive Ind Cap Sum Interval Avg,,Blindleistung (Induktiv + Kapazitiv),Durchschnitt über Zeitintervall,
+Power,Reactive,Ind Cap Sum,Interval Max,Power Reactive Ind Cap Sum Interval Max,,Blindleistung (Induktiv + Kapazitiv),Maximum in Zeitintervall,
+Power,Reactive,Ind Cap Diff,,Power Reactive Ind Cap Diff,,Blindleistung (Induktiv - Kapazitiv),,
+Power,Reactive,Ind Cap Diff,Interval Avg,Power Reactive Ind Cap Diff Interval Avg,,Blindleistung (Induktiv - Kapazitiv),Durchschnitt über Zeitintervall,
+Power,Reactive,Ind Cap Diff,Interval Max,Power Reactive Ind Cap Diff Interval Max,,Blindleistung (Induktiv - Kapazitiv),Maximum in Zeitintervall,
+Power,Apparent,,,Power Apparent,,Scheinleistung,,
+Power,Apparent,,Interval Avg,Power Apparent Interval Avg,,Scheinleistung,Durchschnitt über Zeitintervall,
+Power,Apparent,,Interval Max,Power Apparent Interval Max,,Scheinleistung,Maximum in Zeitintervall,
+Energy,Active,Import,,Energy Active Import,,Wirkenergie (Bezug),seit Herstellung des Zählers,
+Energy,Active,Import,Resettable,Energy Active Import Resettable,,Wirkenergie (Bezug),seit letztem Zurücksetzen,
+Energy,Active,Import,Interval,Energy Active Import Interval,,Wirkenergie (Bezug),in Zeitintervall,
+Energy,Active,Export,,Energy Active Export,,Wirkenergie (Einspeisung),seit Herstellung des Zählers,
+Energy,Active,Export,Resettable,Energy Active Export Resettable,,Wirkenergie (Einspeisung),seit letztem Zurücksetzen,
+Energy,Active,Export,Interval,Energy Active Export Interval,,Wirkenergie (Einspeisung),in Zeitintervall,
+Energy,Active,Im Ex Sum,,Energy Active Im Ex Sum,,Wirkenergie (Bezug + Einspeisung),seit Herstellung des Zählers,
+Energy,Active,Im Ex Sum,Resettable,Energy Active Im Ex Sum Resettable,,Wirkenergie (Bezug + Einspeisung),seit letztem Zurücksetzen,
+Energy,Active,Im Ex Sum,Interval,Energy Active Im Ex Sum Interval,,Wirkenergie (Bezug + Einspeisung),in Zeitintervall,
+Energy,Active,Im Ex Diff,,Energy Active Im Ex Diff,,Wirkenergie (Bezug - Einspeisung),seit Herstellung des Zählers,
+Energy,Active,Im Ex Diff,Resettable,Energy Active Im Ex Diff Resettable,,Wirkenergie (Bezug - Einspeisung),seit letztem Zurücksetzen,
+Energy,Active,Im Ex Diff,Interval,Energy Active Im Ex Diff Interval,,Wirkenergie (Bezug - Einspeisung),in Zeitintervall,
+Energy,Reactive,Inductive,,Energy Reactive Inductive,,Blindenergie (Induktiv),seit Herstellung des Zählers,
+Energy,Reactive,Inductive,Resettable,Energy Reactive Inductive Resettable,,Blindenergie (Induktiv),seit letztem Zurücksetzen,
+Energy,Reactive,Inductive,Interval,Energy Reactive Inductive Interval,,Blindenergie (Induktiv),in Zeitintervall,
+Energy,Reactive,Capacitive,,Energy Reactive Capacitive,,Blindenergie (Kapazitiv),seit Herstellung des Zählers,
+Energy,Reactive,Capacitive,Resettable,Energy Reactive Capacitive Resettable,,Blindenergie (Kapazitiv),seit letztem Zurücksetzen,
+Energy,Reactive,Capacitive,Interval,Energy Reactive Capacitive Interval,,Blindenergie (Kapazitiv),in Zeitintervall,
+Energy,Reactive,Ind Cap Sum,,Energy Reactive Ind Cap Sum,,Blindenergie (Induktiv + Kapazitiv),seit Herstellung des Zählers,
+Energy,Reactive,Ind Cap Sum,Resettable,Energy Reactive Ind Cap Sum Resettable,,Blindenergie (Induktiv + Kapazitiv),seit letztem Zurücksetzen,
+Energy,Reactive,Ind Cap Sum,Interval,Energy Reactive Ind Cap Sum Interval,,Blindenergie (Induktiv + Kapazitiv),in Zeitintervall,
+Energy,Reactive,Ind Cap Diff,,Energy Reactive Ind Cap Diff,,Blindenergie (Induktiv - Kapazitiv),seit Herstellung des Zählers,
+Energy,Reactive,Ind Cap Diff,Resettable,Energy Reactive Ind Cap Diff Resettable,,Blindenergie (Induktiv - Kapazitiv),seit letztem Zurücksetzen,
+Energy,Reactive,Ind Cap Diff,Interval,Energy Reactive Ind Cap Diff Interval,,Blindenergie (Induktiv - Kapazitiv),in Zeitintervall,
+Energy,ReactiveQ1,Inductive,,Energy ReactiveQ1 Inductive,,Blindenergie (Induktiv Motorisch),seit Herstellung des Zählers,
+Energy,ReactiveQ1,,Resettable,Energy ReactiveQ1 Inductive Resettable,,Blindenergie (Induktiv Motorisch),seit letztem Zurücksetzen,
+Energy,ReactiveQ1,,Interval,Energy ReactiveQ1 Inductive Interval,,Blindenergie (Induktiv Motorisch),in Zeitintervall,
+Energy,ReactiveQ2,,,Energy ReactiveQ2 Inductive,,Blindenergie (Induktiv Generatorisch),seit Herstellung des Zählers,
+Energy,ReactiveQ2,,Resettable,Energy ReactiveQ2 Inductive Resettable,,Blindenergie (Induktiv Generatorisch),seit letztem Zurücksetzen,
+Energy,ReactiveQ2,,Interval,Energy ReactiveQ2 Inductive Interval,,Blindenergie (Induktiv Generatorisch),in Zeitintervall,
+Energy,ReactiveQ3,,,Energy ReactiveQ3 Capacitive,,Blindenergie (Kapazitiv Generatorisch),seit Herstellung des Zählers,
+Energy,ReactiveQ3,,Resettable,Energy ReactiveQ3 Capacitive Resettable,,Blindenergie (Kapazitiv Generatorisch),seit letztem Zurücksetzen,
+Energy,ReactiveQ3,,Interval,Energy ReactiveQ3 Capacitive Interval,,Blindenergie (Kapazitiv Generatorisch),in Zeitintervall,
+Energy,ReactiveQ4,,,Energy ReactiveQ4 Capacitive,,Blindenergie (Induktiv Generatorisch),seit Herstellung des Zählers,
+Energy,ReactiveQ4,,Resettable,Energy ReactiveQ4 Capacitive Resettable,,Blindenergie (Induktiv Generatorisch),seit letztem Zurücksetzen,
+Energy,ReactiveQ4,,Interval,Energy ReactiveQ4 Capacitive Interval,,Blindenergie (Induktiv Generatorisch),in Zeitintervall,
+Energy,Apparent,,,Energy Apparent,,Scheinenergie,seit Herstellung des Zählers,
+Energy,Apparent,,Resettable,Energy Apparent Resettable,,Scheinenergie,seit letztem Zurücksetzen,
+Energy,Apparent,,Interval,Energy Apparent Interval,,Scheinenergie,in Zeitintervall,
+Power Factor,,,Directional,Power Factor Directional,,Leistungsfaktor,Vorzeichen gibt Richtung des Stromflusses an,
+Power Factor,,,,Power Factor,,Leistungsfaktor,,
+Frequency,,,,Frequency,,Frequenz,,
+Phase Angle,,,,Phase Angle,,Phasenwinkel,,
+Voltage THD,,,,Voltage THD,,THD der Spannung,,
+Current THD,,,,Current THD,,THD des Stroms,,
+Current Offered,,,,Current Offered,,Angebotener Strom,,
+Power Offered,,,,Power Offered,,Angebotene Leistung,,
