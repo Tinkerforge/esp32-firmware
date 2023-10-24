@@ -156,7 +156,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
 
             {this.state.scan_running ?
                 <FormRow label="">
-                    <div class="form-progress mb-1">
+                    <div class="form-progress">
                         <div class="progress-bar form-control progress-bar-no-transition"
                             role="progressbar" style={"padding: 0; width: " + this.state.scan_progress + "%"} aria-valuenow={this.state.scan_progress} aria-valuemin={0}
                             aria-valuemax={100}></div>
