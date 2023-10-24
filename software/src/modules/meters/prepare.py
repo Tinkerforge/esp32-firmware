@@ -3,6 +3,7 @@ import sys
 import importlib.util
 import importlib.machinery
 import csv
+import json
 
 software_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
@@ -20,6 +21,9 @@ if 'software' not in sys.modules:
 from software import util
 from collections import OrderedDict
 
+def escape(s):
+    return json.dumps(s)
+
 value_id_enum = []
 value_id_list = []
 value_id_infos = []
@@ -36,22 +40,22 @@ translation_values = {'en': [], 'de': []}
 translation_groups = {'en': [], 'de': []}
 
 with open('meter_value_group.csv', newline='') as f:
-    for row in csv.reader(f):
-        if row[0] == 'measurand':
-            # skip header
-            continue
-
-        if len(row[0]) == 0:
+    for row in csv.DictReader(f):
+        if len(row['measurand']) == 0:
             # skip empty
             continue
 
-        name = ' '.join([part for part in row[:4] if len(part) > 0])
+        name = ' '.join([part for part in list(row.values())[:4] if len(part) > 0])
         identifier = name.replace(' ', '_').lower()
-        display_name_en = row[4].replace('\"', '\\"')
-        display_name_de = row[5].replace('\"', '\\"')
+        display_name_en       = escape(row['display_name_en'].replace('\"', '\\"'))
+        display_name_en_muted = escape(row['display_name_en_muted'].replace('\"', '\\"'))
+        display_name_de       = escape(row['display_name_de'].replace('\"', '\\"'))
+        display_name_de_muted = escape(row['display_name_de_muted'].replace('\"', '\\"'))
 
-        translation_groups['en'].append(f'"group_{identifier}": "{display_name_en}"')
-        translation_groups['de'].append(f'"group_{identifier}": "{display_name_de}"')
+        translation_groups['en'].append(f'"group_{identifier}": {display_name_en}')
+        translation_groups['en'].append(f'"group_{identifier}_muted": {display_name_en_muted}')
+        translation_groups['de'].append(f'"group_{identifier}": {display_name_de}')
+        translation_groups['de'].append(f'"group_{identifier}_muted": {display_name_de_muted}')
 
 def update_value_id_dict(sub_dict, sub_id):
     key = sub_id[0]
@@ -62,38 +66,37 @@ def update_value_id_dict(sub_dict, sub_id):
         sub_dict[key] = sub_id[1]
 
 with open('meter_value_id.csv', newline='') as f:
-    for row in csv.reader(f):
-        if row[0] == 'id':
-            # skip header
-            continue
-
-        if len(row[0]) == 0:
+    for row in csv.DictReader(f):
+        if len(row['id']) == 0:
             # skip empty
             continue
 
-        id_ = row[0]
-        name = ' '.join([part for part in row[1:6] if len(part) > 0])
-        name_without_phase = ' '.join([part for part in (row[1:3] + row[4:6]) if len(part) > 0])
-        phase = row[3]
+        id_ = row['id']
+        name_list = [row[x] for x in ['measurand', 'submeasurand', 'phase', 'direction', 'kind']]
+        name = ' '.join([x for x in name_list if len(x) > 0])
+        name_without_phase = ' '.join([row[x] for x in ['measurand', 'submeasurand', 'direction', 'kind'] if len(row[x]) > 0])
+        phase = row['phase']
         identifier = name.replace(' ', '')
         identifier_without_phase = name_without_phase.replace(' ', '_').lower()
-        unit = row[6]
-        digits = row[7]
-        display_name_en = row[8].replace('\"', '\\"') if len(row[8]) > 0 else name
-        display_name_de = row[9].replace('\"', '\\"') if len(row[9]) > 0 else name
+        unit = row['unit']
+        digits = row['digits']
+        display_name_en       = escape(row['display_name_en'].replace('\"', '\\"') if len(row['display_name_en']) > 0 else ("TRANSLATION_MISSING " + name))
+        display_name_en_muted = escape(row['display_name_en_muted'].replace('\"', '\\"'))
+        display_name_de       = escape(row['display_name_de'].replace('\"', '\\"') if len(row['display_name_de']) > 0 else ("TRANSLATION_MISSING " + name))
+        display_name_de_muted = escape(row['display_name_de_muted'].replace('\"', '\\"'))
 
-        foobar = row[1:6]
+        if name_list[4] == "":
+            name_list[4] = "Register"
 
-        if foobar[4] == "":
-            foobar[4] = "Acute" # FIXME
-
-        update_value_id_dict(value_id_dict, [part for part in foobar if len(part) > 0] + [identifier])
+        update_value_id_dict(value_id_dict, [part for part in name_list if len(part) > 0] + [identifier])
 
         value_id_enum.append(f'    {identifier} = {id_}, // {unit}\n')
         value_id_list.append(f'    MeterValueID.{identifier},\n')
         value_id_infos.append(f'    /* {identifier} */ {id_}: {{unit: "{unit}", digits: {digits}}},\n')
-        translation_values['en'].append(f'"value_{id_}": "{display_name_en}"')
-        translation_values['de'].append(f'"value_{id_}": "{display_name_de}"')
+        translation_values['en'].append(f'"value_{id_}": {display_name_en}')
+        translation_values['en'].append(f'"value_{id_}_muted": {display_name_en_muted}')
+        translation_values['de'].append(f'"value_{id_}": {display_name_de}')
+        translation_values['de'].append(f'"value_{id_}_muted": {display_name_de_muted}')
 
         for phases in groupings:
             if phase in phases:
@@ -121,7 +124,7 @@ for foobar in value_id_order:
     foobar_str += ', phases: '
 
     if foobar[2] != None:
-        foobar_str += f'"{"; ".join(foobar[2])}"'
+        foobar_str += f'"{", ".join([x.replace(" ", "-") for x in foobar[2]])}"'
     else:
         foobar_str += 'null'
 
