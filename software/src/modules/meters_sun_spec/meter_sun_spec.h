@@ -61,6 +61,7 @@ private:
 
     void scan_restart();
     void scan_start();
+    void scan_read_delay();
     void scan_next();
 
     uint32_t slot;
