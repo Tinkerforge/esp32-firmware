@@ -58,6 +58,10 @@ void MeterModbusTCP::connect_callback()
     poll_next();
 }
 
+void MeterModbusTCP::disconnect_callback()
+{
+}
+
 void MeterModbusTCP::poll_next()
 {
     uint16_t offset;
