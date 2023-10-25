@@ -132,6 +132,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
 
     render() {
         return <>
+            {!this.state.scan_running ?
             <FormRow label="">
                 <Button variant="primary"
                         className="form-control"
@@ -146,16 +147,17 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                             }
                         }}
                         disabled={this.props.host.trim().length == 0 || !util.hasValue(this.props.port) || this.state.scan_running}>
-                    {__("meters_sun_spec.content.scan")} <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!this.state.scan_running}/>
+                    {__("meters_sun_spec.content.scan")}
                 </Button>
             </FormRow>
+            : undefined }
 
             {this.state.scan_running ?
                 <FormRow label="">
                     <div class="form-progress">
                         <div class="progress-bar form-control progress-bar-no-transition"
                             role="progressbar" style={"padding: 0; width: " + this.state.scan_progress + "%"} aria-valuenow={this.state.scan_progress} aria-valuemin={0}
-                            aria-valuemax={100}></div>
+                            aria-valuemax={100}>{Math.round(this.state.scan_progress) + "%"}</div>
                     </div>
                 </FormRow>
                 : undefined}
