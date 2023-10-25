@@ -303,6 +303,12 @@ def json_to_tsx(s):
 def collect_translation(path, override=False):
     translation = {}
 
+    tsxs = glob.glob(os.path.join(path, 'translation_*.tsx'))
+    jsons = glob.glob(os.path.join(path, 'translation_*.json'))
+    if len(tsxs) > 0 and len(jsons) > 0:
+        print(f"Found translation_*.tsx and translation_*.json in same module ({path})! Use either tsx or json translations!")
+        sys.exit(1)
+
     for translation_path in glob.glob(os.path.join(path, 'translation_*.tsx')) + glob.glob(os.path.join(path, 'translation_*.json')):
         m = re.match(r'translation_([a-z]+){0}\.(tsx|json)'.format('_override' if override else ''), os.path.split(translation_path)[-1])
 
