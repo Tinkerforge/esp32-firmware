@@ -240,7 +240,7 @@ export function init() {
                         name: __("meters_sun_spec.content.config_display_name"),
                         value: <InputText
                             required
-                            maxLength={32}
+                            maxLength={65}
                             value={config[1].display_name}
                             onValue={(v) => {
                                 config[1].display_name = v;
