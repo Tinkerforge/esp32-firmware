@@ -256,7 +256,7 @@ struct pdf_doc {
     int pages_index = 0;
     int page_count = 0;
     int first_object_index = 0;
-    bool write_error_occured;
+    bool write_error_occurred;
 
     int page_number = 0;
 
@@ -701,7 +701,7 @@ static void pdf_flush_write_buf(struct pdf_doc *pdf, int target_free_space) {
         ssize_t written = pdf->write_fn(head, pdf->write_buf_used);
         if (written <= 0) {
             printf("write_fn failed %zd.", written);
-            pdf->write_error_occured = true;
+            pdf->write_error_occurred = true;
         }
         pdf->write_buf_used -= written;
         head += written;
@@ -710,7 +710,7 @@ static void pdf_flush_write_buf(struct pdf_doc *pdf, int target_free_space) {
 
 static int pdf_printf(struct pdf_doc *pdf, const char *fmt, ...)
 {
-    if (pdf->write_error_occured)
+    if (pdf->write_error_occurred)
         return 0;
 
     va_list ap, aq;
@@ -740,7 +740,7 @@ static int pdf_printf(struct pdf_doc *pdf, const char *fmt, ...)
 }
 
 static void pdf_write(struct pdf_doc *pdf, const char *buf, size_t count) {
-    if (pdf->write_error_occured)
+    if (pdf->write_error_occurred)
         return;
 
     while (count > 0) {
@@ -966,7 +966,7 @@ int pdf_save_file(struct pdf_doc *pdf)
 
     pdf->page_indices.reserve(pdf->page_count);
     for(int p = 0; p < pdf->page_count; ++p) {
-        if (pdf->write_error_occured)
+        if (pdf->write_error_occurred)
             return -1;
 
         pdf->page_fn(pdf, p);

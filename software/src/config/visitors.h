@@ -550,7 +550,7 @@ struct from_json {
         if (return_str.length() > 0)
         {
             if (more_errors)
-                return_str += "More errors occured that got filtered out.\n";
+                return_str += "More errors occurred that got filtered out.\n";
             return return_str;
         }
 
