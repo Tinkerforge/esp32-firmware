@@ -140,16 +140,23 @@ void MeterSunSpec::scan_start()
     start_generic_read();
 }
 
+void MeterSunSpec::scan_read_delay()
+{
+    task_scheduler.scheduleOnce([this](){
+        this->start_generic_read();
+    }, 1000 + (esp_random() % 4000));
+}
+
 void MeterSunSpec::scan_next()
 {
-    scan_deserializer.idx = 0;
-    scan_state = scan_state_next;
-
     if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
-        logger.printfln("meter_sun_spec: Modbus read error: %s (%d)", get_modbus_result_code_name(generic_read_request.result_code), generic_read_request.result_code);
-        scan_restart();
+        logger.printfln("meter_sun_spec: Modbus read error during scan: %s (%d)", get_modbus_result_code_name(generic_read_request.result_code), generic_read_request.result_code);
+        scan_read_delay();
         return;
     }
+
+    scan_deserializer.idx = 0;
+    scan_state = scan_state_next;
 
     switch (scan_state) {
         case ScanState::Idle:
@@ -170,7 +177,7 @@ void MeterSunSpec::scan_next()
 
                     if (scan_base_address_index >= ARRAY_SIZE(scan_base_addresses)) {
                         logger.printfln("meter_sun_spec: No SunSpec device found at %s:%u:%u", host_name.c_str(), port, device_address);
-                        scan_restart();
+                        scan_start_delay();
                     }
                     else {
                         generic_read_request.start_address = scan_base_addresses[scan_base_address_index];
@@ -190,7 +197,7 @@ void MeterSunSpec::scan_next()
 
                 if (model_id_ == NON_IMPLEMENTED_UINT16 && block_length == 0) {
                     logger.printfln("meter_sun_spec: Configured SunSpec model %u not found at %s:%u:%u", model_id, host_name.c_str(), port, device_address);
-                    scan_restart();
+                    scan_start_delay();
                 }
                 else if (model_id_ == model_id) {
                     read_start(generic_read_request.start_address, 2 + block_length);
