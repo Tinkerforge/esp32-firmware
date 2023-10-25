@@ -61,7 +61,7 @@ const MeterValueID sdm_helper_all_ids[METER_ALL_VALUES_COUNT] = {
     MeterValueID::EnergyActiveLSumExport,
     MeterValueID::EnergyReactiveLSumInductive,
     MeterValueID::EnergyReactiveLSumCapacitive,
-    MeterValueID::EnergyApparentLSum,
+    MeterValueID::EnergyApparentLSumImExSum,
     MeterValueID::ElectricCharge,
     MeterValueID::PowerActiveLSumImExDiffIntervalAvg,
     MeterValueID::PowerActiveLSumImExDiffIntervalMax,
