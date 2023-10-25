@@ -19,6 +19,7 @@ let x = {
 
             "scan": "Find devices",
             "scan_failed": "Could not find devices",
+            "scan_log": "Scan log",
 
             {{{models}}}
         },

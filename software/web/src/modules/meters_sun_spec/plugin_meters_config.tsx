@@ -29,7 +29,8 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { OutputTextarea } from "../../ts/components/output_textarea";
-import { Button, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
+import { Button, ListGroup, ListGroupItem } from "react-bootstrap";
+import { Download } from 'react-feather';
 import { SUN_SPEC_MODEL_IDS } from "./sun_spec_model_id";
 
 export type SunSpecMetersConfig = [
@@ -163,8 +164,17 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                 : undefined}
 
             <FormRow label="">
-                <OutputTextarea resize='vertical' moreClass="mb-1" value={this.state.scan_log} />
+                <OutputTextarea rows={10} resize='vertical' moreClass="mb-1" value={this.state.scan_log} />
             </FormRow>
+
+            {!this.state.scan_running && this.state.scan_log.length > 0 ?
+                <FormRow label="">
+                    <Button variant="primary" className="form-control" onClick={() => util.downloadToFile(this.state.scan_log, "sun-spec-scan-log", "txt", "text/plain")}>
+                        <span class="mr-2">{__("meters_sun_spec.content.scan_log")}</span>
+                        <Download/>
+                    </Button>
+                </FormRow>
+                : undefined}
 
             {this.state.scan_results.length > 0 ?
                 <FormRow label="">
