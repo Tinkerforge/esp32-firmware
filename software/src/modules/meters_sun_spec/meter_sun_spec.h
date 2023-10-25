@@ -56,10 +56,11 @@ private:
     };
 
     void connect_callback() override;
+    void disconnect_callback() override;
 
     void read_start(size_t model_start_address, size_t model_regcount);
 
-    void scan_restart();
+    void scan_start_delay();
     void scan_start();
     void scan_read_delay();
     void scan_next();
@@ -69,7 +70,7 @@ private:
     Config *state;
     Config *errors;
 
-    bool access_in_progress = false;
+    bool read_allowed = false;
 
     uint16_t model_id;
     size_t scan_base_address_index;

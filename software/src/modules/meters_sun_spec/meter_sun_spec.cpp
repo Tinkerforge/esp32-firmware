@@ -51,13 +51,13 @@ void MeterSunSpec::setup()
     model_id       = static_cast<uint16_t>(config->get("model_id")->asUint());
 
     task_scheduler.scheduleOnce([this]() {
-        this->access_in_progress = true;
+        this->read_allowed = false;
         this->start_connection();
     }, 1000);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        if (!this->access_in_progress) {
-            this->access_in_progress = true;
+        if (this->read_allowed) {
+            this->read_allowed = false;
             this->start_generic_read();
         };
     }, 2000, 1000);
@@ -68,10 +68,14 @@ void MeterSunSpec::connect_callback()
     scan_start();
 }
 
+void MeterSunSpec::disconnect_callback()
+{
+    read_allowed = false;
+}
+
 void MeterSunSpec::read_start(size_t model_start_address, size_t model_regcount)
 {
     free(generic_read_request.data[0]);
-    free(generic_read_request.data[1]);
 
     generic_read_request.data[0] = nullptr;
     generic_read_request.data[1] = nullptr;
@@ -96,7 +100,7 @@ void MeterSunSpec::read_start(size_t model_start_address, size_t model_regcount)
 
 void MeterSunSpec::read_done_callback()
 {
-    access_in_progress = false;
+    read_allowed = true;
 
     if (generic_read_request.result_code == Modbus::ResultCode::EX_SUCCESS) {
         int16_t voltA = static_cast<int16_t>(generic_read_request.data[0][8]);
@@ -104,7 +108,7 @@ void MeterSunSpec::read_done_callback()
     }
 }
 
-void MeterSunSpec::scan_restart()
+void MeterSunSpec::scan_start_delay()
 {
     task_scheduler.scheduleOnce([this](){
         this->scan_start();
@@ -114,7 +118,6 @@ void MeterSunSpec::scan_restart()
 void MeterSunSpec::scan_start()
 {
     free(generic_read_request.data[0]);
-    free(generic_read_request.data[1]);
 
     generic_read_request.data[0] = nullptr;
     generic_read_request.data[1] = nullptr;
@@ -200,6 +203,7 @@ void MeterSunSpec::scan_next()
                     scan_start_delay();
                 }
                 else if (model_id_ == model_id) {
+                    logger.printfln("meter_sun_spec: Configured SunSpec model %u found at %s:%u:%u", model_id, host_name.c_str(), port, device_address);
                     read_start(generic_read_request.start_address, 2 + block_length);
                 }
                 else {

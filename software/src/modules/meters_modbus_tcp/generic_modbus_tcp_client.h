@@ -65,7 +65,7 @@ protected:
     ModbusTCP * const mb;
 
     String host_name;
-    IPAddress host_ip;
+    IPAddress host_ip = IPAddress(0u);
     uint16_t port = 0;
     uint8_t device_address = 0;
 
@@ -74,12 +74,15 @@ protected:
 private:
     void check_ip(const ip_addr_t *ip, int err);
     virtual void connect_callback() = 0;
+    virtual void disconnect_callback() = 0;
     void read_next();
 
     dns_gethostbyname_addrtype_lwip_ctx_async_data host_data;
     uint32_t connect_backoff_ms = 1000;
     bool resolve_error_printed = false;
     bool connect_error_printed = false;
+    micros_t last_successful_read = 0_usec;
+    micros_t successful_read_timeout = 60000000_usec;
 
     uint8_t read_buffer_num;
     uint16_t read_block_size;

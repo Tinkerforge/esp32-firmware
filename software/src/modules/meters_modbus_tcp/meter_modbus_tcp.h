@@ -47,6 +47,7 @@ public:
 
 private:
     void connect_callback() override;
+    void disconnect_callback() override;
     void poll_next();
     void handle_data();
 

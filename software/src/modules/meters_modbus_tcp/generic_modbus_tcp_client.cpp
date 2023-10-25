@@ -32,6 +32,14 @@ void GenericModbusTCPClient::start_connection()
 {
     host_data.user = this;
 
+    if (mb->isConnected(host_ip) && mb->disconnect(host_ip)) {
+        logger.printfln("generic_modbus_tcp_client: Disconnecting from '%s'", host_name.c_str());
+        disconnect_callback();
+    }
+
+    host_ip = IPAddress(0u);
+    last_successful_read = 0_usec;
+
     dns_gethostbyname_addrtype_lwip_ctx_async(host_name.c_str(), [](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
         GenericModbusTCPClient *gmbtc = static_cast<GenericModbusTCPClient *>(data->user);
 
@@ -90,6 +98,18 @@ void GenericModbusTCPClient::check_ip(const ip_addr_t *ip, int err)
 
 void GenericModbusTCPClient::start_generic_read()
 {
+    if (!mb->isConnected(host_ip)) {
+        generic_read_request.result_code = Modbus::ResultCode::EX_GENERAL_FAILURE;
+        generic_read_request.done_callback();
+        return;
+    }
+
+    if (last_successful_read != 0_usec && deadline_elapsed(last_successful_read + successful_read_timeout)) {
+        logger.printfln("generic_modbus_tcp_client: Last successful read occurred too long ago, reconnecting to '%s'", host_name.c_str());
+        start_connection();
+        return;
+    }
+
     read_buffer_num = 0;
     registers_done_count = 0;
 
@@ -129,6 +149,7 @@ void GenericModbusTCPClient::read_next()
                 registers_done_count = 0;
             } else {
                 // Only one read requested or second buffer done. -> All done.
+                last_successful_read = now_us();
                 generic_read_request.result_code = Modbus::ResultCode::EX_SUCCESS;
                 generic_read_request.done_callback();
                 return true;
