@@ -55,8 +55,8 @@ export class OutputTextarea extends Component<OutputTextareaProps, {}> {
                          ref={this.ref}
                          onScroll={(ev) => {
                             let ta = ev.target as HTMLTextAreaElement;
-                            this.auto_scroll = ta.scrollHeight - Math.round(ta.scrollTop) === ta.clientHeight}
-                         }
+                            this.auto_scroll = Math.ceil(ta.scrollHeight - ta.scrollTop) <= ta.clientHeight + 2 * parseFloat(getComputedStyle(ta).lineHeight);
+                         }}
                          {...rest}>
                     {props.value}
                 </textarea>
