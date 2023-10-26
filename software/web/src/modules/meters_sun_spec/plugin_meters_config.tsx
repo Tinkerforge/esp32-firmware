@@ -63,9 +63,8 @@ interface DeviceScannerProps {
 }
 
 interface DeviceScannerState {
-    scan_host: string
-    scan_port: number
     scan_running: boolean
+    scan_cookie: number
     scan_progress: number
     scan_log: string
     scan_show_log: boolean
@@ -77,26 +76,30 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         super();
 
         this.state = {
-            scan_host: '',
-            scan_port: 0,
             scan_running: false,
+            scan_cookie: null,
             scan_progress: 0,
             scan_log: '',
             scan_show_log: false,
             scan_results: [],
         } as any;
 
-        util.addApiEventListener('meters_sun_spec/scan_log', (e) => {
-            if (e.data == '<<<clear_scan_log>>>') {
-                this.setState({scan_log: ''})
+        util.addApiEventListener('meters_sun_spec/scan_log', () => {
+            let scan_log = API.get('meters_sun_spec/scan_log');
+
+            if (!this.state.scan_running || scan_log.cookie !== this.state.scan_cookie) {
+                return;
             }
-            else {
-                this.setState({scan_log: this.state.scan_log + e.data})
-            }
+
+            this.setState({scan_log: this.state.scan_log + scan_log.message})
         });
 
         util.addApiEventListener('meters_sun_spec/scan_progress', (e) => {
             let scan_progress = API.get('meters_sun_spec/scan_progress');
+
+            if (!this.state.scan_running || scan_progress.cookie !== this.state.scan_cookie) {
+                return;
+            }
 
             this.setState({scan_progress: scan_progress.progress});
         });
@@ -104,32 +107,36 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         util.addApiEventListener('meters_sun_spec/scan_result', () => {
             let scan_result = API.get('meters_sun_spec/scan_result');
 
-            if (this.state.scan_running && scan_result.host === this.props.host && scan_result.port === this.props.port) {
-                // this combination must be unique according to sunspec specification
-                let unique_id = scan_result.manufacturer_name + scan_result.model_name + scan_result.serial_number;
+            if (!this.state.scan_running || scan_result.cookie !== this.state.scan_cookie) {
+                return;
+            }
 
-                if (this.state.scan_results.filter((other) => other.unique_id == unique_id && other.model_id == scan_result.model_id).length == 0) {
-                    this.setState({scan_results: this.state.scan_results.concat({
-                        unique_id: unique_id,
-                        manufacturer_name: scan_result.manufacturer_name,
-                        model_name: scan_result.model_name,
-                        display_name: scan_result.model_name.startsWith(scan_result.manufacturer_name) ? scan_result.model_name : scan_result.manufacturer_name + ' ' + scan_result.model_name,
-                        options: scan_result.options,
-                        version: scan_result.version,
-                        serial_number: scan_result.serial_number,
-                        device_address: scan_result.device_address,
-                        model_id: scan_result.model_id,
-                    })});
-                }
+            // this combination must be unique according to sunspec specification
+            let unique_id = scan_result.manufacturer_name + scan_result.model_name + scan_result.serial_number;
+
+            if (this.state.scan_results.filter((other) => other.unique_id == unique_id && other.model_id == scan_result.model_id).length == 0) {
+                this.setState({scan_results: this.state.scan_results.concat({
+                    unique_id: unique_id,
+                    manufacturer_name: scan_result.manufacturer_name,
+                    model_name: scan_result.model_name,
+                    display_name: scan_result.model_name.startsWith(scan_result.manufacturer_name) ? scan_result.model_name : scan_result.manufacturer_name + ' ' + scan_result.model_name,
+                    options: scan_result.options,
+                    version: scan_result.version,
+                    serial_number: scan_result.serial_number,
+                    device_address: scan_result.device_address,
+                    model_id: scan_result.model_id,
+                })});
             }
         });
 
         util.addApiEventListener('meters_sun_spec/scan_done', () => {
             let scan_done = API.get('meters_sun_spec/scan_done');
 
-            if (scan_done.host === this.state.scan_host && scan_done.port === this.state.scan_port) {
-                this.setState({scan_host: "", scan_port: 0, scan_running: false});
+            if (!this.state.scan_running || scan_done.cookie !== this.state.scan_cookie) {
+                return;
             }
+
+            this.setState({scan_running: false, scan_cookie: null});
         });
     }
 
@@ -160,13 +167,34 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                 <Button variant="primary"
                         className="form-control"
                         onClick={async () => {
-                            this.setState({scan_host: this.props.host, scan_port: this.props.port, scan_running: true, scan_show_log: true, scan_progress: 0, scan_results: []});
+                            let scan_cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
+
+                            this.setState({
+                                scan_running: true,
+                                scan_cookie: scan_cookie,
+                                scan_show_log: true,
+                                scan_progress: 0,
+                                scan_log: '',
+                                scan_results: [],
+                            });
+
                             try {
-                                await API.call('meters_sun_spec/scan',
-                                            {host: this.props.host, port: this.props.port},
-                                            __("meters_sun_spec.content.scan_failed"));
-                            } catch {
-                                this.setState({scan_host: "", scan_port: 0, scan_running: false, scan_results: []});
+                                let result = await (await util.put('/meters_sun_spec/scan',
+                                                                   {host: this.props.host, port: this.props.port, cookie: scan_cookie})).text();
+
+                                if (result.length > 0) {
+                                    this.setState({
+                                        scan_running: false,
+                                        scan_cookie: null,
+                                        scan_log: result,
+                                    });
+                                }
+                            } catch (e) {
+                                this.setState({
+                                    scan_running: false,
+                                    scan_cookie: null,
+                                    scan_log: e.message.replace('400(Bad Request) ', ''),
+                                });
                             }
                         }}
                         disabled={this.props.host.trim().length == 0 || !util.hasValue(this.props.port) || this.state.scan_running}>
