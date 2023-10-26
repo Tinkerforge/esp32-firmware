@@ -20,7 +20,6 @@ let x = {
             "scan_title": "Gerätesuche",
             "scan": "Suche starten",
             "scan_results": "Gefundene Geräte",
-            "scan_failed": "Konnte nicht nach Geräten suchen",
             "scan_log": "Log",
 
             "model_no_supported": "Nicht unterstützt",
