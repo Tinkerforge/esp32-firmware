@@ -111,6 +111,7 @@ public:
     size_t scan_standard_block_length;
     char scan_printfln_buffer[512] = "";
     size_t scan_printfln_buffer_used = 0;
+    micros_t scan_printfln_last_flush = 0_usec;
     char scan_common_manufacturer_name[32 + 1];
     char scan_common_model_name[32 + 1];
     char scan_common_options[16 + 1];

@@ -92,6 +92,10 @@ void MetersSunSpec::loop()
         scan_state = ScanState::Disconnect;
     }
 
+    if (scan_printfln_buffer_used > 0 && deadline_elapsed(scan_printfln_last_flush + 2000000_usec)) {
+        scan_flush_log();
+    }
+
     switch (scan_state) {
     case ScanState::Idle:
         if (!scan_log_idle) {
@@ -577,6 +581,7 @@ void MetersSunSpec::scan_flush_log()
 
     scan_log_idle = false;
     scan_printfln_buffer_used = 0;
+    scan_printfln_last_flush = now_us();
 
     ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_log"); // FIXME: error handling
 }
