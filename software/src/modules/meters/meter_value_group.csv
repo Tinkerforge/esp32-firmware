@@ -6,10 +6,10 @@ Current,,Import,Interval Max,Current (draw),maximum this interval,Strom (Bezug),
 Current,,Export,,Current (feed),,Strom (Einspeisung),,
 Current,,Export,Interval Avg,Current (feed),average this interval,Strom (Einspeisung),Durchschnitt über Zeitintervall,
 Current,,Export,Interval Max,Current (feed),maximum this interval,Strom (Einspeisung),Maximum in Zeitintervall,
-Current,,Im Ex Sum,,Current ,,Strom,,"für Zähler, die immer einen positiven Strom melden, egal ob gerade bezogen oder eingespeist wird. Typischerweise kann die Richtung des Stromflusses dann am Leistungsfaktor o.Ä. abgelesen werden."
+Current,,Im Ex Sum,,Current,,Strom,,"für Zähler, die immer einen positiven Strom melden, egal ob gerade bezogen oder eingespeist wird. Typischerweise kann die Richtung des Stromflusses dann am Leistungsfaktor o.Ä. abgelesen werden."
 Current,,Im Ex Sum,Interval Avg,Current (draw plus feed),average this interval,Strom (Bezug plus Einspeisung),Durchschnitt über Zeitintervall,
 Current,,Im Ex Sum,Interval Max,Current (draw plus feed),maximum this interval,Strom (Bezug plus Einspeisung),Maximum in Zeitintervall,
-Current,,Im Ex Diff,,Current ,,Strom,,
+Current,,Im Ex Diff,,Current,,Strom,,
 Current,,Im Ex Diff,Interval Avg,Current (draw minus feed),average this interval,Strom (Bezug minus Einspeisung),Durchschnitt über Zeitintervall,
 Current,,Im Ex Diff,Interval Max,Current (draw minus feed),maximum this interval,Strom (Bezug minus Einspeisung),Maximum in Zeitintervall,
 power,Active,Import,,Active power (draw),,Wirkleistung (Bezug),,
