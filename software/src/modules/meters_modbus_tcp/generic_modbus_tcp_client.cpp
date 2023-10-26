@@ -99,8 +99,8 @@ void GenericModbusTCPClient::check_ip(const ip_addr_t *ip, int err)
 void GenericModbusTCPClient::start_generic_read()
 {
     if (!mb->isConnected(host_ip)) {
-        generic_read_request.result_code = Modbus::ResultCode::EX_GENERAL_FAILURE;
-        generic_read_request.done_callback();
+        logger.printfln("generic_modbus_tcp_client: Connection lost, reconnecting to '%s'", host_name.c_str());
+        start_connection();
         return;
     }
 
