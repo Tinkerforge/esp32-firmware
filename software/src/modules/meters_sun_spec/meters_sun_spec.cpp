@@ -464,34 +464,20 @@ void MetersSunSpec::loop()
                 scan_state = ScanState::NextDeviceAddress;
             }
             else {
-                bool found = false;
+                const char *model_name = "Unknown";
 
                 for (size_t i = 0; i < sun_spec_model_specs_length; ++i) {
                     if (model_id == static_cast<uint16_t>(sun_spec_model_specs[i].model_id)) {
-                        scan_printfln("%s Model [%u] found", sun_spec_model_specs[i].model_name, model_id);
-
-                        if (block_length != sun_spec_model_specs[i].block_length) {
-                            scan_printfln("%s Model [%u] has unexpected length (actual: %zu, expected: %u)",
-                                          sun_spec_model_specs[i].model_name, model_id, block_length, sun_spec_model_specs[i].block_length);
-                        }
-                        else {
-                            found = true;
-                            break;
-                        }
+                        model_name = sun_spec_model_specs[i].model_name;
+                        break;
                     }
                 }
 
-                if (found) {
-                    scan_standard_model_id = model_id;
-                    scan_standard_block_length = block_length;
-                    scan_state = ScanState::ReportStandardModelResult;
-                }
-                else {
-                    scan_printfln("Skipping Unknown Model [%u] with length %zu", model_id, block_length);
+                scan_printfln("Found %s Model [%u] with length %zu", model_name, model_id, block_length);
 
-                    scan_read_address += block_length;
-                    scan_state = ScanState::ReadStandardModelHeader;
-                }
+                scan_standard_model_id = model_id;
+                scan_standard_block_length = block_length;
+                scan_state = ScanState::ReportStandardModelResult;
             }
         }
         else {

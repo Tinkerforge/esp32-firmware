@@ -31,7 +31,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { OutputTextarea } from "../../ts/components/output_textarea";
 import { Button, ListGroup, ListGroupItem } from "react-bootstrap";
 import { Download } from 'react-feather';
-import { SUN_SPEC_MODEL_IDS } from "./sun_spec_model_id";
+import { SUN_SPEC_MODEL_INFOS, SUN_SPEC_MODEL_IS_METER_LIKE, SUN_SPEC_MODEL_IS_SUPPORTED } from "./sun_spec_model_specs";
 
 export type SunSpecMetersConfig = [
     MeterClassID.SunSpec,
@@ -68,6 +68,7 @@ interface DeviceScannerState {
     scan_running: boolean
     scan_progress: number
     scan_log: string
+    scan_show_log: boolean
     scan_results: DeviceScannerResult[]
 }
 
@@ -81,6 +82,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             scan_running: false,
             scan_progress: 0,
             scan_log: '',
+            scan_show_log: false,
             scan_results: [],
         } as any;
 
@@ -131,18 +133,38 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         });
     }
 
+    get_scan_result_item(scan_result: DeviceScannerResult) {
+        return <ListGroupItem
+                key={scan_result.model_id}
+                action
+                type="button"
+                onClick={SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id] ? () => {this.props.onResultSelected(scan_result)} : undefined}
+                style={SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id] ? "" : "cursor: default; background-color: #eeeeee !important;"}>
+            <div class="d-flex w-100 justify-content-between">
+                <span class="h5 text-left">{scan_result.display_name}</span>
+                {SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id] ? undefined :
+                    <span class="text-right" style="color:red">{__("meters_sun_spec.content.model_no_supported")}</span>
+                }
+            </div>
+            <div class="d-flex w-100 justify-content-between">
+                <span>{__("meters_sun_spec.content.config_device_address")}: {scan_result.device_address}</span>
+                <span>{__("meters_sun_spec.content.config_model_id") + ": " + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)}</span>
+            </div>
+        </ListGroupItem>;
+    }
+
     render() {
         return <>
+            <FormRow label={__("meters_sun_spec.content.scan_title")}>
             {!this.state.scan_running ?
-            <FormRow label="">
                 <Button variant="primary"
                         className="form-control"
                         onClick={async () => {
-                            this.setState({scan_host: this.props.host, scan_port: this.props.port, scan_running: true, scan_progress: 0, scan_results: []});
+                            this.setState({scan_host: this.props.host, scan_port: this.props.port, scan_running: true, scan_show_log: true, scan_progress: 0, scan_results: []});
                             try {
                                 await API.call('meters_sun_spec/scan',
-                                               {host: this.props.host, port: this.props.port},
-                                               __("meters_sun_spec.content.scan_failed"));
+                                            {host: this.props.host, port: this.props.port},
+                                            __("meters_sun_spec.content.scan_failed"));
                             } catch {
                                 this.setState({scan_host: "", scan_port: 0, scan_running: false, scan_results: []});
                             }
@@ -150,22 +172,18 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                         disabled={this.props.host.trim().length == 0 || !util.hasValue(this.props.port) || this.state.scan_running}>
                     {__("meters_sun_spec.content.scan")}
                 </Button>
+                : <div class="form-progress">
+                    <div class="progress-bar form-control progress-bar-no-transition"
+                        role="progressbar" style={"padding: 0; width: " + this.state.scan_progress + "%"} aria-valuenow={this.state.scan_progress} aria-valuemin={0}
+                        aria-valuemax={100}>{Math.round(this.state.scan_progress) + "%"}</div>
+                </div>}
             </FormRow>
-            : undefined }
 
-            {this.state.scan_running ?
+            {this.state.scan_show_log ?
                 <FormRow label="">
-                    <div class="form-progress">
-                        <div class="progress-bar form-control progress-bar-no-transition"
-                            role="progressbar" style={"padding: 0; width: " + this.state.scan_progress + "%"} aria-valuenow={this.state.scan_progress} aria-valuemin={0}
-                            aria-valuemax={100}>{Math.round(this.state.scan_progress) + "%"}</div>
-                    </div>
+                    <OutputTextarea rows={10} resize='vertical' value={this.state.scan_log} />
                 </FormRow>
                 : undefined}
-
-            <FormRow label="">
-                <OutputTextarea rows={10} resize='vertical' moreClass="mb-1" value={this.state.scan_log} />
-            </FormRow>
 
             {!this.state.scan_running && this.state.scan_log.length > 0 ?
                 <FormRow label="">
@@ -177,16 +195,14 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                 : undefined}
 
             {this.state.scan_results.length > 0 ?
-                <FormRow label="">
+                <FormRow label={__("meters_sun_spec.content.scan_results")}>
                     <ListGroup>
-                        {this.state.scan_results.map(scan_result =>
-                            <ListGroupItem action type="button" onClick={() => {this.props.onResultSelected(scan_result)}}>
-                                <h5 class="mb-1 pr-2">{scan_result.display_name}</h5>
-                                <div class="d-flex w-100 justify-content-between">
-                                    <span>{__("meters_sun_spec.content.config_device_address")}: {scan_result.device_address}</span>
-                                    <span>{__("meters_sun_spec.content.config_model_id") + ": " + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)}</span>
-                                </div>
-                            </ListGroupItem>)}
+                        {this.state.scan_results
+                            .filter((scan_result) => SUN_SPEC_MODEL_IS_METER_LIKE[scan_result.model_id] && SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id])
+                            .map((scan_result) => this.get_scan_result_item(scan_result))}
+                        {this.state.scan_results
+                            .filter((scan_result) => SUN_SPEC_MODEL_IS_METER_LIKE[scan_result.model_id] && !SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id])
+                            .map((scan_result) => this.get_scan_result_item(scan_result))}
                     </ListGroup>
                 </FormRow>
                 : undefined}
@@ -203,8 +219,10 @@ export function init() {
             get_edit_rows: (config: SunSpecMetersConfig, on_value: (config: SunSpecMetersConfig) => void): TableModalRow[] => {
                 let model_ids: [string, string][] = [];
 
-                for (let id of SUN_SPEC_MODEL_IDS) {
-                    model_ids.push([id.toString(), translate_unchecked(`meters_sun_spec.content.model_${id}`)]);
+                for (let model_info of SUN_SPEC_MODEL_INFOS) {
+                    if (model_info.is_supported) {
+                        model_ids.push([model_info.model_id.toString(), translate_unchecked(`meters_sun_spec.content.model_${model_info.model_id}`)]);
+                    }
                 }
 
                 return [

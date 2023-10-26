@@ -17,10 +17,13 @@ let x = {
             "config_model_id": "Modell",
             "config_model_id_select": "Auswählen...",
 
-            "scan": "Geräte suchen",
+            "scan_title": "Gerätesuche",
+            "scan": "Suche starten",
+            "scan_results": "Gefundene Geräte",
             "scan_failed": "Konnte nicht nach Geräten suchen",
-            "scan_log": "Geräte-Log",
+            "scan_log": "Log",
 
+            "model_no_supported": "Nicht unterstützt",
             {{{models}}}
         },
         "script": {
