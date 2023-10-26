@@ -180,18 +180,18 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             </FormRow>
 
             {this.state.scan_show_log ?
-                <FormRow label="">
+                <><FormRow label="">
                     <OutputTextarea rows={10} resize='vertical' value={this.state.scan_log} />
                 </FormRow>
-                : undefined}
-
-            {!this.state.scan_running && this.state.scan_log.length > 0 ?
                 <FormRow label="">
-                    <Button variant="primary" className="form-control" onClick={() => util.downloadToFile(this.state.scan_log, "sun-spec-scan-log", "txt", "text/plain")}>
+                    <Button variant="primary"
+                            disabled={this.state.scan_running || this.state.scan_log.length == 0}
+                            className="form-control"
+                            onClick={() => util.downloadToFile(this.state.scan_log, "sun-spec-scan-log", "txt", "text/plain")}>
                         <span class="mr-2">{__("meters_sun_spec.content.scan_log")}</span>
                         <Download/>
                     </Button>
-                </FormRow>
+                </FormRow></>
                 : undefined}
 
             {this.state.scan_results.length > 0 ?
