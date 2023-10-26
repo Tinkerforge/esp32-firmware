@@ -17,10 +17,13 @@ let x = {
             "config_model_id": "Model",
             "config_model_id_select": "Select...",
 
-            "scan": "Find devices",
-            "scan_failed": "Could not find devices",
-            "scan_log": "Scan log",
+            "scan_title": "Device search",
+            "scan": "Start search",
+            "scan_results": "Discovered devices",
+            "scan_failed": "Could not discover devices",
+            "scan_log": "Log",
 
+            "model_no_supported": "Not supported",
             {{{models}}}
         },
         "script": {
