@@ -86,13 +86,13 @@ export class Certs extends Component<{}, State> {
                                         }
                                     ],
                                     onEditCommit: async () => {
-                                        await API.call('certs/modify', {
+                                        await API.save('certs/modify', {
                                             id: state.editCert.id,
                                             name: state.editCert.name,
                                             cert: state.editCert.file == null ? null : await state.editCert.file.text()
-                                        }, "error_string");
+                                        }, __("certs.script.mod_cert_failed"));
                                     },
-                                    onRemoveClick: async () => { await API.call('certs/remove', {id: cert.id}, "error_string"); }
+                                    onRemoveClick: async () => { await API.save('certs/remove', {id: cert.id}, __("certs.script.del_cert_failed")); }
                                 }})
                             }
                             addEnabled={API.get('certs/state').certs.length < MAX_CERTS}
@@ -137,7 +137,7 @@ export class Certs extends Component<{}, State> {
                                     }
                                 }
 
-                                await API.call('certs/add', {
+                                await API.save('certs/add', {
                                     id: next_free_id,
                                     name: state.addCert.name,
                                     cert: await state.addCert.file.text()
