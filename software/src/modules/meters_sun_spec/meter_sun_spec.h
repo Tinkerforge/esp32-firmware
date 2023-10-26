@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "model_parser.h"
+
 #include <stdint.h>
 
 #include "config.h"
@@ -71,12 +73,15 @@ private:
     Config *errors;
 
     bool read_allowed = false;
+    bool values_declared = false;
 
     uint16_t model_id;
     size_t scan_base_address_index;
     ScanState scan_state;
     ScanState scan_state_next;
     ModbusDeserializer scan_deserializer;
+
+    MetersSunSpecParser *model_parser;
 };
 
 #if defined(__GNUC__)
