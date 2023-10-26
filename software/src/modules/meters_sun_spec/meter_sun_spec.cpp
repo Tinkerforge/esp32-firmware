@@ -50,6 +50,12 @@ void MeterSunSpec::setup()
     device_address = static_cast<uint8_t>(config->get("device_address")->asUint());
     model_id       = static_cast<uint16_t>(config->get("model_id")->asUint());
 
+    model_parser = MetersSunSpecParser::new_parser(slot, model_id);
+    if (!model_parser) {
+        logger.printfln("meter_sun_spec: No parser available for model %u", model_id);
+        return;
+    }
+
     task_scheduler.scheduleOnce([this]() {
         this->read_allowed = false;
         this->start_connection();
@@ -102,9 +108,18 @@ void MeterSunSpec::read_done_callback()
 {
     read_allowed = true;
 
+    if (!values_declared) {
+        model_parser->detect_values(generic_read_request.data[1]);
+        values_declared = true;
+    }
+
     if (generic_read_request.result_code == Modbus::ResultCode::EX_SUCCESS) {
-        int16_t voltA = static_cast<int16_t>(generic_read_request.data[0][8]);
-        logger.printfln("read_done_cb called voltA=%i", voltA);
+        if (!model_parser->parse_values(generic_read_request.data)) {
+            logger.printfln("meter_sun_spec: Parsing model %u data in slot %u failed.", model_id, slot);
+            // TODO: Read again if parsing failed?
+        }
+    } else {
+        logger.printfln("meter_sun_spec: Read unsuccessful (%i)", generic_read_request.result_code);
     }
 }
 
