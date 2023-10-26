@@ -76,6 +76,7 @@ public:
         ReportStandardModelResult,
     };
 
+    void scan_flush_log();
     void scan_printfln(const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
 
     Config config_prototype;
@@ -108,6 +109,8 @@ public:
     size_t scan_common_block_length;
     uint16_t scan_standard_model_id;
     size_t scan_standard_block_length;
+    char scan_printfln_buffer[512] = "";
+    size_t scan_printfln_buffer_used = 0;
     char scan_common_manufacturer_name[32 + 1];
     char scan_common_model_name[32 + 1];
     char scan_common_options[16 + 1];

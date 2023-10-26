@@ -927,6 +927,13 @@ size_t snprintf_u(char *buf, size_t len, const char *format, ...)
     return res < 0 ? 0 : static_cast<size_t>(res);
 }
 
+size_t vsnprintf_u(char *buf, size_t len, const char *format, va_list args)
+{
+    int res = vsnprintf(buf, len, format, args);
+
+    return res < 0 ? 0 : static_cast<size_t>(res);
+}
+
 bool Ownership::try_acquire(uint32_t owner_id)
 {
     mutex.lock();
