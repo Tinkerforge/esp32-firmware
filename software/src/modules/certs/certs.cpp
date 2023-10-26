@@ -133,9 +133,7 @@ void Certs::register_urls()
             File f = LittleFS.open(String("/certs/") + cert_id, "w");
             // TODO: more robust writing
             auto &cert = add.get("cert")->asString();
-            size_t written = f.write((const uint8_t *) cert.c_str(), cert.length());
-
-            logger.printfln("Written %u; size %u", written, cert.length());
+            f.write((const uint8_t *) cert.c_str(), cert.length());
         }
 
         // Cert is written into flash. Drop from config to free memory.
@@ -176,9 +174,7 @@ void Certs::register_urls()
 
             // TODO: more robust writing
             auto &cert = add.get("cert")->asString();
-            size_t written = f.write((const uint8_t *) cert.c_str(), cert.length());
-
-            logger.printfln("Written %u; size %u", written, cert.length());
+            f.write((const uint8_t *) cert.c_str(), cert.length());
         }
 
         // Cert is written into flash. Drop from config to free memory.
