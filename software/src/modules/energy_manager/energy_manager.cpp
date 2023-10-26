@@ -325,12 +325,17 @@ void EnergyManager::setup()
     // Initialize contactor check state so that the check doesn't trip immediately if the first response from the bricklet is invalid.
     all_data.contactor_check_state = 1;
 
+    // Start this task even if a config error is set below: If only MeterEM::update_all_values runs there are 2.5 sec gaps in the meters data.
+    task_scheduler.scheduleWithFixedDelay([this](){
+        this->update_all_data();
+    }, 0, EM_TASK_DELAY_MS);
+
     // Check for incomplete configuration after as much as possible has been set up.
     // The default configuration after a factory reset must be good enough for everything to run without crashing.
     if ((config_in_use.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !config_in_use.get("contactor_installed")->asBool()) {
         logger.printfln("energy_manager: Invalid configuration: Automatic phase switching selected but no contactor installed.");
         set_config_error(CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK);
-        return; // FIXME: this should not be fatal, because in this case the update_all_data doesn't run, but MeterEM::update_all_values runs resulting in 2.5 sec gaps in the meters data
+        return;
     }
 
     bool power_meter_available = false;
@@ -346,10 +351,6 @@ void EnergyManager::setup()
         set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
         logger.printfln("energy_manager: Excess charging enabled but configured meter can't provide power values.");
     }
-
-    task_scheduler.scheduleWithFixedDelay([this](){
-        this->update_all_data();
-    }, 0, EM_TASK_DELAY_MS);
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_io();
@@ -512,6 +513,10 @@ void EnergyManager::update_all_data()
 #if MODULE_METERS_EM_AVAILABLE()
     meters_em.update_from_em_all_data(all_data);
 #endif
+
+    // Update meter values even if the config is bad.
+    if (is_error(ERROR_FLAGS_BAD_CONFIG_MASK))
+        return;
 
     // Update states derived from all_data
     is_3phase   = contactor_installed ? all_data.contactor_value : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
