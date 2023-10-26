@@ -1015,6 +1015,21 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                         energy = values_by_id[MeterValueID.EnergyActiveLSumImExSum];
                                     }
 
+                                    if (!util.hasValue(energy)) {
+                                        let energy_import = values_by_id[MeterValueID.EnergyActiveLSumImport];
+                                        let energy_export = values_by_id[MeterValueID.EnergyActiveLSumExport];
+
+                                        if (!util.hasValue(energy_import)) {
+                                            energy_import = 0;
+                                        }
+
+                                        if (!util.hasValue(energy_export)) {
+                                            energy_export = 0;
+                                        }
+
+                                        energy = energy_import + energy_export;
+                                    }
+
                                     let voltage_L1 = values_by_id[MeterValueID.VoltageL1N];
                                     let voltage_L2 = values_by_id[MeterValueID.VoltageL2N];
                                     let voltage_L3 = values_by_id[MeterValueID.VoltageL3N];
