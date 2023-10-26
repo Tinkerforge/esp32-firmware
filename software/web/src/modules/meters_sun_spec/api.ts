@@ -2,15 +2,16 @@
 export interface scan {
     host: string
     port: number
+    cookie: number
 }
 
 export interface scan_progress {
+    cookie: number
     progress: number
 }
 
 export interface scan_result {
-    host: string
-    port: number
+    cookie: number
     manufacturer_name: string
     model_name: string
     options: string
@@ -21,8 +22,10 @@ export interface scan_result {
 }
 
 export interface scan_done {
-    host: string
-    port: number
+    cookie: number
 }
 
-export type scan_log = string;
+export interface scan_log {
+    cookie: number
+    message: string
+}

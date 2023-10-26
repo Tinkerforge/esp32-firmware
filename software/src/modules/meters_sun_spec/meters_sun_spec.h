@@ -85,15 +85,16 @@ public:
     ConfigRoot scan;
 
     bool scan_new = false;
-    String scan_new_host = "";
-    uint16_t scan_new_port = 0;
+    String scan_new_host;
+    uint16_t scan_new_port;
+    uint32_t scan_new_cookie;
 
-    bool scan_log_idle = false;
     ScanState scan_state = ScanState::Idle;
-    String scan_host = "";
+    String scan_host;
     dns_gethostbyname_addrtype_lwip_ctx_async_data scan_host_data;
     IPAddress scan_host_address;
     uint16_t scan_port;
+    uint32_t scan_cookie;
     uint8_t scan_device_address;
     size_t scan_base_address_index;
     size_t scan_read_address;

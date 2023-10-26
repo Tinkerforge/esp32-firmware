@@ -63,6 +63,7 @@ void MetersSunSpec::pre_setup()
     scan = ConfigRoot{Config::Object({
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(0)},
+        {"cookie", Config::Uint32(0)},
     })};
 }
 
@@ -75,56 +76,39 @@ void MetersSunSpec::setup()
 
 void MetersSunSpec::register_urls()
 {
-    api.addCommand("meters_sun_spec/scan", &scan, {}, [this](){
+    api.addCommand("meters_sun_spec/scan", &scan, {}, [this](String &error){
         if (scan_state != ScanState::Idle) {
+            error = "Another scan is already in progress, please try again later!";
             return;
         }
 
-        scan_new = true;
         scan_new_host = scan.get("host")->asString();
         scan_new_port = static_cast<uint16_t>(scan.get("port")->asUint());
+        scan_new_cookie = scan.get("cookie")->asUint();
+        scan_new = true;
     }, true);
 }
 
 void MetersSunSpec::loop()
 {
-    if (scan_new && scan_state != ScanState::Idle) {
-        scan_state = ScanState::Disconnect;
-    }
-
     if (scan_printfln_buffer_used > 0 && deadline_elapsed(scan_printfln_last_flush + 2000000_usec)) {
         scan_flush_log();
     }
 
     switch (scan_state) {
     case ScanState::Idle:
-        if (!scan_log_idle) {
-            if (!ws.pushRawStateUpdate("\"\"", "meters_sun_spec/scan_log")) {
-                break; // need to idle the log before doing something else
-            }
-
-            scan_log_idle = true;
-        }
-
         if (scan_new) {
-            if (!ws.pushRawStateUpdate("\"<<<clear_scan_log>>>\"", "meters_sun_spec/scan_log")) {
-                break; // need to clear the log before doing something else
-            }
-
-            ws.pushRawStateUpdate("{\"progress\":0.0}", "meters_sun_spec/scan_progress"); // FIXME: error handling
-
             scan_printfln("Starting scan");
 
             scan_state = ScanState::Resolve;
             scan_host = scan_new_host;
             scan_port = scan_new_port;
+            scan_cookie = scan_new_cookie;
             scan_device_address = DEVICE_ADDRESS_FIRST;
             scan_base_address_index = 0;
             ++scan_read_cookie;
 
             scan_new = false;
-            scan_new_host = "";
-            scan_new_port = 0;
         }
 
         break;
@@ -199,12 +183,11 @@ void MetersSunSpec::loop()
             scan_printfln("Scan finished");
             scan_flush_log();
 
-            char buf[512];
+            char buf[128];
             TFJsonSerializer json{buf, sizeof(buf)};
 
             json.addObject();
-            json.addMemberString("host", scan_host.c_str());
-            json.addMemberNumber("port", scan_port);
+            json.addMemberNumber("cookie", scan_cookie);
             json.endObject();
             json.end();
 
@@ -223,16 +206,17 @@ void MetersSunSpec::loop()
             scan_state = ScanState::Disconnect;
         }
         else {
-            char buf[512];
+            char buf[128];
             TFJsonSerializer json{buf, sizeof(buf)};
 
             json.addObject();
+            json.addMemberNumber("cookie", scan_cookie);
             json.addMemberNumber("progress", static_cast<float>(scan_device_address + 1u - DEVICE_ADDRESS_FIRST) * 100.0f / static_cast<float>(DEVICE_ADDRESS_LAST - DEVICE_ADDRESS_FIRST));
             json.endObject();
             json.end();
 
             if (!ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_progress")) {
-                break; // need report the scan as done before doing something else
+                break; // need report scan progress before doing something else
             }
 
             ++scan_device_address;
@@ -316,9 +300,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReadSunSpecID:
-        scan_printfln("Using device address %u", scan_device_address);
-        scan_printfln("Using base address %u", base_addresses[scan_base_address_index]);
-        scan_printfln("Reading SunSpec ID");
+        scan_printfln("Using device address %u\n"
+                      "Using base address %u\n"
+                      "Reading SunSpec ID",
+                      scan_device_address,
+                      base_addresses[scan_base_address_index]);
 
         scan_read_address = base_addresses[scan_base_address_index];
         scan_read_size = 2;
@@ -376,7 +362,7 @@ void MetersSunSpec::loop()
                 scan_state = ScanState::ReadCommonModelBlock;
             }
             else {
-                scan_printfln("No Common Model found: %u %u", model_id, block_length);
+                scan_printfln("No Common Model found: %u %zu", model_id, block_length);
 
                 scan_state = ScanState::NextBaseAddress;
             }
@@ -498,8 +484,7 @@ void MetersSunSpec::loop()
             TFJsonSerializer json{buf, sizeof(buf)};
 
             json.addObject();
-            json.addMemberString("host", scan_host.c_str());
-            json.addMemberNumber("port", scan_port);
+            json.addMemberNumber("cookie", scan_cookie);
             json.addMemberString("manufacturer_name", scan_common_manufacturer_name);
             json.addMemberString("model_name", scan_common_model_name);
             json.addMemberString("options", scan_common_options);
@@ -562,10 +547,12 @@ void MetersSunSpec::scan_flush_log()
     char buf[1024];
     TFJsonSerializer json{buf, sizeof(buf)};
 
-    json.addString(scan_printfln_buffer);
+    json.addObject();
+    json.addMemberNumber("cookie", scan_cookie);
+    json.addMemberString("message", scan_printfln_buffer);
+    json.endObject();
     json.end();
 
-    scan_log_idle = false;
     scan_printfln_buffer_used = 0;
     scan_printfln_last_flush = now_us();
 
