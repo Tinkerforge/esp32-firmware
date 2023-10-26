@@ -14,7 +14,7 @@ let x = {
             "firmware_update_label": "Firmware update",
             "firmware_update_desc": <><a href="{{{firmware_url}}}">firmware download</a></>,
             "browse": "Browse",
-            "select_file": "Firmware file",
+            "select_file": "Select firmware file...",
             "update": "Upload",
             "current_spiffs": "Configuration version",
             "factory_reset_desc": null,

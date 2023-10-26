@@ -161,7 +161,7 @@ let x = {
             "user_calibration_download": "Herunterladen",
             "user_calibration_upload": "Hochladen",
             "user_calibration_browse": "Durchsuchen",
-            "user_calibration_select_file": "Kalibrierungsdatei auswählen",
+            "user_calibration_select_file": "Kalibrierungsdatei auswählen...",
             "user_calibration_reset": "Zurücksetzen",
 
             // EVSE V2 only

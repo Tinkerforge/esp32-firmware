@@ -31,7 +31,7 @@
 
             "static_ip": "IP address",
             "subnet": "Subnet mask",
-            "subnet_placeholder": "Select subnet mask...",
+            "subnet_placeholder": "Select...",
             "gateway": "Gateway",
             "dns": "DNS server",
             "dns_muted": "optional",
