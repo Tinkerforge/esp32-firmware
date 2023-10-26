@@ -30,12 +30,12 @@ let x = {
             "add_meter_suffix": " energy meters configured",
             "add_meter_slot": "Number",
             "add_meter_class": "Class",
-            "add_meter_class_select": "Select class...",
+            "add_meter_class_select": "Select...",
 
             "edit_meter_title": "Edit energy meter",
             "edit_meter_slot": "Number",
             "edit_meter_class": "Class",
-            "edit_meter_class_select": "Select class...",
+            "edit_meter_class_select": "Select...",
 
             "settings": "Settings"
         },
