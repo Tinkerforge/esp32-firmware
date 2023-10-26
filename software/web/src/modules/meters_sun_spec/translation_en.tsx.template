@@ -20,7 +20,6 @@ let x = {
             "scan_title": "Device search",
             "scan": "Start search",
             "scan_results": "Discovered devices",
-            "scan_failed": "Could not discover devices",
             "scan_log": "Log",
 
             "model_no_supported": "Not supported",
