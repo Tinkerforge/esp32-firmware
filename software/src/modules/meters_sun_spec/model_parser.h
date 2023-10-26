@@ -1,0 +1,90 @@
+/* esp32-firmware
+ * Copyright (C) 2023 Mattias Schäffersmann <mattias@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#pragma once
+
+#include <stddef.h>
+#include <stdint.h>
+#include <vector>
+
+#include "modules/meters/meter_value_id.h"
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    //#include "gcc_warnings.h"
+    #pragma GCC diagnostic ignored "-Weffc++"
+#endif
+
+class MetersSunSpecParser
+{
+public:
+    enum class ValueDetectionResult {
+        Available,
+        Unavailable,
+    };
+
+    typedef ValueDetectionResult (*detect_value_fn)(const void *register_data);
+    typedef float (*get_value_fn)(const void *register_data);
+    typedef bool (*model_validator_fn)(const uint16_t * const register_data[2]);
+
+    struct ValueData {
+        get_value_fn get_value;
+        detect_value_fn detect_value;
+        MeterValueID value_id;
+    };
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+    struct ModelData {
+        uint16_t model_id;
+        model_validator_fn validator;
+        size_t value_count;
+        ValueData value_data[]; // ISO C++ forbids flexible array members
+    };
+
+    struct AllModelData {
+        size_t model_count;
+        const ModelData * model_data[]; // ISO C++ forbids flexible array members
+    };
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+
+    static MetersSunSpecParser *new_parser(uint32_t meter_slot, uint16_t model_id);
+
+    void detect_values(const uint16_t *register_data);
+    bool parse_values(const uint16_t * const register_data[2]);
+
+private:
+    MetersSunSpecParser() : meter_slot(0), model(nullptr) {}
+    MetersSunSpecParser(uint32_t meter_slot_, const ModelData *model_) : meter_slot(meter_slot_), model(model_) {}
+
+    const uint32_t meter_slot;
+    const ModelData * const model;
+    std::vector<const ValueData *> detected_values;
+    float *meter_values;
+};
+
+extern const MetersSunSpecParser::AllModelData meters_sun_spec_all_model_data;
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
