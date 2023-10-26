@@ -29,7 +29,7 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
-import { Button, Collapse, ListGroup } from "react-bootstrap";
+import { Button, Collapse, ListGroup, ListGroupItem } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
 import { Switch } from "../../ts/components/switch";
@@ -469,12 +469,12 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                     {
                                         state.scanResult.filter(c => !state.chargers.some(c1 => c1.host == c.hostname + ".local" || c1.host == c.ip))
                                             .map(c => (
-                                                <ListGroup.Item key={c.hostname}
+                                                <ListGroupItem key={c.hostname}
                                                             action type="button"
-                                                            onClick={c.error != 0 ? () => {} : () => {
+                                                            onClick={c.error != 0 ? undefined : () => {
                                                                 this.setState({addCharger: {host: c.hostname + ".local", name: c.display_name}})
                                                             }}
-                                                            style={c.error == 0 ? "" : "background-color: #eeeeee !important;"}>
+                                                            style={c.error == 0 ? "" : "cursor: default; background-color: #eeeeee !important;"}>
                                                     <div class="d-flex w-100 justify-content-between">
                                                         <span class="h5 text-left">{c.display_name}</span>
                                                         {c.error == 0 ? null :
@@ -485,7 +485,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                                         <a target="_blank" rel="noopener noreferrer" href={"http://" + c.hostname + ".local"}>{c.hostname + ".local"}</a>
                                                         <a target="_blank" rel="noopener noreferrer" href={"http://" + c.ip}>{c.ip}</a>
                                                     </div>
-                                                </ListGroup.Item>))
+                                                </ListGroupItem>))
                                     }
                                     </ListGroup>
                             }
