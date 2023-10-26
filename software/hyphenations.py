@@ -494,6 +494,35 @@ de_hyph = [
     "Start-phase",
     "Zähler-über-wach-ung",
     "ef-fi-zi-ent-er",
+    "Ab-lehn-en-des",
+    "Auf-forden-des",
+    "Be-stätigen-des",
+    "Datei-größe",
+    "Donners-tag",
+    "Donners-tags",
+    "Ein-ge-bet-tetes",
+    "Front-taster",
+    "Ge-speicher-te",
+    "Kon-figurier-bare",
+    "Kon-figurier-baren",
+    "Ver-bindungs-zustand",
+    "Ver-bindungs-zustands-änderung",
+    "Zer-ti-fi-kat",
+    "Zer-ti-fi-kate",
+    "Zer-ti-fi-katen",
+    "Zer-ti-fi-kats",
+    "Zer-ti-fi-kats-bundle",
+    "Zer-ti-fi-kats-datei",
+    "Zer-ti-fi-kats-ein-stell-ungen",
+    "Zer-ti-fi-kats-name",
+    "ab-ge-laufen",
+    "ak-zep-tiert",
+    "ge-speich-erte",
+    "ge-wechselt",
+    "los-ge-lassen",
+    "un-be-grenzt",
+    "Über-wachtes",
+    'Mo-di-fi-zie-ren'
 ]
 
 en_hyph = [
@@ -630,7 +659,13 @@ en_hyph = [
     "over-written",
     "in-di-ca-tion",
     "mal-function",
-    "milli-seconds"
+    "milli-seconds",
+    "Ac-knowl-edge",
+    "Cer-tif-i-cate",
+    "Wednes-days",
+    "cer-tif-i-cate",
+    "cer-tif-i-cates",
+    "trans-action"
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
@@ -706,5 +741,10 @@ allowed_missing = set([
     "SetChargingProfile",
     "TriggerMessageResponse",
     "TriggerMessage",
-    "Tutorial_Authentication"
+    "Tutorial_Authentication",
+    "is_evse_v2",
+    "toLocaleTimeString",
+    "max_length",
+    "setMinutes",
+    "tag_action"
 ])
