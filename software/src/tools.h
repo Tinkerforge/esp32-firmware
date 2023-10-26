@@ -115,6 +115,8 @@ time_t ms_until_time(int h, int m);
 _ATTRIBUTE ((__format__ (__printf__, 3, 4)))
 size_t snprintf_u(char *buf, size_t len, const char *format, ...);
 
+size_t vsnprintf_u(char *buf, size_t len, const char *format, va_list args);
+
 class LogSilencer
 {
 public:

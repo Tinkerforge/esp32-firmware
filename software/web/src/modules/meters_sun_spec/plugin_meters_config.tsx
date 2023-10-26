@@ -89,7 +89,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                 this.setState({scan_log: ''})
             }
             else {
-                this.setState({scan_log: this.state.scan_log + e.data + '\n'})
+                this.setState({scan_log: this.state.scan_log + e.data})
             }
         });
 

@@ -193,6 +193,7 @@ void MetersSunSpec::loop()
 
     case ScanState::Done: {
             scan_printfln("Scan finished");
+            scan_flush_log();
 
             char buf[512];
             TFJsonSerializer json{buf, sizeof(buf)};
@@ -566,41 +567,33 @@ const Config * MetersSunSpec::get_errors_prototype()
     return Config::Null();
 }
 
-void MetersSunSpec::scan_printfln(const char *fmt, ...)
+void MetersSunSpec::scan_flush_log()
 {
-    va_list args;
-    char buf[512];
+    char buf[1024];
+    TFJsonSerializer json{buf, sizeof(buf)};
 
-    va_start(args, fmt);
-    vsnprintf(buf, sizeof(buf), fmt, args);
-    va_end(args);
-
-    char buf_json[512];
-    TFJsonSerializer json{buf_json, sizeof(buf_json)};
-
-    json.addString(buf);
+    json.addString(scan_printfln_buffer);
     json.end();
 
     scan_log_idle = false;
+    scan_printfln_buffer_used = 0;
 
-    ws.pushRawStateUpdate(buf_json, "meters_sun_spec/scan_log"); // FIXME: error handling
+    ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_log"); // FIXME: error handling
+}
 
-    char *p = buf;
-    char *q;
+void MetersSunSpec::scan_printfln(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    size_t used = vsnprintf_u(nullptr, 0, fmt, args);
+    va_end(args);
 
-    while (*p != '\0') {
-        q = strchr(p, '\n');
-
-        if (q != NULL) {
-            *q = '\0';
-        }
-
-        logger.printfln("SunSpec: %s", p);
-
-        if (q == NULL) {
-            break;
-        }
-
-        p = q + 1;
+    if (scan_printfln_buffer_used + used + 1 /* for \n */ >= sizeof(scan_printfln_buffer)) {
+        scan_flush_log();
     }
+
+    scan_printfln_buffer_used += vsnprintf_u(scan_printfln_buffer + scan_printfln_buffer_used, sizeof(scan_printfln_buffer) - scan_printfln_buffer_used, fmt, args);
+
+    scan_printfln_buffer[scan_printfln_buffer_used++] = '\n';
+    scan_printfln_buffer[scan_printfln_buffer_used] = '\0';
 }
