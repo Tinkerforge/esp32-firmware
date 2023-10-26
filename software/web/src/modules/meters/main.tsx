@@ -1009,25 +1009,42 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 
                                 if (util.hasValue(values_by_id)) {
                                     power = values_by_id[MeterValueID.PowerActiveLSumImExDiff];
-                                    energy = values_by_id[MeterValueID.EnergyActiveLSumImExSumResettable];
+                                    energy = values_by_id[MeterValueID.EnergyActiveLSumImExSumResettable]; // FIXME: should this really be ImExSum?
+
+                                    if (!util.hasValue(energy)) {
+                                        // FIXME: move this logic to the backend
+                                        let energy_import = values_by_id[MeterValueID.EnergyActiveLSumImportResettable];
+                                        let energy_export = values_by_id[MeterValueID.EnergyActiveLSumExportResettable];
+
+                                        if (util.hasValue(energy_import) && util.hasValue(energy_export)) {
+                                            energy = energy_import + energy_export;
+                                        }
+                                        else if (util.hasValue(energy_import) && !util.hasValue(energy_export)) {
+                                            energy = energy_import;
+                                        }
+                                        else if (!util.hasValue(energy_import) && util.hasValue(energy_export)) {
+                                            energy = energy_export;
+                                        }
+                                    }
 
                                     if (!util.hasValue(energy)) {
                                         energy = values_by_id[MeterValueID.EnergyActiveLSumImExSum];
                                     }
 
                                     if (!util.hasValue(energy)) {
+                                        // FIXME: move this logic to the backend
                                         let energy_import = values_by_id[MeterValueID.EnergyActiveLSumImport];
                                         let energy_export = values_by_id[MeterValueID.EnergyActiveLSumExport];
 
-                                        if (!util.hasValue(energy_import)) {
-                                            energy_import = 0;
+                                        if (util.hasValue(energy_import) && util.hasValue(energy_export)) {
+                                            energy = energy_import + energy_export;
                                         }
-
-                                        if (!util.hasValue(energy_export)) {
-                                            energy_export = 0;
+                                        else if (util.hasValue(energy_import) && !util.hasValue(energy_export)) {
+                                            energy = energy_import;
                                         }
-
-                                        energy = energy_import + energy_export;
+                                        else if (!util.hasValue(energy_import) && util.hasValue(energy_export)) {
+                                            energy = energy_export;
+                                        }
                                     }
 
                                     let voltage_L1 = values_by_id[MeterValueID.VoltageL1N];
