@@ -47,9 +47,9 @@ with open('meter_value_group.csv', newline='') as f:
 
         name = ' '.join([part for part in list(row.values())[:4] if len(part) > 0])
         identifier = name.replace(' ', '_').lower()
-        display_name_en       = escape(row['display_name_en'].replace('\"', '\\"'))
+        display_name_en       = escape(row['display_name_en'].replace('\"', '\\"') if len(row['display_name_en']) > 0 else ("TRANSLATION_MISSING " + name))
         display_name_en_muted = escape(row['display_name_en_muted'].replace('\"', '\\"'))
-        display_name_de       = escape(row['display_name_de'].replace('\"', '\\"'))
+        display_name_de       = escape(row['display_name_de'].replace('\"', '\\"') if len(row['display_name_en']) > 0 else ("TRANSLATION_MISSING " + name))
         display_name_de_muted = escape(row['display_name_de_muted'].replace('\"', '\\"'))
 
         translation_groups['en'].append(f'"group_{identifier}": {display_name_en}')
