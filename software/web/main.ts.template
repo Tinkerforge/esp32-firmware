@@ -102,7 +102,7 @@ function login() {
         if(xhr.readyState === XMLHttpRequest.DONE) {
             let status = xhr.status;
             if (status == 200) {
-                 window.location.href = "http://" + location.host;
+                 window.location.href = location.protocol + "//" + location.host;
                  result = true;
             } else if (status == 401) {
                 console.log("credentials incorrect?");
@@ -112,7 +112,7 @@ function login() {
             }
         }
     }
-    xhr.open("GET", "http://" + location.host + "/credential_check", false, username, password);
+    xhr.open("GET", location.protocol + "//" + location.host + "/credential_check", false, username, password);
     xhr.send();
     return result;
 }
