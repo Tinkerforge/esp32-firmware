@@ -226,7 +226,6 @@ export class EventLog extends Component<{}, EventLogState> {
                 <FormRow label={__("event_log.content.event_log_desc")} label_muted={__("event_log.content.event_log_desc_muted")}>
                     <OutputTextarea
                         value={state.log}
-                        moreClass="mb-1"
                         placeholder={__("event_log.content.event_log_placeholder")}
                         />
                 </FormRow>
