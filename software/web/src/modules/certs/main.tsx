@@ -52,7 +52,7 @@ export class Certs extends Component<{}, State> {
                     <div class="mb-3">
                         <Table
                             tableTill="md"
-                            columnNames={[__("certs.content.cert_name")]}
+                            columnNames={[]}
                             rows={API.get('certs/state').certs.map((cert, i) =>
                                 { return {
                                     key: cert.id.toString(),
