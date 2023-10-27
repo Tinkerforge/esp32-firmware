@@ -27,7 +27,9 @@ let x = {
             "state_charging": "Lädt",
             "state_error": "Fehler",
             "state_single_phase": "Einphasig",
-            "state_three_phase": "Dreiphasig"
+            "state_three_phase": "Dreiphasig",
+            "import": "Bezug",
+            "export": "Einspeisung"
         },
         "script": {
             "time_5min": "Uhrzeit",

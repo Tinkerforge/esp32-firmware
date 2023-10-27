@@ -27,7 +27,9 @@ let x = {
             "state_charging": "Charging",
             "state_error": "Error",
             "state_single_phase": "Single-phase",
-            "state_three_phase": "Three-phase"
+            "state_three_phase": "Three-phase",
+            "import": "draw",
+            "export": "feed"
         },
         "script": {
             "time_5min": "Time of day",
