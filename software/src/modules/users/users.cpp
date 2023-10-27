@@ -684,7 +684,9 @@ void Users::register_urls()
     api.addCommand("users/http_auth_update", &http_auth_update, {}, [this](){
         bool enable = http_auth_update.get("enabled")->asBool();
         if (!enable)
-            server.onAuthenticate_HTTPThread([](WebServerRequest req){return true;});
+            server.runInHTTPThread([](void *arg) {
+                server.onAuthenticate_HTTPThread([](WebServerRequest req){return true;});
+            }, nullptr);
 
         config.get("http_auth_enabled")->updateBool(enable);
         API::writeConfig("users/config", &config);

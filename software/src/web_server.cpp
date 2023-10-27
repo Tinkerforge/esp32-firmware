@@ -76,6 +76,11 @@ void WebServer::start()
 #endif
 }
 
+void WebServer::runInHTTPThread(void (*fn)(void *arg), void *arg)
+{
+    httpd_queue_work(server.httpd, fn, arg);
+}
+
 struct UserCtx {
     WebServer *server;
     WebServerHandler *handler;

@@ -111,6 +111,8 @@ public:
     }
     void start();
 
+    void runInHTTPThread(void (*fn)(void *arg), void *arg);
+
     WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback = wshUploadCallback());
     WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback = wshUploadCallback());
     void onNotAuthorized_HTTPThread(wshCallback callback);
