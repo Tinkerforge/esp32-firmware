@@ -108,18 +108,19 @@ void MeterSunSpec::read_done_callback()
 {
     read_allowed = true;
 
+    if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
+        logger.printfln("meter_sun_spec: Read unsuccessful (%i)", generic_read_request.result_code);
+        return;
+    }
+
     if (!values_declared) {
         model_parser->detect_values(generic_read_request.data[1]);
         values_declared = true;
     }
 
-    if (generic_read_request.result_code == Modbus::ResultCode::EX_SUCCESS) {
-        if (!model_parser->parse_values(generic_read_request.data)) {
-            logger.printfln("meter_sun_spec: Parsing model %u data in slot %u failed.", model_id, slot);
-            // TODO: Read again if parsing failed?
-        }
-    } else {
-        logger.printfln("meter_sun_spec: Read unsuccessful (%i)", generic_read_request.result_code);
+    if (!model_parser->parse_values(generic_read_request.data)) {
+        logger.printfln("meter_sun_spec: Parsing model %u data in slot %u failed.", model_id, slot);
+        // TODO: Read again if parsing failed?
     }
 }
 
