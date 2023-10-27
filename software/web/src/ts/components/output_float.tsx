@@ -37,7 +37,13 @@ export function OutputFloat(props: OutputFloatProps) {
     const id = !props.idContext ? util.useId() : useContext(props.idContext);
     let pow10 = Math.pow(10, props.scale);
 
-    let val = util.toLocaleFixed(props.value / pow10, props.digits);
+    let val = "";
+    let val_0 = "";
+
+    if (util.hasValue(props.value)) {
+        val = util.toLocaleFixed(props.value / pow10, props.digits);
+        val_0 = util.toLocaleFixed(props.value / pow10, 0);
+    }
 
     let maxFracDigits = props.maxFractionalDigitsOnPage === undefined ? 3 : props.maxFractionalDigitsOnPage;
     let maxUnitLength = props.maxUnitLengthOnPage === undefined ? (props.small ? 1.75 : 2.5) : props.maxUnitLengthOnPage; // Hand-tuned at the moment to fit kvarh
@@ -46,7 +52,7 @@ export function OutputFloat(props: OutputFloatProps) {
         "calc(100% - 2px " + // border
                   "- .75rem " + // left padding
                   `- ${maxUnitLength}rem ` + // unit
-                  `- ${util.toLocaleFixed(props.value / pow10, 0).length}ch` + // digits before decimal separator
+                  `- ${val_0.length}ch` + // digits before decimal separator
         `), calc(${props.digits == 0 ? (maxFracDigits > 0 ? maxFracDigits + 1 : 0) : (maxFracDigits-props.digits)}ch + .75rem));`;
 
     return (
