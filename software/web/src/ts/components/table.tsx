@@ -188,7 +188,7 @@ export class Table extends Component<TableProps, TableState> {
                 <div class={`d-block d-${props.tableTill ? props.tableTill : 'sm'}-none` + " table-card-mode"}>
                     {props.rows.map((row, i) => {
                         let card_fields = this.get_card_fields(row);
-                        let needs_body = card_fields.length > 0 || row.extraValue;
+                        let needs_body = card_fields.length > 0 || (row.extraValue && row.extraShow);
 
                         return <><Card className="mb-3">
                         <div class="card-header d-flex justify-content-between align-items-center p-2d5" style={needs_body ? "" : "border-bottom: 0;"}>

@@ -14,6 +14,7 @@ let x = {
             "history": "History (48 h)",
             "live": "Live",
             "detailed_values": "Details",
+            "detailed_values_none": "No values are available yet.",
 
             {{{values}}},
 
