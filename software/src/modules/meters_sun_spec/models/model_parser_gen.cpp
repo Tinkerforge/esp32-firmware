@@ -67,6 +67,2914 @@ static inline float convert_me_float(uint32_t me32)
     return uni.result;
 }
 
+// ============
+// 001 - Common
+// ============
+
+#include "model_001.h"
+
+static bool model_001_validator(const uint16_t * const register_data[2])
+{
+    const SunSpecCommonModel001_s *block0 = reinterpret_cast<const SunSpecCommonModel001_s *>(register_data[0]);
+    const SunSpecCommonModel001_s *block1 = reinterpret_cast<const SunSpecCommonModel001_s *>(register_data[1]);
+    if (block0->ID !=   1) return false;
+    if (block1->ID !=   1) return false;
+    if (block0->L  !=  65) return false;
+    if (block1->L  !=  65) return false;
+    return true;
+}
+
+static const MetersSunSpecParser::ModelData model_001_data = {
+    1, // model_id
+    &model_001_validator,
+    0,  // value_count
+    {    // value_data
+    }
+};
+
+// ==============
+// 101 - Inverter
+// ==============
+
+#include "model_101.h"
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_A(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->A;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_A(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->A);
+    val *= get_scale_factor(model->A_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_AphA(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->AphA;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_AphA(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->AphA);
+    val *= get_scale_factor(model->A_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_AphB(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->AphB;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_AphB(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->AphB);
+    val *= get_scale_factor(model->A_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_AphC(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->AphC;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_AphC(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->AphC);
+    val *= get_scale_factor(model->A_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PPVphAB(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->PPVphAB;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_PPVphAB(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->PPVphAB);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PPVphBC(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->PPVphBC;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_PPVphBC(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->PPVphBC);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PPVphCA(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->PPVphCA;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_PPVphCA(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->PPVphCA);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PhVphA(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->PhVphA;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_PhVphA(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->PhVphA);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PhVphB(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->PhVphB;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_PhVphB(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->PhVphB);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PhVphC(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->PhVphC;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_PhVphC(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->PhVphC);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_W(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    int16_t val = model->W;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_W(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->W);
+    val *= get_scale_factor(model->W_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_Hz(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->Hz;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_Hz(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->Hz);
+    val *= get_scale_factor(model->Hz_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_VA(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    int16_t val = model->VA;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_VA(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->VA);
+    val *= get_scale_factor(model->VA_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_VAr(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    int16_t val = model->VAr;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_VAr(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->VAr);
+    val *= get_scale_factor(model->VAr_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PF(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    int16_t val = model->PF;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_PF(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->PF);
+    val *= (get_scale_factor(model->PF_SF) * 0.01f);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_WH(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint32_t val = convert_me_uint32(model->WH);
+    if (val == UINT32_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_WH(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(convert_me_uint32(model->WH));
+    val *= (get_scale_factor(model->WH_SF) * 0.001f);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_DCA(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->DCA;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_DCA(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->DCA);
+    val *= get_scale_factor(model->DCA_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_DCV(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    uint16_t val = model->DCV;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_DCV(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->DCV);
+    val *= get_scale_factor(model->DCV_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_DCW(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    int16_t val = model->DCW;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_DCW(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->DCW);
+    val *= get_scale_factor(model->DCW_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpCab(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    int16_t val = model->TmpCab;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_TmpCab(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->TmpCab);
+    val *= get_scale_factor(model->Tmp_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpSnk(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    int16_t val = model->TmpSnk;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_TmpSnk(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->TmpSnk);
+    val *= get_scale_factor(model->Tmp_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpTrns(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    int16_t val = model->TmpTrns;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_TmpTrns(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->TmpTrns);
+    val *= get_scale_factor(model->Tmp_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpOt(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    int16_t val = model->TmpOt;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_101_TmpOt(const void *register_data)
+{
+    const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
+    float val = static_cast<float>(model->TmpOt);
+    val *= get_scale_factor(model->Tmp_SF);
+    return val;
+}
+
+static bool model_101_validator(const uint16_t * const register_data[2])
+{
+    const SunSpecInverterModel101_s *block0 = reinterpret_cast<const SunSpecInverterModel101_s *>(register_data[0]);
+    const SunSpecInverterModel101_s *block1 = reinterpret_cast<const SunSpecInverterModel101_s *>(register_data[1]);
+    if (block0->ID != 101) return false;
+    if (block1->ID != 101) return false;
+    if (block0->L  !=  50) return false;
+    if (block1->L  !=  50) return false;
+    if (block0->A_SF != block1->A_SF) return false;
+    if (block0->V_SF != block1->V_SF) return false;
+    if (block0->W_SF != block1->W_SF) return false;
+    if (block0->Hz_SF != block1->Hz_SF) return false;
+    if (block0->VA_SF != block1->VA_SF) return false;
+    if (block0->VAr_SF != block1->VAr_SF) return false;
+    if (block0->PF_SF != block1->PF_SF) return false;
+    if (block0->WH_SF != block1->WH_SF) return false;
+    if (block0->DCA_SF != block1->DCA_SF) return false;
+    if (block0->DCV_SF != block1->DCV_SF) return false;
+    if (block0->DCW_SF != block1->DCW_SF) return false;
+    if (block0->Tmp_SF != block1->Tmp_SF) return false;
+    return true;
+}
+
+static const MetersSunSpecParser::ModelData model_101_data = {
+    101, // model_id
+    &model_101_validator,
+    23,  // value_count
+    {    // value_data
+        { &get_model_101_A, &detect_model_101_A, MeterValueID::CurrentLSumExport },
+        { &get_model_101_AphA, &detect_model_101_AphA, MeterValueID::CurrentL1Export },
+        { &get_model_101_AphB, &detect_model_101_AphB, MeterValueID::CurrentL2Export },
+        { &get_model_101_AphC, &detect_model_101_AphC, MeterValueID::CurrentL3Export },
+        { &get_model_101_PPVphAB, &detect_model_101_PPVphAB, MeterValueID::VoltageL1L2 },
+        { &get_model_101_PPVphBC, &detect_model_101_PPVphBC, MeterValueID::VoltageL2L3 },
+        { &get_model_101_PPVphCA, &detect_model_101_PPVphCA, MeterValueID::VoltageL3L1 },
+        { &get_model_101_PhVphA, &detect_model_101_PhVphA, MeterValueID::VoltageL1N },
+        { &get_model_101_PhVphB, &detect_model_101_PhVphB, MeterValueID::VoltageL2N },
+        { &get_model_101_PhVphC, &detect_model_101_PhVphC, MeterValueID::VoltageL3N },
+        { &get_model_101_W, &detect_model_101_W, MeterValueID::PowerReactiveLSumIndCapDiff },
+        { &get_model_101_Hz, &detect_model_101_Hz, MeterValueID::FrequencyLAvg },
+        { &get_model_101_VA, &detect_model_101_VA, MeterValueID::PowerApparentLSum },
+        { &get_model_101_VAr, &detect_model_101_VAr, MeterValueID::PowerReactiveLSumIndCapDiff },
+        { &get_model_101_PF, &detect_model_101_PF, MeterValueID::PowerFactorLSumDirectional },
+        { &get_model_101_WH, &detect_model_101_WH, MeterValueID::EnergyActiveLSumExport },
+        { &get_model_101_DCA, &detect_model_101_DCA, MeterValueID::CurrentDC },
+        { &get_model_101_DCV, &detect_model_101_DCV, MeterValueID::VoltageDC },
+        { &get_model_101_DCW, &detect_model_101_DCW, MeterValueID::PowerDC },
+        { &get_model_101_TmpCab, &detect_model_101_TmpCab, MeterValueID::Temperature1 },
+        { &get_model_101_TmpSnk, &detect_model_101_TmpSnk, MeterValueID::Temperature2 },
+        { &get_model_101_TmpTrns, &detect_model_101_TmpTrns, MeterValueID::Temperature3 },
+        { &get_model_101_TmpOt, &detect_model_101_TmpOt, MeterValueID::Temperature4 },
+    }
+};
+
+// ==============
+// 102 - Inverter
+// ==============
+
+#include "model_102.h"
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_A(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->A;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_A(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->A);
+    val *= get_scale_factor(model->A_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_AphA(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->AphA;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_AphA(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->AphA);
+    val *= get_scale_factor(model->A_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_AphB(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->AphB;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_AphB(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->AphB);
+    val *= get_scale_factor(model->A_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_AphC(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->AphC;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_AphC(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->AphC);
+    val *= get_scale_factor(model->A_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PPVphAB(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->PPVphAB;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_PPVphAB(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->PPVphAB);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PPVphBC(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->PPVphBC;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_PPVphBC(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->PPVphBC);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PPVphCA(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->PPVphCA;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_PPVphCA(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->PPVphCA);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PhVphA(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->PhVphA;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_PhVphA(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->PhVphA);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PhVphB(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->PhVphB;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_PhVphB(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->PhVphB);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PhVphC(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->PhVphC;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_PhVphC(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->PhVphC);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_W(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    int16_t val = model->W;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_W(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->W);
+    val *= get_scale_factor(model->W_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_Hz(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->Hz;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_Hz(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->Hz);
+    val *= get_scale_factor(model->Hz_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_VA(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    int16_t val = model->VA;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_VA(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->VA);
+    val *= get_scale_factor(model->VA_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_VAr(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    int16_t val = model->VAr;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_VAr(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->VAr);
+    val *= get_scale_factor(model->VAr_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PF(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    int16_t val = model->PF;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_PF(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->PF);
+    val *= (get_scale_factor(model->PF_SF) * 0.01f);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_WH(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint32_t val = convert_me_uint32(model->WH);
+    if (val == UINT32_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_WH(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(convert_me_uint32(model->WH));
+    val *= (get_scale_factor(model->WH_SF) * 0.001f);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_DCA(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->DCA;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_DCA(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->DCA);
+    val *= get_scale_factor(model->DCA_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_DCV(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    uint16_t val = model->DCV;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_DCV(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->DCV);
+    val *= get_scale_factor(model->DCV_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_DCW(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    int16_t val = model->DCW;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_DCW(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->DCW);
+    val *= get_scale_factor(model->DCW_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpCab(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    int16_t val = model->TmpCab;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_TmpCab(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->TmpCab);
+    val *= get_scale_factor(model->Tmp_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpSnk(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    int16_t val = model->TmpSnk;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_TmpSnk(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->TmpSnk);
+    val *= get_scale_factor(model->Tmp_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpTrns(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    int16_t val = model->TmpTrns;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_TmpTrns(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->TmpTrns);
+    val *= get_scale_factor(model->Tmp_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpOt(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    int16_t val = model->TmpOt;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_102_TmpOt(const void *register_data)
+{
+    const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
+    float val = static_cast<float>(model->TmpOt);
+    val *= get_scale_factor(model->Tmp_SF);
+    return val;
+}
+
+static bool model_102_validator(const uint16_t * const register_data[2])
+{
+    const SunSpecInverterModel102_s *block0 = reinterpret_cast<const SunSpecInverterModel102_s *>(register_data[0]);
+    const SunSpecInverterModel102_s *block1 = reinterpret_cast<const SunSpecInverterModel102_s *>(register_data[1]);
+    if (block0->ID != 102) return false;
+    if (block1->ID != 102) return false;
+    if (block0->L  !=  50) return false;
+    if (block1->L  !=  50) return false;
+    if (block0->A_SF != block1->A_SF) return false;
+    if (block0->V_SF != block1->V_SF) return false;
+    if (block0->W_SF != block1->W_SF) return false;
+    if (block0->Hz_SF != block1->Hz_SF) return false;
+    if (block0->VA_SF != block1->VA_SF) return false;
+    if (block0->VAr_SF != block1->VAr_SF) return false;
+    if (block0->PF_SF != block1->PF_SF) return false;
+    if (block0->WH_SF != block1->WH_SF) return false;
+    if (block0->DCA_SF != block1->DCA_SF) return false;
+    if (block0->DCV_SF != block1->DCV_SF) return false;
+    if (block0->DCW_SF != block1->DCW_SF) return false;
+    if (block0->Tmp_SF != block1->Tmp_SF) return false;
+    return true;
+}
+
+static const MetersSunSpecParser::ModelData model_102_data = {
+    102, // model_id
+    &model_102_validator,
+    23,  // value_count
+    {    // value_data
+        { &get_model_102_A, &detect_model_102_A, MeterValueID::CurrentLSumExport },
+        { &get_model_102_AphA, &detect_model_102_AphA, MeterValueID::CurrentL1Export },
+        { &get_model_102_AphB, &detect_model_102_AphB, MeterValueID::CurrentL2Export },
+        { &get_model_102_AphC, &detect_model_102_AphC, MeterValueID::CurrentL3Export },
+        { &get_model_102_PPVphAB, &detect_model_102_PPVphAB, MeterValueID::VoltageL1L2 },
+        { &get_model_102_PPVphBC, &detect_model_102_PPVphBC, MeterValueID::VoltageL2L3 },
+        { &get_model_102_PPVphCA, &detect_model_102_PPVphCA, MeterValueID::VoltageL3L1 },
+        { &get_model_102_PhVphA, &detect_model_102_PhVphA, MeterValueID::VoltageL1N },
+        { &get_model_102_PhVphB, &detect_model_102_PhVphB, MeterValueID::VoltageL2N },
+        { &get_model_102_PhVphC, &detect_model_102_PhVphC, MeterValueID::VoltageL3N },
+        { &get_model_102_W, &detect_model_102_W, MeterValueID::PowerReactiveLSumIndCapDiff },
+        { &get_model_102_Hz, &detect_model_102_Hz, MeterValueID::FrequencyLAvg },
+        { &get_model_102_VA, &detect_model_102_VA, MeterValueID::PowerApparentLSum },
+        { &get_model_102_VAr, &detect_model_102_VAr, MeterValueID::PowerReactiveLSumIndCapDiff },
+        { &get_model_102_PF, &detect_model_102_PF, MeterValueID::PowerFactorLSumDirectional },
+        { &get_model_102_WH, &detect_model_102_WH, MeterValueID::EnergyActiveLSumExport },
+        { &get_model_102_DCA, &detect_model_102_DCA, MeterValueID::CurrentDC },
+        { &get_model_102_DCV, &detect_model_102_DCV, MeterValueID::VoltageDC },
+        { &get_model_102_DCW, &detect_model_102_DCW, MeterValueID::PowerDC },
+        { &get_model_102_TmpCab, &detect_model_102_TmpCab, MeterValueID::Temperature1 },
+        { &get_model_102_TmpSnk, &detect_model_102_TmpSnk, MeterValueID::Temperature2 },
+        { &get_model_102_TmpTrns, &detect_model_102_TmpTrns, MeterValueID::Temperature3 },
+        { &get_model_102_TmpOt, &detect_model_102_TmpOt, MeterValueID::Temperature4 },
+    }
+};
+
+// ==============
+// 103 - Inverter
+// ==============
+
+#include "model_103.h"
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_A(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->A;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_A(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->A);
+    val *= get_scale_factor(model->A_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_AphA(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->AphA;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_AphA(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->AphA);
+    val *= get_scale_factor(model->A_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_AphB(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->AphB;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_AphB(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->AphB);
+    val *= get_scale_factor(model->A_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_AphC(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->AphC;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_AphC(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->AphC);
+    val *= get_scale_factor(model->A_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PPVphAB(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->PPVphAB;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_PPVphAB(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->PPVphAB);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PPVphBC(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->PPVphBC;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_PPVphBC(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->PPVphBC);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PPVphCA(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->PPVphCA;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_PPVphCA(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->PPVphCA);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PhVphA(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->PhVphA;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_PhVphA(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->PhVphA);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PhVphB(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->PhVphB;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_PhVphB(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->PhVphB);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PhVphC(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->PhVphC;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_PhVphC(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->PhVphC);
+    val *= get_scale_factor(model->V_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_W(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    int16_t val = model->W;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_W(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->W);
+    val *= get_scale_factor(model->W_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_Hz(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->Hz;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_Hz(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->Hz);
+    val *= get_scale_factor(model->Hz_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_VA(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    int16_t val = model->VA;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_VA(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->VA);
+    val *= get_scale_factor(model->VA_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_VAr(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    int16_t val = model->VAr;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_VAr(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->VAr);
+    val *= get_scale_factor(model->VAr_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PF(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    int16_t val = model->PF;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_PF(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->PF);
+    val *= (get_scale_factor(model->PF_SF) * 0.01f);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_WH(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint32_t val = convert_me_uint32(model->WH);
+    if (val == UINT32_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_WH(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(convert_me_uint32(model->WH));
+    val *= (get_scale_factor(model->WH_SF) * 0.001f);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_DCA(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->DCA;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_DCA(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->DCA);
+    val *= get_scale_factor(model->DCA_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_DCV(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    uint16_t val = model->DCV;
+    if (val == UINT16_MAX) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_DCV(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->DCV);
+    val *= get_scale_factor(model->DCV_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_DCW(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    int16_t val = model->DCW;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_DCW(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->DCW);
+    val *= get_scale_factor(model->DCW_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpCab(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    int16_t val = model->TmpCab;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_TmpCab(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->TmpCab);
+    val *= get_scale_factor(model->Tmp_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpSnk(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    int16_t val = model->TmpSnk;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_TmpSnk(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->TmpSnk);
+    val *= get_scale_factor(model->Tmp_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpTrns(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    int16_t val = model->TmpTrns;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_TmpTrns(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->TmpTrns);
+    val *= get_scale_factor(model->Tmp_SF);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpOt(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    int16_t val = model->TmpOt;
+    if (val == INT16_MIN) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_103_TmpOt(const void *register_data)
+{
+    const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
+    float val = static_cast<float>(model->TmpOt);
+    val *= get_scale_factor(model->Tmp_SF);
+    return val;
+}
+
+static bool model_103_validator(const uint16_t * const register_data[2])
+{
+    const SunSpecInverterModel103_s *block0 = reinterpret_cast<const SunSpecInverterModel103_s *>(register_data[0]);
+    const SunSpecInverterModel103_s *block1 = reinterpret_cast<const SunSpecInverterModel103_s *>(register_data[1]);
+    if (block0->ID != 103) return false;
+    if (block1->ID != 103) return false;
+    if (block0->L  !=  50) return false;
+    if (block1->L  !=  50) return false;
+    if (block0->A_SF != block1->A_SF) return false;
+    if (block0->V_SF != block1->V_SF) return false;
+    if (block0->W_SF != block1->W_SF) return false;
+    if (block0->Hz_SF != block1->Hz_SF) return false;
+    if (block0->VA_SF != block1->VA_SF) return false;
+    if (block0->VAr_SF != block1->VAr_SF) return false;
+    if (block0->PF_SF != block1->PF_SF) return false;
+    if (block0->WH_SF != block1->WH_SF) return false;
+    if (block0->DCA_SF != block1->DCA_SF) return false;
+    if (block0->DCV_SF != block1->DCV_SF) return false;
+    if (block0->DCW_SF != block1->DCW_SF) return false;
+    if (block0->Tmp_SF != block1->Tmp_SF) return false;
+    return true;
+}
+
+static const MetersSunSpecParser::ModelData model_103_data = {
+    103, // model_id
+    &model_103_validator,
+    23,  // value_count
+    {    // value_data
+        { &get_model_103_A, &detect_model_103_A, MeterValueID::CurrentLSumExport },
+        { &get_model_103_AphA, &detect_model_103_AphA, MeterValueID::CurrentL1Export },
+        { &get_model_103_AphB, &detect_model_103_AphB, MeterValueID::CurrentL2Export },
+        { &get_model_103_AphC, &detect_model_103_AphC, MeterValueID::CurrentL3Export },
+        { &get_model_103_PPVphAB, &detect_model_103_PPVphAB, MeterValueID::VoltageL1L2 },
+        { &get_model_103_PPVphBC, &detect_model_103_PPVphBC, MeterValueID::VoltageL2L3 },
+        { &get_model_103_PPVphCA, &detect_model_103_PPVphCA, MeterValueID::VoltageL3L1 },
+        { &get_model_103_PhVphA, &detect_model_103_PhVphA, MeterValueID::VoltageL1N },
+        { &get_model_103_PhVphB, &detect_model_103_PhVphB, MeterValueID::VoltageL2N },
+        { &get_model_103_PhVphC, &detect_model_103_PhVphC, MeterValueID::VoltageL3N },
+        { &get_model_103_W, &detect_model_103_W, MeterValueID::PowerReactiveLSumIndCapDiff },
+        { &get_model_103_Hz, &detect_model_103_Hz, MeterValueID::FrequencyLAvg },
+        { &get_model_103_VA, &detect_model_103_VA, MeterValueID::PowerApparentLSum },
+        { &get_model_103_VAr, &detect_model_103_VAr, MeterValueID::PowerReactiveLSumIndCapDiff },
+        { &get_model_103_PF, &detect_model_103_PF, MeterValueID::PowerFactorLSumDirectional },
+        { &get_model_103_WH, &detect_model_103_WH, MeterValueID::EnergyActiveLSumExport },
+        { &get_model_103_DCA, &detect_model_103_DCA, MeterValueID::CurrentDC },
+        { &get_model_103_DCV, &detect_model_103_DCV, MeterValueID::VoltageDC },
+        { &get_model_103_DCW, &detect_model_103_DCW, MeterValueID::PowerDC },
+        { &get_model_103_TmpCab, &detect_model_103_TmpCab, MeterValueID::Temperature1 },
+        { &get_model_103_TmpSnk, &detect_model_103_TmpSnk, MeterValueID::Temperature2 },
+        { &get_model_103_TmpTrns, &detect_model_103_TmpTrns, MeterValueID::Temperature3 },
+        { &get_model_103_TmpOt, &detect_model_103_TmpOt, MeterValueID::Temperature4 },
+    }
+};
+
+// ====================
+// 111 - Inverter FLOAT
+// ====================
+
+#include "model_111.h"
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_A(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->A);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_A(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->A);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_AphA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->AphA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_AphA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->AphA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_AphB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->AphB);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_AphB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->AphB);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_AphC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->AphC);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_AphC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->AphC);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PPVphAB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PPVphAB);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_PPVphAB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PPVphAB);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PPVphBC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PPVphBC);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_PPVphBC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PPVphBC);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PPVphCA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PPVphCA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_PPVphCA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PPVphCA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PhVphA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PhVphA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_PhVphA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PhVphA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PhVphB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PhVphB);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_PhVphB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PhVphB);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PhVphC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PhVphC);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_PhVphC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PhVphC);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_W(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->W);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_W(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->W);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_Hz(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->Hz);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_Hz(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->Hz);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_VA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->VA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_VA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->VA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_VAr(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->VAr);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_VAr(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->VAr);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PF(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PF);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_PF(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->PF);
+    val *= 0.01f;
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_WH(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->WH);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_WH(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->WH);
+    val *= 0.001f;
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_DCA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->DCA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_DCA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->DCA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_DCV(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->DCV);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_DCV(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->DCV);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_DCW(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->DCW);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_DCW(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->DCW);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpCab(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->TmpCab);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_TmpCab(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->TmpCab);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpSnk(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->TmpSnk);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_TmpSnk(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->TmpSnk);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpTrns(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->TmpTrns);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_TmpTrns(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->TmpTrns);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpOt(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->TmpOt);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_111_TmpOt(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
+    float val = convert_me_float(model->TmpOt);
+    return val;
+}
+
+static bool model_111_validator(const uint16_t * const register_data[2])
+{
+    const SunSpecInverterFLOATModel111_s *block0 = reinterpret_cast<const SunSpecInverterFLOATModel111_s *>(register_data[0]);
+    const SunSpecInverterFLOATModel111_s *block1 = reinterpret_cast<const SunSpecInverterFLOATModel111_s *>(register_data[1]);
+    if (block0->ID != 111) return false;
+    if (block1->ID != 111) return false;
+    if (block0->L  !=  60) return false;
+    if (block1->L  !=  60) return false;
+    return true;
+}
+
+static const MetersSunSpecParser::ModelData model_111_data = {
+    111, // model_id
+    &model_111_validator,
+    23,  // value_count
+    {    // value_data
+        { &get_model_111_A, &detect_model_111_A, MeterValueID::CurrentLSumExport },
+        { &get_model_111_AphA, &detect_model_111_AphA, MeterValueID::CurrentL1Export },
+        { &get_model_111_AphB, &detect_model_111_AphB, MeterValueID::CurrentL2Export },
+        { &get_model_111_AphC, &detect_model_111_AphC, MeterValueID::CurrentL3Export },
+        { &get_model_111_PPVphAB, &detect_model_111_PPVphAB, MeterValueID::VoltageL1L2 },
+        { &get_model_111_PPVphBC, &detect_model_111_PPVphBC, MeterValueID::VoltageL2L3 },
+        { &get_model_111_PPVphCA, &detect_model_111_PPVphCA, MeterValueID::VoltageL3L1 },
+        { &get_model_111_PhVphA, &detect_model_111_PhVphA, MeterValueID::VoltageL1N },
+        { &get_model_111_PhVphB, &detect_model_111_PhVphB, MeterValueID::VoltageL2N },
+        { &get_model_111_PhVphC, &detect_model_111_PhVphC, MeterValueID::VoltageL3N },
+        { &get_model_111_W, &detect_model_111_W, MeterValueID::PowerReactiveLSumIndCapDiff },
+        { &get_model_111_Hz, &detect_model_111_Hz, MeterValueID::FrequencyLAvg },
+        { &get_model_111_VA, &detect_model_111_VA, MeterValueID::PowerApparentLSum },
+        { &get_model_111_VAr, &detect_model_111_VAr, MeterValueID::PowerReactiveLSumIndCapDiff },
+        { &get_model_111_PF, &detect_model_111_PF, MeterValueID::PowerFactorLSumDirectional },
+        { &get_model_111_WH, &detect_model_111_WH, MeterValueID::EnergyActiveLSumExport },
+        { &get_model_111_DCA, &detect_model_111_DCA, MeterValueID::CurrentDC },
+        { &get_model_111_DCV, &detect_model_111_DCV, MeterValueID::VoltageDC },
+        { &get_model_111_DCW, &detect_model_111_DCW, MeterValueID::PowerDC },
+        { &get_model_111_TmpCab, &detect_model_111_TmpCab, MeterValueID::Temperature1 },
+        { &get_model_111_TmpSnk, &detect_model_111_TmpSnk, MeterValueID::Temperature2 },
+        { &get_model_111_TmpTrns, &detect_model_111_TmpTrns, MeterValueID::Temperature3 },
+        { &get_model_111_TmpOt, &detect_model_111_TmpOt, MeterValueID::Temperature4 },
+    }
+};
+
+// ====================
+// 112 - Inverter FLOAT
+// ====================
+
+#include "model_112.h"
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_A(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->A);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_A(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->A);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_AphA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->AphA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_AphA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->AphA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_AphB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->AphB);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_AphB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->AphB);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_AphC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->AphC);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_AphC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->AphC);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PPVphAB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PPVphAB);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_PPVphAB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PPVphAB);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PPVphBC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PPVphBC);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_PPVphBC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PPVphBC);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PPVphCA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PPVphCA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_PPVphCA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PPVphCA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PhVphA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PhVphA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_PhVphA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PhVphA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PhVphB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PhVphB);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_PhVphB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PhVphB);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PhVphC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PhVphC);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_PhVphC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PhVphC);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_W(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->W);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_W(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->W);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_Hz(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->Hz);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_Hz(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->Hz);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_VA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->VA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_VA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->VA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_VAr(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->VAr);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_VAr(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->VAr);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PF(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PF);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_PF(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->PF);
+    val *= 0.01f;
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_WH(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->WH);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_WH(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->WH);
+    val *= 0.001f;
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_DCA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->DCA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_DCA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->DCA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_DCV(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->DCV);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_DCV(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->DCV);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_DCW(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->DCW);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_DCW(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->DCW);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpCab(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->TmpCab);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_TmpCab(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->TmpCab);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpSnk(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->TmpSnk);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_TmpSnk(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->TmpSnk);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpTrns(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->TmpTrns);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_TmpTrns(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->TmpTrns);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpOt(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->TmpOt);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_112_TmpOt(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
+    float val = convert_me_float(model->TmpOt);
+    return val;
+}
+
+static bool model_112_validator(const uint16_t * const register_data[2])
+{
+    const SunSpecInverterFLOATModel112_s *block0 = reinterpret_cast<const SunSpecInverterFLOATModel112_s *>(register_data[0]);
+    const SunSpecInverterFLOATModel112_s *block1 = reinterpret_cast<const SunSpecInverterFLOATModel112_s *>(register_data[1]);
+    if (block0->ID != 112) return false;
+    if (block1->ID != 112) return false;
+    if (block0->L  !=  60) return false;
+    if (block1->L  !=  60) return false;
+    return true;
+}
+
+static const MetersSunSpecParser::ModelData model_112_data = {
+    112, // model_id
+    &model_112_validator,
+    23,  // value_count
+    {    // value_data
+        { &get_model_112_A, &detect_model_112_A, MeterValueID::CurrentLSumExport },
+        { &get_model_112_AphA, &detect_model_112_AphA, MeterValueID::CurrentL1Export },
+        { &get_model_112_AphB, &detect_model_112_AphB, MeterValueID::CurrentL2Export },
+        { &get_model_112_AphC, &detect_model_112_AphC, MeterValueID::CurrentL3Export },
+        { &get_model_112_PPVphAB, &detect_model_112_PPVphAB, MeterValueID::VoltageL1L2 },
+        { &get_model_112_PPVphBC, &detect_model_112_PPVphBC, MeterValueID::VoltageL2L3 },
+        { &get_model_112_PPVphCA, &detect_model_112_PPVphCA, MeterValueID::VoltageL3L1 },
+        { &get_model_112_PhVphA, &detect_model_112_PhVphA, MeterValueID::VoltageL1N },
+        { &get_model_112_PhVphB, &detect_model_112_PhVphB, MeterValueID::VoltageL2N },
+        { &get_model_112_PhVphC, &detect_model_112_PhVphC, MeterValueID::VoltageL3N },
+        { &get_model_112_W, &detect_model_112_W, MeterValueID::PowerReactiveLSumIndCapDiff },
+        { &get_model_112_Hz, &detect_model_112_Hz, MeterValueID::FrequencyLAvg },
+        { &get_model_112_VA, &detect_model_112_VA, MeterValueID::PowerApparentLSum },
+        { &get_model_112_VAr, &detect_model_112_VAr, MeterValueID::PowerReactiveLSumIndCapDiff },
+        { &get_model_112_PF, &detect_model_112_PF, MeterValueID::PowerFactorLSumDirectional },
+        { &get_model_112_WH, &detect_model_112_WH, MeterValueID::EnergyActiveLSumExport },
+        { &get_model_112_DCA, &detect_model_112_DCA, MeterValueID::CurrentDC },
+        { &get_model_112_DCV, &detect_model_112_DCV, MeterValueID::VoltageDC },
+        { &get_model_112_DCW, &detect_model_112_DCW, MeterValueID::PowerDC },
+        { &get_model_112_TmpCab, &detect_model_112_TmpCab, MeterValueID::Temperature1 },
+        { &get_model_112_TmpSnk, &detect_model_112_TmpSnk, MeterValueID::Temperature2 },
+        { &get_model_112_TmpTrns, &detect_model_112_TmpTrns, MeterValueID::Temperature3 },
+        { &get_model_112_TmpOt, &detect_model_112_TmpOt, MeterValueID::Temperature4 },
+    }
+};
+
+// ====================
+// 113 - Inverter FLOAT
+// ====================
+
+#include "model_113.h"
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_A(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->A);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_A(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->A);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_AphA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->AphA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_AphA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->AphA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_AphB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->AphB);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_AphB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->AphB);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_AphC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->AphC);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_AphC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->AphC);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PPVphAB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PPVphAB);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_PPVphAB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PPVphAB);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PPVphBC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PPVphBC);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_PPVphBC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PPVphBC);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PPVphCA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PPVphCA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_PPVphCA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PPVphCA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PhVphA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PhVphA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_PhVphA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PhVphA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PhVphB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PhVphB);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_PhVphB(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PhVphB);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PhVphC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PhVphC);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_PhVphC(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PhVphC);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_W(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->W);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_W(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->W);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_Hz(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->Hz);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_Hz(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->Hz);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_VA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->VA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_VA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->VA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_VAr(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->VAr);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_VAr(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->VAr);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PF(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PF);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_PF(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->PF);
+    val *= 0.01f;
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_WH(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->WH);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_WH(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->WH);
+    val *= 0.001f;
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_DCA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->DCA);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_DCA(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->DCA);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_DCV(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->DCV);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_DCV(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->DCV);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_DCW(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->DCW);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_DCW(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->DCW);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpCab(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->TmpCab);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_TmpCab(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->TmpCab);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpSnk(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->TmpSnk);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_TmpSnk(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->TmpSnk);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpTrns(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->TmpTrns);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_TmpTrns(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->TmpTrns);
+    return val;
+}
+
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpOt(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->TmpOt);
+    if (isnan(val)) {
+        return MetersSunSpecParser::ValueDetectionResult::Unavailable;
+    } else {
+        return MetersSunSpecParser::ValueDetectionResult::Available;
+    }
+}
+
+static float get_model_113_TmpOt(const void *register_data)
+{
+    const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
+    float val = convert_me_float(model->TmpOt);
+    return val;
+}
+
+static bool model_113_validator(const uint16_t * const register_data[2])
+{
+    const SunSpecInverterFLOATModel113_s *block0 = reinterpret_cast<const SunSpecInverterFLOATModel113_s *>(register_data[0]);
+    const SunSpecInverterFLOATModel113_s *block1 = reinterpret_cast<const SunSpecInverterFLOATModel113_s *>(register_data[1]);
+    if (block0->ID != 113) return false;
+    if (block1->ID != 113) return false;
+    if (block0->L  !=  60) return false;
+    if (block1->L  !=  60) return false;
+    return true;
+}
+
+static const MetersSunSpecParser::ModelData model_113_data = {
+    113, // model_id
+    &model_113_validator,
+    23,  // value_count
+    {    // value_data
+        { &get_model_113_A, &detect_model_113_A, MeterValueID::CurrentLSumExport },
+        { &get_model_113_AphA, &detect_model_113_AphA, MeterValueID::CurrentL1Export },
+        { &get_model_113_AphB, &detect_model_113_AphB, MeterValueID::CurrentL2Export },
+        { &get_model_113_AphC, &detect_model_113_AphC, MeterValueID::CurrentL3Export },
+        { &get_model_113_PPVphAB, &detect_model_113_PPVphAB, MeterValueID::VoltageL1L2 },
+        { &get_model_113_PPVphBC, &detect_model_113_PPVphBC, MeterValueID::VoltageL2L3 },
+        { &get_model_113_PPVphCA, &detect_model_113_PPVphCA, MeterValueID::VoltageL3L1 },
+        { &get_model_113_PhVphA, &detect_model_113_PhVphA, MeterValueID::VoltageL1N },
+        { &get_model_113_PhVphB, &detect_model_113_PhVphB, MeterValueID::VoltageL2N },
+        { &get_model_113_PhVphC, &detect_model_113_PhVphC, MeterValueID::VoltageL3N },
+        { &get_model_113_W, &detect_model_113_W, MeterValueID::PowerReactiveLSumIndCapDiff },
+        { &get_model_113_Hz, &detect_model_113_Hz, MeterValueID::FrequencyLAvg },
+        { &get_model_113_VA, &detect_model_113_VA, MeterValueID::PowerApparentLSum },
+        { &get_model_113_VAr, &detect_model_113_VAr, MeterValueID::PowerReactiveLSumIndCapDiff },
+        { &get_model_113_PF, &detect_model_113_PF, MeterValueID::PowerFactorLSumDirectional },
+        { &get_model_113_WH, &detect_model_113_WH, MeterValueID::EnergyActiveLSumExport },
+        { &get_model_113_DCA, &detect_model_113_DCA, MeterValueID::CurrentDC },
+        { &get_model_113_DCV, &detect_model_113_DCV, MeterValueID::VoltageDC },
+        { &get_model_113_DCW, &detect_model_113_DCW, MeterValueID::PowerDC },
+        { &get_model_113_TmpCab, &detect_model_113_TmpCab, MeterValueID::Temperature1 },
+        { &get_model_113_TmpSnk, &detect_model_113_TmpSnk, MeterValueID::Temperature2 },
+        { &get_model_113_TmpTrns, &detect_model_113_TmpTrns, MeterValueID::Temperature3 },
+        { &get_model_113_TmpOt, &detect_model_113_TmpOt, MeterValueID::Temperature4 },
+    }
+};
+
 // ========================
 // 201 - Single Phase Meter
 // ========================
@@ -10191,35 +13099,17 @@ static const MetersSunSpecParser::ModelData model_214_data = {
     }
 };
 
-// ============
-// 001 - Common
-// ============
-
-#include "model_001.h"
-
-static bool model_001_validator(const uint16_t * const register_data[2])
-{
-    const SunSpecCommonModel001_s *block0 = reinterpret_cast<const SunSpecCommonModel001_s *>(register_data[0]);
-    const SunSpecCommonModel001_s *block1 = reinterpret_cast<const SunSpecCommonModel001_s *>(register_data[1]);
-    if (block0->ID !=   1) return false;
-    if (block1->ID !=   1) return false;
-    if (block0->L  !=  65) return false;
-    if (block1->L  !=  65) return false;
-    return true;
-}
-
-static const MetersSunSpecParser::ModelData model_001_data = {
-    1, // model_id
-    &model_001_validator,
-    0,  // value_count
-    {    // value_data
-    }
-};
-
 
 const MetersSunSpecParser::AllModelData meters_sun_spec_all_model_data {
-    9, // model_count
+    15, // model_count
     { // model_data
+        &model_001_data,
+        &model_101_data,
+        &model_102_data,
+        &model_103_data,
+        &model_111_data,
+        &model_112_data,
+        &model_113_data,
         &model_201_data,
         &model_202_data,
         &model_203_data,
@@ -10228,6 +13118,5 @@ const MetersSunSpecParser::AllModelData meters_sun_spec_all_model_data {
         &model_212_data,
         &model_213_data,
         &model_214_data,
-        &model_001_data,
     }
 };

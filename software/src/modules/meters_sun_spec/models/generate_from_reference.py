@@ -9,45 +9,32 @@ import sys
 from xlsx2csv import Xlsx2csv
 
 xlsx_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "..", "..", "..", "..", "wallbox", "sunspec", "SunSpec_Information_Model_Reference_20211209.xlsx")
-model_ids = [201, 202, 203, 204,  211, 212, 213, 214, 1]
+model_ids = [1, 101, 102, 103, 111, 112, 113,  201, 202, 203, 204, 211, 212, 213, 214]
 
 value_id_mappings_inverter = {
-    "A"       : "CurrentLSumExport",
-    "AphA"    : "CurrentL1Export",
-    "AphB"    : "CurrentL2Export",
-    "AphC"    : "CurrentL3Export",
-    "DCA"     : "CurrentDC",
-    "DCV"     : "VoltageDC",
-    "DCW"     : "PowerDC",
-    "Hz"      : "FrequencyLAvg",
-    "PF"      : "PowerFactorLSumDirectional",
-    "PhVphA"  : "VoltageL1N",
-    "PhVphB"  : "VoltageL2N",
-    "PhVphC"  : "VoltageL3N",
-    "PPVphAB" : "VoltageL1L2",
-    "PPVphBC" : "VoltageL2L3",
-    "PPVphCA" : "VoltageL3L1",
-    "TmpCab"  : "Temperature1", # Reihenfolge des Models
-    "TmpOt"   : "Temperature4",
-    "TmpSnk"  : "Temperature2",
-    "TmpTrns" : "Temperature3",
-    "VA"      : "PowerApparentLSum",
-    "VAr"     : "PowerReactiveLSumIndCapDiff",
-    "W"       : "PowerReactiveLSumIndCapDiff",
-    "WH"      : "EnergyActiveLSumExport",
-
-    "A_SF"    : None,
-    "DCA_SF"  : None,
-    "DCV_SF"  : None,
-    "DCW_SF"  : None,
-    "Hz_SF"   : None,
-    "PF_SF"   : None,
-    "Tmp_SF"  : None,
-    "V_SF"    : None,
-    "VA_SF"   : None,
-    "VAr_SF"  : None,
-    "W_SF"    : None,
-    "WH_SF"   : None
+    "A"       : [ "CurrentLSumExport",           None  ],
+    "AphA"    : [ "CurrentL1Export",             None  ],
+    "AphB"    : [ "CurrentL2Export",             None  ],
+    "AphC"    : [ "CurrentL3Export",             None  ],
+    "DCA"     : [ "CurrentDC",                   None  ],
+    "DCV"     : [ "VoltageDC",                   None  ],
+    "DCW"     : [ "PowerDC",                     None  ],
+    "Hz"      : [ "FrequencyLAvg",               None  ],
+    "PF"      : [ "PowerFactorLSumDirectional",  0.01  ],
+    "PhVphA"  : [ "VoltageL1N",                  None  ],
+    "PhVphB"  : [ "VoltageL2N",                  None  ],
+    "PhVphC"  : [ "VoltageL3N",                  None  ],
+    "PPVphAB" : [ "VoltageL1L2",                 None  ],
+    "PPVphBC" : [ "VoltageL2L3",                 None  ],
+    "PPVphCA" : [ "VoltageL3L1",                 None  ],
+    "TmpCab"  : [ "Temperature1",                None  ], # Reihenfolge des Models
+    "TmpOt"   : [ "Temperature4",                None  ],
+    "TmpSnk"  : [ "Temperature2",                None  ],
+    "TmpTrns" : [ "Temperature3",                None  ],
+    "VA"      : [ "PowerApparentLSum",           None  ],
+    "VAr"     : [ "PowerReactiveLSumIndCapDiff", None  ],
+    "W"       : [ "PowerReactiveLSumIndCapDiff", None  ],
+    "WH"      : [ "EnergyActiveLSumExport",      0.001 ],
 }
 
 value_id_mappings_meter = {
@@ -137,34 +124,46 @@ value_id_mappings_meter = {
     "PFphC"           : [ "PowerFactorL3Directional",    None  ],
     "PF"              : [ "PowerFactorLSumDirectional",  None  ],
     "Hz"              : [ "FrequencyLAvg",               None  ],
-
-    "V_SF"            : None,
-    "A_SF"            : None,
-    "W_SF"            : None,
-    "VAR_SF"          : None,
-    "VA_SF"           : None,
-    "TotWh_SF"        : None,
-    "TotVArh_SF"      : None,
-    "TotVAh_SF"       : None,
-    "PF_SF"           : None,
-    "Hz_SF"           : None,
-
-    "ID"              : None,
-    "L"               : None,
-
-    "Evt"             : None,
-    "DA"              : None,
-    "Md"              : None,
-    "Mn"              : None,
-    "Opt"             : None,
-    "SN"              : None,
-    "Vr"              : None,
-    "Alg"             : None,
-    "N"               : None,
-    "Ms"              : None,
-    "Seq"             : None,
-    "Ts"              : None,
 }
+
+# Unmapped SunSpec IDs
+#    "ID"  : None,
+#    "L"   : None,
+#
+#    "Evt" : None,
+#    "DA"  : None,
+#    "Md"  : None,
+#    "Mn"  : None,
+#    "Opt" : None,
+#    "SN"  : None,
+#    "Vr"  : None,
+#    "Alg" : None,
+#    "N"   : None,
+#    "Ms"  : None,
+#    "Seq" : None,
+#    "Ts"  : None,
+#
+# Common
+#    "V_SF"   : None,
+#    "A_SF"   : None,
+#    "W_SF"   : None,
+#    "VAR_SF" : None,
+#    "VAr_SF" : None,
+#    "VA_SF"  : None,
+#    "PF_SF"  : None,
+#    "Hz_SF"  : None,
+#
+# Inverters only
+#    "DCA_SF" : None,
+#    "DCV_SF" : None,
+#    "DCW_SF" : None,
+#    "Tmp_SF" : None,
+#    "WH_SF"  : None,
+#
+# Meters only
+#    "TotWh_SF"   : None,
+#    "TotVArh_SF" : None,
+#    "TotVAh_SF"  : None,
 
 for path in glob.glob("model_*.h"):
     os.remove(path)
@@ -190,6 +189,16 @@ for model_id in model_ids:
     model_name_mangled = model_name.replace("-", "_").replace(" ", "_")
     model_name_camel   = model_name_mangled.replace("_", "")
     model_name_upper   = model_name_mangled.upper()
+
+    if model_id == 1:
+        value_id_mappings = {}
+    elif model_id >= 100 and model_id <= 199:
+        value_id_mappings = value_id_mappings_inverter
+    elif model_id >= 200 and model_id <= 299:
+        value_id_mappings = value_id_mappings_meter
+    else:
+        print(f"No value ID mappings available for model ID {model_id}.", file=sys.stderr)
+        exit(1)
 
     max_declaration_length = 0
     max_register = 0
@@ -259,7 +268,7 @@ for model_id in model_ids:
         last_field_bytes = field_bytes
         register_length = len(max_register)
 
-        value_id_mapping = value_id_mappings_meter.get(name)
+        value_id_mapping = value_id_mappings.get(name)
 
         value = {}
         value['register']         = register
@@ -484,7 +493,9 @@ for model in models:
 
         if field_type == "int16":
             print_cpp(f"    int16_t val = model->{name};")
-        elif field_type == "acc32" or field_type == "uint32":
+        elif field_type == "uint16":
+            print_cpp(f"    uint16_t val = model->{name};")
+        elif field_type == "uint32" or field_type == "acc32":
             print_cpp(f"    uint32_t val = convert_me_uint32(model->{name});")
         elif field_type == "float32":
             print_cpp(f"    float val = convert_me_float(model->{name});")
@@ -492,16 +503,18 @@ for model in models:
             print(f"Unhandled field_type {field_type} for field {name}", file=sys.stderr)
 
         if field_type == "int16":
-            print_cpp(f"    if (val == INT16_MIN) {{")
-        elif field_type == "acc32" or field_type == "uint32":
-            print_cpp(f"    if (val == UINT32_MAX) {{")
+            print_cpp(r"    if (val == INT16_MIN) {")
+        elif field_type == "uint16":
+            print_cpp(r"    if (val == UINT16_MAX) {")
+        elif field_type == "uint32" or field_type == "acc32":
+            print_cpp(r"    if (val == UINT32_MAX) {")
         elif field_type == "float32":
-            print_cpp(f"    if (isnan(val)) {{")
+            print_cpp(r"    if (isnan(val)) {")
 
-        print_cpp(f"        return MetersSunSpecParser::ValueDetectionResult::Unavailable;")
-        print_cpp(f"    }} else {{")
-        print_cpp(f"        return MetersSunSpecParser::ValueDetectionResult::Available;")
-        print_cpp(f"    }}")
+        print_cpp(r"        return MetersSunSpecParser::ValueDetectionResult::Unavailable;")
+        print_cpp(r"    } else {")
+        print_cpp(r"        return MetersSunSpecParser::ValueDetectionResult::Available;")
+        print_cpp(r"    }")
         print_cpp(r"}")
         print_cpp()
 
@@ -509,9 +522,9 @@ for model in models:
         print_cpp(r"{")
         print_cpp(f"    const struct {struct_name} *model = static_cast<const struct {struct_name} *>(register_data);")
 
-        if field_type == "int16":
+        if field_type == "int16" or field_type == "uint16":
             print_cpp(f"    float val = static_cast<float>(model->{name});")
-        elif field_type == "acc32" or field_type == "uint32":
+        elif field_type == "uint32" or field_type == "acc32":
             print_cpp(f"    float val = static_cast<float>(convert_me_uint32(model->{name}));")
         elif field_type == "float32":
             print_cpp(f"    float val = convert_me_float(model->{name});")
