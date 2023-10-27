@@ -998,53 +998,27 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                     <div class="mb-3">
                         <Table
                             tableTill="md"
-                            columnNames={[__("meters.content.table_display_name"), __("meters.content.table_power"), __("meters.content.table_energy"), __("meters.content.table_phases")]}
+                            columnNames={[__("meters.content.table_display_name"), __("meters.content.table_power"), __("meters.content.table_energy_import"), __("meters.content.table_energy_export"), __("meters.content.table_phases")]}
                             rows={active_meter_slots.map((meter_slot_str) => {
                                 let meter_slot = parseInt(meter_slot_str);
                                 let config = state.configs_table[meter_slot];
                                 let power: number = null;
-                                let energy: number = null;
+                                let energy_import: number = null;
+                                let energy_export: number = null;
                                 let phases: ["?"|"d"|"c"|"a", "?"|"d"|"c"|"a", "?"|"d"|"c"|"a"] = ["?", "?", "?"]; // [d]isconected, [c]onnected, [a]ctive
                                 let values_by_id = state.values_by_id[meter_slot];
 
                                 if (util.hasValue(values_by_id)) {
                                     power = values_by_id[MeterValueID.PowerActiveLSumImExDiff];
-                                    energy = values_by_id[MeterValueID.EnergyActiveLSumImExSumResettable]; // FIXME: should this really be ImExSum?
+                                    energy_import = values_by_id[MeterValueID.EnergyActiveLSumImportResettable];
+                                    energy_export = values_by_id[MeterValueID.EnergyActiveLSumExportResettable];
 
-                                    if (!util.hasValue(energy)) {
-                                        // FIXME: move this logic to the backend
-                                        let energy_import = values_by_id[MeterValueID.EnergyActiveLSumImportResettable];
-                                        let energy_export = values_by_id[MeterValueID.EnergyActiveLSumExportResettable];
-
-                                        if (util.hasValue(energy_import) && util.hasValue(energy_export)) {
-                                            energy = energy_import + energy_export;
-                                        }
-                                        else if (util.hasValue(energy_import) && !util.hasValue(energy_export)) {
-                                            energy = energy_import;
-                                        }
-                                        else if (!util.hasValue(energy_import) && util.hasValue(energy_export)) {
-                                            energy = energy_export;
-                                        }
+                                    if (!util.hasValue(energy_import)) {
+                                        energy_import = values_by_id[MeterValueID.EnergyActiveLSumImport];
                                     }
 
-                                    if (!util.hasValue(energy)) {
-                                        energy = values_by_id[MeterValueID.EnergyActiveLSumImExSum];
-                                    }
-
-                                    if (!util.hasValue(energy)) {
-                                        // FIXME: move this logic to the backend
-                                        let energy_import = values_by_id[MeterValueID.EnergyActiveLSumImport];
-                                        let energy_export = values_by_id[MeterValueID.EnergyActiveLSumExport];
-
-                                        if (util.hasValue(energy_import) && util.hasValue(energy_export)) {
-                                            energy = energy_import + energy_export;
-                                        }
-                                        else if (util.hasValue(energy_import) && !util.hasValue(energy_export)) {
-                                            energy = energy_import;
-                                        }
-                                        else if (!util.hasValue(energy_import) && util.hasValue(energy_export)) {
-                                            energy = energy_export;
-                                        }
+                                    if (!util.hasValue(energy_export)) {
+                                        energy_export = values_by_id[MeterValueID.EnergyActiveLSumExport];
                                     }
 
                                     let voltage_L1 = values_by_id[MeterValueID.VoltageL1N];
@@ -1137,7 +1111,8 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                             <ChevronRight {...{id:`meter-${meter_slot}-chevron`, class: state.extraShow[meter_slot] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
                                             </Button>{get_meter_name(state.configs_table, meter_slot)}</>,
                                         util.hasValue(power) ? util.toLocaleFixed(power, 0) + " W" : undefined,
-                                        util.hasValue(energy) ? util.toLocaleFixed(energy, 3) + " kWh" : undefined,
+                                        util.hasValue(energy_import) ? util.toLocaleFixed(energy_import, 3) + " kWh" : undefined,
+                                        util.hasValue(energy_export) ? util.toLocaleFixed(energy_export, 3) + " kWh" : undefined,
                                         util.compareArrays(phases, ["?", "?", "?"]) ? undefined : <ButtonGroup>
                                             {phases.map((phase) =>
                                                 <Button disabled size="sm" variant={phase_variant[phase]}>
@@ -1149,7 +1124,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                     extraShow: this.state.extraShow[meter_slot],
                                     extraFieldName: __("meters.content.detailed_values"),
                                     extraValue: extraValue,
-                                    fieldWithBox: [true, true, true, false],
+                                    fieldWithBox: [true, true, true, true, false],
                                     editTitle: __("meters.content.edit_meter_title"),
                                     onEditShow: async () => this.setState({editMeterSlot: meter_slot, editMeter: config_plugins[config[0]].clone(config)}),
                                     onEditGetRows: () => {
