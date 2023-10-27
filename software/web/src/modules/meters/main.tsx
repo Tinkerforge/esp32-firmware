@@ -1108,6 +1108,26 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                     "a": <Zap/>,
                                 };
 
+                                let extraValue = METER_VALUE_ORDER.filter((foobar) => foobar.ids.filter((id) => util.hasValue(state.values_by_id[meter_slot][id])).length > 0)
+                                    .map((foobar) => foobar.group ?
+                                        <FormRow label={translate_unchecked(`meters.content.group_${foobar.group}`)} label_muted={util.joinNonEmpty("; ", [translate_unchecked(`meters.content.group_${foobar.group}_muted`), foobar.phases])} small={true}>
+                                            <div class="row mx-n1 mx-xl-n3">
+                                            {foobar.ids.filter((id) => util.hasValue(state.values_by_id[meter_slot][id])).map((id) =>
+                                                <div class="col-sm-4 px-1 px-xl-3">
+                                                    <OutputFloat value={this.state.values_by_id[meter_slot][id]} digits={METER_VALUE_INFOS[id].digits} scale={0} unit={METER_VALUE_INFOS[id].unit} small={true}/>
+                                                </div>)}
+                                            </div>
+                                        </FormRow>
+                                        : <FormRow label={translate_unchecked(`meters.content.value_${foobar.ids[0]}`)} label_muted={translate_unchecked(`meters.content.value_${foobar.ids[0]}_muted`)} small={true}>
+                                            <div class="row mx-n1 mx-xl-n3"><div class="col-sm-4 px-1 px-xl-3">
+                                                <OutputFloat value={this.state.values_by_id[meter_slot][foobar.ids[0]]} digits={METER_VALUE_INFOS[foobar.ids[0]].digits} scale={0} unit={METER_VALUE_INFOS[foobar.ids[0]].unit} small={true}/>
+                                            </div></div>
+                                        </FormRow>);
+
+                                if (extraValue.length == 0) {
+                                    extraValue = [<div class="form-group row"><span class="col-12">{__("meters.content.detailed_values_none")}</span></div>];
+                                }
+
                                 return {
                                     columnValues: [
                                         <><Button className="mr-2" size="sm"
@@ -1128,22 +1148,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                     ],
                                     extraShow: this.state.extraShow[meter_slot],
                                     extraFieldName: __("meters.content.detailed_values"),
-                                    extraValue:
-                                        METER_VALUE_ORDER.filter((foobar) => foobar.ids.filter((id) => util.hasValue(state.values_by_id[meter_slot][id])).length > 0)
-                                            .map((foobar) => foobar.group ?
-                                                <FormRow label={translate_unchecked(`meters.content.group_${foobar.group}`)} label_muted={util.joinNonEmpty("; ", [translate_unchecked(`meters.content.group_${foobar.group}_muted`), foobar.phases])} small={true}>
-                                                    <div class="row mx-n1 mx-xl-n3">
-                                                    {foobar.ids.filter((id) => util.hasValue(state.values_by_id[meter_slot][id])).map((id) =>
-                                                        <div class="col-sm-4 px-1 px-xl-3">
-                                                            <OutputFloat value={this.state.values_by_id[meter_slot][id]} digits={METER_VALUE_INFOS[id].digits} scale={0} unit={METER_VALUE_INFOS[id].unit} small={true}/>
-                                                        </div>)}
-                                                    </div>
-                                                </FormRow>
-                                                : <FormRow label={translate_unchecked(`meters.content.value_${foobar.ids[0]}`)} label_muted={translate_unchecked(`meters.content.value_${foobar.ids[0]}_muted`)} small={true}>
-                                                    <div class="row mx-n1 mx-xl-n3"><div class="col-sm-4 px-1 px-xl-3">
-                                                        <OutputFloat value={this.state.values_by_id[meter_slot][foobar.ids[0]]} digits={METER_VALUE_INFOS[foobar.ids[0]].digits} scale={0} unit={METER_VALUE_INFOS[foobar.ids[0]].unit} small={true}/>
-                                                    </div></div>
-                                                </FormRow>),
+                                    extraValue: extraValue,
                                     fieldWithBox: [true, true, true, false],
                                     editTitle: __("meters.content.edit_meter_title"),
                                     onEditShow: async () => this.setState({editMeterSlot: meter_slot, editMeter: config_plugins[config[0]].clone(config)}),
