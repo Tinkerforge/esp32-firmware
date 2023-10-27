@@ -171,7 +171,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
 
     async save_authentication_config(enabled: boolean) {
-        await API.save('users/http_auth', {
+        await API.call_unchecked('users/http_auth_update', {
             "enabled": enabled
         },
         __("users.script.save_failed"),
