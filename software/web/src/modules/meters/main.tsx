@@ -1114,9 +1114,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                             <div class="row mx-n1 mx-xl-n3">
                                             {order.ids.map((id) =>
                                                 <div class="col-sm-4 px-1 px-xl-3">
-                                                    {util.hasValue(state.values_by_id[meter_slot][id]) ?
-                                                        <OutputFloat value={this.state.values_by_id[meter_slot][id]} digits={METER_VALUE_INFOS[id].digits} scale={0} unit={METER_VALUE_INFOS[id].unit} small={true}/>
-                                                        : undefined}
+                                                    <OutputFloat value={util.hasValue(state.values_by_id[meter_slot][id]) ? this.state.values_by_id[meter_slot][id] : null} digits={METER_VALUE_INFOS[id].digits} scale={0} unit={METER_VALUE_INFOS[id].unit} small={true}/>
                                                 </div>)}
                                             </div>
                                         </FormRow>
