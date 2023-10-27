@@ -2041,7 +2041,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 //        meters. they would have to be shown side by side, but there is no space
                 if (meter_slot == 0) {
                     uplot_data.keys.push('em_energy_import_' + meter_slot);
-                    uplot_data.names.push(`${get_meter_name(this.state.meter_configs, meter_slot)} Import`); // FIXME: translate import
+                    uplot_data.names.push(`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")})`);
                     uplot_data.values.push(energy_import);
                     uplot_data.stacked.push(false);
                     uplot_data.bars.push(true);
@@ -2084,7 +2084,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 //        meters. they would have to be shown side by side, but there is no space
                 if (meter_slot == 0) {
                     uplot_data.keys.push('em_energy_export_' + meter_slot);
-                    uplot_data.names.push(`${get_meter_name(this.state.meter_configs, meter_slot)} Export`); // FIXME: translate export
+                    uplot_data.names.push(`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.export")})`);
                     uplot_data.values.push(energy_export);
                     uplot_data.stacked.push(false);
                     uplot_data.bars.push(true);
@@ -2727,7 +2727,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                     if (has_import || has_export) {
                         rows.push(
-                            <FormRow label={`${get_meter_name(this.state.meter_configs, meter_slot)} Import / Export`/* FIXME: translate import / export */}>
+                            <FormRow label={`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")} / ${__("em_energy_analysis.content.export")})`}>
                                 <div class="row">
                                     <div class="col-md-6">
                                         {has_import ?
@@ -2781,7 +2781,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                     if (has_import || has_export) {
                         rows.push(
-                            <FormRow label={`${get_meter_name(this.state.meter_configs, meter_slot)} Import / Export`/* FIXME: translate import / export */}>
+                            <FormRow label={`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")} / ${__("em_energy_analysis.content.export")})`}>
                                 <div class="row">
                                     <div class="col-md-6">
                                         {has_import ?
