@@ -22,7 +22,8 @@ let x = {
 
             "table_display_name": "Display name",
             "table_power": "Power draw",
-            "table_energy": "Energy draw",
+            "table_energy_import": "Energy draw",
+            "table_energy_export": "Energy feed",
             "table_phases": "Phases",
 
             "add_meter_title": "Add energy meter",

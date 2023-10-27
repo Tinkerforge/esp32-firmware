@@ -22,7 +22,8 @@ let x = {
 
             "table_display_name": "Anzeigename",
             "table_power": "Leistungsaufnahme",
-            "table_energy": "Stromverbrauch",
+            "table_energy_import": "Energiebezug",
+            "table_energy_export": "Energieeinspeisung",
             "table_phases": "Phasen",
 
             "add_meter_title": "Stromzähler hinzufügen",
