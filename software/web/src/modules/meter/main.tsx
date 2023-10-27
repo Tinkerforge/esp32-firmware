@@ -321,7 +321,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                 let s  = self.series[0];
                                 let xd = self.data[0];
                                 let [i0, i1] = s.idxs;
-                                let x0 = self.valToPos(xd[i0], 'x', true) - self.axes[0].ticks.size;
+                                let x0 = self.valToPos(xd[i0], 'x', true) - self.axes[0].ticks.size * devicePixelRatio;
                                 let x1 = self.valToPos(xd[i1], 'x', true);
                                 let y = self.valToPos(0, 'y', true);
 
@@ -329,7 +329,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                     return;
                                 }
 
-                                const lineWidth = 2;
+                                const lineWidth = 2 * devicePixelRatio;
                                 const offset = (lineWidth % 2) / 2;
 
                                 ctx.save();
