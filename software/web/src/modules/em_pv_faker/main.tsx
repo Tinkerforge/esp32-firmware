@@ -84,6 +84,11 @@ export class EmPvFaker extends ConfigComponent<'em_pv_faker/config', {}, API.get
         await API.reset("em_pv_faker/runtime_config", super.error_string, super.reboot_string);
     }
 
+    // Don't override getIsModified here:
+    // If only runtime_config is changed,
+    // sending a reset is a NOP because after the reboot,
+    // runtime_config is set to the default anyway.
+
     render(props: {}, s: Readonly<API.getType['em_pv_faker/config'] & API.getType['em_pv_faker/runtime_config']>) {
         if (!util.render_allowed())
             return <></>
