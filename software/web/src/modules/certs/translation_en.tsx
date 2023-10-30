@@ -5,10 +5,10 @@ let x = {
         "status": {
         },
         "navbar": {
-            "certs": "TLS certificates"
+            "certs": "TLS Certificates"
         },
         "content": {
-            "certs": "TLS certificates",
+            "certs": "TLS Certificates",
             "add_cert_title": "Add TLS certificate",
 
             "edit_cert_title": "Edit TLS certificate",
