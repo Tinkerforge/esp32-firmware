@@ -36,13 +36,16 @@ MetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t meter_slot, uint16
     return nullptr;
 }
 
-void MetersSunSpecParser::detect_values(const uint16_t *register_data)
+bool MetersSunSpecParser::detect_values(const uint16_t * const register_data[2])
 {
+    if (!model->validator(register_data))
+        return false;
+
     detected_values.reserve(model->value_count);
 
     for (size_t i = 0; i < model->value_count; i++) {
         const ValueData *value_data = &model->value_data[i];
-        ValueDetectionResult detection_result = value_data->detect_value(register_data);
+        ValueDetectionResult detection_result = value_data->detect_value(register_data[1]);
         if (detection_result == ValueDetectionResult::Available) {
             detected_values.push_back(value_data);
         }
@@ -59,6 +62,7 @@ void MetersSunSpecParser::detect_values(const uint16_t *register_data)
     free(ids);
 
     meter_values = static_cast<float *>(malloc(detected_value_count * sizeof(float)));
+    return true;
 }
 
 bool MetersSunSpecParser::parse_values(const uint16_t * const register_data[2])

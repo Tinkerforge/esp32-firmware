@@ -70,7 +70,7 @@ public:
 
     static MetersSunSpecParser *new_parser(uint32_t meter_slot, uint16_t model_id);
 
-    void detect_values(const uint16_t *register_data);
+    bool detect_values(const uint16_t * const register_data[2]);
     bool parse_values(const uint16_t * const register_data[2]);
 
 private:
