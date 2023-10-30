@@ -154,8 +154,10 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
         logger.printfln("MQTT: Recv buf is %u bytes. %s requires %u. Bump MQTT_RECV_BUFFER_SIZE! Updates on this topic might break the MQTT connection!", MQTT_RECV_BUFFER_SIZE, reg.path.c_str(), req_size);
         return;
     }
+#if MODULE_DEBUG_AVAILABLE()
     if (req_size > (MQTT_RECV_BUFFER_SIZE - MQTT_RECV_BUFFER_HEADROOM))
         logger.printfln("MQTT: Recv buf is %u bytes. %s requires %u. Maybe bump MQTT_RECV_BUFFER_SIZE?", MQTT_RECV_BUFFER_SIZE, reg.path.c_str(), req_size);
+#endif
 }
 
 void Mqtt::addState(size_t stateIdx, const StateRegistration &reg)
