@@ -154,8 +154,8 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                 }
             </div>
             <div class="d-flex w-100 justify-content-between">
-                <span>{__("meters_sun_spec.content.config_device_address")}: {scan_result.device_address}</span>
-                <span>{__("meters_sun_spec.content.config_model_id") + ": " + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)}</span>
+                <span class="text-left">{__("meters_sun_spec.content.config_device_address")}: {scan_result.device_address}</span>
+                <span class="text-right">{__("meters_sun_spec.content.config_model_id") + ": " + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)}</span>
             </div>
         </ListGroupItem>;
     }
