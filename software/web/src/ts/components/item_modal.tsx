@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, Context, createContext, toChildArray, VNode, cloneElement } from "preact";
+import { h, Component, ComponentChildren } from "preact";
 import { Button, Modal, ModalProps } from "react-bootstrap";
 
 interface ItemModalProps extends ModalProps {
@@ -28,27 +28,14 @@ interface ItemModalProps extends ModalProps {
     show: boolean
 
     title: string
-    // Don't use ComponentChildren here: We want to pass in the idContext. This only works on VNodes.
-    children: VNode | VNode[]
+    children: ComponentChildren
     no_variant: string
     no_text: string
     yes_variant: string
     yes_text: string
 }
 
-let id_counter = 0;
-
 export class ItemModal extends Component<ItemModalProps, any> {
-    idContext: Context<string>;
-    id: string;
-
-    constructor() {
-        super();
-        this.id = "itemmodal" + id_counter;
-        this.idContext = createContext(this.id);
-        ++id_counter;
-    }
-
     render(props: ItemModalProps) {
         let {onCheck, onSubmit, onHide, show, title, children, no_variant, no_text, yes_variant, yes_text, ...p} = props;
 
@@ -74,7 +61,7 @@ export class ItemModal extends Component<ItemModalProps, any> {
                     await onHide();
                 }}>
                     <Modal.Body className="pb-0">
-                        {(toChildArray(children) as VNode[]).map(c => cloneElement(c, {idContext: this.idContext}))}
+                        {children}
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant={no_variant} onClick={() => onHide()}>
