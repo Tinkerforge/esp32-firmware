@@ -461,7 +461,7 @@
 - Wait for at least 5 seconds until contactor is turned on again after charging was stopped (through EVSE Bricklet firmware 2.1.6)
 - Fix WireGuard crashing after a multiple of 7 days
 
-2023-10-30: 2.1.5 (<unknown>)
+2023-10-30: 2.1.5 (720dd21d)
 - Fix WiFi alternative DNS server config
 - Correctly mark WiFi DNS server and alternative NTP server as optional
 - Fix recovery page API call instructions
