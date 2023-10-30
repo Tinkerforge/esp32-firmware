@@ -246,6 +246,7 @@ struct max_string_length_visitor {
             sum += val_pair.first.length() + 3; // "":
             sum += Config::apply_visitor(max_string_length_visitor{}, val_pair.second.value);
         }
+        sum += size - 1; // ,
         return sum;
     }
 
