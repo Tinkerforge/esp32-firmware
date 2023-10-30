@@ -64,8 +64,8 @@ export function NFCCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
         }}>
             <h5 class="mb-1 pr-2">{t.tag_id}</h5>
             <div class="d-flex w-100 justify-content-between">
-                <span>{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
-                <span>{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</span>
+                <span class="text-left">{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
+                <span class="text-right">{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</span>
             </div>
         </ListGroupItem>);
 
@@ -79,8 +79,8 @@ export function NFCCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
         }}>
             <h5 class="mb-1 pr-2">{t.tag_id}</h5>
             <div class="d-flex w-100 justify-content-between">
-                <span>{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
-                <span>{__("nfc.content.table_user_id") + ": " + users.find(u => u.id == t.user_id).display_name}</span>
+                <span class="text-left">{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
+                <span class="text-right">{__("nfc.content.table_user_id") + ": " + users.find(u => u.id == t.user_id).display_name}</span>
             </div>
         </ListGroupItem>);
 
