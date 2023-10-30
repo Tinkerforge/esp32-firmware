@@ -114,7 +114,10 @@ void MeterSunSpec::read_done_callback()
     }
 
     if (!values_declared) {
-        model_parser->detect_values(generic_read_request.data[1]);
+        if (!model_parser->detect_values(generic_read_request.data)) {
+            logger.printfln("meter_sun_spec: Detecting values of model %u in slot %u failed.", model_id, slot);
+            return;
+        }
         values_declared = true;
     }
 
