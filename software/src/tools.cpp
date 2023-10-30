@@ -829,13 +829,17 @@ void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
                                                u8_t dns_addrtype)
 {
     callback_arg->found_callback = found_callback;
-    callback_arg->err = dns_gethostbyname_addrtype_lwip_ctx(hostname, &callback_arg->addr, gethostbyname_addrtype_lwip_ctx_async, callback_arg, dns_addrtype);
+    err_t err = dns_gethostbyname_addrtype_lwip_ctx(hostname, &callback_arg->addr, gethostbyname_addrtype_lwip_ctx_async, callback_arg, dns_addrtype);
 
-    if (callback_arg->err != ERR_INPROGRESS) {
-        callback_arg->addr_ptr = &callback_arg->addr;
+    // Don't set the callback_arg's err if the result is not available yet.
+    // The callback handler might be executed before dns_gethostbyname_addrtype_lwip_ctx returns.
+    if (err == ERR_INPROGRESS)
+        return;
 
-        found_callback(callback_arg);
-    }
+    callback_arg->err = err;
+    callback_arg->addr_ptr = &callback_arg->addr;
+
+    found_callback(callback_arg);
 }
 
 void trigger_reboot(const char *initiator)
