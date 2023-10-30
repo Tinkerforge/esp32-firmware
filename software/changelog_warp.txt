@@ -459,9 +459,23 @@
 - Make ID.3 mode work for state changes that go from C directly to A (through EVSE Bricklet firmware 2.1.6)
 - Wait for at least 30 seconds until contactor is turned on again after leaving state D (through EVSE Bricklet firmware 2.1.6)
 - Wait for at least 5 seconds until contactor is turned on again after charging was stopped (through EVSE Bricklet firmware 2.1.6)
+- Fix WireGuard crashing after a multiple of 7 days
 
-<unknown>: 2.1.5 (<unknown>)
+2023-10-30: 2.1.5 (<unknown>)
 - Fix WiFi alternative DNS server config
 - Correctly mark WiFi DNS server and alternative NTP server as optional
 - Fix recovery page API call instructions
 - Fix MQTT subscriptions being dropped after (re)connect
+- Reset EVSE external slot to 32 A when enabling
+- Make sure config resets and other actions are not triggered by non-conforming MQTT brokers
+- Fix dropped MQTT subscriptions and publishes on (re-)connect
+- Fix race-conditions when calling API at the same time via different backends
+- Improve flash performance
+- Immediately show event log messages in web interface
+- Collect event log in web interface
+- Auto scroll event log if scrolled down to bottom
+- Work around Firefox table width calculation bug
+- Check that entered IP addresses are not network or broadcast addresses
+- Improve Translations
+- Improve WebSocket connection establishment reliability and performance
+- Fix reverse proxy support.
