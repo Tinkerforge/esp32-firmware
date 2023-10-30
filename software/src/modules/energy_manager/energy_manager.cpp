@@ -350,7 +350,7 @@ void EnergyManager::setup()
     }
 #endif
     if (excess_charging_enable && !power_meter_available) {
-        set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
+        set_config_error(CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK);
         logger.printfln("energy_manager: Excess charging enabled but configured meter can't provide power values.");
     }
 

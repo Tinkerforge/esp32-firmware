@@ -72,7 +72,6 @@ export class EnergyManagerStatus extends Component {
             {this.generate_config_error_label(config_error_flags &  2, __("energy_manager.status.config_error_no_max_current"))}
             {this.generate_config_error_label(config_error_flags &  4, __("energy_manager.status.config_error_no_chargers"))}
             {this.generate_config_error_label(config_error_flags &  8, __("energy_manager.status.config_error_excess_no_meter"))}
-            {this.generate_config_error_label(config_error_flags & 16, __("energy_manager.status.config_error_no_cm"))}
         </>
     }
 
