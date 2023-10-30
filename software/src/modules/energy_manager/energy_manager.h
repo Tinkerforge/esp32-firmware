@@ -289,6 +289,7 @@ private:
 
     std::list<std::function<bool(void)>> pending_data_points;
     bool persistent_data_loaded = false;
+    bool show_blank_value_id_update_warnings = false;
     uint32_t last_history_5min_slot = 0;
     ConfigRoot history_wallbox_5min;
     ConfigRoot history_wallbox_daily;

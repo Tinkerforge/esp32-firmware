@@ -57,7 +57,9 @@ void EnergyManager::register_events()
             }
 
             if (count == 0) {
-                logger.printfln("data_points: Ignoring blank value IDs update from meter in slot %u.", slot);
+                if (show_blank_value_id_update_warnings) {
+                    logger.printfln("data_points: Ignoring blank value IDs update from meter in slot %u.", slot);
+                }
                 return;
             }
 
