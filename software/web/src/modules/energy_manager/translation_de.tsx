@@ -28,7 +28,6 @@ let x = {
             "config_error_no_max_current": "Maximaler Gesamtstrom der Wallboxen nicht konfiguriert",
             "config_error_no_chargers": "Keine Wallboxen konfiguriert",
             "config_error_excess_no_meter": "Überschussladen aktiviert aber kein Stromzähler eingerichtet",
-            "config_error_no_cm": "Lastmanagement nicht verfügbar",
 
             "no_bricklet": "Interner Fehler, Bricklet nicht gefunden"
         },
