@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { VNode, h } from "preact";
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
@@ -35,7 +35,7 @@ export type ChargeLimitsCronAction = [
     }
 ];
 
-function ChargeLimitsCronActionComponent(action: CronAction): VNode {
+function get_charge_limits_table_children(action: CronAction) {
     const value = (action as ChargeLimitsCronAction)[1];
     const durations = [
         __("charge_limits.content.unlimited"),
@@ -54,7 +54,7 @@ function ChargeLimitsCronActionComponent(action: CronAction): VNode {
     return __("charge_limits.content.cron_action_text")(durations[value.duration], value.energy_wh);
 }
 
-function ChargeLimitsCronActionConfig(cron: Cron, action: CronAction) {
+function get_charge_limits_edit_children(cron: Cron, action: CronAction) {
     const value = (action as ChargeLimitsCronAction)[1];
     const energy_items: [string, string][] = [
         ["0", __("charge_limits.content.unlimited")],
@@ -112,7 +112,7 @@ function ChargeLimitsCronActionConfig(cron: Cron, action: CronAction) {
     ].concat(meter_entry);
 }
 
-function ChargeLimitsCronActionFactory(): CronAction {
+function new_charge_limits_config(): CronAction {
     return [
         CronActionID.ChargeLimits,
         {
@@ -127,9 +127,9 @@ export function init() {
         action_components: {
             [CronActionID.ChargeLimits]: {
                 clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
-                config_builder: ChargeLimitsCronActionFactory,
-                config_component: ChargeLimitsCronActionConfig,
-                table_row: ChargeLimitsCronActionComponent,
+                new_config: new_charge_limits_config,
+                get_edit_children: get_charge_limits_edit_children,
+                get_table_children: get_charge_limits_table_children,
                 name: __("charge_limits.content.charge_limits"),
             },
         },

@@ -35,8 +35,8 @@ export function init() {
     return {
         [MeterClassID.EnergyManager]: {
             name: __("meters_em.content.meter_class"),
-            init: () => [MeterClassID.EnergyManager, {display_name: ""}] as MeterConfig,
-            clone: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
+            new_config: () => [MeterClassID.EnergyManager, {display_name: ""}] as MeterConfig,
+            clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: EMMetersConfig, on_value: (config: EMMetersConfig) => void): ComponentChildren => {
                 return [
                     <FormRow label={__("meters_em.content.config_display_name")}>

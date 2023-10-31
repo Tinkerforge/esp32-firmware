@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { VNode, h } from "preact";
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { Cron } from "../cron/main";
@@ -25,15 +25,15 @@ import { CronTrigger } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 
-export type EvseStateCronTrigger = [
+export type IECChangeCronTrigger = [
     CronTriggerID.IECChange,
     {
         charger_state: number;
     },
 ];
 
-export function EvseStateCronComponent(trigger: CronTrigger): VNode {
-    let value = (trigger as EvseStateCronTrigger)[1];
+function get_iec_change_table_children(trigger: CronTrigger) {
+    let value = (trigger as IECChangeCronTrigger)[1];
     const names = [
         [ __("evse.status.not_connected")],
         [__("evse.status.waiting_for_charge_release")],
@@ -45,7 +45,7 @@ export function EvseStateCronComponent(trigger: CronTrigger): VNode {
     return __("evse.content.cron_state_change_trigger")(names[value.charger_state][0]);
 }
 
-function EvseStateCronFactory(): CronTrigger {
+function new_iec_change_config(): CronTrigger {
     return [
         CronTriggerID.IECChange,
         {
@@ -54,7 +54,7 @@ function EvseStateCronFactory(): CronTrigger {
     ];
 }
 
-export function EvseStateCronConfig(cron: Cron, trigger: CronTrigger) {
+function get_iec_change_edit_children(cron: Cron, trigger: CronTrigger) {
     let value = (trigger as IECChangeCronTrigger)[1];
     return [
         <FormRow label="">
@@ -79,11 +79,11 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.IECChange]: {
-                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
-                config_builder: EvseStateCronFactory,
-                config_component: EvseStateCronConfig,
-                table_row: EvseStateCronComponent,
                 name: __("evse.content.state_change"),
+                new_config: new_iec_change_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
+                get_edit_children: get_iec_change_edit_children,
+                get_table_children: get_iec_change_table_children,
             },
         },
     };

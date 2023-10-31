@@ -241,8 +241,8 @@ export function init() {
     return {
         [MeterClassID.SunSpec]: {
             name: __("meters_sun_spec.content.meter_class"),
-            init: () => [MeterClassID.SunSpec, {display_name: "", host: "", port: 502, device_address: null, model_id: null}] as MeterConfig,
-            clone: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
+            new_config: () => [MeterClassID.SunSpec, {display_name: "", host: "", port: 502, device_address: null, model_id: null}] as MeterConfig,
+            clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: SunSpecMetersConfig, on_value: (config: SunSpecMetersConfig) => void): ComponentChildren => {
                 let model_ids: [string, string][] = [];
 

@@ -1126,7 +1126,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                     extraValue: extraValue,
                                     fieldWithBox: [true, true, true, true, false],
                                     editTitle: __("meters.content.edit_meter_title"),
-                                    onEditShow: async () => this.setState({editMeterSlot: meter_slot, editMeter: config_plugins[config[0]].clone(config)}),
+                                    onEditShow: async () => this.setState({editMeterSlot: meter_slot, editMeter: config_plugins[config[0]].clone_config(config)}),
                                     onEditGetChildren: () => {
                                         let slots: [string, string][] = [];
                                         let classes: [string, string][] = [];
@@ -1160,7 +1160,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                                                 this.setState({editMeter: [MeterClassID.None, null]});
                                                             }
                                                             else {
-                                                                this.setState({editMeter: config_plugins[meter_class].init()});
+                                                                this.setState({editMeter: config_plugins[meter_class].new_config()});
                                                             }
                                                         }
                                                     }}
@@ -1232,7 +1232,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                                         this.setState({addMeter: [MeterClassID.None, null]});
                                                     }
                                                     else {
-                                                        this.setState({addMeter: config_plugins[meter_class].init()});
+                                                        this.setState({addMeter: config_plugins[meter_class].new_config()});
                                                     }
                                                 }
                                             }}
@@ -1241,13 +1241,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                 ];
 
                                 if (state.addMeter[0] != MeterClassID.None) {
-                                    let get_add_children = config_plugins[state.addMeter[0]].get_add_children;
-
-                                    if (!get_add_children) {
-                                        get_add_children = config_plugins[state.addMeter[0]].get_edit_children;
-                                    }
-
-                                    rows = rows.concat(toChildArray(get_add_children(state.addMeter, (meter_config) => this.setState({addMeter: meter_config}))));
+                                    rows = rows.concat(toChildArray(config_plugins[state.addMeter[0]].get_edit_children(state.addMeter, (meter_config) => this.setState({addMeter: meter_config}))));
                                 }
 
                                 return rows;

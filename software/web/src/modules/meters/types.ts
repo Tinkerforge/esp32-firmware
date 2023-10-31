@@ -24,8 +24,7 @@ export type MeterConfig = API.getType["meters/0/config"];
 
 export type MeterConfigPlugin = {
     name: string
-    init: () => MeterConfig
-    clone: (config: MeterConfig) => MeterConfig
+    new_config: () => MeterConfig
+    clone_config: (config: MeterConfig) => MeterConfig
     get_edit_children: (config: MeterConfig, on_value: (config: MeterConfig) => void) => ComponentChildren
-    get_add_children?: (config: MeterConfig, on_value: (config: MeterConfig) => void) => ComponentChildren
 };
