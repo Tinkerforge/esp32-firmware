@@ -27,126 +27,183 @@ SUN_SPEC_ID = 0x53756e53
 COMMON_MODEL_ID = 1
 
 class Reader:
-    def __init__(self, client, address, device_address):
+    def __init__(self, client, address, device_address, single_value_read):
         self.client = client
         self.address = address
         self.device_address = device_address
+        self.single_value_read = single_value_read
+        self.preload_decoder = None
+
+    def preload_next_model(self):
+        if self.single_value_read:
+            return
+
+        # read header
+        result_header = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
+
+        if isinstance(result_header, (ExceptionResponse, ModbusException)):
+            raise ReaderError(result_header)
+
+        decoder = BinaryPayloadDecoder.fromRegisters(result_header.registers, Endian.BIG)
+        self.address += 2
+        registers = result_header.registers
+
+        # read block
+        decoder.decode_16bit_uint()  # skip model ID
+        block_length = decoder.decode_16bit_uint()
+
+        if block_length > 0:
+            result_block = self.client.read_holding_registers(self.address, count=block_length, slave=self.device_address)
+
+            if isinstance(result_block, (ExceptionResponse, ModbusException)):
+                raise ReaderError(result_block)
+
+            self.address += block_length
+            registers += result_block.registers
+
+        self.preload_decoder = BinaryPayloadDecoder.fromRegisters(registers, Endian.BIG)
 
     def skip(self, length_registers):
-        self.address += length_registers
+        if self.preload_decoder != None:
+            self.preload_decoder.skip_bytes(length_registers * 2)
+        else:
+            self.address += length_registers
 
     def read_int16(self):
-        result = self.client.read_holding_registers(self.address, count=1, slave=self.device_address)
+        if self.preload_decoder != None:
+            decoder = self.preload_decoder
+        else:
+            result = self.client.read_holding_registers(self.address, count=1, slave=self.device_address)
 
-        if isinstance(result, (ExceptionResponse, ModbusException)):
-            raise ReaderError(result)
+            if isinstance(result, (ExceptionResponse, ModbusException)):
+                raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            self.address += 1
+
         result = decoder.decode_16bit_int()
 
         if result == -0x8000:
             result = None
 
-        self.address += 1
-
         return result
 
     def read_uint16(self):
-        result = self.client.read_holding_registers(self.address, count=1, slave=self.device_address)
+        if self.preload_decoder != None:
+            decoder = self.preload_decoder
+        else:
+            result = self.client.read_holding_registers(self.address, count=1, slave=self.device_address)
 
-        if isinstance(result, (ExceptionResponse, ModbusException)):
-            raise ReaderError(result)
+            if isinstance(result, (ExceptionResponse, ModbusException)):
+                raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            self.address += 1
+
         result = decoder.decode_16bit_uint()
 
         if result == 0xFFFF:
             result = None
 
-        self.address += 1
-
         return result
 
     def read_int32(self):
-        result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
+        if self.preload_decoder != None:
+            decoder = self.preload_decoder
+        else:
+            result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
 
-        if isinstance(result, (ExceptionResponse, ModbusException)):
-            raise ReaderError(result)
+            if isinstance(result, (ExceptionResponse, ModbusException)):
+                raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            self.address += 2
+
         result = decoder.decode_32bit_int()
 
         if result == -0x80000000:
             result = None
 
-        self.address += 2
-
         return result
 
     def read_uint32(self):
-        result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
+        if self.preload_decoder != None:
+            decoder = self.preload_decoder
+        else:
+            result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
 
-        if isinstance(result, (ExceptionResponse, ModbusException)):
-            raise ReaderError(result)
+            if isinstance(result, (ExceptionResponse, ModbusException)):
+                raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            self.address += 2
+
         result = decoder.decode_32bit_uint()
 
         if result == 0xFFFFFFFF:
             result = None
 
-        self.address += 2
-
         return result
 
     def read_acc32(self):
-        result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
+        if self.preload_decoder != None:
+            decoder = self.preload_decoder
+        else:
+            result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
 
-        if isinstance(result, (ExceptionResponse, ModbusException)):
-            raise ReaderError(result)
+            if isinstance(result, (ExceptionResponse, ModbusException)):
+                raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            self.address += 2
+
         result = decoder.decode_32bit_uint()
 
         if result == 0:
             result = None
 
-        self.address += 2
-
         return result
 
     def read_float32(self):
-        result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
+        if self.preload_decoder != None:
+            decoder = self.preload_decoder
+        else:
+            result = self.client.read_holding_registers(self.address, count=2, slave=self.device_address)
 
-        if isinstance(result, (ExceptionResponse, ModbusException)):
-            raise ReaderError(result)
+            if isinstance(result, (ExceptionResponse, ModbusException)):
+                raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            self.address += 2
+
         result = decoder.decode_32bit_float()
 
         if math.isnan(result):
             result = None
 
-        self.address += 2
-
         return result
 
     def read_string(self, length_bytes):
-        length_registers = int(math.ceil(length_bytes / 2))
-        result = self.client.read_holding_registers(self.address, count=length_registers, slave=self.device_address)
+        if self.preload_decoder != None:
+            decoder = self.preload_decoder
+        else:
+            length_registers = int(math.ceil(length_bytes / 2))
+            result = self.client.read_holding_registers(self.address, count=length_registers, slave=self.device_address)
 
-        if isinstance(result, (ExceptionResponse, ModbusException)):
-            raise ReaderError(result)
+            if isinstance(result, (ExceptionResponse, ModbusException)):
+                raise ReaderError(result)
 
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
-        self.address += length_registers
+            decoder = BinaryPayloadDecoder.fromRegisters(result.registers, Endian.BIG)
+            self.address += length_registers
 
         return decoder.decode_string(length_bytes).rstrip(b'\x00').decode('utf-8')
 
-def read_common_model(reader, device_address_ref):
+def read_common_model(reader):
     print('Trying to read Common Model')
 
     try:
+        reader.preload_next_model()
+
         model_id = reader.read_uint16()
 
         if model_id != COMMON_MODEL_ID:
@@ -180,8 +237,6 @@ def read_common_model(reader, device_address_ref):
 
         device_address = reader.read_uint16()
         print('  Device Address:', device_address)
-
-        device_address_ref[0] = device_address
 
         if length == 66:
             reader.skip(1)
@@ -617,6 +672,8 @@ def read_standard_model(reader):
     print('Trying to read Standard Model')
 
     try:
+        reader.preload_next_model()
+
         model_id = reader.read_uint16()
 
         if model_id == None:
@@ -648,8 +705,8 @@ def read_standard_model(reader):
 
     return True
 
-def discover(client, base_address, device_address, device_address_ref):
-    reader = Reader(client, base_address, device_address)
+def discover(client, base_address, device_address, single_value_read):
+    reader = Reader(client, base_address, device_address, single_value_read)
 
     print('Using base address:', base_address)
 
@@ -662,7 +719,7 @@ def discover(client, base_address, device_address, device_address_ref):
 
         print('Sun Spec ID found:', hex(sun_spec_id))
 
-        if not read_common_model(reader, device_address_ref):
+        if not read_common_model(reader):
             return False
 
         result = read_standard_model(reader)
@@ -685,11 +742,13 @@ def main():
     parser.add_argument('-H', '--host', default='192.168.0.64')
     parser.add_argument('-p', '--port', type=int, default=502)
     parser.add_argument('-d', '--device-address', type=int)
+    parser.add_argument('-s', '--single-value-read', action='store_true')
 
     args = parser.parse_args()
 
     print('Using host:', args.host)
     print('Using port:', args.port)
+    print('Using read mode:', 'single-value' if args.single_value_read else 'block')
 
     client = ModbusTcpClient(host=args.host, port=args.port)
     client.connect()
@@ -705,12 +764,8 @@ def main():
         for base_address in BASE_ADDRESSES:
             print('------------------------------------------------------------')
 
-            if discover(client, base_address, device_address, device_address_ref):
+            if discover(client, base_address, device_address, args.single_value_read):
                 break
-
-        if device_address_ref[0] != None and device_address_ref[0] not in valid_device_addresses:
-            print('Stopping discovery due to invalid device address')
-            break
 
 if __name__ == '__main__':
     main()
