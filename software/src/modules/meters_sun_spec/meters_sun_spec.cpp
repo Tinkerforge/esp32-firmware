@@ -323,13 +323,13 @@ void MetersSunSpec::loop()
                 scan_state = ScanState::ReadCommonModelHeader;
             }
             else {
-                scan_printfln("No SunSpec ID found: %08x", sun_spec_id);
+                scan_printfln("No SunSpec ID found (sun-spec-id: %08x)", sun_spec_id);
 
                 scan_state = ScanState::NextBaseAddress;
             }
         }
         else {
-            scan_printfln("Could not read SunSpec ID: %s (%d)", get_modbus_result_code_name(scan_read_result), scan_read_result);
+            scan_printfln("Could not read SunSpec ID (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
 
             if (scan_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
                 scan_state = ScanState::NextDeviceAddress;
@@ -356,19 +356,19 @@ void MetersSunSpec::loop()
             size_t block_length = scan_deserializer.read_uint16();
 
             if (model_id == COMMON_MODEL_ID && (block_length == 65 || block_length == 66)) {
-                scan_printfln("Common Model found");
+                scan_printfln("Common Model found (block-length: %zu)", block_length);
 
                 scan_common_block_length = block_length;
                 scan_state = ScanState::ReadCommonModelBlock;
             }
             else {
-                scan_printfln("No Common Model found: %u %zu", model_id, block_length);
+                scan_printfln("No Common Model found (model-id: %u, block-length: %zu)", model_id, block_length);
 
                 scan_state = ScanState::NextBaseAddress;
             }
         }
         else {
-            scan_printfln("Could not read Common Model header: %s (%d)", get_modbus_result_code_name(scan_read_result), scan_read_result);
+            scan_printfln("Could not read Common Model header (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
 
             if (scan_read_result == Modbus::ResultCode::EX_TIMEOUT) {
                 scan_read_size = 2;
@@ -386,7 +386,14 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReadCommonModelBlock:
-        scan_read_size = scan_common_block_length;
+        if (scan_common_block_length == 66) {
+            scan_printfln("Common Model block has padding, reading data only");
+            scan_read_size = 65; // don't read padding
+        }
+        else {
+            scan_read_size = scan_common_block_length;
+        }
+
         scan_read_state = ScanState::ReadCommonModelBlockDone;
         scan_state = ScanState::Read;
 
@@ -415,10 +422,15 @@ void MetersSunSpec::loop()
                           scan_common_serial_number,
                           device_address);
 
+            if (scan_common_block_length == 66) {
+                scan_printfln("Skipping Common Model block padding");
+                ++scan_read_address; // skip padding
+            }
+
             scan_state = ScanState::ReadStandardModelHeader;
         }
         else {
-            scan_printfln("Could not read Common Model block: %s (%d)", get_modbus_result_code_name(scan_read_result), scan_read_result);
+            scan_printfln("Could not read Common Model block (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
 
             if (scan_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
                 scan_state = ScanState::NextDeviceAddress;
@@ -459,7 +471,7 @@ void MetersSunSpec::loop()
                     }
                 }
 
-                scan_printfln("Found %s Model [%u] with length %zu", model_name, model_id, block_length);
+                scan_printfln("Found %s Model (model-id: %u, block-length: %zu)", model_name, model_id, block_length);
 
                 scan_standard_model_id = model_id;
                 scan_standard_block_length = block_length;
@@ -467,7 +479,7 @@ void MetersSunSpec::loop()
             }
         }
         else {
-            scan_printfln("Could not read Standard Model header: %s (%d)", get_modbus_result_code_name(scan_read_result), scan_read_result);
+            scan_printfln("Could not read Standard Model header (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
 
             if (scan_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND) {
                 scan_state = ScanState::NextDeviceAddress;
