@@ -157,8 +157,8 @@ export function init() {
     return {
         [MeterClassID.PushAPI]: {
             name: __("meters_push_api.content.meter_class"),
-            init: () => [MeterClassID.PushAPI, {display_name: "", value_ids: new Array<number>()}] as MeterConfig,
-            clone: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
+            new_config: () => [MeterClassID.PushAPI, {display_name: "", value_ids: new Array<number>()}] as MeterConfig,
+            clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: PushAPIMetersConfig, on_value: (config: PushAPIMetersConfig) => void): ComponentChildren => {
                 const value_id_obj = {value_id: -1}
                 const stages: [MeterValueIDSelectorStage, StateUpdater<MeterValueIDSelectorStage>][]  = [];

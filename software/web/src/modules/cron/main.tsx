@@ -109,7 +109,7 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
         ];
 
         if (this.state.displayed_trigger != CronTriggerID.None) {
-            const trigger_config = cron_trigger_components[this.state.displayed_trigger].get_config_component(this, this.state.edit_task.trigger);
+            const trigger_config = cron_trigger_components[this.state.displayed_trigger].get_edit_children(this, this.state.edit_task.trigger);
             triggerSelector = triggerSelector.concat(toChildArray(trigger_config));
         }
 
@@ -135,7 +135,7 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
         ];
 
         if (this.state.displayed_action != CronActionID.None) {
-            const action_config = cron_action_components[this.state.displayed_action].get_config_component(this, this.state.edit_task.action);
+            const action_config = cron_action_components[this.state.displayed_action].get_edit_children(this, this.state.edit_task.action);
             actionSelector = actionSelector.concat(toChildArray(action_config));
         }
 
