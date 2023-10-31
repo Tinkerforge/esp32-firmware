@@ -273,8 +273,7 @@ export class Table extends Component<TableProps, TableState> {
                     yes_text={__("component.table.add")}
                     backdropClassName={props.nestingDepth === undefined ? undefined : ("modal-backdrop-" + props.nestingDepth)}
                     className={props.nestingDepth === undefined ? undefined : ("modal-" + props.nestingDepth)}
-                    size={props.nestingDepth === undefined ? "xl" : {0: "xl", 1: "lg", 2: "md", 3: "sm"}[props.nestingDepth] as 'xl' | 'lg' | 'sm'}
-                    >
+                    size={props.nestingDepth === undefined ? "xl" : {0: "xl", 1: "lg", 2: "md", 3: "sm"}[props.nestingDepth] as 'xl' | 'lg' | 'sm'} > // "md" doesn't exist but is just the normal size, the cast make it ignore "md"
                     {state.showAddModal && props.onAddGetChildren ?
                         props.onAddGetChildren()
                         : undefined}
@@ -308,7 +307,7 @@ export class Table extends Component<TableProps, TableState> {
                     yes_text={__("component.table.apply")}
                     backdropClassName={props.nestingDepth === undefined ? undefined : ("modal-backdrop-" + props.nestingDepth)}
                     className={props.nestingDepth === undefined ? undefined : ("modal-" + props.nestingDepth)}
-                    size={props.nestingDepth === undefined ? "xl" : {0: "xl", 1: "lg", 2: "md", 3: "sm"}[props.nestingDepth] as 'xl' | 'lg' | 'sm'}>
+                    size={props.nestingDepth === undefined ? "xl" : {0: "xl", 1: "lg", 2: "md", 3: "sm"}[props.nestingDepth] as 'xl' | 'lg' | 'sm'} > // "md" doesn't exist but is just the normal size, the cast make it ignore "md"
                     {state.showEditModal !== null && props.rows[state.showEditModal].onEditGetChildren ?
                         props.rows[state.showEditModal].onEditGetChildren()
                         : undefined}
