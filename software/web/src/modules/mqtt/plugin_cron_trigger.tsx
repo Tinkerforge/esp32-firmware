@@ -24,6 +24,7 @@ import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types";
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
+import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
 import * as API from "../../ts/api";
 
@@ -51,21 +52,18 @@ function get_mqtt_edit_children(cron: Cron, trigger: CronTrigger) {
     const mqtt_config = API.get("mqtt/config");
     const [isInvalid, isInvalidSetter] = useState(false);
 
-    return [
-        {
-            name: __("mqtt.content.use_topic_prefix"),
-            value: <Switch
+    return [<>
+        <FormRow label={__("mqtt.content.use_topic_prefix")}>
+            <Switch
                 checked={value.use_prefix}
                 onClick={() => {
                     value.use_prefix = !value.use_prefix;
                     cron.setTriggerFromComponent(trigger);
                 }}
-                desc={__("mqtt.content.use_topic_prefix_muted") + mqtt_config.global_topic_prefix + "/cron_trigger/"}/>
-        },
-        {
-            name: __("mqtt.content.topic"),
-            value: <>
-             <InputText
+                desc={__("mqtt.content.use_topic_prefix_muted") + mqtt_config.global_topic_prefix + "/cron_trigger/"} />
+        </FormRow>
+        <FormRow label={__("mqtt.content.topic")}>
+            <InputText
                 required
                 maxLength={64}
                 value={value.topic}
@@ -79,34 +77,31 @@ function get_mqtt_edit_children(cron: Cron, trigger: CronTrigger) {
                     }
                     cron.setTriggerFromComponent(trigger);
                 }}
-                invalidFeedback={__("mqtt.content.use_topic_prefix_invalid")}/>
-                <InputText
-                    class="mt-2"
-                    value={mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic}
-                    hidden={!value.use_prefix} />
-            </>
-        },
-        {
-            name: __("mqtt.content.payload"),
-            value: <InputText
+                invalidFeedback={__("mqtt.content.use_topic_prefix_invalid")} />
+            <InputText
+                class="mt-2"
+                value={mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic}
+                hidden={!value.use_prefix} />
+        </FormRow>
+        <FormRow label={__("mqtt.content.payload")}>
+            <InputText
                 required
                 maxLength={64}
                 value={value.payload}
                 onValue={(v) => {
                     value.payload = v;
                     cron.setTriggerFromComponent(trigger);
-                }}/>
-        },
-        {
-            name: __("mqtt.content.accept_retain"),
-            value: <Switch
+                }} />
+        </FormRow>
+        <FormRow label={__("mqtt.content.accept_retain")}>
+            <Switch
                 checked={value.retain}
                 onClick={() => {
                     value.retain = !value.retain;
                     cron.setTriggerFromComponent(trigger);
-                }}/>
-        }
-    ]
+                }} />
+        </FormRow>
+    </>]
 }
 
 function new_mqtt_config(): CronTrigger {

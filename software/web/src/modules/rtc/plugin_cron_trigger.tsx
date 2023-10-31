@@ -23,6 +23,7 @@ import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types";
 import { Cron } from "../cron/main";
 import { InputSelect } from "../../ts/components/input_select";
+import { FormRow } from "../../ts/components/form_row";
 
 export type RtcCronTrigger = [
     CronTriggerID.Cron,
@@ -71,48 +72,43 @@ function get_rtc_edit_children(cron: Cron, trigger: CronTrigger) {
 
     const day = value.mday != -1 ? value.mday + 7 : value.wday;
 
-    return [
-        {
-            name: __("rtc.content.mday"),
-            value: <InputSelect
-                    items={days}
-                    value={day}
+    return [<>
+        <FormRow label={__("rtc.content.mday")}>
+            <InputSelect
+                items={days}
+                value={day}
+                onValue={(v) => {
+                    const day = Number(v);
+                    if (day > 6) {
+                        value.mday = day - 7;
+                        value.wday = -1;
+                    } else {
+                        value.mday = -1;
+                        value.wday = day;
+                    }
+                    cron.setTriggerFromComponent(trigger);
+                }} />
+        </FormRow>
+        <FormRow label={__("rtc.content.time")}>
+            <div class="input-group mb-2">
+                <InputSelect
+                    items={hours}
+                    value={value.hour}
                     onValue={(v) => {
-                        const day = Number(v);
-                        if (day > 6) {
-                            value.mday = day - 7;
-                            value.wday = -1;
-                        } else {
-                            value.mday = -1;
-                            value.wday = day;
-                        }
+                        value.hour = Number(v);
                         cron.setTriggerFromComponent(trigger);
                     }} />
-        },
-        {
-            name: __("rtc.content.time"),
-            value:  <>
-                <div class="input-group mb-2">
-                    <InputSelect
-                        items={hours}
-                        value={value.hour}
-                        onValue={(v) => {
-                            value.hour = Number(v);
-                            cron.setTriggerFromComponent(trigger);
-                        }} />
-
-                    <InputSelect
+                <InputSelect
                     items={minutes}
                     value={value.minute}
                     onValue={(v) => {
                         value.minute = Number(v);
                         cron.setTriggerFromComponent(trigger);
                     }} />
-                </div>
-                <span>{__("rtc.content.cron_translation_function")(value.mday, value.wday, value.hour, value.minute)}</span>
-            </>
-        }
-    ]
+            </div>
+            <span>{__("rtc.content.cron_translation_function")(value.mday, value.wday, value.hour, value.minute)}</span>
+        </FormRow>
+    </>]
 }
 
 function new_rtc_config(): RtcCronTrigger {

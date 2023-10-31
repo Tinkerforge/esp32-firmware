@@ -27,10 +27,10 @@ import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 
 import { InputText } from "../../ts/components/input_text";
-import { SubPage } from "src/ts/components/sub_page";
-import { PageHeader } from "src/ts/components/page_header";
-import { Table } from "src/ts/components/table";
-import { InputSelect } from "src/ts/components/input_select";
+import { SubPage } from "../../ts/components/sub_page";
+import { PageHeader } from "../../ts/components/page_header";
+import { Table } from "../../ts/components/table";
+import { FormRow } from "../../ts/components/form_row";
 
 interface State {
     editCert: API.getType['certs/add'] & {'file': File, file_too_large: boolean}
@@ -60,32 +60,30 @@ export class Certs extends Component<{}, State> {
                                         [cert.name]
                                     ],
                                     editTitle: __("certs.content.edit_cert_title"),
-                                    onEditShow: async () => this.setState({editCert: {id: cert.id, name: cert.name, cert: "", file: null, file_too_large: false}}),
-                                    onEditGetRows: () => [
-                                        {
-                                            name: __("certs.content.cert_name"),
-                                            value: <InputText value={state.editCert.name}
-                                                            onValue={(v) => this.setState({editCert: {...state.editCert, name: v}})}
-                                                            maxLength={32}
-                                                            required/>
-                                        },
-                                        {
-                                            name: __("certs.content.cert_file"),
-                                            value: <div class="custom-file">
-                                                        <input type="file"
-                                                               class={"custom-file-input form-control" + (this.state.editCert.file_too_large ? " is-invalid" : "")}
-                                                               accept={"application/pem-certificate-chain"}
-                                                            onChange={(ev) => {
-                                                                let file = (ev.target as HTMLInputElement).files[0];
-                                                                this.setState({editCert: {...state.editCert, file: file, file_too_large: file.size > MAX_CERT_SIZE}})
-                                                            }}/>
-                                                        <label class="custom-file-label form-control rounded-left"
-                                                            data-browse={__("certs.content.browse")}>{state.editCert.file ? state.editCert.file.name : __("certs.content.select_file")}</label>
-                                                        <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_SIZE)}</div>
-                                                    </div>
-                                        }
-                                    ],
-                                    onEditSubmit: async () => {
+                                    onEditStart: async () => this.setState({editCert: {id: cert.id, name: cert.name, cert: "", file: null, file_too_large: false}}),
+                                    onEditGetChildren: () => [<>
+                                        <FormRow label={__("certs.content.cert_name")}>
+                                            <InputText value={state.editCert.name}
+                                                        onValue={(v) => this.setState({editCert: {...state.editCert, name: v}})}
+                                                        maxLength={32}
+                                                        required/>
+                                        </FormRow>
+                                        <FormRow label={__("certs.content.cert_file")}>
+                                            <div class="custom-file">
+                                                <input type="file"
+                                                        class={"custom-file-input form-control" + (this.state.editCert.file_too_large ? " is-invalid" : "")}
+                                                        accept={"application/pem-certificate-chain"}
+                                                    onChange={(ev) => {
+                                                        let file = (ev.target as HTMLInputElement).files[0];
+                                                        this.setState({editCert: {...state.editCert, file: file, file_too_large: file.size > MAX_CERT_SIZE}})
+                                                    }}/>
+                                                <label class="custom-file-label form-control rounded-left"
+                                                    data-browse={__("certs.content.browse")}>{state.editCert.file ? state.editCert.file.name : __("certs.content.select_file")}</label>
+                                                <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_SIZE)}</div>
+                                            </div>
+                                        </FormRow>
+                                    </>],
+                                    onEditCommit: async () => {
                                         await API.call('certs/modify', {
                                             id: state.editCert.id,
                                             name: state.editCert.name,
@@ -101,32 +99,28 @@ export class Certs extends Component<{}, State> {
                             onAddShow={async () => {
                                 this.setState({addCert: {name: "", cert: "", file: null, file_too_large: false}});
                             }}
-                            onAddGetRows={() => [
-                                {
-                                    name: __("certs.content.cert_name"),
-                                    value: <InputText value={state.addCert.name}
-                                                    onValue={(v) => this.setState({addCert: {...state.addCert, name: v}})}
-                                                    maxLength={32}
-                                                    required/>
-                                },
-                                {
-                                    name: __("certs.content.cert_file"),
-                                    value: <>
-                                            <div class="custom-file">
-                                                <input type="file"
-                                                       class={"custom-file-input form-control" + (this.state.addCert.file_too_large ? " is-invalid" : "")}
-                                                       accept="application/pem-certificate-chain"
-                                                    onChange={(ev) => {
-                                                        let file = (ev.target as HTMLInputElement).files[0];
-                                                        this.setState({addCert: {...state.addCert, file: file, file_too_large: file.size > MAX_CERT_SIZE}});
-                                                    }}/>
-                                                <label class="custom-file-label form-control rounded-left"
-                                                    data-browse={__("certs.content.browse")}>{state.addCert.file ? state.addCert.file.name : __("certs.content.select_file")}</label>
-                                                <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_SIZE)}</div>
-                                            </div>
-                                          </>
-                                }
-                            ]}
+                            onAddGetChildren={() => [<>
+                                <FormRow label={__("certs.content.cert_name")}>
+                                    <InputText value={state.addCert.name}
+                                        onValue={(v) => this.setState({addCert: {...state.addCert, name: v}})}
+                                        maxLength={32}
+                                        required/>
+                                </FormRow>
+                                <FormRow label={__("certs.content.cert_file")}>
+                                    <div class="custom-file">
+                                        <input type="file"
+                                                class={"custom-file-input form-control" + (this.state.addCert.file_too_large ? " is-invalid" : "")}
+                                                accept="application/pem-certificate-chain"
+                                            onChange={(ev) => {
+                                                let file = (ev.target as HTMLInputElement).files[0];
+                                                this.setState({addCert: {...state.addCert, file: file, file_too_large: file.size > MAX_CERT_SIZE}});
+                                            }}/>
+                                        <label class="custom-file-label form-control rounded-left"
+                                            data-browse={__("certs.content.browse")}>{state.addCert.file ? state.addCert.file.name : __("certs.content.select_file")}</label>
+                                        <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_SIZE)}</div>
+                                    </div>
+                                </FormRow>
+                            </>]}
                             onAddSubmit={async () => {
                                 let ids = API.get('certs/state').certs.map(c => c.id);
                                 let next_free_id = -1;

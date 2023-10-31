@@ -32,6 +32,7 @@ import { ListGroup, ListGroupItem } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
+import { FormRow } from "../../ts/components/form_row";
 
 type NfcConfig = API.getType['nfc/config'];
 interface NfcState {
@@ -131,19 +132,17 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                     ],
                                     editTitle: __("nfc.content.edit_tag_title"),
                                     onEditShow: async () => this.setState({editTag: {tag_id: tag.tag_id, user_id: tag.user_id, tag_type: tag.tag_type}}),
-                                    onEditGetRows: () => [
-                                        {
-                                            name: __("nfc.content.edit_tag_tag_id"),
-                                            value: <InputText value={state.editTag.tag_id}
-                                                            onValue={(v) => this.setState({editTag: {...state.editTag, tag_id: v}})}
-                                                            minLength={8} maxLength={29}
-                                                            pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
-                                                            invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}
-                                                            required/>
-                                        },
-                                        {
-                                            name: __("nfc.content.edit_tag_tag_type"),
-                                            value: <InputSelect items={[
+                                    onEditGetChildren: () => [<>
+                                        <FormRow label={__("nfc.content.edit_tag_tag_id")}>
+                                             <InputText value={state.editTag.tag_id}
+                                                onValue={(v) => this.setState({editTag: {...state.editTag, tag_id: v}})}
+                                                minLength={8} maxLength={29}
+                                                pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
+                                                invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}
+                                                required />
+                                        </FormRow>
+                                        <FormRow label={__("nfc.content.edit_tag_tag_type")}>
+                                             <InputSelect items={[
                                                     ["0",__("nfc.content.type_0")],
                                                     ["1",__("nfc.content.type_1")],
                                                     ["2",__("nfc.content.type_2")],
@@ -151,19 +150,16 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                                     ["4",__("nfc.content.type_4")],
                                                 ]}
                                                 value={state.editTag.tag_type.toString()}
-                                                onValue={(v) => this.setState({editTag: {...state.editTag, tag_type: parseInt(v)}})}
-                                                />
-                                        },
-                                        {
-                                            name: __("nfc.content.edit_tag_user_id"),
-                                            value: <>
+                                                onValue={(v) => this.setState({editTag: {...state.editTag, tag_type: parseInt(v)}})} />
+                                        </FormRow>
+                                        <FormRow label={__("nfc.content.edit_tag_user_id")}>
                                                 <InputSelect items={state.userCfg.users.map((u, j) => [u.id.toString(), j == 0 ? __("nfc.script.not_assigned") : u.display_name.toString()])}
                                                     value={state.editTag.user_id.toString()}
                                                     onValue={(v) => this.setState({editTag: {...state.editTag, user_id: parseInt(v)}})}
                                                     />
-                                                <div class="mt-2" style={state.editTag.user_id == 0 ? undefined : 'visibility: hidden'}>{__("nfc.script.not_assigned_desc")}</div></>
-                                        },
-                                    ],
+                                                <div class="mt-2" style={state.editTag.user_id == 0 ? undefined : 'visibility: hidden'}>{__("nfc.script.not_assigned_desc")}</div>
+                                        </FormRow>
+                                    </>],
                                     onEditSubmit: async () => {
                                         this.setState({authorized_tags: state.authorized_tags.map((tag, k) => i === k ? state.editTag : tag)});
                                         this.setDirty(true);
@@ -178,62 +174,53 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                             addTitle={__("nfc.content.add_tag_title")}
                             addMessage={__("nfc.content.add_tag_prefix") + state.authorized_tags.length + __("nfc.content.add_tag_infix") + MAX_AUTHORIZED_TAGS + __("nfc.content.add_tag_suffix")}
                             onAddShow={async () => this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}})}
-                            onAddGetRows={() => [
-                                {
-                                    name: __("nfc.content.add_tag_seen_tags"),
-                                    value: unauth_seen_tags.length == 0
-                                                ? <span>{__("nfc.content.add_tag_description")}</span>
-                                                : <ListGroup>{
-                                                    unauth_seen_tags.map(t => <ListGroupItem key={t.tag_id} action type="button" onClick={() => this.setState({addTag: {...state.addTag, tag_id: t.tag_id, tag_type: t.tag_type}})}>
-                                                        <h5 class="mb-1 pr-2">{t.tag_id}</h5>
-                                                        <div class="d-flex w-100 justify-content-between">
-                                                            <span class="text-left">{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
-                                                            <span class="text-right">{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</span>
-                                                        </div>
-                                                        </ListGroupItem>)
-                                                }</ListGroup>
-                                },
-                                {
-                                    name: __("nfc.content.add_tag_tag_id"),
-                                    value:
-                                        <InputText value={state.addTag.tag_id}
-                                            onValue={(v) => this.setState({addTag: {...state.addTag, tag_id: v}})}
-                                            minLength={8} maxLength={29}
-                                            pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
-                                            invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}
-                                            required/>
-                                },
-                                {
-                                    name: __("nfc.content.add_tag_tag_type"),
-                                    value:
-                                        <InputSelect items={[
-                                                ["0",__("nfc.content.type_0")],
-                                                ["1",__("nfc.content.type_1")],
-                                                ["2",__("nfc.content.type_2")],
-                                                ["3",__("nfc.content.type_3")],
-                                                ["4",__("nfc.content.type_4")],
-                                            ]}
-                                            placeholder={__("nfc.content.select_type")}
-                                            value={state.addTag.tag_type.toString()}
-                                            onValue={(v) => this.setState({addTag: {...state.addTag, tag_type: parseInt(v)}})}
-                                            required
-                                            />
-                                },
-                                {
-                                    name: null,
-                                    value: <hr/>
-                                },
-                                {
-                                    name: __("nfc.content.add_tag_user_id"),
-                                    value: <>
-                                            <InputSelect items={state.userCfg.users.map((u, j) => [u.id.toString(), j == 0 ? __("nfc.script.not_assigned") : u.display_name.toString()])}
-                                                value={state.addTag.user_id.toString()}
-                                                onValue={(v) => this.setState({addTag: {...state.addTag, user_id: parseInt(v)}})}
-                                                required
-                                                />
-                                            <div class="mt-2" style={state.addTag.user_id == 0 ? undefined : 'visibility: hidden'}>{__("nfc.script.not_assigned_desc")}</div></>
-                                },
-                            ]}
+                            onAddGetChildren={() => [<>
+                                <FormRow label={__("nfc.content.add_tag_seen_tags")}>
+                                    {unauth_seen_tags.length > 0 ?
+                                        <ListGroup>{
+                                            unauth_seen_tags.map(t => <ListGroupItem key={t.tag_id} action type="button" onClick={() => this.setState({addTag: {...state.addTag, tag_id: t.tag_id, tag_type: t.tag_type}})}>
+                                                <h5 class="mb-1 pr-2">{t.tag_id}</h5>
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <span class="text-left">{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
+                                                    <span class="text-right">{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</span>
+                                                </div>
+                                                </ListGroupItem>)
+                                        }</ListGroup>
+                                        : <span>{__("nfc.content.add_tag_description")}</span>}
+                                </FormRow>
+                                <FormRow label={__("nfc.content.add_tag_tag_id")}>
+                                    <InputText
+                                        value={state.addTag.tag_id}
+                                        onValue={(v) => this.setState({addTag: {...state.addTag, tag_id: v}})}
+                                        minLength={8} maxLength={29}
+                                        pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
+                                        invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}
+                                        required />
+                                </FormRow>
+                                <FormRow label={__("nfc.content.add_tag_tag_type")}>
+                                    <InputSelect
+                                        items={[
+                                            ["0",__("nfc.content.type_0")],
+                                            ["1",__("nfc.content.type_1")],
+                                            ["2",__("nfc.content.type_2")],
+                                            ["3",__("nfc.content.type_3")],
+                                            ["4",__("nfc.content.type_4")],
+                                        ]}
+                                        placeholder={__("nfc.content.select_type")}
+                                        value={state.addTag.tag_type.toString()}
+                                        onValue={(v) => this.setState({addTag: {...state.addTag, tag_type: parseInt(v)}})}
+                                        required />
+                                </FormRow>
+                                <hr/>
+                                <FormRow label={__("nfc.content.add_tag_user_id")}>
+                                    <InputSelect
+                                        items={state.userCfg.users.map((u, j) => [u.id.toString(), j == 0 ? __("nfc.script.not_assigned") : u.display_name.toString()])}
+                                        value={state.addTag.user_id.toString()}
+                                        onValue={(v) => this.setState({addTag: {...state.addTag, user_id: parseInt(v)}})}
+                                        required />
+                                    <div class="mt-2" style={state.addTag.user_id == 0 ? undefined : 'visibility: hidden'}>{__("nfc.script.not_assigned_desc")}</div>
+                                </FormRow>
+                            </>]}
                             onAddSubmit={async () => {
                                 this.setState({authorized_tags: state.authorized_tags.concat({tag_id: state.addTag.tag_id, user_id: state.addTag.user_id, tag_type: state.addTag.tag_type})});
                                 this.setDirty(true);

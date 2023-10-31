@@ -23,7 +23,7 @@ import { METERS_SLOTS } from "../../build";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __, translate_unchecked } from "../../ts/translation";
-import { h, render, createRef, Fragment, Component, RefObject, ComponentChild } from "preact";
+import { h, render, createRef, Fragment, Component, RefObject, ComponentChild, toChildArray } from "preact";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { HelpCircle, Zap, ZapOff, ChevronRight } from "react-feather";
 import { FormRow } from "../../ts/components/form_row";
@@ -37,7 +37,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS, METER_VALUE_ORDER } from "./meter_value_id";
 import { MeterClassID } from "./meters_defs";
 import { MeterConfig, MeterConfigPlugin } from "./types";
-import { Table, TableModalRow } from "../../ts/components/table";
+import { Table } from "../../ts/components/table";
 import { PageHeader } from "../../ts/components/page_header";
 import { plugins_init } from "./plugins";
 
@@ -1127,7 +1127,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                     fieldWithBox: [true, true, true, true, false],
                                     editTitle: __("meters.content.edit_meter_title"),
                                     onEditShow: async () => this.setState({editMeterSlot: meter_slot, editMeter: config_plugins[config[0]].clone(config)}),
-                                    onEditGetRows: () => {
+                                    onEditGetChildren: () => {
                                         let slots: [string, string][] = [];
                                         let classes: [string, string][] = [];
 
@@ -1141,35 +1141,35 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                             classes.push([meter_class.toString(), config_plugins[meter_class].name])
                                         }
 
-                                        let rows: TableModalRow[] = [{
-                                            name: __("meters.content.edit_meter_slot"),
-                                            value: <InputSelect
-                                                        items={slots}
-                                                        onValue={(v) => this.setState({editMeterSlot: parseInt(v)})}
-                                                        value={state.editMeterSlot.toString()}/>
-                                        },
-                                        {
-                                            name: __("meters.content.edit_meter_class"),
-                                            value: <InputSelect
-                                                        placeholder={__("meters.content.edit_meter_class_select")}
-                                                        items={classes}
-                                                        onValue={(v) => {
-                                                            let meter_class = parseInt(v);
+                                        let rows: ComponentChild[] = [<>
+                                            <FormRow label={__("meters.content.edit_meter_slot")}>
+                                                <InputSelect
+                                                    items={slots}
+                                                    onValue={(v) => this.setState({editMeterSlot: parseInt(v)})}
+                                                    value={state.editMeterSlot.toString()} />
+                                            </FormRow>
+                                            <FormRow label={__("meters.content.edit_meter_class")}>
+                                                <InputSelect
+                                                    placeholder={__("meters.content.edit_meter_class_select")}
+                                                    items={classes}
+                                                    onValue={(v) => {
+                                                        let meter_class = parseInt(v);
 
-                                                            if (meter_class != state.editMeter[0]) {
-                                                                if (meter_class == MeterClassID.None) {
-                                                                    this.setState({editMeter: [MeterClassID.None, null]});
-                                                                }
-                                                                else {
-                                                                    this.setState({editMeter: config_plugins[meter_class].init()});
-                                                                }
+                                                        if (meter_class != state.editMeter[0]) {
+                                                            if (meter_class == MeterClassID.None) {
+                                                                this.setState({editMeter: [MeterClassID.None, null]});
                                                             }
-                                                        }}
-                                                        value={state.editMeter[0].toString()}/>
-                                        }]
+                                                            else {
+                                                                this.setState({editMeter: config_plugins[meter_class].init()});
+                                                            }
+                                                        }
+                                                    }}
+                                                    value={state.editMeter[0].toString()} />
+                                            </FormRow>
+                                        </>]
 
                                         if (state.editMeter[0] != MeterClassID.None) {
-                                            rows = rows.concat(config_plugins[state.editMeter[0]].get_edit_rows(state.editMeter, (meter_config) => this.setState({editMeter: meter_config})));
+                                            rows = rows.concat(toChildArray(config_plugins[state.editMeter[0]].get_edit_children(state.editMeter, (meter_config) => this.setState({editMeter: meter_config}))));
                                         }
 
                                         return rows;
@@ -1199,7 +1199,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
 
                                 this.setState({addMeterSlot: addMeterSlot, addMeter: [MeterClassID.None, null]});
                             }}
-                            onAddGetRows={() => {
+                            onAddGetChildren={() => {
                                 let slots: [string, string][] = [];
                                 let classes: [string, string][] = [];
 
@@ -1213,41 +1213,41 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                                     classes.push([meter_class.toString(), config_plugins[meter_class].name])
                                 }
 
-                                let rows: TableModalRow[] = [{
-                                    name: __("meters.content.add_meter_slot"),
-                                    value: <InputSelect
-                                                items={slots}
-                                                onValue={(v) => this.setState({addMeterSlot: parseInt(v)})}
-                                                value={state.addMeterSlot.toString()}/>
-                                },
-                                {
-                                    name: __("meters.content.add_meter_class"),
-                                    value: <InputSelect
-                                                placeholder={__("meters.content.add_meter_class_select")}
-                                                items={classes}
-                                                onValue={(v) => {
-                                                    let meter_class = parseInt(v);
+                                let rows: ComponentChild[] = [
+                                    <FormRow label={__("meters.content.add_meter_slot")}>
+                                        <InputSelect
+                                            items={slots}
+                                            onValue={(v) => this.setState({addMeterSlot: parseInt(v)})}
+                                            value={state.addMeterSlot.toString()} />
+                                    </FormRow>,
+                                    <FormRow label={__("meters.content.add_meter_class")}>
+                                        <InputSelect
+                                            placeholder={__("meters.content.add_meter_class_select")}
+                                            items={classes}
+                                            onValue={(v) => {
+                                                let meter_class = parseInt(v);
 
-                                                    if (meter_class != state.addMeter[0]) {
-                                                        if (meter_class == MeterClassID.None) {
-                                                            this.setState({addMeter: [MeterClassID.None, null]});
-                                                        }
-                                                        else {
-                                                            this.setState({addMeter: config_plugins[meter_class].init()});
-                                                        }
+                                                if (meter_class != state.addMeter[0]) {
+                                                    if (meter_class == MeterClassID.None) {
+                                                        this.setState({addMeter: [MeterClassID.None, null]});
                                                     }
-                                                }}
-                                                value={this.state.addMeter[0].toString()}/>
-                                }];
+                                                    else {
+                                                        this.setState({addMeter: config_plugins[meter_class].init()});
+                                                    }
+                                                }
+                                            }}
+                                            value={this.state.addMeter[0].toString()} />
+                                    </FormRow>
+                                ];
 
                                 if (state.addMeter[0] != MeterClassID.None) {
-                                    let get_add_rows = config_plugins[state.addMeter[0]].get_add_rows;
+                                    let get_add_children = config_plugins[state.addMeter[0]].get_add_children;
 
-                                    if (!get_add_rows) {
-                                        get_add_rows = config_plugins[state.addMeter[0]].get_edit_rows;
+                                    if (!get_add_children) {
+                                        get_add_children = config_plugins[state.addMeter[0]].get_edit_children;
                                     }
 
-                                    rows = rows.concat(get_add_rows(state.addMeter, (meter_config) => this.setState({addMeter: meter_config})));
+                                    rows = rows.concat(toChildArray(get_add_children(state.addMeter, (meter_config) => this.setState({addMeter: meter_config}))));
                                 }
 
                                 return rows;

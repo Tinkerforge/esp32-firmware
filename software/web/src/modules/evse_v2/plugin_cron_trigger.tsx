@@ -54,19 +54,18 @@ function get_evse_button_table_children(trigger: CronTrigger) {
 function get_evse_button_edit_children(cron: Cron, trigger: CronTrigger) {
     let value = (trigger as EvseButtonCronTrigger)[1];
     return [
-        {
-            name: __("evse.content.button_configuration"),
-            value: <InputSelect
+        <FormRow label={ __("evse.content.button_configuration")}>
+            <InputSelect
                 items={[
                     ["0", __("evse.content.button_released")],
                     ["1", __("evse.content.button_pressed")]
                 ]}
-            value={value.button_pressed ? "1": "0"}
-            onValue={(v) => {
-                value.button_pressed = v == "1";
-                cron.setTriggerFromComponent(trigger);
-            }}/>
-        }
+                value={value.button_pressed ? "1": "0"}
+                onValue={(v) => {
+                    value.button_pressed = v == "1";
+                    cron.setTriggerFromComponent(trigger);
+                }} />
+        </FormRow>
     ]
 }
 
@@ -87,9 +86,8 @@ function get_evse_shutdown_table_children(trigger: CronTrigger) {
 function get_evse_shutdown_edit_children(cron: Cron, trigger: CronTrigger) {
     const value = (trigger as EvseShutdownCronTrigger)[1];
     return [
-        {
-            name: "",
-            value: <InputSelect
+        <FormRow label="">
+            <InputSelect
                 items={[
                     ["0", __("evse.content.cron_trigger_active_low")],
                     ["1", __("evse.content.cron_trigger_active_high")]
@@ -99,7 +97,7 @@ function get_evse_shutdown_edit_children(cron: Cron, trigger: CronTrigger) {
                     value.high = v == "1";
                     cron.setTriggerFromComponent(trigger);
                 }} />
-        }
+        </FormRow>
     ]
 }
 
@@ -120,9 +118,8 @@ function get_evse_gp_input_table_children(trigger: CronTrigger) {
 function get_evse_gp_input_edit_children(cron: Cron, trigger: CronTrigger) {
     const value = (trigger as EvseGpInputCronTrigger)[1];
     return [
-        {
-            name: "",
-            value: <InputSelect
+        <FormRow label="">
+            <InputSelect
                 items={[
                     ["0", __("evse.content.cron_trigger_active_low")],
                     ["1", __("evse.content.cron_trigger_active_high")]
@@ -132,7 +129,7 @@ function get_evse_gp_input_edit_children(cron: Cron, trigger: CronTrigger) {
                     value.high = v == "1";
                     cron.setTriggerFromComponent(trigger);
                 }} />
-        }
+        </FormRow>
     ]
 }
 

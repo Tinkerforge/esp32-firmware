@@ -24,6 +24,7 @@ import { CronAction } from "../cron/types";
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
+import { FormRow } from "../../ts/components/form_row";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
@@ -82,18 +83,14 @@ function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
 
     const all_tags = known_items.concat(seen_tags);
 
-    return [
-        {
-            name: __("nfc.content.last_seen_and_known_tags"),
-            value: all_tags.length == 0
-                ? <span>{__("nfc.content.add_tag_description")}</span>
-                : <ListGroup>{
-                    all_tags
-                }</ListGroup>
-        },
-        {
-            name: __("nfc.content.table_tag_id"),
-            value: <InputText
+    return [<>
+        <FormRow label={__("nfc.content.last_seen_and_known_tags")}>
+            {all_tags.length > 0 ?
+                <ListGroup>{all_tags}</ListGroup>
+                : <span>{__("nfc.content.add_tag_description")}</span>}
+        </FormRow>
+        <FormRow label={__("nfc.content.table_tag_id")}>
+            <InputText
                 required
                 value={value.tag_id}
                 onValue={(v) => {
@@ -102,11 +99,10 @@ function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
                 }}
                 minLength={8} maxLength={29}
                 pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
-                invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}/>
-        },
-        {
-            name: __("nfc.content.table_tag_type"),
-            value: <InputSelect
+                invalidFeedback={__("nfc.content.tag_id_invalid_feedback")} />
+        </FormRow>
+        <FormRow label={__("nfc.content.table_tag_type")}>
+            <InputSelect
                 items={[
                     ["0",__("nfc.content.type_0")],
                     ["1",__("nfc.content.type_1")],
@@ -118,11 +114,10 @@ function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
                 onValue={(v) => {
                     value.tag_type = parseInt(v);
                     cron.setActionFromComponent(action);
-                }}/>
-        },
-        {
-            name: __("nfc.content.tag_action"),
-            value: <InputSelect
+                }} />
+        </FormRow>
+        <FormRow label={__("nfc.content.tag_action")}>
+            <InputSelect
                 items={[
                     ["0", __("nfc.content.trigger_charge_any")],
                     ["1", __("nfc.content.trigger_charge_start")],
@@ -132,9 +127,9 @@ function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
                 onValue={(v) => {
                     value.tag_action = parseInt(v);
                     cron.setActionFromComponent(action)
-                }}/>
-        }
-    ]
+                }} />
+        </FormRow>
+    </>]
 }
 
 function new_nfc_inject_tag_config(): CronAction {

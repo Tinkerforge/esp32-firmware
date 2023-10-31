@@ -39,17 +39,19 @@ function get_set_manager_table_children(action: CronAction) {
 
 function get_set_manager_edit_children(cron: Cron, action: CronAction) {
     let value = (action as ChargeManagerCronAction)[1];
-    return [{
-        name: "Maximaler Strom",
-        value: <InputFloat value={value.current}
-                    onValue={(v) => {
-                        value.current = v;
-                        cron.setActionFromComponent(action);
-                    }}
-                    min={0}
-                    unit="A"
-                    digits={3}/>
-    }]
+    return [
+        <FormRow label={__("charge_manager.content.max_current")}>
+            <InputFloat
+                value={value.current}
+                onValue={(v) => {
+                    value.current = v;
+                    cron.setActionFromComponent(action);
+                }}
+                min={0}
+                unit="A"
+                digits={3} />
+        </FormRow>
+    ];
 }
 
 function new_set_manager_current_config(): CronAction {
