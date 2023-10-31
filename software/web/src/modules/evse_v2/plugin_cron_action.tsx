@@ -22,6 +22,7 @@ import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
 import { CronAction } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
+import { FormRow } from "../../ts/components/form_row";
 import { Cron } from "../cron/main";
 
 export type EvseGpOutputCronAction = [
@@ -39,9 +40,8 @@ function EvseGpioOutputCronActionComponent(action: CronAction): VNode {
 function EvseGpioOutputCronActionConfigComponent(cron: Cron, action: CronAction) {
     const value = (action as EvseGpOutputCronAction)[1];
     return [
-        {
-            name: __("evse.content.gpio_out"),
-            value: <InputSelect
+        <FormRow label={__("evse.content.gpio_out")}>
+            <InputSelect
                 items={[
                     ["0", __("evse.content.gpio_out_low")],
                     ["1", __("evse.content.gpio_out_high")]
@@ -50,8 +50,8 @@ function EvseGpioOutputCronActionConfigComponent(cron: Cron, action: CronAction)
                 onValue={(v) => {
                     value.state = Number(v);
                     cron.setActionFromComponent(action);
-                }}/>
-        }
+                }} />
+        </FormRow>
     ]
 }
 

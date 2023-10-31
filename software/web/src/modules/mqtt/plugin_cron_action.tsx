@@ -24,6 +24,7 @@ import { CronActionID } from "../cron/cron_defs";
 import { Cron } from "../cron/main";
 import { CronAction } from "../cron/types";
 import { InputText } from "../../ts/components/input_text";
+import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
 import * as API from "../../ts/api";
 
@@ -50,20 +51,17 @@ export function MqttCronActionConfig(cron: Cron, action: CronAction) {
     const mqtt_config = API.get("mqtt/config");
     const [isInvalid, isInvalidSetter] = useState(false);
 
-    return [
-        {
-            name: __("mqtt.content.use_topic_prefix"),
-            value: <Switch
+    return [<>
+        <FormRow label={__("mqtt.content.use_topic_prefix")}>
+            <Switch
                 checked={value.use_prefix}
                 onClick={() => {
                     value.use_prefix = !value.use_prefix;
                     cron.setActionFromComponent(action);
                 }}
                 desc={__("mqtt.content.use_topic_prefix_muted") + mqtt_config.global_topic_prefix}/>
-        },
-        {
-            name: __("mqtt.content.topic"),
-            value: <>
+        </FormRow>
+        <FormRow label={__("mqtt.content.topic")}>
              <InputText
                 required
                 value={value.topic}
@@ -78,34 +76,31 @@ export function MqttCronActionConfig(cron: Cron, action: CronAction) {
                     }
                     cron.setActionFromComponent(action);
                 }}
-                invalidFeedback={__("mqtt.content.use_topic_prefix_invalid")}/>
-                <InputText
-                    class="mt-2"
-                    value={mqtt_config.global_topic_prefix + "/cron_action/" + value.topic}
-                    hidden={!value.use_prefix} />
-            </>
-        },
-        {
-            name: __("mqtt.content.payload"),
-            value: <InputText
+                invalidFeedback={__("mqtt.content.use_topic_prefix_invalid")} />
+            <InputText
+                class="mt-2"
+                value={mqtt_config.global_topic_prefix + "/cron_action/" + value.topic}
+                hidden={!value.use_prefix} />
+        </FormRow>
+        <FormRow label={__("mqtt.content.payload")}>
+            <InputText
                 required
                 maxLength={64}
                 value={value.payload}
                 onValue={(v) => {
                     value.payload = v;
                     cron.setActionFromComponent(action);
-                }}/>
-        },
-        {
-            name: __("mqtt.content.retain"),
-            value: <Switch
+                }} />
+        </FormRow>
+        <FormRow label={__("mqtt.content.retain")}>
+            <Switch
                 checked={value.retain}
                 onClick={() => {
                     value.retain = !value.retain;
                     cron.setActionFromComponent(action);
-                }}/>
-        }
-    ]
+                }} />
+        </FormRow>
+    </>]
 }
 
 function MqttCronActionFactory(): CronAction {

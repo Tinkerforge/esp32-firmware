@@ -21,8 +21,7 @@ import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
 import { CronAction } from "../cron/types";
 import { CronActionID } from "../cron/cron_defs";
-import { TableModalRow } from "../../ts/components/table";
-import { VNode } from "preact";
+import { VNode, ComponentChildren } from "preact";
 
 export type MeterCronAction = [
     CronActionID.MeterReset,
@@ -33,7 +32,7 @@ function MeterResetCronActionComponent(_: CronAction): VNode {
     return __("meter.content.cron_action_text") as any as VNode;
 }
 
-function MeterResetCronActionConfigComponent(_: Cron, __: CronAction): TableModalRow[] {
+function MeterResetCronActionConfigComponent(_: Cron, __: CronAction): ComponentChildren {
     return [];
 }
 

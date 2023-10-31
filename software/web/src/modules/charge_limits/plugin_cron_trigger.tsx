@@ -34,7 +34,7 @@ function ChargeLimitsCronTriggerComponent(_: CronTrigger): VNode {
     return __("charge_limits.content.cron_trigger_text") as any as VNode;
 }
 
-function ChargeLimitsCronTriggerConfig(_: Cron, __: CronTrigger): TableModalRow[] {
+function ChargeLimitsCronTriggerConfig(_: Cron, __: CronTrigger): ComponentChildren {
     return []
 }
 

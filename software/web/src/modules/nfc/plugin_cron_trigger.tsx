@@ -17,13 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { VNode, h } from "preact";
+import { VNode, h, Fragment } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types";
 import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
+import { FormRow } from "../../ts/components/form_row";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
@@ -86,31 +87,26 @@ export function NFCCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
 
     const all_tags = known_items.concat(seen_tags);
 
-    return [
-        {
-            name: __("nfc.content.last_seen_and_known_tags"),
-            value: all_tags.length == 0
-                ? <span>{__("nfc.content.add_tag_description")}</span>
-                : <ListGroup>{
-                    all_tags
-                }</ListGroup>
-        },
-        {
-            name: __("nfc.content.table_tag_id"),
-            value: <InputText
+    return [<>
+        <FormRow label={__("nfc.content.last_seen_and_known_tags")}>
+            {all_tags.length > 0 ?
+                <ListGroup>{all_tags}</ListGroup>
+                : <span>{__("nfc.content.add_tag_description")}</span>}
+        </FormRow>
+        <FormRow label={__("nfc.content.table_tag_id")}>
+            <InputText
                 value={value.tag_id}
-                    required
-                    onValue={(v) => {
+                required
+                onValue={(v) => {
                     value.tag_id = v;
                     cron.setTriggerFromComponent(trigger);
                 }}
                 minLength={8} maxLength={29}
                 pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
-                invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}/>
-        },
-        {
-            name: __("nfc.content.table_tag_type"),
-            value: <InputSelect
+                invalidFeedback={__("nfc.content.tag_id_invalid_feedback")} />
+        </FormRow>
+        <FormRow label={__("nfc.content.table_tag_type")}>
+            <InputSelect
                 items={[
                     ["0",__("nfc.content.type_0")],
                     ["1",__("nfc.content.type_1")],
@@ -122,9 +118,9 @@ export function NFCCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
                 onValue={(v) => {
                     value.tag_type = parseInt(v);
                     cron.setTriggerFromComponent(trigger);
-                }}/>
-        }
-    ]
+                }} />
+        </FormRow>
+    </>]
 }
 
 export function init() {

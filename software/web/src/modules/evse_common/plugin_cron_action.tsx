@@ -25,6 +25,7 @@ import { Cron } from "../cron/main"
 import { InputSelect } from "../../ts/components/input_select"
 import { InputFloat } from "../../ts/components/input_float"
 import { InputNumber } from "../../ts/components/input_number"
+import { FormRow } from "../../ts/components/form_row"
 
 export type EvseCronAction = [
     CronActionID.SetCurrent,
@@ -49,9 +50,8 @@ function EvseSetCurrentCronActionComponent(action: CronAction): VNode {
 function EvseSetCurrentCronActionConfigComponent(cron: Cron, action: CronAction) {
     const value = (action as EvseCronAction)[1];
     return [
-        {
-            name: __("evse.content.allowed_charging_current"),
-            value: <InputFloat
+        <FormRow label={__("evse.content.allowed_charging_current")}>
+            <InputFloat
                 digits={3}
                 min={0}
                 max={32000}
@@ -60,8 +60,8 @@ function EvseSetCurrentCronActionConfigComponent(cron: Cron, action: CronAction)
                 onValue={(v) => {
                     value.current = v;
                     cron.setActionFromComponent(action);
-                }}/>
-        }
+                }} />
+        </FormRow>
     ]
 }
 
@@ -112,34 +112,34 @@ function EvseLedCronActionConfigComponent(cron: Cron, action: CronAction) {
         ["255", __("evse.content.led_state_on")],
         ["1001", __("evse.content.led_state_blinking")],
         ["1002", __("evse.content.led_state_flickering")],
-        ["1003", __("evse.content.led_state_breathing")]];
+        ["1003", __("evse.content.led_state_breathing")]
+    ];
+
     for (let i = 1; i <= 10; i++) {
         items.push([String(2000 + i), __("evse.content.led_state_error")(i)]);
     }
-    return [
-        {
-            name: __("evse.content.led_state"),
-            value: <InputSelect
+
+    return [<>
+        <FormRow label={__("evse.content.led_state")}>
+            <InputSelect
                 items={items}
                 value={value.state.toString()}
                 onValue={(v) => {
                     value.state = parseInt(v);
                     cron.setActionFromComponent(action);
-                }}/>
-        },
-        {
-            name: __("evse.content.led_duration"),
-            value: <> <InputNumber
+                }} />
+        </FormRow>
+        <FormRow label={ __("evse.content.led_duration")}>
+            <InputNumber
                 value={value.duration / 1000}
                 unit="s"
                 onValue={(v) => {
                     value.duration = v * 1000;
                     cron.setActionFromComponent(action);
                 }} />
-                <span class="text-muted mt-1">{__("evse.content.api_must_be_enabled")}</span>
-            </>
-        }
-    ]
+            <span class="text-muted mt-1">{__("evse.content.api_must_be_enabled")}</span>
+        </FormRow>
+    </>];
 }
 
 function EvseLedCronActionConfigFactory(): CronAction {

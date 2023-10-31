@@ -19,11 +19,10 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { h, Fragment, Component } from "preact";
+import { h, Fragment, Component, ComponentChildren } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterConfig } from "../meters/types";
-import { TableModalRow } from "../../ts/components/table";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
@@ -244,7 +243,7 @@ export function init() {
             name: __("meters_sun_spec.content.meter_class"),
             init: () => [MeterClassID.SunSpec, {display_name: "", host: "", port: 502, device_address: null, model_id: null}] as MeterConfig,
             clone: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
-            get_edit_rows: (config: SunSpecMetersConfig, on_value: (config: SunSpecMetersConfig) => void): TableModalRow[] => {
+            get_edit_children: (config: SunSpecMetersConfig, on_value: (config: SunSpecMetersConfig) => void): ComponentChildren => {
                 let model_ids: [string, string][] = [];
 
                 for (let model_info of SUN_SPEC_MODEL_INFOS) {
@@ -253,10 +252,9 @@ export function init() {
                     }
                 }
 
-                return [
-                    {
-                        name: __("meters_sun_spec.content.config_host"),
-                        value: <InputText
+                return [<>
+                    <FormRow label={__("meters_sun_spec.content.config_host")}>
+                        <InputText
                             required
                             maxLength={64}
                             pattern="^[a-zA-Z0-9\-\.]+$"
@@ -265,11 +263,10 @@ export function init() {
                                 config[1].host = v;
                                 on_value(config);
                             }}
-                            invalidFeedback={__("meters_sun_spec.content.config_host_invalid")}/>
-                    },
-                    {
-                        name: __("meters_sun_spec.content.config_port"),
-                        value: <InputNumber
+                            invalidFeedback={__("meters_sun_spec.content.config_host_invalid")} />
+                    </FormRow>
+                    <FormRow label={__("meters_sun_spec.content.config_port")}>
+                        <InputNumber
                             required
                             min={1}
                             max={65535}
@@ -277,35 +274,28 @@ export function init() {
                             onValue={(v) => {
                                 config[1].port = v;
                                 on_value(config);
-                            }}/>
-                    },
-                    {
-                        name: null,
-                        value: <>
-                            <hr/>
-                            <DeviceScanner host={config[1].host} port={config[1].port} onResultSelected={(result: DeviceScannerResult) => {
-                                config[1].display_name = result.display_name;
-                                config[1].device_address = result.device_address;
-                                config[1].model_id = result.model_id;
-                                on_value(config);
                             }} />
-                            <hr/>
-                        </>
-                    },
-                    {
-                        name: __("meters_sun_spec.content.config_display_name"),
-                        value: <InputText
+                    </FormRow>
+                    <hr/>
+                    <DeviceScanner host={config[1].host} port={config[1].port} onResultSelected={(result: DeviceScannerResult) => {
+                        config[1].display_name = result.display_name;
+                        config[1].device_address = result.device_address;
+                        config[1].model_id = result.model_id;
+                        on_value(config);
+                    }} />
+                    <hr/>
+                    <FormRow label={__("meters_sun_spec.content.config_display_name")}>
+                        <InputText
                             required
                             maxLength={65}
                             value={config[1].display_name}
                             onValue={(v) => {
                                 config[1].display_name = v;
                                 on_value(config);
-                            }}/>
-                    },
-                    {
-                        name: __("meters_sun_spec.content.config_device_address"),
-                        value: <InputNumber
+                            }} />
+                    </FormRow>
+                    <FormRow label={__("meters_sun_spec.content.config_device_address")}>
+                        <InputNumber
                             required
                             min={1}
                             max={247}
@@ -313,11 +303,10 @@ export function init() {
                             onValue={(v) => {
                                 config[1].device_address = v;
                                 on_value(config);
-                            }}/>
-                    },
-                    {
-                        name: __("meters_sun_spec.content.config_model_id"),
-                        value: <InputSelect
+                            }} />
+                    </FormRow>
+                    <FormRow label={__("meters_sun_spec.content.config_model_id")}>
+                        <InputSelect
                             required
                             items={model_ids}
                             placeholder={__("meters_sun_spec.content.config_model_id_select")}
@@ -325,9 +314,9 @@ export function init() {
                             onValue={(v) => {
                                 config[1].model_id = parseInt(v);
                                 on_value(config);
-                            }}/>
-                    },
-                ];
+                            }} />
+                    </FormRow>
+                </>];
             },
         },
     };

@@ -38,17 +38,19 @@ export function ChargeManagerCronComponent(action: CronAction): VNode {
 
 export function ChargeManagerCronConfigComponent(cron: Cron, action: CronAction) {
     let value = (action as ChargeManagerCronAction)[1];
-    return [{
-        name: "Maximaler Strom",
-        value: <InputFloat value={value.current}
-                    onValue={(v) => {
-                        value.current = v;
-                        cron.setActionFromComponent(action);
-                    }}
-                    min={0}
-                    unit="A"
-                    digits={3}/>
-    }]
+    return [
+        <FormRow label={__("charge_manager.content.max_current")}>
+            <InputFloat
+                value={value.current}
+                onValue={(v) => {
+                    value.current = v;
+                    cron.setActionFromComponent(action);
+                }}
+                min={0}
+                unit="A"
+                digits={3} />
+        </FormRow>
+    ];
 }
 
 function ChargeManagerCronActionFactory(): CronAction {

@@ -389,49 +389,45 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                     ],
                                     editTitle: __("users.content.edit_user_title"),
                                     onEditShow: async () => this.setState({editUser: {id: user.id, roles: user.roles, username: user.username, display_name: user.display_name, current: user.current, digest_hash: user.digest_hash, password: user.password, is_invalid: user.is_invalid}}),
-                                    onEditGetRows: () => [
-                                        {
-                                            name: __("users.content.edit_user_username"),
-                                            value: <InputText
-                                                        value={state.editUser.username}
-                                                        onValue={(v) => this.setState({editUser: {...state.editUser, username: v}})}
-                                                        minLength={1}
-                                                        maxLength={32}
-                                                        required
-                                                        class={state.editUser.is_invalid != undefined && state.editUser.is_invalid != 0 ? "is-invalid" : ""}
-                                                        invalidFeedback={this.errorMessage(state.editUser)}/>
-                                        },
-                                        {
-                                            name: __("users.content.edit_user_display_name"),
-                                            value: <InputText
-                                                        value={state.editUser.display_name}
-                                                        onValue={(v) => this.setState({editUser: {...state.editUser, display_name: v}})}
-                                                        minLength={1}
-                                                        maxLength={32}
-                                                        required/>
-                                        },
-                                        {
-                                            name: __("users.content.edit_user_current"),
-                                            value: <InputFloat
-                                                        unit="A"
-                                                        value={state.editUser.current}
-                                                        onValue={(v) => this.setState({editUser: {...state.editUser, current: v}})}
-                                                        digits={3}
-                                                        min={6000}
-                                                        max={32000}/>
-                                        },
-                                        {
-                                            name: __("users.content.edit_user_password"),
-                                            value: <InputPassword
-                                                        required={this.require_password(state.editUser)}
-                                                        maxLength={64}
-                                                        value={state.editUser.password === undefined ? state.editUser.digest_hash : state.editUser.password}
-                                                        onValue={(v) => this.setState({editUser: {...state.editUser, password: v}})}
-                                                        clearPlaceholder={__("users.script.login_disabled")}
-                                                        clearSymbol={<Slash/>}
-                                                        allowAPIClear/>
-                                        }
-                                    ],
+                                    onEditGetChildren: () => [<>
+                                        <FormRow label={__("users.content.edit_user_username")}>
+                                            <InputText
+                                                value={state.editUser.username}
+                                                onValue={(v) => this.setState({editUser: {...state.editUser, username: v}})}
+                                                minLength={1}
+                                                maxLength={32}
+                                                required
+                                                class={state.editUser.is_invalid != undefined && state.editUser.is_invalid != 0 ? "is-invalid" : ""}
+                                                invalidFeedback={this.errorMessage(state.editUser)} />
+                                        </FormRow>
+                                        <FormRow label={__("users.content.edit_user_display_name")}>
+                                            <InputText
+                                                value={state.editUser.display_name}
+                                                onValue={(v) => this.setState({editUser: {...state.editUser, display_name: v}})}
+                                                minLength={1}
+                                                maxLength={32}
+                                                required />
+                                        </FormRow>
+                                        <FormRow label={__("users.content.edit_user_current")}>
+                                            <InputFloat
+                                                unit="A"
+                                                value={state.editUser.current}
+                                                onValue={(v) => this.setState({editUser: {...state.editUser, current: v}})}
+                                                digits={3}
+                                                min={6000}
+                                                max={32000} />
+                                        </FormRow>
+                                        <FormRow label={__("users.content.edit_user_password")}>
+                                            <InputPassword
+                                                required={this.require_password(state.editUser)}
+                                                maxLength={64}
+                                                value={state.editUser.password === undefined ? state.editUser.digest_hash : state.editUser.password}
+                                                onValue={(v) => this.setState({editUser: {...state.editUser, password: v}})}
+                                                clearPlaceholder={__("users.script.login_disabled")}
+                                                clearSymbol={<Slash/>}
+                                                allowAPIClear />
+                                        </FormRow>
+                                    </>],
                                     onEditCheck: async () => {
                                         let is_invalid = await this.checkUsername(state.editUser, i + 1);
 
@@ -454,49 +450,45 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                             // One user slot is always taken by the unknown user, so display MAX_ACTIVE_USERS - 1 as the maximum number of users that can be added.
                             addMessage={API.get('users/config').next_user_id == 0 ? __("users.content.add_user_user_ids_exhausted") : __("users.content.add_user_prefix") + (state.users.length - 1) + __("users.content.add_user_infix") + (MAX_ACTIVE_USERS - 1) + __("users.content.add_user_suffix")}
                             onAddShow={async () => this.setState({addUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}})}
-                            onAddGetRows={() => [
-                                {
-                                    name: __("users.content.add_user_username"),
-                                    value: <InputText
-                                                value={state.addUser.username}
-                                                onValue={(v) => this.setState({addUser: {...state.addUser, username: v}})}
-                                                required
-                                                minLength={1}
-                                                maxLength={32}
-                                                placeholder={__("users.content.add_user_username_desc")}
-                                                class={state.addUser.is_invalid != undefined && state.addUser.is_invalid != 0 ? "is-invalid" : ""}
-                                                invalidFeedback={this.errorMessage(state.addUser)} />
-                                },
-                                {
-                                    name: __("users.content.add_user_display_name"),
-                                    value: <InputText
-                                                value={state.addUser.display_name}
-                                                onValue={(v) => this.setState({addUser: {...state.addUser, display_name: v}})}
-                                                required
-                                                minLength={1}
-                                                maxLength={32}
-                                                placeholder={__("users.content.add_user_display_name_desc")} />
-                                },
-                                {
-                                    name: __("users.content.add_user_current"),
-                                    value: <InputFloat
-                                                unit="A"
-                                                value={state.addUser.current}
-                                                onValue={(v) => this.setState({addUser: {...state.addUser, current: v}})}
-                                                digits={3}
-                                                min={6000}
-                                                max={32000} />
-                                },
-                                {
-                                    name: __("users.content.add_user_password"),
-                                    value: <InputPassword
-                                                maxLength={64}
-                                                value={state.addUser.password}
-                                                onValue={(v) => this.setState({addUser: {...state.addUser, password: v}})}
-                                                hideClear
-                                                placeholder={__("users.content.add_user_password_desc")} />
-                                },
-                            ]}
+                            onAddGetChildren={() => [<>
+                                <FormRow label={__("users.content.add_user_username")}>
+                                    <InputText
+                                        value={state.addUser.username}
+                                        onValue={(v) => this.setState({addUser: {...state.addUser, username: v}})}
+                                        required
+                                        minLength={1}
+                                        maxLength={32}
+                                        placeholder={__("users.content.add_user_username_desc")}
+                                        class={state.addUser.is_invalid != undefined && state.addUser.is_invalid != 0 ? "is-invalid" : ""}
+                                        invalidFeedback={this.errorMessage(state.addUser)} />
+                                </FormRow>
+                                <FormRow label={__("users.content.add_user_display_name")}>
+                                    <InputText
+                                        value={state.addUser.display_name}
+                                        onValue={(v) => this.setState({addUser: {...state.addUser, display_name: v}})}
+                                        required
+                                        minLength={1}
+                                        maxLength={32}
+                                        placeholder={__("users.content.add_user_display_name_desc")} />
+                                </FormRow>
+                                <FormRow label={__("users.content.add_user_current")}>
+                                    <InputFloat
+                                        unit="A"
+                                        value={state.addUser.current}
+                                        onValue={(v) => this.setState({addUser: {...state.addUser, current: v}})}
+                                        digits={3}
+                                        min={6000}
+                                        max={32000} />
+                                </FormRow>
+                                <FormRow label={__("users.content.add_user_password")}>
+                                    <InputPassword
+                                        maxLength={64}
+                                        value={state.addUser.password}
+                                        onValue={(v) => this.setState({addUser: {...state.addUser, password: v}})}
+                                        hideClear
+                                        placeholder={__("users.content.add_user_password_desc")} />
+                                </FormRow>
+                            </>]}
                             onAddCheck={async () => {
                                 let is_invalid = await this.checkUsername(state.addUser, undefined);
 

@@ -23,6 +23,7 @@ import { CronTriggerID } from "../cron/cron_defs";
 import { Cron } from "../cron/main";
 import { CronTrigger } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
+import { FormRow } from "../../ts/components/form_row";
 
 export type EvseStateCronTrigger = [
     CronTriggerID.IECChange,
@@ -54,23 +55,24 @@ function EvseStateCronFactory(): CronTrigger {
 }
 
 export function EvseStateCronConfig(cron: Cron, trigger: CronTrigger) {
-    let value = (trigger as EvseStateCronTrigger)[1];
-    return [{
-        name: "",
-        value: <InputSelect
-                    items={[
-                        ["0", __("evse.status.not_connected")],
-                        ["1", __("evse.status.waiting_for_charge_release")],
-                        ["2", __("evse.status.ready_to_charge")],
-                        ["3", __("evse.status.charging")],
-                        ["4", __("evse.status.error")]
-                    ]}
-                    value={value.charger_state.toString()}
-                    onValue={(v) => {
-                        value.charger_state = Number(v);
-                        cron.setTriggerFromComponent(trigger);
-                    }}/>
-    }]
+    let value = (trigger as IECChangeCronTrigger)[1];
+    return [
+        <FormRow label="">
+            <InputSelect
+                items={[
+                    ["0", __("evse.status.not_connected")],
+                    ["1", __("evse.status.waiting_for_charge_release")],
+                    ["2", __("evse.status.ready_to_charge")],
+                    ["3", __("evse.status.charging")],
+                    ["4", __("evse.status.error")]
+                ]}
+                value={value.charger_state.toString()}
+                onValue={(v) => {
+                    value.charger_state = Number(v);
+                    cron.setTriggerFromComponent(trigger);
+                }} />
+        </FormRow>
+    ]
 }
 
 export function init() {

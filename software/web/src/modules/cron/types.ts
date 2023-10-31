@@ -30,8 +30,8 @@ export type CronAction = Task["action"];
 export interface CronTriggerComponent {
     clone: (trigger: CronTrigger) => CronTrigger,
     table_row: (trigger: CronTrigger) => VNode,
-    config_component: (cron: Cron, trigger: CronTrigger) => TableModalRow[],
     config_builder: () => CronTrigger,
+    config_component: (cron: Cron, trigger: CronTrigger) => ComponentChildren,
     name: string,
     require_feature?: string
 }
@@ -39,8 +39,8 @@ export interface CronTriggerComponent {
 export interface CronActionComponent {
     clone: (action: CronAction) => CronAction,
     table_row: (action: CronAction) => VNode,
-    config_component: (cron: Cron, action: CronAction) => TableModalRow[],
     config_builder: () => CronAction,
+    config_component: (cron: Cron, action: CronAction) => ComponentChildren,
     name: string,
     require_feature?: string
 }

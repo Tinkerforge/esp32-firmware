@@ -25,6 +25,7 @@ import { Cron } from "../cron/main";
 import { CronActionID } from "../cron/cron_defs";
 import { CronAction } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
+import { FormRow } from "../../ts/components/form_row";
 
 export type ChargeLimitsCronAction = [
     CronActionID.ChargeLimits,
@@ -87,26 +88,28 @@ function ChargeLimitsCronActionConfig(cron: Cron, action: CronAction) {
     ];
 
     const meter_entry = API.hasFeature("meter") ? [
-        {
-            name: __("charge_limits.content.energy"),
-            value:  <InputSelect
-                    items={energy_items}
-                    value={value.energy_wh.toString()}
-                    onValue={(v) => {
-                        value.energy_wh = parseInt(v);
-                        cron.setActionFromComponent(action)
-                    }}/>
-        }] : [];
-    return [{
-        name: __("charge_limits.content.duration"),
-        value: <InputSelect
-            items={duration_items}
-            value={value.duration.toString()}
-            onValue={(v) => {
-                value.duration = parseInt(v);
-                cron.setActionFromComponent(action);
-            }}/>
-    }].concat(meter_entry);
+        <FormRow label={__("charge_limits.content.energy")}>
+            <InputSelect
+                items={energy_items}
+                value={value.energy_wh.toString()}
+                onValue={(v) => {
+                    value.energy_wh = parseInt(v);
+                    cron.setActionFromComponent(action)
+                }} />
+        </FormRow>
+    ] : [];
+
+    return [
+        <FormRow label={__("charge_limits.content.duration")}>
+            <InputSelect
+                items={duration_items}
+                value={value.duration.toString()}
+                onValue={(v) => {
+                    value.duration = parseInt(v);
+                    cron.setActionFromComponent(action);
+                }} />
+        </FormRow>
+    ].concat(meter_entry);
 }
 
 function ChargeLimitsCronActionFactory(): CronAction {

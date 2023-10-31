@@ -18,7 +18,7 @@
  */
 
 import * as API from "../../ts/api";
-import { TableModalRow } from "../../ts/components/table";
+import { ComponentChildren } from "preact";
 
 export type MeterConfig = API.getType["meters/0/config"];
 
@@ -26,6 +26,6 @@ export type MeterConfigPlugin = {
     name: string
     init: () => MeterConfig
     clone: (config: MeterConfig) => MeterConfig
-    get_edit_rows: (config: MeterConfig, on_value: (config: MeterConfig) => void) => TableModalRow[]
-    get_add_rows?: (config: MeterConfig, on_value: (config: MeterConfig) => void) => TableModalRow[]
+    get_edit_children: (config: MeterConfig, on_value: (config: MeterConfig) => void) => ComponentChildren
+    get_add_children?: (config: MeterConfig, on_value: (config: MeterConfig) => void) => ComponentChildren
 };

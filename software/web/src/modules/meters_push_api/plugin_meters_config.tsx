@@ -17,15 +17,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from 'preact'
+import { h, Fragment, ComponentChildren } from 'preact'
 import { __, translate_unchecked } from "../../ts/translation";
 import { StateUpdater, useState } from 'preact/hooks';
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterValueID, METER_VALUE_ITEMS } from "../meters/meter_value_id";
 import { MeterConfig } from "../meters/types";
-import { Table, TableModalRow, TableRow } from "../../ts/components/table";
+import { Table, TableRow } from "../../ts/components/table";
 import { InputText } from "../../ts/components/input_text";
-import { InputSelect } from 'src/ts/components/input_select';
+import { InputSelect } from '../../ts/components/input_select';
 
 const MAX_VALUES = 100;
 
@@ -159,16 +159,17 @@ export function init() {
             name: __("meters_push_api.content.meter_class"),
             init: () => [MeterClassID.PushAPI, {display_name: "", value_ids: new Array<number>()}] as MeterConfig,
             clone: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
-            get_edit_rows: (config: PushAPIMetersConfig, on_value: (config: PushAPIMetersConfig) => void): TableModalRow[] => {
+            get_edit_children: (config: PushAPIMetersConfig, on_value: (config: PushAPIMetersConfig) => void): ComponentChildren => {
                 const value_id_obj = {value_id: -1}
                 const stages: [MeterValueIDSelectorStage, StateUpdater<MeterValueIDSelectorStage>][]  = [];
+
                 for (let i = 0; i < 5; ++i) {
                     stages.push(useState<MeterValueIDSelectorStage>({state: "", isInvalid: false}));
                 }
-                return [
-                    {
-                        name: __("meters_push_api.content.config_display_name"),
-                        value: <InputText
+
+                return [<>
+                    <FormRow label={__("meters_push_api.content.config_display_name")}>
+                        <InputText
                             required
                             maxLength={32}
                             value={config[1].display_name}
@@ -176,62 +177,58 @@ export function init() {
                                 config[1].display_name = v;
                                 on_value(config);
                             }}/>
-                    },
-                    {
-                        name: __("meters_push_api.content.config_value_ids"),
-                        value: <Table
-                                nestingDepth={1}
-                                rows={config[1].value_ids.map((value_id) => {
-                                    const row: TableRow = {
-                                        columnValues: [translate_unchecked(`meters.content.value_${value_id}`)],
-                                        onRemoveClick: async () => {
-                                            on_value([config[0], {display_name: config[1].display_name, value_ids: config[1].value_ids.filter((v) => v !== value_id)}])
-                                        },
-                                        onEditShow: async () => {
-                                            value_id_obj.value_id = value_id;
-                                            clearStagesFrom(0, stages);
-                                            reverseLookup(value_id).map((v, i) => {
-                                                stages[i][1]({
-                                                    state: v,
-                                                    isInvalid: false,
-                                                });
+                    </FormRow>
+                    <FormRow label={__("meters_push_api.content.config_value_ids")}>
+                        <Table
+                            nestingDepth={1}
+                            rows={config[1].value_ids.map((value_id) => {
+                                const row: TableRow = {
+                                    columnValues: [translate_unchecked(`meters.content.value_${value_id}`)],
+                                    onRemoveClick: async () => {
+                                        on_value([config[0], {display_name: config[1].display_name, value_ids: config[1].value_ids.filter((v) => v !== value_id)}])
+                                    },
+                                    onEditShow: async () => {
+                                        value_id_obj.value_id = value_id;
+                                        clearStagesFrom(0, stages);
+                                        reverseLookup(value_id).map((v, i) => {
+                                            stages[i][1]({
+                                                state: v,
+                                                isInvalid: false,
                                             });
-                                        },
-                                        onEditSubmit: async () => {
-                                            config[1].value_ids.push(value_id_obj.value_id)
-                                            on_value(config)
-                                        },
-                                        onEditGetRows: () => {
-                                            return [{
-                                                name: __("meters_push_api.content.config_value_id"),
-                                                value: <MeterValueIDSelector value_id={value_id_obj} value_id_vec={config[1].value_ids} stages={stages} />
-                                            }]
-                                        },
-                                        editTitle: __("meters_push_api.content.edit_value_title"),
-                                    }
-                                    return row
-                                })}
-                                columnNames={[""]}
-                                addEnabled={true}
-                                addMessage={__("meters_push_api.content.add_value_count")(config[1].value_ids.length, MAX_VALUES)}
-                                addTitle={__("meters_push_api.content.add_value_title")}
-                                onAddShow={async () => {
-                                    value_id_obj.value_id = -1;
-                                    clearStagesFrom(0, stages);
-                                }}
-                                onAddGetRows={() => {
-                                    return [{
-                                        name: __("meters_push_api.content.config_value_id"),
-                                        value: <MeterValueIDSelector value_id={value_id_obj} value_id_vec={config[1].value_ids} stages={stages} />
-                                    }]
-                                }}
-                                onAddSubmit={async () => {
-                                    config[1].value_ids.push(value_id_obj.value_id)
-                                    on_value(config)
-                                }}
-                            />
-                    },
-                ];
+                                        });
+                                    },
+                                    onEditSubmit: async () => {
+                                        config[1].value_ids.push(value_id_obj.value_id)
+                                        on_value(config)
+                                    },
+                                    onEditGetChildren: () => [
+                                        <FormRow label={__("meters_push_api.content.config_value_id")}>
+                                            <MeterValueIDSelector value_id={value_id_obj} value_id_vec={config[1].value_ids} stages={stages} />
+                                        </FormRow>
+                                    ],
+                                    editTitle: __("meters_push_api.content.edit_value_title"),
+                                }
+                                return row
+                            })}
+                            columnNames={[""]}
+                            addEnabled={true}
+                            addMessage={__("meters_push_api.content.add_value_count")(config[1].value_ids.length, MAX_VALUES)}
+                            addTitle={__("meters_push_api.content.add_value_title")}
+                            onAddShow={async () => {
+                                value_id_obj.value_id = -1;
+                                clearStagesFrom(0, stages);
+                            }}
+                            onAddGetChildren={() => [
+                                <FormRow label={__("meters_push_api.content.config_value_id")}>
+                                    <MeterValueIDSelector value_id={value_id_obj} value_id_vec={config[1].value_ids} stages={stages} />
+                                </FormRow>
+                            ]}
+                            onAddSubmit={async () => {
+                                config[1].value_ids.push(value_id_obj.value_id)
+                                on_value(config)
+                            }}/>
+                    </FormRow>
+                </>];
             },
         },
     };

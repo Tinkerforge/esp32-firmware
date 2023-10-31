@@ -17,12 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from 'preact'
+import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterConfig } from "../meters/types";
-import { TableModalRow } from "../../ts/components/table";
 import { InputText } from "../../ts/components/input_text";
+import { FormRow } from "../../ts/components/form_row";
 
 export type EMMetersConfig = [
     MeterClassID.EnergyManager,
@@ -37,11 +37,10 @@ export function init() {
             name: __("meters_em.content.meter_class"),
             init: () => [MeterClassID.EnergyManager, {display_name: ""}] as MeterConfig,
             clone: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
-            get_edit_rows: (config: EMMetersConfig, on_value: (config: EMMetersConfig) => void): TableModalRow[] => {
+            get_edit_children: (config: EMMetersConfig, on_value: (config: EMMetersConfig) => void): ComponentChildren => {
                 return [
-                    {
-                        name: __("meters_em.content.config_display_name"),
-                        value: <InputText
+                    <FormRow label={__("meters_em.content.config_display_name")}>
+                        <InputText
                             required
                             maxLength={32}
                             value={config[1].display_name}
@@ -49,7 +48,7 @@ export function init() {
                                 config[1].display_name = v;
                                 on_value(config);
                             }}/>
-                    },
+                    </FormRow>
                 ];
             },
         },
