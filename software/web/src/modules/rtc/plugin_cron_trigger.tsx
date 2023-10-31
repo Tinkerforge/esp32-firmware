@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment, VNode } from "preact";
+import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types";
@@ -34,13 +34,13 @@ export type RtcCronTrigger = [
     }
 ];
 
-export function RtcCronTriggerComponent(trigger: CronTrigger): VNode {
+function get_rtc_table_children(trigger: CronTrigger) {
     const value = (trigger as RtcCronTrigger)[1];
 
-    return <>{__("rtc.content.cron_translation_function")(value.mday, value.wday, value.hour, value.minute)}</>
+    return __("rtc.content.cron_translation_function")(value.mday, value.wday, value.hour, value.minute);
 }
 
-export function RtcCronTriggerConfigComponent(cron: Cron, trigger: CronTrigger) {
+function get_rtc_edit_children(cron: Cron, trigger: CronTrigger) {
     const value = (trigger as RtcCronTrigger)[1];
 
     let hours: [string, string][] = [['-1','*']];
@@ -115,7 +115,7 @@ export function RtcCronTriggerConfigComponent(cron: Cron, trigger: CronTrigger) 
     ]
 }
 
-function RtcCronTriggerFactory(): RtcCronTrigger {
+function new_rtc_config(): RtcCronTrigger {
     return [
         CronTriggerID.Cron,
         {
@@ -131,11 +131,11 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.Cron]: {
-                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
-                table_row: RtcCronTriggerComponent,
-                config_builder: RtcCronTriggerFactory,
-                config_component: RtcCronTriggerConfigComponent,
                 name: __("rtc.content.clock"),
+                new_config: new_rtc_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
+                get_edit_children: get_rtc_edit_children,
+                get_table_children: get_rtc_table_children,
             },
         },
     };

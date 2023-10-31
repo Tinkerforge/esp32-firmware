@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { VNode, h } from "preact";
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
 import { CronAction } from "../cron/types";
@@ -31,12 +31,12 @@ export type EvseGpOutputCronAction = [
     },
 ];
 
-function EvseGpioOutputCronActionComponent(action: CronAction): VNode {
+function get_evse_gp_output_table_children(action: CronAction) {
     const value = (action as EvseGpOutputCronAction)[1];
     return __("evse.content.cron_gpout_action_text")(value.state);
 }
 
-function EvseGpioOutputCronActionConfigComponent(cron: Cron, action: CronAction) {
+function get_evse_gp_output_edit_children(cron: Cron, action: CronAction) {
     const value = (action as EvseGpOutputCronAction)[1];
     return [
         {
@@ -55,7 +55,7 @@ function EvseGpioOutputCronActionConfigComponent(cron: Cron, action: CronAction)
     ]
 }
 
-function EvseGpioOutputCronActionConfigFactory(): CronAction {
+function new_evse_gp_output_config(): CronAction {
     return [
         CronActionID.EVSEGPOutput,
         {
@@ -68,11 +68,11 @@ export function init() {
     return {
         action_components: {
             [CronActionID.EVSEGPOutput]: {
-                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
-                config_builder: EvseGpioOutputCronActionConfigFactory,
-                config_component: EvseGpioOutputCronActionConfigComponent,
-                table_row: EvseGpioOutputCronActionComponent,
                 name: __("evse.content.gpio_out"),
+                new_config: new_evse_gp_output_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
+                get_edit_children: get_evse_gp_output_edit_children,
+                get_table_children: get_evse_gp_output_table_children,
                 require_feature: "button_configuration",
             },
         },

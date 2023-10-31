@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment, VNode } from "preact";
+import { h, Fragment } from "preact";
 import { useState } from "preact/hooks";
 import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
@@ -37,7 +37,7 @@ export type MqttCronAction = [
     }
 ];
 
-export function MqttCronActionComponent(action: CronAction): VNode {
+function get_mqtt_table_children(action: CronAction) {
     const value = (action as MqttCronAction)[1];
     const mqtt_config = API.get("mqtt/config");
     const topic = value.use_prefix ? mqtt_config.global_topic_prefix + "/cron_action/" + value.topic : value.topic;
@@ -45,7 +45,7 @@ export function MqttCronActionComponent(action: CronAction): VNode {
     return __("mqtt.content.cron_action_text")(topic, value.payload, value.retain);
 }
 
-export function MqttCronActionConfig(cron: Cron, action: CronAction) {
+function get_mqtt_edit_children(cron: Cron, action: CronAction) {
     let value = (action as MqttCronAction)[1];
     const mqtt_config = API.get("mqtt/config");
     const [isInvalid, isInvalidSetter] = useState(false);
@@ -108,7 +108,7 @@ export function MqttCronActionConfig(cron: Cron, action: CronAction) {
     ]
 }
 
-function MqttCronActionFactory(): CronAction {
+function new_mqtt_config(): CronAction {
     return [
         CronActionID.MQTT,
         {
@@ -124,11 +124,11 @@ export function init() {
     return {
         action_components: {
             [CronActionID.MQTT]: {
-                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
-                config_builder: MqttCronActionFactory,
-                config_component: MqttCronActionConfig,
-                table_row: MqttCronActionComponent,
                 name: __("mqtt.content.mqtt"),
+                new_config: new_mqtt_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
+                get_edit_children: get_mqtt_edit_children,
+                get_table_children: get_mqtt_table_children,
             },
         },
     };

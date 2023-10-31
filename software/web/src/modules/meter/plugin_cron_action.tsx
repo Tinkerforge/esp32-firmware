@@ -21,23 +21,22 @@ import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
 import { CronAction } from "../cron/types";
 import { CronActionID } from "../cron/cron_defs";
-import { TableModalRow } from "../../ts/components/table";
-import { VNode } from "preact";
+import { ComponentChildren } from "preact";
 
 export type MeterCronAction = [
     CronActionID.MeterReset,
     {}
 ]
 
-function MeterResetCronActionComponent(_: CronAction): VNode {
-    return __("meter.content.cron_action_text") as any as VNode;
+function get_meter_reset_table_children(_: CronAction) {
+    return __("meter.content.cron_action_text");
 }
 
-function MeterResetCronActionConfigComponent(_: Cron, __: CronAction): TableModalRow[] {
+function get_meter_reset_edit_children(_: Cron, __: CronAction): ComponentChildren {
     return [];
 }
 
-function MeterResetCronActionConfigFactory(): CronAction {
+function new_meter_reset_config(): CronAction {
     return [
         CronActionID.MeterReset,
         {}
@@ -48,11 +47,11 @@ export function init() {
     return {
         action_components: {
             [CronActionID.MeterReset]: {
-                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
-                config_builder: MeterResetCronActionConfigFactory,
-                config_component: MeterResetCronActionConfigComponent,
-                table_row: MeterResetCronActionComponent,
                 name: __("meter.content.meter_reset"),
+                new_config: new_meter_reset_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
+                get_edit_children: get_meter_reset_edit_children,
+                get_table_children: get_meter_reset_table_children,
                 require_feature: "meter",
             },
         },

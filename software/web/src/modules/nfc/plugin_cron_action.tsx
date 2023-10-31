@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { VNode, h } from "preact";
+import { h, Fragment } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
 import { CronAction } from "../cron/types";
@@ -41,13 +41,13 @@ const TRIGGER_CHARGE_ANY = 0;
 const TRIGGER_CHARGE_START = 1;
 const TRIGGER_CHARGE_STOP = 2;
 
-function NFCTagInjectCronActionComponent(action: CronAction): VNode {
+function get_nfc_inject_tag_table_children(action: CronAction) {
     const value = (action as NfcCronAction)[1];
 
     return __("nfc.content.cron_action_text")(value.tag_id, translate_unchecked("nfc.content.type_" + value.tag_type), value.tag_action);
 }
 
-function NFCTagInjectCronActionConfig(cron: Cron, action: CronAction) {
+function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
     const value = (action as NfcCronAction)[1];
     const tags = API.get("nfc/seen_tags");
     const known_tags = API.get("nfc/config").authorized_tags;
@@ -137,7 +137,7 @@ function NFCTagInjectCronActionConfig(cron: Cron, action: CronAction) {
     ]
 }
 
-function NfCTagInjectCronActionFactory(): CronAction {
+function new_nfc_inject_tag_config(): CronAction {
     return [
         CronActionID.NFCInjectTag,
         {
@@ -152,11 +152,11 @@ export function init() {
     return {
         action_components: {
             [CronActionID.NFCInjectTag]: {
-                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
-                table_row: NFCTagInjectCronActionComponent,
-                config_builder: NfCTagInjectCronActionFactory,
-                config_component: NFCTagInjectCronActionConfig,
                 name: __("nfc.content.nfc"),
+                new_config: new_nfc_inject_tag_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
+                get_edit_children: get_nfc_inject_tag_edit_children,
+                get_table_children: get_nfc_inject_tag_table_children,
             },
         },
     };

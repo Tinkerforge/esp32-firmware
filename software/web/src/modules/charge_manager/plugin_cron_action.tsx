@@ -17,12 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { VNode, h } from "preact";
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
 import { Cron } from "../cron/main";
 import { CronAction } from "../cron/types";
 import { InputFloat } from "../../ts/components/input_float";
+import { FormRow } from "../../ts/components/form_row";
 
 export type ChargeManagerCronAction = [
     CronActionID.SetManagerCurrent,
@@ -31,12 +32,12 @@ export type ChargeManagerCronAction = [
     },
 ];
 
-export function ChargeManagerCronComponent(action: CronAction): VNode {
+function get_set_manager_table_children(action: CronAction) {
     let value = (action as ChargeManagerCronAction)[1];
     return __("charge_manager.content.cron_action_text")(value.current);
 }
 
-export function ChargeManagerCronConfigComponent(cron: Cron, action: CronAction) {
+function get_set_manager_edit_children(cron: Cron, action: CronAction) {
     let value = (action as ChargeManagerCronAction)[1];
     return [{
         name: "Maximaler Strom",
@@ -51,7 +52,7 @@ export function ChargeManagerCronConfigComponent(cron: Cron, action: CronAction)
     }]
 }
 
-function ChargeManagerCronActionFactory(): CronAction {
+function new_set_manager_current_config(): CronAction {
     return [
         CronActionID.SetManagerCurrent,
         {
@@ -64,11 +65,11 @@ export function init() {
     return {
         action_components: {
             [CronActionID.SetManagerCurrent]: {
-                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
-                config_builder: ChargeManagerCronActionFactory,
-                config_component: ChargeManagerCronConfigComponent,
-                table_row: ChargeManagerCronComponent,
                 name: __("charge_manager.content.set_charge_manager"),
+                new_config: new_set_manager_current_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
+                get_edit_children: get_set_manager_edit_children,
+                get_table_children: get_set_manager_table_children,
             },
         },
     };

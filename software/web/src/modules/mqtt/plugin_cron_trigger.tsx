@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment, VNode } from "preact";
+import { h, Fragment } from "preact";
 import { useState } from "preact/hooks";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
@@ -37,7 +37,7 @@ export type MqttCronTrigger = [
     }
 ];
 
-export function MqttCronTriggerComponent(trigger: CronTrigger): VNode {
+function get_mqtt_table_children(trigger: CronTrigger) {
     const value = (trigger as MqttCronTrigger)[1];
     const mqtt_config = API.get("mqtt/config");
 
@@ -46,7 +46,7 @@ export function MqttCronTriggerComponent(trigger: CronTrigger): VNode {
     return __("mqtt.content.cron_trigger_text")(topic, value.payload, value.retain);
 }
 
-export function MqttCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
+function get_mqtt_edit_children(cron: Cron, trigger: CronTrigger) {
     const value = (trigger as MqttCronTrigger)[1];
     const mqtt_config = API.get("mqtt/config");
     const [isInvalid, isInvalidSetter] = useState(false);
@@ -109,7 +109,7 @@ export function MqttCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
     ]
 }
 
-function MqttCronTriggerFactory(): CronTrigger {
+function new_mqtt_config(): CronTrigger {
     return [
         CronTriggerID.MQTT,
         {
@@ -125,11 +125,11 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.MQTT]: {
-                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
-                table_row: MqttCronTriggerComponent,
-                config_builder: MqttCronTriggerFactory,
-                config_component: MqttCronTriggerConfig,
                 name: __("mqtt.content.cron_trigger_mqtt"),
+                new_config: new_mqtt_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
+                get_edit_children: get_mqtt_edit_children,
+                get_table_children: get_mqtt_table_children,
             },
         },
     };

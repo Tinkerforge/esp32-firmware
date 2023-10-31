@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment, VNode } from "preact";
+import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
 import { CronAction } from "../cron/types"
@@ -41,12 +41,12 @@ export type EvseLedCronAction = [
     },
 ];
 
-function EvseSetCurrentCronActionComponent(action: CronAction): VNode {
+function get_set_current_table_children(action: CronAction) {
     const value = (action as EvseCronAction)[1];
     return __("evse.content.cron_action_text")(value.current / 1000);
 }
 
-function EvseSetCurrentCronActionConfigComponent(cron: Cron, action: CronAction) {
+function get_set_current_edit_children(cron: Cron, action: CronAction) {
     const value = (action as EvseCronAction)[1];
     return [
         {
@@ -65,7 +65,7 @@ function EvseSetCurrentCronActionConfigComponent(cron: Cron, action: CronAction)
     ]
 }
 
-function EvseSetCurrentCronActionConfigFactory(): CronAction {
+function new_set_current_config(): CronAction {
     return [
         CronActionID.SetCurrent,
         {
@@ -74,7 +74,7 @@ function EvseSetCurrentCronActionConfigFactory(): CronAction {
     ];
 }
 
-function EvseLedCronActionComponent(action: CronAction): VNode {
+function get_led_table_children(action: CronAction) {
     const value = (action as EvseLedCronAction)[1];
     let state = "";
     switch (value.state) {
@@ -105,7 +105,7 @@ function EvseLedCronActionComponent(action: CronAction): VNode {
     return __("evse.content.cron_led_action_text")(state, value.duration)
 }
 
-function EvseLedCronActionConfigComponent(cron: Cron, action: CronAction) {
+function get_led_edit_children(cron: Cron, action: CronAction) {
     const value = (action as EvseLedCronAction)[1];
     const items: [string, string][] = [
         ["0", __("evse.content.led_state_off")],
@@ -142,7 +142,7 @@ function EvseLedCronActionConfigComponent(cron: Cron, action: CronAction) {
     ]
 }
 
-function EvseLedCronActionConfigFactory(): CronAction {
+function new_led_config(): CronAction {
     return [
         CronActionID.LED,
         {
@@ -156,18 +156,18 @@ export function init() {
     return {
         action_components: {
             [CronActionID.SetCurrent]: {
-                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
-                config_builder: EvseSetCurrentCronActionConfigFactory,
-                config_component: EvseSetCurrentCronActionConfigComponent,
-                table_row: EvseSetCurrentCronActionComponent,
                 name: __("evse.content.allowed_charging_current"),
+                new_config: new_set_current_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
+                get_edit_children: get_set_current_edit_children,
+                get_table_children: get_set_current_table_children,
             },
             [CronActionID.LED]: {
-                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
-                config_builder: EvseLedCronActionConfigFactory,
-                config_component: EvseLedCronActionConfigComponent,
-                table_row: EvseLedCronActionComponent,
                 name: __("evse.content.led_state"),
+                new_config: new_led_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
+                get_edit_children: get_led_edit_children,
+                get_table_children: get_led_table_children,
             },
         },
     };

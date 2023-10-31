@@ -18,9 +18,8 @@
  */
 
 import * as API from "../../ts/api";
-import { ComponentChild, VNode } from "preact";
+import { ComponentChildren } from "preact";
 import { Cron } from "./main";
-import { TableModalRow } from "../../ts/components/table";
 
 type CronConfig = API.getType["cron/config"];
 export type Task = CronConfig["tasks"][0];
@@ -28,21 +27,21 @@ export type CronTrigger = Task["trigger"];
 export type CronAction = Task["action"];
 
 export interface CronTriggerComponent {
-    clone: (trigger: CronTrigger) => CronTrigger,
-    table_row: (trigger: CronTrigger) => VNode,
-    config_component: (cron: Cron, trigger: CronTrigger) => TableModalRow[],
-    config_builder: () => CronTrigger,
     name: string,
-    require_feature?: string
+    new_config: () => CronTrigger,
+    clone_config: (trigger: CronTrigger) => CronTrigger,
+    get_edit_children: (cron: Cron, trigger: CronTrigger) => ComponentChildren,
+    get_table_children: (trigger: CronTrigger) => ComponentChildren,
+    require_feature?: string,
 }
 
 export interface CronActionComponent {
-    clone: (action: CronAction) => CronAction,
-    table_row: (action: CronAction) => VNode,
-    config_component: (cron: Cron, action: CronAction) => TableModalRow[],
-    config_builder: () => CronAction,
     name: string,
-    require_feature?: string
+    new_config: () => CronAction,
+    clone_config: (action: CronAction) => CronAction,
+    get_edit_children: (cron: Cron, action: CronAction) => ComponentChildren,
+    get_table_children: (action: CronAction) => ComponentChildren,
+    require_feature?: string,
 }
 
 export type CronTriggerComponents = {[key: number]: CronTriggerComponent};

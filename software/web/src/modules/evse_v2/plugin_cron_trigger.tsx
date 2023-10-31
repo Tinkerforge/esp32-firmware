@@ -19,10 +19,11 @@
 
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types"
-import { VNode, h } from 'preact'
+import { h } from 'preact'
 import { Cron } from "../cron/main"
 import { __ } from "../../ts/translation"
 import { InputSelect } from "../../ts/components/input_select"
+import { FormRow } from "../../ts/components/form_row"
 
 export type EvseShutdownCronTrigger = [
     CronTriggerID.EVSEShutdownInput,
@@ -31,7 +32,7 @@ export type EvseShutdownCronTrigger = [
     },
 ];
 
-export type EvseGpioCronTrigger = [
+export type EvseGpInputCronTrigger = [
     CronTriggerID.EVSEGPInput,
     {
         high: boolean;
@@ -45,12 +46,12 @@ export type EvseButtonCronTrigger = [
     },
 ];
 
-function EvseButtonCronTriggerComponent(trigger: CronTrigger): VNode {
+function get_evse_button_table_children(trigger: CronTrigger) {
     const value = (trigger as EvseButtonCronTrigger)[1];
     return __("evse.content.cron_button_trigger_text")(value.button_pressed);
 }
 
-function EvseButtonCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
+function get_evse_button_edit_children(cron: Cron, trigger: CronTrigger) {
     let value = (trigger as EvseButtonCronTrigger)[1];
     return [
         {
@@ -69,7 +70,7 @@ function EvseButtonCronTriggerConfig(cron: Cron, trigger: CronTrigger) {
     ]
 }
 
-function EvseButtonCronTriggerFactory(): CronTrigger {
+function new_evse_button_config(): CronTrigger {
     return [
         CronTriggerID.EVSEButton,
         {
@@ -78,12 +79,12 @@ function EvseButtonCronTriggerFactory(): CronTrigger {
     ];
 }
 
-function EvseShutdownTriggerComponent(trigger: CronTrigger): VNode {
+function get_evse_shutdown_table_children(trigger: CronTrigger) {
     const value = (trigger as EvseShutdownCronTrigger)[1];
     return __("evse.content.cron_sd_trigger_text")(value.high);
 }
 
-function EvseShutdownTriggerConfig(cron: Cron, trigger: CronTrigger) {
+function get_evse_shutdown_edit_children(cron: Cron, trigger: CronTrigger) {
     const value = (trigger as EvseShutdownCronTrigger)[1];
     return [
         {
@@ -102,7 +103,7 @@ function EvseShutdownTriggerConfig(cron: Cron, trigger: CronTrigger) {
     ]
 }
 
-function EvseShutdownTriggerFactory(): CronTrigger {
+function new_evse_shutdown_input_config(): CronTrigger {
     return [
         CronTriggerID.EVSEShutdownInput,
         {
@@ -111,13 +112,13 @@ function EvseShutdownTriggerFactory(): CronTrigger {
     ];
 }
 
-function EvseGpioInputCronTriggerComponent(trigger: CronTrigger): VNode {
-    const value = (trigger as EvseGpioCronTrigger)[1];
+function get_evse_gp_input_table_children(trigger: CronTrigger) {
+    const value = (trigger as EvseGpInputCronTrigger)[1];
     return __("evse.content.cron_gpin_trigger_text")(value.high);
 }
 
-function EvseGpioInputCrontTriggerConfigComponent(cron: Cron, trigger: CronTrigger) {
-    const value = (trigger as EvseGpioCronTrigger)[1];
+function get_evse_gp_input_edit_children(cron: Cron, trigger: CronTrigger) {
+    const value = (trigger as EvseGpInputCronTrigger)[1];
     return [
         {
             name: "",
@@ -135,7 +136,7 @@ function EvseGpioInputCrontTriggerConfigComponent(cron: Cron, trigger: CronTrigg
     ]
 }
 
-function EvseGpioInputCronTriggerConfigFactory(): CronTrigger {
+function new_evse_gp_input_config(): CronTrigger {
     return [
         CronTriggerID.EVSEGPInput,
         {
@@ -148,27 +149,27 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.EVSEButton]: {
-                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
-                config_builder: EvseButtonCronTriggerFactory,
-                config_component: EvseButtonCronTriggerConfig,
-                table_row: EvseButtonCronTriggerComponent,
                 name: __("evse.content.cron_trigger_button"),
+                new_config: new_evse_button_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
+                get_edit_children: get_evse_button_edit_children,
+                get_table_rchildren: get_evse_button_table_children,
                 require_feature: "button_configuration",
             },
             [CronTriggerID.EVSEShutdownInput]: {
-                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
-                config_component: EvseShutdownTriggerConfig,
-                table_row: EvseShutdownTriggerComponent,
-                config_builder: EvseShutdownTriggerFactory,
-                name: __("evse.content.cron_trigger_gpio_shutdown"),
+                name: __("evse.content.cron_trigger_shutdown_input"),
+                new_config: new_evse_shutdown_input_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
+                get_edit_children: get_evse_shutdown_edit_children,
+                get_table_children: get_evse_shutdown_table_children,
                 require_feature: "button_configuration",
             },
             [CronTriggerID.EVSEGPInput]: {
-                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
-                config_builder: EvseGpioInputCronTriggerConfigFactory,
-                config_component: EvseGpioInputCrontTriggerConfigComponent,
-                table_row: EvseGpioInputCronTriggerComponent,
-                name: __("evse.content.cron_trigger_gpio_in"),
+                name: __("evse.content.cron_trigger_gp_input"),
+                new_config: new_evse_gp_input_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
+                get_edit_children: get_evse_gp_input_edit_children,
+                get_table_children: get_evse_gp_input_table_children,
                 require_feature: "button_configuration",
             },
         },

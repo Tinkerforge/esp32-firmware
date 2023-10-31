@@ -106,8 +106,8 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
                         value={this.state.displayed_trigger.toString()}/>
         }];
         if (this.state.displayed_trigger != CronTriggerID.None) {
-            const trigger_config = cron_trigger_components[this.state.displayed_trigger].config_component(this, this.state.edit_task.trigger);
-            triggerSelector = triggerSelector.concat(trigger_config);
+            const trigger_config = cron_trigger_components[this.state.displayed_trigger].get_edit_children(this, this.state.edit_task.trigger);
+            triggerSelector = triggerSelector.concat(toChildArray(trigger_config));
         }
         triggerSelector = triggerSelector.concat({name: null, value: <hr/>});
 
@@ -131,8 +131,8 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
         }]
 
         if (this.state.displayed_action != CronActionID.None) {
-            const action_config = cron_action_components[this.state.displayed_action].config_component(this, this.state.edit_task.action);
-            actionSelector = actionSelector.concat(action_config);
+            const action_config = cron_action_components[this.state.displayed_action].get_edit_children(this, this.state.edit_task.action);
+            actionSelector = actionSelector.concat(toChildArray(action_config));
         }
 
         return triggerSelector.concat(actionSelector);
@@ -148,20 +148,20 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
             const action_component = cron_action_components[action_id];
 
             const task_copy: Task = {
-                trigger: trigger_component.clone(task.trigger),
-                action: action_component.clone(task.action)
+                trigger: trigger_component.clone_config(task.trigger),
+                action: action_component.clone_config(task.action)
             };
-            const trigger_row = trigger_component.table_row(task.trigger);
-            const action_row = action_component.table_row(task.action);
+            const trigger_children = trigger_component.get_table_children(task.trigger);
+            const action_children = action_component.get_table_children(task.action);
 
             let row: TableRow = {
                 columnValues: [
                     [idx + 1],
-                    [trigger_row],
-                    [action_row]
+                    [trigger_children],
+                    [action_children]
                 ],
                 fieldNames: ["", ""],
-                fieldValues: [__("cron.content.rule") + " #" + (idx + 1) as ComponentChild, <div class="pb-3">{trigger_row}{action_row}</div>],
+                fieldValues: [__("cron.content.rule") + " #" + (idx + 1) as ComponentChild, <div class="pb-3">{trigger_children}{action_children}</div>],
                 onEditShow: async () => {
                     this.setState({
                         displayed_trigger: task.trigger[0] as number,

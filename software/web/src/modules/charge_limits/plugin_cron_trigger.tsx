@@ -21,24 +21,22 @@ import { __ } from "../../ts/translation";
 import { Cron } from "../cron/main";
 import { CronTrigger } from "../cron/types";
 import { CronTriggerID } from "../cron/cron_defs";
-import { TableModalRow } from "../../ts/components/table";
-import { VNode } from "preact";
+import { VNode, ComponentChildren } from "preact";
 
 export type ChargeLimitsCronTrigger = [
     CronTriggerID.ChargeLimits,
     {}
 ];
 
-function ChargeLimitsCronTriggerComponent(_: CronTrigger): VNode {
-    // for whatever reason, wrapping the text in a Fragment crashes.
-    return __("charge_limits.content.cron_trigger_text") as any as VNode;
+function get_charge_limits_table_children(_: CronTrigger) {
+    return __("charge_limits.content.cron_trigger_text");
 }
 
-function ChargeLimitsCronTriggerConfig(_: Cron, __: CronTrigger): TableModalRow[] {
+function get_charge_limits_edit_children(_: Cron, __: CronTrigger): ComponentChildren {
     return []
 }
 
-function ChargeLimitsCronTriggerFactory(): CronTrigger {
+function new_charge_limits_config(): CronTrigger {
     return [
         CronTriggerID.ChargeLimits,
         {}
@@ -49,11 +47,11 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.ChargeLimits]: {
-                clone: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
-                config_builder: ChargeLimitsCronTriggerFactory,
-                config_component: ChargeLimitsCronTriggerConfig,
-                table_row: ChargeLimitsCronTriggerComponent,
                 name: __("charge_limits.content.charge_limits_expiration"),
+                new_config: new_charge_limits_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
+                get_edit_children: get_charge_limits_edit_children,
+                get_table_children: get_charge_limits_table_children,
             },
         },
     };
