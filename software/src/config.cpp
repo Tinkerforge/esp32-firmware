@@ -614,17 +614,22 @@ template<typename T>
 static void shrinkToFit(typename T::Slot * &buf, size_t &buf_size) {
     ASSERT_MAIN_THREAD();
     size_t highest = 0;
+    int empty = 0;
     for (size_t i = 0; i < buf_size; i++)
         if (!T::slotEmpty(i))
             highest = i;
+        else
+            ++empty;
 
-    auto new_buf = T::allocSlotBuf(highest + SLOT_HEADROOM);
+    auto new_size = highest + 1 + std::max(0, SLOT_HEADROOM - empty);
+    auto new_buf = T::allocSlotBuf(new_size);
 
     for(size_t i = 0; i <= highest; ++i)
         new_buf[i] = std::move(buf[i]);
+
     T::freeSlotBuf(buf);
     buf = new_buf;
-    buf_size = highest + SLOT_HEADROOM;
+    buf_size = new_size;
 }
 
 void config_post_setup() {
