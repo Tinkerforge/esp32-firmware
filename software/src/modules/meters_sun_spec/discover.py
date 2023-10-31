@@ -9,8 +9,8 @@ import pymodbus
 
 print('Using pymodbus version:', pymodbus.__version__)
 
-if not pymodbus.__version__.startswith('3.'):
-    print('Error: Available pymodbus version is too old, version 3.x.y required')
+if not pymodbus.__version__.startswith('3.5.'):
+    print('Error: Available pymodbus version is too old, version 3.5.y required')
     sys.exit(1)
 
 from pymodbus.client import ModbusTcpClient
