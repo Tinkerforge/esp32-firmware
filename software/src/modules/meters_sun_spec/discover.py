@@ -50,15 +50,17 @@ class Reader:
 
         # read block
         decoder.decode_16bit_uint()  # skip model ID
-        block_length = decoder.decode_16bit_uint()
+        block_length_remaining = decoder.decode_16bit_uint()
 
-        if block_length > 0:
-            result_block = self.client.read_holding_registers(self.address, count=block_length, slave=self.device_address)
+        while block_length_remaining > 0:
+            read_length = min(block_length_remaining, 125) # FIXME: this might result in a partial read of a multi-register value
+            result_block = self.client.read_holding_registers(self.address, count=read_length, slave=self.device_address)
 
             if isinstance(result_block, (ExceptionResponse, ModbusException)):
                 raise ReaderError(result_block)
 
-            self.address += block_length
+            self.address += read_length
+            block_length_remaining -= read_length
             registers += result_block.registers
 
         self.preload_decoder = BinaryPayloadDecoder.fromRegisters(registers, Endian.BIG)
@@ -758,8 +760,6 @@ def main():
     for device_address in valid_device_addresses if args.device_address == None else [args.device_address]:
         print('============================================================')
         print('Using device address:', device_address)
-
-        device_address_ref = [None]
 
         for base_address in BASE_ADDRESSES:
             print('------------------------------------------------------------')
