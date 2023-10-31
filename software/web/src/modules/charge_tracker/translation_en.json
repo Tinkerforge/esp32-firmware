@@ -73,7 +73,7 @@
             "download_usernames_failed": "Failed to download the usernames used in tracked charges",
 
             "save_failed": "Failed to save the charge manager settings.",
-            "reboot_content_changed": "charge manager settings"
+            "reboot_content_changed": "charge tracker settings"
         }
     }
 }
