@@ -141,3 +141,6 @@
 - Fix reverse proxy support
 - Don't draw zero line outside plot area
 - Fix gap in energy history immediately after reboot
+
+2023-10-30: 1.0.90 (<unknown>)
+- SunSpec Beta 1
