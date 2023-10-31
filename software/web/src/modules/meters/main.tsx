@@ -997,7 +997,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                 <ConfigForm id="meters_config_form" title={__("meters.content.settings")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty} small={true}>
                     <div class="mb-3">
                         <Table
-                            tableTill="md"
+                            tableTill="lg"
                             columnNames={[__("meters.content.table_display_name"), __("meters.content.table_power"), __("meters.content.table_energy_import"), __("meters.content.table_energy_export"), __("meters.content.table_phases")]}
                             rows={active_meter_slots.map((meter_slot_str) => {
                                 let meter_slot = parseInt(meter_slot_str);
