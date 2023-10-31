@@ -30,7 +30,7 @@
 
 #include "gcc_warnings.h"
 
-#define MAX_READ_CHUNK_SIZE 10
+#define MAX_READ_CHUNK_SIZE 125
 
 #define DEVICE_ADDRESS_FIRST 1u
 #define DEVICE_ADDRESS_LAST 247u
