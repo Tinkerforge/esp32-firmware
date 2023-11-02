@@ -68,7 +68,7 @@ public:
     void check_nfc_state();
     uint8_t get_user_id(tag_info_t *tag, uint8_t *tag_idx);
 
-bool action_triggered(Config *config, void *data);
+    bool action_triggered(Config *config, void *data);
 
     ConfigRoot config;
     ConfigRoot config_in_use;
