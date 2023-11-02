@@ -658,13 +658,7 @@ void Users::register_urls()
         API::writeConfig("users/config", &config);
 
 #if MODULE_NFC_AVAILABLE()
-        Config *tags = (Config *)nfc.config.get("authorized_tags");
-
-        for(int i = 0; i < tags->count(); ++i) {
-            if(tags->get(i)->get("user_id")->asUint() == remove.get("id")->asUint())
-                tags->get(i)->get("user_id")->updateUint(0);
-        }
-        API::writeConfig("nfc/config", &nfc.config);
+        nfc.remove_user(remove.get("id")->asUint());
 #endif
 
         if (!charge_tracker.is_user_tracked(remove.get("id")->asUint()))

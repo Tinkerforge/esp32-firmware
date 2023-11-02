@@ -68,6 +68,8 @@ public:
     void check_nfc_state();
     uint8_t get_user_id(tag_info_t *tag, uint8_t *tag_idx);
 
+    void remove_user(uint8_t user_id);
+
     bool action_triggered(Config *config, void *data);
 
     ConfigRoot config;
