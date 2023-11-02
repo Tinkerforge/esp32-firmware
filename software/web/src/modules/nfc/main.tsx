@@ -162,7 +162,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                                 <div class="mt-2" style={state.editTag.user_id == 0 ? undefined : 'visibility: hidden'}>{__("nfc.script.not_assigned_desc")}</div></>
                                         },
                                     ],
-                                    onEditCommit: async () => {
+                                    onEditSubmit: async () => {
                                         this.setState({
                                             authorized_tags: state.authorized_tags.map((tag, k) => i === k ? state.editTag : tag),
                                             editTag: {tag_id: "", user_id: 0, tag_type: "" as any}
