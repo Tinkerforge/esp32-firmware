@@ -237,11 +237,11 @@ for model_id in model_ids:
         elif field_type == "enum16"     : c_type = "uint16_t"
         elif field_type == "float32"    : c_type = "uint32_t"
         elif field_type == "string":
-            c_type = "uint8_t"
+            c_type = "char"
             field_length = int(fields[6]) * 2
             is_array = True
 
-        if   c_type == "uint8_t" : field_bytes = 1
+        if   c_type == "char"    : field_bytes = 1
         elif c_type == "uint16_t": field_bytes = 2
         elif c_type == "int16_t" : field_bytes = 2
         elif c_type == "uint32_t": field_bytes = 4
@@ -560,14 +560,24 @@ for model in models:
     model['validator_fn_name'] = validator_fn_name
     model['usable_value_count'] = usable_value_count
 
+    read_twice = False
+    for value in values:
+        field_type = value['field_type']
+        if field_type == "sunssf":
+            read_twice = True
+            break
+
     print_cpp(f"static bool {validator_fn_name}(const uint16_t * const register_data[2])")
     print_cpp(r"{")
     print_cpp(f"    const {struct_name} *block0 = reinterpret_cast<const {struct_name} *>(register_data[0]);")
-    print_cpp(f"    const {struct_name} *block1 = reinterpret_cast<const {struct_name} *>(register_data[1]);")
+    if read_twice:
+        print_cpp(f"    const {struct_name} *block1 = reinterpret_cast<const {struct_name} *>(register_data[1]);")
     print_cpp(f"    if (block0->ID != {model_id:3d}) return false;")
-    print_cpp(f"    if (block1->ID != {model_id:3d}) return false;")
+    if read_twice:
+        print_cpp(f"    if (block1->ID != {model_id:3d}) return false;")
     print_cpp(f"    if (block0->L  != {model_length:3d}) return false;")
-    print_cpp(f"    if (block1->L  != {model_length:3d}) return false;")
+    if read_twice:
+        print_cpp(f"    if (block1->L  != {model_length:3d}) return false;")
 
     for value in values:
         name = value['name']
@@ -580,8 +590,12 @@ for model in models:
     print_cpp(r"}")
     print_cpp()
 
+    is_meter = model_id >= 200 and model_id < 300
+
     print_cpp(f"static const MetersSunSpecParser::ModelData {model_data_name} = {{")
     print_cpp(f"    {model_id}, // model_id")
+    print_cpp(f"    {str(is_meter).lower()}, // is_meter")
+    print_cpp(f"    {str(read_twice).lower()}, // read_twice")
     print_cpp(f"    &{validator_fn_name},")
     print_cpp(f"    {usable_value_count},  // value_count")
     print_cpp(r"    {    // value_data")

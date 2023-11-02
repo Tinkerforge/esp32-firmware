@@ -24,7 +24,6 @@
 #include "event_log.h"
 //#include "modules/meters/meter_value_id.h"
 #include "task_scheduler.h"
-//#include "tools.h"
 
 #include "gcc_warnings.h"
 
@@ -86,7 +85,10 @@ void MeterSunSpec::read_start(size_t model_start_address, size_t model_regcount)
     generic_read_request.data[0] = nullptr;
     generic_read_request.data[1] = nullptr;
 
-    uint16_t *buffer = static_cast<uint16_t *>(malloc(sizeof(uint16_t) * model_regcount * 2));
+    bool read_twice = model_parser->must_read_twice();
+    size_t buffer_regcount = read_twice ? model_regcount * 2 : model_regcount;
+
+    uint16_t *buffer = static_cast<uint16_t *>(malloc(sizeof(uint16_t) * buffer_regcount));
     if (!buffer) {
         logger.printfln("meter_sun_spec: Cannot alloc read buffer.");
         return;
@@ -97,8 +99,9 @@ void MeterSunSpec::read_start(size_t model_start_address, size_t model_regcount)
     generic_read_request.register_count = model_regcount;
 
     generic_read_request.data[0] = buffer;
-    generic_read_request.data[1] = buffer + model_regcount;
-    generic_read_request.read_twice = true;
+    if (read_twice)
+        generic_read_request.data[1] = buffer + model_regcount;
+    generic_read_request.read_twice = read_twice;
     generic_read_request.done_callback = [this]{ read_done_callback(); };
 
     start_generic_read();
@@ -222,7 +225,7 @@ void MeterSunSpec::scan_next()
                     scan_start_delay();
                 }
                 else if (model_id_ == model_id) {
-                    logger.printfln("meter_sun_spec: Configured SunSpec model %u found at %s:%u:%u", model_id, host_name.c_str(), port, device_address);
+                    logger.printfln("meter_sun_spec: Configured SunSpec model %u found at %s:%u:%u:%u", model_id, host_name.c_str(), port, device_address, generic_read_request.start_address);
                     read_start(generic_read_request.start_address, 2 + block_length);
                 }
                 else {

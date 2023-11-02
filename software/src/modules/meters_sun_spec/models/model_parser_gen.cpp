@@ -76,16 +76,15 @@ static inline float convert_me_float(uint32_t me32)
 static bool model_001_validator(const uint16_t * const register_data[2])
 {
     const SunSpecCommonModel001_s *block0 = reinterpret_cast<const SunSpecCommonModel001_s *>(register_data[0]);
-    const SunSpecCommonModel001_s *block1 = reinterpret_cast<const SunSpecCommonModel001_s *>(register_data[1]);
     if (block0->ID !=   1) return false;
-    if (block1->ID !=   1) return false;
     if (block0->L  !=  65) return false;
-    if (block1->L  !=  65) return false;
     return true;
 }
 
 static const MetersSunSpecParser::ModelData model_001_data = {
     1, // model_id
+    false, // is_meter
+    false, // read_twice
     &model_001_validator,
     0,  // value_count
     {    // value_data
@@ -560,6 +559,8 @@ static bool model_101_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_101_data = {
     101, // model_id
+    false, // is_meter
+    true, // read_twice
     &model_101_validator,
     23,  // value_count
     {    // value_data
@@ -1057,6 +1058,8 @@ static bool model_102_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_102_data = {
     102, // model_id
+    false, // is_meter
+    true, // read_twice
     &model_102_validator,
     23,  // value_count
     {    // value_data
@@ -1554,6 +1557,8 @@ static bool model_103_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_103_data = {
     103, // model_id
+    false, // is_meter
+    true, // read_twice
     &model_103_validator,
     23,  // value_count
     {    // value_data
@@ -2008,16 +2013,15 @@ static float get_model_111_TmpOt(const void *register_data)
 static bool model_111_validator(const uint16_t * const register_data[2])
 {
     const SunSpecInverterFLOATModel111_s *block0 = reinterpret_cast<const SunSpecInverterFLOATModel111_s *>(register_data[0]);
-    const SunSpecInverterFLOATModel111_s *block1 = reinterpret_cast<const SunSpecInverterFLOATModel111_s *>(register_data[1]);
     if (block0->ID != 111) return false;
-    if (block1->ID != 111) return false;
     if (block0->L  !=  60) return false;
-    if (block1->L  !=  60) return false;
     return true;
 }
 
 static const MetersSunSpecParser::ModelData model_111_data = {
     111, // model_id
+    false, // is_meter
+    false, // read_twice
     &model_111_validator,
     23,  // value_count
     {    // value_data
@@ -2472,16 +2476,15 @@ static float get_model_112_TmpOt(const void *register_data)
 static bool model_112_validator(const uint16_t * const register_data[2])
 {
     const SunSpecInverterFLOATModel112_s *block0 = reinterpret_cast<const SunSpecInverterFLOATModel112_s *>(register_data[0]);
-    const SunSpecInverterFLOATModel112_s *block1 = reinterpret_cast<const SunSpecInverterFLOATModel112_s *>(register_data[1]);
     if (block0->ID != 112) return false;
-    if (block1->ID != 112) return false;
     if (block0->L  !=  60) return false;
-    if (block1->L  !=  60) return false;
     return true;
 }
 
 static const MetersSunSpecParser::ModelData model_112_data = {
     112, // model_id
+    false, // is_meter
+    false, // read_twice
     &model_112_validator,
     23,  // value_count
     {    // value_data
@@ -2936,16 +2939,15 @@ static float get_model_113_TmpOt(const void *register_data)
 static bool model_113_validator(const uint16_t * const register_data[2])
 {
     const SunSpecInverterFLOATModel113_s *block0 = reinterpret_cast<const SunSpecInverterFLOATModel113_s *>(register_data[0]);
-    const SunSpecInverterFLOATModel113_s *block1 = reinterpret_cast<const SunSpecInverterFLOATModel113_s *>(register_data[1]);
     if (block0->ID != 113) return false;
-    if (block1->ID != 113) return false;
     if (block0->L  !=  60) return false;
-    if (block1->L  !=  60) return false;
     return true;
 }
 
 static const MetersSunSpecParser::ModelData model_113_data = {
     113, // model_id
+    false, // is_meter
+    false, // read_twice
     &model_113_validator,
     23,  // value_count
     {    // value_data
@@ -4223,6 +4225,8 @@ static bool model_201_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_201_data = {
     201, // model_id
+    true, // is_meter
+    true, // read_twice
     &model_201_validator,
     61,  // value_count
     {    // value_data
@@ -5538,6 +5542,8 @@ static bool model_202_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_202_data = {
     202, // model_id
+    true, // is_meter
+    true, // read_twice
     &model_202_validator,
     61,  // value_count
     {    // value_data
@@ -6853,6 +6859,8 @@ static bool model_203_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_203_data = {
     203, // model_id
+    true, // is_meter
+    true, // read_twice
     &model_203_validator,
     61,  // value_count
     {    // value_data
@@ -8168,6 +8176,8 @@ static bool model_204_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_204_data = {
     204, // model_id
+    true, // is_meter
+    true, // read_twice
     &model_204_validator,
     61,  // value_count
     {    // value_data
@@ -9374,16 +9384,15 @@ static float get_model_211_TotVArhExpQ4phC(const void *register_data)
 static bool model_211_validator(const uint16_t * const register_data[2])
 {
     const SunSpecSinglePhaseMeterModel211_s *block0 = reinterpret_cast<const SunSpecSinglePhaseMeterModel211_s *>(register_data[0]);
-    const SunSpecSinglePhaseMeterModel211_s *block1 = reinterpret_cast<const SunSpecSinglePhaseMeterModel211_s *>(register_data[1]);
     if (block0->ID != 211) return false;
-    if (block1->ID != 211) return false;
     if (block0->L  != 124) return false;
-    if (block1->L  != 124) return false;
     return true;
 }
 
 static const MetersSunSpecParser::ModelData model_211_data = {
     211, // model_id
+    true, // is_meter
+    false, // read_twice
     &model_211_validator,
     61,  // value_count
     {    // value_data
@@ -10590,16 +10599,15 @@ static float get_model_212_TotVArhExpQ4phC(const void *register_data)
 static bool model_212_validator(const uint16_t * const register_data[2])
 {
     const SunSpecSplitSinglePhaseMeterModel212_s *block0 = reinterpret_cast<const SunSpecSplitSinglePhaseMeterModel212_s *>(register_data[0]);
-    const SunSpecSplitSinglePhaseMeterModel212_s *block1 = reinterpret_cast<const SunSpecSplitSinglePhaseMeterModel212_s *>(register_data[1]);
     if (block0->ID != 212) return false;
-    if (block1->ID != 212) return false;
     if (block0->L  != 124) return false;
-    if (block1->L  != 124) return false;
     return true;
 }
 
 static const MetersSunSpecParser::ModelData model_212_data = {
     212, // model_id
+    true, // is_meter
+    false, // read_twice
     &model_212_validator,
     61,  // value_count
     {    // value_data
@@ -11806,16 +11814,15 @@ static float get_model_213_TotVArhExpQ4phC(const void *register_data)
 static bool model_213_validator(const uint16_t * const register_data[2])
 {
     const SunSpecWyeConnectThreePhaseMeterModel213_s *block0 = reinterpret_cast<const SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data[0]);
-    const SunSpecWyeConnectThreePhaseMeterModel213_s *block1 = reinterpret_cast<const SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data[1]);
     if (block0->ID != 213) return false;
-    if (block1->ID != 213) return false;
     if (block0->L  != 124) return false;
-    if (block1->L  != 124) return false;
     return true;
 }
 
 static const MetersSunSpecParser::ModelData model_213_data = {
     213, // model_id
+    true, // is_meter
+    false, // read_twice
     &model_213_validator,
     61,  // value_count
     {    // value_data
@@ -13022,16 +13029,15 @@ static float get_model_214_TotVArhExpQ4phC(const void *register_data)
 static bool model_214_validator(const uint16_t * const register_data[2])
 {
     const SunSpecDeltaConnectThreePhaseMeterModel214_s *block0 = reinterpret_cast<const SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data[0]);
-    const SunSpecDeltaConnectThreePhaseMeterModel214_s *block1 = reinterpret_cast<const SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data[1]);
     if (block0->ID != 214) return false;
-    if (block1->ID != 214) return false;
     if (block0->L  != 124) return false;
-    if (block1->L  != 124) return false;
     return true;
 }
 
 static const MetersSunSpecParser::ModelData model_214_data = {
     214, // model_id
+    true, // is_meter
+    false, // read_twice
     &model_214_validator,
     61,  // value_count
     {    // value_data
