@@ -55,6 +55,8 @@ public:
 #endif
     struct ModelData {
         uint16_t model_id;
+        bool is_meter;
+        bool read_twice;
         model_validator_fn validator;
         size_t value_count;
         ValueData value_data[]; // ISO C++ forbids flexible array members
@@ -72,6 +74,8 @@ public:
 
     bool detect_values(const uint16_t * const register_data[2]);
     bool parse_values(const uint16_t * const register_data[2]);
+
+    bool must_read_twice();
 
 private:
     MetersSunSpecParser() : meter_slot(0), model(nullptr) {}

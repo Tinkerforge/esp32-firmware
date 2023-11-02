@@ -18,11 +18,11 @@
 struct SunSpecCommonModel001_s {
                          uint16_t ID;      //  0
                          uint16_t L;       //  1
-                         uint8_t  Mn[32];  //  2
-                         uint8_t  Md[32];  // 18
-                         uint8_t  Opt[16]; // 34
-                         uint8_t  Vr[16];  // 42
-                         uint8_t  SN[32];  // 50
+                         char     Mn[32];  //  2
+                         char     Md[32];  // 18
+                         char     Opt[16]; // 34
+                         char     Vr[16];  // 42
+                         char     SN[32];  // 50
                          uint16_t DA;      // 66
 };
 
