@@ -171,14 +171,13 @@ void NFC::check_nfc_state()
 
 uint8_t NFC::get_user_id(tag_info_t *tag, uint8_t *tag_idx)
 {
-    Config *auth_tags = (Config *)config_in_use.get("authorized_tags");
+    for (uint8_t i = 0; i < auth_tag_count; ++i) {
+        const auto &auth_tag = auth_tags[i];
 
-    for (uint8_t auth_tag_idx = 0; auth_tag_idx < auth_tags->count(); ++auth_tag_idx) {
-        Config *auth_tag = (Config *)auth_tags->get(auth_tag_idx);
-
-        if (auth_tag->get("tag_type")->asUint() == tag->tag_type && auth_tag->get("tag_id")->asString() == tag->tag_id) {
-            *tag_idx = auth_tag_idx;
-            return auth_tag->get("user_id")->asUint();
+        if (auth_tag.tag_type == tag->tag_type
+         && strncmp(auth_tag.tag_id, tag->tag_id, sizeof(auth_tag.tag_id)) == 0) {
+            *tag_idx = i;
+            return auth_tag.user_id;
         }
     }
     return 0;
@@ -336,6 +335,24 @@ void NFC::update_seen_tags()
     new_tags = tmp;
 }
 
+void NFC::setup_auth_tags() {
+    const auto *auth_tags_cfg = (Config *) config.get("authorized_tags");
+    auth_tag_count = auth_tags_cfg->count();
+    if (auth_tag_count == 0)
+        return;
+
+    auth_tags = heap_alloc_array<auth_tag_t>(auth_tag_count);
+    memset(auth_tags.get(), 0, sizeof(auth_tag_t) * auth_tag_count);
+
+    for(int i = 0; i < auth_tag_count; ++i) {
+        const auto tag = auth_tags_cfg->get(i);
+
+        auth_tags[i].tag_type = tag->get("tag_type")->asUint();
+        auth_tags[i].user_id = tag->get("user_id")->asUint();
+        tag->get("tag_id")->asString().toCharArray(auth_tags[i].tag_id, sizeof(auth_tags[i].tag_id));
+    }
+}
+
 void NFC::setup()
 {
     setup_nfc();
@@ -343,7 +360,7 @@ void NFC::setup()
         return;
 
     api.restorePersistentConfig("nfc/config", &config);
-    config_in_use = config;
+    setup_auth_tags();
 
     for (int i = 0; i < TAG_LIST_LENGTH; ++i) {
         seen_tags.add();

@@ -62,6 +62,14 @@ public:
         char tag_id[NFC_TAG_ID_STRING_LENGTH + 1]; // allow null terminator here
     };
 
+    struct auth_tag_t {
+        uint8_t tag_type;
+        uint8_t user_id;
+        char tag_id[NFC_TAG_ID_STRING_LENGTH + 1]; // allow null terminator here
+    };
+
+    static_assert(sizeof(auth_tag_t::tag_id) == sizeof(tag_info_t::tag_id));
+
     void update_seen_tags();
     void tag_seen(tag_info_t *tag, bool injected);
     void setup_nfc();
@@ -72,8 +80,14 @@ public:
 
     bool action_triggered(Config *config, void *data);
 
+private:
     ConfigRoot config;
-    ConfigRoot config_in_use;
+
+    size_t auth_tag_count = 0;
+    std::unique_ptr<auth_tag_t[]> auth_tags = nullptr;
+    void setup_auth_tags();
+
+public:
     ConfigRoot seen_tags;
     ConfigRoot state;
     ConfigRoot inject_tag;
