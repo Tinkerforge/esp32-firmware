@@ -124,6 +124,11 @@ void NFC::pre_setup()
             last_tag_injection -= 1;
     });
 #endif
+
+    auth_info = Config::Object({
+        {"tag_type", Config::Uint8(0)},
+        {"tag_id", Config::Str("", 0, 30)}
+    });
 }
 
 void NFC::setup_nfc()
@@ -210,9 +215,11 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
 #if MODULE_EVSE_LED_AVAILABLE()
         evse_led.set_module(EvseLed::Blink::Ack, 2000);
 #endif
-        users.trigger_charge_action(user_id, injected ? USERS_AUTH_TYPE_NFC_INJECTION : USERS_AUTH_TYPE_NFC, Config::Object({
-                {"tag_type", Config::Uint8(tag->tag_type)},
-                {"tag_id", Config::Str(tag->tag_id, 0, 30)}}).value,
+
+        auth_info.get("tag_type")->updateUint(tag->tag_type);
+        auth_info.get("tag_id")->updateString(tag->tag_id);
+
+        users.trigger_charge_action(user_id, injected ? USERS_AUTH_TYPE_NFC_INJECTION : USERS_AUTH_TYPE_NFC, auth_info.value,
                 injected ? tag_injection_action : TRIGGER_CHARGE_ANY);
 #if MODULE_OCPP_AVAILABLE()
         ocpp.on_tag_seen(tag->tag_id);

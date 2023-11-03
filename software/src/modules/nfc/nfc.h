@@ -82,6 +82,7 @@ public:
 
 private:
     ConfigRoot config;
+    ConfigRoot auth_info;
 
     size_t auth_tag_count = 0;
     std::unique_ptr<auth_tag_t[]> auth_tags = nullptr;
