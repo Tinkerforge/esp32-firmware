@@ -47,8 +47,7 @@ bool MetersSunSpecParser::detect_values(const uint16_t * const register_data[2],
 
     for (size_t i = 0; i < model->value_count; i++) {
         const ValueData *value_data = &model->value_data[i];
-        ValueDetectionResult detection_result = value_data->detect_value(data, quirks);
-        if (detection_result == ValueDetectionResult::Available) {
+        if (!model->is_meter || !isnan(value_data->get_value(data, quirks, true))) {
             detected_values.push_back(value_data);
         }
     }
@@ -76,7 +75,7 @@ bool MetersSunSpecParser::parse_values(const uint16_t * const register_data[2], 
 
     size_t value_count = detected_values.size();
     for (size_t i = 0; i < value_count; i++) {
-        meter_values[i] = detected_values[i]->get_value(data, quirks);
+        meter_values[i] = detected_values[i]->get_value(data, quirks, false);
     }
     meters.update_all_values(meter_slot, meter_values);
     return true;

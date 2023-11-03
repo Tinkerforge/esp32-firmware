@@ -385,7 +385,6 @@ r"""// WARNING: This file is generated.
 #include "gcc_warnings.h"
 
 #if defined(__GNUC__)
-    #pragma GCC diagnostic ignored "-Wfloat-equal"
     #pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 
@@ -482,17 +481,16 @@ for model in models:
 
         usable_value_count += 1
 
-        ######## Detection function ########
-
-        detect_fn_name = f"detect_model_{model_id:03d}_{name}"
         get_fn_name =  f"get_model_{model_id:03d}_{name}"
-        value['detect_fn_name'] = detect_fn_name
         value['get_fn_name'] = get_fn_name
 
-        print_cpp(f"static MetersSunSpecParser::ValueDetectionResult {detect_fn_name}(const void *register_data, uint32_t quirks)")
+        ######## Get value function ########
+
+        print_cpp(f"static float {get_fn_name}(const void *register_data, uint32_t quirks, bool detection)")
         print_cpp(r"{")
         print_cpp(f"    const struct {struct_name} *model = static_cast<const struct {struct_name} *>(register_data);")
 
+        # Retrieve value from struct
         if field_type == "int16":
             print_cpp(f"    int16_t val = model->{name};")
         elif field_type == "uint16":
@@ -504,49 +502,36 @@ for model in models:
         else:
             print(f"Unhandled field_type {field_type} for field {name}", file=sys.stderr)
 
+        # Special handling for "not accumulated" acc32 values
+        if field_type == "acc32" and not mandatory:
+            print_cpp(r"    if (val == 0 && !detection) return NAN;")
+
+        # Check for non-implemented value
         if field_type == "int16":
-            print_cpp(r"    if (val == INT16_MIN) {")
+            print_cpp(r"    if (val == INT16_MIN) return NAN;")
         elif field_type == "uint16":
-            print_cpp(r"    if (val == UINT16_MAX) {")
+            print_cpp(r"    if (val == UINT16_MAX) return NAN;")
         elif field_type == "uint32":
-            print_cpp(r"    if (val == UINT32_MAX) {")
+            print_cpp(r"    if (val == UINT32_MAX) return NAN;")
         elif field_type == "acc32":
-            print_cpp(r"    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;")
-            print_cpp(r"    if (val == not_implemented_val) {")
+            print_cpp(r"    uint32_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) == 0 ? UINT32_MAX : 0x80000000u;")
+            print_cpp(r"    if (val == not_implemented_val) return NAN;")
         elif field_type == "float32":
-            print_cpp(r"    if (isnan(val)) {")
-
-        print_cpp(r"        return MetersSunSpecParser::ValueDetectionResult::Unavailable;")
-        print_cpp(r"    } else {")
-        print_cpp(r"        return MetersSunSpecParser::ValueDetectionResult::Available;")
-        print_cpp(r"    }")
-        print_cpp(r"}")
-        print_cpp()
-
-        ######## Get value function ########
-
-        print_cpp(f"static float {get_fn_name}(const void *register_data, uint32_t quirks)")
-        print_cpp(r"{")
-        print_cpp(f"    const struct {struct_name} *model = static_cast<const struct {struct_name} *>(register_data);")
-
-        if field_type == "int16" or field_type == "uint16":
-            print_cpp(f"    float val = static_cast<float>(model->{name});")
-        elif field_type == "uint32":
-            print_cpp(f"    float val = static_cast<float>(convert_me_uint32(model->{name}));")
-        elif field_type == "acc32":
-            print_cpp(f"    uint32_t uval = convert_me_uint32(model->{name});")
-            print_cpp(r"    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)")
-            print_cpp(r"        uval = -uval;")
-            print_cpp(r"    float val = static_cast<float>(uval);")
-        elif field_type == "float32":
-            print_cpp(f"    float val = convert_me_float(model->{name});")
+            pass # isnan(val)) -> NAN is redundant
         else:
             print(f"Unhandled field_type {field_type} for field {name}", file=sys.stderr)
 
-        if field_type == "acc32" and not mandatory:
-            print_cpp(r"    if (val == 0.0f)")
-            print_cpp(r"        return NAN;")
+        # Handle int acc32 quirk
+        if field_type == "acc32":
+            print_cpp(r"    if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;")
 
+        # Convert value to float
+        if field_type == "float32":
+            print_cpp(f"    float fval = val;")
+        else:
+            print_cpp(f"    float fval = static_cast<float>(val);")
+
+        # Apply dynamic and/or static scale factor
         if scale_factor:
             if field_type in ["int16", "uint16", "int32", "uint32", "int64", "uint64", "acc32"]:
                 scale_factor = f"get_scale_factor(model->{scale_factor})"
@@ -556,13 +541,13 @@ for model in models:
 
         value_mapping_factor = value_id_mapping[1]
         if scale_factor and value_mapping_factor:
-            print_cpp(f"    val *= ({scale_factor} * {value_mapping_factor}f);")
+            print_cpp(f"    fval *= ({scale_factor} * {value_mapping_factor}f);")
         elif scale_factor:
-            print_cpp(f"    val *= {scale_factor};")
+            print_cpp(f"    fval *= {scale_factor};")
         elif value_mapping_factor:
-            print_cpp(f"    val *= {value_mapping_factor}f;")
+            print_cpp(f"    fval *= {value_mapping_factor}f;")
 
-        print_cpp(r"    return val;")
+        print_cpp(r"    return fval;")
         print_cpp(r"}")
         print_cpp()
 
@@ -622,7 +607,7 @@ for model in models:
 
         value_id = value_id_mapping[0]
 
-        print_cpp(f"        {{ &{value['get_fn_name']}, &{value['detect_fn_name']}, MeterValueID::{value_id} }},")
+        print_cpp(f"        {{ &{value['get_fn_name']}, MeterValueID::{value_id} }},")
 
     print_cpp(r"    }")
     print_cpp(r"};")

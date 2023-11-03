@@ -36,18 +36,11 @@
 class MetersSunSpecParser
 {
 public:
-    enum class ValueDetectionResult {
-        Available,
-        Unavailable,
-    };
-
-    typedef ValueDetectionResult (*detect_value_fn)(const void *register_data, uint32_t quirks);
-    typedef float (*get_value_fn)(const void *register_data, uint32_t quirks);
+    typedef float (*get_value_fn)(const void *register_data, uint32_t quirks, bool detection);
     typedef bool (*model_validator_fn)(const uint16_t * const register_data[2]);
 
     struct ValueData {
         get_value_fn get_value;
-        detect_value_fn detect_value;
         MeterValueID value_id;
     };
 
