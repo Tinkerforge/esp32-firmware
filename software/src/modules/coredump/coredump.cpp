@@ -112,7 +112,7 @@ void Coredump::register_urls()
         if (esp_core_dump_image_check() != ESP_OK)
             return request.send(404);
 
-        auto buffer = heap_caps_calloc_prefer(4096, 1, MALLOC_CAP_32BIT | MALLOC_CAP_INTERNAL, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        auto buffer = heap_caps_calloc_prefer(4096, 1, 2, MALLOC_CAP_32BIT | MALLOC_CAP_INTERNAL, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
         defer {free(buffer);};
 
         if (!buffer)

@@ -69,7 +69,7 @@ Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> &&val)
         buf_len += schema->key_lengths[i] + 1;
     }
 
-    char *key_buf = (char*)heap_caps_calloc_prefer(buf_len, sizeof(char), MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    char *key_buf = (char*)heap_caps_calloc_prefer(buf_len, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
     size_t written = 0;
     for(int i = 0; i < len; ++i) {
