@@ -55,6 +55,7 @@ private:
         Idle,
         ReadSunSpecID,
         ReadModelHeader,
+        ReadModel,
     };
 
     void connect_callback() override;
@@ -81,6 +82,7 @@ private:
     ScanState scan_state_next;
     ModbusDeserializer scan_deserializer;
 
+    uint32_t quirks = 0;
     MetersSunSpecParser *model_parser;
 };
 

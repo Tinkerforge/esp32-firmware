@@ -31,6 +31,8 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
+#define SUN_SPEC_QUIRKS_ACC32_IS_INT32              (1u << 0)
+
 class MetersSunSpecParser
 {
 public:
@@ -39,8 +41,8 @@ public:
         Unavailable,
     };
 
-    typedef ValueDetectionResult (*detect_value_fn)(const void *register_data);
-    typedef float (*get_value_fn)(const void *register_data);
+    typedef ValueDetectionResult (*detect_value_fn)(const void *register_data, uint32_t quirks);
+    typedef float (*get_value_fn)(const void *register_data, uint32_t quirks);
     typedef bool (*model_validator_fn)(const uint16_t * const register_data[2]);
 
     struct ValueData {
@@ -72,8 +74,8 @@ public:
 
     static MetersSunSpecParser *new_parser(uint32_t meter_slot, uint16_t model_id);
 
-    bool detect_values(const uint16_t * const register_data[2]);
-    bool parse_values(const uint16_t * const register_data[2]);
+    bool detect_values(const uint16_t * const register_data[2], uint32_t quirks);
+    bool parse_values(const uint16_t * const register_data[2], uint32_t quirks);
 
     bool must_read_twice();
 

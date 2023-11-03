@@ -482,12 +482,14 @@ for model in models:
 
         usable_value_count += 1
 
+        ######## Detection function ########
+
         detect_fn_name = f"detect_model_{model_id:03d}_{name}"
         get_fn_name =  f"get_model_{model_id:03d}_{name}"
         value['detect_fn_name'] = detect_fn_name
         value['get_fn_name'] = get_fn_name
 
-        print_cpp(f"static MetersSunSpecParser::ValueDetectionResult {detect_fn_name}(const void *register_data)")
+        print_cpp(f"static MetersSunSpecParser::ValueDetectionResult {detect_fn_name}(const void *register_data, uint32_t quirks)")
         print_cpp(r"{")
         print_cpp(f"    const struct {struct_name} *model = static_cast<const struct {struct_name} *>(register_data);")
 
@@ -506,8 +508,11 @@ for model in models:
             print_cpp(r"    if (val == INT16_MIN) {")
         elif field_type == "uint16":
             print_cpp(r"    if (val == UINT16_MAX) {")
-        elif field_type == "uint32" or field_type == "acc32":
+        elif field_type == "uint32":
             print_cpp(r"    if (val == UINT32_MAX) {")
+        elif field_type == "acc32":
+            print_cpp(r"    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;")
+            print_cpp(r"    if (val == not_implemented_val) {")
         elif field_type == "float32":
             print_cpp(r"    if (isnan(val)) {")
 
@@ -518,14 +523,21 @@ for model in models:
         print_cpp(r"}")
         print_cpp()
 
-        print_cpp(f"static float {get_fn_name}(const void *register_data)")
+        ######## Get value function ########
+
+        print_cpp(f"static float {get_fn_name}(const void *register_data, uint32_t quirks)")
         print_cpp(r"{")
         print_cpp(f"    const struct {struct_name} *model = static_cast<const struct {struct_name} *>(register_data);")
 
         if field_type == "int16" or field_type == "uint16":
             print_cpp(f"    float val = static_cast<float>(model->{name});")
-        elif field_type == "uint32" or field_type == "acc32":
+        elif field_type == "uint32":
             print_cpp(f"    float val = static_cast<float>(convert_me_uint32(model->{name}));")
+        elif field_type == "acc32":
+            print_cpp(f"    uint32_t uval = convert_me_uint32(model->{name});")
+            print_cpp(r"    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)")
+            print_cpp(r"        uval = -uval;")
+            print_cpp(r"    float val = static_cast<float>(uval);")
         elif field_type == "float32":
             print_cpp(f"    float val = convert_me_float(model->{name});")
         else:
@@ -553,6 +565,8 @@ for model in models:
         print_cpp(r"    return val;")
         print_cpp(r"}")
         print_cpp()
+
+    ######## Model struct ########
 
     model_data_name = f"model_{model_id:03d}_data"
     validator_fn_name = f"model_{model_id:03d}_validator"
