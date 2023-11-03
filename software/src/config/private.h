@@ -39,9 +39,15 @@ struct ConfArraySlot {
     bool inUse = false;
 };
 
+struct ConfObjectSchema {
+    size_t length;
+    std::unique_ptr<uint8_t[]> key_lengths;
+    std::unique_ptr<char*[]> keys;
+};
+
 struct ConfObjectSlot {
-    std::vector<std::pair<String, Config>> val;
-    bool inUse = false;
+    const ConfObjectSchema *schema;
+    std::unique_ptr<Config[]> values;
 };
 
 struct ConfUnionSlot {

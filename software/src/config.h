@@ -191,7 +191,7 @@ struct Config {
         using Slot = ConfObjectSlot;
     private:
         uint16_t idx;
-        Slot *getSlot();
+
 
     public:
         static bool slotEmpty(size_t i);
@@ -201,11 +201,10 @@ struct Config {
 
         Config *get(const String &s);
         const Config *get(const String &s) const;
-        std::vector<std::pair<String, Config>> *getVal();
-        const std::vector<std::pair<String, Config>> *getVal() const;
         const Slot *getSlot() const;
+        Slot *getSlot();
 
-        ConfObject(std::vector<std::pair<String, Config>> val);
+        ConfObject(std::vector<std::pair<String, Config>> &&val);
         ConfObject(const ConfObject &cpy);
         ~ConfObject();
 

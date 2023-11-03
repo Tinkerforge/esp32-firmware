@@ -117,6 +117,9 @@ Config Config::Object(std::initializer_list<std::pair<String, Config>> obj)
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
+    if (boot_stage >= BootStage::LOOP)
+        esp_system_abort("constructing configs in the loop phase is not allowed!");
+
     return Config{ConfObject{obj}};
 }
 
