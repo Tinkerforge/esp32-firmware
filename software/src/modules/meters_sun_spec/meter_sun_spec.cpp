@@ -22,7 +22,7 @@
 #include "module_dependencies.h"
 
 #include "event_log.h"
-//#include "modules/meters/meter_value_id.h"
+#include "modules/meters_sun_spec/models/model_001.h"
 #include "task_scheduler.h"
 
 #include "gcc_warnings.h"
@@ -117,14 +117,14 @@ void MeterSunSpec::read_done_callback()
     }
 
     if (!values_declared) {
-        if (!model_parser->detect_values(generic_read_request.data)) {
+        if (!model_parser->detect_values(generic_read_request.data, quirks)) {
             logger.printfln("meter_sun_spec: Detecting values of model %u in slot %u failed.", model_id, slot);
             return;
         }
         values_declared = true;
     }
 
-    if (!model_parser->parse_values(generic_read_request.data)) {
+    if (!model_parser->parse_values(generic_read_request.data, quirks)) {
         logger.printfln("meter_sun_spec: Parsing model %u data in slot %u failed.", model_id, slot);
         // TODO: Read again if parsing failed?
     }
@@ -144,6 +144,7 @@ void MeterSunSpec::scan_start()
     generic_read_request.data[0] = nullptr;
     generic_read_request.data[1] = nullptr;
 
+    // Buffer must be big enough for the Common model.
     uint16_t *buffer = static_cast<uint16_t *>(malloc(sizeof(uint16_t) * 68));
     if (!buffer) {
         logger.printfln("meter_sun_spec: Cannot alloc read buffer.");
@@ -228,12 +229,58 @@ void MeterSunSpec::scan_next()
                     logger.printfln("meter_sun_spec: Configured SunSpec model %u found at %s:%u:%u:%u", model_id, host_name.c_str(), port, device_address, generic_read_request.start_address);
                     read_start(generic_read_request.start_address, 2 + block_length);
                 }
+                else if (model_id_ == 1) { // Common model
+                    if (generic_read_request.register_count == 2) {
+                        // Place data pointer after already read header.
+                        generic_read_request.data[0] += 2;
+                        generic_read_request.start_address += 2;
+                        generic_read_request.register_count = 65;
+                        scan_state_next = ScanState::ReadModel;
+
+                        start_generic_read();
+                    }
+                }
                 else {
                     generic_read_request.start_address += generic_read_request.register_count + block_length;
                     generic_read_request.register_count = 2;
 
                     start_generic_read();
                 }
+            }
+
+            break;
+
+        case ScanState::ReadModel: {
+                // Set data pointer back to model header.
+                generic_read_request.data[0] -= 2;
+
+                uint16_t model_id_ = scan_deserializer.read_uint16();
+                size_t block_length = scan_deserializer.read_uint16();
+
+                if (model_id_ == 1) { // Common model
+                    SunSpecCommonModel001_u *common_model = reinterpret_cast<SunSpecCommonModel001_u *>(generic_read_request.data[0]);
+                    modbus_bswap_registers(common_model->registers + 2, 16); // 16 registers for only manufacturer name, 64 registers for everything
+                    const SunSpecCommonModel001_s *m = &common_model->model;
+
+                    //logger.printfln("meter_sun_spec: Device is %s %s %s %s %s", m->Mn, m->Md, m->Opt, m->Vr, m->SN);
+
+                    if (strcmp(m->Mn, "KOSTAL") == 0) {
+                        quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
+                    }
+
+                    if (quirks) {
+                        logger.printfln("meter_sun_spec: Enabling quirks mode 0x%x for %s device.", quirks, m->Mn);
+                    }
+                }
+                else {
+                    logger.printfln("meter_sun_spec: Read full model %u for no reason.", model_id_);
+                }
+
+                generic_read_request.start_address += block_length;
+                generic_read_request.register_count = 2;
+                scan_state_next = ScanState::ReadModelHeader;
+
+                start_generic_read();
             }
 
             break;

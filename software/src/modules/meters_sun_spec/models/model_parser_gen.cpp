@@ -97,7 +97,7 @@ static const MetersSunSpecParser::ModelData model_001_data = {
 
 #include "model_101.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->A;
@@ -108,7 +108,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_A(const void *
     }
 }
 
-static float get_model_101_A(const void *register_data)
+static float get_model_101_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->A);
@@ -116,7 +116,7 @@ static float get_model_101_A(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->AphA;
@@ -127,7 +127,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_AphA(const voi
     }
 }
 
-static float get_model_101_AphA(const void *register_data)
+static float get_model_101_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->AphA);
@@ -135,7 +135,7 @@ static float get_model_101_AphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->AphB;
@@ -146,7 +146,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_AphB(const voi
     }
 }
 
-static float get_model_101_AphB(const void *register_data)
+static float get_model_101_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->AphB);
@@ -154,7 +154,7 @@ static float get_model_101_AphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->AphC;
@@ -165,7 +165,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_AphC(const voi
     }
 }
 
-static float get_model_101_AphC(const void *register_data)
+static float get_model_101_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->AphC);
@@ -173,7 +173,7 @@ static float get_model_101_AphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_PPVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->PPVphAB;
@@ -184,7 +184,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_PPVphAB(const 
     }
 }
 
-static float get_model_101_PPVphAB(const void *register_data)
+static float get_model_101_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->PPVphAB);
@@ -192,7 +192,7 @@ static float get_model_101_PPVphAB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_PPVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->PPVphBC;
@@ -203,7 +203,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_PPVphBC(const 
     }
 }
 
-static float get_model_101_PPVphBC(const void *register_data)
+static float get_model_101_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->PPVphBC);
@@ -211,7 +211,7 @@ static float get_model_101_PPVphBC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_PPVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->PPVphCA;
@@ -222,7 +222,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_PPVphCA(const 
     }
 }
 
-static float get_model_101_PPVphCA(const void *register_data)
+static float get_model_101_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->PPVphCA);
@@ -230,7 +230,7 @@ static float get_model_101_PPVphCA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->PhVphA;
@@ -241,7 +241,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_PhVphA(const v
     }
 }
 
-static float get_model_101_PhVphA(const void *register_data)
+static float get_model_101_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->PhVphA);
@@ -249,7 +249,7 @@ static float get_model_101_PhVphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->PhVphB;
@@ -260,7 +260,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_PhVphB(const v
     }
 }
 
-static float get_model_101_PhVphB(const void *register_data)
+static float get_model_101_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->PhVphB);
@@ -268,7 +268,7 @@ static float get_model_101_PhVphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->PhVphC;
@@ -279,7 +279,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_PhVphC(const v
     }
 }
 
-static float get_model_101_PhVphC(const void *register_data)
+static float get_model_101_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->PhVphC);
@@ -287,7 +287,7 @@ static float get_model_101_PhVphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     int16_t val = model->W;
@@ -298,7 +298,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_W(const void *
     }
 }
 
-static float get_model_101_W(const void *register_data)
+static float get_model_101_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->W);
@@ -306,7 +306,7 @@ static float get_model_101_W(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->Hz;
@@ -317,7 +317,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_Hz(const void 
     }
 }
 
-static float get_model_101_Hz(const void *register_data)
+static float get_model_101_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->Hz);
@@ -325,7 +325,7 @@ static float get_model_101_Hz(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     int16_t val = model->VA;
@@ -336,7 +336,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_VA(const void 
     }
 }
 
-static float get_model_101_VA(const void *register_data)
+static float get_model_101_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->VA);
@@ -344,7 +344,7 @@ static float get_model_101_VA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_VAr(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_VAr(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     int16_t val = model->VAr;
@@ -355,7 +355,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_VAr(const void
     }
 }
 
-static float get_model_101_VAr(const void *register_data)
+static float get_model_101_VAr(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->VAr);
@@ -363,7 +363,7 @@ static float get_model_101_VAr(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     int16_t val = model->PF;
@@ -374,7 +374,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_PF(const void 
     }
 }
 
-static float get_model_101_PF(const void *register_data)
+static float get_model_101_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->PF);
@@ -382,26 +382,30 @@ static float get_model_101_PF(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_WH(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_WH(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint32_t val = convert_me_uint32(model->WH);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_101_WH(const void *register_data)
+static float get_model_101_WH(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->WH));
+    uint32_t uval = convert_me_uint32(model->WH);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     val *= (get_scale_factor(model->WH_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_DCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_DCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->DCA;
@@ -412,7 +416,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_DCA(const void
     }
 }
 
-static float get_model_101_DCA(const void *register_data)
+static float get_model_101_DCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->DCA);
@@ -420,7 +424,7 @@ static float get_model_101_DCA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_DCV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_DCV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->DCV;
@@ -431,7 +435,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_DCV(const void
     }
 }
 
-static float get_model_101_DCV(const void *register_data)
+static float get_model_101_DCV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->DCV);
@@ -439,7 +443,7 @@ static float get_model_101_DCV(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_DCW(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_DCW(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     int16_t val = model->DCW;
@@ -450,7 +454,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_DCW(const void
     }
 }
 
-static float get_model_101_DCW(const void *register_data)
+static float get_model_101_DCW(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->DCW);
@@ -458,7 +462,7 @@ static float get_model_101_DCW(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpCab(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpCab(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     int16_t val = model->TmpCab;
@@ -469,7 +473,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpCab(const v
     }
 }
 
-static float get_model_101_TmpCab(const void *register_data)
+static float get_model_101_TmpCab(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->TmpCab);
@@ -477,7 +481,7 @@ static float get_model_101_TmpCab(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpSnk(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpSnk(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     int16_t val = model->TmpSnk;
@@ -488,7 +492,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpSnk(const v
     }
 }
 
-static float get_model_101_TmpSnk(const void *register_data)
+static float get_model_101_TmpSnk(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->TmpSnk);
@@ -496,7 +500,7 @@ static float get_model_101_TmpSnk(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpTrns(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpTrns(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     int16_t val = model->TmpTrns;
@@ -507,7 +511,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpTrns(const 
     }
 }
 
-static float get_model_101_TmpTrns(const void *register_data)
+static float get_model_101_TmpTrns(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->TmpTrns);
@@ -515,7 +519,7 @@ static float get_model_101_TmpTrns(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpOt(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpOt(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     int16_t val = model->TmpOt;
@@ -526,7 +530,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_101_TmpOt(const vo
     }
 }
 
-static float get_model_101_TmpOt(const void *register_data)
+static float get_model_101_TmpOt(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     float val = static_cast<float>(model->TmpOt);
@@ -596,7 +600,7 @@ static const MetersSunSpecParser::ModelData model_101_data = {
 
 #include "model_102.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->A;
@@ -607,7 +611,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_A(const void *
     }
 }
 
-static float get_model_102_A(const void *register_data)
+static float get_model_102_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->A);
@@ -615,7 +619,7 @@ static float get_model_102_A(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->AphA;
@@ -626,7 +630,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_AphA(const voi
     }
 }
 
-static float get_model_102_AphA(const void *register_data)
+static float get_model_102_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->AphA);
@@ -634,7 +638,7 @@ static float get_model_102_AphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->AphB;
@@ -645,7 +649,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_AphB(const voi
     }
 }
 
-static float get_model_102_AphB(const void *register_data)
+static float get_model_102_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->AphB);
@@ -653,7 +657,7 @@ static float get_model_102_AphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->AphC;
@@ -664,7 +668,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_AphC(const voi
     }
 }
 
-static float get_model_102_AphC(const void *register_data)
+static float get_model_102_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->AphC);
@@ -672,7 +676,7 @@ static float get_model_102_AphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_PPVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->PPVphAB;
@@ -683,7 +687,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_PPVphAB(const 
     }
 }
 
-static float get_model_102_PPVphAB(const void *register_data)
+static float get_model_102_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->PPVphAB);
@@ -691,7 +695,7 @@ static float get_model_102_PPVphAB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_PPVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->PPVphBC;
@@ -702,7 +706,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_PPVphBC(const 
     }
 }
 
-static float get_model_102_PPVphBC(const void *register_data)
+static float get_model_102_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->PPVphBC);
@@ -710,7 +714,7 @@ static float get_model_102_PPVphBC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_PPVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->PPVphCA;
@@ -721,7 +725,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_PPVphCA(const 
     }
 }
 
-static float get_model_102_PPVphCA(const void *register_data)
+static float get_model_102_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->PPVphCA);
@@ -729,7 +733,7 @@ static float get_model_102_PPVphCA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->PhVphA;
@@ -740,7 +744,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_PhVphA(const v
     }
 }
 
-static float get_model_102_PhVphA(const void *register_data)
+static float get_model_102_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->PhVphA);
@@ -748,7 +752,7 @@ static float get_model_102_PhVphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->PhVphB;
@@ -759,7 +763,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_PhVphB(const v
     }
 }
 
-static float get_model_102_PhVphB(const void *register_data)
+static float get_model_102_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->PhVphB);
@@ -767,7 +771,7 @@ static float get_model_102_PhVphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->PhVphC;
@@ -778,7 +782,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_PhVphC(const v
     }
 }
 
-static float get_model_102_PhVphC(const void *register_data)
+static float get_model_102_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->PhVphC);
@@ -786,7 +790,7 @@ static float get_model_102_PhVphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     int16_t val = model->W;
@@ -797,7 +801,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_W(const void *
     }
 }
 
-static float get_model_102_W(const void *register_data)
+static float get_model_102_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->W);
@@ -805,7 +809,7 @@ static float get_model_102_W(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->Hz;
@@ -816,7 +820,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_Hz(const void 
     }
 }
 
-static float get_model_102_Hz(const void *register_data)
+static float get_model_102_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->Hz);
@@ -824,7 +828,7 @@ static float get_model_102_Hz(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     int16_t val = model->VA;
@@ -835,7 +839,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_VA(const void 
     }
 }
 
-static float get_model_102_VA(const void *register_data)
+static float get_model_102_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->VA);
@@ -843,7 +847,7 @@ static float get_model_102_VA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_VAr(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_VAr(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     int16_t val = model->VAr;
@@ -854,7 +858,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_VAr(const void
     }
 }
 
-static float get_model_102_VAr(const void *register_data)
+static float get_model_102_VAr(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->VAr);
@@ -862,7 +866,7 @@ static float get_model_102_VAr(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     int16_t val = model->PF;
@@ -873,7 +877,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_PF(const void 
     }
 }
 
-static float get_model_102_PF(const void *register_data)
+static float get_model_102_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->PF);
@@ -881,26 +885,30 @@ static float get_model_102_PF(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_WH(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_WH(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint32_t val = convert_me_uint32(model->WH);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_102_WH(const void *register_data)
+static float get_model_102_WH(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->WH));
+    uint32_t uval = convert_me_uint32(model->WH);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     val *= (get_scale_factor(model->WH_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_DCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_DCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->DCA;
@@ -911,7 +919,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_DCA(const void
     }
 }
 
-static float get_model_102_DCA(const void *register_data)
+static float get_model_102_DCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->DCA);
@@ -919,7 +927,7 @@ static float get_model_102_DCA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_DCV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_DCV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->DCV;
@@ -930,7 +938,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_DCV(const void
     }
 }
 
-static float get_model_102_DCV(const void *register_data)
+static float get_model_102_DCV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->DCV);
@@ -938,7 +946,7 @@ static float get_model_102_DCV(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_DCW(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_DCW(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     int16_t val = model->DCW;
@@ -949,7 +957,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_DCW(const void
     }
 }
 
-static float get_model_102_DCW(const void *register_data)
+static float get_model_102_DCW(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->DCW);
@@ -957,7 +965,7 @@ static float get_model_102_DCW(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpCab(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpCab(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     int16_t val = model->TmpCab;
@@ -968,7 +976,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpCab(const v
     }
 }
 
-static float get_model_102_TmpCab(const void *register_data)
+static float get_model_102_TmpCab(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->TmpCab);
@@ -976,7 +984,7 @@ static float get_model_102_TmpCab(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpSnk(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpSnk(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     int16_t val = model->TmpSnk;
@@ -987,7 +995,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpSnk(const v
     }
 }
 
-static float get_model_102_TmpSnk(const void *register_data)
+static float get_model_102_TmpSnk(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->TmpSnk);
@@ -995,7 +1003,7 @@ static float get_model_102_TmpSnk(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpTrns(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpTrns(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     int16_t val = model->TmpTrns;
@@ -1006,7 +1014,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpTrns(const 
     }
 }
 
-static float get_model_102_TmpTrns(const void *register_data)
+static float get_model_102_TmpTrns(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->TmpTrns);
@@ -1014,7 +1022,7 @@ static float get_model_102_TmpTrns(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpOt(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpOt(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     int16_t val = model->TmpOt;
@@ -1025,7 +1033,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_102_TmpOt(const vo
     }
 }
 
-static float get_model_102_TmpOt(const void *register_data)
+static float get_model_102_TmpOt(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     float val = static_cast<float>(model->TmpOt);
@@ -1095,7 +1103,7 @@ static const MetersSunSpecParser::ModelData model_102_data = {
 
 #include "model_103.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->A;
@@ -1106,7 +1114,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_A(const void *
     }
 }
 
-static float get_model_103_A(const void *register_data)
+static float get_model_103_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->A);
@@ -1114,7 +1122,7 @@ static float get_model_103_A(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->AphA;
@@ -1125,7 +1133,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_AphA(const voi
     }
 }
 
-static float get_model_103_AphA(const void *register_data)
+static float get_model_103_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->AphA);
@@ -1133,7 +1141,7 @@ static float get_model_103_AphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->AphB;
@@ -1144,7 +1152,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_AphB(const voi
     }
 }
 
-static float get_model_103_AphB(const void *register_data)
+static float get_model_103_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->AphB);
@@ -1152,7 +1160,7 @@ static float get_model_103_AphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->AphC;
@@ -1163,7 +1171,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_AphC(const voi
     }
 }
 
-static float get_model_103_AphC(const void *register_data)
+static float get_model_103_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->AphC);
@@ -1171,7 +1179,7 @@ static float get_model_103_AphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_PPVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->PPVphAB;
@@ -1182,7 +1190,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_PPVphAB(const 
     }
 }
 
-static float get_model_103_PPVphAB(const void *register_data)
+static float get_model_103_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->PPVphAB);
@@ -1190,7 +1198,7 @@ static float get_model_103_PPVphAB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_PPVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->PPVphBC;
@@ -1201,7 +1209,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_PPVphBC(const 
     }
 }
 
-static float get_model_103_PPVphBC(const void *register_data)
+static float get_model_103_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->PPVphBC);
@@ -1209,7 +1217,7 @@ static float get_model_103_PPVphBC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_PPVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->PPVphCA;
@@ -1220,7 +1228,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_PPVphCA(const 
     }
 }
 
-static float get_model_103_PPVphCA(const void *register_data)
+static float get_model_103_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->PPVphCA);
@@ -1228,7 +1236,7 @@ static float get_model_103_PPVphCA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->PhVphA;
@@ -1239,7 +1247,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_PhVphA(const v
     }
 }
 
-static float get_model_103_PhVphA(const void *register_data)
+static float get_model_103_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->PhVphA);
@@ -1247,7 +1255,7 @@ static float get_model_103_PhVphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->PhVphB;
@@ -1258,7 +1266,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_PhVphB(const v
     }
 }
 
-static float get_model_103_PhVphB(const void *register_data)
+static float get_model_103_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->PhVphB);
@@ -1266,7 +1274,7 @@ static float get_model_103_PhVphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->PhVphC;
@@ -1277,7 +1285,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_PhVphC(const v
     }
 }
 
-static float get_model_103_PhVphC(const void *register_data)
+static float get_model_103_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->PhVphC);
@@ -1285,7 +1293,7 @@ static float get_model_103_PhVphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     int16_t val = model->W;
@@ -1296,7 +1304,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_W(const void *
     }
 }
 
-static float get_model_103_W(const void *register_data)
+static float get_model_103_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->W);
@@ -1304,7 +1312,7 @@ static float get_model_103_W(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->Hz;
@@ -1315,7 +1323,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_Hz(const void 
     }
 }
 
-static float get_model_103_Hz(const void *register_data)
+static float get_model_103_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->Hz);
@@ -1323,7 +1331,7 @@ static float get_model_103_Hz(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     int16_t val = model->VA;
@@ -1334,7 +1342,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_VA(const void 
     }
 }
 
-static float get_model_103_VA(const void *register_data)
+static float get_model_103_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->VA);
@@ -1342,7 +1350,7 @@ static float get_model_103_VA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_VAr(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_VAr(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     int16_t val = model->VAr;
@@ -1353,7 +1361,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_VAr(const void
     }
 }
 
-static float get_model_103_VAr(const void *register_data)
+static float get_model_103_VAr(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->VAr);
@@ -1361,7 +1369,7 @@ static float get_model_103_VAr(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     int16_t val = model->PF;
@@ -1372,7 +1380,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_PF(const void 
     }
 }
 
-static float get_model_103_PF(const void *register_data)
+static float get_model_103_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->PF);
@@ -1380,26 +1388,30 @@ static float get_model_103_PF(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_WH(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_WH(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint32_t val = convert_me_uint32(model->WH);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_103_WH(const void *register_data)
+static float get_model_103_WH(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->WH));
+    uint32_t uval = convert_me_uint32(model->WH);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     val *= (get_scale_factor(model->WH_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_DCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_DCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->DCA;
@@ -1410,7 +1422,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_DCA(const void
     }
 }
 
-static float get_model_103_DCA(const void *register_data)
+static float get_model_103_DCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->DCA);
@@ -1418,7 +1430,7 @@ static float get_model_103_DCA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_DCV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_DCV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->DCV;
@@ -1429,7 +1441,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_DCV(const void
     }
 }
 
-static float get_model_103_DCV(const void *register_data)
+static float get_model_103_DCV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->DCV);
@@ -1437,7 +1449,7 @@ static float get_model_103_DCV(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_DCW(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_DCW(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     int16_t val = model->DCW;
@@ -1448,7 +1460,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_DCW(const void
     }
 }
 
-static float get_model_103_DCW(const void *register_data)
+static float get_model_103_DCW(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->DCW);
@@ -1456,7 +1468,7 @@ static float get_model_103_DCW(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpCab(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpCab(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     int16_t val = model->TmpCab;
@@ -1467,7 +1479,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpCab(const v
     }
 }
 
-static float get_model_103_TmpCab(const void *register_data)
+static float get_model_103_TmpCab(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->TmpCab);
@@ -1475,7 +1487,7 @@ static float get_model_103_TmpCab(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpSnk(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpSnk(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     int16_t val = model->TmpSnk;
@@ -1486,7 +1498,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpSnk(const v
     }
 }
 
-static float get_model_103_TmpSnk(const void *register_data)
+static float get_model_103_TmpSnk(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->TmpSnk);
@@ -1494,7 +1506,7 @@ static float get_model_103_TmpSnk(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpTrns(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpTrns(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     int16_t val = model->TmpTrns;
@@ -1505,7 +1517,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpTrns(const 
     }
 }
 
-static float get_model_103_TmpTrns(const void *register_data)
+static float get_model_103_TmpTrns(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->TmpTrns);
@@ -1513,7 +1525,7 @@ static float get_model_103_TmpTrns(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpOt(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpOt(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     int16_t val = model->TmpOt;
@@ -1524,7 +1536,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_103_TmpOt(const vo
     }
 }
 
-static float get_model_103_TmpOt(const void *register_data)
+static float get_model_103_TmpOt(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     float val = static_cast<float>(model->TmpOt);
@@ -1594,7 +1606,7 @@ static const MetersSunSpecParser::ModelData model_103_data = {
 
 #include "model_111.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->A);
@@ -1605,14 +1617,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_A(const void *
     }
 }
 
-static float get_model_111_A(const void *register_data)
+static float get_model_111_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->A);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->AphA);
@@ -1623,14 +1635,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_AphA(const voi
     }
 }
 
-static float get_model_111_AphA(const void *register_data)
+static float get_model_111_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->AphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->AphB);
@@ -1641,14 +1653,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_AphB(const voi
     }
 }
 
-static float get_model_111_AphB(const void *register_data)
+static float get_model_111_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->AphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->AphC);
@@ -1659,14 +1671,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_AphC(const voi
     }
 }
 
-static float get_model_111_AphC(const void *register_data)
+static float get_model_111_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->AphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_PPVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
@@ -1677,14 +1689,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_PPVphAB(const 
     }
 }
 
-static float get_model_111_PPVphAB(const void *register_data)
+static float get_model_111_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_PPVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
@@ -1695,14 +1707,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_PPVphBC(const 
     }
 }
 
-static float get_model_111_PPVphBC(const void *register_data)
+static float get_model_111_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_PPVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
@@ -1713,14 +1725,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_PPVphCA(const 
     }
 }
 
-static float get_model_111_PPVphCA(const void *register_data)
+static float get_model_111_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
@@ -1731,14 +1743,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_PhVphA(const v
     }
 }
 
-static float get_model_111_PhVphA(const void *register_data)
+static float get_model_111_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
@@ -1749,14 +1761,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_PhVphB(const v
     }
 }
 
-static float get_model_111_PhVphB(const void *register_data)
+static float get_model_111_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
@@ -1767,14 +1779,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_PhVphC(const v
     }
 }
 
-static float get_model_111_PhVphC(const void *register_data)
+static float get_model_111_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->W);
@@ -1785,14 +1797,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_W(const void *
     }
 }
 
-static float get_model_111_W(const void *register_data)
+static float get_model_111_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->W);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->Hz);
@@ -1803,14 +1815,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_Hz(const void 
     }
 }
 
-static float get_model_111_Hz(const void *register_data)
+static float get_model_111_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->Hz);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->VA);
@@ -1821,14 +1833,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_VA(const void 
     }
 }
 
-static float get_model_111_VA(const void *register_data)
+static float get_model_111_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->VA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_VAr(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_VAr(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->VAr);
@@ -1839,14 +1851,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_VAr(const void
     }
 }
 
-static float get_model_111_VAr(const void *register_data)
+static float get_model_111_VAr(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->VAr);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PF);
@@ -1857,7 +1869,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_PF(const void 
     }
 }
 
-static float get_model_111_PF(const void *register_data)
+static float get_model_111_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->PF);
@@ -1865,7 +1877,7 @@ static float get_model_111_PF(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_WH(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_WH(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->WH);
@@ -1876,7 +1888,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_WH(const void 
     }
 }
 
-static float get_model_111_WH(const void *register_data)
+static float get_model_111_WH(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->WH);
@@ -1884,7 +1896,7 @@ static float get_model_111_WH(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_DCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_DCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->DCA);
@@ -1895,14 +1907,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_DCA(const void
     }
 }
 
-static float get_model_111_DCA(const void *register_data)
+static float get_model_111_DCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->DCA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_DCV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_DCV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->DCV);
@@ -1913,14 +1925,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_DCV(const void
     }
 }
 
-static float get_model_111_DCV(const void *register_data)
+static float get_model_111_DCV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->DCV);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_DCW(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_DCW(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->DCW);
@@ -1931,14 +1943,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_DCW(const void
     }
 }
 
-static float get_model_111_DCW(const void *register_data)
+static float get_model_111_DCW(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->DCW);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpCab(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpCab(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->TmpCab);
@@ -1949,14 +1961,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpCab(const v
     }
 }
 
-static float get_model_111_TmpCab(const void *register_data)
+static float get_model_111_TmpCab(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->TmpCab);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpSnk(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpSnk(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->TmpSnk);
@@ -1967,14 +1979,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpSnk(const v
     }
 }
 
-static float get_model_111_TmpSnk(const void *register_data)
+static float get_model_111_TmpSnk(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->TmpSnk);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpTrns(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpTrns(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->TmpTrns);
@@ -1985,14 +1997,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpTrns(const 
     }
 }
 
-static float get_model_111_TmpTrns(const void *register_data)
+static float get_model_111_TmpTrns(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->TmpTrns);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpOt(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpOt(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->TmpOt);
@@ -2003,7 +2015,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_111_TmpOt(const vo
     }
 }
 
-static float get_model_111_TmpOt(const void *register_data)
+static float get_model_111_TmpOt(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->TmpOt);
@@ -2057,7 +2069,7 @@ static const MetersSunSpecParser::ModelData model_111_data = {
 
 #include "model_112.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->A);
@@ -2068,14 +2080,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_A(const void *
     }
 }
 
-static float get_model_112_A(const void *register_data)
+static float get_model_112_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->A);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->AphA);
@@ -2086,14 +2098,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_AphA(const voi
     }
 }
 
-static float get_model_112_AphA(const void *register_data)
+static float get_model_112_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->AphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->AphB);
@@ -2104,14 +2116,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_AphB(const voi
     }
 }
 
-static float get_model_112_AphB(const void *register_data)
+static float get_model_112_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->AphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->AphC);
@@ -2122,14 +2134,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_AphC(const voi
     }
 }
 
-static float get_model_112_AphC(const void *register_data)
+static float get_model_112_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->AphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_PPVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
@@ -2140,14 +2152,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_PPVphAB(const 
     }
 }
 
-static float get_model_112_PPVphAB(const void *register_data)
+static float get_model_112_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_PPVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
@@ -2158,14 +2170,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_PPVphBC(const 
     }
 }
 
-static float get_model_112_PPVphBC(const void *register_data)
+static float get_model_112_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_PPVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
@@ -2176,14 +2188,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_PPVphCA(const 
     }
 }
 
-static float get_model_112_PPVphCA(const void *register_data)
+static float get_model_112_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
@@ -2194,14 +2206,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_PhVphA(const v
     }
 }
 
-static float get_model_112_PhVphA(const void *register_data)
+static float get_model_112_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
@@ -2212,14 +2224,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_PhVphB(const v
     }
 }
 
-static float get_model_112_PhVphB(const void *register_data)
+static float get_model_112_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
@@ -2230,14 +2242,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_PhVphC(const v
     }
 }
 
-static float get_model_112_PhVphC(const void *register_data)
+static float get_model_112_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->W);
@@ -2248,14 +2260,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_W(const void *
     }
 }
 
-static float get_model_112_W(const void *register_data)
+static float get_model_112_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->W);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->Hz);
@@ -2266,14 +2278,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_Hz(const void 
     }
 }
 
-static float get_model_112_Hz(const void *register_data)
+static float get_model_112_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->Hz);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->VA);
@@ -2284,14 +2296,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_VA(const void 
     }
 }
 
-static float get_model_112_VA(const void *register_data)
+static float get_model_112_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->VA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_VAr(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_VAr(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->VAr);
@@ -2302,14 +2314,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_VAr(const void
     }
 }
 
-static float get_model_112_VAr(const void *register_data)
+static float get_model_112_VAr(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->VAr);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PF);
@@ -2320,7 +2332,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_PF(const void 
     }
 }
 
-static float get_model_112_PF(const void *register_data)
+static float get_model_112_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->PF);
@@ -2328,7 +2340,7 @@ static float get_model_112_PF(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_WH(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_WH(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->WH);
@@ -2339,7 +2351,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_WH(const void 
     }
 }
 
-static float get_model_112_WH(const void *register_data)
+static float get_model_112_WH(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->WH);
@@ -2347,7 +2359,7 @@ static float get_model_112_WH(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_DCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_DCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->DCA);
@@ -2358,14 +2370,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_DCA(const void
     }
 }
 
-static float get_model_112_DCA(const void *register_data)
+static float get_model_112_DCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->DCA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_DCV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_DCV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->DCV);
@@ -2376,14 +2388,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_DCV(const void
     }
 }
 
-static float get_model_112_DCV(const void *register_data)
+static float get_model_112_DCV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->DCV);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_DCW(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_DCW(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->DCW);
@@ -2394,14 +2406,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_DCW(const void
     }
 }
 
-static float get_model_112_DCW(const void *register_data)
+static float get_model_112_DCW(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->DCW);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpCab(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpCab(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->TmpCab);
@@ -2412,14 +2424,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpCab(const v
     }
 }
 
-static float get_model_112_TmpCab(const void *register_data)
+static float get_model_112_TmpCab(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->TmpCab);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpSnk(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpSnk(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->TmpSnk);
@@ -2430,14 +2442,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpSnk(const v
     }
 }
 
-static float get_model_112_TmpSnk(const void *register_data)
+static float get_model_112_TmpSnk(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->TmpSnk);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpTrns(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpTrns(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->TmpTrns);
@@ -2448,14 +2460,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpTrns(const 
     }
 }
 
-static float get_model_112_TmpTrns(const void *register_data)
+static float get_model_112_TmpTrns(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->TmpTrns);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpOt(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpOt(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->TmpOt);
@@ -2466,7 +2478,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_112_TmpOt(const vo
     }
 }
 
-static float get_model_112_TmpOt(const void *register_data)
+static float get_model_112_TmpOt(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->TmpOt);
@@ -2520,7 +2532,7 @@ static const MetersSunSpecParser::ModelData model_112_data = {
 
 #include "model_113.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->A);
@@ -2531,14 +2543,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_A(const void *
     }
 }
 
-static float get_model_113_A(const void *register_data)
+static float get_model_113_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->A);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->AphA);
@@ -2549,14 +2561,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_AphA(const voi
     }
 }
 
-static float get_model_113_AphA(const void *register_data)
+static float get_model_113_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->AphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->AphB);
@@ -2567,14 +2579,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_AphB(const voi
     }
 }
 
-static float get_model_113_AphB(const void *register_data)
+static float get_model_113_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->AphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->AphC);
@@ -2585,14 +2597,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_AphC(const voi
     }
 }
 
-static float get_model_113_AphC(const void *register_data)
+static float get_model_113_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->AphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_PPVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
@@ -2603,14 +2615,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_PPVphAB(const 
     }
 }
 
-static float get_model_113_PPVphAB(const void *register_data)
+static float get_model_113_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_PPVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
@@ -2621,14 +2633,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_PPVphBC(const 
     }
 }
 
-static float get_model_113_PPVphBC(const void *register_data)
+static float get_model_113_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_PPVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
@@ -2639,14 +2651,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_PPVphCA(const 
     }
 }
 
-static float get_model_113_PPVphCA(const void *register_data)
+static float get_model_113_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
@@ -2657,14 +2669,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_PhVphA(const v
     }
 }
 
-static float get_model_113_PhVphA(const void *register_data)
+static float get_model_113_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
@@ -2675,14 +2687,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_PhVphB(const v
     }
 }
 
-static float get_model_113_PhVphB(const void *register_data)
+static float get_model_113_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
@@ -2693,14 +2705,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_PhVphC(const v
     }
 }
 
-static float get_model_113_PhVphC(const void *register_data)
+static float get_model_113_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->W);
@@ -2711,14 +2723,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_W(const void *
     }
 }
 
-static float get_model_113_W(const void *register_data)
+static float get_model_113_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->W);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->Hz);
@@ -2729,14 +2741,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_Hz(const void 
     }
 }
 
-static float get_model_113_Hz(const void *register_data)
+static float get_model_113_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->Hz);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->VA);
@@ -2747,14 +2759,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_VA(const void 
     }
 }
 
-static float get_model_113_VA(const void *register_data)
+static float get_model_113_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->VA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_VAr(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_VAr(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->VAr);
@@ -2765,14 +2777,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_VAr(const void
     }
 }
 
-static float get_model_113_VAr(const void *register_data)
+static float get_model_113_VAr(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->VAr);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PF);
@@ -2783,7 +2795,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_PF(const void 
     }
 }
 
-static float get_model_113_PF(const void *register_data)
+static float get_model_113_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->PF);
@@ -2791,7 +2803,7 @@ static float get_model_113_PF(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_WH(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_WH(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->WH);
@@ -2802,7 +2814,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_WH(const void 
     }
 }
 
-static float get_model_113_WH(const void *register_data)
+static float get_model_113_WH(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->WH);
@@ -2810,7 +2822,7 @@ static float get_model_113_WH(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_DCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_DCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->DCA);
@@ -2821,14 +2833,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_DCA(const void
     }
 }
 
-static float get_model_113_DCA(const void *register_data)
+static float get_model_113_DCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->DCA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_DCV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_DCV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->DCV);
@@ -2839,14 +2851,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_DCV(const void
     }
 }
 
-static float get_model_113_DCV(const void *register_data)
+static float get_model_113_DCV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->DCV);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_DCW(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_DCW(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->DCW);
@@ -2857,14 +2869,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_DCW(const void
     }
 }
 
-static float get_model_113_DCW(const void *register_data)
+static float get_model_113_DCW(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->DCW);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpCab(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpCab(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->TmpCab);
@@ -2875,14 +2887,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpCab(const v
     }
 }
 
-static float get_model_113_TmpCab(const void *register_data)
+static float get_model_113_TmpCab(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->TmpCab);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpSnk(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpSnk(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->TmpSnk);
@@ -2893,14 +2905,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpSnk(const v
     }
 }
 
-static float get_model_113_TmpSnk(const void *register_data)
+static float get_model_113_TmpSnk(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->TmpSnk);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpTrns(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpTrns(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->TmpTrns);
@@ -2911,14 +2923,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpTrns(const 
     }
 }
 
-static float get_model_113_TmpTrns(const void *register_data)
+static float get_model_113_TmpTrns(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->TmpTrns);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpOt(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpOt(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->TmpOt);
@@ -2929,7 +2941,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_113_TmpOt(const vo
     }
 }
 
-static float get_model_113_TmpOt(const void *register_data)
+static float get_model_113_TmpOt(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->TmpOt);
@@ -2983,7 +2995,7 @@ static const MetersSunSpecParser::ModelData model_113_data = {
 
 #include "model_201.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->A;
@@ -2994,7 +3006,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_A(const void *
     }
 }
 
-static float get_model_201_A(const void *register_data)
+static float get_model_201_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->A);
@@ -3002,7 +3014,7 @@ static float get_model_201_A(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->AphA;
@@ -3013,7 +3025,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_AphA(const voi
     }
 }
 
-static float get_model_201_AphA(const void *register_data)
+static float get_model_201_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->AphA);
@@ -3021,7 +3033,7 @@ static float get_model_201_AphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->AphB;
@@ -3032,7 +3044,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_AphB(const voi
     }
 }
 
-static float get_model_201_AphB(const void *register_data)
+static float get_model_201_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->AphB);
@@ -3040,7 +3052,7 @@ static float get_model_201_AphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->AphC;
@@ -3051,7 +3063,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_AphC(const voi
     }
 }
 
-static float get_model_201_AphC(const void *register_data)
+static float get_model_201_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->AphC);
@@ -3059,7 +3071,7 @@ static float get_model_201_AphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_PhV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PhV;
@@ -3070,7 +3082,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_PhV(const void
     }
 }
 
-static float get_model_201_PhV(const void *register_data)
+static float get_model_201_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->PhV);
@@ -3078,7 +3090,7 @@ static float get_model_201_PhV(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PhVphA;
@@ -3089,7 +3101,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_PhVphA(const v
     }
 }
 
-static float get_model_201_PhVphA(const void *register_data)
+static float get_model_201_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->PhVphA);
@@ -3097,7 +3109,7 @@ static float get_model_201_PhVphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PhVphB;
@@ -3108,7 +3120,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_PhVphB(const v
     }
 }
 
-static float get_model_201_PhVphB(const void *register_data)
+static float get_model_201_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->PhVphB);
@@ -3116,7 +3128,7 @@ static float get_model_201_PhVphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PhVphC;
@@ -3127,7 +3139,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_PhVphC(const v
     }
 }
 
-static float get_model_201_PhVphC(const void *register_data)
+static float get_model_201_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->PhVphC);
@@ -3135,7 +3147,7 @@ static float get_model_201_PhVphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_PPV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PPV;
@@ -3146,7 +3158,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_PPV(const void
     }
 }
 
-static float get_model_201_PPV(const void *register_data)
+static float get_model_201_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->PPV);
@@ -3154,7 +3166,7 @@ static float get_model_201_PPV(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_PPVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PPVphAB;
@@ -3165,7 +3177,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_PPVphAB(const 
     }
 }
 
-static float get_model_201_PPVphAB(const void *register_data)
+static float get_model_201_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->PPVphAB);
@@ -3173,7 +3185,7 @@ static float get_model_201_PPVphAB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_PPVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PPVphBC;
@@ -3184,7 +3196,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_PPVphBC(const 
     }
 }
 
-static float get_model_201_PPVphBC(const void *register_data)
+static float get_model_201_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->PPVphBC);
@@ -3192,7 +3204,7 @@ static float get_model_201_PPVphBC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_PPVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PPVphCA;
@@ -3203,7 +3215,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_PPVphCA(const 
     }
 }
 
-static float get_model_201_PPVphCA(const void *register_data)
+static float get_model_201_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->PPVphCA);
@@ -3211,7 +3223,7 @@ static float get_model_201_PPVphCA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->Hz;
@@ -3222,7 +3234,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_Hz(const void 
     }
 }
 
-static float get_model_201_Hz(const void *register_data)
+static float get_model_201_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->Hz);
@@ -3230,7 +3242,7 @@ static float get_model_201_Hz(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->W;
@@ -3241,7 +3253,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_W(const void *
     }
 }
 
-static float get_model_201_W(const void *register_data)
+static float get_model_201_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->W);
@@ -3249,7 +3261,7 @@ static float get_model_201_W(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_WphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->WphA;
@@ -3260,7 +3272,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_WphA(const voi
     }
 }
 
-static float get_model_201_WphA(const void *register_data)
+static float get_model_201_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->WphA);
@@ -3268,7 +3280,7 @@ static float get_model_201_WphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_WphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->WphB;
@@ -3279,7 +3291,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_WphB(const voi
     }
 }
 
-static float get_model_201_WphB(const void *register_data)
+static float get_model_201_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->WphB);
@@ -3287,7 +3299,7 @@ static float get_model_201_WphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_WphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->WphC;
@@ -3298,7 +3310,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_WphC(const voi
     }
 }
 
-static float get_model_201_WphC(const void *register_data)
+static float get_model_201_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->WphC);
@@ -3306,7 +3318,7 @@ static float get_model_201_WphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->VA;
@@ -3317,7 +3329,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_VA(const void 
     }
 }
 
-static float get_model_201_VA(const void *register_data)
+static float get_model_201_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->VA);
@@ -3325,7 +3337,7 @@ static float get_model_201_VA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_VAphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->VAphA;
@@ -3336,7 +3348,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_VAphA(const vo
     }
 }
 
-static float get_model_201_VAphA(const void *register_data)
+static float get_model_201_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->VAphA);
@@ -3344,7 +3356,7 @@ static float get_model_201_VAphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_VAphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->VAphB;
@@ -3355,7 +3367,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_VAphB(const vo
     }
 }
 
-static float get_model_201_VAphB(const void *register_data)
+static float get_model_201_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->VAphB);
@@ -3363,7 +3375,7 @@ static float get_model_201_VAphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_VAphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->VAphC;
@@ -3374,7 +3386,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_VAphC(const vo
     }
 }
 
-static float get_model_201_VAphC(const void *register_data)
+static float get_model_201_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->VAphC);
@@ -3382,7 +3394,7 @@ static float get_model_201_VAphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_VAR(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->VAR;
@@ -3393,7 +3405,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_VAR(const void
     }
 }
 
-static float get_model_201_VAR(const void *register_data)
+static float get_model_201_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->VAR);
@@ -3401,7 +3413,7 @@ static float get_model_201_VAR(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_VARphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->VARphA;
@@ -3412,7 +3424,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_VARphA(const v
     }
 }
 
-static float get_model_201_VARphA(const void *register_data)
+static float get_model_201_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->VARphA);
@@ -3420,7 +3432,7 @@ static float get_model_201_VARphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_VARphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->VARphB;
@@ -3431,7 +3443,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_VARphB(const v
     }
 }
 
-static float get_model_201_VARphB(const void *register_data)
+static float get_model_201_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->VARphB);
@@ -3439,7 +3451,7 @@ static float get_model_201_VARphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_VARphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->VARphC;
@@ -3450,7 +3462,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_VARphC(const v
     }
 }
 
-static float get_model_201_VARphC(const void *register_data)
+static float get_model_201_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->VARphC);
@@ -3458,7 +3470,7 @@ static float get_model_201_VARphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PF;
@@ -3469,7 +3481,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_PF(const void 
     }
 }
 
-static float get_model_201_PF(const void *register_data)
+static float get_model_201_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->PF);
@@ -3477,7 +3489,7 @@ static float get_model_201_PF(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_PFphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PFphA;
@@ -3488,7 +3500,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_PFphA(const vo
     }
 }
 
-static float get_model_201_PFphA(const void *register_data)
+static float get_model_201_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->PFphA);
@@ -3496,7 +3508,7 @@ static float get_model_201_PFphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_PFphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PFphB;
@@ -3507,7 +3519,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_PFphB(const vo
     }
 }
 
-static float get_model_201_PFphB(const void *register_data)
+static float get_model_201_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->PFphB);
@@ -3515,7 +3527,7 @@ static float get_model_201_PFphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_PFphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PFphC;
@@ -3526,7 +3538,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_201_PFphC(const vo
     }
 }
 
-static float get_model_201_PFphC(const void *register_data)
+static float get_model_201_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     float val = static_cast<float>(model->PFphC);
@@ -3534,668 +3546,796 @@ static float get_model_201_PFphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotWhExp(const void *register_data)
+static float get_model_201_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExp));
+    uint32_t uval = convert_me_uint32(model->TotWhExp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotWhExpPhA(const void *register_data)
+static float get_model_201_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExpPhA));
+    uint32_t uval = convert_me_uint32(model->TotWhExpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotWhExpPhB(const void *register_data)
+static float get_model_201_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExpPhB));
+    uint32_t uval = convert_me_uint32(model->TotWhExpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotWhExpPhC(const void *register_data)
+static float get_model_201_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExpPhC));
+    uint32_t uval = convert_me_uint32(model->TotWhExpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotWhImp(const void *register_data)
+static float get_model_201_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImp));
+    uint32_t uval = convert_me_uint32(model->TotWhImp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotWhImpPhA(const void *register_data)
+static float get_model_201_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImpPhA));
+    uint32_t uval = convert_me_uint32(model->TotWhImpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotWhImpPhB(const void *register_data)
+static float get_model_201_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImpPhB));
+    uint32_t uval = convert_me_uint32(model->TotWhImpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotWhImpPhC(const void *register_data)
+static float get_model_201_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImpPhC));
+    uint32_t uval = convert_me_uint32(model->TotWhImpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVAhExp(const void *register_data)
+static float get_model_201_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExp));
+    uint32_t uval = convert_me_uint32(model->TotVAhExp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVAhExpPhA(const void *register_data)
+static float get_model_201_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExpPhA));
+    uint32_t uval = convert_me_uint32(model->TotVAhExpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVAhExpPhB(const void *register_data)
+static float get_model_201_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExpPhB));
+    uint32_t uval = convert_me_uint32(model->TotVAhExpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVAhExpPhC(const void *register_data)
+static float get_model_201_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExpPhC));
+    uint32_t uval = convert_me_uint32(model->TotVAhExpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVAhImp(const void *register_data)
+static float get_model_201_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImp));
+    uint32_t uval = convert_me_uint32(model->TotVAhImp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVAhImpPhA(const void *register_data)
+static float get_model_201_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImpPhA));
+    uint32_t uval = convert_me_uint32(model->TotVAhImpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVAhImpPhB(const void *register_data)
+static float get_model_201_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImpPhB));
+    uint32_t uval = convert_me_uint32(model->TotVAhImpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVAhImpPhC(const void *register_data)
+static float get_model_201_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImpPhC));
+    uint32_t uval = convert_me_uint32(model->TotVAhImpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ1(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhImpQ1(const void *register_data)
+static float get_model_201_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ1PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ1PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhImpQ1PhA(const void *register_data)
+static float get_model_201_TotVArhImpQ1PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ1PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ1PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhImpQ1PhB(const void *register_data)
+static float get_model_201_TotVArhImpQ1PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ1PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ1PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhImpQ1PhC(const void *register_data)
+static float get_model_201_TotVArhImpQ1PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ2(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhImpQ2(const void *register_data)
+static float get_model_201_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ2PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ2PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhImpQ2PhA(const void *register_data)
+static float get_model_201_TotVArhImpQ2PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ2PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ2PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhImpQ2PhB(const void *register_data)
+static float get_model_201_TotVArhImpQ2PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ2PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhImpQ2PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhImpQ2PhC(const void *register_data)
+static float get_model_201_TotVArhImpQ2PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ3(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhExpQ3(const void *register_data)
+static float get_model_201_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ3PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ3PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhExpQ3PhA(const void *register_data)
+static float get_model_201_TotVArhExpQ3PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ3PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ3PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhExpQ3PhB(const void *register_data)
+static float get_model_201_TotVArhExpQ3PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ3PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ3PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhExpQ3PhC(const void *register_data)
+static float get_model_201_TotVArhExpQ3PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ4(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhExpQ4(const void *register_data)
+static float get_model_201_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ4PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ4PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhExpQ4PhA(const void *register_data)
+static float get_model_201_TotVArhExpQ4PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ4PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ4PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhExpQ4PhB(const void *register_data)
+static float get_model_201_TotVArhExpQ4PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ4PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_201_TotVArhExpQ4PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_201_TotVArhExpQ4PhC(const void *register_data)
+static float get_model_201_TotVArhExpQ4PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
@@ -4300,7 +4440,7 @@ static const MetersSunSpecParser::ModelData model_201_data = {
 
 #include "model_202.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->A;
@@ -4311,7 +4451,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_A(const void *
     }
 }
 
-static float get_model_202_A(const void *register_data)
+static float get_model_202_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->A);
@@ -4319,7 +4459,7 @@ static float get_model_202_A(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->AphA;
@@ -4330,7 +4470,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_AphA(const voi
     }
 }
 
-static float get_model_202_AphA(const void *register_data)
+static float get_model_202_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->AphA);
@@ -4338,7 +4478,7 @@ static float get_model_202_AphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->AphB;
@@ -4349,7 +4489,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_AphB(const voi
     }
 }
 
-static float get_model_202_AphB(const void *register_data)
+static float get_model_202_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->AphB);
@@ -4357,7 +4497,7 @@ static float get_model_202_AphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->AphC;
@@ -4368,7 +4508,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_AphC(const voi
     }
 }
 
-static float get_model_202_AphC(const void *register_data)
+static float get_model_202_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->AphC);
@@ -4376,7 +4516,7 @@ static float get_model_202_AphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PhV;
@@ -4387,7 +4527,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhV(const void
     }
 }
 
-static float get_model_202_PhV(const void *register_data)
+static float get_model_202_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->PhV);
@@ -4395,7 +4535,7 @@ static float get_model_202_PhV(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PhVphA;
@@ -4406,7 +4546,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphA(const v
     }
 }
 
-static float get_model_202_PhVphA(const void *register_data)
+static float get_model_202_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->PhVphA);
@@ -4414,7 +4554,7 @@ static float get_model_202_PhVphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PhVphB;
@@ -4425,7 +4565,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphB(const v
     }
 }
 
-static float get_model_202_PhVphB(const void *register_data)
+static float get_model_202_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->PhVphB);
@@ -4433,7 +4573,7 @@ static float get_model_202_PhVphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PhVphC;
@@ -4444,7 +4584,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphC(const v
     }
 }
 
-static float get_model_202_PhVphC(const void *register_data)
+static float get_model_202_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->PhVphC);
@@ -4452,7 +4592,7 @@ static float get_model_202_PhVphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_PPV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PPV;
@@ -4463,7 +4603,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_PPV(const void
     }
 }
 
-static float get_model_202_PPV(const void *register_data)
+static float get_model_202_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->PPV);
@@ -4471,7 +4611,7 @@ static float get_model_202_PPV(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PhVphAB;
@@ -4482,7 +4622,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphAB(const 
     }
 }
 
-static float get_model_202_PhVphAB(const void *register_data)
+static float get_model_202_PhVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->PhVphAB);
@@ -4490,7 +4630,7 @@ static float get_model_202_PhVphAB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PhVphBC;
@@ -4501,7 +4641,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphBC(const 
     }
 }
 
-static float get_model_202_PhVphBC(const void *register_data)
+static float get_model_202_PhVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->PhVphBC);
@@ -4509,7 +4649,7 @@ static float get_model_202_PhVphBC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PhVphCA;
@@ -4520,7 +4660,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_PhVphCA(const 
     }
 }
 
-static float get_model_202_PhVphCA(const void *register_data)
+static float get_model_202_PhVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->PhVphCA);
@@ -4528,7 +4668,7 @@ static float get_model_202_PhVphCA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->Hz;
@@ -4539,7 +4679,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_Hz(const void 
     }
 }
 
-static float get_model_202_Hz(const void *register_data)
+static float get_model_202_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->Hz);
@@ -4547,7 +4687,7 @@ static float get_model_202_Hz(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->W;
@@ -4558,7 +4698,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_W(const void *
     }
 }
 
-static float get_model_202_W(const void *register_data)
+static float get_model_202_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->W);
@@ -4566,7 +4706,7 @@ static float get_model_202_W(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_WphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->WphA;
@@ -4577,7 +4717,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_WphA(const voi
     }
 }
 
-static float get_model_202_WphA(const void *register_data)
+static float get_model_202_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->WphA);
@@ -4585,7 +4725,7 @@ static float get_model_202_WphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_WphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->WphB;
@@ -4596,7 +4736,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_WphB(const voi
     }
 }
 
-static float get_model_202_WphB(const void *register_data)
+static float get_model_202_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->WphB);
@@ -4604,7 +4744,7 @@ static float get_model_202_WphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_WphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->WphC;
@@ -4615,7 +4755,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_WphC(const voi
     }
 }
 
-static float get_model_202_WphC(const void *register_data)
+static float get_model_202_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->WphC);
@@ -4623,7 +4763,7 @@ static float get_model_202_WphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->VA;
@@ -4634,7 +4774,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_VA(const void 
     }
 }
 
-static float get_model_202_VA(const void *register_data)
+static float get_model_202_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->VA);
@@ -4642,7 +4782,7 @@ static float get_model_202_VA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_VAphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->VAphA;
@@ -4653,7 +4793,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_VAphA(const vo
     }
 }
 
-static float get_model_202_VAphA(const void *register_data)
+static float get_model_202_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->VAphA);
@@ -4661,7 +4801,7 @@ static float get_model_202_VAphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_VAphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->VAphB;
@@ -4672,7 +4812,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_VAphB(const vo
     }
 }
 
-static float get_model_202_VAphB(const void *register_data)
+static float get_model_202_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->VAphB);
@@ -4680,7 +4820,7 @@ static float get_model_202_VAphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_VAphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->VAphC;
@@ -4691,7 +4831,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_VAphC(const vo
     }
 }
 
-static float get_model_202_VAphC(const void *register_data)
+static float get_model_202_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->VAphC);
@@ -4699,7 +4839,7 @@ static float get_model_202_VAphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_VAR(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->VAR;
@@ -4710,7 +4850,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_VAR(const void
     }
 }
 
-static float get_model_202_VAR(const void *register_data)
+static float get_model_202_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->VAR);
@@ -4718,7 +4858,7 @@ static float get_model_202_VAR(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_VARphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->VARphA;
@@ -4729,7 +4869,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_VARphA(const v
     }
 }
 
-static float get_model_202_VARphA(const void *register_data)
+static float get_model_202_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->VARphA);
@@ -4737,7 +4877,7 @@ static float get_model_202_VARphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_VARphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->VARphB;
@@ -4748,7 +4888,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_VARphB(const v
     }
 }
 
-static float get_model_202_VARphB(const void *register_data)
+static float get_model_202_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->VARphB);
@@ -4756,7 +4896,7 @@ static float get_model_202_VARphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_VARphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->VARphC;
@@ -4767,7 +4907,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_VARphC(const v
     }
 }
 
-static float get_model_202_VARphC(const void *register_data)
+static float get_model_202_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->VARphC);
@@ -4775,7 +4915,7 @@ static float get_model_202_VARphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PF;
@@ -4786,7 +4926,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_PF(const void 
     }
 }
 
-static float get_model_202_PF(const void *register_data)
+static float get_model_202_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->PF);
@@ -4794,7 +4934,7 @@ static float get_model_202_PF(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_PFphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PFphA;
@@ -4805,7 +4945,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_PFphA(const vo
     }
 }
 
-static float get_model_202_PFphA(const void *register_data)
+static float get_model_202_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->PFphA);
@@ -4813,7 +4953,7 @@ static float get_model_202_PFphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_PFphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PFphB;
@@ -4824,7 +4964,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_PFphB(const vo
     }
 }
 
-static float get_model_202_PFphB(const void *register_data)
+static float get_model_202_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->PFphB);
@@ -4832,7 +4972,7 @@ static float get_model_202_PFphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_PFphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PFphC;
@@ -4843,7 +4983,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_202_PFphC(const vo
     }
 }
 
-static float get_model_202_PFphC(const void *register_data)
+static float get_model_202_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     float val = static_cast<float>(model->PFphC);
@@ -4851,668 +4991,796 @@ static float get_model_202_PFphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotWhExp(const void *register_data)
+static float get_model_202_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExp));
+    uint32_t uval = convert_me_uint32(model->TotWhExp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotWhExpPhA(const void *register_data)
+static float get_model_202_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExpPhA));
+    uint32_t uval = convert_me_uint32(model->TotWhExpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotWhExpPhB(const void *register_data)
+static float get_model_202_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExpPhB));
+    uint32_t uval = convert_me_uint32(model->TotWhExpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotWhExpPhC(const void *register_data)
+static float get_model_202_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExpPhC));
+    uint32_t uval = convert_me_uint32(model->TotWhExpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotWhImp(const void *register_data)
+static float get_model_202_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImp));
+    uint32_t uval = convert_me_uint32(model->TotWhImp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotWhImpPhA(const void *register_data)
+static float get_model_202_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImpPhA));
+    uint32_t uval = convert_me_uint32(model->TotWhImpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotWhImpPhB(const void *register_data)
+static float get_model_202_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImpPhB));
+    uint32_t uval = convert_me_uint32(model->TotWhImpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotWhImpPhC(const void *register_data)
+static float get_model_202_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImpPhC));
+    uint32_t uval = convert_me_uint32(model->TotWhImpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVAhExp(const void *register_data)
+static float get_model_202_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExp));
+    uint32_t uval = convert_me_uint32(model->TotVAhExp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVAhExpPhA(const void *register_data)
+static float get_model_202_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExpPhA));
+    uint32_t uval = convert_me_uint32(model->TotVAhExpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVAhExpPhB(const void *register_data)
+static float get_model_202_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExpPhB));
+    uint32_t uval = convert_me_uint32(model->TotVAhExpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVAhExpPhC(const void *register_data)
+static float get_model_202_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExpPhC));
+    uint32_t uval = convert_me_uint32(model->TotVAhExpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVAhImp(const void *register_data)
+static float get_model_202_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImp));
+    uint32_t uval = convert_me_uint32(model->TotVAhImp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVAhImpPhA(const void *register_data)
+static float get_model_202_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImpPhA));
+    uint32_t uval = convert_me_uint32(model->TotVAhImpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVAhImpPhB(const void *register_data)
+static float get_model_202_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImpPhB));
+    uint32_t uval = convert_me_uint32(model->TotVAhImpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVAhImpPhC(const void *register_data)
+static float get_model_202_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImpPhC));
+    uint32_t uval = convert_me_uint32(model->TotVAhImpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ1(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhImpQ1(const void *register_data)
+static float get_model_202_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ1PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ1PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhImpQ1PhA(const void *register_data)
+static float get_model_202_TotVArhImpQ1PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ1PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ1PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhImpQ1PhB(const void *register_data)
+static float get_model_202_TotVArhImpQ1PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ1PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ1PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhImpQ1PhC(const void *register_data)
+static float get_model_202_TotVArhImpQ1PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ2(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhImpQ2(const void *register_data)
+static float get_model_202_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ2PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ2PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhImpQ2PhA(const void *register_data)
+static float get_model_202_TotVArhImpQ2PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ2PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ2PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhImpQ2PhB(const void *register_data)
+static float get_model_202_TotVArhImpQ2PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ2PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhImpQ2PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhImpQ2PhC(const void *register_data)
+static float get_model_202_TotVArhImpQ2PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ3(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhExpQ3(const void *register_data)
+static float get_model_202_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ3PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ3PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhExpQ3PhA(const void *register_data)
+static float get_model_202_TotVArhExpQ3PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ3PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ3PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhExpQ3PhB(const void *register_data)
+static float get_model_202_TotVArhExpQ3PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ3PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ3PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhExpQ3PhC(const void *register_data)
+static float get_model_202_TotVArhExpQ3PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ4(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhExpQ4(const void *register_data)
+static float get_model_202_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ4PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ4PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhExpQ4PhA(const void *register_data)
+static float get_model_202_TotVArhExpQ4PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ4PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ4PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhExpQ4PhB(const void *register_data)
+static float get_model_202_TotVArhExpQ4PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ4PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_202_TotVArhExpQ4PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_202_TotVArhExpQ4PhC(const void *register_data)
+static float get_model_202_TotVArhExpQ4PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
@@ -5617,7 +5885,7 @@ static const MetersSunSpecParser::ModelData model_202_data = {
 
 #include "model_203.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->A;
@@ -5628,7 +5896,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_A(const void *
     }
 }
 
-static float get_model_203_A(const void *register_data)
+static float get_model_203_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->A);
@@ -5636,7 +5904,7 @@ static float get_model_203_A(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->AphA;
@@ -5647,7 +5915,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_AphA(const voi
     }
 }
 
-static float get_model_203_AphA(const void *register_data)
+static float get_model_203_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->AphA);
@@ -5655,7 +5923,7 @@ static float get_model_203_AphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->AphB;
@@ -5666,7 +5934,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_AphB(const voi
     }
 }
 
-static float get_model_203_AphB(const void *register_data)
+static float get_model_203_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->AphB);
@@ -5674,7 +5942,7 @@ static float get_model_203_AphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->AphC;
@@ -5685,7 +5953,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_AphC(const voi
     }
 }
 
-static float get_model_203_AphC(const void *register_data)
+static float get_model_203_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->AphC);
@@ -5693,7 +5961,7 @@ static float get_model_203_AphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PhV;
@@ -5704,7 +5972,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhV(const void
     }
 }
 
-static float get_model_203_PhV(const void *register_data)
+static float get_model_203_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->PhV);
@@ -5712,7 +5980,7 @@ static float get_model_203_PhV(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PhVphA;
@@ -5723,7 +5991,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphA(const v
     }
 }
 
-static float get_model_203_PhVphA(const void *register_data)
+static float get_model_203_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->PhVphA);
@@ -5731,7 +5999,7 @@ static float get_model_203_PhVphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PhVphB;
@@ -5742,7 +6010,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphB(const v
     }
 }
 
-static float get_model_203_PhVphB(const void *register_data)
+static float get_model_203_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->PhVphB);
@@ -5750,7 +6018,7 @@ static float get_model_203_PhVphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PhVphC;
@@ -5761,7 +6029,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphC(const v
     }
 }
 
-static float get_model_203_PhVphC(const void *register_data)
+static float get_model_203_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->PhVphC);
@@ -5769,7 +6037,7 @@ static float get_model_203_PhVphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_PPV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PPV;
@@ -5780,7 +6048,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_PPV(const void
     }
 }
 
-static float get_model_203_PPV(const void *register_data)
+static float get_model_203_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->PPV);
@@ -5788,7 +6056,7 @@ static float get_model_203_PPV(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PhVphAB;
@@ -5799,7 +6067,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphAB(const 
     }
 }
 
-static float get_model_203_PhVphAB(const void *register_data)
+static float get_model_203_PhVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->PhVphAB);
@@ -5807,7 +6075,7 @@ static float get_model_203_PhVphAB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PhVphBC;
@@ -5818,7 +6086,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphBC(const 
     }
 }
 
-static float get_model_203_PhVphBC(const void *register_data)
+static float get_model_203_PhVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->PhVphBC);
@@ -5826,7 +6094,7 @@ static float get_model_203_PhVphBC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PhVphCA;
@@ -5837,7 +6105,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_PhVphCA(const 
     }
 }
 
-static float get_model_203_PhVphCA(const void *register_data)
+static float get_model_203_PhVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->PhVphCA);
@@ -5845,7 +6113,7 @@ static float get_model_203_PhVphCA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->Hz;
@@ -5856,7 +6124,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_Hz(const void 
     }
 }
 
-static float get_model_203_Hz(const void *register_data)
+static float get_model_203_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->Hz);
@@ -5864,7 +6132,7 @@ static float get_model_203_Hz(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->W;
@@ -5875,7 +6143,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_W(const void *
     }
 }
 
-static float get_model_203_W(const void *register_data)
+static float get_model_203_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->W);
@@ -5883,7 +6151,7 @@ static float get_model_203_W(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_WphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->WphA;
@@ -5894,7 +6162,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_WphA(const voi
     }
 }
 
-static float get_model_203_WphA(const void *register_data)
+static float get_model_203_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->WphA);
@@ -5902,7 +6170,7 @@ static float get_model_203_WphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_WphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->WphB;
@@ -5913,7 +6181,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_WphB(const voi
     }
 }
 
-static float get_model_203_WphB(const void *register_data)
+static float get_model_203_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->WphB);
@@ -5921,7 +6189,7 @@ static float get_model_203_WphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_WphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->WphC;
@@ -5932,7 +6200,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_WphC(const voi
     }
 }
 
-static float get_model_203_WphC(const void *register_data)
+static float get_model_203_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->WphC);
@@ -5940,7 +6208,7 @@ static float get_model_203_WphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->VA;
@@ -5951,7 +6219,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_VA(const void 
     }
 }
 
-static float get_model_203_VA(const void *register_data)
+static float get_model_203_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->VA);
@@ -5959,7 +6227,7 @@ static float get_model_203_VA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_VAphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->VAphA;
@@ -5970,7 +6238,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_VAphA(const vo
     }
 }
 
-static float get_model_203_VAphA(const void *register_data)
+static float get_model_203_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->VAphA);
@@ -5978,7 +6246,7 @@ static float get_model_203_VAphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_VAphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->VAphB;
@@ -5989,7 +6257,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_VAphB(const vo
     }
 }
 
-static float get_model_203_VAphB(const void *register_data)
+static float get_model_203_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->VAphB);
@@ -5997,7 +6265,7 @@ static float get_model_203_VAphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_VAphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->VAphC;
@@ -6008,7 +6276,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_VAphC(const vo
     }
 }
 
-static float get_model_203_VAphC(const void *register_data)
+static float get_model_203_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->VAphC);
@@ -6016,7 +6284,7 @@ static float get_model_203_VAphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_VAR(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->VAR;
@@ -6027,7 +6295,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_VAR(const void
     }
 }
 
-static float get_model_203_VAR(const void *register_data)
+static float get_model_203_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->VAR);
@@ -6035,7 +6303,7 @@ static float get_model_203_VAR(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_VARphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->VARphA;
@@ -6046,7 +6314,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_VARphA(const v
     }
 }
 
-static float get_model_203_VARphA(const void *register_data)
+static float get_model_203_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->VARphA);
@@ -6054,7 +6322,7 @@ static float get_model_203_VARphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_VARphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->VARphB;
@@ -6065,7 +6333,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_VARphB(const v
     }
 }
 
-static float get_model_203_VARphB(const void *register_data)
+static float get_model_203_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->VARphB);
@@ -6073,7 +6341,7 @@ static float get_model_203_VARphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_VARphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->VARphC;
@@ -6084,7 +6352,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_VARphC(const v
     }
 }
 
-static float get_model_203_VARphC(const void *register_data)
+static float get_model_203_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->VARphC);
@@ -6092,7 +6360,7 @@ static float get_model_203_VARphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PF;
@@ -6103,7 +6371,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_PF(const void 
     }
 }
 
-static float get_model_203_PF(const void *register_data)
+static float get_model_203_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->PF);
@@ -6111,7 +6379,7 @@ static float get_model_203_PF(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_PFphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PFphA;
@@ -6122,7 +6390,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_PFphA(const vo
     }
 }
 
-static float get_model_203_PFphA(const void *register_data)
+static float get_model_203_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->PFphA);
@@ -6130,7 +6398,7 @@ static float get_model_203_PFphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_PFphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PFphB;
@@ -6141,7 +6409,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_PFphB(const vo
     }
 }
 
-static float get_model_203_PFphB(const void *register_data)
+static float get_model_203_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->PFphB);
@@ -6149,7 +6417,7 @@ static float get_model_203_PFphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_PFphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PFphC;
@@ -6160,7 +6428,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_203_PFphC(const vo
     }
 }
 
-static float get_model_203_PFphC(const void *register_data)
+static float get_model_203_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     float val = static_cast<float>(model->PFphC);
@@ -6168,668 +6436,796 @@ static float get_model_203_PFphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotWhExp(const void *register_data)
+static float get_model_203_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExp));
+    uint32_t uval = convert_me_uint32(model->TotWhExp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotWhExpPhA(const void *register_data)
+static float get_model_203_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExpPhA));
+    uint32_t uval = convert_me_uint32(model->TotWhExpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotWhExpPhB(const void *register_data)
+static float get_model_203_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExpPhB));
+    uint32_t uval = convert_me_uint32(model->TotWhExpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotWhExpPhC(const void *register_data)
+static float get_model_203_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExpPhC));
+    uint32_t uval = convert_me_uint32(model->TotWhExpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotWhImp(const void *register_data)
+static float get_model_203_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImp));
+    uint32_t uval = convert_me_uint32(model->TotWhImp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotWhImpPhA(const void *register_data)
+static float get_model_203_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImpPhA));
+    uint32_t uval = convert_me_uint32(model->TotWhImpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotWhImpPhB(const void *register_data)
+static float get_model_203_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImpPhB));
+    uint32_t uval = convert_me_uint32(model->TotWhImpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotWhImpPhC(const void *register_data)
+static float get_model_203_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImpPhC));
+    uint32_t uval = convert_me_uint32(model->TotWhImpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVAhExp(const void *register_data)
+static float get_model_203_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExp));
+    uint32_t uval = convert_me_uint32(model->TotVAhExp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVAhExpPhA(const void *register_data)
+static float get_model_203_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExpPhA));
+    uint32_t uval = convert_me_uint32(model->TotVAhExpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVAhExpPhB(const void *register_data)
+static float get_model_203_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExpPhB));
+    uint32_t uval = convert_me_uint32(model->TotVAhExpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVAhExpPhC(const void *register_data)
+static float get_model_203_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExpPhC));
+    uint32_t uval = convert_me_uint32(model->TotVAhExpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVAhImp(const void *register_data)
+static float get_model_203_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImp));
+    uint32_t uval = convert_me_uint32(model->TotVAhImp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVAhImpPhA(const void *register_data)
+static float get_model_203_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImpPhA));
+    uint32_t uval = convert_me_uint32(model->TotVAhImpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVAhImpPhB(const void *register_data)
+static float get_model_203_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImpPhB));
+    uint32_t uval = convert_me_uint32(model->TotVAhImpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVAhImpPhC(const void *register_data)
+static float get_model_203_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImpPhC));
+    uint32_t uval = convert_me_uint32(model->TotVAhImpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ1(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhImpQ1(const void *register_data)
+static float get_model_203_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ1PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ1PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhImpQ1PhA(const void *register_data)
+static float get_model_203_TotVArhImpQ1PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ1PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ1PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhImpQ1PhB(const void *register_data)
+static float get_model_203_TotVArhImpQ1PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ1PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ1PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhImpQ1PhC(const void *register_data)
+static float get_model_203_TotVArhImpQ1PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ2(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhImpQ2(const void *register_data)
+static float get_model_203_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ2PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ2PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhImpQ2PhA(const void *register_data)
+static float get_model_203_TotVArhImpQ2PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ2PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ2PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhImpQ2PhB(const void *register_data)
+static float get_model_203_TotVArhImpQ2PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ2PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhImpQ2PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhImpQ2PhC(const void *register_data)
+static float get_model_203_TotVArhImpQ2PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ3(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhExpQ3(const void *register_data)
+static float get_model_203_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ3PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ3PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhExpQ3PhA(const void *register_data)
+static float get_model_203_TotVArhExpQ3PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ3PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ3PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhExpQ3PhB(const void *register_data)
+static float get_model_203_TotVArhExpQ3PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ3PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ3PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhExpQ3PhC(const void *register_data)
+static float get_model_203_TotVArhExpQ3PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ4(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhExpQ4(const void *register_data)
+static float get_model_203_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ4PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ4PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhExpQ4PhA(const void *register_data)
+static float get_model_203_TotVArhExpQ4PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ4PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ4PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhExpQ4PhB(const void *register_data)
+static float get_model_203_TotVArhExpQ4PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ4PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_203_TotVArhExpQ4PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_203_TotVArhExpQ4PhC(const void *register_data)
+static float get_model_203_TotVArhExpQ4PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
@@ -6934,7 +7330,7 @@ static const MetersSunSpecParser::ModelData model_203_data = {
 
 #include "model_204.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->A;
@@ -6945,7 +7341,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_A(const void *
     }
 }
 
-static float get_model_204_A(const void *register_data)
+static float get_model_204_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->A);
@@ -6953,7 +7349,7 @@ static float get_model_204_A(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->AphA;
@@ -6964,7 +7360,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_AphA(const voi
     }
 }
 
-static float get_model_204_AphA(const void *register_data)
+static float get_model_204_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->AphA);
@@ -6972,7 +7368,7 @@ static float get_model_204_AphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->AphB;
@@ -6983,7 +7379,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_AphB(const voi
     }
 }
 
-static float get_model_204_AphB(const void *register_data)
+static float get_model_204_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->AphB);
@@ -6991,7 +7387,7 @@ static float get_model_204_AphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->AphC;
@@ -7002,7 +7398,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_AphC(const voi
     }
 }
 
-static float get_model_204_AphC(const void *register_data)
+static float get_model_204_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->AphC);
@@ -7010,7 +7406,7 @@ static float get_model_204_AphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PhV;
@@ -7021,7 +7417,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhV(const void
     }
 }
 
-static float get_model_204_PhV(const void *register_data)
+static float get_model_204_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->PhV);
@@ -7029,7 +7425,7 @@ static float get_model_204_PhV(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PhVphA;
@@ -7040,7 +7436,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphA(const v
     }
 }
 
-static float get_model_204_PhVphA(const void *register_data)
+static float get_model_204_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->PhVphA);
@@ -7048,7 +7444,7 @@ static float get_model_204_PhVphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PhVphB;
@@ -7059,7 +7455,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphB(const v
     }
 }
 
-static float get_model_204_PhVphB(const void *register_data)
+static float get_model_204_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->PhVphB);
@@ -7067,7 +7463,7 @@ static float get_model_204_PhVphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PhVphC;
@@ -7078,7 +7474,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphC(const v
     }
 }
 
-static float get_model_204_PhVphC(const void *register_data)
+static float get_model_204_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->PhVphC);
@@ -7086,7 +7482,7 @@ static float get_model_204_PhVphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_PPV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PPV;
@@ -7097,7 +7493,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_PPV(const void
     }
 }
 
-static float get_model_204_PPV(const void *register_data)
+static float get_model_204_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->PPV);
@@ -7105,7 +7501,7 @@ static float get_model_204_PPV(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PhVphAB;
@@ -7116,7 +7512,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphAB(const 
     }
 }
 
-static float get_model_204_PhVphAB(const void *register_data)
+static float get_model_204_PhVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->PhVphAB);
@@ -7124,7 +7520,7 @@ static float get_model_204_PhVphAB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PhVphBC;
@@ -7135,7 +7531,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphBC(const 
     }
 }
 
-static float get_model_204_PhVphBC(const void *register_data)
+static float get_model_204_PhVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->PhVphBC);
@@ -7143,7 +7539,7 @@ static float get_model_204_PhVphBC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PhVphCA;
@@ -7154,7 +7550,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_PhVphCA(const 
     }
 }
 
-static float get_model_204_PhVphCA(const void *register_data)
+static float get_model_204_PhVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->PhVphCA);
@@ -7162,7 +7558,7 @@ static float get_model_204_PhVphCA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->Hz;
@@ -7173,7 +7569,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_Hz(const void 
     }
 }
 
-static float get_model_204_Hz(const void *register_data)
+static float get_model_204_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->Hz);
@@ -7181,7 +7577,7 @@ static float get_model_204_Hz(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->W;
@@ -7192,7 +7588,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_W(const void *
     }
 }
 
-static float get_model_204_W(const void *register_data)
+static float get_model_204_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->W);
@@ -7200,7 +7596,7 @@ static float get_model_204_W(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_WphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->WphA;
@@ -7211,7 +7607,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_WphA(const voi
     }
 }
 
-static float get_model_204_WphA(const void *register_data)
+static float get_model_204_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->WphA);
@@ -7219,7 +7615,7 @@ static float get_model_204_WphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_WphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->WphB;
@@ -7230,7 +7626,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_WphB(const voi
     }
 }
 
-static float get_model_204_WphB(const void *register_data)
+static float get_model_204_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->WphB);
@@ -7238,7 +7634,7 @@ static float get_model_204_WphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_WphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->WphC;
@@ -7249,7 +7645,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_WphC(const voi
     }
 }
 
-static float get_model_204_WphC(const void *register_data)
+static float get_model_204_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->WphC);
@@ -7257,7 +7653,7 @@ static float get_model_204_WphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->VA;
@@ -7268,7 +7664,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_VA(const void 
     }
 }
 
-static float get_model_204_VA(const void *register_data)
+static float get_model_204_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->VA);
@@ -7276,7 +7672,7 @@ static float get_model_204_VA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_VAphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->VAphA;
@@ -7287,7 +7683,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_VAphA(const vo
     }
 }
 
-static float get_model_204_VAphA(const void *register_data)
+static float get_model_204_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->VAphA);
@@ -7295,7 +7691,7 @@ static float get_model_204_VAphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_VAphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->VAphB;
@@ -7306,7 +7702,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_VAphB(const vo
     }
 }
 
-static float get_model_204_VAphB(const void *register_data)
+static float get_model_204_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->VAphB);
@@ -7314,7 +7710,7 @@ static float get_model_204_VAphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_VAphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->VAphC;
@@ -7325,7 +7721,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_VAphC(const vo
     }
 }
 
-static float get_model_204_VAphC(const void *register_data)
+static float get_model_204_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->VAphC);
@@ -7333,7 +7729,7 @@ static float get_model_204_VAphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_VAR(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->VAR;
@@ -7344,7 +7740,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_VAR(const void
     }
 }
 
-static float get_model_204_VAR(const void *register_data)
+static float get_model_204_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->VAR);
@@ -7352,7 +7748,7 @@ static float get_model_204_VAR(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_VARphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->VARphA;
@@ -7363,7 +7759,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_VARphA(const v
     }
 }
 
-static float get_model_204_VARphA(const void *register_data)
+static float get_model_204_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->VARphA);
@@ -7371,7 +7767,7 @@ static float get_model_204_VARphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_VARphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->VARphB;
@@ -7382,7 +7778,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_VARphB(const v
     }
 }
 
-static float get_model_204_VARphB(const void *register_data)
+static float get_model_204_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->VARphB);
@@ -7390,7 +7786,7 @@ static float get_model_204_VARphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_VARphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->VARphC;
@@ -7401,7 +7797,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_VARphC(const v
     }
 }
 
-static float get_model_204_VARphC(const void *register_data)
+static float get_model_204_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->VARphC);
@@ -7409,7 +7805,7 @@ static float get_model_204_VARphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PF;
@@ -7420,7 +7816,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_PF(const void 
     }
 }
 
-static float get_model_204_PF(const void *register_data)
+static float get_model_204_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->PF);
@@ -7428,7 +7824,7 @@ static float get_model_204_PF(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_PFphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PFphA;
@@ -7439,7 +7835,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_PFphA(const vo
     }
 }
 
-static float get_model_204_PFphA(const void *register_data)
+static float get_model_204_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->PFphA);
@@ -7447,7 +7843,7 @@ static float get_model_204_PFphA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_PFphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PFphB;
@@ -7458,7 +7854,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_PFphB(const vo
     }
 }
 
-static float get_model_204_PFphB(const void *register_data)
+static float get_model_204_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->PFphB);
@@ -7466,7 +7862,7 @@ static float get_model_204_PFphB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_PFphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PFphC;
@@ -7477,7 +7873,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_204_PFphC(const vo
     }
 }
 
-static float get_model_204_PFphC(const void *register_data)
+static float get_model_204_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     float val = static_cast<float>(model->PFphC);
@@ -7485,668 +7881,796 @@ static float get_model_204_PFphC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotWhExp(const void *register_data)
+static float get_model_204_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExp));
+    uint32_t uval = convert_me_uint32(model->TotWhExp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotWhExpPhA(const void *register_data)
+static float get_model_204_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExpPhA));
+    uint32_t uval = convert_me_uint32(model->TotWhExpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotWhExpPhB(const void *register_data)
+static float get_model_204_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExpPhB));
+    uint32_t uval = convert_me_uint32(model->TotWhExpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhExpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotWhExpPhC(const void *register_data)
+static float get_model_204_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhExpPhC));
+    uint32_t uval = convert_me_uint32(model->TotWhExpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotWhImp(const void *register_data)
+static float get_model_204_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImp));
+    uint32_t uval = convert_me_uint32(model->TotWhImp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotWhImpPhA(const void *register_data)
+static float get_model_204_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImpPhA));
+    uint32_t uval = convert_me_uint32(model->TotWhImpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotWhImpPhB(const void *register_data)
+static float get_model_204_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImpPhB));
+    uint32_t uval = convert_me_uint32(model->TotWhImpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotWhImpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotWhImpPhC(const void *register_data)
+static float get_model_204_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotWhImpPhC));
+    uint32_t uval = convert_me_uint32(model->TotWhImpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotWh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVAhExp(const void *register_data)
+static float get_model_204_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExp));
+    uint32_t uval = convert_me_uint32(model->TotVAhExp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVAhExpPhA(const void *register_data)
+static float get_model_204_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExpPhA));
+    uint32_t uval = convert_me_uint32(model->TotVAhExpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVAhExpPhB(const void *register_data)
+static float get_model_204_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExpPhB));
+    uint32_t uval = convert_me_uint32(model->TotVAhExpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhExpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVAhExpPhC(const void *register_data)
+static float get_model_204_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhExpPhC));
+    uint32_t uval = convert_me_uint32(model->TotVAhExpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImp);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVAhImp(const void *register_data)
+static float get_model_204_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImp));
+    uint32_t uval = convert_me_uint32(model->TotVAhImp);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImpPhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVAhImpPhA(const void *register_data)
+static float get_model_204_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImpPhA));
+    uint32_t uval = convert_me_uint32(model->TotVAhImpPhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImpPhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVAhImpPhB(const void *register_data)
+static float get_model_204_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImpPhB));
+    uint32_t uval = convert_me_uint32(model->TotVAhImpPhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVAhImpPhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVAhImpPhC(const void *register_data)
+static float get_model_204_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVAhImpPhC));
+    uint32_t uval = convert_me_uint32(model->TotVAhImpPhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ1(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhImpQ1(const void *register_data)
+static float get_model_204_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ1PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ1PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhImpQ1PhA(const void *register_data)
+static float get_model_204_TotVArhImpQ1PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ1PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ1PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhImpQ1PhB(const void *register_data)
+static float get_model_204_TotVArhImpQ1PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ1PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ1PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ1PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhImpQ1PhC(const void *register_data)
+static float get_model_204_TotVArhImpQ1PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ1PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ1PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ2(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhImpQ2(const void *register_data)
+static float get_model_204_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ2PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ2PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhImpQ2PhA(const void *register_data)
+static float get_model_204_TotVArhImpQ2PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ2PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ2PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhImpQ2PhB(const void *register_data)
+static float get_model_204_TotVArhImpQ2PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ2PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhImpQ2PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhImpQ2PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhImpQ2PhC(const void *register_data)
+static float get_model_204_TotVArhImpQ2PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhImpQ2PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhImpQ2PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ3(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhExpQ3(const void *register_data)
+static float get_model_204_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ3PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ3PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhExpQ3PhA(const void *register_data)
+static float get_model_204_TotVArhExpQ3PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ3PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ3PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhExpQ3PhB(const void *register_data)
+static float get_model_204_TotVArhExpQ3PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ3PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ3PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ3PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhExpQ3PhC(const void *register_data)
+static float get_model_204_TotVArhExpQ3PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ3PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ3PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ4(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhExpQ4(const void *register_data)
+static float get_model_204_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ4PhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ4PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4PhA);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhExpQ4PhA(const void *register_data)
+static float get_model_204_TotVArhExpQ4PhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4PhA));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4PhA);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ4PhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ4PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4PhB);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhExpQ4PhB(const void *register_data)
+static float get_model_204_TotVArhExpQ4PhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4PhB));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4PhB);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ4PhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_204_TotVArhExpQ4PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     uint32_t val = convert_me_uint32(model->TotVArhExpQ4PhC);
-    if (val == UINT32_MAX) {
+    uint32_t not_implemented_val = quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32 ? 0x80000000u : UINT32_MAX;
+    if (val == not_implemented_val) {
         return MetersSunSpecParser::ValueDetectionResult::Unavailable;
     } else {
         return MetersSunSpecParser::ValueDetectionResult::Available;
     }
 }
 
-static float get_model_204_TotVArhExpQ4PhC(const void *register_data)
+static float get_model_204_TotVArhExpQ4PhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
-    float val = static_cast<float>(convert_me_uint32(model->TotVArhExpQ4PhC));
+    uint32_t uval = convert_me_uint32(model->TotVArhExpQ4PhC);
+    if (uval > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32)
+        uval = -uval;
+    float val = static_cast<float>(uval);
     if (val == 0.0f)
         return NAN;
     val *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
@@ -8251,7 +8775,7 @@ static const MetersSunSpecParser::ModelData model_204_data = {
 
 #include "model_211.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->A);
@@ -8262,14 +8786,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_A(const void *
     }
 }
 
-static float get_model_211_A(const void *register_data)
+static float get_model_211_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->A);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->AphA);
@@ -8280,14 +8804,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_AphA(const voi
     }
 }
 
-static float get_model_211_AphA(const void *register_data)
+static float get_model_211_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->AphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->AphB);
@@ -8298,14 +8822,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_AphB(const voi
     }
 }
 
-static float get_model_211_AphB(const void *register_data)
+static float get_model_211_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->AphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->AphC);
@@ -8316,14 +8840,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_AphC(const voi
     }
 }
 
-static float get_model_211_AphC(const void *register_data)
+static float get_model_211_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->AphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_PhV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PhV);
@@ -8334,14 +8858,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_PhV(const void
     }
 }
 
-static float get_model_211_PhV(const void *register_data)
+static float get_model_211_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PhV);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
@@ -8352,14 +8876,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_PhVphA(const v
     }
 }
 
-static float get_model_211_PhVphA(const void *register_data)
+static float get_model_211_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
@@ -8370,14 +8894,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_PhVphB(const v
     }
 }
 
-static float get_model_211_PhVphB(const void *register_data)
+static float get_model_211_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
@@ -8388,14 +8912,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_PhVphC(const v
     }
 }
 
-static float get_model_211_PhVphC(const void *register_data)
+static float get_model_211_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_PPV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PPV);
@@ -8406,14 +8930,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_PPV(const void
     }
 }
 
-static float get_model_211_PPV(const void *register_data)
+static float get_model_211_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PPV);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_PPVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
@@ -8424,14 +8948,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_PPVphAB(const 
     }
 }
 
-static float get_model_211_PPVphAB(const void *register_data)
+static float get_model_211_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_PPVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
@@ -8442,14 +8966,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_PPVphBC(const 
     }
 }
 
-static float get_model_211_PPVphBC(const void *register_data)
+static float get_model_211_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_PPVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
@@ -8460,14 +8984,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_PPVphCA(const 
     }
 }
 
-static float get_model_211_PPVphCA(const void *register_data)
+static float get_model_211_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->Hz);
@@ -8478,14 +9002,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_Hz(const void 
     }
 }
 
-static float get_model_211_Hz(const void *register_data)
+static float get_model_211_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->Hz);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->W);
@@ -8496,14 +9020,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_W(const void *
     }
 }
 
-static float get_model_211_W(const void *register_data)
+static float get_model_211_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->W);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_WphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->WphA);
@@ -8514,14 +9038,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_WphA(const voi
     }
 }
 
-static float get_model_211_WphA(const void *register_data)
+static float get_model_211_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->WphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_WphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->WphB);
@@ -8532,14 +9056,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_WphB(const voi
     }
 }
 
-static float get_model_211_WphB(const void *register_data)
+static float get_model_211_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->WphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_WphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->WphC);
@@ -8550,14 +9074,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_WphC(const voi
     }
 }
 
-static float get_model_211_WphC(const void *register_data)
+static float get_model_211_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->WphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VA);
@@ -8568,14 +9092,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_VA(const void 
     }
 }
 
-static float get_model_211_VA(const void *register_data)
+static float get_model_211_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_VAphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VAphA);
@@ -8586,14 +9110,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_VAphA(const vo
     }
 }
 
-static float get_model_211_VAphA(const void *register_data)
+static float get_model_211_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VAphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_VAphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VAphB);
@@ -8604,14 +9128,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_VAphB(const vo
     }
 }
 
-static float get_model_211_VAphB(const void *register_data)
+static float get_model_211_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VAphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_VAphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VAphC);
@@ -8622,14 +9146,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_VAphC(const vo
     }
 }
 
-static float get_model_211_VAphC(const void *register_data)
+static float get_model_211_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VAphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_VAR(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VAR);
@@ -8640,14 +9164,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_VAR(const void
     }
 }
 
-static float get_model_211_VAR(const void *register_data)
+static float get_model_211_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VAR);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_VARphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VARphA);
@@ -8658,14 +9182,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_VARphA(const v
     }
 }
 
-static float get_model_211_VARphA(const void *register_data)
+static float get_model_211_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VARphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_VARphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VARphB);
@@ -8676,14 +9200,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_VARphB(const v
     }
 }
 
-static float get_model_211_VARphB(const void *register_data)
+static float get_model_211_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VARphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_VARphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VARphC);
@@ -8694,14 +9218,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_VARphC(const v
     }
 }
 
-static float get_model_211_VARphC(const void *register_data)
+static float get_model_211_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->VARphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PF);
@@ -8712,14 +9236,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_PF(const void 
     }
 }
 
-static float get_model_211_PF(const void *register_data)
+static float get_model_211_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PF);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_PFphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PFphA);
@@ -8730,14 +9254,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_PFphA(const vo
     }
 }
 
-static float get_model_211_PFphA(const void *register_data)
+static float get_model_211_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PFphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_PFphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PFphB);
@@ -8748,14 +9272,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_PFphB(const vo
     }
 }
 
-static float get_model_211_PFphB(const void *register_data)
+static float get_model_211_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PFphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_PFphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PFphC);
@@ -8766,14 +9290,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_PFphC(const vo
     }
 }
 
-static float get_model_211_PFphC(const void *register_data)
+static float get_model_211_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->PFphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhExp);
@@ -8784,7 +9308,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhExp(const
     }
 }
 
-static float get_model_211_TotWhExp(const void *register_data)
+static float get_model_211_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhExp);
@@ -8792,7 +9316,7 @@ static float get_model_211_TotWhExp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhA);
@@ -8803,7 +9327,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhExpPhA(co
     }
 }
 
-static float get_model_211_TotWhExpPhA(const void *register_data)
+static float get_model_211_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhA);
@@ -8811,7 +9335,7 @@ static float get_model_211_TotWhExpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhB);
@@ -8822,7 +9346,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhExpPhB(co
     }
 }
 
-static float get_model_211_TotWhExpPhB(const void *register_data)
+static float get_model_211_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhB);
@@ -8830,7 +9354,7 @@ static float get_model_211_TotWhExpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhC);
@@ -8841,7 +9365,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhExpPhC(co
     }
 }
 
-static float get_model_211_TotWhExpPhC(const void *register_data)
+static float get_model_211_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhC);
@@ -8849,7 +9373,7 @@ static float get_model_211_TotWhExpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhImp);
@@ -8860,7 +9384,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhImp(const
     }
 }
 
-static float get_model_211_TotWhImp(const void *register_data)
+static float get_model_211_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhImp);
@@ -8868,7 +9392,7 @@ static float get_model_211_TotWhImp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhA);
@@ -8879,7 +9403,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhImpPhA(co
     }
 }
 
-static float get_model_211_TotWhImpPhA(const void *register_data)
+static float get_model_211_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhA);
@@ -8887,7 +9411,7 @@ static float get_model_211_TotWhImpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhB);
@@ -8898,7 +9422,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhImpPhB(co
     }
 }
 
-static float get_model_211_TotWhImpPhB(const void *register_data)
+static float get_model_211_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhB);
@@ -8906,7 +9430,7 @@ static float get_model_211_TotWhImpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhC);
@@ -8917,7 +9441,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotWhImpPhC(co
     }
 }
 
-static float get_model_211_TotWhImpPhC(const void *register_data)
+static float get_model_211_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhC);
@@ -8925,7 +9449,7 @@ static float get_model_211_TotWhImpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhExp);
@@ -8936,7 +9460,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhExp(cons
     }
 }
 
-static float get_model_211_TotVAhExp(const void *register_data)
+static float get_model_211_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhExp);
@@ -8944,7 +9468,7 @@ static float get_model_211_TotVAhExp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhA);
@@ -8955,7 +9479,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhExpPhA(c
     }
 }
 
-static float get_model_211_TotVAhExpPhA(const void *register_data)
+static float get_model_211_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhA);
@@ -8963,7 +9487,7 @@ static float get_model_211_TotVAhExpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhB);
@@ -8974,7 +9498,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhExpPhB(c
     }
 }
 
-static float get_model_211_TotVAhExpPhB(const void *register_data)
+static float get_model_211_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhB);
@@ -8982,7 +9506,7 @@ static float get_model_211_TotVAhExpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhC);
@@ -8993,7 +9517,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhExpPhC(c
     }
 }
 
-static float get_model_211_TotVAhExpPhC(const void *register_data)
+static float get_model_211_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhC);
@@ -9001,7 +9525,7 @@ static float get_model_211_TotVAhExpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhImp);
@@ -9012,7 +9536,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhImp(cons
     }
 }
 
-static float get_model_211_TotVAhImp(const void *register_data)
+static float get_model_211_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhImp);
@@ -9020,7 +9544,7 @@ static float get_model_211_TotVAhImp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhA);
@@ -9031,7 +9555,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhImpPhA(c
     }
 }
 
-static float get_model_211_TotVAhImpPhA(const void *register_data)
+static float get_model_211_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhA);
@@ -9039,7 +9563,7 @@ static float get_model_211_TotVAhImpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhB);
@@ -9050,7 +9574,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhImpPhB(c
     }
 }
 
-static float get_model_211_TotVAhImpPhB(const void *register_data)
+static float get_model_211_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhB);
@@ -9058,7 +9582,7 @@ static float get_model_211_TotVAhImpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhC);
@@ -9069,7 +9593,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVAhImpPhC(c
     }
 }
 
-static float get_model_211_TotVAhImpPhC(const void *register_data)
+static float get_model_211_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhC);
@@ -9077,7 +9601,7 @@ static float get_model_211_TotVAhImpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ1(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1);
@@ -9088,7 +9612,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ1(c
     }
 }
 
-static float get_model_211_TotVArhImpQ1(const void *register_data)
+static float get_model_211_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1);
@@ -9096,7 +9620,7 @@ static float get_model_211_TotVArhImpQ1(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ1phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ1phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phA);
@@ -9107,7 +9631,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ1ph
     }
 }
 
-static float get_model_211_TotVArhImpQ1phA(const void *register_data)
+static float get_model_211_TotVArhImpQ1phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phA);
@@ -9115,7 +9639,7 @@ static float get_model_211_TotVArhImpQ1phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ1phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ1phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phB);
@@ -9126,7 +9650,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ1ph
     }
 }
 
-static float get_model_211_TotVArhImpQ1phB(const void *register_data)
+static float get_model_211_TotVArhImpQ1phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phB);
@@ -9134,7 +9658,7 @@ static float get_model_211_TotVArhImpQ1phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ1phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ1phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phC);
@@ -9145,7 +9669,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ1ph
     }
 }
 
-static float get_model_211_TotVArhImpQ1phC(const void *register_data)
+static float get_model_211_TotVArhImpQ1phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phC);
@@ -9153,7 +9677,7 @@ static float get_model_211_TotVArhImpQ1phC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ2(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2);
@@ -9164,7 +9688,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ2(c
     }
 }
 
-static float get_model_211_TotVArhImpQ2(const void *register_data)
+static float get_model_211_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2);
@@ -9172,7 +9696,7 @@ static float get_model_211_TotVArhImpQ2(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ2phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ2phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phA);
@@ -9183,7 +9707,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ2ph
     }
 }
 
-static float get_model_211_TotVArhImpQ2phA(const void *register_data)
+static float get_model_211_TotVArhImpQ2phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phA);
@@ -9191,7 +9715,7 @@ static float get_model_211_TotVArhImpQ2phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ2phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ2phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phB);
@@ -9202,7 +9726,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ2ph
     }
 }
 
-static float get_model_211_TotVArhImpQ2phB(const void *register_data)
+static float get_model_211_TotVArhImpQ2phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phB);
@@ -9210,7 +9734,7 @@ static float get_model_211_TotVArhImpQ2phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ2phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ2phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phC);
@@ -9221,7 +9745,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhImpQ2ph
     }
 }
 
-static float get_model_211_TotVArhImpQ2phC(const void *register_data)
+static float get_model_211_TotVArhImpQ2phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phC);
@@ -9229,7 +9753,7 @@ static float get_model_211_TotVArhImpQ2phC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ3(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3);
@@ -9240,7 +9764,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ3(c
     }
 }
 
-static float get_model_211_TotVArhExpQ3(const void *register_data)
+static float get_model_211_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3);
@@ -9248,7 +9772,7 @@ static float get_model_211_TotVArhExpQ3(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ3phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ3phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phA);
@@ -9259,7 +9783,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ3ph
     }
 }
 
-static float get_model_211_TotVArhExpQ3phA(const void *register_data)
+static float get_model_211_TotVArhExpQ3phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phA);
@@ -9267,7 +9791,7 @@ static float get_model_211_TotVArhExpQ3phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ3phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ3phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phB);
@@ -9278,7 +9802,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ3ph
     }
 }
 
-static float get_model_211_TotVArhExpQ3phB(const void *register_data)
+static float get_model_211_TotVArhExpQ3phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phB);
@@ -9286,7 +9810,7 @@ static float get_model_211_TotVArhExpQ3phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ3phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ3phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phC);
@@ -9297,7 +9821,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ3ph
     }
 }
 
-static float get_model_211_TotVArhExpQ3phC(const void *register_data)
+static float get_model_211_TotVArhExpQ3phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phC);
@@ -9305,7 +9829,7 @@ static float get_model_211_TotVArhExpQ3phC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ4(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4);
@@ -9316,7 +9840,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ4(c
     }
 }
 
-static float get_model_211_TotVArhExpQ4(const void *register_data)
+static float get_model_211_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4);
@@ -9324,7 +9848,7 @@ static float get_model_211_TotVArhExpQ4(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ4phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ4phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phA);
@@ -9335,7 +9859,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ4ph
     }
 }
 
-static float get_model_211_TotVArhExpQ4phA(const void *register_data)
+static float get_model_211_TotVArhExpQ4phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phA);
@@ -9343,7 +9867,7 @@ static float get_model_211_TotVArhExpQ4phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ4phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ4phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phB);
@@ -9354,7 +9878,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ4ph
     }
 }
 
-static float get_model_211_TotVArhExpQ4phB(const void *register_data)
+static float get_model_211_TotVArhExpQ4phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phB);
@@ -9362,7 +9886,7 @@ static float get_model_211_TotVArhExpQ4phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ4phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ4phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phC);
@@ -9373,7 +9897,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_211_TotVArhExpQ4ph
     }
 }
 
-static float get_model_211_TotVArhExpQ4phC(const void *register_data)
+static float get_model_211_TotVArhExpQ4phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phC);
@@ -9466,7 +9990,7 @@ static const MetersSunSpecParser::ModelData model_211_data = {
 
 #include "model_212.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->A);
@@ -9477,14 +10001,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_A(const void *
     }
 }
 
-static float get_model_212_A(const void *register_data)
+static float get_model_212_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->A);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->AphA);
@@ -9495,14 +10019,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_AphA(const voi
     }
 }
 
-static float get_model_212_AphA(const void *register_data)
+static float get_model_212_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->AphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->AphB);
@@ -9513,14 +10037,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_AphB(const voi
     }
 }
 
-static float get_model_212_AphB(const void *register_data)
+static float get_model_212_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->AphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->AphC);
@@ -9531,14 +10055,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_AphC(const voi
     }
 }
 
-static float get_model_212_AphC(const void *register_data)
+static float get_model_212_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->AphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_PhV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PhV);
@@ -9549,14 +10073,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_PhV(const void
     }
 }
 
-static float get_model_212_PhV(const void *register_data)
+static float get_model_212_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PhV);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
@@ -9567,14 +10091,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_PhVphA(const v
     }
 }
 
-static float get_model_212_PhVphA(const void *register_data)
+static float get_model_212_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
@@ -9585,14 +10109,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_PhVphB(const v
     }
 }
 
-static float get_model_212_PhVphB(const void *register_data)
+static float get_model_212_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
@@ -9603,14 +10127,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_PhVphC(const v
     }
 }
 
-static float get_model_212_PhVphC(const void *register_data)
+static float get_model_212_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_PPV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PPV);
@@ -9621,14 +10145,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_PPV(const void
     }
 }
 
-static float get_model_212_PPV(const void *register_data)
+static float get_model_212_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PPV);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_PPVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
@@ -9639,14 +10163,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_PPVphAB(const 
     }
 }
 
-static float get_model_212_PPVphAB(const void *register_data)
+static float get_model_212_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_PPVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
@@ -9657,14 +10181,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_PPVphBC(const 
     }
 }
 
-static float get_model_212_PPVphBC(const void *register_data)
+static float get_model_212_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_PPVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
@@ -9675,14 +10199,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_PPVphCA(const 
     }
 }
 
-static float get_model_212_PPVphCA(const void *register_data)
+static float get_model_212_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->Hz);
@@ -9693,14 +10217,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_Hz(const void 
     }
 }
 
-static float get_model_212_Hz(const void *register_data)
+static float get_model_212_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->Hz);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->W);
@@ -9711,14 +10235,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_W(const void *
     }
 }
 
-static float get_model_212_W(const void *register_data)
+static float get_model_212_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->W);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_WphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->WphA);
@@ -9729,14 +10253,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_WphA(const voi
     }
 }
 
-static float get_model_212_WphA(const void *register_data)
+static float get_model_212_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->WphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_WphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->WphB);
@@ -9747,14 +10271,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_WphB(const voi
     }
 }
 
-static float get_model_212_WphB(const void *register_data)
+static float get_model_212_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->WphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_WphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->WphC);
@@ -9765,14 +10289,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_WphC(const voi
     }
 }
 
-static float get_model_212_WphC(const void *register_data)
+static float get_model_212_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->WphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VA);
@@ -9783,14 +10307,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_VA(const void 
     }
 }
 
-static float get_model_212_VA(const void *register_data)
+static float get_model_212_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_VAphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VAphA);
@@ -9801,14 +10325,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_VAphA(const vo
     }
 }
 
-static float get_model_212_VAphA(const void *register_data)
+static float get_model_212_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VAphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_VAphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VAphB);
@@ -9819,14 +10343,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_VAphB(const vo
     }
 }
 
-static float get_model_212_VAphB(const void *register_data)
+static float get_model_212_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VAphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_VAphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VAphC);
@@ -9837,14 +10361,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_VAphC(const vo
     }
 }
 
-static float get_model_212_VAphC(const void *register_data)
+static float get_model_212_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VAphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_VAR(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VAR);
@@ -9855,14 +10379,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_VAR(const void
     }
 }
 
-static float get_model_212_VAR(const void *register_data)
+static float get_model_212_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VAR);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_VARphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VARphA);
@@ -9873,14 +10397,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_VARphA(const v
     }
 }
 
-static float get_model_212_VARphA(const void *register_data)
+static float get_model_212_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VARphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_VARphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VARphB);
@@ -9891,14 +10415,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_VARphB(const v
     }
 }
 
-static float get_model_212_VARphB(const void *register_data)
+static float get_model_212_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VARphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_VARphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VARphC);
@@ -9909,14 +10433,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_VARphC(const v
     }
 }
 
-static float get_model_212_VARphC(const void *register_data)
+static float get_model_212_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->VARphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PF);
@@ -9927,14 +10451,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_PF(const void 
     }
 }
 
-static float get_model_212_PF(const void *register_data)
+static float get_model_212_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PF);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_PFphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PFphA);
@@ -9945,14 +10469,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_PFphA(const vo
     }
 }
 
-static float get_model_212_PFphA(const void *register_data)
+static float get_model_212_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PFphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_PFphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PFphB);
@@ -9963,14 +10487,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_PFphB(const vo
     }
 }
 
-static float get_model_212_PFphB(const void *register_data)
+static float get_model_212_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PFphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_PFphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PFphC);
@@ -9981,14 +10505,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_PFphC(const vo
     }
 }
 
-static float get_model_212_PFphC(const void *register_data)
+static float get_model_212_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->PFphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhExp);
@@ -9999,7 +10523,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhExp(const
     }
 }
 
-static float get_model_212_TotWhExp(const void *register_data)
+static float get_model_212_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhExp);
@@ -10007,7 +10531,7 @@ static float get_model_212_TotWhExp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhA);
@@ -10018,7 +10542,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhExpPhA(co
     }
 }
 
-static float get_model_212_TotWhExpPhA(const void *register_data)
+static float get_model_212_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhA);
@@ -10026,7 +10550,7 @@ static float get_model_212_TotWhExpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhB);
@@ -10037,7 +10561,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhExpPhB(co
     }
 }
 
-static float get_model_212_TotWhExpPhB(const void *register_data)
+static float get_model_212_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhB);
@@ -10045,7 +10569,7 @@ static float get_model_212_TotWhExpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhC);
@@ -10056,7 +10580,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhExpPhC(co
     }
 }
 
-static float get_model_212_TotWhExpPhC(const void *register_data)
+static float get_model_212_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhC);
@@ -10064,7 +10588,7 @@ static float get_model_212_TotWhExpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhImp);
@@ -10075,7 +10599,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhImp(const
     }
 }
 
-static float get_model_212_TotWhImp(const void *register_data)
+static float get_model_212_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhImp);
@@ -10083,7 +10607,7 @@ static float get_model_212_TotWhImp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhA);
@@ -10094,7 +10618,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhImpPhA(co
     }
 }
 
-static float get_model_212_TotWhImpPhA(const void *register_data)
+static float get_model_212_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhA);
@@ -10102,7 +10626,7 @@ static float get_model_212_TotWhImpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhB);
@@ -10113,7 +10637,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhImpPhB(co
     }
 }
 
-static float get_model_212_TotWhImpPhB(const void *register_data)
+static float get_model_212_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhB);
@@ -10121,7 +10645,7 @@ static float get_model_212_TotWhImpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhC);
@@ -10132,7 +10656,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotWhImpPhC(co
     }
 }
 
-static float get_model_212_TotWhImpPhC(const void *register_data)
+static float get_model_212_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhC);
@@ -10140,7 +10664,7 @@ static float get_model_212_TotWhImpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhExp);
@@ -10151,7 +10675,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhExp(cons
     }
 }
 
-static float get_model_212_TotVAhExp(const void *register_data)
+static float get_model_212_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhExp);
@@ -10159,7 +10683,7 @@ static float get_model_212_TotVAhExp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhA);
@@ -10170,7 +10694,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhExpPhA(c
     }
 }
 
-static float get_model_212_TotVAhExpPhA(const void *register_data)
+static float get_model_212_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhA);
@@ -10178,7 +10702,7 @@ static float get_model_212_TotVAhExpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhB);
@@ -10189,7 +10713,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhExpPhB(c
     }
 }
 
-static float get_model_212_TotVAhExpPhB(const void *register_data)
+static float get_model_212_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhB);
@@ -10197,7 +10721,7 @@ static float get_model_212_TotVAhExpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhC);
@@ -10208,7 +10732,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhExpPhC(c
     }
 }
 
-static float get_model_212_TotVAhExpPhC(const void *register_data)
+static float get_model_212_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhC);
@@ -10216,7 +10740,7 @@ static float get_model_212_TotVAhExpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhImp);
@@ -10227,7 +10751,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhImp(cons
     }
 }
 
-static float get_model_212_TotVAhImp(const void *register_data)
+static float get_model_212_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhImp);
@@ -10235,7 +10759,7 @@ static float get_model_212_TotVAhImp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhA);
@@ -10246,7 +10770,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhImpPhA(c
     }
 }
 
-static float get_model_212_TotVAhImpPhA(const void *register_data)
+static float get_model_212_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhA);
@@ -10254,7 +10778,7 @@ static float get_model_212_TotVAhImpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhB);
@@ -10265,7 +10789,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhImpPhB(c
     }
 }
 
-static float get_model_212_TotVAhImpPhB(const void *register_data)
+static float get_model_212_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhB);
@@ -10273,7 +10797,7 @@ static float get_model_212_TotVAhImpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhC);
@@ -10284,7 +10808,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVAhImpPhC(c
     }
 }
 
-static float get_model_212_TotVAhImpPhC(const void *register_data)
+static float get_model_212_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhC);
@@ -10292,7 +10816,7 @@ static float get_model_212_TotVAhImpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ1(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1);
@@ -10303,7 +10827,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ1(c
     }
 }
 
-static float get_model_212_TotVArhImpQ1(const void *register_data)
+static float get_model_212_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1);
@@ -10311,7 +10835,7 @@ static float get_model_212_TotVArhImpQ1(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ1phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ1phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phA);
@@ -10322,7 +10846,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ1ph
     }
 }
 
-static float get_model_212_TotVArhImpQ1phA(const void *register_data)
+static float get_model_212_TotVArhImpQ1phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phA);
@@ -10330,7 +10854,7 @@ static float get_model_212_TotVArhImpQ1phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ1phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ1phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phB);
@@ -10341,7 +10865,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ1ph
     }
 }
 
-static float get_model_212_TotVArhImpQ1phB(const void *register_data)
+static float get_model_212_TotVArhImpQ1phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phB);
@@ -10349,7 +10873,7 @@ static float get_model_212_TotVArhImpQ1phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ1phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ1phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phC);
@@ -10360,7 +10884,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ1ph
     }
 }
 
-static float get_model_212_TotVArhImpQ1phC(const void *register_data)
+static float get_model_212_TotVArhImpQ1phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phC);
@@ -10368,7 +10892,7 @@ static float get_model_212_TotVArhImpQ1phC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ2(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2);
@@ -10379,7 +10903,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ2(c
     }
 }
 
-static float get_model_212_TotVArhImpQ2(const void *register_data)
+static float get_model_212_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2);
@@ -10387,7 +10911,7 @@ static float get_model_212_TotVArhImpQ2(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ2phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ2phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phA);
@@ -10398,7 +10922,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ2ph
     }
 }
 
-static float get_model_212_TotVArhImpQ2phA(const void *register_data)
+static float get_model_212_TotVArhImpQ2phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phA);
@@ -10406,7 +10930,7 @@ static float get_model_212_TotVArhImpQ2phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ2phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ2phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phB);
@@ -10417,7 +10941,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ2ph
     }
 }
 
-static float get_model_212_TotVArhImpQ2phB(const void *register_data)
+static float get_model_212_TotVArhImpQ2phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phB);
@@ -10425,7 +10949,7 @@ static float get_model_212_TotVArhImpQ2phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ2phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ2phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phC);
@@ -10436,7 +10960,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhImpQ2ph
     }
 }
 
-static float get_model_212_TotVArhImpQ2phC(const void *register_data)
+static float get_model_212_TotVArhImpQ2phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phC);
@@ -10444,7 +10968,7 @@ static float get_model_212_TotVArhImpQ2phC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ3(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3);
@@ -10455,7 +10979,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ3(c
     }
 }
 
-static float get_model_212_TotVArhExpQ3(const void *register_data)
+static float get_model_212_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3);
@@ -10463,7 +10987,7 @@ static float get_model_212_TotVArhExpQ3(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ3phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ3phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phA);
@@ -10474,7 +10998,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ3ph
     }
 }
 
-static float get_model_212_TotVArhExpQ3phA(const void *register_data)
+static float get_model_212_TotVArhExpQ3phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phA);
@@ -10482,7 +11006,7 @@ static float get_model_212_TotVArhExpQ3phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ3phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ3phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phB);
@@ -10493,7 +11017,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ3ph
     }
 }
 
-static float get_model_212_TotVArhExpQ3phB(const void *register_data)
+static float get_model_212_TotVArhExpQ3phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phB);
@@ -10501,7 +11025,7 @@ static float get_model_212_TotVArhExpQ3phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ3phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ3phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phC);
@@ -10512,7 +11036,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ3ph
     }
 }
 
-static float get_model_212_TotVArhExpQ3phC(const void *register_data)
+static float get_model_212_TotVArhExpQ3phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phC);
@@ -10520,7 +11044,7 @@ static float get_model_212_TotVArhExpQ3phC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ4(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4);
@@ -10531,7 +11055,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ4(c
     }
 }
 
-static float get_model_212_TotVArhExpQ4(const void *register_data)
+static float get_model_212_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4);
@@ -10539,7 +11063,7 @@ static float get_model_212_TotVArhExpQ4(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ4phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ4phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phA);
@@ -10550,7 +11074,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ4ph
     }
 }
 
-static float get_model_212_TotVArhExpQ4phA(const void *register_data)
+static float get_model_212_TotVArhExpQ4phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phA);
@@ -10558,7 +11082,7 @@ static float get_model_212_TotVArhExpQ4phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ4phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ4phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phB);
@@ -10569,7 +11093,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ4ph
     }
 }
 
-static float get_model_212_TotVArhExpQ4phB(const void *register_data)
+static float get_model_212_TotVArhExpQ4phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phB);
@@ -10577,7 +11101,7 @@ static float get_model_212_TotVArhExpQ4phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ4phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ4phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phC);
@@ -10588,7 +11112,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_212_TotVArhExpQ4ph
     }
 }
 
-static float get_model_212_TotVArhExpQ4phC(const void *register_data)
+static float get_model_212_TotVArhExpQ4phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phC);
@@ -10681,7 +11205,7 @@ static const MetersSunSpecParser::ModelData model_212_data = {
 
 #include "model_213.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->A);
@@ -10692,14 +11216,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_A(const void *
     }
 }
 
-static float get_model_213_A(const void *register_data)
+static float get_model_213_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->A);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->AphA);
@@ -10710,14 +11234,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_AphA(const voi
     }
 }
 
-static float get_model_213_AphA(const void *register_data)
+static float get_model_213_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->AphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->AphB);
@@ -10728,14 +11252,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_AphB(const voi
     }
 }
 
-static float get_model_213_AphB(const void *register_data)
+static float get_model_213_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->AphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->AphC);
@@ -10746,14 +11270,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_AphC(const voi
     }
 }
 
-static float get_model_213_AphC(const void *register_data)
+static float get_model_213_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->AphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_PhV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PhV);
@@ -10764,14 +11288,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_PhV(const void
     }
 }
 
-static float get_model_213_PhV(const void *register_data)
+static float get_model_213_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PhV);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
@@ -10782,14 +11306,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_PhVphA(const v
     }
 }
 
-static float get_model_213_PhVphA(const void *register_data)
+static float get_model_213_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
@@ -10800,14 +11324,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_PhVphB(const v
     }
 }
 
-static float get_model_213_PhVphB(const void *register_data)
+static float get_model_213_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
@@ -10818,14 +11342,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_PhVphC(const v
     }
 }
 
-static float get_model_213_PhVphC(const void *register_data)
+static float get_model_213_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_PPV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PPV);
@@ -10836,14 +11360,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_PPV(const void
     }
 }
 
-static float get_model_213_PPV(const void *register_data)
+static float get_model_213_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PPV);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_PPVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
@@ -10854,14 +11378,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_PPVphAB(const 
     }
 }
 
-static float get_model_213_PPVphAB(const void *register_data)
+static float get_model_213_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_PPVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
@@ -10872,14 +11396,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_PPVphBC(const 
     }
 }
 
-static float get_model_213_PPVphBC(const void *register_data)
+static float get_model_213_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_PPVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
@@ -10890,14 +11414,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_PPVphCA(const 
     }
 }
 
-static float get_model_213_PPVphCA(const void *register_data)
+static float get_model_213_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->Hz);
@@ -10908,14 +11432,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_Hz(const void 
     }
 }
 
-static float get_model_213_Hz(const void *register_data)
+static float get_model_213_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->Hz);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->W);
@@ -10926,14 +11450,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_W(const void *
     }
 }
 
-static float get_model_213_W(const void *register_data)
+static float get_model_213_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->W);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_WphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->WphA);
@@ -10944,14 +11468,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_WphA(const voi
     }
 }
 
-static float get_model_213_WphA(const void *register_data)
+static float get_model_213_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->WphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_WphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->WphB);
@@ -10962,14 +11486,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_WphB(const voi
     }
 }
 
-static float get_model_213_WphB(const void *register_data)
+static float get_model_213_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->WphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_WphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->WphC);
@@ -10980,14 +11504,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_WphC(const voi
     }
 }
 
-static float get_model_213_WphC(const void *register_data)
+static float get_model_213_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->WphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VA);
@@ -10998,14 +11522,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_VA(const void 
     }
 }
 
-static float get_model_213_VA(const void *register_data)
+static float get_model_213_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_VAphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VAphA);
@@ -11016,14 +11540,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_VAphA(const vo
     }
 }
 
-static float get_model_213_VAphA(const void *register_data)
+static float get_model_213_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VAphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_VAphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VAphB);
@@ -11034,14 +11558,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_VAphB(const vo
     }
 }
 
-static float get_model_213_VAphB(const void *register_data)
+static float get_model_213_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VAphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_VAphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VAphC);
@@ -11052,14 +11576,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_VAphC(const vo
     }
 }
 
-static float get_model_213_VAphC(const void *register_data)
+static float get_model_213_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VAphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_VAR(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VAR);
@@ -11070,14 +11594,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_VAR(const void
     }
 }
 
-static float get_model_213_VAR(const void *register_data)
+static float get_model_213_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VAR);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_VARphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VARphA);
@@ -11088,14 +11612,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_VARphA(const v
     }
 }
 
-static float get_model_213_VARphA(const void *register_data)
+static float get_model_213_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VARphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_VARphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VARphB);
@@ -11106,14 +11630,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_VARphB(const v
     }
 }
 
-static float get_model_213_VARphB(const void *register_data)
+static float get_model_213_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VARphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_VARphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VARphC);
@@ -11124,14 +11648,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_VARphC(const v
     }
 }
 
-static float get_model_213_VARphC(const void *register_data)
+static float get_model_213_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->VARphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PF);
@@ -11142,14 +11666,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_PF(const void 
     }
 }
 
-static float get_model_213_PF(const void *register_data)
+static float get_model_213_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PF);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_PFphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PFphA);
@@ -11160,14 +11684,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_PFphA(const vo
     }
 }
 
-static float get_model_213_PFphA(const void *register_data)
+static float get_model_213_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PFphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_PFphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PFphB);
@@ -11178,14 +11702,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_PFphB(const vo
     }
 }
 
-static float get_model_213_PFphB(const void *register_data)
+static float get_model_213_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PFphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_PFphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PFphC);
@@ -11196,14 +11720,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_PFphC(const vo
     }
 }
 
-static float get_model_213_PFphC(const void *register_data)
+static float get_model_213_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->PFphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhExp);
@@ -11214,7 +11738,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhExp(const
     }
 }
 
-static float get_model_213_TotWhExp(const void *register_data)
+static float get_model_213_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhExp);
@@ -11222,7 +11746,7 @@ static float get_model_213_TotWhExp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhA);
@@ -11233,7 +11757,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhExpPhA(co
     }
 }
 
-static float get_model_213_TotWhExpPhA(const void *register_data)
+static float get_model_213_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhA);
@@ -11241,7 +11765,7 @@ static float get_model_213_TotWhExpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhB);
@@ -11252,7 +11776,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhExpPhB(co
     }
 }
 
-static float get_model_213_TotWhExpPhB(const void *register_data)
+static float get_model_213_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhB);
@@ -11260,7 +11784,7 @@ static float get_model_213_TotWhExpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhC);
@@ -11271,7 +11795,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhExpPhC(co
     }
 }
 
-static float get_model_213_TotWhExpPhC(const void *register_data)
+static float get_model_213_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhC);
@@ -11279,7 +11803,7 @@ static float get_model_213_TotWhExpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhImp);
@@ -11290,7 +11814,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhImp(const
     }
 }
 
-static float get_model_213_TotWhImp(const void *register_data)
+static float get_model_213_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhImp);
@@ -11298,7 +11822,7 @@ static float get_model_213_TotWhImp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhA);
@@ -11309,7 +11833,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhImpPhA(co
     }
 }
 
-static float get_model_213_TotWhImpPhA(const void *register_data)
+static float get_model_213_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhA);
@@ -11317,7 +11841,7 @@ static float get_model_213_TotWhImpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhB);
@@ -11328,7 +11852,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhImpPhB(co
     }
 }
 
-static float get_model_213_TotWhImpPhB(const void *register_data)
+static float get_model_213_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhB);
@@ -11336,7 +11860,7 @@ static float get_model_213_TotWhImpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhC);
@@ -11347,7 +11871,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotWhImpPhC(co
     }
 }
 
-static float get_model_213_TotWhImpPhC(const void *register_data)
+static float get_model_213_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhC);
@@ -11355,7 +11879,7 @@ static float get_model_213_TotWhImpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhExp);
@@ -11366,7 +11890,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhExp(cons
     }
 }
 
-static float get_model_213_TotVAhExp(const void *register_data)
+static float get_model_213_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhExp);
@@ -11374,7 +11898,7 @@ static float get_model_213_TotVAhExp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhA);
@@ -11385,7 +11909,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhExpPhA(c
     }
 }
 
-static float get_model_213_TotVAhExpPhA(const void *register_data)
+static float get_model_213_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhA);
@@ -11393,7 +11917,7 @@ static float get_model_213_TotVAhExpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhB);
@@ -11404,7 +11928,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhExpPhB(c
     }
 }
 
-static float get_model_213_TotVAhExpPhB(const void *register_data)
+static float get_model_213_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhB);
@@ -11412,7 +11936,7 @@ static float get_model_213_TotVAhExpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhC);
@@ -11423,7 +11947,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhExpPhC(c
     }
 }
 
-static float get_model_213_TotVAhExpPhC(const void *register_data)
+static float get_model_213_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhC);
@@ -11431,7 +11955,7 @@ static float get_model_213_TotVAhExpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhImp);
@@ -11442,7 +11966,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhImp(cons
     }
 }
 
-static float get_model_213_TotVAhImp(const void *register_data)
+static float get_model_213_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhImp);
@@ -11450,7 +11974,7 @@ static float get_model_213_TotVAhImp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhA);
@@ -11461,7 +11985,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhImpPhA(c
     }
 }
 
-static float get_model_213_TotVAhImpPhA(const void *register_data)
+static float get_model_213_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhA);
@@ -11469,7 +11993,7 @@ static float get_model_213_TotVAhImpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhB);
@@ -11480,7 +12004,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhImpPhB(c
     }
 }
 
-static float get_model_213_TotVAhImpPhB(const void *register_data)
+static float get_model_213_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhB);
@@ -11488,7 +12012,7 @@ static float get_model_213_TotVAhImpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhC);
@@ -11499,7 +12023,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVAhImpPhC(c
     }
 }
 
-static float get_model_213_TotVAhImpPhC(const void *register_data)
+static float get_model_213_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhC);
@@ -11507,7 +12031,7 @@ static float get_model_213_TotVAhImpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ1(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1);
@@ -11518,7 +12042,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ1(c
     }
 }
 
-static float get_model_213_TotVArhImpQ1(const void *register_data)
+static float get_model_213_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1);
@@ -11526,7 +12050,7 @@ static float get_model_213_TotVArhImpQ1(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ1phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ1phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phA);
@@ -11537,7 +12061,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ1ph
     }
 }
 
-static float get_model_213_TotVArhImpQ1phA(const void *register_data)
+static float get_model_213_TotVArhImpQ1phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phA);
@@ -11545,7 +12069,7 @@ static float get_model_213_TotVArhImpQ1phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ1phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ1phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phB);
@@ -11556,7 +12080,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ1ph
     }
 }
 
-static float get_model_213_TotVArhImpQ1phB(const void *register_data)
+static float get_model_213_TotVArhImpQ1phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phB);
@@ -11564,7 +12088,7 @@ static float get_model_213_TotVArhImpQ1phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ1phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ1phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phC);
@@ -11575,7 +12099,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ1ph
     }
 }
 
-static float get_model_213_TotVArhImpQ1phC(const void *register_data)
+static float get_model_213_TotVArhImpQ1phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phC);
@@ -11583,7 +12107,7 @@ static float get_model_213_TotVArhImpQ1phC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ2(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2);
@@ -11594,7 +12118,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ2(c
     }
 }
 
-static float get_model_213_TotVArhImpQ2(const void *register_data)
+static float get_model_213_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2);
@@ -11602,7 +12126,7 @@ static float get_model_213_TotVArhImpQ2(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ2phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ2phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phA);
@@ -11613,7 +12137,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ2ph
     }
 }
 
-static float get_model_213_TotVArhImpQ2phA(const void *register_data)
+static float get_model_213_TotVArhImpQ2phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phA);
@@ -11621,7 +12145,7 @@ static float get_model_213_TotVArhImpQ2phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ2phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ2phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phB);
@@ -11632,7 +12156,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ2ph
     }
 }
 
-static float get_model_213_TotVArhImpQ2phB(const void *register_data)
+static float get_model_213_TotVArhImpQ2phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phB);
@@ -11640,7 +12164,7 @@ static float get_model_213_TotVArhImpQ2phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ2phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ2phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phC);
@@ -11651,7 +12175,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhImpQ2ph
     }
 }
 
-static float get_model_213_TotVArhImpQ2phC(const void *register_data)
+static float get_model_213_TotVArhImpQ2phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phC);
@@ -11659,7 +12183,7 @@ static float get_model_213_TotVArhImpQ2phC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ3(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3);
@@ -11670,7 +12194,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ3(c
     }
 }
 
-static float get_model_213_TotVArhExpQ3(const void *register_data)
+static float get_model_213_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3);
@@ -11678,7 +12202,7 @@ static float get_model_213_TotVArhExpQ3(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ3phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ3phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phA);
@@ -11689,7 +12213,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ3ph
     }
 }
 
-static float get_model_213_TotVArhExpQ3phA(const void *register_data)
+static float get_model_213_TotVArhExpQ3phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phA);
@@ -11697,7 +12221,7 @@ static float get_model_213_TotVArhExpQ3phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ3phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ3phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phB);
@@ -11708,7 +12232,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ3ph
     }
 }
 
-static float get_model_213_TotVArhExpQ3phB(const void *register_data)
+static float get_model_213_TotVArhExpQ3phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phB);
@@ -11716,7 +12240,7 @@ static float get_model_213_TotVArhExpQ3phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ3phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ3phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phC);
@@ -11727,7 +12251,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ3ph
     }
 }
 
-static float get_model_213_TotVArhExpQ3phC(const void *register_data)
+static float get_model_213_TotVArhExpQ3phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phC);
@@ -11735,7 +12259,7 @@ static float get_model_213_TotVArhExpQ3phC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ4(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4);
@@ -11746,7 +12270,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ4(c
     }
 }
 
-static float get_model_213_TotVArhExpQ4(const void *register_data)
+static float get_model_213_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4);
@@ -11754,7 +12278,7 @@ static float get_model_213_TotVArhExpQ4(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ4phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ4phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phA);
@@ -11765,7 +12289,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ4ph
     }
 }
 
-static float get_model_213_TotVArhExpQ4phA(const void *register_data)
+static float get_model_213_TotVArhExpQ4phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phA);
@@ -11773,7 +12297,7 @@ static float get_model_213_TotVArhExpQ4phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ4phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ4phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phB);
@@ -11784,7 +12308,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ4ph
     }
 }
 
-static float get_model_213_TotVArhExpQ4phB(const void *register_data)
+static float get_model_213_TotVArhExpQ4phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phB);
@@ -11792,7 +12316,7 @@ static float get_model_213_TotVArhExpQ4phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ4phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ4phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phC);
@@ -11803,7 +12327,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_213_TotVArhExpQ4ph
     }
 }
 
-static float get_model_213_TotVArhExpQ4phC(const void *register_data)
+static float get_model_213_TotVArhExpQ4phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phC);
@@ -11896,7 +12420,7 @@ static const MetersSunSpecParser::ModelData model_213_data = {
 
 #include "model_214.h"
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_A(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->A);
@@ -11907,14 +12431,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_A(const void *
     }
 }
 
-static float get_model_214_A(const void *register_data)
+static float get_model_214_A(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->A);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_AphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->AphA);
@@ -11925,14 +12449,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_AphA(const voi
     }
 }
 
-static float get_model_214_AphA(const void *register_data)
+static float get_model_214_AphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->AphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_AphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->AphB);
@@ -11943,14 +12467,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_AphB(const voi
     }
 }
 
-static float get_model_214_AphB(const void *register_data)
+static float get_model_214_AphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->AphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_AphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->AphC);
@@ -11961,14 +12485,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_AphC(const voi
     }
 }
 
-static float get_model_214_AphC(const void *register_data)
+static float get_model_214_AphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->AphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_PhV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PhV);
@@ -11979,14 +12503,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_PhV(const void
     }
 }
 
-static float get_model_214_PhV(const void *register_data)
+static float get_model_214_PhV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PhV);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_PhVphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
@@ -11997,14 +12521,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_PhVphA(const v
     }
 }
 
-static float get_model_214_PhVphA(const void *register_data)
+static float get_model_214_PhVphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PhVphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_PhVphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
@@ -12015,14 +12539,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_PhVphB(const v
     }
 }
 
-static float get_model_214_PhVphB(const void *register_data)
+static float get_model_214_PhVphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PhVphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_PhVphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
@@ -12033,14 +12557,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_PhVphC(const v
     }
 }
 
-static float get_model_214_PhVphC(const void *register_data)
+static float get_model_214_PhVphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PhVphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_PPV(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PPV);
@@ -12051,14 +12575,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_PPV(const void
     }
 }
 
-static float get_model_214_PPV(const void *register_data)
+static float get_model_214_PPV(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PPV);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_PPVphAB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
@@ -12069,14 +12593,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_PPVphAB(const 
     }
 }
 
-static float get_model_214_PPVphAB(const void *register_data)
+static float get_model_214_PPVphAB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PPVphAB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_PPVphBC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
@@ -12087,14 +12611,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_PPVphBC(const 
     }
 }
 
-static float get_model_214_PPVphBC(const void *register_data)
+static float get_model_214_PPVphBC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PPVphBC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_PPVphCA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
@@ -12105,14 +12629,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_PPVphCA(const 
     }
 }
 
-static float get_model_214_PPVphCA(const void *register_data)
+static float get_model_214_PPVphCA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PPVphCA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_Hz(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->Hz);
@@ -12123,14 +12647,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_Hz(const void 
     }
 }
 
-static float get_model_214_Hz(const void *register_data)
+static float get_model_214_Hz(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->Hz);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_W(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->W);
@@ -12141,14 +12665,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_W(const void *
     }
 }
 
-static float get_model_214_W(const void *register_data)
+static float get_model_214_W(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->W);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_WphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->WphA);
@@ -12159,14 +12683,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_WphA(const voi
     }
 }
 
-static float get_model_214_WphA(const void *register_data)
+static float get_model_214_WphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->WphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_WphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->WphB);
@@ -12177,14 +12701,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_WphB(const voi
     }
 }
 
-static float get_model_214_WphB(const void *register_data)
+static float get_model_214_WphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->WphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_WphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->WphC);
@@ -12195,14 +12719,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_WphC(const voi
     }
 }
 
-static float get_model_214_WphC(const void *register_data)
+static float get_model_214_WphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->WphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_VA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VA);
@@ -12213,14 +12737,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_VA(const void 
     }
 }
 
-static float get_model_214_VA(const void *register_data)
+static float get_model_214_VA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_VAphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VAphA);
@@ -12231,14 +12755,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_VAphA(const vo
     }
 }
 
-static float get_model_214_VAphA(const void *register_data)
+static float get_model_214_VAphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VAphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_VAphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VAphB);
@@ -12249,14 +12773,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_VAphB(const vo
     }
 }
 
-static float get_model_214_VAphB(const void *register_data)
+static float get_model_214_VAphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VAphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_VAphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VAphC);
@@ -12267,14 +12791,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_VAphC(const vo
     }
 }
 
-static float get_model_214_VAphC(const void *register_data)
+static float get_model_214_VAphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VAphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_VAR(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VAR);
@@ -12285,14 +12809,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_VAR(const void
     }
 }
 
-static float get_model_214_VAR(const void *register_data)
+static float get_model_214_VAR(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VAR);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_VARphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VARphA);
@@ -12303,14 +12827,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_VARphA(const v
     }
 }
 
-static float get_model_214_VARphA(const void *register_data)
+static float get_model_214_VARphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VARphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_VARphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VARphB);
@@ -12321,14 +12845,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_VARphB(const v
     }
 }
 
-static float get_model_214_VARphB(const void *register_data)
+static float get_model_214_VARphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VARphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_VARphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VARphC);
@@ -12339,14 +12863,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_VARphC(const v
     }
 }
 
-static float get_model_214_VARphC(const void *register_data)
+static float get_model_214_VARphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->VARphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_PF(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PF);
@@ -12357,14 +12881,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_PF(const void 
     }
 }
 
-static float get_model_214_PF(const void *register_data)
+static float get_model_214_PF(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PF);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_PFphA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PFphA);
@@ -12375,14 +12899,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_PFphA(const vo
     }
 }
 
-static float get_model_214_PFphA(const void *register_data)
+static float get_model_214_PFphA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PFphA);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_PFphB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PFphB);
@@ -12393,14 +12917,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_PFphB(const vo
     }
 }
 
-static float get_model_214_PFphB(const void *register_data)
+static float get_model_214_PFphB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PFphB);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_PFphC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PFphC);
@@ -12411,14 +12935,14 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_PFphC(const vo
     }
 }
 
-static float get_model_214_PFphC(const void *register_data)
+static float get_model_214_PFphC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->PFphC);
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhExp);
@@ -12429,7 +12953,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhExp(const
     }
 }
 
-static float get_model_214_TotWhExp(const void *register_data)
+static float get_model_214_TotWhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhExp);
@@ -12437,7 +12961,7 @@ static float get_model_214_TotWhExp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhA);
@@ -12448,7 +12972,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhExpPhA(co
     }
 }
 
-static float get_model_214_TotWhExpPhA(const void *register_data)
+static float get_model_214_TotWhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhA);
@@ -12456,7 +12980,7 @@ static float get_model_214_TotWhExpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhB);
@@ -12467,7 +12991,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhExpPhB(co
     }
 }
 
-static float get_model_214_TotWhExpPhB(const void *register_data)
+static float get_model_214_TotWhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhB);
@@ -12475,7 +12999,7 @@ static float get_model_214_TotWhExpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhC);
@@ -12486,7 +13010,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhExpPhC(co
     }
 }
 
-static float get_model_214_TotWhExpPhC(const void *register_data)
+static float get_model_214_TotWhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhExpPhC);
@@ -12494,7 +13018,7 @@ static float get_model_214_TotWhExpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhImp);
@@ -12505,7 +13029,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhImp(const
     }
 }
 
-static float get_model_214_TotWhImp(const void *register_data)
+static float get_model_214_TotWhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhImp);
@@ -12513,7 +13037,7 @@ static float get_model_214_TotWhImp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhA);
@@ -12524,7 +13048,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhImpPhA(co
     }
 }
 
-static float get_model_214_TotWhImpPhA(const void *register_data)
+static float get_model_214_TotWhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhA);
@@ -12532,7 +13056,7 @@ static float get_model_214_TotWhImpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhB);
@@ -12543,7 +13067,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhImpPhB(co
     }
 }
 
-static float get_model_214_TotWhImpPhB(const void *register_data)
+static float get_model_214_TotWhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhB);
@@ -12551,7 +13075,7 @@ static float get_model_214_TotWhImpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhC);
@@ -12562,7 +13086,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotWhImpPhC(co
     }
 }
 
-static float get_model_214_TotWhImpPhC(const void *register_data)
+static float get_model_214_TotWhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotWhImpPhC);
@@ -12570,7 +13094,7 @@ static float get_model_214_TotWhImpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhExp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhExp);
@@ -12581,7 +13105,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhExp(cons
     }
 }
 
-static float get_model_214_TotVAhExp(const void *register_data)
+static float get_model_214_TotVAhExp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhExp);
@@ -12589,7 +13113,7 @@ static float get_model_214_TotVAhExp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhExpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhA);
@@ -12600,7 +13124,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhExpPhA(c
     }
 }
 
-static float get_model_214_TotVAhExpPhA(const void *register_data)
+static float get_model_214_TotVAhExpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhA);
@@ -12608,7 +13132,7 @@ static float get_model_214_TotVAhExpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhExpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhB);
@@ -12619,7 +13143,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhExpPhB(c
     }
 }
 
-static float get_model_214_TotVAhExpPhB(const void *register_data)
+static float get_model_214_TotVAhExpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhB);
@@ -12627,7 +13151,7 @@ static float get_model_214_TotVAhExpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhExpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhC);
@@ -12638,7 +13162,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhExpPhC(c
     }
 }
 
-static float get_model_214_TotVAhExpPhC(const void *register_data)
+static float get_model_214_TotVAhExpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhExpPhC);
@@ -12646,7 +13170,7 @@ static float get_model_214_TotVAhExpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhImp(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhImp);
@@ -12657,7 +13181,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhImp(cons
     }
 }
 
-static float get_model_214_TotVAhImp(const void *register_data)
+static float get_model_214_TotVAhImp(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhImp);
@@ -12665,7 +13189,7 @@ static float get_model_214_TotVAhImp(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhImpPhA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhA);
@@ -12676,7 +13200,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhImpPhA(c
     }
 }
 
-static float get_model_214_TotVAhImpPhA(const void *register_data)
+static float get_model_214_TotVAhImpPhA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhA);
@@ -12684,7 +13208,7 @@ static float get_model_214_TotVAhImpPhA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhImpPhB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhB);
@@ -12695,7 +13219,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhImpPhB(c
     }
 }
 
-static float get_model_214_TotVAhImpPhB(const void *register_data)
+static float get_model_214_TotVAhImpPhB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhB);
@@ -12703,7 +13227,7 @@ static float get_model_214_TotVAhImpPhB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhImpPhC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhC);
@@ -12714,7 +13238,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVAhImpPhC(c
     }
 }
 
-static float get_model_214_TotVAhImpPhC(const void *register_data)
+static float get_model_214_TotVAhImpPhC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVAhImpPhC);
@@ -12722,7 +13246,7 @@ static float get_model_214_TotVAhImpPhC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ1(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1);
@@ -12733,7 +13257,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ1(c
     }
 }
 
-static float get_model_214_TotVArhImpQ1(const void *register_data)
+static float get_model_214_TotVArhImpQ1(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1);
@@ -12741,7 +13265,7 @@ static float get_model_214_TotVArhImpQ1(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ1phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ1phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phA);
@@ -12752,7 +13276,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ1ph
     }
 }
 
-static float get_model_214_TotVArhImpQ1phA(const void *register_data)
+static float get_model_214_TotVArhImpQ1phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phA);
@@ -12760,7 +13284,7 @@ static float get_model_214_TotVArhImpQ1phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ1phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ1phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phB);
@@ -12771,7 +13295,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ1ph
     }
 }
 
-static float get_model_214_TotVArhImpQ1phB(const void *register_data)
+static float get_model_214_TotVArhImpQ1phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phB);
@@ -12779,7 +13303,7 @@ static float get_model_214_TotVArhImpQ1phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ1phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ1phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phC);
@@ -12790,7 +13314,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ1ph
     }
 }
 
-static float get_model_214_TotVArhImpQ1phC(const void *register_data)
+static float get_model_214_TotVArhImpQ1phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ1phC);
@@ -12798,7 +13322,7 @@ static float get_model_214_TotVArhImpQ1phC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ2(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2);
@@ -12809,7 +13333,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ2(c
     }
 }
 
-static float get_model_214_TotVArhImpQ2(const void *register_data)
+static float get_model_214_TotVArhImpQ2(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2);
@@ -12817,7 +13341,7 @@ static float get_model_214_TotVArhImpQ2(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ2phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ2phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phA);
@@ -12828,7 +13352,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ2ph
     }
 }
 
-static float get_model_214_TotVArhImpQ2phA(const void *register_data)
+static float get_model_214_TotVArhImpQ2phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phA);
@@ -12836,7 +13360,7 @@ static float get_model_214_TotVArhImpQ2phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ2phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ2phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phB);
@@ -12847,7 +13371,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ2ph
     }
 }
 
-static float get_model_214_TotVArhImpQ2phB(const void *register_data)
+static float get_model_214_TotVArhImpQ2phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phB);
@@ -12855,7 +13379,7 @@ static float get_model_214_TotVArhImpQ2phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ2phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ2phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phC);
@@ -12866,7 +13390,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhImpQ2ph
     }
 }
 
-static float get_model_214_TotVArhImpQ2phC(const void *register_data)
+static float get_model_214_TotVArhImpQ2phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhImpQ2phC);
@@ -12874,7 +13398,7 @@ static float get_model_214_TotVArhImpQ2phC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ3(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3);
@@ -12885,7 +13409,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ3(c
     }
 }
 
-static float get_model_214_TotVArhExpQ3(const void *register_data)
+static float get_model_214_TotVArhExpQ3(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3);
@@ -12893,7 +13417,7 @@ static float get_model_214_TotVArhExpQ3(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ3phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ3phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phA);
@@ -12904,7 +13428,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ3ph
     }
 }
 
-static float get_model_214_TotVArhExpQ3phA(const void *register_data)
+static float get_model_214_TotVArhExpQ3phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phA);
@@ -12912,7 +13436,7 @@ static float get_model_214_TotVArhExpQ3phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ3phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ3phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phB);
@@ -12923,7 +13447,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ3ph
     }
 }
 
-static float get_model_214_TotVArhExpQ3phB(const void *register_data)
+static float get_model_214_TotVArhExpQ3phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phB);
@@ -12931,7 +13455,7 @@ static float get_model_214_TotVArhExpQ3phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ3phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ3phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phC);
@@ -12942,7 +13466,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ3ph
     }
 }
 
-static float get_model_214_TotVArhExpQ3phC(const void *register_data)
+static float get_model_214_TotVArhExpQ3phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ3phC);
@@ -12950,7 +13474,7 @@ static float get_model_214_TotVArhExpQ3phC(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ4(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4);
@@ -12961,7 +13485,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ4(c
     }
 }
 
-static float get_model_214_TotVArhExpQ4(const void *register_data)
+static float get_model_214_TotVArhExpQ4(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4);
@@ -12969,7 +13493,7 @@ static float get_model_214_TotVArhExpQ4(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ4phA(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ4phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phA);
@@ -12980,7 +13504,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ4ph
     }
 }
 
-static float get_model_214_TotVArhExpQ4phA(const void *register_data)
+static float get_model_214_TotVArhExpQ4phA(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phA);
@@ -12988,7 +13512,7 @@ static float get_model_214_TotVArhExpQ4phA(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ4phB(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ4phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phB);
@@ -12999,7 +13523,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ4ph
     }
 }
 
-static float get_model_214_TotVArhExpQ4phB(const void *register_data)
+static float get_model_214_TotVArhExpQ4phB(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phB);
@@ -13007,7 +13531,7 @@ static float get_model_214_TotVArhExpQ4phB(const void *register_data)
     return val;
 }
 
-static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ4phC(const void *register_data)
+static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ4phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phC);
@@ -13018,7 +13542,7 @@ static MetersSunSpecParser::ValueDetectionResult detect_model_214_TotVArhExpQ4ph
     }
 }
 
-static float get_model_214_TotVArhExpQ4phC(const void *register_data)
+static float get_model_214_TotVArhExpQ4phC(const void *register_data, uint32_t quirks)
 {
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->TotVArhExpQ4phC);

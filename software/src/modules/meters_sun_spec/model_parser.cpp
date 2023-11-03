@@ -36,7 +36,7 @@ MetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t meter_slot, uint16
     return nullptr;
 }
 
-bool MetersSunSpecParser::detect_values(const uint16_t * const register_data[2])
+bool MetersSunSpecParser::detect_values(const uint16_t * const register_data[2], uint32_t quirks)
 {
     if (!model->validator(register_data))
         return false;
@@ -47,7 +47,7 @@ bool MetersSunSpecParser::detect_values(const uint16_t * const register_data[2])
 
     for (size_t i = 0; i < model->value_count; i++) {
         const ValueData *value_data = &model->value_data[i];
-        ValueDetectionResult detection_result = value_data->detect_value(data);
+        ValueDetectionResult detection_result = value_data->detect_value(data, quirks);
         if (detection_result == ValueDetectionResult::Available) {
             detected_values.push_back(value_data);
         }
@@ -67,7 +67,7 @@ bool MetersSunSpecParser::detect_values(const uint16_t * const register_data[2])
     return true;
 }
 
-bool MetersSunSpecParser::parse_values(const uint16_t * const register_data[2])
+bool MetersSunSpecParser::parse_values(const uint16_t * const register_data[2], uint32_t quirks)
 {
     if (!model->validator(register_data))
         return false;
@@ -76,7 +76,7 @@ bool MetersSunSpecParser::parse_values(const uint16_t * const register_data[2])
 
     size_t value_count = detected_values.size();
     for (size_t i = 0; i < value_count; i++) {
-        meter_values[i] = detected_values[i]->get_value(data);
+        meter_values[i] = detected_values[i]->get_value(data, quirks);
     }
     meters.update_all_values(meter_slot, meter_values);
     return true;

@@ -44,6 +44,14 @@ const char* get_modbus_result_code_name(Modbus::ResultCode rc)
     }
 }
 
+void modbus_bswap_registers(uint16_t *register_start, size_t register_count)
+{
+    for (size_t i = 0; i < register_count; i++) {
+        *register_start = __bswap16(*register_start);
+        register_start++;
+    }
+}
+
 uint16_t ModbusDeserializer::read_uint16()
 {
     uint16_t result = buf[idx];
