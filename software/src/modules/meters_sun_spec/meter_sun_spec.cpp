@@ -218,18 +218,18 @@ void MeterSunSpec::scan_next()
             break;
 
         case ScanState::ReadModelHeader: {
-                uint16_t model_id_ = scan_deserializer.read_uint16();
+                uint16_t scan_model_id = scan_deserializer.read_uint16();
                 size_t block_length = scan_deserializer.read_uint16();
 
-                if (model_id_ == NON_IMPLEMENTED_UINT16 && block_length == 0) {
+                if (scan_model_id == NON_IMPLEMENTED_UINT16 && block_length == 0) {
                     logger.printfln("meter_sun_spec: Configured SunSpec model %u not found at %s:%u:%u", model_id, host_name.c_str(), port, device_address);
                     scan_start_delay();
                 }
-                else if (model_id_ == model_id) {
+                else if (scan_model_id == model_id) {
                     logger.printfln("meter_sun_spec: Configured SunSpec model %u found at %s:%u:%u:%u", model_id, host_name.c_str(), port, device_address, generic_read_request.start_address);
                     read_start(generic_read_request.start_address, 2 + block_length);
                 }
-                else if (model_id_ == 1) { // Common model
+                else if (scan_model_id == 1) { // Common model
                     if (generic_read_request.register_count == 2) {
                         // Place data pointer after already read header.
                         generic_read_request.data[0] += 2;
@@ -254,10 +254,10 @@ void MeterSunSpec::scan_next()
                 // Set data pointer back to model header.
                 generic_read_request.data[0] -= 2;
 
-                uint16_t model_id_ = scan_deserializer.read_uint16();
+                uint16_t scan_model_id = scan_deserializer.read_uint16();
                 size_t block_length = scan_deserializer.read_uint16();
 
-                if (model_id_ == 1) { // Common model
+                if (scan_model_id == 1) { // Common model
                     SunSpecCommonModel001_u *common_model = reinterpret_cast<SunSpecCommonModel001_u *>(generic_read_request.data[0]);
                     modbus_bswap_registers(common_model->registers + 2, 16); // 16 registers for only manufacturer name, 64 registers for everything
                     const SunSpecCommonModel001_s *m = &common_model->model;
@@ -266,6 +266,10 @@ void MeterSunSpec::scan_next()
 
                     if (strcmp(m->Mn, "KOSTAL") == 0) {
                         quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
+                    } else if (strcmp(m->Mn, "SMA") == 0) {
+                        if (model_id >= 100 && model_id < 200) {
+                            quirks |= SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16;
+                        }
                     }
 
                     if (quirks) {
@@ -273,7 +277,7 @@ void MeterSunSpec::scan_next()
                     }
                 }
                 else {
-                    logger.printfln("meter_sun_spec: Read full model %u for no reason.", model_id_);
+                    logger.printfln("meter_sun_spec: Read full model %u for no reason.", scan_model_id);
                 }
 
                 generic_read_request.start_address += block_length;

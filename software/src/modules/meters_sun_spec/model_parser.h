@@ -32,6 +32,7 @@
 #endif
 
 #define SUN_SPEC_QUIRKS_ACC32_IS_INT32              (1u << 0)
+#define SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16   (1u << 1)
 
 class MetersSunSpecParser
 {
