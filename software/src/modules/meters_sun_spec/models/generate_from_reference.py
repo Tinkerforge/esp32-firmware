@@ -481,6 +481,8 @@ for model in models:
 
         usable_value_count += 1
 
+        value_is_inverter_current = model_id >= 100 and model_id < 200 and re.match(r"^CurrentL.*Export$", value_id_mapping[0])
+
         get_fn_name =  f"get_model_{model_id:03d}_{name}"
         value['get_fn_name'] = get_fn_name
 
@@ -510,7 +512,11 @@ for model in models:
         if field_type == "int16":
             print_cpp(r"    if (val == INT16_MIN) return NAN;")
         elif field_type == "uint16":
-            print_cpp(r"    if (val == UINT16_MAX) return NAN;")
+            if value_is_inverter_current:
+                print_cpp(r"    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;")
+                print_cpp(r"    if (val == not_implemented_val) return NAN;")
+            else:
+                print_cpp(r"    if (val == UINT16_MAX) return NAN;")
         elif field_type == "uint32":
             print_cpp(r"    if (val == UINT32_MAX) return NAN;")
         elif field_type == "acc32":
@@ -527,9 +533,20 @@ for model in models:
 
         # Convert value to float
         if field_type == "float32":
-            print_cpp(f"    float fval = val;")
+            print_cpp(r"    float fval = val;")
+        elif field_type == "uint16":
+            if value_is_inverter_current:
+                print_cpp(r"    float fval;")
+                print_cpp(r"    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {")
+                print_cpp(r"        fval = static_cast<float>(val);")
+                print_cpp(r"    } else {")
+                print_cpp(r"        int16_t sval = static_cast<int16_t>(val);")
+                print_cpp(r"        fval = static_cast<float>(sval);")
+                print_cpp(r"    }")
+            else:
+                print_cpp(r"    float fval = static_cast<float>(val);")
         else:
-            print_cpp(f"    float fval = static_cast<float>(val);")
+            print_cpp(r"    float fval = static_cast<float>(val);")
 
         # Apply dynamic and/or static scale factor
         if scale_factor:
