@@ -43,7 +43,6 @@ public:
     void set_allocated_current_callback(std::function<void(uint32_t)> callback);
 
     ConfigRoot config;
-    ConfigRoot config_in_use;
 
     ConfigRoot state;
 
@@ -60,4 +59,12 @@ private:
     std::function<void(uint32_t)> allocated_current_callback;
 
     std::unique_ptr<char[]> distribution_log;
+
+    std::unique_ptr<const char *[]> hosts;
+    std::unique_ptr<const char *[]> names;
+    uint32_t default_available_current;
+    uint32_t minimum_current;
+    uint32_t minimum_current_1p;
+    uint16_t requested_current_threshold;
+    uint16_t requested_current_margin;
 };
