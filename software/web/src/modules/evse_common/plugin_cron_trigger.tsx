@@ -42,7 +42,7 @@ function get_iec_change_table_children(trigger: CronTrigger) {
         [__("evse.status.error")]
     ]
 
-    return __("evse.content.cron_state_change_trigger")(names[value.charger_state][0]);
+    return __("evse.cron.cron_state_change_trigger")(names[value.charger_state][0]);
 }
 
 function new_iec_change_config(): CronTrigger {
@@ -79,7 +79,7 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.IECChange]: {
-                name: __("evse.content.state_change"),
+                name: __("evse.cron.state_change"),
                 new_config: new_iec_change_config,
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_edit_children: get_iec_change_edit_children,

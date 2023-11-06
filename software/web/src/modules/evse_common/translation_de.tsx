@@ -235,6 +235,28 @@ let x = {
             "switch_to_one_phase": "Umschalten auf einphasig",
             "switch_to_three_phases": "Umschalten auf dreiphasig"
         },
+        "cron" : {
+            "api_must_be_enabled": "Die API muss aktiviert sein, um die Status-LED steuern zu können.",
+            "state_change": "Fahrzeugstatus gewechselt auf",
+            "cron_sd_trigger_text": /*FFN*/(state: boolean) => <>Wenn der Abschalteingang <b>{state ? "geöffnet" : "geschlossen"}</b> wird,{" "}</>/*NF*/,
+            "cron_gpin_trigger_text": /*FFN*/(state: boolean) => <>Wenn der Konfigurierbare Eingang <b>{state ? "geöffnet" : "geschlossen"}</b> wird,{" "}</>/*NF*/,
+            "cron_button_trigger_text": /*FFN*/(state: boolean) => <>Wenn der Fronttaster <b>{state ? "gedrückt" : "losgelassen"}</b> wird,{" "}</>/*NF*/,
+            "cron_gpout_action_text": /*FFN*/(state: number) => state ? <><b>schalte</b> den Konfigurierbaren Ausgang <b>hochohmig</b>.</> : <><b>verbinde</b> den Konfigurierbaren Ausgang <b>mit Masse</b>.</>/*NF*/,
+            "led_duration": "Dauer",
+            "led_state": "LED-Zustand",
+            "led_state_off": "Aus",
+            "led_state_on": "An",
+            "led_state_blinking": "Bestätigendes Blinken",
+            "led_state_flickering": "Ablehnendes Blinken",
+            "led_state_breathing": "Auffordendes Blinken",
+            "led_state_error": /*SFN*/(count: number) => {
+                return "Blinken (" + count + "x)";
+            }/*NF*/,
+            "allowed_charging_current": "Erlaubter Ladestrom",
+            "cron_state_change_trigger": /*FFN*/(state: string) => <>Wenn der Ladecontroller in den Zustand "<b>{state}</b>" wechselt,{" "}</>/*NF*/,
+            "cron_action_text": /*FFN*/(current: number) => <>setze den erlaubten Ladestrom auf <b>{current} A</b>.</>/*NF*/,
+            "cron_led_action_text": /*FFN*/(state: string, duration: number) => (state == "An" || state == "Aus") ? <>schalte die Status-LED für <b>{duration / 1000} Sekunden</b> <b>{state}</b>.</> : <>zeige <b>{state}</b> für <b>{duration / 1000} Sekunden</b> auf der Status-LED.</>/*NF*/
+        },
         "script": {
             "error_code": "Fehlercode",
             "set_charging_current_failed": "Konnte Ladestrom nicht setzen",

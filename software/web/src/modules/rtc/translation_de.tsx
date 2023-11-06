@@ -7,6 +7,12 @@ let x = {
         },
         "content": {
             "rtc": "Echtzeituhr",
+            "live_date": "Aktuelle Zeit der Echtzeituhr",
+            "set_time": "Zeit setzen",
+            "enable_auto_sync": "Automatische Synchronisierung",
+            "auto_sync_desc": "Setzt die Zeit der Echtzeituhr automatisch, wenn das Webinterface geladen wird und keine NTP-Synchronisierung besteht."
+        },
+        "cron": {
             "clock": "Zeitpunkt",
             "time": "Uhrzeit",
             "mday": "Tag",
@@ -63,11 +69,7 @@ let x = {
                 }
 
                 return ret + ", ";
-            }/*NF*/,
-            "live_date": "Aktuelle Zeit der Echtzeituhr",
-            "set_time": "Zeit setzen",
-            "enable_auto_sync": "Automatische Synchronisierung",
-            "auto_sync_desc": "Setzt die Zeit der Echtzeituhr automatisch, wenn das Webinterface geladen wird und keine NTP-Synchronisierung besteht."
+            }/*NF*/
         },
         "script": {
             "save_failed": "Speichern der Echtzeituhr-Einstellungen fehlgeschlagen.",

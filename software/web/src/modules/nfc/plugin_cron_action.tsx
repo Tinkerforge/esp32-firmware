@@ -45,7 +45,7 @@ const TRIGGER_CHARGE_STOP = 2;
 function get_nfc_inject_tag_table_children(action: CronAction) {
     const value = (action as NfcCronAction)[1];
 
-    return __("nfc.content.cron_action_text")(value.tag_id, translate_unchecked("nfc.content.type_" + value.tag_type), value.tag_action);
+    return __("nfc.cron.cron_action_text")(value.tag_id, translate_unchecked("nfc.cron.type_" + value.tag_type), value.tag_action);
 }
 
 function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
@@ -60,9 +60,9 @@ function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
         }
         }}>
             <h5 class="mb-1 pr-2">{t.tag_id}</h5>
-            <div class="d-flex w-100 justify-content-between">
-                <span class="text-left">{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
-                <span class="text-right">{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</span>
+            <div class="d-flex w-100 justify-cron-between">
+                <span class="text-left">{translate_unchecked(`nfc.cron.type_${t.tag_type}`)}</span>
+                <span class="text-right">{__("nfc.cron.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.cron.last_seen_suffix")}</span>
             </div>
         </ListGroupItem>);
 
@@ -75,21 +75,21 @@ function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
         }
         }}>
             <h5 class="mb-1 pr-2">{t.tag_id}</h5>
-            <div class="d-flex w-100 justify-content-between">
-                <span class="text-left">{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
-                <span class="text-right">{__("nfc.content.table_user_id") + ": " + users.find(u => u.id == t.user_id).display_name}</span>
+            <div class="d-flex w-100 justify-cron-between">
+                <span class="text-left">{translate_unchecked(`nfc.cron.type_${t.tag_type}`)}</span>
+                <span class="text-right">{__("nfc.cron.table_user_id") + ": " + users.find(u => u.id == t.user_id).display_name}</span>
             </div>
         </ListGroupItem>);
 
     const all_tags = known_items.concat(seen_tags);
 
     return [<>
-        <FormRow label={__("nfc.content.last_seen_and_known_tags")}>
+        <FormRow label={__("nfc.cron.last_seen_and_known_tags")}>
             {all_tags.length > 0 ?
                 <ListGroup>{all_tags}</ListGroup>
-                : <span>{__("nfc.content.add_tag_description")}</span>}
+                : <span>{__("nfc.cron.add_tag_description")}</span>}
         </FormRow>
-        <FormRow label={__("nfc.content.table_tag_id")}>
+        <FormRow label={__("nfc.cron.table_tag_id")}>
             <InputText
                 required
                 value={value.tag_id}
@@ -99,16 +99,16 @@ function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
                 }}
                 minLength={8} maxLength={29}
                 pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
-                invalidFeedback={__("nfc.content.tag_id_invalid_feedback")} />
+                invalidFeedback={__("nfc.cron.tag_id_invalid_feedback")} />
         </FormRow>
-        <FormRow label={__("nfc.content.table_tag_type")}>
+        <FormRow label={__("nfc.cron.table_tag_type")}>
             <InputSelect
                 items={[
-                    ["0",__("nfc.content.type_0")],
-                    ["1",__("nfc.content.type_1")],
-                    ["2",__("nfc.content.type_2")],
-                    ["3",__("nfc.content.type_3")],
-                    ["4",__("nfc.content.type_4")],
+                    ["0",__("nfc.cron.type_0")],
+                    ["1",__("nfc.cron.type_1")],
+                    ["2",__("nfc.cron.type_2")],
+                    ["3",__("nfc.cron.type_3")],
+                    ["4",__("nfc.cron.type_4")],
                 ]}
                 value={value.tag_type.toString()}
                 onValue={(v) => {
@@ -116,12 +116,12 @@ function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
                     cron.setActionFromComponent(action);
                 }} />
         </FormRow>
-        <FormRow label={__("nfc.content.tag_action")}>
+        <FormRow label={__("nfc.cron.tag_action")}>
             <InputSelect
                 items={[
-                    ["0", __("nfc.content.trigger_charge_any")],
-                    ["1", __("nfc.content.trigger_charge_start")],
-                    ["2", __("nfc.content.trigger_charge_stop")]
+                    ["0", __("nfc.cron.trigger_charge_any")],
+                    ["1", __("nfc.cron.trigger_charge_start")],
+                    ["2", __("nfc.cron.trigger_charge_stop")]
                 ]}
                 value={value.tag_action.toString()}
                 onValue={(v) => {
@@ -147,7 +147,7 @@ export function init() {
     return {
         action_components: {
             [CronActionID.NFCInjectTag]: {
-                name: __("nfc.content.nfc"),
+                name: __("nfc.cron.nfc"),
                 new_config: new_nfc_inject_tag_config,
                 clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 get_edit_children: get_nfc_inject_tag_edit_children,

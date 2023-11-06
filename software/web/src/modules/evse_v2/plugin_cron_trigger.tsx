@@ -48,17 +48,17 @@ export type EvseButtonCronTrigger = [
 
 function get_evse_button_table_children(trigger: CronTrigger) {
     const value = (trigger as EvseButtonCronTrigger)[1];
-    return __("evse.content.cron_button_trigger_text")(value.button_pressed);
+    return __("evse.cron.cron_button_trigger_text")(value.button_pressed);
 }
 
 function get_evse_button_edit_children(cron: Cron, trigger: CronTrigger) {
     let value = (trigger as EvseButtonCronTrigger)[1];
     return [
-        <FormRow label={ __("evse.content.button_configuration")}>
+        <FormRow label={ __("evse.cron.button_configuration")}>
             <InputSelect
                 items={[
-                    ["0", __("evse.content.button_released")],
-                    ["1", __("evse.content.button_pressed")]
+                    ["0", __("evse.cron.button_released")],
+                    ["1", __("evse.cron.button_pressed")]
                 ]}
                 value={value.button_pressed ? "1": "0"}
                 onValue={(v) => {
@@ -80,7 +80,7 @@ function new_evse_button_config(): CronTrigger {
 
 function get_evse_shutdown_table_children(trigger: CronTrigger) {
     const value = (trigger as EvseShutdownCronTrigger)[1];
-    return __("evse.content.cron_sd_trigger_text")(value.high);
+    return __("evse.cron.cron_sd_trigger_text")(value.high);
 }
 
 function get_evse_shutdown_edit_children(cron: Cron, trigger: CronTrigger) {
@@ -89,8 +89,8 @@ function get_evse_shutdown_edit_children(cron: Cron, trigger: CronTrigger) {
         <FormRow label="">
             <InputSelect
                 items={[
-                    ["0", __("evse.content.cron_trigger_active_low")],
-                    ["1", __("evse.content.cron_trigger_active_high")]
+                    ["0", __("evse.cron.cron_trigger_active_low")],
+                    ["1", __("evse.cron.cron_trigger_active_high")]
                 ]}
                 value={value.high ? "1" : "0"}
                 onValue={(v) => {
@@ -112,7 +112,7 @@ function new_evse_shutdown_input_config(): CronTrigger {
 
 function get_evse_gp_input_table_children(trigger: CronTrigger) {
     const value = (trigger as EvseGpInputCronTrigger)[1];
-    return __("evse.content.cron_gpin_trigger_text")(value.high);
+    return __("evse.cron.cron_gpin_trigger_text")(value.high);
 }
 
 function get_evse_gp_input_edit_children(cron: Cron, trigger: CronTrigger) {
@@ -121,8 +121,8 @@ function get_evse_gp_input_edit_children(cron: Cron, trigger: CronTrigger) {
         <FormRow label="">
             <InputSelect
                 items={[
-                    ["0", __("evse.content.cron_trigger_active_low")],
-                    ["1", __("evse.content.cron_trigger_active_high")]
+                    ["0", __("evse.cron.cron_trigger_active_low")],
+                    ["1", __("evse.cron.cron_trigger_active_high")]
                 ]}
                 value={value.high ? "1" : "0"}
                 onValue={(v) => {
@@ -146,7 +146,7 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.EVSEButton]: {
-                name: __("evse.content.cron_trigger_button"),
+                name: __("evse.cron.cron_trigger_button"),
                 new_config: new_evse_button_config,
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_edit_children: get_evse_button_edit_children,
@@ -154,7 +154,7 @@ export function init() {
                 require_feature: "button_configuration",
             },
             [CronTriggerID.EVSEShutdownInput]: {
-                name: __("evse.content.cron_trigger_shutdown_input"),
+                name: __("evse.cron.cron_trigger_shutdown_input"),
                 new_config: new_evse_shutdown_input_config,
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_edit_children: get_evse_shutdown_edit_children,
@@ -162,7 +162,7 @@ export function init() {
                 require_feature: "button_configuration",
             },
             [CronTriggerID.EVSEGPInput]: {
-                name: __("evse.content.cron_trigger_gp_input"),
+                name: __("evse.cron.cron_trigger_gp_input"),
                 new_config: new_evse_gp_input_config,
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_edit_children: get_evse_gp_input_edit_children,

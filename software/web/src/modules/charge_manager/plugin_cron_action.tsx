@@ -34,13 +34,13 @@ export type ChargeManagerCronAction = [
 
 function get_set_manager_table_children(action: CronAction) {
     let value = (action as ChargeManagerCronAction)[1];
-    return __("charge_manager.content.cron_action_text")(value.current);
+    return __("charge_manager.cron.cron_action_text")(value.current);
 }
 
 function get_set_manager_edit_children(cron: Cron, action: CronAction) {
     let value = (action as ChargeManagerCronAction)[1];
     return [
-        <FormRow label={__("charge_manager.content.max_current")}>
+        <FormRow label={__("charge_manager.cron.max_current")}>
             <InputFloat
                 value={value.current}
                 onValue={(v) => {
@@ -67,7 +67,7 @@ export function init() {
     return {
         action_components: {
             [CronActionID.SetManagerCurrent]: {
-                name: __("charge_manager.content.set_charge_manager"),
+                name: __("charge_manager.cron.set_charge_manager"),
                 new_config: new_set_manager_current_config,
                 clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 get_edit_children: get_set_manager_edit_children,

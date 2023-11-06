@@ -58,6 +58,27 @@ let x = {
             }/*NF*/,
             "cron_trigger_mqtt": "MQTT message received"
         },
+        "cron": {
+            "mqtt": "MQTT",
+            "topic": "Topic",
+            "payload": "Message",
+            "retain": "Retain message",
+            "accept_retain": "Accept retained messages",
+            "use_topic_prefix": "Use topic prefix",
+            "use_topic_prefix_muted": "The topic prefix is ",
+            "use_topic_prefix_invalid": "The topic prefix must not be a part of the topic",
+            "cron_action_text": /*FFN*/(topic: string, payload: string, retain: boolean) => {
+                return <>
+                    send MQTT message '<b>{payload}</b>' to topic '<b>{topic}</b>'{retain ? " and retain it." : "."}
+                </>
+            }/*NF*/,
+            "cron_trigger_text": /*FFN*/(topic: string, payload: string, retained: boolean) => {
+                return <>
+                    If MQTT message '<b>{payload}</b>' is received on topic '<b>{topic}</b>' {retained ? "(Retained messages are accepted)" : ""} {", "}
+                </>
+            }/*NF*/,
+            "cron_trigger_mqtt": "MQTT message received"
+        },
         "script": {
             "save_failed": "Failed to save the MQTT settings.",
             "reboot_content_changed": "MQTT settings"

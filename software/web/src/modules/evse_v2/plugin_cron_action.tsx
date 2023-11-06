@@ -34,17 +34,17 @@ export type EvseGpOutputCronAction = [
 
 function get_evse_gp_output_table_children(action: CronAction) {
     const value = (action as EvseGpOutputCronAction)[1];
-    return __("evse.content.cron_gpout_action_text")(value.state);
+    return __("evse.cron.cron_gpout_action_text")(value.state);
 }
 
 function get_evse_gp_output_edit_children(cron: Cron, action: CronAction) {
     const value = (action as EvseGpOutputCronAction)[1];
     return [
-        <FormRow label={__("evse.content.gpio_out")}>
+        <FormRow label={__("evse.cron.gpio_out")}>
             <InputSelect
                 items={[
-                    ["0", __("evse.content.gpio_out_low")],
-                    ["1", __("evse.content.gpio_out_high")]
+                    ["0", __("evse.cron.gpio_out_low")],
+                    ["1", __("evse.cron.gpio_out_high")]
                 ]}
                 value={value.state}
                 onValue={(v) => {
@@ -68,7 +68,7 @@ export function init() {
     return {
         action_components: {
             [CronActionID.EVSEGPOutput]: {
-                name: __("evse.content.gpio_out"),
+                name: __("evse.cron.gpio_out"),
                 new_config: new_evse_gp_output_config,
                 clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 get_edit_children: get_evse_gp_output_edit_children,

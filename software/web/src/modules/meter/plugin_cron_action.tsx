@@ -29,7 +29,7 @@ export type MeterCronAction = [
 ]
 
 function get_meter_reset_table_children(_: CronAction) {
-    return __("meter.content.cron_action_text");
+    return __("meter.cron.cron_action_text");
 }
 
 function get_meter_reset_edit_children(_: Cron, __: CronAction): ComponentChildren {
@@ -47,7 +47,7 @@ export function init() {
     return {
         action_components: {
             [CronActionID.MeterReset]: {
-                name: __("meter.content.meter_reset"),
+                name: __("meter.cron.meter_reset"),
                 new_config: new_meter_reset_config,
                 clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 get_edit_children: get_meter_reset_edit_children,

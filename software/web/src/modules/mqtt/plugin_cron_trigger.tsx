@@ -44,7 +44,7 @@ function get_mqtt_table_children(trigger: CronTrigger) {
 
     const topic = value.use_prefix ? mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic : value.topic;
 
-    return __("mqtt.content.cron_trigger_text")(topic, value.payload, value.retain);
+    return __("mqtt.cron.cron_trigger_text")(topic, value.payload, value.retain);
 }
 
 function get_mqtt_edit_children(cron: Cron, trigger: CronTrigger) {
@@ -53,16 +53,16 @@ function get_mqtt_edit_children(cron: Cron, trigger: CronTrigger) {
     const [isInvalid, isInvalidSetter] = useState(false);
 
     return [<>
-        <FormRow label={__("mqtt.content.use_topic_prefix")}>
+        <FormRow label={__("mqtt.cron.use_topic_prefix")}>
             <Switch
                 checked={value.use_prefix}
                 onClick={() => {
                     value.use_prefix = !value.use_prefix;
                     cron.setTriggerFromComponent(trigger);
                 }}
-                desc={__("mqtt.content.use_topic_prefix_muted") + mqtt_config.global_topic_prefix + "/cron_trigger/"} />
+                desc={__("mqtt.cron.use_topic_prefix_muted") + mqtt_config.global_topic_prefix + "/cron_trigger/"} />
         </FormRow>
-        <FormRow label={__("mqtt.content.topic")}>
+        <FormRow label={__("mqtt.cron.topic")}>
             <InputText
                 required
                 maxLength={64}
@@ -77,13 +77,13 @@ function get_mqtt_edit_children(cron: Cron, trigger: CronTrigger) {
                     }
                     cron.setTriggerFromComponent(trigger);
                 }}
-                invalidFeedback={__("mqtt.content.use_topic_prefix_invalid")} />
+                invalidFeedback={__("mqtt.cron.use_topic_prefix_invalid")} />
             <InputText
                 class="mt-2"
                 value={mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic}
                 hidden={!value.use_prefix} />
         </FormRow>
-        <FormRow label={__("mqtt.content.payload")}>
+        <FormRow label={__("mqtt.cron.payload")}>
             <InputText
                 required
                 maxLength={64}
@@ -93,7 +93,7 @@ function get_mqtt_edit_children(cron: Cron, trigger: CronTrigger) {
                     cron.setTriggerFromComponent(trigger);
                 }} />
         </FormRow>
-        <FormRow label={__("mqtt.content.accept_retain")}>
+        <FormRow label={__("mqtt.cron.accept_retain")}>
             <Switch
                 checked={value.retain}
                 onClick={() => {
@@ -120,7 +120,7 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.MQTT]: {
-                name: __("mqtt.content.cron_trigger_mqtt"),
+                name: __("mqtt.cron.cron_trigger_mqtt"),
                 new_config: new_mqtt_config,
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_edit_children: get_mqtt_edit_children,
