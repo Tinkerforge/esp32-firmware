@@ -23,13 +23,6 @@ let x = {
             "username_muted": "optional",
             "password": "Broker-Passwort",
             "password_muted": "optional",
-            "topic": "Überwachtes Topic",
-            "payload": "Erwartete Nachricht",
-            "retain": "Nachricht Speichern",
-            "accept_retain": "Erlaube gespeicherte (retained) Nachrichten",
-            "use_topic_prefix": "Topic-Präfix benutzen",
-            "use_topic_prefix_muted": "Konfigurierter Topic-Präfix: ",
-            "use_topic_prefix_invalid": "Das Topic darf nicht mit dem konfigurierten Topic-Präfix beginnen, es sei denn \"Topic-Präfix benutzen\" ist aktiviert.",
             "topic_prefix": "Topic-Präfix",
             "topic_prefix_muted": "optional",
             "topic_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, oder ein # oder + enthalten.",
@@ -42,22 +35,7 @@ let x = {
             "auto_discovery_mode_generic": "Generisch",
             "auto_discovery_mode_homeassistant": "Home Assistant",
             "auto_discovery_prefix": "Discovery-Topic-Präfix",
-            "auto_discovery_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, ein # oder + enthalten oder leer sein.",
-            "yes": "Ja",
-            "no": "Nein",
-
-            "cron_action_text": /*FFN*/(topic: string, payload: string, retain: boolean) => {
-                return <>
-                    sende MQTT-Nachricht '<b>{payload}</b>' an Topic '<b>{topic}</b>'{retain ? " und speichere sie." : "."}
-                </>
-            }/*NF*/,
-            "cron_trigger_text": /*FFN*/(topic: string, payload: string, retained: boolean) => {
-                return <>
-                    Wenn MQTT-Nachricht '<b>{payload}</b>' an Topic '<b>{topic}</b>' empfangen wird {retained ? "(Gespeicherte Nachrichten werden akzeptiert)" : ""} {", "}
-                </>
-            }/*NF*/,
-            "cron_trigger_mqtt": "MQTT-Nachricht empfangen"
-
+            "auto_discovery_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, ein # oder + enthalten oder leer sein."
         },
         "cron": {
             "mqtt": "MQTT",
