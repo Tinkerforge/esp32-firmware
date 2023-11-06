@@ -75,11 +75,7 @@ let x = {
 
             "managed_boxes": "Kontrollierte Wallboxen",
 
-            "host_exists": "Host existiert bereits",
-
-            "set_charge_manager": "Lastmanagement",
-            "cron_action_text": /*FFN*/(current: number) => <>setze den maximalen Gesamtstrom auf <b>{current / 1000} A</b>.</> /*NF*/,
-            "max_current": "Maximaler Strom"
+            "host_exists": "Host existiert bereits"
         },
         "cron": {
             "set_charge_manager": "Lastmanagement",

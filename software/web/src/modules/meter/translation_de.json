@@ -9,7 +9,6 @@
         },
         "content": {
             "energy_meter": "Stromzähler",
-            "meter_reset": "Stromzähler zurücksetzen",
             "history": "Verlauf (48 h)",
             "live": "Live",
             "statistics": "Statistiken",
@@ -183,9 +182,7 @@
             "detailed_export_kvarh_desc": "L1, L2, L3",
 
             "detailed_total_kvarh": "Gesamtblindenergie",
-            "detailed_total_kvarh_desc": "L1, L2, L3",
-
-            "cron_action_text": "setze den Stromverbrauchswert zurück."
+            "detailed_total_kvarh_desc": "L1, L2, L3"
         },
         "cron": {
             "meter_reset": "Stromzähler zurücksetzen",

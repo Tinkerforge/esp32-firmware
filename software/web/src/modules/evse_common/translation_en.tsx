@@ -54,7 +54,6 @@ let x = {
             "lock_opening": "Opening",
             "lock_error": "Error",
             "time_since_state_change": "Time since state change",
-            "state_change": "State change",
             "uptime": "Uptime",
             "configuration": "Hardware configuration",
             "has_lock_switch": "Cable lock available",
@@ -77,7 +76,6 @@ let x = {
             "led_state_flickering": "Flickering",
             "led_state_breathing": "Breathing",
             "led_state_api": "API",
-            "led_duration": "Duration",
             "cp_pwm_dc": "CP PWM duty cycle",
             "adc_values": "ADC values",
             "voltages": "Voltages",
@@ -91,16 +89,11 @@ let x = {
             "debug_stop": "Stop+Download",
             "debug_description": "Create charge log",
             "debug_description_muted": "to diagnose charging problems",
-            "active_high": "If open",
-            "active_low": "If closed",
-            "gpio_state": "State",
             "gpio_out_high": "High impedance",
             "gpio_out_low": "Connected to ground",
             "gpio_out": "General purpose output",
             "gpio_in": "General purpose input",
             "gpio_shutdown": "Shutdown input",
-            "button_pressed": "At button press",
-            "button_released": "At button release",
             "button_configuration": "Button configuration",
 
             "auto_start_description": "Manual charge release",
@@ -126,10 +119,6 @@ let x = {
 
             "enable_led_api": "Status-LED control",
             "enable_led_api_desc": "Allows an external source to control the Status-LED.",
-            "api_must_be_enabled": "API must be enabled to use this feature.",
-            "cron_state_change_trigger": /*FFN*/(state: string) => <>If the charge status changes to "<b>{state}</b>",{" "}</>/*NF*/,
-            "cron_action_text": /*FFN*/(current: number) => <>set the allowed charging current to <b>{current} A</b>.</>/*NF*/,
-            "cron_led_action_text": /*FFN*/(state: string, duration: number) => state == "An" || state == "Aus" ? <>turn the status-LED <b>{state}</b> for <b>{duration} seconds</b>.</> : <>show <b>{state}</b> for <b>{duration / 1000} seconds</b> on the status-LED.</>/*NF*/,
 
             "slot": /*SFN*/(i: number) => { return {
                 0: "Supply cable",
@@ -216,10 +205,6 @@ let x = {
             "reset": "Reset",
             "trigger_dc_fault_test": "Test DC fault protector",
             "time_since_dc_fault_check": "Time since last DC fault protector test",
-            "cron_sd_trigger_text": /*FFN*/(state: boolean) => <>If the shutdown input switches to <b>{state ? "open" : "closed"}</b>{" "}</>/*NF*/,
-            "cron_gpin_trigger_text": /*FFN*/(state: boolean) => <>If the General Purpose input switches to <b>{state ? "open" : "closed"}</b>{" "}</>/*NF*/,
-            "cron_button_trigger_text": /*FFN*/(state: boolean) => <>If the button is <b>{state ? "pressed" : "released"}</b>{" "}</>/*NF*/,
-            "cron_gpout_action_text": /*FFN*/(state: number) => state ? <>set general purpose output to <b>high impedance</b>.</> : <><b>connect</b> general purpose output <b>to ground</b>.</>/*NF*/,
 
             // EVSE version specific value for common placeholder
             "error_2": /*SFN*/(is_evse_v2: boolean) => is_evse_v2 ? "DC fault protector error" : "Calibration error"/*NF*/,

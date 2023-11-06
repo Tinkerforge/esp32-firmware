@@ -9,7 +9,6 @@
         },
         "content": {
             "energy_meter": "Energy Meter",
-            "meter_reset": "Energy Meter reset",
             "history": "History (48 h)",
             "live": "Live",
             "statistics": "Statistics",
@@ -183,9 +182,7 @@
             "detailed_export_kvarh_desc": "L1, L2, L3",
 
             "detailed_total_kvarh": "Total reactive energies",
-            "detailed_total_kvarh_desc": "L1, L2, L3",
-
-            "cron_action_text": "reset energy consumption."
+            "detailed_total_kvarh_desc": "L1, L2, L3"
         },
         "cron": {
             "meter_reset": "Energy Meter reset",

@@ -3,8 +3,6 @@ import { h } from "preact";
 let x = {
     "charge_limits": {
         "content": {
-            "charge_limits": "Ladelimit",
-            "charge_limits_expiration": "Ladelimit abgelaufen",
             "overridden": "(aktiv)",
             "configured": "(konfiguriert)",
             "left": " verbleibend",
@@ -24,20 +22,7 @@ let x = {
             "h4": "4 Stunden",
             "h6": "6 Stunden",
             "h8": "8 Stunden",
-            "h12": "12 Stunden",
-            "cron_trigger_text": "Wenn das Ladelimit erreicht ist, ",
-            "cron_action_text": /*FFN*/(duration: string, energy: number) => {
-                return (
-                  <>
-                    setze das Ladelimit auf{" "}
-                    {duration !== "Unbegrenzt" && <b>{duration}</b>}
-                    {duration !== "Unbegrenzt" && energy !== 0 && " und "}
-                    {energy !== 0 && <b>{energy / 1000} kWh</b>}
-                    {duration === "Unbegrenzt" && energy === 0 && <b>unbegrenzt</b>}
-                    {"."}
-                  </>
-                );
-            }/*NF*/
+            "h12": "12 Stunden"
         },
         "cron": {
             "charge_limits_expiration": "Ladelimit abgelaufen",

@@ -38,26 +38,7 @@ let x = {
             "type_2": "NFC Forum Type 2",
             "type_3": "NFC Forum Type 3",
             "type_4": "NFC Forum Type 4",
-            "tag_id_invalid_feedback": "The BSSID must have three to ten groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
-
-            "trigger_charge_any": "Charge start/stop",
-            "trigger_charge_start": "Charge start",
-            "trigger_charge_stop": "Charge stop",
-            "tag_action": "Tag action",
-
-            "last_seen_and_known_tags": "Last seen tags and known tags",
-
-            "cron_action_text": /*FFN*/(tag_id: string, tag_type: string, tag_action: number) => {
-                return <>
-                    fake the presence of the NFC tag <b>{tag_id}</b> ({tag_type}) to {tag_action == 1 ? "start a charge." : tag_action == 2 ? "stop a charge." : "."}
-                </>
-            }/*NF*/,
-            "cron_trigger_text": /*FFN*/(tag_id: string, tag_type: string) => {
-                return <>
-                    If NFC tag '<b>{tag_id}</b>' ({tag_type}) is detected,{" "}
-                </>
-            }/*NF*/,
-            "cron_trigger_nfc": "NFC tag seen"
+            "tag_id_invalid_feedback": "The BSSID must have three to ten groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB"
         },
         "cron": {
             "nfc": "NFC-Tags",
@@ -70,7 +51,6 @@ let x = {
             "table_tag_id": "Tag ID",
             "table_user_id": "Assigned user",
             "table_tag_type": "Tag type",
-            "table_last_seen": "Last seen",
             "type_0": "Mifare Classic",
             "type_1": "NFC Forum Type 1",
             "type_2": "NFC Forum Type 2",

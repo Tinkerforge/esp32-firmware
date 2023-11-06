@@ -75,17 +75,7 @@ let x = {
 
             "managed_boxes": "Managed chargers",
 
-            "host_exists": "Host already exists",
-
-            "set_charge_manager": "Charge Manager",
-            "cron_action_text": /*FFN*/(current: number) => {
-              return (
-                <>
-                  set the maximum total current to <b>{current / 1000} A</b>.
-                </>
-              );
-            }/*NF*/,
-            "max_current": "Maximum current"
+            "host_exists": "Host already exists"
         },
         "cron": {
           "set_charge_manager": "Charge Manager",
