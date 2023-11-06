@@ -5,6 +5,7 @@ interface ChargerState {
     supported_current: number,
     last_update: number,
     name: string,
+    uid: number
 }
 
 interface ServCharger {

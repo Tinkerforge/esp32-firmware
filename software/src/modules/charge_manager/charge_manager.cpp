@@ -161,6 +161,7 @@ void ChargeManager::pre_setup()
                 {"supported_current", Config::Uint16(0)}, // maximum current supported by the charger
                 {"last_update", Config::Uint32(0)},
                 {"name", Config::Str("", 0, 32)},
+                {"uid", Config::Uint32(0)}
             })},
             0, MAX_CLIENTS, Config::type_id<Config::ConfObject>()
         )}
@@ -334,6 +335,7 @@ void ChargeManager::start_manager_task()
             charger_cfg->get("allocated_current")->updateUint(target.allocated_current);
             charger_cfg->get("supported_current")->updateUint(target.supported_current);
             charger_cfg->get("last_update")->updateUint(target.last_update);
+            charger_cfg->get("uid")->updateUint(target.uid);
     }, [this](uint8_t client_id, uint8_t error){
         //TODO bounds check
         ChargerState &target = this->charger_state[client_id];
@@ -896,6 +898,7 @@ void ChargeManager::distribute_current()
         charger_cfg->get("allocated_current")->updateUint(charger.allocated_current);
         charger_cfg->get("supported_current")->updateUint(charger.supported_current);
         charger_cfg->get("last_update")->updateUint(charger.last_update);
+        charger_cfg->get("uid")->updateUint(charger.uid);
     }
 }
 
