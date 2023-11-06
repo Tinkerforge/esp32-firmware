@@ -716,7 +716,8 @@ def discover(client, base_address, device_address, single_value_read):
         sun_spec_id = reader.read_uint32()
 
         if sun_spec_id != SUN_SPEC_ID:
-            print('Sun Spec ID is wrong:', hex(sun_spec_id))
+            sun_spec_id = hex(sun_spec_id) if sun_spec_id else 'NOT_IMPLEMENTED'
+            print('Sun Spec ID is wrong:', sun_spec_id)
             return False
 
         print('Sun Spec ID found:', hex(sun_spec_id))
