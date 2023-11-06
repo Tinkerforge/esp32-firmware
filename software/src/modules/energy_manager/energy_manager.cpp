@@ -112,7 +112,7 @@ void EnergyManager::pre_setup()
         {"input4_rule_then_on_high", Config::Uint(MODE_DO_NOTHING, 0, 255)},
         {"input4_rule_then_on_low", Config::Uint(MODE_DO_NOTHING, 0, 255)},
     }), [](const Config &cfg) -> String {
-        uint32_t max_current_ma = charge_manager.config_in_use.get("maximum_available_current")->asUint();
+        uint32_t max_current_ma = charge_manager.config.get("maximum_available_current")->asUint();
         uint32_t input3_rule_then_limit_ma = cfg.get("input3_rule_then_limit")->asUint();
         uint32_t input4_rule_then_limit_ma = cfg.get("input4_rule_then_limit")->asUint();
 
@@ -247,9 +247,9 @@ void EnergyManager::setup()
     contactor_installed         = config_in_use.get("contactor_installed")->asBool();
     phase_switching_mode        = config_in_use.get("phase_switching_mode")->asUint();
     switching_hysteresis_ms     = debug_config_in_use.get("hysteresis_time")->asUint() * 60 * 1000;    // milliseconds (from minutes)
-    max_current_unlimited_ma    = charge_manager.config_in_use.get("maximum_available_current")->asUint();      // milliampere
-    min_current_1p_ma           = charge_manager.config_in_use.get("minimum_current_1p")->asUint();             // milliampere
-    min_current_3p_ma           = charge_manager.config_in_use.get("minimum_current")->asUint();                // milliampere
+    max_current_unlimited_ma    = charge_manager.config.get("maximum_available_current")->asUint();      // milliampere
+    min_current_1p_ma           = charge_manager.config.get("minimum_current_1p")->asUint();             // milliampere
+    min_current_3p_ma           = charge_manager.config.get("minimum_current")->asUint();                // milliampere
 
     uint32_t auto_reset_time    = config_in_use.get("auto_reset_time")->asUint();
     auto_reset_hour   = auto_reset_time / 60;
