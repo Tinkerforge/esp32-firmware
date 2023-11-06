@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { Fragment, render, h, ComponentChild } from "preact";
+import { Fragment, render, h, ComponentChild, toChildArray } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { Table, TableModalRow, TableRow } from "../../ts/components/table";
@@ -98,7 +98,7 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
                             this.setState({
                                 displayed_trigger: parseInt(v),
                                 edit_task: {
-                                    trigger: cron_trigger_components[parseInt(v)].config_builder(),
+                                    trigger: cron_trigger_components[parseInt(v)].new_config(),
                                     action: this.state.edit_task.action
                                 }
                             })
@@ -123,7 +123,7 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
                                 displayed_action: parseInt(v),
                                 edit_task: {
                                     trigger: this.state.edit_task.trigger,
-                                    action: cron_action_components[parseInt(v)].config_builder()
+                                    action: cron_action_components[parseInt(v)].new_config()
                                 }
                             });
                         }}

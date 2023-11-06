@@ -23,6 +23,7 @@ import { CronTriggerID } from "../cron/cron_defs";
 import { Cron } from "../cron/main";
 import { CronTrigger } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
+import { FormRow } from "../../ts/components/form_row";
 
 export type IECChangeCronTrigger = [
     CronTriggerID.IECChange,
