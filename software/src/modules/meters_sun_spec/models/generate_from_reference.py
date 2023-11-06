@@ -202,10 +202,10 @@ for model_id in model_ids:
 
     max_declaration_length = 0
     max_register = 0
-    last_field_bytes = 0
     register_length = 0
 
     values = []
+    scale_factors = {}
 
     csv.seek(0)
     for line in csv:
@@ -264,14 +264,14 @@ for model_id in model_ids:
         declaration_length = len(declaration)
         if declaration_length > max_declaration_length:
             max_declaration_length = declaration_length
-        max_register = register
-        last_field_bytes = field_bytes
-        register_length = len(max_register)
+        max_register = int(register) + int(field_bytes / 2) - 1
+        register_length = len(str(max_register))
 
         value_id_mapping = value_id_mappings.get(name)
 
         value = {}
         value['register']         = register
+        value['max_register']     = max_register
         value['name']             = name
         value['field_type']       = field_type
         value['scale_factor']     = scale_factor
@@ -282,6 +282,9 @@ for model_id in model_ids:
         value['mandatory']        = mandatory
 
         values.append(value)
+
+        if field_type == "sunssf":
+            scale_factors[name] = max_register
 
     del csv
 
@@ -321,8 +324,8 @@ for model_id in model_ids:
     for value in values:
         print_header(f"    {value['packed']} {value['c_type']:8} {value['declaration']:{max_declaration_length}} // {int(value['register']):>{register_length}d}")
 
-    struct_size  = int(max_register) * 2 + last_field_bytes
-    model_length = int(max_register) + int(last_field_bytes / 2) - 2
+    struct_size  = (int(max_register) + 1) * 2
+    model_length = int(max_register) + 1 - 2
 
     print_header(r"};")
     print_header()
@@ -358,6 +361,7 @@ for model_id in model_ids:
     model['name_camel']         = model_name_camel
     model['name_upper']         = model_name_upper
     model['values']             = values
+    model['scale_factors']      = scale_factors
     model['struct_size']        = struct_size
     model['model_length']       = model_length
     model['struct_name']        = struct_name
@@ -451,6 +455,7 @@ for model in models:
     #model['name_camel']        = model_name_camel
     #model['name_upper']        = model_name_upper
     values = model['values']
+    scale_factors = model['scale_factors']
     #model['struct_size']       = struct_size
     model_length = model['model_length']
     struct_name = model['struct_name']
@@ -550,6 +555,11 @@ for model in models:
 
         # Apply dynamic and/or static scale factor
         if scale_factor:
+            max_register = value['max_register']
+            scale_factor_max_register = scale_factors[scale_factor]
+            if scale_factor_max_register > max_register:
+                value['max_register'] = scale_factor_max_register
+
             if field_type in ["int16", "uint16", "int32", "uint32", "int64", "uint64", "acc32"]:
                 scale_factor = f"get_scale_factor(model->{scale_factor})"
             else:
@@ -624,7 +634,7 @@ for model in models:
 
         value_id = value_id_mapping[0]
 
-        print_cpp(f"        {{ &{value['get_fn_name']}, MeterValueID::{value_id} }},")
+        print_cpp(f"        {{ &{value['get_fn_name']}, MeterValueID::{value_id}, {value['max_register']} }},")
 
     print_cpp(r"    }")
     print_cpp(r"};")

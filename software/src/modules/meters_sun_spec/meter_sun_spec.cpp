@@ -117,11 +117,13 @@ void MeterSunSpec::read_done_callback()
     }
 
     if (!values_declared) {
-        if (!model_parser->detect_values(generic_read_request.data, quirks)) {
+        size_t registers_to_read = 0;
+        if (!model_parser->detect_values(generic_read_request.data, quirks, &registers_to_read)) {
             logger.printfln("meter_sun_spec: Detecting values of model %u in slot %u failed.", model_id, slot);
             return;
         }
         values_declared = true;
+        generic_read_request.register_count = registers_to_read;
     }
 
     if (!model_parser->parse_values(generic_read_request.data, quirks)) {
