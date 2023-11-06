@@ -43,6 +43,7 @@ public:
     struct ValueData {
         get_value_fn get_value;
         MeterValueID value_id;
+        uint8_t max_register;
     };
 
 #if defined(__GNUC__)
@@ -68,7 +69,7 @@ public:
 
     static MetersSunSpecParser *new_parser(uint32_t meter_slot, uint16_t model_id);
 
-    bool detect_values(const uint16_t * const register_data[2], uint32_t quirks);
+    bool detect_values(const uint16_t * const register_data[2], uint32_t quirks, size_t *registers_to_read);
     bool parse_values(const uint16_t * const register_data[2], uint32_t quirks);
 
     bool must_read_twice();

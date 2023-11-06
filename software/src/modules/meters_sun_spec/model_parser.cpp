@@ -36,12 +36,13 @@ MetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t meter_slot, uint16
     return nullptr;
 }
 
-bool MetersSunSpecParser::detect_values(const uint16_t * const register_data[2], uint32_t quirks)
+bool MetersSunSpecParser::detect_values(const uint16_t * const register_data[2], uint32_t quirks, size_t *registers_to_read)
 {
     if (!model->validator(register_data))
         return false;
 
     const uint16_t *data = model->read_twice ? register_data[1] : register_data[0];
+    uint8_t max_register = 0;
 
     detected_values.reserve(model->value_count);
 
@@ -49,8 +50,14 @@ bool MetersSunSpecParser::detect_values(const uint16_t * const register_data[2],
         const ValueData *value_data = &model->value_data[i];
         if (!model->is_meter || !isnan(value_data->get_value(data, quirks, true))) {
             detected_values.push_back(value_data);
+
+            if (value_data->max_register > max_register) {
+                max_register = value_data->max_register;
+            }
         }
     }
+
+    *registers_to_read = static_cast<uint32_t>(max_register) + 1;
 
     detected_values.shrink_to_fit();
     size_t detected_value_count = detected_values.size();
