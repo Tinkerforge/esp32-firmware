@@ -39,6 +39,9 @@ let x = {
                 let ret = "";
                 if (mday != -1) {
                     ret += "Jeden " + mday + ". des Monats";
+                    if (mday >= 29) {
+                        ret += " (wird nur in Monaten mit " + mday + " Tagen ausgeführt)";
+                    }
                 } else if (wday != -1) {
                     ret += wdays[wday];
                 } else {

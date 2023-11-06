@@ -42,6 +42,9 @@ let x = {
                 let ret = "";
                 if (mday != -1) {
                     ret += "Every " + mday + "th of the Month";
+                    if (mday >= 29) {
+                        ret += " (only executed in months with " + mday + " days)";
+                    }
                 } else if (wday != -1) {
                     ret += wdays[wday];
                 } else {
