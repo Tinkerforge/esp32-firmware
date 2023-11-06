@@ -139,7 +139,16 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
             actionSelector = actionSelector.concat(toChildArray(action_config));
         }
 
-        return triggerSelector.concat(actionSelector);
+        const preview = [];
+        const trigger_children = cron_trigger_components[this.state.displayed_trigger];
+        if (trigger_children) {
+            preview.push(trigger_children.get_table_children(this.state.edit_task.trigger));
+        }
+        const action_children = cron_action_components[this.state.displayed_action];
+        if (action_children) {
+            preview.push(action_children.get_table_children(this.state.edit_task.action));
+        }
+        return triggerSelector.concat(actionSelector).concat(<hr/>).concat(<div class="pb-3">{preview}</div>);
     }
 
     assembleTable() {

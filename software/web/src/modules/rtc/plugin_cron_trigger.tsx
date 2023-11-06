@@ -106,7 +106,6 @@ function get_rtc_edit_children(cron: Cron, trigger: CronTrigger) {
                         cron.setTriggerFromComponent(trigger);
                     }} />
             </div>
-            <span>{__("rtc.cron.cron_translation_function")(value.mday, value.wday, value.hour, value.minute)}</span>
         </FormRow>
     </>]
 }
