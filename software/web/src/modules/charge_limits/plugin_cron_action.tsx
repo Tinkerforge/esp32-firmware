@@ -123,7 +123,7 @@ export function init() {
     return {
         action_components: {
             [CronActionID.ChargeLimits]: {
-                clone: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 new_config: new_charge_limits_config,
                 get_edit_children: get_charge_limits_edit_children,
                 get_table_children: get_charge_limits_table_children,

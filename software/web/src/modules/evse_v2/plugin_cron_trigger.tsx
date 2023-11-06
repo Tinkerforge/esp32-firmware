@@ -153,7 +153,7 @@ export function init() {
                 new_config: new_evse_button_config,
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_edit_children: get_evse_button_edit_children,
-                get_table_rchildren: get_evse_button_table_children,
+                get_table_children: get_evse_button_table_children,
                 require_feature: "button_configuration",
             },
             [CronTriggerID.EVSEShutdownInput]: {
