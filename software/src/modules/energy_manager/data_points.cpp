@@ -108,22 +108,23 @@ void EnergyManager::collect_data_points()
 
     if (current_5min_slot != last_history_5min_slot) {
         // 5min data
-        for (auto &charger : charge_manager.state.get("chargers")) {
-            uint32_t last_update = charger.get("last_update")->asUint();
+        for(size_t i = 0; i < charge_manager.charger_count; ++i) {
+            auto &charger = charge_manager.charger_state[i];
+            uint32_t last_update = charger.last_update;
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
-                uint8_t charger_state = charger.get("charger_state")->asUint();
+                uint8_t charger_state = charger.charger_state;
 
-                uint32_t uid = charger.get("uid")->asUint();
+                uint32_t uid = charger.uid;
                 uint8_t flags = charger_state; // bit 0-2 = charger state, bit 7 = no data (read only)
                 uint16_t power = UINT16_MAX;
 
-                if (charger.get("meter_supported")->asBool()) {
-                    float power_total_sum = charger.get("power_total_sum")->asFloat();
-                    uint32_t power_total_count = charger.get("power_total_count")->asUint();
+                if (charger.meter_supported) {
+                    float power_total_sum = charger.power_total_sum;
+                    uint32_t power_total_count = charger.power_total_count;
 
-                    charger.get("power_total_sum")->updateFloat(0);
-                    charger.get("power_total_count")->updateUint(0);
+                    charger.power_total_sum = 0;
+                    charger.power_total_count = 0;
 
                     if (power_total_count > 0) {
                         power = clamp<uint64_t>(0,
@@ -144,7 +145,7 @@ void EnergyManager::collect_data_points()
 #ifdef DEBUG_LOGGING
             else {
                 logger.printfln("collect_data_points: skipping 5min u%u, data too old %u",
-                                charger.get("uid")->asUint(), last_update);
+                                charger.uid, last_update);
             }
 #endif
         }
@@ -186,18 +187,19 @@ void EnergyManager::collect_data_points()
         }
 
         // daily data
-        for (const auto &charger : charge_manager.state.get("chargers")) {
-            uint32_t last_update = charger.get("last_update")->asUint();
+        for(size_t i = 0; i < charge_manager.charger_count; ++i) {
+            const auto &charger = charge_manager.charger_state[i];
+            uint32_t last_update = charger.last_update;
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
                 bool have_data = false;
-                uint32_t uid = charger.get("uid")->asUint();
+                uint32_t uid = charger.uid;
                 uint32_t energy = UINT32_MAX;
 
-                if (charger.get("meter_supported")->asBool()) {
+                if (charger.meter_supported) {
                     have_data = true;
                     energy = clamp<uint64_t>(0,
-                                             roundf(charger.get("energy_abs")->asFloat() * 100.0),
+                                             roundf(charger.energy_abs * 100.0),
                                              UINT32_MAX - 1); // kWh -> dWh
                 }
 
@@ -214,14 +216,14 @@ void EnergyManager::collect_data_points()
 #ifdef DEBUG_LOGGING
                 else {
                     logger.printfln("collect_data_points: skipping daily u%u, no data",
-                                    charger.get("uid")->asUint());
+                                    charger.uid);
                 }
 #endif
             }
 #ifdef DEBUG_LOGGING
             else {
                 logger.printfln("collect_data_points: skipping daily u%u, data too old %u",
-                                charger.get("uid")->asUint(), last_update);
+                                charger.uid, last_update);
             }
 #endif
         }

@@ -211,7 +211,6 @@ public:
     int create_socket(uint16_t port);
 
     void register_manager(const char * const * const hosts,
-                          const char * const * const names,
                           int charger_count,
                           std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *)> manager_callback,
                           std::function<void(uint8_t, uint8_t)> manager_error_callback);
@@ -258,7 +257,6 @@ private:
     uint8_t resolve_state[MAX_CLIENTS] = {};
     struct sockaddr_in dest_addrs[MAX_CLIENTS] = {};
     const char * const * hosts = nullptr;
-    const char * const * names = nullptr;
     int charger_count = 0;
     // one bit per charger
     uint32_t needs_mdns = 0;

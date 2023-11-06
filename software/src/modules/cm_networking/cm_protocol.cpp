@@ -153,13 +153,11 @@ static bool endswith(const char *haystack, const char *needle) {
 }
 
 void CMNetworking::register_manager(const char * const * const hosts,
-                                    const char * const * const names,
                                     int charger_count,
                                     std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *)> manager_callback,
                                     std::function<void(uint8_t, uint8_t)> manager_error_callback)
 {
     this->hosts = hosts;
-    this->names = names;
     this->charger_count = charger_count;
 
     for (int i = 0; i < charger_count; ++i) {
@@ -222,7 +220,7 @@ void CMNetworking::register_manager(const char * const * const hosts,
             String validation_error = validate_state_packet_header(&state_pkt, len);
             if (validation_error != "") {
                 logger.printfln("Received state packet from %s (%s) (%i bytes) failed validation: %s",
-                                this->names[charger_idx],
+                                charge_manager.get_charger_name(charger_idx),
                                 inet_ntoa(source_addr.sin_addr),
                                 len,
                                 validation_error.c_str());
@@ -232,7 +230,7 @@ void CMNetworking::register_manager(const char * const * const hosts,
 
             if (seq_num_invalid(state_pkt.header.seq_num, last_seen_seq_num[charger_idx])) {
                 logger.printfln("Received stale (out of order?) state packet from %s (%s). Last seen seq_num is %u, Received seq_num is %u",
-                                this->names[charger_idx],
+                                charge_manager.get_charger_name(charger_idx),
                                 inet_ntoa(source_addr.sin_addr),
                                 last_seen_seq_num[charger_idx],
                                 state_pkt.header.seq_num);
@@ -244,7 +242,7 @@ void CMNetworking::register_manager(const char * const * const hosts,
             if (!CM_STATE_FLAGS_MANAGED_IS_SET(state_pkt.v1.state_flags)) {
                 manager_error_callback(charger_idx, CM_NETWORKING_ERROR_NOT_MANAGED);
                 logger.printfln("%s (%s) reports managed is not activated!",
-                    this->names[charger_idx],
+                    charge_manager.get_charger_name(charger_idx),
                     inet_ntoa(source_addr.sin_addr));
                 return;
             }

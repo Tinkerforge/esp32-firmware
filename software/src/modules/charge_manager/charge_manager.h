@@ -42,6 +42,8 @@ public:
     bool is_control_pilot_disconnect_supported(uint32_t last_update_cutoff);
     void set_allocated_current_callback(std::function<void(uint32_t)> callback);
 
+    const char *get_charger_name(uint8_t idx);
+
     ConfigRoot config;
 
     ConfigRoot state;
@@ -54,6 +56,51 @@ public:
 
     uint32_t last_available_current_update = 0;
 
+    struct ChargerState {
+        uint32_t last_update;
+        uint32_t uid;
+        uint32_t uptime;
+        uint32_t last_sent_config;
+        uint32_t power_total_count;
+        float power_total_sum;
+        float energy_abs;
+
+        // last current limit send to the charger
+        uint16_t allocated_current;
+
+        // maximum current supported by the charger
+        uint16_t supported_current;
+
+        // last current limit reported by the charger
+        uint16_t allowed_current;
+
+        // requested current calculated with the line currents reported by the charger
+        uint16_t requested_current;
+
+        // 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
+        uint8_t state;
+
+        // 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed
+        uint8_t error;
+        uint8_t charger_state;
+        bool wants_to_charge;
+        bool wants_to_charge_low_priority;
+        bool is_charging;
+
+        // last CP disconnect support reported by the charger: false - CP disconnect not supported, true - CP disconnect supported
+        bool cp_disconnect_supported;
+
+        // last CP disconnect state reported by the charger: false - automatic, true - disconnected
+        bool cp_disconnect_state;
+
+        // last CP disconnect request sent to charger: false - automatic/don't care, true - disconnect
+        bool cp_disconnect;
+        bool meter_supported;
+    };
+
+    ChargerState *charger_state = nullptr;
+    size_t charger_count = 0;
+
 private:
     bool all_chargers_seen = false;
     std::function<void(uint32_t)> allocated_current_callback;
@@ -61,7 +108,6 @@ private:
     std::unique_ptr<char[]> distribution_log;
 
     std::unique_ptr<const char *[]> hosts;
-    std::unique_ptr<const char *[]> names;
     uint32_t default_available_current;
     uint32_t minimum_current;
     uint32_t minimum_current_1p;

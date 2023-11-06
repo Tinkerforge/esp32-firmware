@@ -1,24 +1,10 @@
 interface ChargerState {
-    name: string,
-    uid: number,
-    last_update: number,
-    uptime: number,
-    supported_current: number,
-    allowed_current: number,
-    requested_current: number,
-    wants_to_charge: boolean,
-    wants_to_charge_low_priority: boolean,
-    is_charging: boolean,
-    cp_disconnect_supported: boolean,
-    cp_disconnect_state: boolean,
-    cp_disconnect: boolean,
-    last_sent_config: number,
-    allocated_current: number,
     state: number,
     error: number,
-    charger_state: number,
-    power_total: number,
-    energy_abs: number
+    allocated_current: number,
+    supported_current: number,
+    last_update: number,
+    name: string,
 }
 
 interface ServCharger {
