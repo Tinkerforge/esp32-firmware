@@ -39,7 +39,7 @@ export type NfcCronTrigger = [
 
 function get_nfc_table_children(trigger: CronTrigger) {
     const value = (trigger as NfcCronTrigger)[1];
-    return __("nfc.content.cron_trigger_text")(value.tag_id, translate_unchecked("nfc.content.type_" + value.tag_type))
+    return __("nfc.cron.cron_trigger_text")(value.tag_id, translate_unchecked("nfc.cron.type_" + value.tag_type))
 }
 
 function new_nfc_config(): CronTrigger {
@@ -64,9 +64,9 @@ function get_nfc_edit_children(cron: Cron, trigger: CronTrigger) {
         }
         }}>
             <h5 class="mb-1 pr-2">{t.tag_id}</h5>
-            <div class="d-flex w-100 justify-content-between">
-                <span class="text-left">{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
-                <span class="text-right">{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</span>
+            <div class="d-flex w-100 justify-cron-between">
+                <span class="text-left">{translate_unchecked(`nfc.cron.type_${t.tag_type}`)}</span>
+                <span class="text-right">{__("nfc.cron.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.cron.last_seen_suffix")}</span>
             </div>
         </ListGroupItem>);
 
@@ -79,21 +79,21 @@ function get_nfc_edit_children(cron: Cron, trigger: CronTrigger) {
         }
         }}>
             <h5 class="mb-1 pr-2">{t.tag_id}</h5>
-            <div class="d-flex w-100 justify-content-between">
-                <span class="text-left">{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
-                <span class="text-right">{__("nfc.content.table_user_id") + ": " + users.find(u => u.id == t.user_id).display_name}</span>
+            <div class="d-flex w-100 justify-cron-between">
+                <span class="text-left">{translate_unchecked(`nfc.cron.type_${t.tag_type}`)}</span>
+                <span class="text-right">{__("nfc.cron.table_user_id") + ": " + users.find(u => u.id == t.user_id).display_name}</span>
             </div>
         </ListGroupItem>);
 
     const all_tags = known_items.concat(seen_tags);
 
     return [<>
-        <FormRow label={__("nfc.content.last_seen_and_known_tags")}>
+        <FormRow label={__("nfc.cron.last_seen_and_known_tags")}>
             {all_tags.length > 0 ?
                 <ListGroup>{all_tags}</ListGroup>
-                : <span>{__("nfc.content.add_tag_description")}</span>}
+                : <span>{__("nfc.cron.add_tag_description")}</span>}
         </FormRow>
-        <FormRow label={__("nfc.content.table_tag_id")}>
+        <FormRow label={__("nfc.cron.table_tag_id")}>
             <InputText
                 value={value.tag_id}
                 required
@@ -103,16 +103,16 @@ function get_nfc_edit_children(cron: Cron, trigger: CronTrigger) {
                 }}
                 minLength={8} maxLength={29}
                 pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
-                invalidFeedback={__("nfc.content.tag_id_invalid_feedback")} />
+                invalidFeedback={__("nfc.cron.tag_id_invalid_feedback")} />
         </FormRow>
-        <FormRow label={__("nfc.content.table_tag_type")}>
+        <FormRow label={__("nfc.cron.table_tag_type")}>
             <InputSelect
                 items={[
-                    ["0",__("nfc.content.type_0")],
-                    ["1",__("nfc.content.type_1")],
-                    ["2",__("nfc.content.type_2")],
-                    ["3",__("nfc.content.type_3")],
-                    ["4",__("nfc.content.type_4")],
+                    ["0",__("nfc.cron.type_0")],
+                    ["1",__("nfc.cron.type_1")],
+                    ["2",__("nfc.cron.type_2")],
+                    ["3",__("nfc.cron.type_3")],
+                    ["4",__("nfc.cron.type_4")],
                 ]}
                 value={value.tag_type.toString()}
                 onValue={(v) => {
@@ -127,7 +127,7 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.NFC]: {
-                name: __("nfc.content.cron_trigger_nfc"),
+                name: __("nfc.cron.cron_trigger_nfc"),
                 new_config: new_nfc_config,
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_edit_children: get_nfc_edit_children,

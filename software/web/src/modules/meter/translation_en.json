@@ -187,6 +187,10 @@
 
             "cron_action_text": "reset energy consumption."
         },
+        "cron": {
+            "meter_reset": "Energy Meter reset",
+            "cron_action_text": "reset energy consumption."
+        },
         "script": {
             "time": "Time of day",
             "power": "Power"

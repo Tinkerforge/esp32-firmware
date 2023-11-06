@@ -222,6 +222,28 @@ let x = {
             "adc_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail</> : <>CP/PE, PP/PE</>/*NF*/,
             "voltage_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail</> : <>CP/PE, PP/PE,<br/> CP/PE (high)</>/*NF*/
         },
+        "cron": {
+            "api_must_be_enabled": "API must be enabled to use this feature.",
+            "state_change": "State change",
+            "cron_sd_trigger_text": /*FFN*/(state: boolean) => <>If the shutdown input switches to <b>{state ? "open" : "closed"}</b>{" "}</>/*NF*/,
+            "cron_gpin_trigger_text": /*FFN*/(state: boolean) => <>If the General Purpose input switches to <b>{state ? "open" : "closed"}</b>{" "}</>/*NF*/,
+            "cron_button_trigger_text": /*FFN*/(state: boolean) => <>If the button is <b>{state ? "pressed" : "released"}</b>{" "}</>/*NF*/,
+            "cron_gpout_action_text": /*FFN*/(state: number) => state ? <>set general purpose output to <b>high impedance</b>.</> : <><b>connect</b> general purpose output <b>to ground</b>.</>/*NF*/,
+            "led_duration": "Duration",
+            "led_state": "LED state",
+            "led_state_off": "Off",
+            "led_state_on": "On",
+            "led_state_blinking": "Acknowledge blinking",
+            "led_state_flickering": "Rejecting blinking",
+            "led_state_breathing": "Demanding blinking",
+            "led_state_error": /*SFN*/(count: number) => {
+                return "Blinking (" + count + " x)";
+            }/*NF*/,
+            "allowed_charging_current": "Allowed charging current",
+            "cron_state_change_trigger": /*FFN*/(state: string) => <>If the charge status changes to "<b>{state}</b>",{" "}</>/*NF*/,
+            "cron_action_text": /*FFN*/(current: number) => <>set the allowed charging current to <b>{current} A</b>.</>/*NF*/,
+            "cron_led_action_text": /*FFN*/(state: string, duration: number) => state == "An" || state == "Aus" ? <>turn the status-LED <b>{state}</b> for <b>{duration} seconds</b>.</> : <>show <b>{state}</b> for <b>{duration / 1000} seconds</b> on the status-LED.</>/*NF*/
+        },
         "script": {
             "error_code": "Error code",
             "set_charging_current_failed": "Failed to set charging current",

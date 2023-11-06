@@ -2,7 +2,13 @@
 import { h } from "preact";
 let x = {
     "evse": {
-        "content": {
+        "cron": {
+            "button_pressed": "At button press",
+            "button_released": "At button release",
+            "button_configuration": "Button configuration",
+            "gpio_out_high": "High impedance",
+            "gpio_out_low": "Connected to ground",
+            "gpio_out": "General purpose output",
             "cron_trigger_button": "Front button pressed",
             "cron_trigger_shutdown_input": "Shutdown input switched",
             "cron_trigger_gp_input": "General purpose input switched",

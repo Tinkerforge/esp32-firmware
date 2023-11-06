@@ -81,6 +81,11 @@ let x = {
             "cron_action_text": /*FFN*/(current: number) => <>setze den maximalen Gesamtstrom auf <b>{current / 1000} A</b>.</> /*NF*/,
             "max_current": "Maximaler Strom"
         },
+        "cron": {
+            "set_charge_manager": "Lastmanagement",
+            "cron_action_text": /*FFN*/(current: number) => <>setze den maximalen Gesamtstrom auf <b>{current / 1000} A</b>.</> /*NF*/,
+            "max_current": "Maximaler Strom"
+        },
         "script": {
             "charge_state_0": "Kein Fahrzeug angeschlossen",
             "charge_state_1": "Warte auf Benutzer-/NFC-Freigabe",

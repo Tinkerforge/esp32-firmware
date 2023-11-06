@@ -8,6 +8,12 @@ let x = {
         },
         "content": {
             "rtc": "Real-Time Clock",
+            "live_date": "Current time on real-time clock",
+            "set_time": "Set time",
+            "enable_auto_sync": "Automatic synchronization",
+            "auto_sync_desc": "Automatically sets the real-time clock's time when loading the web interface and NTP is not synchronized."
+        },
+        "cron": {
             "clock": "Time",
             "time": "Time",
             "mday": "Day",
@@ -61,11 +67,7 @@ let x = {
                 }
 
                 return ret + ", ";
-            }/*NF*/,
-            "live_date": "Current time on real-time clock",
-            "set_time": "Set time",
-            "enable_auto_sync": "Automatic synchronization",
-            "auto_sync_desc": "Automatically sets the real-time clock's time when loading the web interface and NTP is not synchronized."
+            }/*NF*/
         },
         "script": {
             "save_failed": "Failed to save the real-time clock settings.",

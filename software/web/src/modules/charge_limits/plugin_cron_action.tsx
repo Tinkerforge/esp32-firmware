@@ -38,26 +38,26 @@ export type ChargeLimitsCronAction = [
 function get_charge_limits_table_children(action: CronAction) {
     const value = (action as ChargeLimitsCronAction)[1];
     const durations = [
-        __("charge_limits.content.unlimited"),
-        __("charge_limits.content.min15"),
-        __("charge_limits.content.min30"),
-        __("charge_limits.content.min45"),
-        __("charge_limits.content.h1"),
-        __("charge_limits.content.h2"),
-        __("charge_limits.content.h3"),
-        __("charge_limits.content.h4"),
-        __("charge_limits.content.h6"),
-        __("charge_limits.content.h8"),
-        __("charge_limits.content.h12"),
+        __("charge_limits.cron.unlimited"),
+        __("charge_limits.cron.min15"),
+        __("charge_limits.cron.min30"),
+        __("charge_limits.cron.min45"),
+        __("charge_limits.cron.h1"),
+        __("charge_limits.cron.h2"),
+        __("charge_limits.cron.h3"),
+        __("charge_limits.cron.h4"),
+        __("charge_limits.cron.h6"),
+        __("charge_limits.cron.h8"),
+        __("charge_limits.cron.h12"),
     ]
 
-    return __("charge_limits.content.cron_action_text")(durations[value.duration], value.energy_wh);
+    return __("charge_limits.cron.cron_action_text")(durations[value.duration], value.energy_wh);
 }
 
 function get_charge_limits_edit_children(cron: Cron, action: CronAction) {
     const value = (action as ChargeLimitsCronAction)[1];
     const energy_items: [string, string][] = [
-        ["0", __("charge_limits.content.unlimited")],
+        ["0", __("charge_limits.cron.unlimited")],
         ["5000", util.toLocaleFixed(5, 0) + " kWh"],
         ["10000", util.toLocaleFixed(10, 0) + " kWh"],
         ["15000", util.toLocaleFixed(15, 0) + " kWh"],
@@ -74,21 +74,21 @@ function get_charge_limits_edit_children(cron: Cron, action: CronAction) {
     ];
 
     const duration_items: [string, string][] = [
-        ["0", __("charge_limits.content.unlimited")],
-        ["1", __("charge_limits.content.min15")],
-        ["2", __("charge_limits.content.min30")],
-        ["3", __("charge_limits.content.min45")],
-        ["4", __("charge_limits.content.h1")],
-        ["5", __("charge_limits.content.h2")],
-        ["6", __("charge_limits.content.h3")],
-        ["7", __("charge_limits.content.h4")],
-        ["8", __("charge_limits.content.h6")],
-        ["9", __("charge_limits.content.h8")],
-        ["10", __("charge_limits.content.h12")],
+        ["0", __("charge_limits.cron.unlimited")],
+        ["1", __("charge_limits.cron.min15")],
+        ["2", __("charge_limits.cron.min30")],
+        ["3", __("charge_limits.cron.min45")],
+        ["4", __("charge_limits.cron.h1")],
+        ["5", __("charge_limits.cron.h2")],
+        ["6", __("charge_limits.cron.h3")],
+        ["7", __("charge_limits.cron.h4")],
+        ["8", __("charge_limits.cron.h6")],
+        ["9", __("charge_limits.cron.h8")],
+        ["10", __("charge_limits.cron.h12")],
     ];
 
     const meter_entry = API.hasFeature("meter") ? [
-        <FormRow label={__("charge_limits.content.energy")}>
+        <FormRow label={__("charge_limits.cron.energy")}>
             <InputSelect
                 items={energy_items}
                 value={value.energy_wh.toString()}
@@ -100,7 +100,7 @@ function get_charge_limits_edit_children(cron: Cron, action: CronAction) {
     ] : [];
 
     return [
-        <FormRow label={__("charge_limits.content.duration")}>
+        <FormRow label={__("charge_limits.cron.duration")}>
             <InputSelect
                 items={duration_items}
                 value={value.duration.toString()}
@@ -130,7 +130,7 @@ export function init() {
                 new_config: new_charge_limits_config,
                 get_edit_children: get_charge_limits_edit_children,
                 get_table_children: get_charge_limits_table_children,
-                name: __("charge_limits.content.charge_limits"),
+                name: __("charge_limits.cron.charge_limits"),
             },
         },
     };

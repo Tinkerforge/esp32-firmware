@@ -87,6 +87,17 @@ let x = {
             }/*NF*/,
             "max_current": "Maximum current"
         },
+        "cron": {
+          "set_charge_manager": "Charge Manager",
+          "cron_action_text": /*FFN*/(current: number) => {
+            return (
+              <>
+                set the maximum total current to <b>{current / 1000} A</b>.
+              </>
+            );
+          }/*NF*/,
+          "max_current": "Maximum current"
+        },
         "script": {
             "charge_state_0": "No vehicle connected",
             "charge_state_1": "Waiting for user/NFC release",

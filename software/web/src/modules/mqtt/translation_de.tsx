@@ -59,6 +59,27 @@ let x = {
             "cron_trigger_mqtt": "MQTT-Nachricht empfangen"
 
         },
+        "cron": {
+            "mqtt": "MQTT",
+            "topic": "Überwachtes Topic",
+            "payload": "Erwartete Nachricht",
+            "retain": "Nachricht Speichern",
+            "accept_retain": "Erlaube gespeicherte (retained) Nachrichten",
+            "use_topic_prefix": "Topic-Präfix benutzen",
+            "use_topic_prefix_muted": "Konfigurierter Topic-Präfix: ",
+            "use_topic_prefix_invalid": "Das Topic darf nicht mit dem konfigurierten Topic-Präfix beginnen, es sei denn \"Topic-Präfix benutzen\" ist aktiviert.",
+            "cron_action_text": /*FFN*/(topic: string, payload: string, retain: boolean) => {
+                return <>
+                    sende MQTT-Nachricht '<b>{payload}</b>' an Topic '<b>{topic}</b>'{retain ? " und speichere sie." : "."}
+                </>
+            }/*NF*/,
+            "cron_trigger_text": /*FFN*/(topic: string, payload: string, retained: boolean) => {
+                return <>
+                    Wenn MQTT-Nachricht '<b>{payload}</b>' an Topic '<b>{topic}</b>' empfangen wird {retained ? "(Gespeicherte Nachrichten werden akzeptiert)" : ""} {", "}
+                </>
+            }/*NF*/,
+            "cron_trigger_mqtt": "MQTT-Nachricht empfangen"
+        },
         "script": {
             "save_failed": "Speichern der MQTT-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "MQTT-Einstellungen"

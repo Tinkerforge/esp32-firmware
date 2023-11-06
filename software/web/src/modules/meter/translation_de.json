@@ -187,6 +187,10 @@
 
             "cron_action_text": "setze den Stromverbrauchswert zurück."
         },
+        "cron": {
+            "meter_reset": "Stromzähler zurücksetzen",
+            "cron_action_text": "setze den Stromverbrauchswert zurück."
+        },
         "script": {
             "time": "Uhrzeit",
             "power": "Leistung"
