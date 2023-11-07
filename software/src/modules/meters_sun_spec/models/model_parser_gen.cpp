@@ -100,15 +100,8 @@ static float get_model_101_A(const void *register_data, uint32_t quirks, bool de
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->A;
-    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
-    if (val == not_implemented_val) return NAN;
-    float fval;
-    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {
-        fval = static_cast<float>(val);
-    } else {
-        int16_t sval = static_cast<int16_t>(val);
-        fval = static_cast<float>(sval);
-    }
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->A_SF);
     return fval;
 }
@@ -422,15 +415,8 @@ static float get_model_102_A(const void *register_data, uint32_t quirks, bool de
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->A;
-    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
-    if (val == not_implemented_val) return NAN;
-    float fval;
-    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {
-        fval = static_cast<float>(val);
-    } else {
-        int16_t sval = static_cast<int16_t>(val);
-        fval = static_cast<float>(sval);
-    }
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->A_SF);
     return fval;
 }
@@ -744,15 +730,8 @@ static float get_model_103_A(const void *register_data, uint32_t quirks, bool de
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->A;
-    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
-    if (val == not_implemented_val) return NAN;
-    float fval;
-    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {
-        fval = static_cast<float>(val);
-    } else {
-        int16_t sval = static_cast<int16_t>(val);
-        fval = static_cast<float>(sval);
-    }
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->A_SF);
     return fval;
 }
