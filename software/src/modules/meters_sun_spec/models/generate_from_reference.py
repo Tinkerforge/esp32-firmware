@@ -486,7 +486,7 @@ for model in models:
 
         usable_value_count += 1
 
-        value_is_inverter_current = model_id >= 100 and model_id < 200 and re.match(r"^CurrentL.*Export$", value_id_mapping[0])
+        value_is_inverter_current = model_id >= 100 and model_id < 200 and re.match(r"^CurrentL.Export$", value_id_mapping[0])
 
         get_fn_name =  f"get_model_{model_id:03d}_{name}"
         value['get_fn_name'] = get_fn_name
