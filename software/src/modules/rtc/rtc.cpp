@@ -68,6 +68,10 @@ void Rtc::pre_setup()
 #endif
 }
 
+void Rtc::setup() {
+    api.restorePersistentConfig("rtc/config", &config);
+}
+
 #if MODULE_CRON_AVAILABLE()
 static bool trigger_action(Config *cfg, void *data) {
     return rtc.action_triggered(cfg, data);
@@ -193,6 +197,7 @@ bool Rtc::action_triggered(Config *conf, void *data) {
     Config *cfg = (Config*)conf->get();
     tm *time_struct = (tm *)data;
     bool triggered = false;
+
     if (cfg->get("wday")->asInt() == -1) {
         triggered |= cfg->get("mday")->asInt() == time_struct->tm_mday || cfg->get("mday")->asInt() == -1 || cfg->get("mday")->asInt() == 0;
         triggered |= cfg->get("mday")->asInt() == 32 && is_last_day(*time_struct);
