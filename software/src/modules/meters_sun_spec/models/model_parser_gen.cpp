@@ -2472,10 +2472,10 @@ static const MetersSunSpecParser::ModelData model_201_data = {
     &model_201_validator,
     61,  // value_count
     {    // value_data
-        { &get_model_201_A, MeterValueID::CurrentLSumImExDiff, 6 },
-        { &get_model_201_AphA, MeterValueID::CurrentL1ImExDiff, 6 },
-        { &get_model_201_AphB, MeterValueID::CurrentL2ImExDiff, 6 },
-        { &get_model_201_AphC, MeterValueID::CurrentL3ImExDiff, 6 },
+        { &get_model_201_A, MeterValueID::CurrentLSumImExSum, 6 },
+        { &get_model_201_AphA, MeterValueID::CurrentL1ImExSum, 6 },
+        { &get_model_201_AphB, MeterValueID::CurrentL2ImExSum, 6 },
+        { &get_model_201_AphC, MeterValueID::CurrentL3ImExSum, 6 },
         { &get_model_201_PhV, MeterValueID::VoltageLNAvg, 15 },
         { &get_model_201_PhVphA, MeterValueID::VoltageL1N, 15 },
         { &get_model_201_PhVphB, MeterValueID::VoltageL2N, 15 },
@@ -3274,10 +3274,10 @@ static const MetersSunSpecParser::ModelData model_202_data = {
     &model_202_validator,
     61,  // value_count
     {    // value_data
-        { &get_model_202_A, MeterValueID::CurrentLSumImExDiff, 6 },
-        { &get_model_202_AphA, MeterValueID::CurrentL1ImExDiff, 6 },
-        { &get_model_202_AphB, MeterValueID::CurrentL2ImExDiff, 6 },
-        { &get_model_202_AphC, MeterValueID::CurrentL3ImExDiff, 6 },
+        { &get_model_202_A, MeterValueID::CurrentLSumImExSum, 6 },
+        { &get_model_202_AphA, MeterValueID::CurrentL1ImExSum, 6 },
+        { &get_model_202_AphB, MeterValueID::CurrentL2ImExSum, 6 },
+        { &get_model_202_AphC, MeterValueID::CurrentL3ImExSum, 6 },
         { &get_model_202_PhV, MeterValueID::VoltageLNAvg, 15 },
         { &get_model_202_PhVphA, MeterValueID::VoltageL1N, 15 },
         { &get_model_202_PhVphB, MeterValueID::VoltageL2N, 15 },
@@ -4076,10 +4076,10 @@ static const MetersSunSpecParser::ModelData model_203_data = {
     &model_203_validator,
     61,  // value_count
     {    // value_data
-        { &get_model_203_A, MeterValueID::CurrentLSumImExDiff, 6 },
-        { &get_model_203_AphA, MeterValueID::CurrentL1ImExDiff, 6 },
-        { &get_model_203_AphB, MeterValueID::CurrentL2ImExDiff, 6 },
-        { &get_model_203_AphC, MeterValueID::CurrentL3ImExDiff, 6 },
+        { &get_model_203_A, MeterValueID::CurrentLSumImExSum, 6 },
+        { &get_model_203_AphA, MeterValueID::CurrentL1ImExSum, 6 },
+        { &get_model_203_AphB, MeterValueID::CurrentL2ImExSum, 6 },
+        { &get_model_203_AphC, MeterValueID::CurrentL3ImExSum, 6 },
         { &get_model_203_PhV, MeterValueID::VoltageLNAvg, 15 },
         { &get_model_203_PhVphA, MeterValueID::VoltageL1N, 15 },
         { &get_model_203_PhVphB, MeterValueID::VoltageL2N, 15 },
@@ -4878,10 +4878,10 @@ static const MetersSunSpecParser::ModelData model_204_data = {
     &model_204_validator,
     61,  // value_count
     {    // value_data
-        { &get_model_204_A, MeterValueID::CurrentLSumImExDiff, 6 },
-        { &get_model_204_AphA, MeterValueID::CurrentL1ImExDiff, 6 },
-        { &get_model_204_AphB, MeterValueID::CurrentL2ImExDiff, 6 },
-        { &get_model_204_AphC, MeterValueID::CurrentL3ImExDiff, 6 },
+        { &get_model_204_A, MeterValueID::CurrentLSumImExSum, 6 },
+        { &get_model_204_AphA, MeterValueID::CurrentL1ImExSum, 6 },
+        { &get_model_204_AphB, MeterValueID::CurrentL2ImExSum, 6 },
+        { &get_model_204_AphC, MeterValueID::CurrentL3ImExSum, 6 },
         { &get_model_204_PhV, MeterValueID::VoltageLNAvg, 15 },
         { &get_model_204_PhVphA, MeterValueID::VoltageL1N, 15 },
         { &get_model_204_PhVphB, MeterValueID::VoltageL2N, 15 },
@@ -5483,10 +5483,10 @@ static const MetersSunSpecParser::ModelData model_211_data = {
     &model_211_validator,
     61,  // value_count
     {    // value_data
-        { &get_model_211_A, MeterValueID::CurrentLSumImExDiff, 3 },
-        { &get_model_211_AphA, MeterValueID::CurrentL1ImExDiff, 5 },
-        { &get_model_211_AphB, MeterValueID::CurrentL2ImExDiff, 7 },
-        { &get_model_211_AphC, MeterValueID::CurrentL3ImExDiff, 9 },
+        { &get_model_211_A, MeterValueID::CurrentLSumImExSum, 3 },
+        { &get_model_211_AphA, MeterValueID::CurrentL1ImExSum, 5 },
+        { &get_model_211_AphB, MeterValueID::CurrentL2ImExSum, 7 },
+        { &get_model_211_AphC, MeterValueID::CurrentL3ImExSum, 9 },
         { &get_model_211_PhV, MeterValueID::VoltageLNAvg, 11 },
         { &get_model_211_PhVphA, MeterValueID::VoltageL1N, 13 },
         { &get_model_211_PhVphB, MeterValueID::VoltageL2N, 15 },
@@ -6088,10 +6088,10 @@ static const MetersSunSpecParser::ModelData model_212_data = {
     &model_212_validator,
     61,  // value_count
     {    // value_data
-        { &get_model_212_A, MeterValueID::CurrentLSumImExDiff, 3 },
-        { &get_model_212_AphA, MeterValueID::CurrentL1ImExDiff, 5 },
-        { &get_model_212_AphB, MeterValueID::CurrentL2ImExDiff, 7 },
-        { &get_model_212_AphC, MeterValueID::CurrentL3ImExDiff, 9 },
+        { &get_model_212_A, MeterValueID::CurrentLSumImExSum, 3 },
+        { &get_model_212_AphA, MeterValueID::CurrentL1ImExSum, 5 },
+        { &get_model_212_AphB, MeterValueID::CurrentL2ImExSum, 7 },
+        { &get_model_212_AphC, MeterValueID::CurrentL3ImExSum, 9 },
         { &get_model_212_PhV, MeterValueID::VoltageLNAvg, 11 },
         { &get_model_212_PhVphA, MeterValueID::VoltageL1N, 13 },
         { &get_model_212_PhVphB, MeterValueID::VoltageL2N, 15 },
@@ -6693,10 +6693,10 @@ static const MetersSunSpecParser::ModelData model_213_data = {
     &model_213_validator,
     61,  // value_count
     {    // value_data
-        { &get_model_213_A, MeterValueID::CurrentLSumImExDiff, 3 },
-        { &get_model_213_AphA, MeterValueID::CurrentL1ImExDiff, 5 },
-        { &get_model_213_AphB, MeterValueID::CurrentL2ImExDiff, 7 },
-        { &get_model_213_AphC, MeterValueID::CurrentL3ImExDiff, 9 },
+        { &get_model_213_A, MeterValueID::CurrentLSumImExSum, 3 },
+        { &get_model_213_AphA, MeterValueID::CurrentL1ImExSum, 5 },
+        { &get_model_213_AphB, MeterValueID::CurrentL2ImExSum, 7 },
+        { &get_model_213_AphC, MeterValueID::CurrentL3ImExSum, 9 },
         { &get_model_213_PhV, MeterValueID::VoltageLNAvg, 11 },
         { &get_model_213_PhVphA, MeterValueID::VoltageL1N, 13 },
         { &get_model_213_PhVphB, MeterValueID::VoltageL2N, 15 },
@@ -7298,10 +7298,10 @@ static const MetersSunSpecParser::ModelData model_214_data = {
     &model_214_validator,
     61,  // value_count
     {    // value_data
-        { &get_model_214_A, MeterValueID::CurrentLSumImExDiff, 3 },
-        { &get_model_214_AphA, MeterValueID::CurrentL1ImExDiff, 5 },
-        { &get_model_214_AphB, MeterValueID::CurrentL2ImExDiff, 7 },
-        { &get_model_214_AphC, MeterValueID::CurrentL3ImExDiff, 9 },
+        { &get_model_214_A, MeterValueID::CurrentLSumImExSum, 3 },
+        { &get_model_214_AphA, MeterValueID::CurrentL1ImExSum, 5 },
+        { &get_model_214_AphB, MeterValueID::CurrentL2ImExSum, 7 },
+        { &get_model_214_AphC, MeterValueID::CurrentL3ImExSum, 9 },
         { &get_model_214_PhV, MeterValueID::VoltageLNAvg, 11 },
         { &get_model_214_PhVphA, MeterValueID::VoltageL1N, 13 },
         { &get_model_214_PhVphB, MeterValueID::VoltageL2N, 15 },
