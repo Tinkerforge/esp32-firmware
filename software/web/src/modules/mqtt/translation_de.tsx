@@ -39,6 +39,9 @@ let x = {
         },
         "cron": {
             "mqtt": "MQTT",
+            "match_all": "Alle Nachrichten werden akzeptiert",
+            "send_topic": "An Topic",
+            "send_payload": "Nachricht",
             "topic": "Überwachtes Topic",
             "payload": "Erwartete Nachricht",
             "retain": "Nachricht Speichern",
@@ -52,8 +55,14 @@ let x = {
                 </>
             }/*NF*/,
             "cron_trigger_text": /*FFN*/(topic: string, payload: string, retained: boolean) => {
+                let ret = <></>;
+                if (payload.length == 0) {
+                    ret = <>Wenn beliebige MQTT-Nachricht</>;
+                } else {
+                    ret = <>Wenn MQTT-Nachricht '<b>{payload}</b>'</>;
+                }
                 return <>
-                    Wenn MQTT-Nachricht '<b>{payload}</b>' an Topic '<b>{topic}</b>' empfangen wird {retained ? "(Gespeicherte Nachrichten werden akzeptiert)" : ""} {", "}
+                    {ret} an Topic '<b>{topic}</b>' empfangen wird {retained ? "(Gespeicherte Nachrichten werden akzeptiert)" : ""} {", "}
                 </>
             }/*NF*/,
             "cron_trigger_mqtt": "MQTT-Nachricht empfangen"

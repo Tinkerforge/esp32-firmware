@@ -39,6 +39,9 @@ let x = {
         },
         "cron": {
             "mqtt": "MQTT",
+            "match_all": "Accept all messages",
+            "send_topic": "To topic",
+            "send_payload": "Message",
             "topic": "Topic",
             "payload": "Message",
             "retain": "Retain message",
@@ -52,8 +55,14 @@ let x = {
                 </>
             }/*NF*/,
             "cron_trigger_text": /*FFN*/(topic: string, payload: string, retained: boolean) => {
+                let ret = <></>;
+                if (payload.length == 0) {
+                    ret = <>If any MQTT message</>;
+                } else {
+                    ret = <>If  MQTT message '<b>{payload}</b>'</>;
+                }
                 return <>
-                    If MQTT message '<b>{payload}</b>' is received on topic '<b>{topic}</b>' {retained ? "(Retained messages are accepted)" : ""} {", "}
+                    {ret} is received on topic '<b>{topic}</b>' {retained ? "(Retained messages are accepted)" : ""} {", "}
                 </>
             }/*NF*/,
             "cron_trigger_mqtt": "MQTT message received"

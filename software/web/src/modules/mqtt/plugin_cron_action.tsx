@@ -61,7 +61,7 @@ function get_mqtt_edit_children(cron: Cron, action: CronAction) {
                 }}
                 desc={__("mqtt.cron.use_topic_prefix_muted") + mqtt_config.global_topic_prefix}/>
         </FormRow>
-        <FormRow label={__("mqtt.cron.topic")}>
+        <FormRow label={__("mqtt.cron.send_topic")}>
              <InputText
                 required
                 value={value.topic}
@@ -82,7 +82,7 @@ function get_mqtt_edit_children(cron: Cron, action: CronAction) {
                 value={mqtt_config.global_topic_prefix + "/cron_action/" + value.topic}
                 hidden={!value.use_prefix} />
         </FormRow>
-        <FormRow label={__("mqtt.cron.payload")}>
+        <FormRow label={__("mqtt.cron.send_payload")}>
             <InputText
                 required
                 maxLength={64}
