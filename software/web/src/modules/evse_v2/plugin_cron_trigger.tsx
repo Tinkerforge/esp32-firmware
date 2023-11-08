@@ -51,22 +51,8 @@ function get_evse_button_table_children(trigger: CronTrigger) {
     return __("evse.cron.cron_button_trigger_text")(value.button_pressed);
 }
 
-function get_evse_button_edit_children(cron: Cron, trigger: CronTrigger) {
-    let value = (trigger as EvseButtonCronTrigger)[1];
-    return [
-        <FormRow label={ __("evse.cron.button_configuration")}>
-            <InputSelect
-                items={[
-                    ["0", __("evse.cron.button_released")],
-                    ["1", __("evse.cron.button_pressed")]
-                ]}
-                value={value.button_pressed ? "1": "0"}
-                onValue={(v) => {
-                    value.button_pressed = v == "1";
-                    cron.setTriggerFromComponent(trigger);
-                }} />
-        </FormRow>
-    ]
+function get_evse_button_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
+    return []
 }
 
 function new_evse_button_config(): CronTrigger {
