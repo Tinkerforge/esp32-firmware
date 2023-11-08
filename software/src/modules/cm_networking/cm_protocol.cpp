@@ -102,7 +102,7 @@ static String validate_protocol_version(const struct cm_packet_header *header, u
 
     if (header->version <= max_known_version) { // Known protocol version; match against known packet length.
         if (header->length != packet_length_versions[header->version])
-            return String("Invalid ") + packet_type_name + " packet length for known protocol version " + header->version + ": " + header->length + " bytes.";
+            return String("Invalid ") + packet_type_name + " packet length for known protocol version " + header->version + ": " + header->length + " bytes. Expected " + packet_length_versions[header->version] + " bytes.";
 
         // This is a known version. The recv_buf was large enough to receive the complete packet. Enforce length correctness
         if (recv_length != header->length)
