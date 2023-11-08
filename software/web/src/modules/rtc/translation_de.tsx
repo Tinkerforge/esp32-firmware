@@ -24,6 +24,9 @@ let x = {
             "saturday": "Samstag",
             "sunday": "Sonntag",
             "every": "Täglich",
+            "weekdays": "Wochentags",
+            "weekends": "Am Wochenende",
+            "month_end": "Monatsende",
             "cron_translation_function": /*SFN*/(mday: number, wday: number, hour: number, minute: number) => {
                 const wdays = [
                     "Sonntags",
@@ -38,13 +41,22 @@ let x = {
 
                 let ret = "";
                 if (mday != -1) {
-                    ret += "Jeden " + mday + ". des Monats";
-                    if (mday >= 29) {
-                        ret += " (wird nur in Monaten mit " + mday + " Tagen ausgeführt)";
+                    if (mday == 32) {
+                        ret += "Am letzten Tag des Monats";
+                    } else {
+                        ret += "Jeden " + mday + ". des Monats";
+                        if (mday >= 29) {
+                            ret += " (wird nur in Monaten mit " + mday + " Tagen ausgeführt)";
+                        }
                     }
+                } else if (wday == 8) {
+                    ret += "Wochentags";
+                } else if (wday == 9) {
+                    ret += "Am Wochenende";
                 } else if (wday != -1) {
                     ret += wdays[wday];
-                } else {
+                }
+                else {
                     ret += "Täglich";
                 }
 

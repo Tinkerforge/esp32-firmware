@@ -55,6 +55,9 @@ function get_rtc_edit_children(cron: Cron, trigger: CronTrigger) {
         ['5', __("rtc.cron.friday")],
         ['6', __("rtc.cron.saturday")],
         ['0', __("rtc.cron.sunday")],
+        ['8', __("rtc.cron.weekdays")],
+        ['9', __("rtc.cron.weekends")],
+        ['10', __("rtc.cron.month_end")]
     ];
 
     const date = new Date();
@@ -62,7 +65,7 @@ function get_rtc_edit_children(cron: Cron, trigger: CronTrigger) {
         const numString = i < 10 ? "0" + i : i.toString();
         minutes.push([String(i), numString]);
         if (i != 0 && i <= 31) {
-            days.push([String(i + 7), numString]);
+            days.push([String(i + 10), numString]);
         }
         if (i <= 23) {
             date.setHours(i);
@@ -70,7 +73,9 @@ function get_rtc_edit_children(cron: Cron, trigger: CronTrigger) {
         }
     }
 
-    const day = value.mday != -1 ? value.mday + 7 : value.wday;
+    const day = value.mday != -1 ? value.mday == 32 ? 10 : value.mday + 7 : value.wday;
+
+    console.log(day);
 
     return [<>
         <FormRow label={__("rtc.cron.mday")}>
@@ -79,8 +84,11 @@ function get_rtc_edit_children(cron: Cron, trigger: CronTrigger) {
                 value={day}
                 onValue={(v) => {
                     const day = Number(v);
-                    if (day > 6) {
-                        value.mday = day - 7;
+                    if (day == 10) {
+                        value.mday = 32;
+                        value.wday = -1;
+                    } else if (day > 9) {
+                        value.mday = day - 9;
                         value.wday = -1;
                     } else {
                         value.mday = -1;
