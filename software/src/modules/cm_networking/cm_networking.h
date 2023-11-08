@@ -208,7 +208,7 @@ public:
     void setup() override;
     void register_urls() override;
 
-    int create_socket(uint16_t port);
+    int create_socket(uint16_t port, bool blocking);
 
     void register_manager(const char * const * const hosts,
                           int charger_count,

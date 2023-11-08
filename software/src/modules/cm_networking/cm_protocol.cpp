@@ -33,7 +33,7 @@
 #include "lwip/dns.h"
 #include <cstring>
 
-int CMNetworking::create_socket(uint16_t port)
+int CMNetworking::create_socket(uint16_t port, bool blocking)
 {
     int sock;
     struct sockaddr_in dest_addr;
@@ -53,6 +53,9 @@ int CMNetworking::create_socket(uint16_t port)
         logger.printfln("Socket unable to bind: errno %d", errno);
         return -1;
     }
+
+    if (blocking)
+        return sock;
 
     int flags = fcntl(sock, F_GETFL, 0);
     if (flags < 0) {
@@ -152,6 +155,35 @@ static bool endswith(const char *haystack, const char *needle) {
     return memcmp(haystack + haystack_len - needle_len, needle, needle_len) == 0;
 }
 
+struct ManagerTaskArgs {
+    int manager_sock;
+    QueueHandle_t manager_queue;
+};
+
+struct ManagerQueueItem {
+    int len;
+    struct cm_state_packet state_pkt;
+    struct sockaddr_in source_addr;
+};
+
+static void manager_task(void *arg) {
+    ManagerQueueItem item;
+    memset(&item, 0, sizeof(ManagerQueueItem));
+
+    auto manager_sock = ((ManagerTaskArgs *) arg)->manager_sock;
+    auto manager_queue = ((ManagerTaskArgs *) arg)->manager_queue;
+
+    for (;;) {
+        socklen_t socklen = sizeof(item.source_addr);
+        item.len = recvfrom(manager_sock, &item.state_pkt, sizeof(item.state_pkt), 0, (sockaddr *)&item.source_addr, &socklen);
+        if (item.len == -1)
+            item.len = -errno;
+
+        // If the queue is full, just drop the item.
+        xQueueSendToBack(manager_queue, &item, 0);
+    }
+}
+
 void CMNetworking::register_manager(const char * const * const hosts,
                                     int charger_count,
                                     std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *)> manager_callback,
@@ -171,11 +203,39 @@ void CMNetworking::register_manager(const char * const * const hosts,
         dest_addrs[i].sin_port = htons(CHARGE_MANAGEMENT_PORT);
     }
 
-    manager_sock = create_socket(CHARGE_MANAGER_PORT);
+    manager_sock = create_socket(CHARGE_MANAGER_PORT, true);
     if (manager_sock < 0)
         return;
 
-    task_scheduler.scheduleWithFixedDelay([this, manager_callback, manager_error_callback](){
+    // LWIP stores LWIP_UDP_RECVMBOX_SIZE (configured to 6)
+    // UDP packets in the socket's receive buffer.
+    // Use a separate task to receive state packets
+    // to free the receive mbox as fast as possible.
+    // The tasks resources may be leaked, because
+    // it will run forever.
+
+    QueueHandle_t manager_queue = xQueueCreateStatic(
+        this->charger_count,
+        sizeof(ManagerQueueItem),
+        (uint8_t *)heap_caps_calloc_prefer(this->charger_count, sizeof(ManagerQueueItem), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        new StaticQueue_t);
+
+    #define CM_MANAGER_RECV_STACK_SIZE 2048
+
+    xTaskCreateStatic(
+        manager_task,
+        "cm_manager_recv",
+        CM_MANAGER_RECV_STACK_SIZE,
+        (void*) new ManagerTaskArgs{manager_sock, manager_queue},
+        ESP_TASK_TCPIP_PRIO - 1,
+        new StackType_t[CM_MANAGER_RECV_STACK_SIZE],
+        new StaticTask_t);
+
+    #if MODULE_DEBUG_AVAILABLE()
+        debug.register_task("cm_manager_recv", CM_MANAGER_RECV_STACK_SIZE);
+    #endif
+
+    task_scheduler.scheduleWithFixedDelay([this, manager_callback, manager_error_callback, manager_queue](){
         static uint16_t last_seen_seq_num[MAX_CLIENTS];
         static bool initialized = false;
         if (!initialized) {
@@ -183,21 +243,22 @@ void CMNetworking::register_manager(const char * const * const hosts,
             initialized = true;
         }
 
-        struct cm_state_packet state_pkt;
-        struct sockaddr_in source_addr;
-        socklen_t socklen = sizeof(source_addr);
+        ManagerQueueItem item;
 
-        // Try to receive up to four packets in one go to catch up on any backlog.
-        // Retrieving one packet every 100+ms is not enough with 10 chargers configured.
-        // Also, chargers might sync up and send their status packets bunched up.
-        // Retrieve them quickly to free up the RX buffer.
-        // Don't process more than four packets in one go, to avoid stalling other tasks for too long.
+        // Try to receive up to four packets in one go to catch up on the backlog.
+        // Don't receive every available packet to smooth out bursts of packets.
+        static_assert(MAX_CLIENTS <= 32);
         for (int poll_ctr = 0; poll_ctr < 4; ++poll_ctr) {
-            int len = recvfrom(manager_sock, &state_pkt, sizeof(state_pkt), 0, (sockaddr *)&source_addr, &socklen);
+            if (!xQueueReceive(manager_queue, &item, 0))
+                return;
+
+            int len = item.len;
+            struct cm_state_packet &state_pkt = item.state_pkt;
+            struct sockaddr_in &source_addr = item.source_addr;
 
             if (len < 0) {
-                if (errno != EAGAIN && errno != EWOULDBLOCK)
-                    logger.printfln("recvfrom failed: errno %d", errno);
+                if (len != -EAGAIN && len != -EWOULDBLOCK)
+                    logger.printfln("recvfrom failed: %s", strerror(-len));
                 return;
             }
 
@@ -273,7 +334,7 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
     command_pkt.v1.allocated_current = allocated_current;
     command_pkt.v1.command_flags = cp_disconnect_requested << CM_COMMAND_FLAGS_CPPDISC_BIT_POS;
 
-    int err = sendto(manager_sock, &command_pkt, sizeof(command_pkt), 0, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
+    int err = sendto(manager_sock, &command_pkt, sizeof(command_pkt), MSG_DONTWAIT, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
 
     if (err < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -296,7 +357,7 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
 
 void CMNetworking::register_client(std::function<void(uint16_t, bool)> client_callback)
 {
-    client_sock = create_socket(CHARGE_MANAGEMENT_PORT);
+    client_sock = create_socket(CHARGE_MANAGEMENT_PORT, false);
 
     if (client_sock < 0)
         return;
