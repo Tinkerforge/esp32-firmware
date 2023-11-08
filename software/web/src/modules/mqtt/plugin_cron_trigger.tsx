@@ -85,7 +85,7 @@ function get_mqtt_edit_children(cron: Cron, trigger: CronTrigger) {
         </FormRow>
         <FormRow label={__("mqtt.cron.payload")}>
             <InputText
-                required
+                placeholder={__("mqtt.cron.match_all")}
                 maxLength={64}
                 value={value.payload}
                 onValue={(v) => {

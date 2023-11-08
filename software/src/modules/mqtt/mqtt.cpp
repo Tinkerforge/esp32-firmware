@@ -614,10 +614,11 @@ void Mqtt::register_events() {
 bool Mqtt::action_triggered(Config *config, void *data) {
     Config *cfg = (Config*)config->get();
     MqttMessage *msg = (MqttMessage *)data;
+    auto &payload = cfg->get("payload")->asString();
     switch (config->getTag<CronTriggerID>())
     {
         case CronTriggerID::MQTT:
-        if (cfg->get("payload")->asString() == msg->payload)
+        if (msg->topic == cfg->get("topic")->asString() && (payload == msg->payload || payload.length() == 0))
             return true;
         break;
 
