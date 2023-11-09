@@ -35,7 +35,6 @@
 #define CHARGE_MANAGER_PORT 34127
 #define CHARGE_MANAGEMENT_PORT (CHARGE_MANAGER_PORT + 1)
 
-// Keep in sync with charge_manager.cpp
 #define MAX_CLIENTS 10
 
 // Increment when changing packet structs
