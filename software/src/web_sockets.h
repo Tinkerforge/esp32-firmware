@@ -51,10 +51,14 @@ struct ws_work_item {
 
 void clear_ws_work_item(ws_work_item *wi);
 
+#define WEBSOCKET_WORKER_ENQUEUED 0
+#define WEBSOCKET_WORKER_RUNNING 1
+#define WEBSOCKET_WORKER_DONE 2
+
 class WebSockets
 {
 public:
-    WebSockets() : worker_active(false), worker_start_errors(0)
+    WebSockets() : worker_active(WEBSOCKET_WORKER_DONE), worker_start_errors(0)
     {
     }
 
@@ -100,8 +104,7 @@ public:
     std::recursive_mutex work_queue_mutex;
     std::deque<ws_work_item> work_queue;
 
-    // std::atomic<bool>.is_lock_free() is true!
-    std::atomic<bool> worker_active;
+    std::atomic<uint8_t> worker_active;
     std::atomic<uint32_t> worker_start_errors;
 
     std::function<void(WebSocketsClient)> on_client_connect_fn;

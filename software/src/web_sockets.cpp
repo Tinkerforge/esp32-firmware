@@ -118,6 +118,7 @@ static bool send_ws_work_item(WebSockets *ws, ws_work_item wi) {
 static void work(void *arg)
 {
     WebSockets *ws = (WebSockets *)arg;
+    ws->worker_active = WEBSOCKET_WORKER_RUNNING;
 
     ws_work_item wi;
     while (ws->haveWork(&wi)) {
@@ -126,7 +127,7 @@ static void work(void *arg)
     }
 
     ws->worker_start_errors = 0;
-    ws->worker_active = false;
+    ws->worker_active = WEBSOCKET_WORKER_DONE;
 #if MODULE_WATCHDOG_AVAILABLE()
     watchdog.reset(watchdog_handle);
 #endif
@@ -484,14 +485,14 @@ static uint32_t last_worker_run = 0;
 
 void WebSockets::triggerHttpThread()
 {
-    if (worker_active) {
+    if (worker_active == WEBSOCKET_WORKER_ENQUEUED) {
         // Protect against lost UDP packet in httpd_queue_work control socket.
         // If the packet that enqueues the worker is lost
         // worker_active must be reset or web sockets will never send data again.
         if (last_worker_run != 0 && deadline_elapsed(last_worker_run + KEEP_ALIVE_TIMEOUT_MS * 2)) {
-            logger.printfln("WebSocket worker ran %u seconds. Control socket drop? Restarting worker.", (KEEP_ALIVE_TIMEOUT_MS * 2) / 1000U);
+            logger.printfln("WebSocket worker did not start for %u seconds. Control socket drop? Retrying.", (KEEP_ALIVE_TIMEOUT_MS * 2) / 1000U);
             last_worker_run = millis();
-            worker_active = false;
+            worker_active = WEBSOCKET_WORKER_DONE;
 
             worker_start_errors += (KEEP_ALIVE_TIMEOUT_MS * 2) / 100; // count a hanging worker as if we've attempted to start the worker the whole time.
 
@@ -514,14 +515,14 @@ void WebSockets::triggerHttpThread()
         }
     }
 */
-    // If we don't set worker_active to true BEFORE enqueueing the worker,
-    // we can be preempted after enqueueing, but before we set worker_active to true
-    // the worker can then run to completion, we then set worker_active to true and are
+    // If we don't set worker_active to "enqueued" BEFORE enqueueing the worker,
+    // we can be preempted after enqueueing, but before we set worker_active to "enqueued"
+    // the worker can then run to completion, we then set worker_active to "enqueued" and are
     // NEVER able to start the worker again.
-    worker_active = true;
+    worker_active = WEBSOCKET_WORKER_ENQUEUED;
     if (httpd_queue_work(server.httpd, work, this) != ESP_OK) {
         logger.printfln("Failed to start WebSocket worker!");
-        worker_active = false;
+        worker_active = WEBSOCKET_WORKER_DONE;
         ++worker_start_errors;
     }
 }
@@ -530,7 +531,7 @@ void WebSockets::pre_setup() {
     state = Config::Object({
         {"keep_alive_fds", Config::Array({}, new Config{Config::Int(-1)}, MAX_WEB_SOCKET_CLIENTS, MAX_WEB_SOCKET_CLIENTS, Config::type_id<Config::ConfInt>())},
         {"keep_alive_pongs", Config::Array({}, new Config{Config::Uint(0)}, MAX_WEB_SOCKET_CLIENTS, MAX_WEB_SOCKET_CLIENTS, Config::type_id<Config::ConfUint>())},
-        {"worker_active", Config::Bool(false)},
+        {"worker_active", Config::Uint8(WEBSOCKET_WORKER_DONE)},
         {"last_worker_run", Config::Uint32(0)},
         {"queue_len", Config::Uint32(0)}
     });
@@ -549,7 +550,7 @@ void WebSockets::updateDebugState() {
     for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         state.get("keep_alive_fds")->get(i)->updateInt(keep_alive_fds[i]);
         state.get("keep_alive_pongs")->get(i)->updateUint(keep_alive_last_pong[i]);
-        state.get("worker_active")->updateBool(worker_active);
+        state.get("worker_active")->updateUint(worker_active);
         state.get("last_worker_run")->updateUint(last_worker_run);
         state.get("queue_len")->updateUint(work_queue.size());
     }
