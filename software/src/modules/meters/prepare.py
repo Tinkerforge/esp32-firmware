@@ -39,7 +39,7 @@ groupings = [
 translation_values = {'en': [], 'de': []}
 translation_groups = {'en': [], 'de': []}
 
-with open('meter_value_group.csv', newline='') as f:
+with open('meter_value_group.csv', newline='', encoding='utf-8') as f:
     for row in csv.DictReader(f):
         if len(row['measurand']) == 0:
             # skip empty
@@ -65,7 +65,7 @@ def update_value_id_dict(sub_dict, sub_id):
     else:
         sub_dict[key] = sub_id[1]
 
-with open('meter_value_id.csv', newline='') as f:
+with open('meter_value_id.csv', newline='', encoding='utf-8') as f:
     for row in csv.DictReader(f):
         if len(row['id']) == 0:
             # skip empty
