@@ -129,6 +129,16 @@ void ChargeLimits::register_urls()
         state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + override_energy.get("energy_wh")->asUint() / 1000.0);
     }, true);
 
+    api.addCommand("charge_limits/reset", Config::Null(), {}, [this]() {
+        auto time_now = evse_common.get_low_level_state().get("uptime")->asUint();
+        state.get("target_timestamp_ms")->updateUint(time_now + map_duration(config_in_use.get("duration")->asUint()));
+
+        if (api.hasFeature("meter")) {
+            auto energy_now = meter.values.get("energy_abs")->asFloat();
+            state.get("target_energy_kwh")->updateFloat(energy_now + config_in_use.get("energy_wh")->asUint() / 1000.0);
+        }
+    }, true);
+
     //if we dont set the target timestamp right away we will have 0 seconds left displayed in the webinterface until we start and end a charge.
     state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration")->asUint()));
 
