@@ -156,6 +156,15 @@ class Charger:
 
         self.build_ui()
 
+
+        self.recv_timer = QTimer()
+        self.recv_timer.timeout.connect(lambda: self.receive())
+        self.recv_timer.start(100)
+
+        self.send_timer = QTimer()
+        self.send_timer.timeout.connect(lambda: self.send())
+        self.send_timer.start(1000)
+
     def addRow(self, title_or_widget, widget=None):
         if widget is None:
             widget = title_or_widget
@@ -380,23 +389,17 @@ top_level_layout = QGridLayout()
 
 last_row_counter = 0
 
+chargers = []
+
 for i, listen_addr in enumerate(sys.argv[1:]):
     col = int(i % rows)
     row = int(i / rows) + last_row_counter
     print(col, row, cols, rows)
 
-    charger = Charger(top_level_layout, row, col + 1, listen_addr)
+    chargers.append(Charger(top_level_layout, row, col + 1, listen_addr))
     if col == rows - 1:
         print("Updating last row counter")
-        last_row_counter += charger.row_counter
-
-    recv_timer = QTimer()
-    recv_timer.timeout.connect(lambda: charger.receive())
-    recv_timer.start(100)
-
-    send_timer = QTimer()
-    send_timer.timeout.connect(lambda: charger.send())
-    send_timer.start(1000)
+        last_row_counter += chargers[-1].row_counter
 
 window.setLayout(top_level_layout)
 window.show()
