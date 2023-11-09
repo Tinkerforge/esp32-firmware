@@ -205,6 +205,8 @@ let x = {
             "voltage_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail</> : <>CP/PE, PP/PE,<br/> CP/PE (high)</>/*NF*/
         },
         "cron": {
+            "external_current_wd": "External current watchdog",
+            "external_current_wd_trigger": "When the external control systems watchdog gets triggered, ",
             "api_must_be_enabled": "API must be enabled to use this feature.",
             "state_change": "State change",
             "cron_sd_trigger_text": /*FFN*/(state: boolean) => <>If the shutdown input switches to <b>{state ? "open" : "closed"}</b>{" "}</>/*NF*/,

@@ -145,6 +145,11 @@ void EvseCommon::pre_setup() {
             {"new_charger_state", Config::Int(0, -1, 4)}
         }));
 
+    cron.register_trigger(
+        CronTriggerID::EVSEExternalCurrentWd,
+        *Config::Null()
+    );
+
     cron.register_action(
         CronActionID::SetCurrent,
         Config::Object({
@@ -281,6 +286,9 @@ bool EvseCommon::action_triggered(Config *config, void *data) {
                     return true;
             break;
 
+        case CronTriggerID::EVSEExternalCurrentWd:
+        return true;
+
         default:
             return false;
     }
@@ -393,6 +401,7 @@ void EvseCommon::register_urls() {
 
     api.addState("evse/external_current", &external_current, {}, 1000);
     api.addCommand("evse/external_current_update", &external_current_update, {}, [this](){
+        this->last_current_update = millis();
         backend->set_charging_slot_max_current(CHARGING_SLOT_EXTERNAL, external_current_update.get("current")->asUint());
     }, false);
 
@@ -562,6 +571,19 @@ void EvseCommon::register_urls() {
                 last_state = state_now;
             }
         });
+    }
+
+    if (cron.is_trigger_active(CronTriggerID::EVSEExternalCurrentWd)) {
+        task_scheduler.scheduleWithFixedDelay([this](){
+            static bool was_triggered = false;
+            const bool elapsed = deadline_elapsed(last_external_update + 30000);
+            if (external_enabled.get("enabled")->asBool() && elapsed && !was_triggered) {
+                cron.trigger_action(CronTriggerID::EVSEExternalCurrentWd, nullptr, &trigger_action);
+                was_triggered = true;
+            } else if (!elapsed) {
+                was_triggered = false;
+            }
+        }, 1000, 1000);
     }
 #endif
 

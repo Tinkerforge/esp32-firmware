@@ -205,6 +205,8 @@ let x = {
             "voltage_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail</> : <>CP/PE, PP/PE,<br/> CP/PE (high)</> /*NF*/
         },
         "cron" : {
+            "external_current_wd": "Externer Steuerungs Watchdog",
+            "external_current_wd_trigger": "Wenn der Watchdog der Externen steuerung auslöst, ",
             "api_must_be_enabled": "Die API muss aktiviert sein, um die Status-LED steuern zu können.",
             "state_change": "Fahrzeugstatus gewechselt",
             "cron_sd_trigger_text": /*FFN*/(state: boolean) => <>Wenn der Abschalteingang <b>{state ? "geöffnet" : "geschlossen"}</b> wird,{" "}</>/*NF*/,
