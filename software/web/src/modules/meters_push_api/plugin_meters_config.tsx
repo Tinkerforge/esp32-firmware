@@ -24,6 +24,7 @@ import { MeterClassID } from "../meters/meters_defs";
 import { MeterValueID, METER_VALUE_ITEMS } from "../meters/meter_value_id";
 import { MeterConfig } from "../meters/types";
 import { Table, TableRow } from "../../ts/components/table";
+import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from '../../ts/components/input_select';
 
