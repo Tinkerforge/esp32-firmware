@@ -57,6 +57,9 @@ void EvseCommon::pre_setup() {
     indicator_led = Config::Object({
         {"indication", Config::Int16(0)},
         {"duration", Config::Uint16(0)},
+        {"color_h", Config::Uint16(0)},
+        {"color_s", Config::Uint8(0)},
+        {"color_v", Config::Uint8(0)},
     });
 
     auto_start_charging = Config::Object({
@@ -644,8 +647,8 @@ void EvseCommon::get_data_storage(uint8_t page, uint8_t* data) {
     backend->get_data_storage(page, data);
 }
 
-void EvseCommon::set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret_status) {
-    backend->set_indicator_led(indication, duration, ret_status);
+void EvseCommon::set_indicator_led(int16_t indication, uint16_t duration, uint16_t color_h, uint8_t color_s, uint8_t color_v,  uint8_t *ret_status) {
+    backend->set_indicator_led(indication, duration, color_h, color_s, color_v, ret_status);
 }
 
 ConfigRoot &EvseCommon::get_slots() {

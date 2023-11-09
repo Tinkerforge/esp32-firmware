@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-06-21.      *
+ * This file was automatically generated on 2023-11-09.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -228,6 +228,21 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_FUNCTION_SET_GP_OUTPUT 37
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_TEMPERATURE 38
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_PHASE_CONTROL 39
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_PHASE_CONTROL 40
 
 /**
  * \ingroup TF_EVSEV2
@@ -496,7 +511,7 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_DC_FAULT_CURRENT_STATE_6_MA_ERROR 1
+#define TF_EVSE_V2_DC_FAULT_CURRENT_STATE_6_MA_DC_ERROR 1
 
 /**
  * \ingroup TF_EVSEV2
@@ -512,6 +527,16 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_DC_FAULT_CURRENT_STATE_CALIBRATION_ERROR 4
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_DC_FAULT_CURRENT_STATE_20_MA_AC_ERROR 5
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_DC_FAULT_CURRENT_STATE_6_MA_AC_AND_20_MA_AC_ERROR 6
 
 /**
  * \ingroup TF_EVSEV2
@@ -1013,14 +1038,14 @@ int tf_evse_v2_set_data_storage(TF_EVSEV2 *evse_v2, uint8_t page, const uint8_t 
  *
  * TODO
  */
-int tf_evse_v2_get_indicator_led(TF_EVSEV2 *evse_v2, int16_t *ret_indication, uint16_t *ret_duration);
+int tf_evse_v2_get_indicator_led(TF_EVSEV2 *evse_v2, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v);
 
 /**
  * \ingroup TF_EVSEV2
  *
  * TODO
  */
-int tf_evse_v2_set_indicator_led(TF_EVSEV2 *evse_v2, int16_t indication, uint16_t duration, uint8_t *ret_status);
+int tf_evse_v2_set_indicator_led(TF_EVSEV2 *evse_v2, int16_t indication, uint16_t duration, uint16_t color_h, uint8_t color_s, uint8_t color_v, uint8_t *ret_status);
 
 /**
  * \ingroup TF_EVSEV2
@@ -1083,7 +1108,7 @@ int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, u
  *
  * TODO
  */
-int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled);
+int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_status);
 
 /**
  * \ingroup TF_EVSEV2
@@ -1126,6 +1151,27 @@ int tf_evse_v2_trigger_dc_fault_test(TF_EVSEV2 *evse_v2, uint32_t password, bool
  * TODO
  */
 int tf_evse_v2_set_gp_output(TF_EVSEV2 *evse_v2, uint8_t gp_output);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_temperature(TF_EVSEV2 *evse_v2, int16_t *ret_temperature);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_phase_control(TF_EVSEV2 *evse_v2, uint8_t phases);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_phase_control(TF_EVSEV2 *evse_v2, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_status);
 
 /**
  * \ingroup TF_EVSEV2

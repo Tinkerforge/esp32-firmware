@@ -58,7 +58,7 @@ protected:
     void set_data_storage(uint8_t page, const uint8_t *data) override;
     void get_data_storage(uint8_t page, uint8_t *data) override;
 
-    void set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret_status) override;
+    void set_indicator_led(int16_t indication, uint16_t duration, uint16_t color_h, uint8_t color_s, uint8_t color_v, uint8_t *ret_status) override;
 
     void set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected) override;
     bool get_control_pilot_disconnect() override;

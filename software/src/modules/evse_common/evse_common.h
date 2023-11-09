@@ -80,7 +80,7 @@ protected:
     virtual void set_data_storage(uint8_t, const uint8_t*) = 0;
     virtual void get_data_storage(uint8_t, uint8_t*) = 0;
 
-    virtual void set_indicator_led(int16_t, uint16_t, uint8_t*) = 0;
+    virtual void set_indicator_led(int16_t, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t*) = 0;
 
     virtual void set_control_pilot_disconnect(bool, bool*) = 0;
     virtual bool get_control_pilot_disconnect() = 0;
@@ -143,7 +143,7 @@ public:
 
     void set_data_storage(uint8_t, const uint8_t*);
     void get_data_storage(uint8_t, uint8_t*);
-    void set_indicator_led(int16_t, uint16_t, uint8_t*);
+    void set_indicator_led(int16_t, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t*);
 
     bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     void apply_defaults();

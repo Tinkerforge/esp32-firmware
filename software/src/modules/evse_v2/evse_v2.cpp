@@ -101,7 +101,11 @@ void EVSEV2::pre_setup()
         {"charging_time", Config::Uint32(0)},
         {"time_since_state_change", Config::Uint32(0)},
         {"uptime", Config::Uint32(0)},
-        {"time_since_dc_fault_check", Config::Uint32(0)}
+        {"time_since_dc_fault_check", Config::Uint32(0)},
+        {"temperature", Config::Int16(0)},
+        {"phases_current", Config::Uint16(0)},
+        {"phases_requested", Config::Uint16(0)},
+        {"phases_status", Config::Uint16(0)}
     });
 
     energy_meter_values = Config::Object({
@@ -307,9 +311,9 @@ void EVSEV2::get_data_storage(uint8_t page, uint8_t *data)
     tf_evse_v2_get_data_storage(&device, page, data);
 }
 
-void EVSEV2::set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret_status)
+void EVSEV2::set_indicator_led(int16_t indication, uint16_t duration, uint16_t color_h, uint8_t color_s, uint8_t color_v, uint8_t *ret_status)
 {
-    tf_evse_v2_set_indicator_led(&device, indication, duration, ret_status);
+    tf_evse_v2_set_indicator_led(&device, indication, duration, color_h, color_s, color_v, ret_status);
 }
 
 void EVSEV2::set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected) {
@@ -700,12 +704,15 @@ void EVSEV2::update_all_data()
     bool phases_connected[3];
     uint32_t error_count[6];
 
-    // get_all_data_2 - 19 byte
+    // get_all_data_2 - 26 byte
     uint8_t shutdown_input_configuration;
     uint8_t input_configuration;
     uint8_t output_configuration;
     int16_t indication;
     uint16_t duration;
+    uint16_t color_h;
+    uint8_t color_s;
+    uint8_t color_v;
     uint8_t button_cfg;
     uint32_t button_press_time;
     uint32_t button_release_time;
@@ -713,6 +720,10 @@ void EVSEV2::update_all_data()
     bool ev_wakeup_enabled;
     bool cp_disconnect;
     bool boost_mode_enabled;
+    int16_t temperature;
+    uint8_t phases_current;
+    uint8_t phases_requested;
+    uint8_t phases_status;
 
     // get_low_level_state - 61 byte
     uint8_t led_state;
@@ -762,13 +773,20 @@ void EVSEV2::update_all_data()
                                    &output_configuration,
                                    &indication,
                                    &duration,
+                                   &color_h,
+                                   &color_s,
+                                   &color_v,
                                    &button_cfg,
                                    &button_press_time,
                                    &button_release_time,
                                    &button_pressed,
                                    &ev_wakeup_enabled,
                                    &cp_disconnect,
-                                   &boost_mode_enabled);
+                                   &boost_mode_enabled,
+                                   &temperature,
+                                   &phases_current,
+                                   &phases_requested,
+                                   &phases_status);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_2 %d", rc);
@@ -955,6 +973,9 @@ void EVSEV2::update_all_data()
     // get_indicator_led
     evse_common.indicator_led.get("indication")->updateInt(indication);
     evse_common.indicator_led.get("duration")->updateUint(duration);
+    evse_common.indicator_led.get("color_h")->updateUint(color_h);
+    evse_common.indicator_led.get("color_s")->updateUint(color_s);
+    evse_common.indicator_led.get("color_v")->updateUint(color_v);
 
     evse_common.auto_start_charging.get("auto_start_charging")->updateBool(!SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[CHARGING_SLOT_AUTOSTART_BUTTON]));
 
