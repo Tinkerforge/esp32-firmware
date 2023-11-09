@@ -356,7 +356,11 @@ HYPHENATE_THRESHOLD = 9
 
 missing_hyphenations = []
 
-def hyphenate(s):
+def hyphenate(s, key):
+    if '\u00AD' in s:
+        print("Found unicode soft hyphen in translation value {}: {}".format(key, s.replace('\u00AD', "___HERE___")))
+        sys.exit(1)
+
     # Replace longest words first. This prevents replacing parts of longer words.
     for word in sorted(re.split('\W+', s.replace("&shy;", "")), key=lambda x: len(x), reverse=True):
         for l, r in hyphenations:
@@ -376,7 +380,7 @@ def hyphenate_translation(translation, parent_key=None):
     if parent_key == None:
         parent_key = []
 
-    return {key: (hyphenate(value) if isinstance(value, str) else hyphenate_translation(value, parent_key=parent_key + [key])) for key, value in translation.items()}
+    return {key: (hyphenate(value, key) if isinstance(value, str) else hyphenate_translation(value, parent_key=parent_key + [key])) for key, value in translation.items()}
 
 def repair_rtc_dir():
     path = os.path.abspath("src/modules/rtc")
