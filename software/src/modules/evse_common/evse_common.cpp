@@ -144,7 +144,8 @@ void EvseCommon::pre_setup() {
     cron.register_trigger(
         CronTriggerID::IECChange,
         Config::Object({
-            {"charger_state", Config::Uint(0, 0, 4)}
+            {"old_charger_state", Config::Int(0, -1, 4)},
+            {"new_charger_state", Config::Int(0, -1, 4)}
         }));
 
     cron.register_action(
@@ -274,9 +275,12 @@ void EvseCommon::setup() {
 #if MODULE_CRON_AVAILABLE()
 bool EvseCommon::action_triggered(Config *config, void *data) {
     Config *cfg = (Config*)config->get();
+    uint32_t *states = (uint32_t*)data;
     switch (config->getTag<CronTriggerID>()) {
         case CronTriggerID::IECChange:
-                if (cfg->get("charger_state")->asUint() == state.get("charger_state")->asUint())
+                if ((cfg->get("new_charger_state")->asInt() == states[1]
+                    || cfg->get("new_charger_state")->asInt() == -1)
+                    && (cfg->get("old_charger_state")->asInt() == states[0] || cfg->get("old_charger_state")->asInt() == -1) )
                     return true;
             break;
 
@@ -555,8 +559,9 @@ void EvseCommon::register_urls() {
             // we need this since not only iec state changes trigger this api event.
             static uint32_t last_state = 0;
             uint32_t state_now = cfg->get("charger_state")->asUint();
+            uint32_t states[2] = {last_state, state_now};
             if (last_state != state_now) {
-                cron.trigger_action(CronTriggerID::IECChange, nullptr, &trigger_action);
+                cron.trigger_action(CronTriggerID::IECChange, (void *)states, &trigger_action);
                 last_state = state_now;
             }
         });

@@ -221,7 +221,7 @@ let x = {
         },
         "cron" : {
             "api_must_be_enabled": "Die API muss aktiviert sein, um die Status-LED steuern zu können.",
-            "state_change": "Fahrzeugstatus gewechselt auf",
+            "state_change": "Fahrzeugstatus gewechselt",
             "cron_sd_trigger_text": /*FFN*/(state: boolean) => <>Wenn der Abschalteingang <b>{state ? "geöffnet" : "geschlossen"}</b> wird,{" "}</>/*NF*/,
             "cron_gpin_trigger_text": /*FFN*/(state: boolean) => <>Wenn der Konfigurierbare Eingang <b>{state ? "geöffnet" : "geschlossen"}</b> wird,{" "}</>/*NF*/,
             "cron_button_trigger_text": /*FFN*/(state: boolean) => <>Wenn der Fronttaster <b>{state ? "gedrückt" : "losgelassen"}</b> wird,{" "}</>/*NF*/,
@@ -236,8 +236,11 @@ let x = {
             "led_state_error": /*SFN*/(count: number) => {
                 return "Blinken (" + count + "x)";
             }/*NF*/,
+            "from": "Von",
+            "to": "Zu",
+            "any": "Beliebiger status",
             "allowed_charging_current": "Erlaubter Ladestrom",
-            "cron_state_change_trigger": /*FFN*/(state: string) => <>Wenn der Ladecontroller in den Zustand "<b>{state}</b>" wechselt,{" "}</>/*NF*/,
+            "cron_state_change_trigger": /*FFN*/(old_state: string, new_state: string) => <>Wenn der Ladecontroller vom Zustand "<b>{old_state}</b>" auf Zustand "<b>{new_state}</b>" wechselt,{" "}</>/*NF*/,
             "cron_action_text": /*FFN*/(current: number) => <>setze den erlaubten Ladestrom auf <b>{current} A</b>.</>/*NF*/,
             "cron_led_action_text": /*FFN*/(state: string, duration: number) => (state == "An" || state == "Aus") ? <>schalte die Status-LED für <b>{duration / 1000} Sekunden</b> <b>{state}</b>.</> : <>zeige <b>{state}</b> für <b>{duration / 1000} Sekunden</b> auf der Status-LED.</>/*NF*/
         },
