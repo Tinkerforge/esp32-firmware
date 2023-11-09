@@ -28,13 +28,15 @@ import { FormRow } from "../../ts/components/form_row";
 export type IECChangeCronTrigger = [
     CronTriggerID.IECChange,
     {
-        charger_state: number;
+        new_charger_state: number;
+        old_charger_state: number;
     },
 ];
 
 function get_iec_change_table_children(trigger: CronTrigger) {
     let value = (trigger as IECChangeCronTrigger)[1];
     const names = [
+        [__("evse.cron.any")],
         [ __("evse.status.not_connected")],
         [__("evse.status.waiting_for_charge_release")],
         [__("evse.status.ready_to_charge")],
@@ -42,14 +44,15 @@ function get_iec_change_table_children(trigger: CronTrigger) {
         [__("evse.status.error")]
     ]
 
-    return __("evse.cron.cron_state_change_trigger")(names[value.charger_state][0]);
+    return __("evse.cron.cron_state_change_trigger")(names[value.old_charger_state + 1][0], names[value.new_charger_state + 1][0]);
 }
 
 function new_iec_change_config(): CronTrigger {
     return [
         CronTriggerID.IECChange,
         {
-            charger_state: 0,
+            new_charger_state: -1,
+            old_charger_state: -1,
         },
     ];
 }
@@ -57,18 +60,35 @@ function new_iec_change_config(): CronTrigger {
 function get_iec_change_edit_children(cron: Cron, trigger: CronTrigger) {
     let value = (trigger as IECChangeCronTrigger)[1];
     return [
-        <FormRow label="">
+        <FormRow label={__("evse.cron.from")}>
             <InputSelect
                 items={[
+                    ["-1", __("evse.cron.any")],
                     ["0", __("evse.status.not_connected")],
                     ["1", __("evse.status.waiting_for_charge_release")],
                     ["2", __("evse.status.ready_to_charge")],
                     ["3", __("evse.status.charging")],
                     ["4", __("evse.status.error")]
                 ]}
-                value={value.charger_state.toString()}
+                value={value.old_charger_state.toString()}
                 onValue={(v) => {
-                    value.charger_state = Number(v);
+                    value.old_charger_state = Number(v);
+                    cron.setTriggerFromComponent(trigger);
+                }} />
+        </FormRow>,
+        <FormRow label={__("evse.cron.to")}>
+            <InputSelect
+                items={[
+                    ["-1", __("evse.cron.any")],
+                    ["0", __("evse.status.not_connected")],
+                    ["1", __("evse.status.waiting_for_charge_release")],
+                    ["2", __("evse.status.ready_to_charge")],
+                    ["3", __("evse.status.charging")],
+                    ["4", __("evse.status.error")]
+                ]}
+                value={value.new_charger_state.toString()}
+                onValue={(v) => {
+                    value.new_charger_state = Number(v);
                     cron.setTriggerFromComponent(trigger);
                 }} />
         </FormRow>
