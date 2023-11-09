@@ -68,12 +68,9 @@ let x = {
             "led_state": "LED-Zustand",
             "led_state_off": "Aus",
             "led_state_on": "An",
-            "led_state_blinking": "Bestätigendes Blinken",
-            "led_state_flickering": "Ablehnendes Blinken",
-            "led_state_breathing": "Auffordendes Blinken",
-            "led_state_error": /*SFN*/(count: number) => {
-                return "Blinken (" + count + "x)";
-            }/*NF*/,
+            "led_state_blinking": "Blinkend",
+            "led_state_flickering": "Flackernd",
+            "led_state_breathing": "Atmend",
             "led_state_api": "API",
             "led_duration": "Dauer",
             "cp_pwm_dc": "CP-PWM-Tastverhältnis",
