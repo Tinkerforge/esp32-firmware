@@ -40,8 +40,6 @@ import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 import { Check } from "react-feather";
 
-const MAX_ACTIVE_USERS = 17;
-
 type User = (API.getType['users/config']['users'][0]) & {password: string, is_invalid: number};
 type UsersConfig = Omit<API.getType['users/config'], 'users'> & {users: User[]};
 
@@ -332,6 +330,8 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     override render(props: {}, state: UsersConfig & UsersState & ConfigComponentState) {
         if (!util.render_allowed())
             return <></>
+
+        const MAX_ACTIVE_USERS = API.hasModule("esp32_ethernet_brick") ? 33 : 17;
 
         let auth_allowed = this.http_auth_allowed();
 

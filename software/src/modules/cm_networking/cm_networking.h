@@ -29,13 +29,18 @@
 #include "module.h"
 #include "mdns.h"
 #include "TFJson.h"
+#include "module_dependencies.h"
 
 #include <functional>
 
 #define CHARGE_MANAGER_PORT 34127
 #define CHARGE_MANAGEMENT_PORT (CHARGE_MANAGER_PORT + 1)
 
+#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
+#define MAX_CONTROLLED_CHARGERS 32
+#else
 #define MAX_CONTROLLED_CHARGERS 10
+#endif
 
 // Increment when changing packet structs
 #define CM_COMMAND_VERSION 1

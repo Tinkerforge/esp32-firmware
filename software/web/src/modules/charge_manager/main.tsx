@@ -42,8 +42,6 @@ type ChargeManagerConfig = API.getType["charge_manager/config"];
 type ChargerConfig = ChargeManagerConfig["chargers"][0];
 type ScanCharger = Exclude<API.getType['charge_manager/scan_result'], string>[0];
 
-const MAX_CONTROLLED_CHARGERS = 10;
-
 interface ChargeManagerState {
     addCharger: ChargerConfig
     editCharger: ChargerConfig
@@ -227,6 +225,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
     render(props: {}, state: ChargeManagerConfig & ChargeManagerState) {
         if (!util.render_allowed())
             return <></>
+
+        const MAX_CONTROLLED_CHARGERS = API.hasModule("esp32_ethernet_brick") ? 32 : 10;
 
         let energyManagerMode = API.hasModule("energy_manager") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
         let warpUltimateMode  = API.hasModule("energy_manager") &&  (API.hasModule("evse_v2") || API.hasModule("evse"));

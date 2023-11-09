@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include "module.h"
+#include "module_dependencies.h"
 
 #define USERS_AUTH_TYPE_NONE 0
 #define USERS_AUTH_TYPE_LOST 1
@@ -37,7 +38,11 @@
 #define USERNAME_ENTRY_LENGTH (USERNAME_LENGTH + DISPLAY_NAME_LENGTH)
 #define MAX_PASSIVE_USERS 256
 
+#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
+#define MAX_ACTIVE_USERS 33
+#else
 #define MAX_ACTIVE_USERS 17
+#endif
 
 class Users final : public IModule
 {

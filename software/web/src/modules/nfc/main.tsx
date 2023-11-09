@@ -33,8 +33,6 @@ import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 
-const MAX_AUTHORIZED_TAGS = 16;
-
 type NfcConfig = API.getType['nfc/config'];
 interface NfcState {
     userCfg: API.getType['users/config'];
@@ -81,6 +79,8 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
     render(props: {}, state: NfcConfig & NfcState) {
         if (!util.render_allowed() || !API.hasFeature("nfc"))
             return <></>
+
+        const MAX_AUTHORIZED_TAGS = API.hasModule("esp32_ethernet_brick") ? 32 : 16;
 
         type NFCSeenTag = API.getType['nfc/seen_tags'][0];
 
