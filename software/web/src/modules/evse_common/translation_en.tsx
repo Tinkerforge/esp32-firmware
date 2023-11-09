@@ -220,6 +220,8 @@ let x = {
             "switch_to_three_phases": "Switch to three phases"
         },
         "cron": {
+            "external_current_wd": "External current watchdog",
+            "external_current_wd_trigger": "When the external control systems watchdog gets triggered, ",
             "api_must_be_enabled": "API must be enabled to use this feature.",
             "state_change": "State change",
             "cron_sd_trigger_text": /*FFN*/(state: boolean) => <>If the shutdown input switches to <b>{state ? "open" : "closed"}</b>{" "}</>/*NF*/,

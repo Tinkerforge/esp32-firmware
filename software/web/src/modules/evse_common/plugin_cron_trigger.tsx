@@ -33,6 +33,11 @@ export type IECChangeCronTrigger = [
     },
 ];
 
+export type EVSEEexternalCurrentWdCronTrigger = [
+    CronTriggerID.EVSEExternalCurrentWd,
+    {}
+];
+
 function get_iec_change_table_children(trigger: CronTrigger) {
     let value = (trigger as IECChangeCronTrigger)[1];
     const names = [
@@ -95,6 +100,21 @@ function get_iec_change_edit_children(cron: Cron, trigger: CronTrigger) {
     ]
 }
 
+function get_external_current_wd_table_children(trigger: CronTrigger) {
+    return __("evse.cron.external_current_wd_trigger");
+}
+
+function new_external_current_wd_config(): CronTrigger {
+    return [
+        CronTriggerID.EVSEExternalCurrentWd,
+        {},
+    ];
+}
+
+function get_external_current_wd_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
+    return []
+}
+
 export function init() {
     return {
         trigger_components: {
@@ -104,6 +124,13 @@ export function init() {
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_edit_children: get_iec_change_edit_children,
                 get_table_children: get_iec_change_table_children,
+            },
+            [CronTriggerID.EVSEExternalCurrentWd]: {
+                name: __("evse.cron.external_current_wd"),
+                new_config: new_external_current_wd_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
+                get_edit_children: get_external_current_wd_edit_children,
+                get_table_children: get_external_current_wd_table_children,
             },
         },
     };

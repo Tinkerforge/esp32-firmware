@@ -220,6 +220,8 @@ let x = {
             "switch_to_three_phases": "Umschalten auf dreiphasig"
         },
         "cron" : {
+            "external_current_wd": "Externer Steuerungs Watchdog",
+            "external_current_wd_trigger": "Wenn der Watchdog der Externen steuerung auslöst, ",
             "api_must_be_enabled": "Die API muss aktiviert sein, um die Status-LED steuern zu können.",
             "state_change": "Fahrzeugstatus gewechselt",
             "cron_sd_trigger_text": /*FFN*/(state: boolean) => <>Wenn der Abschalteingang <b>{state ? "geöffnet" : "geschlossen"}</b> wird,{" "}</>/*NF*/,

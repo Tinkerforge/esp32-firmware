@@ -60,6 +60,8 @@
 #define SLOT_ACTIVE(x) ((bool)(x & 0x01))
 #define SLOT_CLEAR_ON_DISCONNECT(x) ((bool)(x & 0x02))
 
+#define EXTERNAL_TIMEOUT 30
+
 class IEvseBackend : virtual public IModule {
     friend class EvseCommon;
 protected:
@@ -110,6 +112,7 @@ class EvseCommon final : public IModule
 
 private:
     IEvseBackend *backend = nullptr;
+    unsigned long last_external_update = 0;
 
 public:
     EvseCommon();
