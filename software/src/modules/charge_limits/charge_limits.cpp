@@ -130,11 +130,17 @@ void ChargeLimits::register_urls()
     }, true);
 
     api.addCommand("charge_limits/reset", Config::Null(), {}, [this]() {
+        if (charge_tracker.current_charge.get("user_id")->asInt() == -1) {
+            return;
+        }
+
         auto time_now = evse_common.get_low_level_state().get("uptime")->asUint();
+        state.get("start_timestamp_ms")->updateUint(time_now);
         state.get("target_timestamp_ms")->updateUint(time_now + map_duration(config_in_use.get("duration")->asUint()));
 
         if (api.hasFeature("meter")) {
             auto energy_now = meter.values.get("energy_abs")->asFloat();
+            state.get("start_energy_kwh")-> updateFloat(energy_now);
             state.get("target_energy_kwh")->updateFloat(energy_now + config_in_use.get("energy_wh")->asUint() / 1000.0);
         }
     }, true);
