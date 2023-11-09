@@ -29,7 +29,7 @@
 
 extern NFC nfc;
 
-#define AUTHORIZED_TAG_LIST_LENGTH 16
+#define MAX_AUTHORIZED_TAGS 16
 
 #define DETECTION_THRESHOLD_MS 2000
 
@@ -54,7 +54,7 @@ void NFC::pre_setup()
                 {"tag_type", Config::Uint(0, 0, 4)},
                 {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
             })},
-            0, AUTHORIZED_TAG_LIST_LENGTH,
+            0, MAX_AUTHORIZED_TAGS,
             Config::type_id<Config::ConfObject>())
         }
     }), [this](Config &cfg) -> String {

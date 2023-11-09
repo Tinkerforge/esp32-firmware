@@ -236,7 +236,7 @@ void CMNetworking::register_manager(const char * const * const hosts,
     #endif
 
     task_scheduler.scheduleWithFixedDelay([this, manager_callback, manager_error_callback, manager_queue](){
-        static uint16_t last_seen_seq_num[MAX_CLIENTS];
+        static uint16_t last_seen_seq_num[MAX_CONTROLLED_CHARGERS];
         static bool initialized = false;
         if (!initialized) {
             memset(last_seen_seq_num, 255, sizeof(last_seen_seq_num));
@@ -247,7 +247,7 @@ void CMNetworking::register_manager(const char * const * const hosts,
 
         // Try to receive up to four packets in one go to catch up on the backlog.
         // Don't receive every available packet to smooth out bursts of packets.
-        static_assert(MAX_CLIENTS <= 32);
+        static_assert(MAX_CONTROLLED_CHARGERS <= 32);
         for (int poll_ctr = 0; poll_ctr < 4; ++poll_ctr) {
             if (!xQueueReceive(manager_queue, &item, 0))
                 return;

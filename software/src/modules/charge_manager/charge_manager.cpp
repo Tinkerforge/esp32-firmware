@@ -103,7 +103,7 @@ void ChargeManager::pre_setup()
                 {"host", Config::Str("", 0, 64)},
                 {"name", Config::Str("", 0, 32)}
             })},
-            0, MAX_CLIENTS, Config::type_id<Config::ConfObject>()
+            0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
         )}
     }), [](Config &conf) -> String {
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
@@ -160,7 +160,7 @@ void ChargeManager::pre_setup()
                 {"name", Config::Str("", 0, 32)},
                 {"uid", Config::Uint32(0)}
             })},
-            0, MAX_CLIENTS, Config::type_id<Config::ConfObject>()
+            0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
         )}
     });
 
@@ -355,7 +355,7 @@ void ChargeManager::start_manager_task()
     }, 0, cm_send_delay);
 }
 
-int idx_array[MAX_CLIENTS] = {0};
+int idx_array[MAX_CONTROLLED_CHARGERS] = {0};
 
 void ChargeManager::setup()
 {
@@ -391,7 +391,7 @@ void ChargeManager::setup()
         idx_array[i] = i;
     }
 
-    for (int i = config.get("chargers")->count(); i < MAX_CLIENTS; ++i)
+    for (int i = config.get("chargers")->count(); i < MAX_CONTROLLED_CHARGERS; ++i)
         idx_array[i] = -1;
 
     size_t hosts_buf_size = 0;
@@ -540,7 +540,7 @@ void ChargeManager::distribute_current()
 
     bool any_charger_blocking_firmware_update = false;
 
-    uint32_t current_array[MAX_CLIENTS] = {0};
+    uint32_t current_array[MAX_CONTROLLED_CHARGERS] = {0};
 
     // Update control pilot disconnect
     {
