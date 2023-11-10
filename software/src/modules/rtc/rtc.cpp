@@ -185,6 +185,7 @@ bool Rtc::update_system_time()
     return backend->update_system_time();
 }
 
+#if MODULE_CRON_AVAILABLE()
 static bool is_last_day (struct tm time) {
     const int mon = time.tm_mon;
     time_t next_day = mktime(&time) + 86400;
@@ -192,7 +193,6 @@ static bool is_last_day (struct tm time) {
     return time.tm_mon != mon;
 }
 
-#if MODULE_CRON_AVAILABLE()
 bool Rtc::action_triggered(Config *conf, void *data) {
     Config *cfg = (Config*)conf->get();
     tm *time_struct = (tm *)data;
