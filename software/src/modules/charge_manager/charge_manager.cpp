@@ -57,6 +57,7 @@ static uint32_t max_avail_current = 0;
 #define REQUESTED_CURRENT_MARGIN_DEFAULT 3000
 
 extern bool firmware_update_allowed;
+extern ChargeManager charge_manager;
 
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
 #define REQUESTED_CURRENT_MARGIN_ENERGY_MANAGER_1_CHARGER_DEFAULT (2 * REQUESTED_CURRENT_MARGIN_DEFAULT)
@@ -75,6 +76,26 @@ static void apply_energy_manager_config(Config &conf)
     if (conf.get("chargers")->count() != 1 && conf.get("requested_current_margin")->asUint() == REQUESTED_CURRENT_MARGIN_ENERGY_MANAGER_1_CHARGER_DEFAULT) {
         conf.get("requested_current_margin")->updateUint(REQUESTED_CURRENT_MARGIN_DEFAULT);
     }
+}
+#endif
+
+#if MODULE_CRON_AVAILABLE()
+static bool trigger_action(Config *config, void *data) {
+    return charge_manager.action_triggered(config, data);
+}
+
+bool ChargeManager::action_triggered(Config *config, void *data) {
+    switch(config->getTag<CronTriggerID>()) {
+        case CronTriggerID::ChargeManagerWd:
+            return true;
+
+        default:
+            return false;
+    }
+}
+
+void ChargeManager::trigger_wd() {
+    cron.trigger_action(CronTriggerID::ChargeManagerWd, nullptr, trigger_action);
 }
 #endif
 
@@ -213,6 +234,11 @@ void ChargeManager::pre_setup()
     });
 
 #if MODULE_CRON_AVAILABLE()
+    cron.register_trigger(
+        CronTriggerID::ChargeManagerWd,
+        *Config::Null()
+    );
+
     cron.register_action(
         CronActionID::SetManagerCurrent,
         Config::Object({
