@@ -50,6 +50,7 @@ export class EVSE extends Component<{}, {}> {
         let user_calibration = API.get('evse/user_calibration');
 
         let is_evse_v2 = hardware_cfg.evse_version >= 20;
+        let is_evse_v3 = hardware_cfg.evse_version >= 30;
 
         let min = Math.min(...slots.filter(s => s.active).map(s => s.max_current));
 
@@ -78,12 +79,12 @@ export class EVSE extends Component<{}, {}> {
                                 ["success", __("evse.content.error_ok")],
                                 ["danger", __("evse.content.error_switch")],
                                 ["danger", __("evse.content.error_2")(is_evse_v2)],
-                                ["danger", __("evse.content.error_contactor")],
+                                ["danger", __("evse.content.error_contactor")(state.error_state == 4 && !is_evse_v3 || ((state.contactor_error & 1) == 1), state.error_state == 4 && !is_evse_v3 || ((state.contactor_error & ~1) > 0))],
                                 ["danger", __("evse.content.error_communication")]
                             ]}/>
                     </FormRow>
 
-                    <FormRow label={__("evse.content.contactor_state")} label_muted={__("evse.content.contactor_names")}>
+                    <FormRow label={__("evse.content.contactor_state")} label_muted={__("evse.content.contactor_names")(is_evse_v3)}>
                         <div class="row mx-n1">
                             <IndicatorGroup
                                 class="mb-1 col px-1"
@@ -94,17 +95,17 @@ export class EVSE extends Component<{}, {}> {
                                 ]}/>
                             <IndicatorGroup
                                 class="mb-1 col px-1"
-                                value={state.contactor_state > 1 ? 1 : 0}
+                                value={(state.contactor_state & 2) == 2 ? 1 : 0}
                                 items={[
                                     ["secondary", __("evse.content.contactor_not_live")],
                                     ["primary", __("evse.content.contactor_live")]
                                 ]}/>
                             <IndicatorGroup
                                 class="mb-1 col-auto px-1"
-                                value={state.contactor_error != 0 ? 1 : 0}
+                                value={state.contactor_error >> (is_evse_v3 ? 1 : 0)}
                                 items={[
                                     ["success", __("evse.content.contactor_ok")],
-                                    ["danger", state.contactor_error != 0 ? __("evse.script.error_code") + " " + state.contactor_error : __("evse.content.contactor_error")]
+                                    ["danger", __("evse.content.contactor_error")(state.contactor_error >> (is_evse_v3 ? 1 : 0))]
                                 ]}/>
                         </div>
                     </FormRow>
@@ -120,8 +121,12 @@ export class EVSE extends Component<{}, {}> {
                                         ["danger", __("evse.content.dc_fault_current_6_ma")],
                                         ["danger", __("evse.content.dc_fault_current_system")],
                                         ["danger", __("evse.content.dc_fault_current_unknown")],
-                                        ["danger", __("evse.content.dc_fault_current_calibration")]
-                                    ]}/>
+                                        ["danger", __("evse.content.dc_fault_current_calibration")(state.dc_fault_current_state, ll_state.dc_fault_pins)],
+                                    ].concat((ll_state.dc_fault_sensor_type > 0 ? [
+                                        ["danger", __("evse.content.dc_fault_current_20_ma")],
+                                        ["danger", __("evse.content.dc_fault_current_6_ma_20_ma")],
+                                    ] : [])) as any
+                                    }/>
                                 <Button
                                     disabled={state.dc_fault_current_state == 0}
                                     variant="danger"
@@ -351,9 +356,19 @@ export class EVSE extends Component<{}, {}> {
                         </FormRow>
 
                         {!is_evse_v2 ? undefined :
+                        <>
                             <FormRow label={__("evse.content.time_since_dc_fault_check")}>
                                 <InputText value={util.format_timespan_ms(ll_state.time_since_dc_fault_check)}/>
                             </FormRow>
+
+                            <FormRow label={__("evse.content.dc_fault_sensor_type")}>
+                                <InputText value={ll_state.dc_fault_sensor_type.toString()}/>
+                            </FormRow>
+
+                            <FormRow label={__("evse.content.dc_fault_pins")}>
+                            <InputText value={ll_state.dc_fault_pins.toString()}/>
+                            </FormRow>
+                        </>
                         }
 
                         <FormRow label={__("evse.content.reset_description")} label_muted={__("evse.content.reset_description_muted")}>

@@ -107,7 +107,9 @@ void EVSEV2::pre_setup()
         {"temperature", Config::Int16(0)},
         {"phases_current", Config::Uint16(0)},
         {"phases_requested", Config::Uint16(0)},
-        {"phases_status", Config::Uint16(0)}
+        {"phases_status", Config::Uint16(0)},
+        {"dc_fault_pins", Config::Uint8(0)},
+        {"dc_fault_sensor_type", Config::Uint8(0)}
     });
 
     energy_meter_values = Config::Object({
@@ -857,13 +859,20 @@ void EVSEV2::update_all_data()
     evse_common.state.get("allowed_charging_current")->updateUint(allowed_charging_current);
     bool error_state_changed = evse_common.state.get("error_state")->updateUint(error_state);
     evse_common.state.get("lock_state")->updateUint(lock_state);
+
+    uint8_t dc_fault_pins =  (dc_fault_current_state & 0x38) >> 3; //0b0011'1000
+    uint8_t dc_sensor_type = (dc_fault_current_state & 0x40) >> 6; //0b0100'0000
+    dc_fault_current_state = (dc_fault_current_state & 0x07) >> 0; //0b0000'0111
+
     bool dc_fault_current_state_changed = evse_common.state.get("dc_fault_current_state")->updateUint(dc_fault_current_state);
+    evse_common.low_level_state.get("dc_fault_pins")->updateUint(dc_fault_pins);
+    evse_common.low_level_state.get("dc_fault_sensor_type")->updateUint(dc_sensor_type);
 
     if (contactor_error_changed) {
         if (contactor_error != 0) {
-            logger.printfln("EVSE: Contactor error %d", contactor_error);
+            logger.printfln("EVSE: Contactor error %u PE error %u", contactor_error >> 1, contactor_error & 1);
         } else {
-            logger.printfln("EVSE: Contactor error cleared");
+            logger.printfln("EVSE: Contactor/PE error cleared");
         }
     }
 
@@ -877,7 +886,11 @@ void EVSEV2::update_all_data()
 
     if (dc_fault_current_state_changed) {
         if (dc_fault_current_state != 0) {
-            logger.printfln("EVSE: DC Fault current state %d", dc_fault_current_state);
+            logger.printfln("EVSE: DC Fault current state %u (%s %u; sensor type %u)",
+                                dc_fault_current_state,
+                                dc_fault_current_state == 4 ? "calibration error code" : "pins",
+                                dc_fault_pins,
+                                dc_sensor_type);
         } else {
             logger.printfln("EVSE: DC Fault current state cleared");
         }

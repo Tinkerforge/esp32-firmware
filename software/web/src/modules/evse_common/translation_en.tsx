@@ -29,18 +29,23 @@ let x = {
             "iec_state_d": "D (not supported)",
             "iec_state_ef": "E/F (error)",
             "contactor_state": "Contactor check",
-            "contactor_names": "before contactor, behind contactor, state",
+            "contactor_names": /*SFN*/(is_evse_v3: boolean) => is_evse_v3 ? "contactor L1+N, contactor L2+L3, state" : "before contactor, behind contactor, state"/*NF*/,
             "contactor_not_live": "Not live",
             "contactor_live": "Live",
             "contactor_ok": "OK",
-            "contactor_error": "Error",
+            "contactor_error": /*SFN*/(contactor_error: number) => {
+                if (contactor_error == 0)
+                    return "Error";
+                return "Error code " + contactor_error.toString();
+                }/*NF*/,
             "allowed_charging_current": "Allowed charging current",
             "error_state": "Error state",
             "error_state_desc": <><a href="{{{manual_url}}}">see manual for details</a></>,
             "error_ok": "OK",
             "error_switch": "Switch error",
-            "error_contactor": "Contactor error",
+            "error_contactor": /*SFN*/(pe_error: boolean, contactor_error: boolean) => pe_error ? "PE" : (contactor_error ? "Contactor error" : "Contactor/PE error")/*NF*/,
             "error_communication": "Communication error",
+            "error_pe": "PE",
             "lock_state": "Cable lock",
             "lock_init": "Init",
             "lock_open": "Open",
@@ -200,8 +205,10 @@ let x = {
             "dc_fault_current_6_ma": "DC fault",
             "dc_fault_current_system": "System error",
             "dc_fault_current_unknown": "Unknown error",
-            "dc_fault_current_calibration": "Calibration error",
+            "dc_fault_current_calibration": /*SFN*/ (dc_fault_state: number, dc_fault_pins: number) => "Calibration error" + (dc_fault_state != 0 ? dc_fault_pins.toString() : "")/*NF*/,
             "dc_fault_current_reset": "Reset",
+            "dc_fault_current_20_ma": "AC fault",
+            "dc_fault_current_6_ma_20_ma": "DC+AC fault",
 
             "reset_dc_fault_title": "Reset the DC fault protector",
             "reset_dc_fault_content": <>Resetting the DC fault protector restores the ability to charge. <b>Ensure that the reason why the DC fault protector triggered is resolved!</b> <a href="{{{manual_url}}}">See manual for details.</a> Really reset the DC fault protector?</>,
@@ -217,7 +224,9 @@ let x = {
             // EVSE version specific value for common placeholder
             "error_2": /*SFN*/(is_evse_v2: boolean) => is_evse_v2 ? "DC fault protector error" : "Calibration error"/*NF*/,
             "adc_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail</> : <>CP/PE, PP/PE</>/*NF*/,
-            "voltage_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail</> : <>CP/PE, PP/PE,<br/> CP/PE (high)</>/*NF*/
+            "voltage_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail</> : <>CP/PE, PP/PE,<br/> CP/PE (high)</>/*NF*/,
+            "dc_fault_sensor_type": "DC fault protector version",
+            "dc_fault_pins": "DC fault protector pins"
         },
         "script": {
             "error_code": "Error code",

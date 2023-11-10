@@ -43,6 +43,8 @@ export interface low_level_state {
     time_since_state_change: number,
     uptime: number,
     time_since_dc_fault_check: number,
+    dc_fault_pins?: number,
+    dc_fault_sensor_type?: number
 }
 
 export interface external_current {

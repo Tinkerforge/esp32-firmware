@@ -29,18 +29,23 @@ let x = {
             "iec_state_d": "D (nicht unterstützt)",
             "iec_state_ef": "E/F (Fehler)",
             "contactor_state": "Schützprüfung",
-            "contactor_names": "vor Schütz, nach Schütz, Zustand",
+            "contactor_names": /*SFN*/(is_evse_v3: boolean) => is_evse_v3 ? "Schütz L1+N, Schütz L2+L3, Zustand" : "vor Schütz, nach Schütz, Zustand"/*NF*/,
             "contactor_not_live": "Stromlos",
             "contactor_live": "Stromführend",
             "contactor_ok": "OK",
-            "contactor_error": "Fehler",
+            "contactor_error": /*SFN*/(contactor_error: number) => {
+                if (contactor_error == 0)
+                    return "Fehler";
+                return "Fehlercode " + contactor_error.toString();
+                }/*NF*/,
             "allowed_charging_current": "Erlaubter Ladestrom",
             "error_state": "Fehlerzustand",
             "error_state_desc": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
             "error_ok": "OK",
             "error_switch": "Schalter",
-            "error_contactor": "Schütz",
+            "error_contactor": /*SFN*/(pe_error: boolean, contactor_error: boolean) => pe_error ? "PE" : (contactor_error ? "Schütz" : "Schütz/PE")/*NF*/,
             "error_communication": "Kommunikation",
+            "error_pe": "PE",
             "lock_state": "Kabelverriegelung",
             "lock_init": "Start",
             "lock_open": "Offen",
@@ -200,8 +205,10 @@ let x = {
             "dc_fault_current_6_ma": "Gleichstromfehler",
             "dc_fault_current_system": "Systemfehler",
             "dc_fault_current_unknown": "Unbekannter Fehler",
-            "dc_fault_current_calibration": "Kalibrierungsfehler",
+            "dc_fault_current_calibration": /*SFN*/ (dc_fault_state: number, dc_fault_pins: number) => "Kalibrierungsfehler" + (dc_fault_state != 0 ? dc_fault_pins.toString() : "")/*NF*/,
             "dc_fault_current_reset": "Zurücksetzen",
+            "dc_fault_current_20_ma": "Wechselstromfehler",
+            "dc_fault_current_6_ma_20_ma": "Gleich-+Wechselstromfehler",
 
             "reset_dc_fault_title": "Zurücksetzen des DC-Fehlerstromschutzmoduls",
             "reset_dc_fault_content": <>Durch das Zurücksetzen des Moduls kann wieder geladen werden. <b>Es muss sichergestellt sein, dass der Grund für das Auslösen des Moduls behoben wurde!</b> <a href="{{{manual_url}}}">Siehe Betriebsanleitung für Details.</a> Soll das DC-Fehlerstromschutzmodul wirklich zurückgesetzt werden?</>,
@@ -218,7 +225,9 @@ let x = {
             // EVSE version specific value for common placeholder
             "error_2": /*SFN*/(is_evse_v2: boolean) => is_evse_v2 ? "DC-Fehlerstromschutz" : "Kalibrierung"  /*NF*/,
             "adc_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail</> : <>CP/PE, PP/PE</> /*NF*/,
-            "voltage_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail</> : <>CP/PE, PP/PE,<br/> CP/PE (high)</> /*NF*/
+            "voltage_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail</> : <>CP/PE, PP/PE,<br/> CP/PE (high)</> /*NF*/,
+            "dc_fault_sensor_type": "Version des DC-Fehlerschutzsensors",
+            "dc_fault_pins": "Pins des DC-Fehlerschutzsensor"
         },
         "script": {
             "error_code": "Fehlercode",
