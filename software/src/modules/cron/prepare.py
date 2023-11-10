@@ -48,6 +48,7 @@ actions = [
     ('Charge Limits', 8),
     ('EVSE GP Output', 9),
     ('Charge Tracker Reset', 10),
+    ('EM Phase Switch', 11),
 ]
 
 trigger_values = []

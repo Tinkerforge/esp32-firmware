@@ -131,6 +131,13 @@ let x = {
             "hysteresis_time": "Hysterese-Zeit",
             "hysteresis_time_muted": "Minimale Wartezeit vor Phasenumschaltungen bzw. Anfang und Ende eines Ladevorganges, um die Ladeelektronik des Fahrzeuges nicht durch häufige Schaltvorgänge zu belasten."
         },
+        "cron": {
+            "set_phases": "Phasenumschaltung",
+            "phases_wanted": "Umschaltung auf",
+            "single_phase": "Einphasig",
+            "three_phase": "Dreiphasig",
+            "cron_action_text": /*SFN*/(phases: number) => "Umschaltung auf " + (phases == 1 ? "Einphasig." : "Dreiphasig.")/*NF*/
+        },
         "script": {
             "save_failed": "Speichern der Energiemanager-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "Energiemanager-Einstellungen",

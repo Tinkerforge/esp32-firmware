@@ -131,6 +131,13 @@ let x = {
             "hysteresis_time": "Hysteresis time",
             "hysteresis_time_muted": "Minimum delay before phase switches or starting or stopping a charge, to avoid excessive wear on the vehicle's charge electronics by switching too often."
         },
+        "cron": {
+            "set_phases": "Phase switching",
+            "phases_wanted": "Switch to",
+            "single_phase": "Single-phase",
+            "three_phase": "Three-phase",
+            "cron_action_text": /*SFN*/(phases: number) => "Switch to " + (phases == 1 ? "Single-phase." : "Thress-phase.")/*NF*/
+        },
         "script": {
             "save_failed": "Failed to save energy manager settings.",
             "reboot_content_changed": "energy manager settings",
