@@ -26,10 +26,12 @@ import { CronActionID } from "../cron/cron_defs";
 import { CronAction } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
+import { Switch } from "src/ts/components/switch";
 
 export type ChargeLimitsCronAction = [
     CronActionID.ChargeLimits,
     {
+        reset: boolean,
         duration: number,
         energy_wh: number
     }
@@ -51,7 +53,7 @@ function get_charge_limits_table_children(action: CronAction) {
         __("charge_limits.cron.h12"),
     ]
 
-    return __("charge_limits.cron.cron_action_text")(durations[value.duration], value.energy_wh);
+    return __("charge_limits.cron.cron_action_text")(durations[value.duration], value.energy_wh, value.reset);
 }
 
 function get_charge_limits_edit_children(cron: Cron, action: CronAction) {
@@ -100,6 +102,14 @@ function get_charge_limits_edit_children(cron: Cron, action: CronAction) {
     ] : [];
 
     return [
+        <FormRow label={__("charge_limits.cron.reset")}>
+            <Switch
+                checked={value.reset}
+                onClick={(v) => {
+                    value.reset = !value.reset;
+                    cron.setActionFromComponent(action);
+                }} />
+        </FormRow>,
         <FormRow label={__("charge_limits.cron.duration")}>
             <InputSelect
                 items={duration_items}
@@ -116,6 +126,7 @@ function new_charge_limits_config(): CronAction {
     return [
         CronActionID.ChargeLimits,
         {
+            reset: false,
             duration: 0,
             energy_wh: 0,
         },
