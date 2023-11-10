@@ -39,6 +39,8 @@ extern NFC nfc;
 
 void NFC::pre_setup()
 {
+    this->DeviceModule::pre_setup();
+
     seen_tags = Config::Array(
         {},
         new Config{Config::Object({
