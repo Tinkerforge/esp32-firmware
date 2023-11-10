@@ -88,6 +88,19 @@ void ChargeTracker::pre_setup()
     config = Config::Object({
         {"electricity_price", Config::Uint16(0)}
     });
+
+#if MODULE_CRON_AVAILABLE()
+    cron.register_action(
+        CronActionID::ChargeTrackerReset,
+        *Config::Null(),
+        [this](const Config *conf) {
+            (void)conf;
+            api.callCommand("charge_tracker/remove_all_charges", Config::ConfUpdateObject{{
+                {"do_i_know_what_i_am_doing", true}
+            }});
+        }
+    );
+#endif
 }
 
 String ChargeTracker::chargeRecordFilename(uint32_t i)
