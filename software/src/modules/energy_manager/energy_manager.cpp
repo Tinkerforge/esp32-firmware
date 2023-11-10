@@ -36,6 +36,8 @@
 
 void EnergyManager::pre_setup()
 {
+    this->DeviceModule::pre_setup();
+
     // States
     state = Config::Object({
         {"phases_switched", Config::Uint8(0)},

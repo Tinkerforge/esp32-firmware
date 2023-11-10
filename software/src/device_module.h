@@ -62,6 +62,17 @@ public:
 
     }
 
+    virtual void pre_setup() override {
+        identity = Config::Object({
+            {"uid", Config::Str("", 0, 8)},
+            {"connected_uid", Config::Str("", 0, 8)},
+            {"position", Config::Str("", 0, 1)},
+            {"hw_version", Config::Str("", 0, 12)},
+            {"fw_version", Config::Str("", 0, 12)},
+            {"device_identifier", Config::Uint16(123)}
+        });
+    }
+
     uint16_t get_device_id()
     {
         return firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET] | (firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET + 1] << 8);
@@ -112,14 +123,6 @@ public:
             return false;
         }
 
-        identity = Config::Object({
-            {"uid", Config::Str("", 0, 8)},
-            {"connected_uid", Config::Str("", 0, 8)},
-            {"position", Config::Str("", 0, 1)},
-            {"hw_version", Config::Str("", 0, 12)},
-            {"fw_version", Config::Str("", 0, 12)},
-            {"device_identifier", Config::Uint16(123)}
-        });
 
         update_identity(tfp);
         return true;

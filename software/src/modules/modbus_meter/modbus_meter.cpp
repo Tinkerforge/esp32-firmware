@@ -45,6 +45,8 @@ static MeterInfo *meter_in_use = nullptr;
 
 void ModbusMeter::pre_setup()
 {
+    this->DeviceModule::pre_setup();
+
     error_counters = Config::Object({
         {"meter", Config::Uint32(0)},
         {"bricklet", Config::Uint32(0)},

@@ -43,6 +43,8 @@ void EVSEV2::pre_init()
 
 void EVSEV2::pre_setup()
 {
+    this->DeviceModule::pre_setup();
+
     // States
     evse_common.state = Config::Object({
         {"iec61851_state", Config::Uint8(0)},

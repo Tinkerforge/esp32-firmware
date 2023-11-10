@@ -34,6 +34,8 @@ EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", [](){evse_common.setup_evse(
 
 void EVSE::pre_setup()
 {
+    this->DeviceModule::pre_setup();
+
     // States
     evse_common.state = Config::Object({
         {"iec61851_state", Config::Uint8(0)},
