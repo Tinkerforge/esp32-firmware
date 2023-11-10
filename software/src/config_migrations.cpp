@@ -336,6 +336,30 @@ static const ConfigMigration migrations[] = {
             migrate_charge_manager_minimum_current();
         }
     },
+/*
+    {
+        1, 1, 0,
+        // 1.1.0 changes
+        // - Migrate to new meter framework. If the user configured a custom meter, set up an API meter in slot 0. Otherwise, a local meter will be set up in slot 0 by default.
+        [](){
+            const char *old_config_path = "energy_manager/meter_config";
+            DynamicJsonDocument json{128};
+
+            if (read_config_file(old_config_path, json)) {
+                if (json.containsKey("meter_source")) {
+                    uint32_t meter_source = json["meter_source"].as<uint32_t>();
+                    if (meter_source == 100) {
+                        File file = LittleFS.open("/migration/meters_0_config", "w");
+                        const char *new_config_str = "[4,{\"display_name\":\"API-Stromzähler\",\"value_ids\":[0,1,2,15,27,39,91,103,115,203,206,209,152,164,176,411,412,413,423,424,425,6,63,75,139,215,200,414,426,422,255,258,303,306,405,453,140,141,216,217,52,53,3,4,5,7,51,427,428,429,435,436,437,433,438,16,28,40,17,29,41,430,431,432,434,261,309,219,231,243,222,234,246,225,237,249,267,279,291,270,282,294,273,285,297]}]";
+                        file.write(reinterpret_cast<const uint8_t *>(new_config_str), strlen(new_config_str));
+                        file.close();
+                    }
+                }
+                delete_config_file(old_config_path);
+            }
+        }
+    },
+*/
 #endif
 };
 
