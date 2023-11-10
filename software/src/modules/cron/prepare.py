@@ -46,6 +46,7 @@ actions = [
     ('NFC Inject Tag', 7),
     ('Charge Limits', 8),
     ('EVSE GP Output', 9),
+    ('Charge Tracker Reset', 10),
 ]
 
 trigger_values = []
