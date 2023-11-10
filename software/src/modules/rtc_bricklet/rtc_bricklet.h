@@ -24,7 +24,7 @@
 #include "real_time_clock_v2_bricklet_firmware_bin.embedded.h"
 #include "../rtc/rtc.h"
 
-class RtcBricklet : public DeviceModule<TF_RealTimeClockV2,
+class RtcBricklet final : public DeviceModule<TF_RealTimeClockV2,
                                         real_time_clock_v2_bricklet_firmware_bin_data,
                                         real_time_clock_v2_bricklet_firmware_bin_length,
                                         tf_real_time_clock_v2_create,
