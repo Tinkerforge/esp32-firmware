@@ -184,6 +184,19 @@ void EnergyManager::pre_setup()
         history_meter_setup_done[slot] = false;
         history_meter_power_value[slot] = NAN;
     }
+
+#if MODULE_CRON_AVAILABLE()
+    cron.register_action(
+        CronActionID::EMPhaseSwitch,
+        Config::Object({
+            {"phases_wanted", Config::Uint(1)}
+        }),
+        [this](const Config *cfg) {
+            api.callCommand("energy_manager/external_control_update", Config::ConfUpdateObject{{
+                {"phases_wanted", cfg->get("phases_wanted")->asUint()}
+            }});
+        });
+#endif
 }
 
 void EnergyManager::setup_energy_manager()
