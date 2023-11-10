@@ -86,10 +86,14 @@ void ChargeLimits::pre_setup()
     cron.register_action(
         CronActionID::ChargeLimits,
         Config::Object({
+            {"reset", Config::Bool(false)},
             {"duration", Config::Uint32(0)},
             {"energy_wh", Config::Uint32(0)}
         }),
         [this](const Config *conf) {
+            if (conf->get("reset")->asBool()) {
+                api.callCommand("charge_limits/reset", {});
+            }
             config_in_use.get("duration")->updateUint(conf->get("duration")->asUint());
             state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint() + map_duration(conf->get("duration")->asUint()));
 
