@@ -77,10 +77,6 @@ static void apply_energy_manager_config(Config &conf)
 #endif
 
 #if MODULE_CRON_AVAILABLE()
-static bool trigger_action(Config *config, void *data) {
-    return charge_manager.action_triggered(config, data);
-}
-
 bool ChargeManager::action_triggered(Config *config, void *data) {
     switch(config->getTag<CronTriggerID>()) {
         case CronTriggerID::ChargeManagerWd:
@@ -91,9 +87,15 @@ bool ChargeManager::action_triggered(Config *config, void *data) {
     }
 }
 
+
+ #if !MODULE_ENERGY_MANAGER_AVAILABLE()
+static bool trigger_action(Config *config, void *data) {
+    return charge_manager.action_triggered(config, data);
+}
 void ChargeManager::trigger_wd() {
     cron.trigger_action(CronTriggerID::ChargeManagerWd, nullptr, trigger_action);
 }
+ #endif
 #endif
 
 void ChargeManager::pre_setup()
@@ -208,10 +210,12 @@ void ChargeManager::pre_setup()
     });
 
 #if MODULE_CRON_AVAILABLE()
+ #if !MODULE_ENERGY_MANAGER_AVAILABLE()
     cron.register_trigger(
         CronTriggerID::ChargeManagerWd,
         *Config::Null()
     );
+ #endif
 
     cron.register_action(
         CronActionID::SetManagerCurrent,

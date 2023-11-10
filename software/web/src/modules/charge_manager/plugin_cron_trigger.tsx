@@ -22,6 +22,7 @@ import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { Cron } from "../cron/main";
 import { CronTrigger } from "../cron/types";
+import { IS_ENERGY_MANAGER } from "src/build";
 
 export type ChargeManagerWdCronTrigger = [
     CronTriggerID.ChargeManagerWd,
@@ -44,15 +45,18 @@ function new_charge_manager_wd_config(): CronTrigger {
 }
 
 export function init() {
-    return {
-        trigger_components: {
-            [CronTriggerID.ChargeManagerWd]: {
-                new_config: new_charge_manager_wd_config,
-                get_table_children: get_charge_manager_wd_table_children,
-                get_edit_children: get_charge_manager_wd_edit_children,
-                name: __("charge_manager.cron.charge_manager_wd"),
-                clone_config: (action: CronTrigger) => [action[0], {...action[1]}] as CronTrigger
+    if (!IS_ENERGY_MANAGER) {
+        return {
+            trigger_components: {
+                [CronTriggerID.ChargeManagerWd]: {
+                    new_config: new_charge_manager_wd_config,
+                    get_table_children: get_charge_manager_wd_table_children,
+                    get_edit_children: get_charge_manager_wd_edit_children,
+                    name: __("charge_manager.cron.charge_manager_wd"),
+                    clone_config: (action: CronTrigger) => [action[0], {...action[1]}] as CronTrigger
+                }
             }
         }
     }
+    return {};
 }
