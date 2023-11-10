@@ -128,7 +128,7 @@ public:
         return true;
     }
 
-    void register_urls()
+    void register_urls() override
     {
         api.addCommand(url_prefix + "/reflash", Config::Null(), {}, [this]() {
             uint16_t device_id = get_device_id();
@@ -148,7 +148,7 @@ public:
         api.addState(url_prefix + "/identity", &identity, {}, 1000);
     }
 
-    void loop()
+    void loop() override
     {
         if (device_found && !initialized && deadline_elapsed(last_check + 10000)) {
             last_check = millis();
