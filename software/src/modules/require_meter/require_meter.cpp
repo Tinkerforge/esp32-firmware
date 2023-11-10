@@ -21,6 +21,8 @@
 #include "tools.h"
 #include "module_dependencies.h"
 
+extern RequireMeter require_meter;
+
 #define METER_TIMEOUT micros_t{24ll * 60 * 60 * 1000 * 1000}
 // #define METER_TIMEOUT micros_t{10 * 1000 * 1000}
 
@@ -34,6 +36,12 @@ void RequireMeter::pre_setup() {
     config = Config::Object({
         {"config", Config::Uint8(WARP_SMART)}
     });
+
+#if MODULE_CRON_AVAILABLE()
+    cron.register_trigger(
+        CronTriggerID::RequireMeter,
+        *Config::Null());
+#endif
 }
 
 void RequireMeter::setup() {
@@ -67,6 +75,22 @@ void RequireMeter::register_urls() {
     }
 }
 
+#if MODULE_CRON_AVAILABLE()
+bool RequireMeter::action_triggered(Config *config, void *data) {
+    switch (config->getTag<CronTriggerID>()) {
+        case CronTriggerID::RequireMeter:
+            return true;
+
+        default:
+            return false;
+    }
+}
+
+static bool trigger_action(Config *config, void *data) {
+    return require_meter.action_triggered(config, data);
+}
+#endif
+
 void RequireMeter::start_task() {
     static bool is_running = false;
     if (is_running)
@@ -83,6 +107,16 @@ void RequireMeter::start_task() {
         meter_timeout |= deadline_elapsed(meter.last_value_change + METER_TIMEOUT);
 
         evse_common.set_require_meter_blocking(meter_timeout);
+
+#if MODULE_CRON_AVAILABLE()
+        static bool was_triggered = false;
+        if (meter_timeout && !was_triggered) {
+            cron.trigger_action(CronTriggerID::RequireMeter, nullptr, trigger_action);
+            was_triggered = true;
+        } else if (!meter_timeout) {
+            was_triggered = false;
+        }
+#endif
 
 #if MODULE_USERS_AVAILABLE()
         if (meter_timeout)
