@@ -30,7 +30,8 @@ triggers = [
     ('Charge Limits', 6),
     ('EVSE Shutdown Input', 7),
     ('EVSE GP Input', 8),
-    ('EVSE External Current Wd', 9)
+    ('EVSE External Current Wd', 9),
+    ('Require Meter', 10),
 ]
 
 # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!

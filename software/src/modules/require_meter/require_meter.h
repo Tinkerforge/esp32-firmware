@@ -34,5 +34,7 @@ public:
     void start_task();
     bool allow_charging(float meter_value);
 
+    bool action_triggered(Config *config, void *data);
+
     bool initialized = false;
 };
