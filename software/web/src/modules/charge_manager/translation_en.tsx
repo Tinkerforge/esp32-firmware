@@ -78,6 +78,8 @@ let x = {
             "host_exists": "Host already exists"
         },
         "cron": {
+          "charge_manager_wd": "Charge manager watchdog",
+          "cron_trigger_text": "When the charge managers watchdog gets triggered, ",
           "set_charge_manager": "Charge Manager",
           "cron_action_text": /*FFN*/(current: number) => {
             return (

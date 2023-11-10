@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include "module.h"
+#include "module_dependencies.h"
 
 class ChargeManager final : public IModule
 {
@@ -43,6 +44,11 @@ public:
     void set_allocated_current_callback(std::function<void(uint32_t)> callback);
 
     const char *get_charger_name(uint8_t idx);
+
+#if MODULE_CRON_AVAILABLE()
+    bool action_triggered(Config *config, void *data);
+    void trigger_wd();
+#endif
 
     ConfigRoot config;
 
