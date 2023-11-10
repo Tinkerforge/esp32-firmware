@@ -183,11 +183,16 @@ void Meter::setupMeter(uint8_t meter_type)
         case METER_TYPE_SDM630:
         case METER_TYPE_SDM72DMV2:
         case METER_TYPE_SDM630MCTV2:
+        case METER_TYPE_DSZ15DZMOD:
+        case METER_TYPE_DEM4A:
             api.addFeature("meter_phases");
             /* FALLTHROUGH*/
         case METER_TYPE_SDM72CTM:
         case METER_TYPE_CUSTOM_ALL_VALUES:
             api.addFeature("meter_all_values");
+            break;
+        default:
+            logger.printfln("Unknown meter type %u", meter_type);
             break;
     }
 

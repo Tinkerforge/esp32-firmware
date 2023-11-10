@@ -285,9 +285,11 @@ let x = {
             "gpio_configuration_failed": "Speichern der GPIO-Konfiguration fehlgeschlagen",
 
             "meter_type_0": "Kein Stromzähler angeschlossen",
-            "meter_type_1": "SDM72",
-            "meter_type_2": "SDM630",
-            "meter_type_3": "SDM72V2",
+            "meter_type_1": "Eastron SDM72",
+            "meter_type_2": "Eastron SDM630",
+            "meter_type_3": "Eastron SDM72V2",
+            "meter_type_6": "Eltako DSZ15DZMOD",
+            "meter_type_7": "YTL DEM4A",
             "meter_type_254": "intern"
         }
     }

@@ -284,9 +284,11 @@ let x = {
             "gpio_configuration_failed": "Updating the GPIO configuration failed",
 
             "meter_type_0": "No energy meter found",
-            "meter_type_1": "SDM72",
-            "meter_type_2": "SDM630",
-            "meter_type_3": "SDM72V2",
+            "meter_type_1": "Eastron SDM72",
+            "meter_type_2": "Eastron SDM630",
+            "meter_type_3": "Eastron SDM72V2",
+            "meter_type_6": "Eltako DSZ15DZMOD",
+            "meter_type_7": "YTL DEM4A",
             "meter_type_254": "internal"
         }
     }

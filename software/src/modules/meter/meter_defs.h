@@ -30,6 +30,10 @@
 #define METER_TYPE_SDM630 2
 #define METER_TYPE_SDM72DMV2 3
 
+// Supported by evse_v2 module
+#define METER_TYPE_DSZ15DZMOD 6
+#define METER_TYPE_DEM4A 7
+
 // Supported by energy_manager module
 #define METER_TYPE_SDM72CTM 4
 #define METER_TYPE_SDM630MCTV2 5
