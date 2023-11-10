@@ -62,7 +62,7 @@ let x = {
                     ret = <>Wenn MQTT-Nachricht '<b>{payload}</b>'</>;
                 }
                 return <>
-                    {ret} an Topic '<b>{topic}</b>' empfangen wird {retained ? "(Gespeicherte Nachrichten werden akzeptiert)" : ""} {", "}
+                    {ret} an Topic '<b>{topic}</b>' empfangen wird{retained ? " (Gespeicherte Nachrichten werden akzeptiert)" : ""}{", "}
                 </>
             }/*NF*/,
             "cron_trigger_mqtt": "MQTT-Nachricht empfangen"
