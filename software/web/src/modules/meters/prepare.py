@@ -33,7 +33,7 @@ inits = []
 configs = []
 
 for plugin in util.find_frontend_plugins('Meters', 'Config'):
-    import_path = os.path.join('..', plugin.module_name, plugin.import_name)
+    import_path = os.path.join('..', plugin.module_name, plugin.import_name).replace('\\', '/')
     imports.append("import * as {0}_config from '{1}'".format(plugin.module_name, import_path))
     inits.append("result.push({0}_config.init());".format(plugin.module_name))
 
