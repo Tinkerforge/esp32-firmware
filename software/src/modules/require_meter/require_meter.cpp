@@ -58,6 +58,7 @@ void RequireMeter::register_urls() {
                 return;
 
             if (api.hasFeature("meter")) {
+                logger.printfln("Seen energy meter for the first time (since factory reset). Will require up-to-date meter readings to start charging from now on.");
                 config.get("config")->updateUint(WARP_PRO_ENABLED);
                 api.writeConfig("require_meter/config", &config);
                 evse_common.set_require_meter_enabled(true);
@@ -89,6 +90,13 @@ void RequireMeter::start_task() {
             users.stop_charging(0, true, 0);
 #endif
 
+        static bool last_meter_timeout = false;
+        if (last_meter_timeout && !meter_timeout) {
+            logger.printfln("Energy meter working again. Allowing charging.");
+        } else if (!last_meter_timeout && meter_timeout) {
+            logger.printfln("Energy meter stuck or unreachable! Blocking charging.");
+        }
+        last_meter_timeout = meter_timeout;
     }, 0, 1000);
     is_running = true;
 }
