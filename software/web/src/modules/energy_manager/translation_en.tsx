@@ -132,6 +132,33 @@ let x = {
             "hysteresis_time_muted": "Minimum delay before phase switches or starting or stopping a charge, to avoid excessive wear on the vehicle's charge electronics by switching too often."
         },
         "cron": {
+            "charge_mode_switch": "Switch charge mode",
+            "charge_mode": "Charge mode",
+            "fast": "Fast",
+            "disabled": "Disabled",
+            "pv_excess": "PV-Excess",
+            "guaranteed_power": "Min + PV: Minimum charging power",
+            "charge_mode_switch_action_text": /*FFN*/(mode: number) => {
+                let ret = <></>;
+                switch (mode) {
+                    case 0:
+                        ret = <><b>Fast</b></>
+                        break;
+
+                    case 1:
+                        ret = <><b>Disabled</b></>
+                        break;
+
+                    case 2:
+                        ret = <><b>PV-Excess</b></>
+                        break;
+
+                    case 3:
+                        ret = <><b>Min + PV</b></>
+                        break;
+                }
+                return <>Switch charge mode to {ret}.</>
+            }/*NF*/,
             "set_phases": "Phase switching",
             "phases_wanted": "Switch to",
             "single_phase": "Single-phase",

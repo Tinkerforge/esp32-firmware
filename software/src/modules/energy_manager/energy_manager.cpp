@@ -198,6 +198,17 @@ void EnergyManager::pre_setup()
                 {"phases_wanted", cfg->get("phases_wanted")->asUint()}
             }});
         });
+
+    cron.register_action(
+        CronActionID::EMChargeModeSwitch,
+        Config::Object({
+            {"mode", Config::Uint(0)}
+        }),
+        [this](const Config *cfg) {
+            api.callCommand("energy_manager/charge_mode_update", Config::ConfUpdateObject{{
+                {"mode", cfg->get("mode")->asUint()}
+            }});
+        });
 #endif
 }
 

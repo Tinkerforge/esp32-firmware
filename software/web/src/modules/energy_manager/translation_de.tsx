@@ -132,6 +132,33 @@ let x = {
             "hysteresis_time_muted": "Minimale Wartezeit vor Phasenumschaltungen bzw. Anfang und Ende eines Ladevorganges, um die Ladeelektronik des Fahrzeuges nicht durch häufige Schaltvorgänge zu belasten."
         },
         "cron": {
+            "charge_mode_switch": "Lademodus wechseln",
+            "charge_mode": "Lademodus",
+            "fast": "Schnell",
+            "disabled": "Deaktiviert",
+            "pv_excess": "PV-Überschuss",
+            "guaranteed_power": "Min + PV: Mindestladeleistung",
+            "charge_mode_switch_action_text": /*FFN*/(mode: number) => {
+                let ret = <></>;
+                switch (mode) {
+                    case 0:
+                        ret = <><b>Schnell</b></>
+                        break;
+
+                    case 1:
+                        ret = <><b>Deaktiviert</b></>
+                        break;
+
+                    case 2:
+                        ret = <><b>PV-Überschuss</b></>
+                        break;
+
+                    case 3:
+                        ret = <><b>Min + PV</b></>
+                        break;
+                }
+                return <>wechsel Lademodus auf {ret}.</>
+            }/*NF*/,
             "set_phases": "Phasenumschaltung",
             "phases_wanted": "Umschaltung auf",
             "single_phase": "Einphasig",

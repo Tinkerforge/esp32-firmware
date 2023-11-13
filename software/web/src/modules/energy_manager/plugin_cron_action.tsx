@@ -32,6 +32,13 @@ export type EMPhaseSwitchCronAction = [
     },
 ];
 
+export type EMChargeModeSwitchCronAction = [
+    CronActionID.EMChargeModeSwitch,
+    {
+        mode: number;
+    }
+]
+
 function get_em_phase_switch_table_children(action: CronAction) {
     let value = (action as EMPhaseSwitchCronAction)[1];
     return __("energy_manager.cron.cron_action_text")(value.phases_wanted);
@@ -66,6 +73,43 @@ function new_em_phase_switch_config(): CronAction {
     ];
 }
 
+function get_em_charge_mode_switch_table_children(action: CronAction) {
+    let value = (action as EMChargeModeSwitchCronAction)[1];
+    return __("energy_manager.cron.charge_mode_switch_action_text")(value.mode);
+}
+
+function get_em_charge_mode_switch_edit_children(cron: Cron, action: CronAction) {
+    let value = (action as EMChargeModeSwitchCronAction)[1];
+    const modes: [string, string][] = [
+        ['0', __('energy_manager.cron.fast')],
+        ['1', __('energy_manager.cron.disabled')],
+        ['2', __('energy_manager.cron.pv_excess')],
+        ['3', __('energy_manager.cron.guaranteed_power')],
+    ]
+
+    return [
+        <FormRow label={__("energy_manager.cron.charge_mode")}>
+            <InputSelect
+                items={modes}
+                value={value.mode.toString()}
+                onValue={(v) => {
+                    value.mode = parseInt(v);
+                    cron.setActionFromComponent(action);
+                }}
+            />
+        </FormRow>
+    ]
+}
+
+function new_em_charge_mode_switch_config(): CronAction {
+    return [
+        CronActionID.EMChargeModeSwitch,
+        {
+            mode: 0,
+        },
+    ];
+}
+
 export function init() {
     return {
         action_components: {
@@ -74,6 +118,13 @@ export function init() {
                 new_config: new_em_phase_switch_config,
                 get_table_children: get_em_phase_switch_table_children,
                 get_edit_children: get_em_phase_switch_edit_children,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction
+            },
+            [CronActionID.EMChargeModeSwitch]: {
+                name: __("energy_manager.cron.charge_mode_switch"),
+                new_config: new_em_charge_mode_switch_config,
+                get_table_children: get_em_charge_mode_switch_table_children,
+                get_edit_children: get_em_charge_mode_switch_edit_children,
                 clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction
             }
         }
