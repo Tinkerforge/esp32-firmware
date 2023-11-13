@@ -1,7 +1,7 @@
-From 2e409ad57a9f228c1ba2fc73e95f63df3359a848 Mon Sep 17 00:00:00 2001
+From 2e7128683f15fb54ddc2ba0b1ee59e4d6ca0251c Mon Sep 17 00:00:00 2001
 From: Erik Fleckstein <erik@tinkerforge.com>
-Date: Mon, 25 Sep 2023 15:05:26 +0200
-Subject: [PATCH] system: add workaround for interrupted backtraces on Xtensa.
+Date: Mon, 13 Nov 2023 10:43:52 +0100
+Subject: [PATCH] system: Add workaround for interrupted backtraces on Xtensa.
 
 Based on
 https://github.com/espressif/esp-idf/issues/6124#issuecomment-1157298092
@@ -28,11 +28,11 @@ index 3fa64c9935..2d9e5fcf49 100644
      panic_abort(details);
  }
 diff --git a/components/esp_system/include/esp_private/panic_internal.h b/components/esp_system/include/esp_private/panic_internal.h
-index d43a705aba..51da19ff97 100644
+index 3d1845385a..4233a8763a 100644
 --- a/components/esp_system/include/esp_private/panic_internal.h
 +++ b/components/esp_system/include/esp_private/panic_internal.h
-@@ -76,7 +76,38 @@ void panic_print_hex(int h);
- #define panic_print_hex(h)
+@@ -80,7 +80,38 @@ void panic_print_hex(int h);
+ #define panic_print_hex(h)      ESP_UNUSED(h)
  #endif
  
 -void __attribute__((noreturn)) panic_abort(const char *details);
