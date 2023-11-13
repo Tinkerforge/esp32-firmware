@@ -40,7 +40,7 @@ export type EMChargeModeSwitchCronAction = [
 ]
 
 export type EMContactorCronAction = [
-    CronActionID.EMContactor,
+    CronActionID.EMRelaySwitch,
     {
         state: boolean;
     },
@@ -120,18 +120,18 @@ function new_em_charge_mode_switch_config(): CronAction {
 
 function get_em_contactor_table_children(action: CronAction) {
     let value = (action as EMContactorCronAction)[1];
-    return __("energy_manager.cron.contactor_action_text")(value.state);
+    return __("energy_manager.cron.relay_action_text")(value.state);
 }
 
 function get_em_contactor_edit_children(cron: Cron, action: CronAction) {
     let value = (action as EMContactorCronAction)[1];
     const states: [string, string][] = [
-        ['1', __('energy_manager.cron.contactor_state_closed')],
-        ['0', __('energy_manager.cron.contactor_state_open')],
+        ['1', __('energy_manager.cron.relay_state_closed')],
+        ['0', __('energy_manager.cron.relay_state_open')],
     ]
 
     return [
-        <FormRow label={__("energy_manager.cron.contactor_state")}>
+        <FormRow label={__("energy_manager.cron.relay_state")}>
             <InputSelect
                 items={states}
                 value={value.state ? '1' : '0'}
@@ -146,7 +146,7 @@ function get_em_contactor_edit_children(cron: Cron, action: CronAction) {
 
 function new_em_contactor_config(): CronAction {
     return [
-        CronActionID.EMContactor,
+        CronActionID.EMRelaySwitch,
         {
             state: true,
         },
@@ -170,8 +170,8 @@ export function init() {
                 get_edit_children: get_em_charge_mode_switch_edit_children,
                 clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction
             },
-            [CronActionID.EMContactor]: {
-                name: __("energy_manager.cron.switch_contactor"),
+            [CronActionID.EMRelaySwitch]: {
+                name: __("energy_manager.cron.switch_relay"),
                 new_config: new_em_contactor_config,
                 get_table_children: get_em_contactor_table_children,
                 get_edit_children: get_em_contactor_edit_children,

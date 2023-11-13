@@ -218,7 +218,7 @@ void EnergyManager::pre_setup()
         });
 
     cron.register_action(
-        CronActionID::EMContactor,
+        CronActionID::EMRelaySwitch,
         Config::Object({
             {"state", Config::Bool(false)}
         }),
