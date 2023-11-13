@@ -50,6 +50,7 @@ actions = [
     ('Charge Tracker Reset', 10),
     ('EM Phase Switch', 11),
     ('EM Charge Mode Switch', 12),
+    ('EM Contactor', 13),
 ]
 
 trigger_values = []

@@ -132,6 +132,14 @@ let x = {
             "hysteresis_time_muted": "Minimale Wartezeit vor Phasenumschaltungen bzw. Anfang und Ende eines Ladevorganges, um die Ladeelektronik des Fahrzeuges nicht durch häufige Schaltvorgänge zu belasten."
         },
         "cron": {
+            "switch_contactor": "Relay schalten",
+            "contactor_state": "Schalten auf",
+            "contactor_state_open": "Offen",
+            "contactor_state_closed": "Geschlossen",
+            "contactor_action_text": /*FFN*/(state: boolean) => {
+                let ret = state ? <><b>schließen</b></> : <><b>öffnen</b></>
+                return <>Relay {ret}.</>
+            }/*NF*/,
             "charge_mode_default": "Standardmodus",
             "charge_mode_switch": "Lademodus wechseln",
             "charge_mode": "Lademodus",

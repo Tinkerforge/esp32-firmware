@@ -132,6 +132,14 @@ let x = {
             "hysteresis_time_muted": "Minimum delay before phase switches or starting or stopping a charge, to avoid excessive wear on the vehicle's charge electronics by switching too often."
         },
         "cron": {
+            "switch_contactor": "Switch relay",
+            "contactor_state": "Swtich to",
+            "contactor_state_open": "Open",
+            "contactor_state_closed": "Closed",
+            "contactor_action_text": /*FFN*/(state: boolean) => {
+                let ret = state ? <><b>Close</b></> : <><b>Open</b></>
+                return <>{ret} relay.</>
+            }/*NF*/,
             "charge_mode_default": "Default mode",
             "charge_mode_switch": "Switch charge mode",
             "charge_mode": "Charge mode",

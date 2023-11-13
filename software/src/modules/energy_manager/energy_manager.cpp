@@ -206,7 +206,7 @@ void EnergyManager::pre_setup()
         }),
         [this](const Config *cfg) {
             auto configured_mode = cfg->get("mode")->asUint();
-            
+
             // Cron rule configured to switch to default mode
             if (configured_mode == 4) {
                 configured_mode = this->config_in_use.get("default_mode")->asUint();
@@ -216,6 +216,16 @@ void EnergyManager::pre_setup()
                 {"mode", configured_mode}
             }});
         });
+
+    cron.register_action(
+        CronActionID::EMContactor,
+        Config::Object({
+            {"state", Config::Bool(false)}
+        }),
+        [this](const Config *cfg) {
+            this->set_output(cfg->get("state")->asBool());
+        }
+    );
 #endif
 }
 

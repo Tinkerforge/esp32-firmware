@@ -39,6 +39,13 @@ export type EMChargeModeSwitchCronAction = [
     }
 ]
 
+export type EMContactorCronAction = [
+    CronActionID.EMContactor,
+    {
+        state: boolean;
+    },
+];
+
 function get_em_phase_switch_table_children(action: CronAction) {
     let value = (action as EMPhaseSwitchCronAction)[1];
     return __("energy_manager.cron.cron_action_text")(value.phases_wanted);
@@ -111,6 +118,41 @@ function new_em_charge_mode_switch_config(): CronAction {
     ];
 }
 
+function get_em_contactor_table_children(action: CronAction) {
+    let value = (action as EMContactorCronAction)[1];
+    return __("energy_manager.cron.contactor_action_text")(value.state);
+}
+
+function get_em_contactor_edit_children(cron: Cron, action: CronAction) {
+    let value = (action as EMContactorCronAction)[1];
+    const states: [string, string][] = [
+        ['1', __('energy_manager.cron.contactor_state_closed')],
+        ['0', __('energy_manager.cron.contactor_state_open')],
+    ]
+
+    return [
+        <FormRow label={__("energy_manager.cron.contactor_state")}>
+            <InputSelect
+                items={states}
+                value={value.state ? '1' : '0'}
+                onValue={(v) => {
+                    value.state = v == '1';
+                    cron.setActionFromComponent(action);
+                }}
+            />
+        </FormRow>
+    ]
+}
+
+function new_em_contactor_config(): CronAction {
+    return [
+        CronActionID.EMContactor,
+        {
+            state: true,
+        },
+    ];
+}
+
 export function init() {
     return {
         action_components: {
@@ -126,6 +168,13 @@ export function init() {
                 new_config: new_em_charge_mode_switch_config,
                 get_table_children: get_em_charge_mode_switch_table_children,
                 get_edit_children: get_em_charge_mode_switch_edit_children,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction
+            },
+            [CronActionID.EMContactor]: {
+                name: __("energy_manager.cron.switch_contactor"),
+                new_config: new_em_contactor_config,
+                get_table_children: get_em_contactor_table_children,
+                get_edit_children: get_em_contactor_edit_children,
                 clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction
             }
         }
