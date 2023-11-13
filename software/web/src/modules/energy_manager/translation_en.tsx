@@ -132,6 +132,7 @@ let x = {
             "hysteresis_time_muted": "Minimum delay before phase switches or starting or stopping a charge, to avoid excessive wear on the vehicle's charge electronics by switching too often."
         },
         "cron": {
+            "charge_mode_default": "Default mode",
             "charge_mode_switch": "Switch charge mode",
             "charge_mode": "Charge mode",
             "fast": "Fast",
@@ -155,6 +156,10 @@ let x = {
 
                     case 3:
                         ret = <><b>Min + PV</b></>
+                        break;
+
+                    default:
+                        ret = <><b>Default mode</b></>
                         break;
                 }
                 return <>Switch charge mode to {ret}.</>

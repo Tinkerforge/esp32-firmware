@@ -85,6 +85,7 @@ function get_em_charge_mode_switch_edit_children(cron: Cron, action: CronAction)
         ['1', __('energy_manager.cron.disabled')],
         ['2', __('energy_manager.cron.pv_excess')],
         ['3', __('energy_manager.cron.guaranteed_power')],
+        ['4', __('energy_manager.cron.charge_mode_default')]
     ]
 
     return [
@@ -105,7 +106,7 @@ function new_em_charge_mode_switch_config(): CronAction {
     return [
         CronActionID.EMChargeModeSwitch,
         {
-            mode: 0,
+            mode: 4,
         },
     ];
 }

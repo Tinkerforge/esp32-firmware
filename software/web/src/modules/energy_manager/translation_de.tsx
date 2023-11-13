@@ -132,6 +132,7 @@ let x = {
             "hysteresis_time_muted": "Minimale Wartezeit vor Phasenumschaltungen bzw. Anfang und Ende eines Ladevorganges, um die Ladeelektronik des Fahrzeuges nicht durch häufige Schaltvorgänge zu belasten."
         },
         "cron": {
+            "charge_mode_default": "Standardmodus",
             "charge_mode_switch": "Lademodus wechseln",
             "charge_mode": "Lademodus",
             "fast": "Schnell",
@@ -155,6 +156,10 @@ let x = {
 
                     case 3:
                         ret = <><b>Min + PV</b></>
+                        break;
+
+                    default:
+                        ret = <><b>Standardmodus</b></>
                         break;
                 }
                 return <>wechsel Lademodus auf {ret}.</>

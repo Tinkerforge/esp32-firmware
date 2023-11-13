@@ -202,11 +202,18 @@ void EnergyManager::pre_setup()
     cron.register_action(
         CronActionID::EMChargeModeSwitch,
         Config::Object({
-            {"mode", Config::Uint(0)}
+            {"mode", Config::Uint(0, 0, 4)}
         }),
         [this](const Config *cfg) {
+            auto configured_mode = cfg->get("mode")->asUint();
+            
+            // Cron rule configured to switch to default mode
+            if (configured_mode == 4) {
+                configured_mode = this->config_in_use.get("default_mode")->asUint();
+            }
+
             api.callCommand("energy_manager/charge_mode_update", Config::ConfUpdateObject{{
-                {"mode", cfg->get("mode")->asUint()}
+                {"mode", configured_mode}
             }});
         });
 #endif
