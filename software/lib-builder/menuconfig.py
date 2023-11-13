@@ -31,7 +31,7 @@ shutil.move(os.path.join(root, "configs", "defconfig.esp32"), os.path.join(root,
 try:
     shutil.copy(os.path.join(sys.argv[2]), os.path.join(root, "configs", "defconfig.esp32"))
     with ChangedDirectory(os.path.join(root)):
-        subprocess.call("./build.sh -t esp32 -b menuconfig", shell=True, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
+        subprocess.call(['bash', '-c', '. esp-idf/export.sh && ./build.sh -t esp32 -b menuconfig'], stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
 
     defconfig = create_defconfig.main(["create_defconfig", os.path.join(root, "sdkconfig.vanilla"), os.path.join(root, "sdkconfig")])
     with open("defconfig.tmp", "w") as f:
