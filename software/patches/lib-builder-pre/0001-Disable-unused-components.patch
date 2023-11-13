@@ -1,6 +1,6 @@
-From 7da07f15e37ddf677d17f7a0923f1fddd84d4c8d Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
-Date: Tue, 19 Sep 2023 15:54:19 +0200
+From dcd4c7d30c90b14c2fa51626d7e8406289df42c6 Mon Sep 17 00:00:00 2001
+From: Erik Fleckstein <erik@tinkerforge.com>
+Date: Mon, 13 Nov 2023 09:55:16 +0100
 Subject: [PATCH] Disable unused components.
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH] Disable unused components.
  2 files changed, 11 insertions(+), 11 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 558857c..53a471d 100644
+index 63540cc..1a68e70 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -2,8 +2,8 @@
@@ -24,7 +24,7 @@ index 558857c..53a471d 100644
  include($ENV{IDF_PATH}/tools/cmake/project.cmake)
  project(arduino-lib-builder)
 diff --git a/tools/update-components.sh b/tools/update-components.sh
-index eb661c2..c4dbd54 100755
+index bd0e394..bf0b25f 100755
 --- a/tools/update-components.sh
 +++ b/tools/update-components.sh
 @@ -57,7 +57,7 @@ if [ $? -ne 0 ]; then exit 1; fi
@@ -44,23 +44,25 @@ index eb661c2..c4dbd54 100755
 -	git -C "$AR_COMPS/esp-dl" reset --hard 0632d2447dd49067faabe9761d88fa292589d5d9
 -	if [ $? -ne 0 ]; then exit 1; fi
 +	true #git clone $DL_REPO_URL "$AR_COMPS/esp-dl" && \
-+	#git -C "$AR_COMPS/esp-dl" reset --hard 0632d2447dd49067faabe9761d88fa292589d5d9
-+	#if [ $? -ne 0 ]; then exit 1; fi
++	true #git -C "$AR_COMPS/esp-dl" reset --hard 0632d2447dd49067faabe9761d88fa292589d5d9
++	true #if [ $? -ne 0 ]; then exit 1; fi
  fi
  
  #
-@@ -93,8 +93,8 @@ if [ $? -ne 0 ]; then exit 1; fi
+@@ -93,9 +93,9 @@ if [ $? -ne 0 ]; then exit 1; fi
  #
  echo "Updating ESP-RainMaker..."
  if [ ! -d "$AR_COMPS/esp-rainmaker" ]; then
 -    git clone $RMAKER_REPO_URL "$AR_COMPS/esp-rainmaker" && \
+-	git -C "$AR_COMPS/esp-rainmaker" reset --hard d8e93454f495bd8a414829ec5e86842b373ff555 && \
 -    git -C "$AR_COMPS/esp-rainmaker" submodule update --init --recursive
 +    true #git clone $RMAKER_REPO_URL "$AR_COMPS/esp-rainmaker" && \
++	true #git -C "$AR_COMPS/esp-rainmaker" reset --hard d8e93454f495bd8a414829ec5e86842b373ff555 && \
 +    true #git -C "$AR_COMPS/esp-rainmaker" submodule update --init --recursive
- else
- 	git -C "$AR_COMPS/esp-rainmaker" fetch && \
- 	git -C "$AR_COMPS/esp-rainmaker" pull --ff-only && \
-@@ -107,7 +107,7 @@ if [ $? -ne 0 ]; then exit 1; fi
+ fi
+ if [ $? -ne 0 ]; then exit 1; fi
+ 
+@@ -104,7 +104,7 @@ if [ $? -ne 0 ]; then exit 1; fi
  #
  echo "Updating ESP-DSP..."
  if [ ! -d "$AR_COMPS/espressif__esp-dsp" ]; then
@@ -69,7 +71,7 @@ index eb661c2..c4dbd54 100755
  else
  	git -C "$AR_COMPS/espressif__esp-dsp" fetch && \
  	git -C "$AR_COMPS/espressif__esp-dsp" pull --ff-only
-@@ -119,7 +119,7 @@ if [ $? -ne 0 ]; then exit 1; fi
+@@ -116,7 +116,7 @@ if [ $? -ne 0 ]; then exit 1; fi
  #
  echo "Updating TinyUSB..."
  if [ ! -d "$AR_COMPS/arduino_tinyusb/tinyusb" ]; then
@@ -79,5 +81,5 @@ index eb661c2..c4dbd54 100755
  	git -C "$AR_COMPS/arduino_tinyusb/tinyusb" fetch && \
  	git -C "$AR_COMPS/arduino_tinyusb/tinyusb" pull --ff-only
 -- 
-2.30.2
+2.42.0
 
