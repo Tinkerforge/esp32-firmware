@@ -30,12 +30,6 @@
 #include "meter_value_id.h"
 #include "tools.h"
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #include "gcc_warnings.h"
-    #pragma GCC diagnostic ignored "-Weffc++"
-#endif
-
 #define INDEX_CACHE_POWER         0
 #define INDEX_CACHE_ENERGY_IMPORT 1
 #define INDEX_CACHE_ENERGY_EXPORT 2
@@ -154,7 +148,3 @@ private:
 };
 
 extern uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, MeterValueID id);
-
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif

@@ -25,12 +25,6 @@
 #include "modules/meter/meter_defs.h"
 #include "module.h"
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #include "gcc_warnings.h"
-    #pragma GCC diagnostic ignored "-Weffc++"
-#endif
-
 #define PHASE_CONNECTED_VOLTAGE_THRES 180.0f // V
 #define PHASE_ACTIVE_CURRENT_THRES      0.3f // A
 
@@ -77,7 +71,3 @@ private:
     bool     meter_writable        = false;
     bool     phases_overridden     = false;
 };
-
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
