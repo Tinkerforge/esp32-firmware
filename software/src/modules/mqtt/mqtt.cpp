@@ -36,10 +36,12 @@ extern Mqtt mqtt;
 
 extern char local_uid_str[32];
 
-#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
+#if defined(BOARD_HAS_PSRAM)
 #define MQTT_RECV_BUFFER_SIZE 6144U
+#define MQTT_SEND_BUFFER_SIZE 32768U
 #else
 #define MQTT_RECV_BUFFER_SIZE 2048U
+#define MQTT_SEND_BUFFER_SIZE 2048U
 #endif
 
 #define MQTT_RECV_BUFFER_HEADROOM (MQTT_RECV_BUFFER_SIZE / 4)
@@ -188,7 +190,7 @@ bool Mqtt::publish(const String &topic, const String &payload, bool retain)
     if (this->state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
         return false;
 
-    return esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain) >= 0;
+    return esp_mqtt_client_enqueue(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain, true) >= 0;
 }
 
 bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
@@ -529,6 +531,7 @@ void Mqtt::setup()
     mqtt_cfg.username = config_in_use.get("broker_username")->asEphemeralCStr();
     mqtt_cfg.password = config_in_use.get("broker_password")->asEphemeralCStr();
     mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE;
+    mqtt_cfg.out_buffer_size = MQTT_SEND_BUFFER_SIZE;
     mqtt_cfg.network_timeout_ms = 1000;
     mqtt_cfg.message_retransmit_timeout = 400;
 
