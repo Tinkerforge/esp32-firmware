@@ -54,6 +54,13 @@ export class EVSE extends Component<{}, {}> {
 
         let min = Math.min(...slots.filter(s => s.active).map(s => s.max_current));
 
+        let pe_error = state.error_state == 4 && ((!is_evse_v3 && state.contactor_error == 4)
+                                                    || is_evse_v3 && (state.contactor_error & 1) == 1);
+
+        // EVSE 3.0 can report both a PE and a contactor error!
+        let contactor_error = state.error_state == 4 && ((!is_evse_v3 && state.contactor_error != 4)
+                                                           || is_evse_v3 && (state.contactor_error & 1) == 0);
+
         return <SubPage>
             <PageHeader title={__("evse.content.status")} />
                     <FormRow label={__("evse.content.iec_state")}>
@@ -79,7 +86,7 @@ export class EVSE extends Component<{}, {}> {
                                 ["success", __("evse.content.error_ok")],
                                 ["danger", __("evse.content.error_switch")],
                                 ["danger", __("evse.content.error_2")(is_evse_v2)],
-                                ["danger", __("evse.content.error_contactor")(state.error_state == 4 && !is_evse_v3 || ((state.contactor_error & 1) == 1), state.error_state == 4 && !is_evse_v3 || ((state.contactor_error & ~1) > 0))],
+                                ["danger", __("evse.content.error_contactor")(pe_error, contactor_error)],
                                 ["danger", __("evse.content.error_communication")]
                             ]}/>
                     </FormRow>
@@ -102,7 +109,7 @@ export class EVSE extends Component<{}, {}> {
                                 ]}/>
                             <IndicatorGroup
                                 class="mb-1 col-auto px-1"
-                                value={state.contactor_error >> (is_evse_v3 ? 1 : 0)}
+                                value={state.contactor_error > (is_evse_v3 ? 1 : 0) ? 1 : 0}
                                 items={[
                                     ["success", __("evse.content.contactor_ok")],
                                     ["danger", __("evse.content.contactor_error")(state.contactor_error >> (is_evse_v3 ? 1 : 0))]
@@ -357,6 +364,22 @@ export class EVSE extends Component<{}, {}> {
 
                         {!is_evse_v2 ? undefined :
                         <>
+                            <FormRow label={__("evse.content.temperature")}>
+                                <InputText value={ll_state.temperature}/>
+                            </FormRow>
+
+                            <FormRow label={__("evse.content.phases_current")}>
+                                <InputText value={ll_state.phases_current}/>
+                            </FormRow>
+
+                            <FormRow label={__("evse.content.phases_requested")}>
+                                <InputText value={ll_state.phases_requested}/>
+                            </FormRow>
+
+                            <FormRow label={__("evse.content.phases_status")}>
+                                <InputText value={ll_state.phases_status}/>
+                            </FormRow>
+
                             <FormRow label={__("evse.content.time_since_dc_fault_check")}>
                                 <InputText value={util.format_timespan_ms(ll_state.time_since_dc_fault_check)}/>
                             </FormRow>
@@ -366,7 +389,7 @@ export class EVSE extends Component<{}, {}> {
                             </FormRow>
 
                             <FormRow label={__("evse.content.dc_fault_pins")}>
-                            <InputText value={ll_state.dc_fault_pins.toString()}/>
+                                <InputText value={ll_state.dc_fault_pins.toString()}/>
                             </FormRow>
                         </>
                         }
