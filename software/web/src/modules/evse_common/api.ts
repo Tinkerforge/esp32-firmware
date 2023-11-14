@@ -170,3 +170,6 @@ export interface user_calibration {
     resistance_2700: number,
     resistance_880: number[],
 }
+
+export interface debug_switch_to_one_phase {}
+export interface debug_switch_to_three_phases {}
