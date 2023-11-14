@@ -35,6 +35,7 @@ import { PageHeader } from "src/ts/components/page_header";
 import { SubPage } from "src/ts/components/sub_page";
 import { __, translate_unchecked } from "src/ts/translation";
 import { EVSE_SLOT_EXTERNAL } from "./api";
+import { OutputFloat } from "src/ts/components/output_float";
 
 let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
 
@@ -365,7 +366,7 @@ export class EVSE extends Component<{}, {}> {
                         {!is_evse_v2 ? undefined :
                         <>
                             <FormRow label={__("evse.content.temperature")}>
-                                <InputText value={ll_state.temperature}/>
+                                <OutputFloat value={ll_state.temperature} digits={2} scale={2} unit="°C"/>
                             </FormRow>
 
                             <FormRow label={__("evse.content.phases_current")}>
