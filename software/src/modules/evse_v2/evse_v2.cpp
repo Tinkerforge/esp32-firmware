@@ -1016,6 +1016,11 @@ void EVSEV2::update_all_data()
 
     gp_output.get("gp_output")->updateUint(gpio[10] ? TF_EVSE_V2_OUTPUT_CONNECTED_TO_GROUND : TF_EVSE_V2_OUTPUT_HIGH_IMPEDANCE);
 
+    evse_common.low_level_state.get("temperature")->updateInt(temperature);
+    evse_common.low_level_state.get("phases_current")->updateUint(phases_current);
+    evse_common.low_level_state.get("phases_requested")->updateUint(phases_requested);
+    evse_common.low_level_state.get("phases_status")->updateUint(phases_status);
+
 #if MODULE_WATCHDOG_AVAILABLE()
     static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable");
     watchdog.reset(watchdog_handle);
