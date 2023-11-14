@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "LittleFS.h"
+
 #include "bindings/hal_common.h"
 #include "bindings/bricklet_evse_v2.h"
 #include "modules/esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick.h"
@@ -10,7 +12,7 @@
 #include "tools.h"
 #include "api.h"
 
-#include "modules.h"
+#include "module_dependencies.h"
 
 #define BUTTON_MIN_PRESS_THRES 10000
 #define BUTTON_MAX_PRESS_THRES 30000
@@ -119,10 +121,12 @@ void evse_v2_button_recovery_handler() {
             logger.printfln("Running stage 0: Resetting network configuration and disabling web interface login");
 
             mount_or_format_spiffs();
+#if MODULE_USERS_AVAILABLE()
             if (api.restorePersistentConfig("users/config", &users.config)) {
                 users.config.get("http_auth_enabled")->updateBool(false);
                 api.writeConfig("users/config", &users.config);
             }
+#endif
 
             api.removeConfig("ethernet/config");
             api.removeConfig("wifi/sta_config");
@@ -140,10 +144,12 @@ void evse_v2_button_recovery_handler() {
             break;
         // Stage 2 - ESP still crashed. Format data partition. (This also removes tracked charges and the username file)
         case 2:
+#if MODULE_FIRMWARE_UPDATE_AVAILABLE()
             logger.printfln("Running stage 2: Formatting data partition");
             mount_or_format_spiffs();
             factory_reset(false);
             logger.printfln("Stage 2 done");
+#endif
             break;
         // Stage 3 - ESP still crashed after formatting the data partition. The firmware is unrecoverably broken. To prevent a fast boot loop, delay here.
         case 3:
