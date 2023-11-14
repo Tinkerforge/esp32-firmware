@@ -37,7 +37,7 @@ extern Mqtt mqtt;
 extern char local_uid_str[32];
 
 #if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
-#define MQTT_RECV_BUFFER_SIZE 4096U
+#define MQTT_RECV_BUFFER_SIZE 6144U
 #else
 #define MQTT_RECV_BUFFER_SIZE 2048U
 #endif
