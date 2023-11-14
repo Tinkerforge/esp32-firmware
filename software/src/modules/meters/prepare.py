@@ -152,7 +152,7 @@ def format_value_id_dict(sub_dict, indent):
 
     return result
 
-with open('../../../web/src/modules/meters/meter_value_id.ts', 'w') as f:
+with open('../../../web/src/modules/meters/meter_value_id.ts', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('export const enum MeterValueID {\n')
     f.write(''.join(value_id_enum))
