@@ -162,6 +162,8 @@ public:
 
     bool disallow_fw_update_with_vehicle_connected();
 
+    bool action_triggered(Config *config, void *data);
+
     bool debug = false;
 
     ConfigRoot state;

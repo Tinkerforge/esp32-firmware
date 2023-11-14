@@ -33,6 +33,12 @@ triggers = [
     ('EVSE External Current Wd', 9),
     ('Require Meter', 10),
     ('Charge Manager Wd', 11),
+    ('EM Input Three', 12),
+    ('EM Input Four', 13),
+    ('EM Phase Switch', 14),
+    ('EM Contactor Monitoring', 15),
+    ('EM Power Available', 16),
+    ('EM Grid Power Draw', 17),
 ]
 
 # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!

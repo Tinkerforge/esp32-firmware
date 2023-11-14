@@ -132,6 +132,52 @@ let x = {
             "hysteresis_time_muted": "Minimale Wartezeit vor Phasenumschaltungen bzw. Anfang und Ende eines Ladevorganges, um die Ladeelektronik des Fahrzeuges nicht durch häufige Schaltvorgänge zu belasten."
         },
         "cron": {
+            "grid_power_draw": "Netzbezug",
+            "drawing": "Bezieht Energie aus dem Netz",
+            "feeding": "Speist Energie ins Netz ein",
+            "cron_grid_power_draw_text": /*FFN*/(drawing_power: boolean) => {
+                if (drawing_power) {
+                    return <>Wenn Energie aus dem Stromnetz bezogen wird, </>;
+                } else {
+                    return <>Wenn Energie ins Stromnetz eingespeist wird, </>;
+                }
+            }/*NF*/,
+            "power_available": "Leistung verfügbar",
+            "not_available": "Nicht verfügbar",
+            "available": "Verfügbar",
+            "power": "Leistung",
+            "cron_power_available_text": /*FFN*/(power: boolean) => {
+                let not = <></>
+                if (!power) {
+                    not = <><b>keine </b></>
+                }
+                return <>Wenn {not}Leistung verfügbar ist, </>
+            }/*NF*/,
+            "contactor_monitoring": "Schützüberwachung",
+            "cron_contactor_monitoring_text": "Wenn ein Schützfehler erkannt wird, ",
+            "phase_switch": "Phasenumschaltung",
+            "phase": "Phase",
+            "cron_phase_switch_text": /*FFN*/(phase: number) => {
+                let ret = <></>;
+                switch (phase) {
+                    case 1:
+                        ret = <><b>einphasig</b></>
+                        break;
+
+                    case 3:
+                        ret = <><b>dreiphasig</b></>
+                        break;
+                }
+                return <>Wenn das Schütz auf {ret} geschaltet hat, </>
+            }/*NF*/,
+            "input": /*SFN*/(input: number) => "Eingang " + input/*NF*/,
+            "state": "Zustand",
+            "closed": "Geschlossen",
+            "open": "Offen",
+            "cron_input_text": /*FFN*/(input: number, state: boolean) => {
+                let ret = state ? <><b>geschlossen</b></> : <><b>offen</b></>
+                return <>Wenn Eingang {input} auf Zustand {ret} wechselt, </>
+            }/*NF*/,
             "switch_relay": "Relay schalten",
             "relay_state": "Schalten auf",
             "relay_state_open": "Offen",

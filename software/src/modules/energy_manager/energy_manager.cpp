@@ -34,6 +34,8 @@
 
 #include "gcc_warnings.h"
 
+extern EnergyManager energy_manager;
+
 void EnergyManager::pre_setup()
 {
     this->DeviceModule::pre_setup();
@@ -226,8 +228,90 @@ void EnergyManager::pre_setup()
             this->set_output(cfg->get("state")->asBool());
         }
     );
+
+    cron.register_trigger(
+        CronTriggerID::EMInputThree,
+        Config::Object({
+            {"state", Config::Bool(false)}
+        }));
+
+    cron.register_trigger(
+        CronTriggerID::EMInputFour,
+        Config::Object({
+            {"state", Config::Bool(false)}
+        }));
+
+    cron.register_trigger(
+        CronTriggerID::EMPhaseSwitch,
+        Config::Object({
+            {"phase", Config::Uint(1)}
+        }));
+
+    cron.register_trigger(
+        CronTriggerID::EMContactorMonitoring,
+        *Config::Null());
+
+    cron.register_trigger(
+        CronTriggerID::EMPowerAvailable,
+        Config::Object({
+            {"power_available", Config::Bool(false)}
+        }));
+
+    cron.register_trigger(
+        CronTriggerID::EMGridPowerDraw,
+        Config::Object({
+            {"drawing_power", Config::Bool(false)}
+        }));
 #endif
 }
+
+#if MODULE_CRON_AVAILABLE()
+bool EnergyManager::action_triggered(Config *cron_config, void *data) {
+    Config *cfg = static_cast<Config *>(cron_config->get());
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
+    switch (cron_config->getTag<CronTriggerID>()) {
+        case CronTriggerID::EMInputThree:
+            if (cfg->get("state")->asBool() == state.get("input3_state")->asBool()) {
+                return true;
+            }
+            break;
+
+        case CronTriggerID::EMInputFour:
+            if (cfg->get("state")->asBool() == state.get("input4_state")->asBool()) {
+                return true;
+            }
+            break;
+
+        case CronTriggerID::EMPhaseSwitch:
+            if (cfg->get("phase")->asUint() == state.get("phases_switched")->asUint()) {
+                return true;
+            }
+            break;
+
+        case CronTriggerID::EMContactorMonitoring:
+            return true;
+
+        case CronTriggerID::EMPowerAvailable:
+            return (*static_cast<bool *>(data) == cfg->get("power_available")->asBool());
+
+        case CronTriggerID::EMGridPowerDraw:
+            return (*static_cast<bool *>(data) == cfg->get("drawing_power")->asBool());
+
+        default:
+            break;
+    }
+#pragma GCC diagnostic pop
+
+    return false;
+}
+
+static bool trigger_action(Config *config, void *data) {
+    return energy_manager.action_triggered(config, data);
+}
+#endif
 
 void EnergyManager::setup_energy_manager()
 {
@@ -543,12 +627,22 @@ void EnergyManager::update_all_data()
 {
     update_all_data_struct();
 
+    /**
+     * Use uint8_t to collect all triggers, so that only one ifdef is needed.
+     * Bit 0: input 3
+     * Bit 1: input 4
+     * Bit 2: phase switching
+     * Bit 3: Contactor monitoring
+     * Bits 4-7: unused
+     */
+    uint32_t cron_trigger = 0;
+
     low_level_state.get("contactor")->updateBool(all_data.contactor_value);
     low_level_state.get("led_rgb")->get(0)->updateUint(all_data.rgb_value_r);
     low_level_state.get("led_rgb")->get(1)->updateUint(all_data.rgb_value_g);
     low_level_state.get("led_rgb")->get(2)->updateUint(all_data.rgb_value_b);
-    state.get("input3_state")->updateBool(all_data.input[0]);
-    state.get("input4_state")->updateBool(all_data.input[1]);
+    cron_trigger |= state.get("input3_state")->updateBool(all_data.input[0]) ? 1u : 0u;
+    cron_trigger |= state.get("input4_state")->updateBool(all_data.input[1]) ? 2u : 0u;
     state.get("relay_state")->updateBool(all_data.relay);
     low_level_state.get("input_voltage")->updateUint(all_data.voltage);
     low_level_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
@@ -566,7 +660,7 @@ void EnergyManager::update_all_data()
     is_3phase   = contactor_installed ? all_data.contactor_value : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
     have_phases = 1 + static_cast<uint32_t>(is_3phase) * 2;
     low_level_state.get("is_3phase")->updateBool(is_3phase);
-    state.get("phases_switched")->updateUint(have_phases);
+    cron_trigger |= state.get("phases_switched")->updateUint(have_phases) ? 4u : 0u;
 
 #if MODULE_METERS_AVAILABLE()
     if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != Meters::ValueAvailability::Fresh)
@@ -624,10 +718,34 @@ void EnergyManager::update_all_data()
     if (contactor_installed) {
         if ((all_data.contactor_check_state & 1) == 0) {
             logger.printfln("Contactor check tripped. Check contactor.");
+            if (contactor_check_tripped == false) {
+                cron_trigger |= 1 << 3;
+            }
             contactor_check_tripped = true;
             set_error(ERROR_FLAGS_CONTACTOR_MASK);
         }
     }
+
+#if MODULE_CRON_AVAILABLE()
+    if (cron_trigger & 1) {
+        cron.trigger_action(CronTriggerID::EMInputThree, nullptr, trigger_action);
+    }
+    if (cron_trigger & 2) {
+        cron.trigger_action(CronTriggerID::EMInputFour, nullptr, trigger_action);
+    }
+    if (cron_trigger & 4) {
+        cron.trigger_action(CronTriggerID::EMPhaseSwitch, nullptr, trigger_action);
+    }
+    if (cron_trigger & 8) {
+        cron.trigger_action(CronTriggerID::EMContactorMonitoring, nullptr, trigger_action);
+    }
+    static bool drawing_power_last = false;
+    bool drawing_power = power_at_meter_raw_w > 0;
+    if (drawing_power != drawing_power_last) {
+        cron.trigger_action(CronTriggerID::EMGridPowerDraw, &drawing_power, trigger_action);
+        drawing_power_last = drawing_power;
+    }
+#endif
 }
 
 void EnergyManager::update_all_data_struct()
@@ -1104,6 +1222,10 @@ void EnergyManager::update_energy()
                 logger.printfln("energy_manager: wants_on decision changed to %i", wants_on);
                 on_state_change_blocked_until = time_now + switching_hysteresis_ms;
                 on_state_change_is_blocked = true; // Set manually because the usual update already ran before the phase switching code.
+
+#if MODULE_CRON_AVAILABLE()
+                cron.trigger_action(CronTriggerID::EMPowerAvailable, &wants_on, trigger_action);
+#endif
                 wants_on_last = wants_on;
             }
 

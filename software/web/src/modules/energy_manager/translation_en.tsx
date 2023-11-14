@@ -132,6 +132,52 @@ let x = {
             "hysteresis_time_muted": "Minimum delay before phase switches or starting or stopping a charge, to avoid excessive wear on the vehicle's charge electronics by switching too often."
         },
         "cron": {
+            "grid_power_draw": "Grid power draw",
+            "drawing": "Drawing power from the grid",
+            "feeding": "Feeding power to the grid",
+            "cron_grid_power_draw_text": /*FFN*/(drawing_power: boolean) => {
+                if (drawing_power) {
+                    return <>When power is drawn from the grid, </>;
+                } else {
+                    return <>When power is fed the grid, </>;
+                }
+            }/*NF*/,
+            "power_available": "Power available",
+            "not_available": "not available",
+            "available": "available",
+            "power": "Power",
+            "cron_power_available_text": /*FFN*/(power: boolean) => {
+                let not = <></>
+                if (!power) {
+                    not = <><b>no </b></>
+                }
+                return <>When {not}power is available, </>
+            }/*NF*/,
+            "contactor_monitoring": "Contactor monitoring",
+            "cron_contactor_monitoring_text": "When the Contactor monitoring gets triggered, ",
+            "phase_switch": "Phasenumschaltung",
+            "phase": "Phase",
+            "cron_phase_switch_text": /*FFN*/(phase: number) => {
+                let ret = <></>;
+                switch (phase) {
+                    case 1:
+                        ret = <><b>single-phase</b></>
+                        break;
+
+                    case 3:
+                        ret = <><b>three-phase</b></>
+                        break;
+                }
+                return <>When the contactor switched to {ret}, </>
+            }/*NF*/,
+            "input": /*SFN*/(input: number) => "Input " + input/*NF*/,
+            "state": "State",
+            "closed": "Closed",
+            "open": "Open",
+            "cron_input_text": /*FFN*/(input: number, state: boolean) => {
+                let ret = state ? <><b>closed</b></> : <><b>open</b></>
+                return <>If Input {input} switches to state {ret}, </>
+            }/*NF*/,
             "switch_relay": "Switch relay",
             "relay_state": "Swtich to",
             "relay_state_open": "Open",
@@ -170,7 +216,7 @@ let x = {
                         ret = <><b>Default mode</b></>
                         break;
                 }
-                return <>Switch charge mode to {ret}.</>
+                return <>switch charge mode to {ret}.</>
             }/*NF*/,
             "set_phases": "Phase switching",
             "phases_wanted": "Switch to",
