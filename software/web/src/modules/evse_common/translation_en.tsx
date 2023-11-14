@@ -208,7 +208,7 @@ let x = {
             "dc_fault_current_calibration": /*SFN*/ (dc_fault_state: number, dc_fault_pins: number) => "Calibration error" + (dc_fault_state != 0 ? (": " + dc_fault_pins.toString()) : "")/*NF*/,
             "dc_fault_current_reset": "Reset",
             "dc_fault_current_20_ma": "AC fault",
-            "dc_fault_current_6_ma_20_ma": "DC+AC fault",
+            "dc_fault_current_6_ma_20_ma": "AC and DC fault",
 
             "reset_dc_fault_title": "Reset the DC fault protector",
             "reset_dc_fault_content": <>Resetting the DC fault protector restores the ability to charge. <b>Ensure that the reason why the DC fault protector triggered is resolved!</b> <a href="{{{manual_url}}}">See manual for details.</a> Really reset the DC fault protector?</>,

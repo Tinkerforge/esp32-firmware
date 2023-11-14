@@ -208,7 +208,7 @@ let x = {
             "dc_fault_current_calibration": /*SFN*/ (dc_fault_state: number, dc_fault_pins: number) => "Kalibrierungsfehler" + (dc_fault_state != 0 ? (": " + dc_fault_pins.toString()) : "")/*NF*/,
             "dc_fault_current_reset": "Zurücksetzen",
             "dc_fault_current_20_ma": "AC-Fehler",
-            "dc_fault_current_6_ma_20_ma": "AC/DC-Fehler",
+            "dc_fault_current_6_ma_20_ma": "AC- und DC-Fehler",
 
             "reset_dc_fault_title": "Zurücksetzen des DC-Fehlerstromschutzmoduls",
             "reset_dc_fault_content": <>Durch das Zurücksetzen des Moduls kann wieder geladen werden. <b>Es muss sichergestellt sein, dass der Grund für das Auslösen des Moduls behoben wurde!</b> <a href="{{{manual_url}}}">Siehe Betriebsanleitung für Details.</a> Soll das DC-Fehlerstromschutzmodul wirklich zurückgesetzt werden?</>,
