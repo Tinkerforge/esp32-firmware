@@ -246,7 +246,7 @@ const char * const fs_browser_footer =
 "<br>"
 "<div>"
     "<label for=upload>Create directory</label>&nbsp;&nbsp;&nbsp;"
-    "<input type=text id=dirname placeholder='Directory name'>"
+    "<input type=text id=dirname placeholder='Directory name'>&nbsp;&nbsp;&nbsp;"
     "<button type=button onClick=createDirectory()>Create</button>"
 "</div>"
 "<br>"
@@ -307,14 +307,14 @@ void Debug::register_urls()
 
             if (path.length() > 1) {
                 int idx = path.lastIndexOf('/');
-                String up = "<button type=button onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=/debug/fs" + path.substring(0, static_cast<unsigned int>(idx + 1)) + ">..</a><br>\n";
+                String up = "<button type=button onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=/debug/fs" + path.substring(0, static_cast<unsigned int>(idx + 1)) + ">..</a><br>\n";
 
                 request.sendChunk(up.c_str(), static_cast<ssize_t>(up.length()));
             }
 
             File file = f.openNextFile();
             while(file) {
-                String s = "<button type=button onclick=\"deleteFile('" + String(file.path()) + "')\">Delete</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=/debug/fs" + String(file.path()) + ">"+ file.name() + (file.isDirectory() ? "/" : "") +"</a><br>\n";
+                String s = "<button type=button onclick=\"deleteFile('" + String(file.path()) + "')\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=/debug/fs" + String(file.path()) + ">"+ file.name() + (file.isDirectory() ? "/" : "") +"</a><br>\n";
                 request.sendChunk(s.c_str(), static_cast<ssize_t>(s.length()));
                 file = f.openNextFile();
             }
