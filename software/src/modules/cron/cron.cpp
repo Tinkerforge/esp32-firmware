@@ -80,7 +80,7 @@ void Cron::pre_setup() {
 
         return "";
     });
-
+    config_in_use = config;
 
     enabled = Config::Object({
         {"enabled", Config::Bool(false)}
