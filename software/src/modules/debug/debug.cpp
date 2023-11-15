@@ -204,25 +204,70 @@ void Debug::setup()
 }
 
 #ifdef DEBUG_FS_ENABLE
-const char * const fs_browser_footer =
-"<form id='uploadForm'>"
-"  <label for='upload'>Choose file to upload</label>"
-"  <input type='file' id='upload' name='upload'/>"
-"  <button>Upload</button>"
-"</form>"
-"<script type='text/javascript'>"
-"async function uploadFile(ev) {"
-"    ev.preventDefault();"
-"    let file = document.getElementById('upload').files[0];"
-"    await fetch(window.location + file.name, {"
-"        method: 'PUT',"
-"        credentials: 'same-origin',"
-"        body: file"
-"    });"
-"    window.location.reload(true);"
+const char * const fs_browser_header = "<script>"
+"async function uploadFile() {"
+    "let file = document.getElementById('upload').files[0];"
+    "await fetch(window.location +(window.location.toString().endsWith('/') ? '' : '/') + file.name, {"
+        "method: 'PUT',"
+        "credentials: 'same-origin',"
+        "body: file"
+    "});"
+    "window.location.reload(true);"
 "}"
-"document.getElementById('uploadForm').addEventListener('submit', uploadFile, false);"
+"async function createFile() {"
+    "let filename = document.getElementById('newFileName').value;"
+    "let content = document.getElementById('newFileContent').value;"
+    "await fetch(window.location + filename, {"
+        "method: 'PUT',"
+        "credentials: 'same-origin',"
+        "body: content"
+    "});"
+    "window.location.reload(true);"
+"}"
+"async function createDirectory() {"
+    "let dirname = document.getElementById('dirname').value;"
+    "await fetch(window.location + dirname + (dirname.endsWith('/') ? '' : '/'), {"
+        "method: 'PUT',"
+        "credentials: 'same-origin'"
+    "});"
+    "window.location.reload(true);"
+"}"
+"async function deleteFile(name) {"
+    "if (!window.confirm('Delete file ' + name + ' ?'))"
+        "return;"
+    "await fetch('/debug/fs' + name, {method: 'DELETE'});"
+    "window.location.reload(true);"
+"}"
 "</script>";
+
+const char * const fs_browser_footer =
+"<br>"
+"<hr>"
+"<br>"
+"<div>"
+    "<label for=upload>Create directory</label>&nbsp;&nbsp;&nbsp;"
+    "<input type=text id=dirname placeholder='Directory name'>"
+    "<button type=button onClick=createDirectory()>Create</button>"
+"</div>"
+"<br>"
+"<hr>"
+"<br>"
+"<div>"
+    "<label for=upload>Upload file</label>&nbsp;&nbsp;&nbsp;"
+    "<input type=file id=upload>"
+    "<button type=button onClick=uploadFile()>Upload</button>"
+"</div>"
+"<br>"
+"<hr>"
+"<br>"
+"<div>"
+    "<label for=create>Create new file</label>&nbsp;&nbsp;&nbsp;"
+    "<input type=text id=newFileName placeholder='File name'>"
+    "<br>"
+    "<textarea id=newFileContent placeholder='File content' cols=80 rows=25></textarea>"
+    "<br>"
+    "<button type=button onClick=createFile()>Create file</button>"
+"</div>";
 #endif
 
 void Debug::register_urls()
@@ -256,19 +301,20 @@ void Debug::register_urls()
             return request.endChunkedResponse();
         } else {
             request.beginChunkedResponse(200, "text/html; charset=utf-8");
+            request.sendChunk(fs_browser_header, strlen(fs_browser_header));
             String header = "<h1>" + String(f.path()) + "</h1><br>\n";
             request.sendChunk(header.c_str(), static_cast<ssize_t>(header.length()));
 
             if (path.length() > 1) {
                 int idx = path.lastIndexOf('/');
-                String up = "<button type=\"button\" onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/debug/fs" + path.substring(0, static_cast<unsigned int>(idx + 1)) + "\">..</a><br>\n";
+                String up = "<button type=button onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=/debug/fs" + path.substring(0, static_cast<unsigned int>(idx + 1)) + ">..</a><br>\n";
 
                 request.sendChunk(up.c_str(), static_cast<ssize_t>(up.length()));
             }
 
             File file = f.openNextFile();
             while(file) {
-                String s = "<button type=\"button\" onclick=\"if (window.confirm('Delete file?')) {fetch('/debug/fs" + String(file.path()) + "', {method: 'DELETE'})}\">Delete</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/debug/fs" + String(file.path()) + "\">"+ file.name() +"</a><br>\n";
+                String s = "<button type=button onclick=\"deleteFile('" + String(file.path()) + "')\">Delete</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=/debug/fs" + String(file.path()) + ">"+ file.name() + (file.isDirectory() ? "/" : "") +"</a><br>\n";
                 request.sendChunk(s.c_str(), static_cast<ssize_t>(s.length()));
                 file = f.openNextFile();
             }
