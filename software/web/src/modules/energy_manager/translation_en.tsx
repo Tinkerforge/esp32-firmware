@@ -60,6 +60,7 @@ let x = {
             "default_mode": "Default charging mode",
             "default_mode_muted": "will be used after energy manager reboot",
             "auto_reset_charging_mode": "Daily reset",
+            "auto_reset_charging_mode_disabled": "Found different Automation rule for setting the charging mode, please check the Automation settings.",
             "auto_reset_charging_mode_desc": "Automatically sets the charging mode back to the default.",
             "auto_reset_time": "Reset at",
             "meter_slot_grid_power": "Power meter",

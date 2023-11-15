@@ -60,6 +60,7 @@ let x = {
             "default_mode": "Standardlademodus",
             "default_mode_muted": "wird nach Neustart des Energiemanagers verwendet",
             "auto_reset_charging_mode": "Tägliches Zurücksetzen",
+            "auto_reset_charging_mode_disabled": "Abweichende Automatisierungsregeln für Lademoduswechsel gefunden, bitte in den Automatisierungseinstellungen überprüfen.",
             "auto_reset_charging_mode_desc": "Setzt den Lademodus täglich auf den Standardlademodus zurück.",
             "auto_reset_time": "Zurücksetzen um",
             "meter_slot_grid_power": "Stromzähler",
