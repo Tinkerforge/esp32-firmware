@@ -114,7 +114,7 @@ void Cron::register_trigger(CronTriggerID id, Config cfg, ValidatorCb validator)
 
 bool Cron::trigger_action(CronTriggerID number, void *data, std::function<bool(Config *, void *)> cb) {
     bool triggered = false;
-    for (auto &conf: config.get("tasks")) {
+    for (auto &conf: config_in_use.get("tasks")) {
         if (conf.get("trigger")->getTag<CronTriggerID>() == number && cb((Config *)conf.get("trigger"), data)) {
             triggered = true;
             auto action_ident = conf.get("action")->getTag<CronActionID>();
@@ -128,7 +128,7 @@ bool Cron::trigger_action(CronTriggerID number, void *data, std::function<bool(C
 }
 
 bool Cron::is_trigger_active(CronTriggerID number) {
-    for (auto &conf: config.get("tasks")) {
+    for (auto &conf: config_in_use.get("tasks")) {
         if (conf.get("trigger")->getTag<CronTriggerID>() == number) {
             return true;
         }
@@ -138,7 +138,7 @@ bool Cron::is_trigger_active(CronTriggerID number) {
 
 ConfigVec Cron::get_configured_triggers(CronTriggerID number) {
     ConfigVec vec;
-    for (size_t idx = 0; idx < config.get("tasks")->count(); idx++) {
+    for (size_t idx = 0; idx < config_in_use.get("tasks")->count(); idx++) {
         auto trigger = config.get("tasks")->get(idx)->get("trigger");
         if (trigger->getTag<CronTriggerID>() == number) {
             vec.push_back({idx, (Config *)trigger->get()});
