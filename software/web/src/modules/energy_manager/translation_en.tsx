@@ -150,9 +150,9 @@ let x = {
             "cron_power_available_text": /*FFN*/(power: boolean) => {
                 let not = <></>
                 if (!power) {
-                    not = <><b>no </b></>
+                    not = <><b>not </b></>
                 }
-                return <>When {not}power is available, </>
+                return <>When {not}enough power for charging is available, </>
             }/*NF*/,
             "contactor_monitoring": "Contactor monitoring",
             "cron_contactor_monitoring_text": /*FFN*/(contactor: boolean) => {
