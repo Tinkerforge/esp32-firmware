@@ -203,6 +203,28 @@ void Debug::setup()
     initialized = true;
 }
 
+#ifdef DEBUG_FS_ENABLE
+const char * const fs_browser_footer =
+"<form id='uploadForm'>"
+"  <label for='upload'>Choose file to upload</label>"
+"  <input type='file' id='upload' name='upload'/>"
+"  <button>Upload</button>"
+"</form>"
+"<script type='text/javascript'>"
+"async function uploadFile(ev) {"
+"    ev.preventDefault();"
+"    let file = document.getElementById('upload').files[0];"
+"    await fetch(window.location + file.name, {"
+"        method: 'PUT',"
+"        credentials: 'same-origin',"
+"        body: file"
+"    });"
+"    window.location.reload(true);"
+"}"
+"document.getElementById('uploadForm').addEventListener('submit', uploadFile, false);"
+"</script>";
+#endif
+
 void Debug::register_urls()
 {
     api.addState("debug/state_static", &state_static);
@@ -250,6 +272,8 @@ void Debug::register_urls()
                 request.sendChunk(s.c_str(), static_cast<ssize_t>(s.length()));
                 file = f.openNextFile();
             }
+
+            request.sendChunk(fs_browser_footer, strlen(fs_browser_footer));
 
             return request.endChunkedResponse();
         }
