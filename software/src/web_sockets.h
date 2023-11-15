@@ -65,9 +65,6 @@ public:
     void pre_setup();
 
     void start(const char *uri);
-    void stop()
-    {
-    }
 
     bool sendToClient(const char *payload, size_t payload_len, int sock);
     bool sendToClientOwned(char *payload, size_t payload_len, int sock);
