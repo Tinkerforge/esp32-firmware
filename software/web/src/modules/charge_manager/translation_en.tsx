@@ -84,7 +84,7 @@ let x = {
           "cron_action_text": /*FFN*/(current: number) => {
             return (
               <>
-                set the maximum total current to <b>{current / 1000} A</b>.
+                set the maximum total current that can be distributed by the charge manager to <b>{current / 1000} A</b>.
               </>
             );
           }/*NF*/,
