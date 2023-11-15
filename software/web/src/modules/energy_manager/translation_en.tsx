@@ -155,8 +155,17 @@ let x = {
                 return <>When {not}power is available, </>
             }/*NF*/,
             "contactor_monitoring": "Contactor monitoring",
-            "cron_contactor_monitoring_text": "When the Contactor monitoring gets triggered, ",
-            "phase_switch": "Phasenumschaltung",
+            "cron_contactor_monitoring_text": /*FFN*/(contactor: boolean) => {
+                if (contactor) {
+                    return <>When <b>no</b> contactor error is detected on boot, </>
+                } else {
+                    return <>When a contactor error is detected, </>
+                }
+            }/*NF*/,
+            "contactor_monitoring_state": "State",
+            "contactor_error": "Contactor error",
+            "contactor_okay": "No contactor error on boot",
+            "phase_switch": "Phase switching",
             "phase": "Phase",
             "cron_phase_switch_text": /*FFN*/(phase: number) => {
                 let ret = <></>;

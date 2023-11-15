@@ -155,7 +155,16 @@ let x = {
                 return <>Wenn {not}Leistung verfügbar ist, </>
             }/*NF*/,
             "contactor_monitoring": "Schützüberwachung",
-            "cron_contactor_monitoring_text": "Wenn ein Schützfehler erkannt wird, ",
+            "cron_contactor_monitoring_text": /*FFN*/(contactor: boolean) => {
+                if (contactor) {
+                    return <>Wenn beim Start <b>kein</b> Schützfehler erkannt wird, </>
+                } else {
+                    return <>Wenn <b>ein</b> Schützfehler erkannt wird, </>
+                }
+            }/*NF*/,
+            "contactor_monitoring_state": "Status",
+            "contactor_error": "Schützfehler",
+            "contactor_okay": "Kein Schützfehler bei Start",
             "phase_switch": "Phasenumschaltung",
             "phase": "Phase",
             "cron_phase_switch_text": /*FFN*/(phase: number) => {

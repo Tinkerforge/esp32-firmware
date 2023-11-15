@@ -48,7 +48,9 @@ export type EMPhaseSwitchCronTrigger = [
 
 export type EMContactorMonitoringCronTrigger = [
     CronTriggerID.EMContactorMonitoring,
-    {},
+    {
+        contactor_okay: boolean;
+    },
 ];
 
 export type EMPowerAvailableCronTrigger = [
@@ -171,17 +173,35 @@ function new_em_phase_switch_config(): CronTrigger {
 }
 
 function get_em_contactor_monitoring_table_children(trigger: CronTrigger) {
-    return __('energy_manager.cron.cron_contactor_monitoring_text');
+    let value = (trigger as EMContactorMonitoringCronTrigger)[1];
+    return __('energy_manager.cron.cron_contactor_monitoring_text')(value.contactor_okay);
 }
 
 function get_em_contactor_monitoring_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
-    return [];
+    let value = (trigger as EMContactorMonitoringCronTrigger)[1];
+    return [
+        <FormRow label={__('energy_manager.cron.contactor_monitoring_state')}>
+            <InputSelect
+                value={ value.contactor_okay ? '1' : '0'}
+                items = {[
+                    ['0', __('energy_manager.cron.contactor_error')],
+                    ['1', __('energy_manager.cron.contactor_okay')],
+                ]}
+                onValue={(v) => {
+                    value.contactor_okay = v === '1';
+                    cron.setTriggerFromComponent(trigger);
+                }}
+            />
+        </FormRow>
+    ];
 }
 
 function new_em_contactor_monitoring_config(): CronTrigger {
     return [
         CronTriggerID.EMContactorMonitoring,
-        {}
+        {
+            contactor_okay: false
+        }
     ];
 }
 

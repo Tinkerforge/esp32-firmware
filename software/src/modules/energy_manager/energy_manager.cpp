@@ -249,7 +249,9 @@ void EnergyManager::pre_setup()
 
     cron.register_trigger(
         CronTriggerID::EMContactorMonitoring,
-        *Config::Null());
+        Config::Object({
+            {"contactor_okay", Config::Bool(false)}
+        }));
 
     cron.register_trigger(
         CronTriggerID::EMPowerAvailable,
@@ -292,7 +294,7 @@ bool EnergyManager::action_triggered(Config *cron_config, void *data) {
             break;
 
         case CronTriggerID::EMContactorMonitoring:
-            return true;
+            return (*static_cast<bool *>(data) == cfg->get("contactor_okay")->asBool());
 
         case CronTriggerID::EMPowerAvailable:
             return (*static_cast<bool *>(data) == cfg->get("power_available")->asBool());
@@ -724,6 +726,17 @@ void EnergyManager::update_all_data()
             contactor_check_tripped = true;
             set_error(ERROR_FLAGS_CONTACTOR_MASK);
         }
+
+#if MODULE_CRON_AVAILABLE()
+        static bool first_read = true;
+        if (first_read) {
+            task_scheduler.scheduleOnce([this]() {
+                bool contactor_okay = (all_data.contactor_check_state & 1) != 0;
+                cron.trigger_action(CronTriggerID::EMContactorMonitoring, &contactor_okay, trigger_action);
+            }, 0);
+            first_read = false;
+        }
+#endif
     }
 
 #if MODULE_CRON_AVAILABLE()
@@ -737,7 +750,8 @@ void EnergyManager::update_all_data()
         cron.trigger_action(CronTriggerID::EMPhaseSwitch, nullptr, trigger_action);
     }
     if (cron_trigger & 8) {
-        cron.trigger_action(CronTriggerID::EMContactorMonitoring, nullptr, trigger_action);
+        bool contactor_okay = (all_data.contactor_check_state & 1) != 0;
+        cron.trigger_action(CronTriggerID::EMContactorMonitoring, &contactor_okay, trigger_action);
     }
     static bool drawing_power_last = false;
     bool drawing_power = power_at_meter_raw_w > 0;
