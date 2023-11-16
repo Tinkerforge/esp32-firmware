@@ -145,6 +145,7 @@ public:
     void update_all_data();
 
     void limit_max_current(uint32_t limit_ma);
+    void reset_limit_max_current();
     void switch_mode(uint32_t new_mode);
 
     void setup_energy_manager();

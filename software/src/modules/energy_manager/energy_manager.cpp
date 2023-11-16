@@ -229,6 +229,20 @@ void EnergyManager::pre_setup()
         }
     );
 
+    cron.register_action(
+        CronActionID::EMLimitMaxCurrent,
+        Config::Object({
+            {"current", Config::Int(0, -1)}
+        }),
+        [this](const Config *cfg) {
+            auto current = cfg->get("current")->asInt();
+            if (current == -1) {
+                this->reset_limit_max_current();
+            } else {
+                this->limit_max_current(static_cast<uint32_t>(current));
+            }
+        });
+
     cron.register_trigger(
         CronTriggerID::EMInputThree,
         Config::Object({
@@ -866,9 +880,6 @@ void EnergyManager::update_io()
     //    logger.printfln("get_input error %d", rc);
     //}
 
-    // Restore values that can be changed by input pins.
-    max_current_limited_ma      = max_current_unlimited_ma;
-
     input3->update(all_data.input[0]);
     input4->update(all_data.input[1]);
 }
@@ -943,6 +954,10 @@ void EnergyManager::limit_max_current(uint32_t limit_ma)
 {
     if (max_current_limited_ma > limit_ma)
         max_current_limited_ma = limit_ma;
+}
+
+void EnergyManager::reset_limit_max_current() {
+    max_current_limited_ma = max_current_unlimited_ma;
 }
 
 void EnergyManager::switch_mode(uint32_t new_mode)

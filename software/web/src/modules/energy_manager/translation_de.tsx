@@ -133,6 +133,16 @@ let x = {
             "hysteresis_time_muted": "Minimale Wartezeit vor Phasenumschaltungen bzw. Anfang und Ende eines Ladevorganges, um die Ladeelektronik des Fahrzeuges nicht durch häufige Schaltvorgänge zu belasten."
         },
         "cron": {
+            "limit_max_current": "Maximalen Gesamtstrom begrenzen",
+            "limit_mode": "Modus",
+            "reset_limit_max_current": "Maximalen Gesamtstrom zurücksetzen",
+            "max_current": "Maximaler Gesamtstrom",
+            "cron_limit_max_current_action_text": /*FFN*/(current: number) => {
+                if (current === -1) {
+                    return <>setze den maximalen Gesamtstrom zurück.</>
+                }
+                return <>begrenze den maximalen Gesamtstrom auf <b>{current / 1000} A</b>.</>
+            }/*NF*/,
             "grid_power_draw": "Netzbezug",
             "drawing": "Bezieht Energie aus dem Netz",
             "feeding": "Speist Energie ins Netz ein",

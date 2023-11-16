@@ -24,6 +24,7 @@ import { Cron } from "../cron/main";
 import { CronAction } from "../cron/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "src/ts/components/input_select";
+import { InputFloat } from "src/ts/components/input_float";
 
 export type EMPhaseSwitchCronAction = [
     CronActionID.EMPhaseSwitch,
@@ -43,6 +44,13 @@ export type EMContactorCronAction = [
     CronActionID.EMRelaySwitch,
     {
         state: boolean;
+    },
+];
+
+export type EMLimitMaxCurrentCronAction = [
+    CronActionID.EMLimitMaxCurrent,
+    {
+        current: number;
     },
 ];
 
@@ -153,6 +161,51 @@ function new_em_contactor_config(): CronAction {
     ];
 }
 
+function get_em_limit_max_current_table_children(action: CronAction) {
+    let value = (action as EMLimitMaxCurrentCronAction)[1];
+    return __("energy_manager.cron.cron_limit_max_current_action_text")(value.current);
+}
+
+function get_em_limit_max_current_edit_children(cron: Cron, action: CronAction) {
+    let value = (action as EMLimitMaxCurrentCronAction)[1];
+    const items:[string, string][] = [
+        ['0', __('energy_manager.cron.limit_max_current')],
+        ['1', __("energy_manager.cron.reset_limit_max_current")]
+    ]
+
+    return [
+        <FormRow label={__("energy_manager.cron.limit_mode")}>
+            <InputSelect
+                items={items}
+                value={value.current == -1 ? '1' : '0'}
+                onValue={(v) => {
+                    value.current = v == '1' ? -1 : 0;
+                    cron.setActionFromComponent(action);
+                }}/>
+        </FormRow>,
+        <FormRow label={__("energy_manager.cron.max_current")} hidden={value.current == -1}>
+            <InputFloat
+                value={value.current}
+                onValue={(v) => {
+                    value.current = v;
+                    cron.setActionFromComponent(action);
+                }}
+                min={0}
+                unit="A"
+                digits={3} />
+        </FormRow>
+    ];
+}
+
+function new_em_limit_max_current_config(): CronAction {
+    return [
+        CronActionID.EMLimitMaxCurrent,
+        {
+            current: 0,
+        },
+    ];
+}
+
 export function init() {
     return {
         action_components: {
@@ -176,6 +229,13 @@ export function init() {
                 get_table_children: get_em_contactor_table_children,
                 get_edit_children: get_em_contactor_edit_children,
                 clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction
+            },
+            [CronActionID.EMLimitMaxCurrent]: {
+                name: __("energy_manager.cron.limit_max_current"),
+                new_config: new_em_limit_max_current_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
+                get_edit_children: get_em_limit_max_current_edit_children,
+                get_table_children: get_em_limit_max_current_table_children,
             }
         }
     }

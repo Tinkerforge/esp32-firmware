@@ -57,6 +57,7 @@ actions = [
     ('EM Phase Switch', 11),
     ('EM Charge Mode Switch', 12),
     ('EM Relay Switch', 13),
+    ('EM Limit Max Current', 14),
 ]
 
 trigger_values = []

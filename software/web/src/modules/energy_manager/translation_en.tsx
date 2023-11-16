@@ -133,6 +133,16 @@ let x = {
             "hysteresis_time_muted": "Minimum delay before phase switches or starting or stopping a charge, to avoid excessive wear on the vehicle's charge electronics by switching too often."
         },
         "cron": {
+            "limit_max_current": "Limit maximum total current",
+            "limit_mode": "Mode",
+            "reset_limit_max_current": "Reset maximum total current limit",
+            "max_current": "Maximum total current",
+            "cron_limit_max_current_action_text": /*FFN*/(current: number) => {
+                if (current === -1) {
+                    return <>reset maximum total current limit.</>
+                }
+                return <>limit maximum total current to <b>{current / 1000} A</b>.</>
+            }/*NF*/,
             "grid_power_draw": "Grid power draw",
             "drawing": "Drawing power from the grid",
             "feeding": "Feeding power to the grid",
