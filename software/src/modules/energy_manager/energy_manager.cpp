@@ -374,6 +374,13 @@ void EnergyManager::setup()
         return;
     }
 
+#if MODULE_CRON_AVAILABLE()
+    task_scheduler.scheduleOnce([this]() {
+        cron.trigger_action(CronTriggerID::EMInputThree, nullptr, trigger_action);
+        cron.trigger_action(CronTriggerID::EMInputFour, nullptr, trigger_action);
+    }, 0);
+#endif
+
     api.addFeature("energy_manager");
 
     update_status_led();
@@ -546,6 +553,7 @@ void EnergyManager::setup()
     task_scheduler.scheduleOnce([this](){this->show_blank_value_id_update_warnings = true;}, 250);
     task_scheduler.scheduleWithFixedDelay([this](){collect_data_points();}, 15000, 10000);
     task_scheduler.scheduleWithFixedDelay([this](){set_pending_data_points();}, 15000, 100);
+    reset_limit_max_current();
 }
 
 void EnergyManager::register_urls()

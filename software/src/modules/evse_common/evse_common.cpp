@@ -260,6 +260,12 @@ void EvseCommon::apply_defaults()
     }
 }
 
+#if MODULE_CRON_AVAILABLE()
+    bool trigger_action(Config *cfg, void *data) {
+        return evse_common.action_triggered(cfg, data);
+    }
+#endif
+
 void EvseCommon::setup() {
     setup_evse();
 
@@ -269,6 +275,13 @@ void EvseCommon::setup() {
     // Get all data once before announcing the EVSE feature.
     backend->update_all_data();
     api.addFeature("evse");
+
+#if MODULE_CRON_AVAILABLE()
+    task_scheduler.scheduleOnce([this]() {
+        cron.trigger_action(CronTriggerID::IECChange, nullptr, trigger_action);
+    }, 0);
+#endif
+
     task_scheduler.scheduleWithFixedDelay([this](){
         backend->update_all_data();
     }, 0, 250);
@@ -307,12 +320,6 @@ void EvseCommon::setup_evse()
     this->apply_defaults();
     backend->initialized = true;
 }
-
-#if MODULE_CRON_AVAILABLE()
-    bool trigger_action(Config *cfg, void *data) {
-        return evse_common.action_triggered(cfg, data);
-    }
-#endif
 
 void EvseCommon::register_urls() {
 #if MODULE_CM_NETWORKING_AVAILABLE()

@@ -207,9 +207,23 @@ void EVSEV2::pre_setup()
 #endif
 }
 
+#if MODULE_CRON_AVAILABLE()
+static bool trigger_action(Config *cfg, void *data) {
+    return evse_v2.action_triggered(cfg, data);
+}
+#endif
+
 void EVSEV2::post_setup() {
     if (!device_found)
         return;
+
+#if MODULE_CRON_AVAILABLE()
+    task_scheduler.scheduleOnce([this]() {
+        cron.trigger_action(CronTriggerID::EVSEButton, nullptr, trigger_action);
+        cron.trigger_action(CronTriggerID::EVSEGPInput, nullptr, trigger_action);
+        cron.trigger_action(CronTriggerID::EVSEShutdownInput, nullptr, trigger_action);
+    }, 0);
+#endif
 
     task_scheduler.scheduleOnce([this](){
         uint32_t press_time = 0;
@@ -684,12 +698,6 @@ String EVSEV2::get_evse_debug_line()
              SLOT_ACTIVE(active_and_clear_on_disconnect[19]) ? max_current[19] : 32000);
     return String(line);
 }
-
-#if MODULE_CRON_AVAILABLE()
-static bool trigger_action(Config *cfg, void *data) {
-    return evse_v2.action_triggered(cfg, data);
-}
-#endif
 
 void EVSEV2::update_all_data()
 {
