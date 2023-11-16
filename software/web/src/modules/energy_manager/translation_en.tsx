@@ -133,6 +133,16 @@ let x = {
             "hysteresis_time_muted": "Minimum delay before phase switches or starting or stopping a charge, to avoid excessive wear on the vehicle's charge electronics by switching too often."
         },
         "cron": {
+            "slot": "Blocking slot",
+            "block_charge": "Block charging",
+            "unblock_charge": "Unblock charging",
+            "block_mode": "Mode",
+            "cron_block_charge_action_text": /*FFN*/(slot: number, block: boolean) => {
+                if (block) {
+                    return <>block charging with slot {slot}.</>
+                }
+                return <>unblock charging with slot {slot}.</>
+            }/*NF*/,
             "limit_max_current": "Limit maximum total current",
             "limit_mode": "Mode",
             "reset_limit_max_current": "Reset maximum total current limit",

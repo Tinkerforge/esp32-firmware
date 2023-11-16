@@ -54,6 +54,14 @@ export type EMLimitMaxCurrentCronAction = [
     },
 ];
 
+export type EMBlockChargeCronAction = [
+    CronActionID.EMBlockCharge,
+    {
+        slot: number;
+        block: boolean;
+    },
+];
+
 function get_em_phase_switch_table_children(action: CronAction) {
     let value = (action as EMPhaseSwitchCronAction)[1];
     return __("energy_manager.cron.cron_action_text")(value.phases_wanted);
@@ -206,6 +214,55 @@ function new_em_limit_max_current_config(): CronAction {
     ];
 }
 
+function get_em_block_charge_table_children(action: CronAction) {
+    let value = (action as EMBlockChargeCronAction)[1];
+    return __("energy_manager.cron.cron_block_charge_action_text")(value.slot, value.block);
+}
+
+function get_em_block_charge_edit_children(cron: Cron, action: CronAction) {
+    let value = (action as EMBlockChargeCronAction)[1];
+    const items:[string, string][] = [
+        ['0', __("energy_manager.cron.unblock_charge")],
+        ['1', __('energy_manager.cron.block_charge')],
+    ]
+
+    const slot_items: [string, string][] = [];
+    for (let i = 0; i < 4; i++) {
+        slot_items.push([i.toString(), __('energy_manager.cron.slot') + ' ' + i.toString()]);
+    }
+
+    return [
+        <FormRow label={__("energy_manager.cron.slot")}>
+            <InputSelect
+                items={slot_items}
+                value={value.slot.toString()}
+                onValue={(v) => {
+                    value.slot = parseInt(v);
+                    cron.setActionFromComponent(action);
+                }}/>
+        </FormRow>,
+        <FormRow label={__("energy_manager.cron.block_mode")}>
+            <InputSelect
+                items={items}
+                value={value.block ? '1' : '0'}
+                onValue={(v) => {
+                    value.block = v == '1';
+                    cron.setActionFromComponent(action);
+                }}/>
+        </FormRow>
+    ];
+}
+
+function new_em_block_charge_config(): CronAction {
+    return [
+        CronActionID.EMBlockCharge,
+        {
+            slot: 0,
+            block: true,
+        },
+    ];
+}
+
 export function init() {
     return {
         action_components: {
@@ -236,6 +293,13 @@ export function init() {
                 clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 get_edit_children: get_em_limit_max_current_edit_children,
                 get_table_children: get_em_limit_max_current_table_children,
+            },
+            [CronActionID.EMBlockCharge]: {
+                name: __("energy_manager.cron.block_charge"),
+                new_config: new_em_block_charge_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
+                get_edit_children: get_em_block_charge_edit_children,
+                get_table_children: get_em_block_charge_table_children,
             }
         }
     }

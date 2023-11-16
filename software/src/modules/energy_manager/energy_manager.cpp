@@ -243,6 +243,16 @@ void EnergyManager::pre_setup()
             }
         });
 
+    cron.register_action(
+        CronActionID::EMBlockCharge,
+        Config::Object({
+            {"slot", Config::Uint(0, 0, 3)},
+            {"block", Config::Bool(false)}
+        }),
+        [this](const Config *cfg) {
+            this->charging_blocked.pin[cfg->get("slot")->asUint()] = static_cast<uint8_t>(cfg->get("block")->asBool());
+        });
+
     cron.register_trigger(
         CronTriggerID::EMInputThree,
         Config::Object({

@@ -133,6 +133,16 @@ let x = {
             "hysteresis_time_muted": "Minimale Wartezeit vor Phasenumschaltungen bzw. Anfang und Ende eines Ladevorganges, um die Ladeelektronik des Fahrzeuges nicht durch häufige Schaltvorgänge zu belasten."
         },
         "cron": {
+            "slot": "Blockierungsslot",
+            "block_charge": "Laden blockieren",
+            "unblock_charge": "Laden freigeben",
+            "block_mode": "Modus",
+            "cron_block_charge_action_text": /*FFN*/(slot: number, block: boolean) => {
+                if (block) {
+                    return <>blockiere das Laden durch Slot {slot}.</>
+                }
+                return <>gebe das Laden durch Slot {slot} frei.</>
+            }/*NF*/,
             "limit_max_current": "Maximalen Gesamtstrom begrenzen",
             "limit_mode": "Modus",
             "reset_limit_max_current": "Maximalen Gesamtstrom zurücksetzen",
