@@ -128,7 +128,7 @@ bool Cron::trigger_action(CronTriggerID number, void *data, std::function<bool(C
         if (conf.get("trigger")->getTag<CronTriggerID>() == number && cb((Config *)conf.get("trigger"), data)) {
             triggered = true;
             auto action_ident = conf.get("action")->getTag<CronActionID>();
-            if (action_map.find(action_ident) != action_map.end())
+            if (action_map.find(action_ident) != action_map.end() && action_ident != CronActionID::None)
                 action_map[action_ident].first((Config *)conf.get("action")->get());
             else
                 logger.printfln("There is no action with ident-nr %u!", (uint8_t)action_ident);

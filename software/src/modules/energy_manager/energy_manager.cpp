@@ -91,37 +91,11 @@ void EnergyManager::pre_setup()
         {"phase_switching_mode", Config::Uint(PHASE_SWITCHING_AUTOMATIC, PHASE_SWITCHING_MIN, PHASE_SWITCHING_MAX)},
         {"excess_charging_enable", Config::Bool(false)},
         {"default_mode", Config::Uint(0, 0, 3)},
-        {"auto_reset_mode", Config::Bool(false)},
-        {"auto_reset_time", Config::Uint(0, 0, 1439)},
         {"meter_slot_grid_power", Config::Uint(0, 0, METERS_SLOTS - 1)},
         {"target_power_from_grid", Config::Int32(0)}, // in watt
         {"guaranteed_power", Config::Uint(1380, 0, 22080)}, // in watt
         {"cloud_filter_mode", Config::Uint(CLOUD_FILTER_MEDIUM, CLOUD_FILTER_OFF, CLOUD_FILTER_STRONG)},
-        {"relay_config", Config::Uint8(0)},
-        {"relay_rule_when", Config::Uint8(0)},
-        {"relay_rule_is", Config::Uint8(0)},
-        {"input3_rule_then", Config::Uint8(0)},
-        {"input3_rule_then_limit", Config::Uint32(0)}, // in A
-        {"input3_rule_is", Config::Uint8(0)},
-        {"input3_rule_then_on_high", Config::Uint(MODE_DO_NOTHING, 0, 255)},
-        {"input3_rule_then_on_low", Config::Uint(MODE_DO_NOTHING, 0, 255)},
-        {"input4_rule_then", Config::Uint8(0)},
-        {"input4_rule_then_limit", Config::Uint32(0)}, // in A
-        {"input4_rule_is", Config::Uint8(0)},
-        {"input4_rule_then_on_high", Config::Uint(MODE_DO_NOTHING, 0, 255)},
-        {"input4_rule_then_on_low", Config::Uint(MODE_DO_NOTHING, 0, 255)},
     }), [](const Config &cfg, ConfigSource source) -> String {
-        uint32_t max_current_ma = charge_manager.config.get("maximum_available_current")->asUint();
-        uint32_t input3_rule_then_limit_ma = cfg.get("input3_rule_then_limit")->asUint();
-        uint32_t input4_rule_then_limit_ma = cfg.get("input4_rule_then_limit")->asUint();
-
-        if (input3_rule_then_limit_ma > max_current_ma) {
-            return "Input 3 current limit exceeds maximum total current of all chargers.";
-        }
-        if (input4_rule_then_limit_ma > max_current_ma) {
-            return "Input 4 current limit exceeds maximum total current of all chargers.";
-        }
-
         if (cfg.get("phase_switching_mode")->asUint() == 3) { // external control
             if (cfg.get("contactor_installed")->asBool() != true)
                 return "Can't enable external control with no contactor installed.";
@@ -129,12 +103,6 @@ void EnergyManager::pre_setup()
                 return "Can't enable external control unless excess charging is disabled.";
             if (cfg.get("default_mode")->asUint() != MODE_FAST)
                 return "Can't enable external control with any charging mode besides 'Fast'.";
-            if (cfg.get("auto_reset_mode")->asBool() != false)
-                return "Can't enable external control unless auto reset mode is disabled.";
-            if (cfg.get("input3_rule_then")->asUint() == INPUT_CONFIG_SWITCH_MODE)
-                return "Can't enable external control when input 3 is configured to change charging mode.";
-            if (cfg.get("input4_rule_then")->asUint() == INPUT_CONFIG_SWITCH_MODE)
-                return "Can't enable external control when input 4 is configured to change charging mode.";
         }
 
         return "";
@@ -412,10 +380,6 @@ void EnergyManager::setup()
     min_current_1p_ma           = charge_manager.config.get("minimum_current_1p")->asUint();             // milliampere
     min_current_3p_ma           = charge_manager.config.get("minimum_current")->asUint();                // milliampere
 
-    uint32_t auto_reset_time    = config_in_use.get("auto_reset_time")->asUint();
-    auto_reset_hour   = auto_reset_time / 60;
-    auto_reset_minute = auto_reset_time % 60;
-
     mode = default_mode;
     charge_mode.get("mode")->updateUint(mode);
 
@@ -440,11 +404,6 @@ void EnergyManager::setup()
 
     // Bricklet and meter access, requires power filter to be set up
     update_all_data();
-
-    // Set up output relay and input pins
-    output = new OutputRelay(config_in_use);
-    input3 = new InputPin(3, 0, config_in_use, all_data.input[0]);
-    input4 = new InputPin(4, 1, config_in_use, all_data.input[1]);
 
     // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
     uint32_t hysteresis_min_ms = 10 * 1000;  // milliseconds
@@ -512,10 +471,6 @@ void EnergyManager::setup()
         logger.printfln("energy_manager: Excess charging enabled but configured meter can't provide power values.");
     }
 
-    task_scheduler.scheduleWithFixedDelay([this](){
-        this->update_io();
-    }, EM_TASK_DELAY_MS, EM_TASK_DELAY_MS);
-
     start_network_check_task();
 
     // Tell CM how many phases are available. is_3phase is updated in the previous call to update_all_data().
@@ -546,9 +501,6 @@ void EnergyManager::setup()
         uptime_past_hysteresis = true;
         low_level_state.get("uptime_past_hysteresis")->updateBool(uptime_past_hysteresis);
     }, switching_hysteresis_ms);
-
-    if (config_in_use.get("auto_reset_mode")->asBool())
-        start_auto_reset_task();
 
     task_scheduler.scheduleOnce([this](){this->show_blank_value_id_update_warnings = true;}, 250);
     task_scheduler.scheduleWithFixedDelay([this](){collect_data_points();}, 15000, 10000);
@@ -886,22 +838,6 @@ void EnergyManager::check_bricklet_reachable(int rc, const char *context) {
     low_level_state.get("consecutive_bricklet_errors")->updateUint(consecutive_bricklet_errors);
 }
 
-void EnergyManager::update_io()
-{
-    output->update();
-
-    // Oversampling inputs is currently not used because all of the implemented input pin functions require update_energy() to run anyway.
-    //// We "over-sample" the two inputs compared to the other data in the all_data struct
-    //// to make sure that we can always react in a timely manner to input changes
-    //int rc = tf_warp_energy_manager_get_input(&device, all_data.input);
-    //if (rc != TF_E_OK) {
-    //    logger.printfln("get_input error %d", rc);
-    //}
-
-    input3->update(all_data.input[0]);
-    input4->update(all_data.input[1]);
-}
-
 void EnergyManager::start_network_check_task()
 {
     task_scheduler.scheduleWithFixedDelay([this](){
@@ -941,31 +877,6 @@ void EnergyManager::start_network_check_task()
                 clr_error(ERROR_FLAGS_NETWORK_MASK);
         }
     }, 0, 5000);
-}
-
-void EnergyManager::start_auto_reset_task()
-{
-#if MODULE_NTP_AVAILABLE()
-    task_scheduler.scheduleOnce([this](){
-        if (ntp.state.get("synced")->asBool())
-            schedule_auto_reset_task();
-        else
-            start_auto_reset_task();
-    }, 30 * 1000);
-#endif
-}
-
-void EnergyManager::schedule_auto_reset_task()
-{
-    time_t delay_ms = ms_until_time(static_cast<int>(auto_reset_hour), static_cast<int>(auto_reset_minute));
-    if (delay_ms < 0) {
-        logger.printfln("energy_manager: Auto reset task delay negative: %li", delay_ms);
-        return;
-    }
-    task_scheduler.scheduleOnce([this](){
-        switch_mode(default_mode);
-        schedule_auto_reset_task();
-    }, static_cast<uint32_t>(delay_ms));
 }
 
 void EnergyManager::limit_max_current(uint32_t limit_ma)

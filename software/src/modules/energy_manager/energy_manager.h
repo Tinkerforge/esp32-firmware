@@ -28,8 +28,6 @@
 
 #include "device_module.h"
 #include "em_rgb_led.h"
-#include "input_pin.h"
-#include "output_relay.h"
 #include "structs.h"
 #include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
@@ -54,27 +52,6 @@
 #define PHASE_SWITCHING_EXTERNAL_CONTROL    3
 #define PHASE_SWITCHING_PV1P_FAST3P         4
 #define PHASE_SWITCHING_MAX                 4
-
-#define RELAY_CONFIG_MANUAL                 0
-#define RELAY_CONFIG_RULE_BASED             1
-
-#define RELAY_CONFIG_WHEN_INPUT3            0
-#define RELAY_CONFIG_WHEN_INPUT4            1
-#define RELAY_CONFIG_WHEN_PHASE_SWITCHING   2
-#define RELAY_CONFIG_WHEN_CONTACTOR_CHECK   3
-#define RELAY_CONFIG_WHEN_POWER_AVAILABLE   4
-#define RELAY_CONFIG_WHEN_GRID_DRAW         5
-
-#define RELAY_RULE_IS_HIGH                  0
-#define RELAY_RULE_IS_LOW                   1
-#define RELAY_RULE_IS_1PHASE                2
-#define RELAY_RULE_IS_3PHASE                3
-#define RELAY_RULE_IS_CONTACTOR_FAIL        4
-#define RELAY_RULE_IS_CONTACTOR_OK          5
-#define RELAY_RULE_IS_POWER_SUFFIC          6
-#define RELAY_RULE_IS_POWER_INSUFFIC        7
-#define RELAY_RULE_IS_GT0                   8
-#define RELAY_RULE_IS_LE0                   9
 
 #define INPUT_CONFIG_DISABLED               0
 #define INPUT_CONFIG_CONTACTOR_CHECK        1
@@ -200,12 +177,9 @@ private:
     void set_config_error(uint32_t config_error_mask);
     void check_bricklet_reachable(int rc, const char *context);
     void update_all_data_struct();
-    void update_io();
     void update_energy();
 
     void start_network_check_task();
-    void start_auto_reset_task();
-    void schedule_auto_reset_task();
     void set_available_current(uint32_t current);
     void set_available_phases(uint32_t phases);
 
@@ -213,9 +187,6 @@ private:
     String prepare_fmtstr();
 
     EmRgbLed rgb_led;
-    OutputRelay *output;
-    InputPin *input3;
-    InputPin *input4;
 
     uint32_t last_debug_keep_alive               = 0;
     bool     printed_not_seen_all_chargers       = false;
@@ -255,8 +226,6 @@ private:
 
     // Config cache
     uint32_t default_mode             = 0;
-    uint32_t auto_reset_hour          = 0;
-    uint32_t auto_reset_minute        = 0;
     bool     excess_charging_enable   = false;
     uint32_t meter_slot_power         = UINT32_MAX;
     int32_t  target_power_from_grid_w = 0;

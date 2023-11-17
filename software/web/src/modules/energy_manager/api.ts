@@ -41,8 +41,6 @@ export interface state {
 
 export interface config {
     default_mode: number,
-    auto_reset_mode: boolean,
-    auto_reset_time: number,
     excess_charging_enable: boolean,
     meter_slot_grid_power: number,
     target_power_from_grid: number,
@@ -50,19 +48,6 @@ export interface config {
     cloud_filter_mode: number,
     contactor_installed: boolean,
     phase_switching_mode: number,
-    relay_config: number,
-    relay_rule_when: number,
-    relay_rule_is: number,
-    input3_rule_then: number,
-    input3_rule_then_limit: number,
-    input3_rule_is: number,
-    input3_rule_then_on_high: number,
-    input3_rule_then_on_low: number,
-    input4_rule_then: number,
-    input4_rule_then_limit: number,
-    input4_rule_is: number,
-    input4_rule_then_on_high: number,
-    input4_rule_then_on_low: number
 }
 
 export interface debug_config {
