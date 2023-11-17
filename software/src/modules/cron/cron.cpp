@@ -61,7 +61,12 @@ void Cron::pre_setup() {
     }),
     [this](Config &cfg, ConfigSource source) -> String {
         for (auto &task : cfg.get("tasks")) {
-            auto &action_validator = this->action_map[task.get("action")->getTag<CronActionID>()].second;
+            CronActionID action_id = task.get("action")->getTag<CronActionID>();
+            if (action_id == CronActionID::None) {
+                return "ActionID must not be 0!";
+            }
+
+            auto &action_validator = this->action_map[action_id].second;
             if (action_validator) {
                 auto ret = action_validator((Config *)task.get("action")->get());
                 if (ret != "") {
@@ -69,7 +74,12 @@ void Cron::pre_setup() {
                 }
             }
 
-            auto &trigger_validator = this->trigger_map[task.get("trigger")->getTag<CronTriggerID>()];
+            CronTriggerID trigger_id = task.get("trigger")->getTag<CronTriggerID>();
+            if (trigger_id == CronTriggerID::None) {
+                return "TriggerID must not be 0!";
+            }
+
+            auto &trigger_validator = this->trigger_map[trigger_id];
             if (trigger_validator) {
                 auto ret = trigger_validator((Config *)task.get("trigger")->get());
                 if (ret != "") {
