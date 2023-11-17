@@ -21,7 +21,7 @@ let x = {
             {{{groups}}},
 
             "table_display_name": "Anzeigename",
-            "table_power": "Leistungsaufnahme",
+            "table_power": "Leistung",
             "table_energy_import": "Energiebezug",
             "table_energy_export": "Energieeinspeisung",
             "table_phases": "Phasen",
