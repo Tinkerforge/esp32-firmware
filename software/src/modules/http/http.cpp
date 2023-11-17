@@ -18,7 +18,6 @@
  */
 
 #include "http.h"
-#include "module_dependencies.h"
 
 #include "api.h"
 #include "task_scheduler.h"
