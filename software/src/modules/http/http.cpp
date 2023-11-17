@@ -24,7 +24,7 @@
 #include "task_scheduler.h"
 #include "web_server.h"
 
-#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
+#if defined(BOARD_HAS_PSRAM)
 #define RECV_BUF_SIZE 4096
 #else
 #define RECV_BUF_SIZE 2048
