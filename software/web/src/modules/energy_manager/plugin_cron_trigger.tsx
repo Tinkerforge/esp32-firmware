@@ -75,12 +75,12 @@ function get_em_input_three_table_children(trigger: CronTrigger) {
 function get_em_input_three_edit_children(cron: Cron, trigger: CronTrigger) {
     let value = (trigger as EMInputThreeCronTrigger)[1];
     const states: [string, string][] = [
-        ['0', __('energy_manager.cron.open')],
-        ['1', __('energy_manager.cron.closed')],
+        ['0', __("energy_manager.cron.open")],
+        ['1', __("energy_manager.cron.closed")],
     ];
 
     return [
-        <FormRow label={__('energy_manager.cron.state')}>
+        <FormRow label={__("energy_manager.cron.state")}>
             <InputSelect
                 value={value.state == true ? '1' : '0'}
                 items = {states}
@@ -110,12 +110,12 @@ function get_em_input_four_table_children(trigger: CronTrigger) {
 function get_em_input_four_edit_children(cron: Cron, trigger: CronTrigger) {
     let value = (trigger as EMInputFourCronTrigger)[1];
     const states: [string, string][] = [
-        ['0', __('energy_manager.cron.open')],
-        ['1', __('energy_manager.cron.closed')],
+        ['0', __("energy_manager.cron.open")],
+        ['1', __("energy_manager.cron.closed")],
     ];
 
     return [
-        <FormRow label={__('energy_manager.cron.state')}>
+        <FormRow label={__("energy_manager.cron.state")}>
             <InputSelect
                 value={value.state == true ? '1' : '0'}
                 items = {states}
@@ -145,12 +145,12 @@ function get_em_phase_switch_table_children(trigger: CronTrigger) {
 function get_em_phase_switch_edit_children(cron: Cron, trigger: CronTrigger) {
     let value = (trigger as EMPhaseSwitchCronTrigger)[1];
     const phases: [string, string][] = [
-        ['1', __('energy_manager.cron.single_phase')],
-        ['3', __('energy_manager.cron.three_phase')],
+        ['1', __("energy_manager.cron.single_phase")],
+        ['3', __("energy_manager.cron.three_phase")],
     ];
 
     return [
-        <FormRow label={__('energy_manager.cron.phase')}>
+        <FormRow label={__("energy_manager.cron.phase")}>
             <InputSelect
                 value={value.phase.toString()}
                 items = {phases}
@@ -174,18 +174,18 @@ function new_em_phase_switch_config(): CronTrigger {
 
 function get_em_contactor_monitoring_table_children(trigger: CronTrigger) {
     let value = (trigger as EMContactorMonitoringCronTrigger)[1];
-    return __('energy_manager.cron.cron_contactor_monitoring_text')(value.contactor_okay);
+    return __("energy_manager.cron.cron_contactor_monitoring_text")(value.contactor_okay);
 }
 
 function get_em_contactor_monitoring_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
     let value = (trigger as EMContactorMonitoringCronTrigger)[1];
     return [
-        <FormRow label={__('energy_manager.cron.contactor_monitoring_state')}>
+        <FormRow label={__("energy_manager.cron.contactor_monitoring_state")}>
             <InputSelect
                 value={ value.contactor_okay ? '1' : '0'}
                 items = {[
-                    ['0', __('energy_manager.cron.contactor_error')],
-                    ['1', __('energy_manager.cron.contactor_okay')],
+                    ['0', __("energy_manager.cron.contactor_error")],
+                    ['1', __("energy_manager.cron.contactor_okay")],
                 ]}
                 onValue={(v) => {
                     value.contactor_okay = v === '1';
@@ -207,18 +207,18 @@ function new_em_contactor_monitoring_config(): CronTrigger {
 
 function get_em_power_available_table_children(trigger: CronTrigger) {
     let value = (trigger as EMPowerAvailableCronTrigger)[1];
-    return __('energy_manager.cron.cron_power_available_text')(value.power_available);
+    return __("energy_manager.cron.cron_power_available_text")(value.power_available);
 }
 
 function get_em_power_available_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
     let value = (trigger as EMPowerAvailableCronTrigger)[1];
     const states: [string, string][] = [
-        ['0', __('energy_manager.cron.not_available')],
-        ['1', __('energy_manager.cron.available')],
+        ['0', __("energy_manager.cron.not_available")],
+        ['1', __("energy_manager.cron.available")],
     ];
 
     return [
-        <FormRow label={__('energy_manager.cron.power')}>
+        <FormRow label={__("energy_manager.cron.power")}>
             <InputSelect
                 value={value.power_available == true ? '1' : '0'}
                 items = {states}
@@ -242,18 +242,18 @@ function new_em_power_available_config(): CronTrigger {
 
 function get_em_grid_power_draw_table_children(trigger: CronTrigger) {
     let value = (trigger as EMGridPowerDrawCronTrigger)[1];
-    return __('energy_manager.cron.cron_grid_power_draw_text')(value.drawing_power);
+    return __("energy_manager.cron.cron_grid_power_draw_text")(value.drawing_power);
 }
 
 function get_em_grid_power_draw_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
     let value = (trigger as EMGridPowerDrawCronTrigger)[1];
     const states: [string, string][] = [
-        ['0', __('energy_manager.cron.feeding')],
-        ['1', __('energy_manager.cron.drawing')],
+        ['0', __("energy_manager.cron.feeding")],
+        ['1', __("energy_manager.cron.drawing")],
     ];
 
     return [
-        <FormRow label={__('energy_manager.cron.power')}>
+        <FormRow label={__("energy_manager.cron.power")}>
             <InputSelect
                 value={value.drawing_power == true ? '1' : '0'}
                 items = {states}
@@ -282,42 +282,42 @@ export function init() {
                 new_config: new_em_input_three_config,
                 get_table_children: get_em_input_three_table_children,
                 get_edit_children: get_em_input_three_edit_children,
-                name: __('energy_manager.cron.input')(3),
+                name: __("energy_manager.cron.input")(3),
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             },
             [CronTriggerID.EMInputFour]: {
                 new_config: new_em_input_four_config,
                 get_table_children: get_em_input_four_table_children,
                 get_edit_children: get_em_input_four_edit_children,
-                name: __('energy_manager.cron.input')(4),
+                name: __("energy_manager.cron.input")(4),
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             },
             [CronTriggerID.EMPhaseSwitch]: {
                 new_config: new_em_phase_switch_config,
                 get_table_children: get_em_phase_switch_table_children,
                 get_edit_children: get_em_phase_switch_edit_children,
-                name: __('energy_manager.cron.phase_switch'),
+                name: __("energy_manager.cron.phase_switch"),
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             },
             [CronTriggerID.EMContactorMonitoring]: {
                 new_config: new_em_contactor_monitoring_config,
                 get_table_children: get_em_contactor_monitoring_table_children,
                 get_edit_children: get_em_contactor_monitoring_edit_children,
-                name: __('energy_manager.cron.contactor_monitoring'),
+                name: __("energy_manager.cron.contactor_monitoring"),
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             },
             [CronTriggerID.EMPowerAvailable]: {
                 new_config: new_em_power_available_config,
                 get_table_children: get_em_power_available_table_children,
                 get_edit_children: get_em_power_available_edit_children,
-                name: __('energy_manager.cron.power_available'),
+                name: __("energy_manager.cron.power_available"),
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             },
             [CronTriggerID.EMGridPowerDraw]: {
                 new_config: new_em_grid_power_draw_config,
                 get_table_children: get_em_grid_power_draw_table_children,
                 get_edit_children: get_em_grid_power_draw_edit_children,
-                name: __('energy_manager.cron.grid_power_draw'),
+                name: __("energy_manager.cron.grid_power_draw"),
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             },
         }

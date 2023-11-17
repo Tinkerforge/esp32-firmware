@@ -70,8 +70,8 @@ function get_em_phase_switch_table_children(action: CronAction) {
 function get_em_phase_switch_edit_children(cron: Cron, action: CronAction) {
     let value = (action as EMPhaseSwitchCronAction)[1];
     const phases: [string, string][] = [
-        ['1', __('energy_manager.cron.single_phase')],
-        ['3', __('energy_manager.cron.three_phase')],
+        ['1', __("energy_manager.cron.single_phase")],
+        ['3', __("energy_manager.cron.three_phase")],
     ]
     return [
         <FormRow label={__("energy_manager.cron.phases_wanted")}>
@@ -104,11 +104,11 @@ function get_em_charge_mode_switch_table_children(action: CronAction) {
 function get_em_charge_mode_switch_edit_children(cron: Cron, action: CronAction) {
     let value = (action as EMChargeModeSwitchCronAction)[1];
     const modes: [string, string][] = [
-        ['0', __('energy_manager.cron.fast')],
-        ['1', __('energy_manager.cron.disabled')],
-        ['2', __('energy_manager.cron.pv_excess')],
-        ['3', __('energy_manager.cron.guaranteed_power')],
-        ['4', __('energy_manager.cron.charge_mode_default')]
+        ['0', __("energy_manager.cron.fast")],
+        ['1', __("energy_manager.cron.disabled")],
+        ['2', __("energy_manager.cron.pv_excess")],
+        ['3', __("energy_manager.cron.guaranteed_power")],
+        ['4', __("energy_manager.cron.charge_mode_default")]
     ]
 
     return [
@@ -142,8 +142,8 @@ function get_em_contactor_table_children(action: CronAction) {
 function get_em_contactor_edit_children(cron: Cron, action: CronAction) {
     let value = (action as EMContactorCronAction)[1];
     const states: [string, string][] = [
-        ['1', __('energy_manager.cron.relay_state_closed')],
-        ['0', __('energy_manager.cron.relay_state_open')],
+        ['1', __("energy_manager.cron.relay_state_closed")],
+        ['0', __("energy_manager.cron.relay_state_open")],
     ]
 
     return [
@@ -177,7 +177,7 @@ function get_em_limit_max_current_table_children(action: CronAction) {
 function get_em_limit_max_current_edit_children(cron: Cron, action: CronAction) {
     let value = (action as EMLimitMaxCurrentCronAction)[1];
     const items:[string, string][] = [
-        ['0', __('energy_manager.cron.limit_max_current')],
+        ['0', __("energy_manager.cron.limit_max_current")],
         ['1', __("energy_manager.cron.reset_limit_max_current")]
     ]
 
@@ -223,12 +223,12 @@ function get_em_block_charge_edit_children(cron: Cron, action: CronAction) {
     let value = (action as EMBlockChargeCronAction)[1];
     const items:[string, string][] = [
         ['0', __("energy_manager.cron.unblock_charge")],
-        ['1', __('energy_manager.cron.block_charge')],
+        ['1', __("energy_manager.cron.block_charge")],
     ]
 
     const slot_items: [string, string][] = [];
     for (let i = 0; i < 4; i++) {
-        slot_items.push([i.toString(), __('energy_manager.cron.slot') + ' ' + i.toString()]);
+        slot_items.push([i.toString(), __("energy_manager.cron.slot") + ' ' + i.toString()]);
     }
 
     return [
