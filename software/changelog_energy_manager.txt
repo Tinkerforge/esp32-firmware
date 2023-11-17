@@ -148,3 +148,19 @@
 2023-10-31: 1.0.91 (<unknown>)
 - SunSpec Beta 2
 - Don't read partial SunSpec values during device scan process; SMA devices don't allow partial reads
+
+2023-11-03: 1.0.92 (<unknown>)
+- SunSpec Beta 3
+- Add quirks mode for KOSTAL devices: acc32 can be signed.
+- Fixed detection of inverter values at night; fixes missing values of SMA inverters.
+- Improved performance of SunSpec devices with float models; reduces risk of timeouts during reads.
+
+2023-11-06: 1.0.93 (<unknown>)
+- SunSpec Beta 4
+- Fixed display of inverter power.
+- Fixed display of phase currents of SMA inverters.
+- Improved read performance, especially with Modbus RTU bridges.
+
+2023-11-17: 1.0.94 (<unknown>)
+- SunSpec Beta 5
+- Change inverter power value ID so that the power shows up in the table and plot.
