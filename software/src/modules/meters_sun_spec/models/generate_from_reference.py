@@ -33,7 +33,7 @@ value_id_mappings_inverter = {
     "TmpTrns" : [ "Temperature3",                None  ],
     "VA"      : [ "PowerApparentLSum",           None  ],
     "VAr"     : [ "PowerReactiveLSumIndCapDiff", None  ],
-    "W"       : [ "PowerActiveLSumExport",       None  ],
+    "W"       : [ "PowerActiveLSumImExDiff",     -1.0  ],
     "WH"      : [ "EnergyActiveLSumExport",      0.001 ],
 }
 

@@ -223,7 +223,7 @@ static float get_model_101_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= (get_scale_factor(model->W_SF) * -1.0f);
     return fval;
 }
 
@@ -389,7 +389,7 @@ static const MetersSunSpecParser::ModelData model_101_data = {
         { &get_model_101_PhVphA, MeterValueID::VoltageL1N, 13 },
         { &get_model_101_PhVphB, MeterValueID::VoltageL2N, 13 },
         { &get_model_101_PhVphC, MeterValueID::VoltageL3N, 13 },
-        { &get_model_101_W, MeterValueID::PowerActiveLSumExport, 15 },
+        { &get_model_101_W, MeterValueID::PowerActiveLSumImExDiff, 15 },
         { &get_model_101_Hz, MeterValueID::FrequencyLAvg, 17 },
         { &get_model_101_VA, MeterValueID::PowerApparentLSum, 19 },
         { &get_model_101_VAr, MeterValueID::PowerReactiveLSumIndCapDiff, 21 },
@@ -538,7 +538,7 @@ static float get_model_102_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= (get_scale_factor(model->W_SF) * -1.0f);
     return fval;
 }
 
@@ -704,7 +704,7 @@ static const MetersSunSpecParser::ModelData model_102_data = {
         { &get_model_102_PhVphA, MeterValueID::VoltageL1N, 13 },
         { &get_model_102_PhVphB, MeterValueID::VoltageL2N, 13 },
         { &get_model_102_PhVphC, MeterValueID::VoltageL3N, 13 },
-        { &get_model_102_W, MeterValueID::PowerActiveLSumExport, 15 },
+        { &get_model_102_W, MeterValueID::PowerActiveLSumImExDiff, 15 },
         { &get_model_102_Hz, MeterValueID::FrequencyLAvg, 17 },
         { &get_model_102_VA, MeterValueID::PowerApparentLSum, 19 },
         { &get_model_102_VAr, MeterValueID::PowerReactiveLSumIndCapDiff, 21 },
@@ -853,7 +853,7 @@ static float get_model_103_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= (get_scale_factor(model->W_SF) * -1.0f);
     return fval;
 }
 
@@ -1019,7 +1019,7 @@ static const MetersSunSpecParser::ModelData model_103_data = {
         { &get_model_103_PhVphA, MeterValueID::VoltageL1N, 13 },
         { &get_model_103_PhVphB, MeterValueID::VoltageL2N, 13 },
         { &get_model_103_PhVphC, MeterValueID::VoltageL3N, 13 },
-        { &get_model_103_W, MeterValueID::PowerActiveLSumExport, 15 },
+        { &get_model_103_W, MeterValueID::PowerActiveLSumImExDiff, 15 },
         { &get_model_103_Hz, MeterValueID::FrequencyLAvg, 17 },
         { &get_model_103_VA, MeterValueID::PowerApparentLSum, 19 },
         { &get_model_103_VAr, MeterValueID::PowerReactiveLSumIndCapDiff, 21 },
@@ -1126,6 +1126,7 @@ static float get_model_111_W(const void *register_data, uint32_t quirks, bool de
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(model->W);
     float fval = val;
+    fval *= -1.0f;
     return fval;
 }
 
@@ -1252,7 +1253,7 @@ static const MetersSunSpecParser::ModelData model_111_data = {
         { &get_model_111_PhVphA, MeterValueID::VoltageL1N, 17 },
         { &get_model_111_PhVphB, MeterValueID::VoltageL2N, 19 },
         { &get_model_111_PhVphC, MeterValueID::VoltageL3N, 21 },
-        { &get_model_111_W, MeterValueID::PowerActiveLSumExport, 23 },
+        { &get_model_111_W, MeterValueID::PowerActiveLSumImExDiff, 23 },
         { &get_model_111_Hz, MeterValueID::FrequencyLAvg, 25 },
         { &get_model_111_VA, MeterValueID::PowerApparentLSum, 27 },
         { &get_model_111_VAr, MeterValueID::PowerReactiveLSumIndCapDiff, 29 },
@@ -1359,6 +1360,7 @@ static float get_model_112_W(const void *register_data, uint32_t quirks, bool de
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(model->W);
     float fval = val;
+    fval *= -1.0f;
     return fval;
 }
 
@@ -1485,7 +1487,7 @@ static const MetersSunSpecParser::ModelData model_112_data = {
         { &get_model_112_PhVphA, MeterValueID::VoltageL1N, 17 },
         { &get_model_112_PhVphB, MeterValueID::VoltageL2N, 19 },
         { &get_model_112_PhVphC, MeterValueID::VoltageL3N, 21 },
-        { &get_model_112_W, MeterValueID::PowerActiveLSumExport, 23 },
+        { &get_model_112_W, MeterValueID::PowerActiveLSumImExDiff, 23 },
         { &get_model_112_Hz, MeterValueID::FrequencyLAvg, 25 },
         { &get_model_112_VA, MeterValueID::PowerApparentLSum, 27 },
         { &get_model_112_VAr, MeterValueID::PowerReactiveLSumIndCapDiff, 29 },
@@ -1592,6 +1594,7 @@ static float get_model_113_W(const void *register_data, uint32_t quirks, bool de
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(model->W);
     float fval = val;
+    fval *= -1.0f;
     return fval;
 }
 
@@ -1718,7 +1721,7 @@ static const MetersSunSpecParser::ModelData model_113_data = {
         { &get_model_113_PhVphA, MeterValueID::VoltageL1N, 17 },
         { &get_model_113_PhVphB, MeterValueID::VoltageL2N, 19 },
         { &get_model_113_PhVphC, MeterValueID::VoltageL3N, 21 },
-        { &get_model_113_W, MeterValueID::PowerActiveLSumExport, 23 },
+        { &get_model_113_W, MeterValueID::PowerActiveLSumImExDiff, 23 },
         { &get_model_113_Hz, MeterValueID::FrequencyLAvg, 25 },
         { &get_model_113_VA, MeterValueID::PowerApparentLSum, 27 },
         { &get_model_113_VAr, MeterValueID::PowerReactiveLSumIndCapDiff, 29 },
