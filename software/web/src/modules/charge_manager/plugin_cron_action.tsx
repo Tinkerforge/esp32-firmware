@@ -24,6 +24,7 @@ import { Cron } from "../cron/main";
 import { CronAction } from "../cron/types";
 import { InputFloat } from "../../ts/components/input_float";
 import { FormRow } from "../../ts/components/form_row";
+import { IS_ENERGY_MANAGER } from "src/build";
 
 export type ChargeManagerCronAction = [
     CronActionID.SetManagerCurrent,
@@ -64,15 +65,18 @@ function new_set_manager_current_config(): CronAction {
 }
 
 export function init() {
-    return {
-        action_components: {
-            [CronActionID.SetManagerCurrent]: {
-                name: __("charge_manager.cron.set_charge_manager"),
-                new_config: new_set_manager_current_config,
-                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
-                get_edit_children: get_set_manager_edit_children,
-                get_table_children: get_set_manager_table_children,
+    if (!IS_ENERGY_MANAGER) {
+        return {
+            action_components: {
+                [CronActionID.SetManagerCurrent]: {
+                    name: __("charge_manager.cron.set_charge_manager"),
+                    new_config: new_set_manager_current_config,
+                    clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
+                    get_edit_children: get_set_manager_edit_children,
+                    get_table_children: get_set_manager_table_children,
+                },
             },
-        },
-    };
+        };
+    }
+    return {};
 }

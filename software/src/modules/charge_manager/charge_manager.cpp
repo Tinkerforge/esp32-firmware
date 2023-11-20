@@ -209,13 +209,11 @@ void ChargeManager::pre_setup()
         {"disconnect", Config::Bool(false)},
     });
 
-#if MODULE_CRON_AVAILABLE()
- #if !MODULE_ENERGY_MANAGER_AVAILABLE()
+#if MODULE_CRON_AVAILABLE() && !MODULE_ENERGY_MANAGER_AVAILABLE()
     cron.register_trigger(
         CronTriggerID::ChargeManagerWd,
         *Config::Null()
     );
- #endif
 
     cron.register_action(
         CronActionID::SetManagerCurrent,
