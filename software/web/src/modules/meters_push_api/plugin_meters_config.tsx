@@ -101,16 +101,21 @@ function reverseLookup(value_id: number) {
     return []
 }
 
-// FIXME: need to fix invalid feedback when editing values.
-export function MeterValueIDSelector(state: {value_id: {value_id: number}, value_id_vec: Array<number>, stages: [MeterValueIDSelectorStage, StateUpdater<MeterValueIDSelectorStage>][]}) {
-    const stages = state.stages
+export function MeterValueIDSelector(state: {value_id: {value_id: number},
+        value_id_vec: Array<number>,
+        stages: [MeterValueIDSelectorStage, StateUpdater<MeterValueIDSelectorStage>][],
+        edit_idx?: number
+    }) {
+
+    const e_idx = state.edit_idx;
+    const stages = state.stages;
     const items: [string, string][][] = [];
     for (let i = 0; i < 5; ++i) {
         const stage = getStage(i, stages, METER_VALUE_ITEMS);
         const item = createItems(stage);
         if (item.length === 1) {
             state.value_id.value_id = parseInt(stage["Register"])
-            if (state.value_id_vec.find((v) => state.value_id.value_id === v) !== undefined && !stages[i - 1][0].isInvalid) {
+            if (state.value_id_vec.find((v, idx) => state.value_id.value_id === v && idx !== e_idx ) !== undefined && !stages[i - 1][0].isInvalid) {
                 stages[i - 1][1]({
                     state: stages[i - 1][0].state,
                     isInvalid: true,
@@ -129,6 +134,8 @@ export function MeterValueIDSelector(state: {value_id: {value_id: number}, value
                         required
                         items={item}
                         onValue={(v) => {
+                            state.value_id.value_id = undefined;
+
                             const stage = getStage(i, stages, METER_VALUE_ITEMS);
                             const val_as_number = parseInt(stage[v]);
                             if (!isNaN(val_as_number)) {
@@ -136,9 +143,10 @@ export function MeterValueIDSelector(state: {value_id: {value_id: number}, value
                             }
 
                             let invalid = false;
-                            if (state.value_id_vec.find((v) => state.value_id.value_id === v) !== undefined) {
+                            if (state.value_id_vec.find((v, idx) => state.value_id.value_id === v && idx !== e_idx) !== undefined ) {
                                 invalid = true;
                             }
+
                             stages[i][1]({state: v, isInvalid: invalid});
                             clearStagesFrom(i + 1, stages);
                         }}
@@ -155,13 +163,14 @@ export function MeterValueIDSelector(state: {value_id: {value_id: number}, value
 }
 
 export function init() {
+    const value_id_obj = {value_id: -1}
+    let edit_idx = -1;
     return {
         [MeterClassID.PushAPI]: {
             name: __("meters_push_api.content.meter_class"),
             new_config: () => [MeterClassID.PushAPI, {display_name: "", value_ids: new Array<number>()}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: PushAPIMetersConfig, on_value: (config: PushAPIMetersConfig) => void): ComponentChildren => {
-                const value_id_obj = {value_id: -1}
                 const stages: [MeterValueIDSelectorStage, StateUpdater<MeterValueIDSelectorStage>][]  = [];
 
                 for (let i = 0; i < 5; ++i) {
@@ -190,6 +199,7 @@ export function init() {
                                     },
                                     onEditShow: async () => {
                                         value_id_obj.value_id = value_id;
+                                        edit_idx = config[1].value_ids.findIndex((v) => v === value_id);
                                         clearStagesFrom(0, stages);
                                         reverseLookup(value_id).map((v, i) => {
                                             stages[i][1]({
@@ -199,12 +209,12 @@ export function init() {
                                         });
                                     },
                                     onEditSubmit: async () => {
-                                        config[1].value_ids.push(value_id_obj.value_id)
+                                        config[1].value_ids[edit_idx] = value_id_obj.value_id;
                                         on_value(config)
                                     },
                                     onEditGetChildren: () => [
                                         <FormRow label={__("meters_push_api.content.config_value_id")}>
-                                            <MeterValueIDSelector value_id={value_id_obj} value_id_vec={config[1].value_ids} stages={stages} />
+                                            <MeterValueIDSelector value_id={value_id_obj} edit_idx={edit_idx} value_id_vec={config[1].value_ids} stages={stages} />
                                         </FormRow>
                                     ],
                                     editTitle: __("meters_push_api.content.edit_value_title"),
