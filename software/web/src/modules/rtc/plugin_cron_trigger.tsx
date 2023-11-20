@@ -73,9 +73,7 @@ function get_rtc_edit_children(cron: Cron, trigger: CronTrigger) {
         }
     }
 
-    const day = value.mday != -1 ? value.mday == 32 ? 10 : value.mday + 7 : value.wday;
-
-    console.log(day);
+    const day = value.mday != -1 ? value.mday == 32 ? 10 : value.mday + 10 : value.wday;
 
     return [<>
         <FormRow label={__("rtc.cron.mday")}>
@@ -83,17 +81,18 @@ function get_rtc_edit_children(cron: Cron, trigger: CronTrigger) {
                 items={days}
                 value={day}
                 onValue={(v) => {
-                    const day = Number(v);
+                    const day = parseInt(v);
                     if (day == 10) {
                         value.mday = 32;
                         value.wday = -1;
-                    } else if (day > 9) {
-                        value.mday = day - 9;
+                    } else if (day > 10) {
+                        value.mday = day - 10;
                         value.wday = -1;
                     } else {
                         value.mday = -1;
                         value.wday = day;
                     }
+                    console.log(value.mday, value.wday)
                     cron.setTriggerFromComponent(trigger);
                 }} />
         </FormRow>
