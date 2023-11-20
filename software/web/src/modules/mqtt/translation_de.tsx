@@ -40,6 +40,7 @@ let x = {
         "cron": {
             "mqtt": "MQTT",
             "match_all": "Alle Nachrichten werden akzeptiert",
+            "full_topic": "Vollständiges Topic",
             "send_topic": "An Topic",
             "send_payload": "Nachricht",
             "topic": "Überwachtes Topic",

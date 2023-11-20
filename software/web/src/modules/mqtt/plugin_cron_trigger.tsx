@@ -78,10 +78,11 @@ function get_mqtt_edit_children(cron: Cron, trigger: CronTrigger) {
                     cron.setTriggerFromComponent(trigger);
                 }}
                 invalidFeedback={__("mqtt.cron.use_topic_prefix_invalid")} />
+        </FormRow>
+        <FormRow label={__("mqtt.cron.full_topic")} hidden={!value.use_prefix}>
             <InputText
                 class="mt-2"
-                value={mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic}
-                hidden={!value.use_prefix} />
+                value={mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic}/>
         </FormRow>
         <FormRow label={__("mqtt.cron.payload")}>
             <InputText
