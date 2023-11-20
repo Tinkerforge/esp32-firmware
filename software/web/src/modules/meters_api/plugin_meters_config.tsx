@@ -192,8 +192,15 @@ export function init() {
                         <Table
                             nestingDepth={1}
                             rows={config[1].value_ids.map((value_id) => {
+                                let name = translate_unchecked(`meters.content.value_${value_id}`);
+                                let name_muted = translate_unchecked(`meters.content.value_${value_id}_muted`);
+
+                                if (name_muted.length > 0) {
+                                    name += "; " + name_muted
+                                }
+
                                 const row: TableRow = {
-                                    columnValues: [translate_unchecked(`meters.content.value_${value_id}`)],
+                                    columnValues: [name],
                                     onRemoveClick: async () => {
                                         on_value([config[0], {display_name: config[1].display_name, value_ids: config[1].value_ids.filter((v) => v !== value_id)}])
                                     },
