@@ -25,6 +25,7 @@ import { CronAction } from "../cron/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "src/ts/components/input_select";
 import { InputFloat } from "src/ts/components/input_float";
+import * as API from "../../ts/api";
 
 export type EMPhaseSwitchCronAction = [
     CronActionID.EMPhaseSwitch,
@@ -98,7 +99,7 @@ function new_em_phase_switch_config(): CronAction {
 
 function get_em_charge_mode_switch_table_children(action: CronAction) {
     let value = (action as EMChargeModeSwitchCronAction)[1];
-    return __("energy_manager.cron.charge_mode_switch_action_text")(value.mode);
+    return __("energy_manager.cron.charge_mode_switch_action_text")(value.mode, API.get("energy_manager/config").default_mode);
 }
 
 function get_em_charge_mode_switch_edit_children(cron: Cron, action: CronAction) {
@@ -108,8 +109,9 @@ function get_em_charge_mode_switch_edit_children(cron: Cron, action: CronAction)
         ['1', __("energy_manager.cron.disabled")],
         ['2', __("energy_manager.cron.pv_excess")],
         ['3', __("energy_manager.cron.guaranteed_power")],
-        ['4', __("energy_manager.cron.charge_mode_default")]
     ]
+
+    modes.push(['4', __("energy_manager.cron.charge_mode_default") + " (" + modes[API.get("energy_manager/config").default_mode][1] + ")"])
 
     return [
         <FormRow label={__("energy_manager.cron.charge_mode")}>

@@ -213,7 +213,9 @@ let x = {
             "disabled": "Deaktiviert",
             "pv_excess": "PV-Überschuss",
             "guaranteed_power": "Min + PV: Mindestladeleistung",
-            "charge_mode_switch_action_text": /*FFN*/(mode: number) => {
+            "charge_mode_switch_action_text": /*FFN*/(mode: number, default_mode: number) => {
+                const modes = ["Schnell", "Deaktiviert", "PV-Überschuss", "Min + PV"];
+
                 let ret = <></>;
                 switch (mode) {
                     case 0:
@@ -233,7 +235,7 @@ let x = {
                         break;
 
                     default:
-                        ret = <><b>Standardmodus</b></>
+                        ret = <><b>Standardmodus ({modes[default_mode]})</b></>
                         break;
                 }
                 return <>wechsel Lademodus auf {ret}.</>
