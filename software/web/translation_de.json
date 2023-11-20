@@ -22,7 +22,8 @@
             "to_be_cleared": "Wird beim Speichern geleert",
             "unchanged": "Unverändert",
             "required": "Notwendig",
-            "not_set": "Nicht gesetzt"
+            "not_set": "Nicht gesetzt",
+            "capslock_enabled": "Feststelltaste ist aktiviert"
         },
         "ip_configuration": {
             "ip_configuration": "IP-Konfiguration",

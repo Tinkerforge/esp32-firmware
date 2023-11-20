@@ -22,7 +22,8 @@
             "to_be_cleared": "Will be cleared on save.",
             "unchanged": "Unchanged",
             "required": "Required",
-            "not_set": "Unset"
+            "not_set": "Unset",
+            "capslock_enabled": "Capslock is enabled"
         },
         "ip_configuration": {
             "ip_configuration": "IP configuration",
