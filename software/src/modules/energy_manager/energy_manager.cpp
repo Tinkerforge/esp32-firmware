@@ -449,6 +449,9 @@ void EnergyManager::setup()
         this->update_all_data();
     }, 0, EM_TASK_DELAY_MS);
 
+    task_scheduler.scheduleWithFixedDelay([this](){collect_data_points();}, 15000, 10000);
+    task_scheduler.scheduleWithFixedDelay([this](){set_pending_data_points();}, 15000, 100);
+
     // Check for incomplete configuration after as much as possible has been set up.
     // The default configuration after a factory reset must be good enough for everything to run without crashing.
     if ((config_in_use.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !config_in_use.get("contactor_installed")->asBool()) {
@@ -503,8 +506,6 @@ void EnergyManager::setup()
     }, switching_hysteresis_ms);
 
     task_scheduler.scheduleOnce([this](){this->show_blank_value_id_update_warnings = true;}, 250);
-    task_scheduler.scheduleWithFixedDelay([this](){collect_data_points();}, 15000, 10000);
-    task_scheduler.scheduleWithFixedDelay([this](){set_pending_data_points();}, 15000, 100);
     reset_limit_max_current();
 }
 
