@@ -4,7 +4,7 @@ let x = {
     "meters": {
         "status": {
             "power_history": null,
-            "current_power": "Leistungsaufnahme"
+            "current_power": "Leistung"
         },
         "navbar": {
             "meters": "Stromzähler"
