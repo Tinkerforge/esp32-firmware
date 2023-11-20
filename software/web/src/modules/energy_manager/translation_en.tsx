@@ -137,9 +137,9 @@ let x = {
             "limit_mode": "Mode",
             "reset_limit_max_current": "Reset maximum total current limit",
             "max_current": "Maximum total current",
-            "cron_limit_max_current_action_text": /*FFN*/(current: number) => {
+            "cron_limit_max_current_action_text": /*FFN*/(current: number, default_current: number) => {
                 if (current === -1) {
-                    return <>reset maximum total current limit.</>
+                    return <>reset maximum total current limit to the configured default current (<b>{default_current / 1000} A</b>).</>
                 }
                 return <>limit maximum total current to <b>{current / 1000} A</b>.</>
             }/*NF*/,

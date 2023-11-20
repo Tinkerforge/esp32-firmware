@@ -173,14 +173,14 @@ function new_em_contactor_config(): CronAction {
 
 function get_em_limit_max_current_table_children(action: CronAction) {
     let value = (action as EMLimitMaxCurrentCronAction)[1];
-    return __("energy_manager.cron.cron_limit_max_current_action_text")(value.current);
+    return __("energy_manager.cron.cron_limit_max_current_action_text")(value.current, API.get("charge_manager/config").maximum_available_current);
 }
 
 function get_em_limit_max_current_edit_children(cron: Cron, action: CronAction) {
     let value = (action as EMLimitMaxCurrentCronAction)[1];
     const items:[string, string][] = [
         ['0', __("energy_manager.cron.limit_max_current")],
-        ['1', __("energy_manager.cron.reset_limit_max_current")]
+        ['1', __("energy_manager.cron.reset_limit_max_current") + " (" + API.get("charge_manager/config").maximum_available_current / 1000 + "A)"]
     ]
 
     return [
