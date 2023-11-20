@@ -17,19 +17,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meter_push_api.h"
-#include "meters_push_api.h"
+#include "meter_api.h"
+#include "meters_api.h"
 #include "module_dependencies.h"
 
 #include "gcc_warnings.h"
 
-void MetersPushAPI::pre_setup()
+void MetersAPI::pre_setup()
 {
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
         {"value_ids", Config::Array({},
             meters.get_config_uint_max_prototype(),
-            0, METER_PUSH_API_MAX_VALUES, Config::type_id<Config::ConfUint>()
+            0, METER_API_MAX_VALUES, Config::type_id<Config::ConfUint>()
         )},
     });
 
@@ -37,30 +37,30 @@ void MetersPushAPI::pre_setup()
 }
 
 _ATTRIBUTE((const))
-MeterClassID MetersPushAPI::get_class() const
+MeterClassID MetersAPI::get_class() const
 {
-    return MeterClassID::PushAPI;
+    return MeterClassID::API;
 }
 
-IMeter * MetersPushAPI::new_meter(uint32_t slot, Config * /*state*/, Config *config, Config * /*errors*/)
+IMeter * MetersAPI::new_meter(uint32_t slot, Config * /*state*/, Config *config, Config * /*errors*/)
 {
-    return new MeterPushAPI(slot, config);
+    return new MeterAPI(slot, config);
 }
 
 _ATTRIBUTE((const))
-const Config * MetersPushAPI::get_config_prototype()
+const Config * MetersAPI::get_config_prototype()
 {
     return &config_prototype;
 }
 
 _ATTRIBUTE((const))
-const Config * MetersPushAPI::get_state_prototype()
+const Config * MetersAPI::get_state_prototype()
 {
     return Config::Null();
 }
 
 _ATTRIBUTE((const))
-const Config * MetersPushAPI::get_errors_prototype()
+const Config * MetersAPI::get_errors_prototype()
 {
     return Config::Null();
 }

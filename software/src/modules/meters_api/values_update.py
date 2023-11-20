@@ -19,7 +19,7 @@ def main():
 
     while True:
         start = time.time()
-        request = urllib.request.Request(f'http://{args.host}/meters/{args.meter}/push_values',
+        request = urllib.request.Request(f'http://{args.host}/meters/{args.meter}/values_update',
                                          data=json.dumps([args.value]).encode('utf-8'),
                                          method='PUT',
                                          headers={'Content-Type': 'application/json'})

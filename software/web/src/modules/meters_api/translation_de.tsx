@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 let x = {
-    "meters_push_api": {
+    "meters_api": {
         "content": {
             "meter_class": "API",
 

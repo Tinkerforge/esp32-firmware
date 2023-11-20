@@ -22,7 +22,8 @@
 #include <stdint.h>
 
 #include "config.h"
-#include "modules/meters/imeter.h"
+#include "modules/meters/meter_generator.h"
+#include "module.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -30,28 +31,21 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-// Limited to 256 values because processing requires at least 20 bytes per value.
-#define METER_PUSH_API_MAX_VALUES 256
-
-class MeterPushAPI final : public IMeter
+class MetersAPI final : public IModule, public MeterGenerator
 {
 public:
-    MeterPushAPI(uint32_t slot_, Config *config_) : slot(slot_), config(config_) {}
+    // for IModule
+    void pre_setup() override;
 
-    MeterClassID get_class() const override;
-    void setup() override;
-    void register_urls(const String &base_url) override;
+    // for MeterGenerator
+    MeterClassID get_class() const override _ATTRIBUTE((const));
+    virtual IMeter *new_meter(uint32_t slot, Config *state, Config *config, Config *errors) override;
+    virtual const Config *get_config_prototype() override _ATTRIBUTE((const));
+    virtual const Config *get_state_prototype()  override _ATTRIBUTE((const));
+    virtual const Config *get_errors_prototype() override _ATTRIBUTE((const));
 
-    bool supports_power()         override {return true;}
-    bool supports_energy_import() override {return true;}
-    bool supports_energy_export() override {return true;}
-    bool supports_currents()      override {return true;}
 private:
-    uint32_t slot;
-    Config *config;
-    ConfigRoot push_values;
-
-    uint32_t value_count;
+    Config config_prototype;
 };
 
 #if defined(__GNUC__)

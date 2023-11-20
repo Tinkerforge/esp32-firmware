@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meter_push_api.h"
+#include "meter_api.h"
 #include "module_dependencies.h"
 
 #include "api.h"
@@ -26,17 +26,17 @@
 #include "gcc_warnings.h"
 
 _ATTRIBUTE((const))
-MeterClassID MeterPushAPI::get_class() const
+MeterClassID MeterAPI::get_class() const
 {
-    return MeterClassID::PushAPI;
+    return MeterClassID::API;
 }
 
-void MeterPushAPI::setup()
+void MeterAPI::setup()
 {
     Config *value_ids = static_cast<Config *>(config->get("value_ids"));
     ssize_t id_count = value_ids->count();
     if (id_count < 0) {
-        logger.printfln("meter_push_api: Invalid ID count: %i", id_count);
+        logger.printfln("meter_api: Invalid ID count: %i", id_count);
         return;
     }
 
@@ -56,9 +56,9 @@ void MeterPushAPI::setup()
     );
 }
 
-void MeterPushAPI::register_urls(const String &base_url)
+void MeterAPI::register_urls(const String &base_url)
 {
-    api.addCommand(base_url + "push_values", &push_values, {}, [this](){
+    api.addCommand(base_url + "values_update", &push_values, {}, [this](){
         meters.update_all_values(this->slot, &push_values);
     }, false);
 }

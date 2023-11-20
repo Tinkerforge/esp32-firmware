@@ -151,7 +151,7 @@ void MetersLegacyAPI::register_urls()
 
     api.addCommand("meter/state_update", &legacy_state_update, {}, [this](){
         if (!this->meter_writable) {
-            logger.printfln("meters_legacy_api: Meter %u cannot be updated via the API. Only a 'Push API' meter can be updated.", this->linked_meter_slot);
+            logger.printfln("meters_legacy_api: Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
         }
         logger.printfln("meters_legacy_api: Meter %u state cannot be updated. Change the meter's configuration instead.", this->linked_meter_slot);
@@ -159,7 +159,7 @@ void MetersLegacyAPI::register_urls()
 
     api.addCommand("meter/values_update", &legacy_values_update, {}, [this](){
         if (!this->meter_writable) {
-            logger.printfln("meters_legacy_api: Meter %u cannot be updated via the API. Only a 'Push API' meter can be updated.", this->linked_meter_slot);
+            logger.printfln("meters_legacy_api: Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
         }
 
@@ -177,7 +177,7 @@ void MetersLegacyAPI::register_urls()
 
     api.addCommand("meter/phases_update", &legacy_phases_update, {}, [this](){
         if (!this->meter_writable) {
-            logger.printfln("meters_legacy_api: Meter %u cannot be updated via the API. Only a 'Push API' meter can be updated.", this->linked_meter_slot);
+            logger.printfln("meters_legacy_api: Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
         }
         if (!this->has_phases) {
@@ -201,7 +201,7 @@ void MetersLegacyAPI::register_urls()
 
     api.addCommand("meter/all_values_update", &legacy_all_values_update, {}, [this](){
         if (!this->meter_writable) {
-            logger.printfln("meters_legacy_api: Meter %u cannot be updated via the API. Only a 'Push API' meter can be updated.", this->linked_meter_slot);
+            logger.printfln("meters_legacy_api: Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
         }
 
@@ -484,7 +484,7 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
 
     state.get("readable")->updateBool(true);
 
-    if (linked_meter_class == MeterClassID::PushAPI) {
+    if (linked_meter_class == MeterClassID::API) {
         state.get("writable")->updateBool(true);
         meter_writable = true;
     }

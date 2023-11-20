@@ -30,8 +30,8 @@ import { InputSelect } from '../../ts/components/input_select';
 
 const MAX_VALUES = 100;
 
-export type PushAPIMetersConfig = [
-    MeterClassID.PushAPI,
+export type APIMetersConfig = [
+    MeterClassID.API,
     {
         display_name: string;
         value_ids: number[];
@@ -150,10 +150,10 @@ export function MeterValueIDSelector(state: {value_id: {value_id: number},
                             stages[i][1]({state: v, isInvalid: invalid});
                             clearStagesFrom(i + 1, stages);
                         }}
-                        placeholder={__("meters_push_api.content.placeholder")}
+                        placeholder={__("meters_api.content.placeholder")}
                         value={stages[i][0].state}
                         className = {'form-control' + (stages[i][0].isInvalid ? ' is-invalid' : '')}
-                        invalidFeedback={__("meters_push_api.content.invalid_feedback")}
+                        invalidFeedback={__("meters_api.content.invalid_feedback")}
                     />
             </div>
         }
@@ -166,11 +166,11 @@ export function init() {
     const value_id_obj = {value_id: -1}
     let edit_idx = -1;
     return {
-        [MeterClassID.PushAPI]: {
-            name: __("meters_push_api.content.meter_class"),
-            new_config: () => [MeterClassID.PushAPI, {display_name: "", value_ids: new Array<number>()}] as MeterConfig,
+        [MeterClassID.API]: {
+            name: __("meters_api.content.meter_class"),
+            new_config: () => [MeterClassID.API, {display_name: "", value_ids: new Array<number>()}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
-            get_edit_children: (config: PushAPIMetersConfig, on_value: (config: PushAPIMetersConfig) => void): ComponentChildren => {
+            get_edit_children: (config: APIMetersConfig, on_value: (config: APIMetersConfig) => void): ComponentChildren => {
                 const stages: [MeterValueIDSelectorStage, StateUpdater<MeterValueIDSelectorStage>][]  = [];
 
                 for (let i = 0; i < 5; ++i) {
@@ -178,7 +178,7 @@ export function init() {
                 }
 
                 return [<>
-                    <FormRow label={__("meters_push_api.content.config_display_name")}>
+                    <FormRow label={__("meters_api.content.config_display_name")}>
                         <InputText
                             required
                             maxLength={32}
@@ -188,7 +188,7 @@ export function init() {
                                 on_value(config);
                             }}/>
                     </FormRow>
-                    <FormRow label={__("meters_push_api.content.config_value_ids")}>
+                    <FormRow label={__("meters_api.content.config_value_ids")}>
                         <Table
                             nestingDepth={1}
                             rows={config[1].value_ids.map((value_id) => {
@@ -213,24 +213,24 @@ export function init() {
                                         on_value(config)
                                     },
                                     onEditGetChildren: () => [
-                                        <FormRow label={__("meters_push_api.content.config_value_id")}>
+                                        <FormRow label={__("meters_api.content.config_value_id")}>
                                             <MeterValueIDSelector value_id={value_id_obj} edit_idx={edit_idx} value_id_vec={config[1].value_ids} stages={stages} />
                                         </FormRow>
                                     ],
-                                    editTitle: __("meters_push_api.content.edit_value_title"),
+                                    editTitle: __("meters_api.content.edit_value_title"),
                                 }
                                 return row
                             })}
                             columnNames={[""]}
                             addEnabled={true}
-                            addMessage={__("meters_push_api.content.add_value_count")(config[1].value_ids.length, MAX_VALUES)}
-                            addTitle={__("meters_push_api.content.add_value_title")}
+                            addMessage={__("meters_api.content.add_value_count")(config[1].value_ids.length, MAX_VALUES)}
+                            addTitle={__("meters_api.content.add_value_title")}
                             onAddShow={async () => {
                                 value_id_obj.value_id = -1;
                                 clearStagesFrom(0, stages);
                             }}
                             onAddGetChildren={() => [
-                                <FormRow label={__("meters_push_api.content.config_value_id")}>
+                                <FormRow label={__("meters_api.content.config_value_id")}>
                                     <MeterValueIDSelector value_id={value_id_obj} value_id_vec={config[1].value_ids} stages={stages} />
                                 </FormRow>
                             ]}

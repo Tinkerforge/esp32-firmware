@@ -182,7 +182,7 @@ classes = [
     'RS485 Bricklet',
     'EVSE V2',
     'Energy Manager',
-    'Push API',
+    'API',
     'Sun Spec',
     'Modbus TCP',
     'MQTT Subscription',
