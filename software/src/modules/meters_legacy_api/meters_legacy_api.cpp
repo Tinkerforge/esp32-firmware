@@ -122,6 +122,10 @@ void MetersLegacyAPI::setup()
         meters.get_config_float_nan_prototype(),
         METER_ALL_VALUES_COUNT, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
     // END from old api_meter.cpp pre_setup()
+
+    task_scheduler.scheduleOnce([this]() {
+        this->show_blank_value_id_update_warnings = true;
+    }, 250);
 }
 
 void MetersLegacyAPI::register_urls()
@@ -295,7 +299,9 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     }
 
     if (cnt == 0) {
-        logger.printfln("meters_legacy_api: Ignoring blank value IDs update from linked meter in slot %u.", linked_meter_slot);
+        if (show_blank_value_id_update_warnings) {
+            logger.printfln("meters_legacy_api: Ignoring blank value IDs update from linked meter in slot %u.", linked_meter_slot);
+        }
         return;
     }
 

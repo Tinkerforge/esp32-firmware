@@ -70,4 +70,5 @@ private:
     bool     meter_setup_done      = false;
     bool     meter_writable        = false;
     bool     phases_overridden     = false;
+    bool     show_blank_value_id_update_warnings = false;
 };
