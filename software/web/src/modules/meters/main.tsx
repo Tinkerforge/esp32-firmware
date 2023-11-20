@@ -596,9 +596,9 @@ function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
     return a.slice(-tail);
 }
 
-type MetersConfig = API.getType['meters/config'];
+type MetersConfig = API.getType['meters/0/config'];
 
-export class Meters extends ConfigComponent<'meters/config', MetersProps, MetersState> {
+export class Meters extends ConfigComponent<'meters/0/config', MetersProps, MetersState> {
     live_data: CachedData = {timestamps: [], samples: []};
     pending_live_data: CachedData;
     history_data: CachedData = {timestamps: [], samples: []};
@@ -610,7 +610,7 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
     values: {[meter_slot: number]: Readonly<number[]>} = {};
 
     constructor(props: MetersProps) {
-        super('meters/config',
+        super('meters/0/config',
               __("meters.script.save_failed"),
               __("meters.script.reboot_content_changed"), {
                   states: {},
@@ -902,38 +902,37 @@ export class Meters extends ConfigComponent<'meters/config', MetersProps, Meters
                 values: [this.history_data.timestamps],
             };
 
-            if (this.history_data.samples[this.state.meter_slot_status].length > 0) {
-                status_data.keys.push('meter_' + this.state.meter_slot_status);
-                status_data.names.push(get_meter_name(this.state.configs_plot, this.state.meter_slot_status));
-                status_data.values.push(this.history_data.samples[this.state.meter_slot_status]);
+            let meter_slot = this.status_ref.current.state.meter_slot;
+
+            if (this.history_data.samples[meter_slot].length > 0) {
+                status_data.keys.push('meter_' + meter_slot);
+                status_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
+                status_data.values.push(this.history_data.samples[meter_slot]);
             }
 
             this.status_ref.current.uplot_wrapper_ref.current.set_data(status_data);
         }
     }
 
-    override async sendSave(t: "meters/config", new_config: MetersConfig) {
+    override async sendSave(t: "meters/0/config", new_config: MetersConfig) {
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             await API.save_unchecked(`meters/${meter_slot}/config`, this.state.configs_table[meter_slot], __("meters.script.save_failed"));
         }
-
-        await super.sendSave(t, new_config);
     }
 
-    override async sendReset(t: "meters/config") {
+    override async sendReset(t: "meters/0/config") {
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             await API.reset_unchecked(`meters/${meter_slot}/config`, super.error_string, super.reboot_string);
         }
-
-        await super.sendReset(t);
     }
 
-    override getIsModified(t: "meters/config"): boolean {
+    override getIsModified(t: "meters/0/config"): boolean {
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             if (API.is_modified_unchecked(`meters/${meter_slot}/config`))
                 return true;
         }
-        return super.getIsModified(t);
+
+        return false;
     }
 
     render(props: {}, state: Readonly<MetersState>) {
@@ -1295,12 +1294,6 @@ export class MetersStatus extends Component<{}, MeterStatusState> {
                 }));
             });
         }
-
-        util.addApiEventListener("meters/config", () => {
-            let config = API.get("meters/config");
-
-            this.setState({meter_slot: config.meter_slot_status});
-        });
     }
 
     render(props: {}, state: MeterStatusState) {
