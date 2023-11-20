@@ -1,0 +1,68 @@
+/* esp32-firmware
+ * Copyright (C) 2023 Mattias Schäffersmann <mattias@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#pragma once
+
+#include "module_dependencies.h"
+
+#include <math.h>
+
+#include "config.h"
+#include "modules/meter/meter_defs.h" // FIXME: remove after port to meters module
+#include "modules/meters/imeter.h"
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    //#include "gcc_warnings.h"
+    #pragma GCC diagnostic ignored "-Weffc++"
+#endif
+
+class MeterEVSEV2 final : public IMeter
+{
+public:
+    MeterEVSEV2(uint32_t slot_, Config *state_, Config *errors_) : slot(slot_), state(state_), errors(errors_) {}
+
+    MeterClassID get_class() const override;
+    void setup() override;
+    //void register_urls(const String &base_url) override;
+
+    bool supports_power()         override {return true;}
+    bool supports_energy_import() override {return true;}
+    bool supports_energy_export() override {return true;}
+    bool supports_currents()      override {return true;}
+
+    void update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data);
+private:
+    void update_all_values();
+
+    uint32_t slot;
+    Config *state;
+    Config *errors;
+
+    uint32_t meter_type = METER_TYPE_NONE;
+    uint32_t value_index_power      = UINT32_MAX;
+    uint32_t value_index_energy_rel = UINT32_MAX;
+    uint32_t value_index_energy_abs = UINT32_MAX;
+
+    bool meter_change_warning_printed = false;
+};
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif

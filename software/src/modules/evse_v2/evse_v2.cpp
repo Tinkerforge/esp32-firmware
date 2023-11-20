@@ -716,13 +716,7 @@ void EVSEV2::update_all_data()
     uint8_t jumper_configuration;
     bool has_lock_switch;
     uint8_t evse_version;
-    uint8_t energy_meter_type;
-    float power;
-    float energy_relative;
-    float energy_absolute;
-    bool phases_active[3];
-    bool phases_connected[3];
-    uint32_t error_count[6];
+    struct meter_data meter_data;
 
     // get_all_data_2 - 26 byte
     uint8_t shutdown_input_configuration;
@@ -773,13 +767,13 @@ void EVSEV2::update_all_data()
                                        &jumper_configuration,
                                        &has_lock_switch,
                                        &evse_version,
-                                       &energy_meter_type,
-                                       &power,
-                                       &energy_relative,
-                                       &energy_absolute,
-                                       phases_active,
-                                       phases_connected,
-                                       error_count);
+                                       &meter_data.meter_type,
+                                       &meter_data.power,
+                                       &meter_data.energy_relative,
+                                       &meter_data.energy_absolute,
+                                       meter_data.phases_active,
+                                       meter_data.phases_connected,
+                                       meter_data.error_count);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_1 %d", rc);
@@ -916,7 +910,7 @@ void EVSEV2::update_all_data()
     evse_common.hardware_configuration.get("jumper_configuration")->updateUint(jumper_configuration);
     evse_common.hardware_configuration.get("has_lock_switch")->updateBool(has_lock_switch);
     evse_common.hardware_configuration.get("evse_version")->updateUint(evse_version);
-    evse_common.hardware_configuration.get("energy_meter_type")->updateUint(energy_meter_type);
+    evse_common.hardware_configuration.get("energy_meter_type")->updateUint(meter_data.meter_type);
 
     // get_low_level_state
     evse_common.low_level_state.get("led_state")->updateUint(led_state);
@@ -957,26 +951,27 @@ void EVSEV2::update_all_data()
         !evse_common.slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("clear_on_disconnect")->asBool());
 
 
-    if (energy_meter_type != 0) {
+    // TODO: Remove meter values and errors? Also remove meter type?
+    if (meter_data.meter_type != 0) {
         // get_energy_meter_values
-        energy_meter_values.get("power")->updateFloat(power);
-        energy_meter_values.get("energy_rel")->updateFloat(energy_relative);
-        energy_meter_values.get("energy_abs")->updateFloat(energy_absolute);
+        energy_meter_values.get("power")->updateFloat(meter_data.power);
+        energy_meter_values.get("energy_rel")->updateFloat(meter_data.energy_relative);
+        energy_meter_values.get("energy_abs")->updateFloat(meter_data.energy_absolute);
 
         for (int i = 0; i < 3; ++i)
-            energy_meter_values.get("phases_active")->get(i)->updateBool(phases_active[i]);
+            energy_meter_values.get("phases_active")->get(i)->updateBool(meter_data.phases_active[i]);
 
         for (int i = 0; i < 3; ++i)
-            energy_meter_values.get("phases_connected")->get(i)->updateBool(phases_connected[i]);
+            energy_meter_values.get("phases_connected")->get(i)->updateBool(meter_data.phases_connected[i]);
     }
 
     // get_energy_meter_errors
-    energy_meter_errors.get("local_timeout")->updateUint(error_count[0]);
-    energy_meter_errors.get("global_timeout")->updateUint(error_count[1]);
-    energy_meter_errors.get("illegal_function")->updateUint(error_count[2]);
-    energy_meter_errors.get("illegal_data_access")->updateUint(error_count[3]);
-    energy_meter_errors.get("illegal_data_value")->updateUint(error_count[4]);
-    energy_meter_errors.get("slave_device_failure")->updateUint(error_count[5]);
+    energy_meter_errors.get("local_timeout")->updateUint(meter_data.error_count[0]);
+    energy_meter_errors.get("global_timeout")->updateUint(meter_data.error_count[1]);
+    energy_meter_errors.get("illegal_function")->updateUint(meter_data.error_count[2]);
+    energy_meter_errors.get("illegal_data_access")->updateUint(meter_data.error_count[3]);
+    energy_meter_errors.get("illegal_data_value")->updateUint(meter_data.error_count[4]);
+    energy_meter_errors.get("slave_device_failure")->updateUint(meter_data.error_count[5]);
 
     // get_gpio_configuration
     gpio_configuration.get("shutdown_input")->updateUint(shutdown_input_configuration);
@@ -1040,6 +1035,10 @@ void EVSEV2::update_all_data()
 #if MODULE_WATCHDOG_AVAILABLE()
     static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable");
     watchdog.reset(watchdog_handle);
+#endif
+
+#if MODULE_METERS_EVSE_V2_AVAILABLE()
+    meters_evse_v2.update_from_evse_v2_all_data(&meter_data);
 #endif
 }
 
