@@ -134,10 +134,12 @@ void RequireMeter::start_task() {
 
 #if MODULE_CRON_AVAILABLE()
         static bool was_triggered = false;
-        if (meter_timeout && !was_triggered) {
-            cron.trigger_action(CronTriggerID::RequireMeter, nullptr, trigger_action);
-            was_triggered = true;
-        } else if (!meter_timeout) {
+        if (meter_timeout) {
+            if (!was_triggered) {
+                cron.trigger_action(CronTriggerID::RequireMeter, nullptr, trigger_action);
+                was_triggered = true;
+            }
+        } else {
             was_triggered = false;
         }
 #endif
@@ -148,10 +150,12 @@ void RequireMeter::start_task() {
 #endif
 
         static bool last_meter_timeout = false;
-        if (last_meter_timeout && !meter_timeout) {
-            logger.printfln("Energy meter working again. Allowing charging.");
-        } else if (!last_meter_timeout && meter_timeout) {
-            logger.printfln("Energy meter stuck or unreachable! Blocking charging.");
+        if (meter_timeout != last_meter_timeout) {
+            if (meter_timeout) {
+                logger.printfln("Energy meter stuck or unreachable! Blocking charging.");
+            } else {
+                logger.printfln("Energy meter working again. Allowing charging.");
+            }
         }
         last_meter_timeout = meter_timeout;
     }, 0, 1000);
