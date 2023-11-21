@@ -269,7 +269,7 @@ void EnergyManager::collect_data_points()
         uint32_t energy_export[7] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // daWh
 
         micros_t max_age = micros_t{5 * 60 * 1000 * 1000};
-        Meters::ValueAvailability availability;
+        MeterValueAvailability availability;
 
         for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
             if (meters.get_meter_class(slot) == MeterClassID::None) {
@@ -278,7 +278,7 @@ void EnergyManager::collect_data_points()
 
             float total_import; // kWh
             availability = meters.get_energy_import(slot, &total_import, max_age);
-            if (availability == Meters::ValueAvailability::Fresh) {
+            if (availability == MeterValueAvailability::Fresh) {
                 if (isnan(total_import)) {
                     logger.printfln("data_points: Meter claims fresh 'import' value but returned NaN.");
                 } else {
@@ -287,7 +287,7 @@ void EnergyManager::collect_data_points()
                                                           roundf(total_import * 100.0), // kWh -> daWh
                                                           UINT32_MAX - 1);
                 }
-            } else if (availability == Meters::ValueAvailability::Unavailable) {
+            } else if (availability == MeterValueAvailability::Unavailable) {
                 have_data = true;
                 energy_import[slot] = clamp<uint64_t>(0, roundf(history_meter_energy_import[slot]), UINT32_MAX - 1);
             } else {
@@ -296,7 +296,7 @@ void EnergyManager::collect_data_points()
 
             float total_export; // kWh
             availability = meters.get_energy_export(slot, &total_export, max_age);
-            if (availability == Meters::ValueAvailability::Fresh) {
+            if (availability == MeterValueAvailability::Fresh) {
                 if (isnan(total_export)) {
                     logger.printfln("data_points: Meter claims fresh 'export' value but returned NaN.");
                 } else {
@@ -305,7 +305,7 @@ void EnergyManager::collect_data_points()
                                                           roundf(total_export * 100.0), // kWh -> daWh
                                                           UINT32_MAX - 1);
                 }
-            } else if (availability == Meters::ValueAvailability::Unavailable) {
+            } else if (availability == MeterValueAvailability::Unavailable) {
                 have_data = true;
                 energy_export[slot] = clamp<uint64_t>(0, roundf(history_meter_energy_export[slot]), UINT32_MAX - 1);
             } else {

@@ -463,7 +463,7 @@ void EnergyManager::setup()
     bool power_meter_available = false;
 #if MODULE_METERS_AVAILABLE()
     float unused_power;
-    if (meters.get_power(meter_slot_power, &unused_power) == Meters::ValueAvailability::Unavailable) {
+    if (meters.get_power(meter_slot_power, &unused_power) == MeterValueAvailability::Unavailable) {
         meter_slot_power = UINT32_MAX;
     } else {
         power_meter_available = true;
@@ -650,7 +650,7 @@ void EnergyManager::update_all_data()
     cron_trigger |= state.get("phases_switched")->updateUint(have_phases) ? 4u : 0u;
 
 #if MODULE_METERS_AVAILABLE()
-    if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != Meters::ValueAvailability::Fresh)
+    if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != MeterValueAvailability::Fresh)
         power_at_meter_raw_w = NAN;
 #else
     power_at_meter_raw_w = NAN;

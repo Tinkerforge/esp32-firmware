@@ -437,10 +437,10 @@ bool Meters::meter_is_fresh(uint32_t slot, micros_t max_age_us)
     }
 }
 
-Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, float *value_out, micros_t max_age)
+MeterValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, float *value_out, micros_t max_age)
 {
     if (slot >= METERS_SLOTS) {
-        return Meters::ValueAvailability::Unavailable;
+        return MeterValueAvailability::Unavailable;
     }
 
     MeterSlot &meter_slot = meter_slots[slot];
@@ -452,7 +452,7 @@ Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind,
 
         // Meter declared its values but index isn't cached -> value is unavailable.
         if (meter_slot.values_declared)
-            return Meters::ValueAvailability::Unavailable;
+            return MeterValueAvailability::Unavailable;
 
         // Meter hasn't declared its values yet, ask the configured meter.
         bool supported;
@@ -463,9 +463,9 @@ Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind,
             default: supported = false;
         }
         if (supported) {
-            return Meters::ValueAvailability::CurrentlyUnknown;
+            return MeterValueAvailability::CurrentlyUnknown;
         } else {
-            return Meters::ValueAvailability::Unavailable;
+            return MeterValueAvailability::Unavailable;
         }
     }
 
@@ -475,23 +475,23 @@ Meters::ValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind,
     *value_out = val->asFloat();
 
     if (max_age != 0_usec && deadline_elapsed(meter_slot.values_last_updated_at + max_age)) {
-        return Meters::ValueAvailability::Stale;
+        return MeterValueAvailability::Stale;
     } else {
-        return Meters::ValueAvailability::Fresh;
+        return MeterValueAvailability::Fresh;
     }
 }
 
-Meters::ValueAvailability Meters::get_power(uint32_t slot, float *power, micros_t max_age)
+MeterValueAvailability Meters::get_power(uint32_t slot, float *power, micros_t max_age)
 {
     return get_single_value(slot, INDEX_CACHE_POWER, power, max_age);
 }
 
-Meters::ValueAvailability Meters::get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age)
+MeterValueAvailability Meters::get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age)
 {
     return get_single_value(slot, INDEX_CACHE_ENERGY_IMPORT, total_import_kwh, max_age);
 }
 
-Meters::ValueAvailability Meters::get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age)
+MeterValueAvailability Meters::get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age)
 {
     return get_single_value(slot, INDEX_CACHE_ENERGY_EXPORT, total_export_kwh, max_age);
 }
@@ -591,7 +591,7 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
         meter_slot.values_last_updated_at = now_us();
 
         float power;
-        if (get_power(slot, &power) == ValueAvailability::Fresh) {
+        if (get_power(slot, &power) == MeterValueAvailability::Fresh) {
             meter_slot.power_history.add_sample(power);
         }
     }
@@ -627,7 +627,7 @@ void Meters::update_all_values(uint32_t slot, Config *new_values)
         meter_slot.values_last_updated_at = now_us();
 
         float power;
-        if (get_power(slot, &power) == ValueAvailability::Fresh) {
+        if (get_power(slot, &power) == MeterValueAvailability::Fresh) {
             meter_slot.power_history.add_sample(power);
         }
     }

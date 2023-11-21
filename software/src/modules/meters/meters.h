@@ -21,6 +21,7 @@
 
 #include "imeter.h"
 #include "meter_generator.h"
+#include "meter_value_availability.h"
 
 #include <stdint.h>
 
@@ -44,13 +45,6 @@
 class Meters final : public IModule
 {
 public:
-    enum class ValueAvailability {
-        Fresh,              // Meter declared requested value ID and value is fresh.
-        Stale,              // Meter declared requested value ID and value is stale or not yet set.
-        Unavailable,        // (a) Meter declared its value IDs but requisted value ID was not among them. (b) Meter hasn't declared its values and meter config can't provide this value ID.
-        CurrentlyUnknown,   // Meter hasn't declared its value IDs yet and the meter config doesn't know.
-    };
-
     enum class PathType {
         Base        = 0,
         Config      = 1,
@@ -74,9 +68,9 @@ public:
     MeterClassID get_meter_class(uint32_t slot);
     bool meter_is_fresh(uint32_t slot, micros_t max_age_us);
 
-    ValueAvailability get_power(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
-    ValueAvailability get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age = 0_usec);
-    ValueAvailability get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age = 0_usec);
+    MeterValueAvailability get_power(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
+    MeterValueAvailability get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age = 0_usec);
+    MeterValueAvailability get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age = 0_usec);
     //uint32_t get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age = 0_usec);
 
     void update_value(uint32_t slot, uint32_t index, float new_value);
@@ -118,7 +112,7 @@ private:
     MeterGenerator *get_generator_for_class(MeterClassID meter_class);
     IMeter *new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *config, Config *errors);
 
-    ValueAvailability get_single_value(uint32_t slot, uint32_t kind, float *value, micros_t max_age_us);
+    MeterValueAvailability get_single_value(uint32_t slot, uint32_t kind, float *value, micros_t max_age_us);
 
     float live_samples_per_second();
 
