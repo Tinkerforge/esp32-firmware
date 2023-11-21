@@ -142,8 +142,9 @@ void ChargeLimits::register_urls()
         state.get("start_timestamp_ms")->updateUint(time_now);
         state.get("target_timestamp_ms")->updateUint(time_now + map_duration(config_in_use.get("duration")->asUint()));
 
-        if (api.hasFeature("meter")) {
-            auto energy_now = meter.values.get("energy_abs")->asFloat();
+        float energy_now;
+        evse_common.get_charger_meter_energy(&energy_now); // TODO: Use value freshness?
+        if (!isnan(energy_now)) {
             state.get("start_energy_kwh")-> updateFloat(energy_now);
             state.get("target_energy_kwh")->updateFloat(energy_now + config_in_use.get("energy_wh")->asUint() / 1000.0);
         }
@@ -158,54 +159,58 @@ void ChargeLimits::register_urls()
     task_scheduler.scheduleWithFixedDelay([this](){
         static bool was_charging = false;
         bool charging = charge_tracker.current_charge.get("user_id")->asInt() != -1;
-
-        if (!charging && was_charging) {
-            if (!api.restorePersistentConfig("charge_limits/default_limits", &config_in_use))
-            {
-                config_in_use.get("duration")->updateUint(config.get("duration")->asUint());
-                config_in_use.get("energy_wh")->updateUint(config.get("energy_wh")->asUint());
-            }
-
-            evse_common.set_charge_limits_slot(32000, true);
-
-            state.get("start_timestamp_ms")->updateUint(0);
-            state.get("start_energy_kwh")->updateFloat(NAN);
-            state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration")->asUint()));
-            state.get("target_energy_kwh")->updateFloat(NAN);
-        }
-
-
-        auto uptime = evse_common.get_low_level_state().get("uptime")->asUint();
-
-        if (charging && !was_charging) {
-            state.get("start_timestamp_ms")->updateUint(charge_tracker.current_charge.get("evse_uptime_start")->asUint());
-            if (api.hasFeature("meter") && !isnan(charge_tracker.current_charge.get("meter_start")->asFloat()))
-                state.get("start_energy_kwh")->updateFloat(charge_tracker.current_charge.get("meter_start")->asFloat());
-        }
-
         uint16_t target_current = 32000;
 
-        if (charging && config_in_use.get("duration")->asUint() > 0)
-        {
-            if (!was_charging)
-                state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint()
-                                                                + map_duration(config_in_use.get("duration")->asUint()));
+        if (!charging) {
+            if (was_charging) {
+                if (!api.restorePersistentConfig("charge_limits/default_limits", &config_in_use))
+                {
+                    config_in_use.get("duration")->updateUint(config.get("duration")->asUint());
+                    config_in_use.get("energy_wh")->updateUint(config.get("energy_wh")->asUint());
+                }
 
-            if (a_after_b(uptime, state.get("target_timestamp_ms")->asUint()))
-                target_current = 0;
-        }
+                evse_common.set_charge_limits_slot(32000, true);
 
-        if (charging && api.hasFeature("meter") && config_in_use.get("energy_wh")->asUint() > 0)
-        {
-            auto start = state.get("start_energy_kwh")->asFloat();
-            if (!was_charging && !isnan(start))
-                state.get("target_energy_kwh")->updateFloat(start + config_in_use.get("energy_wh")->asUint() / 1000.0);
+                state.get("start_timestamp_ms")->updateUint(0);
+                state.get("start_energy_kwh")->updateFloat(NAN);
+                state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration")->asUint()));
+                state.get("target_energy_kwh")->updateFloat(NAN);
+            }
+        } else { // charging
+            float energy_now_kwh;
+            evse_common.get_charger_meter_energy(&energy_now_kwh); // TODO: Use freshness check?
 
-            auto target = state.get("target_energy_kwh")->asFloat();
-            auto now = meter.values.get("energy_abs")->asFloat();
+            if (!was_charging) {
+                state.get("start_timestamp_ms")->updateUint(charge_tracker.current_charge.get("evse_uptime_start")->asUint());
+                if (!isnan(energy_now_kwh) && !isnan(charge_tracker.current_charge.get("meter_start")->asFloat())) // TODO: Is the check for energy_now_kwh even needed?
+                    state.get("start_energy_kwh")->updateFloat(charge_tracker.current_charge.get("meter_start")->asFloat());
+            }
 
-            if (!isnan(target) && !isnan(now) && target <= now)
-                target_current = 0;
+            if (config_in_use.get("duration")->asUint() > 0) {
+                if (!was_charging)
+                    state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint()
+                                                                    + map_duration(config_in_use.get("duration")->asUint()));
+
+                uint32_t uptime = evse_common.get_low_level_state().get("uptime")->asUint();
+                if (a_after_b(uptime, state.get("target_timestamp_ms")->asUint()))
+                    target_current = 0;
+            }
+
+            if (config_in_use.get("energy_wh")->asUint() > 0 && !isnan(energy_now_kwh)) {
+                if (!was_charging) {
+                    float start = state.get("start_energy_kwh")->asFloat();
+                    if (!isnan(start)) {
+                        state.get("target_energy_kwh")->updateFloat(start + config_in_use.get("energy_wh")->asUint() / 1000.0);
+                    }
+                }
+
+                float target = state.get("target_energy_kwh")->asFloat();
+                if (!isnan(target)) {
+                    if (!isnan(energy_now_kwh) && target <= energy_now_kwh) {
+                        target_current = 0;
+                    }
+                }
+            }
         }
 
 #if MODULE_CRON_AVAILABLE()
