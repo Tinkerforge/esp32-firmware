@@ -140,16 +140,25 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
     }
 
     get_scan_result_item(scan_result: DeviceScannerResult) {
+        let preferred_model_id: number = null;
+
+        if ([101, 102, 103, 201, 202, 203, 204].indexOf(scan_result.model_id) >= 0 &&
+            this.state.scan_results.findIndex((other) => other.model_id == scan_result.model_id + 10) >= 0) {
+            preferred_model_id = scan_result.model_id + 10;
+        }
+
+        let selectable = SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id] && preferred_model_id === null;
+
         return <ListGroupItem
                 key={scan_result.model_id}
                 action
                 type="button"
-                onClick={SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id] ? () => {this.props.onResultSelected(scan_result)} : undefined}
-                style={SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id] ? "" : "cursor: default; background-color: #eeeeee !important;"}>
+                onClick={selectable ? () => {this.props.onResultSelected(scan_result)} : undefined}
+                style={selectable ? "" : "cursor: default; background-color: #eeeeee !important;"}>
             <div class="d-flex w-100 justify-content-between">
                 <span class="h5 text-left">{scan_result.display_name}</span>
-                {SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id] ? undefined :
-                    <span class="text-right" style="color:red">{__("meters_sun_spec.content.model_no_supported")}</span>
+                {selectable ? undefined :
+                    <span class="text-right" style="color:red">{preferred_model_id !== null ? __("meters_sun_spec.content.model_other_preferred")(preferred_model_id) : __("meters_sun_spec.content.model_no_supported")}</span>
                 }
             </div>
             <div class="d-flex w-100 justify-content-between">
