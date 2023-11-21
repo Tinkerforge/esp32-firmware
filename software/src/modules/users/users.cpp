@@ -76,9 +76,9 @@ Config *get_user_slot()
 
 float get_energy()
 {
-    bool meter_avail = meter.state.get("state")->asUint() == 2;
-    // If for some reason we decide to use energy_rel here, also update the energy_this_charge calculation in modbus_tcp.cpp
-    return !meter_avail ? NAN : meter.values.get("energy_abs")->asFloat();
+    float energy;
+    evse_common.get_charger_meter_energy(&energy);
+    return energy;
 }
 
 #define USER_SLOT_INFO_VERSION 1
@@ -282,6 +282,8 @@ void Users::setup()
         if (std::isnan(override_value) || override_value == 0.0f)
         {
             auto start = millis();
+#warning "The meter checks below must be migrated to the meters framework."
+// TODO: The condition above check if override_value is NAN, but the loops below don't do anything when that is the case?
 #if MODULE_EVSE_AVAILABLE() && MODULE_MODBUS_METER_AVAILABLE()
             while(!deadline_elapsed(start + 10000) && meter.values.get("energy_abs")->asFloat() == 0)
             {
