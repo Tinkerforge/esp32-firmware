@@ -21,7 +21,9 @@
 
 #include "config.h"
 
+#include "modules/meters/meter_value_availability.h"
 #include "module.h"
+#include "tools.h"
 
 #define CHARGING_SLOT_COUNT 15
 #define CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE 20
@@ -130,6 +132,9 @@ public:
 
     void set_modbus_current(uint16_t);
     void set_modbus_enabled(bool);
+
+    MeterValueAvailability get_charger_meter_power(float *power, micros_t max_age = 0_usec);
+    MeterValueAvailability get_charger_meter_energy(float *energy, micros_t max_age = 0_usec);
 
     void set_require_meter_blocking(bool);
     void set_require_meter_enabled(bool);
