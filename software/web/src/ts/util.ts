@@ -222,6 +222,24 @@ export function render_allowed() {
     return allow_render.value;
 }
 
+let caps_active: Signal<boolean> = signal(false);
+
+export function capsLockActive() {
+    return caps_active.value;
+}
+
+function checkCapsLock(e: MouseEvent | KeyboardEvent) {
+    let active = e.getModifierState("CapsLock");
+    if (caps_active.value && e instanceof KeyboardEvent && e.type == "keyup" && e.key == "CapsLock")
+        active = false;
+    caps_active.value = active;
+}
+
+export function initCapsLockCheck() {
+    document.addEventListener("keyup", checkCapsLock);
+    document.addEventListener("click", checkCapsLock);
+}
+
 export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.APIEventTarget) => void) {
     if (!first) {
         add_alert("event_connection_lost", "alert-warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))

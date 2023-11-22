@@ -42,13 +42,12 @@ interface InputPasswordProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputEl
 interface InputPasswordState {
     show: boolean
     clearSelected: boolean
-    capsLock: boolean
 }
 
 export class InputPassword extends Component<InputPasswordProps, InputPasswordState> {
     constructor() {
         super();
-        this.state = {show: false, clearSelected: false, capsLock: false};
+        this.state = {show: false, clearSelected: false};
     }
 
     toggleClear() {
@@ -99,9 +98,6 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
                                 props.onValue(old_val.length > 0 ? old_val : null);
                             }}
                         }
-                        onKeyPress={(e) => {
-                            this.setState({capsLock: e.getModifierState('CapsLock')});
-                        }}
                         disabled={toBeCleared}
                         {...props} />
                     <div class="input-group-append">
@@ -117,8 +113,7 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
                     </div>
                     {invalidFeedback}
                 </div>
-                {state.capsLock ? <div class="mt-2">{__("component.input_password.capslock_enabled")}</div> : ""}
-
+                <div class="mt-2" hidden={!util.capsLockActive()}>{__("component.input_password.capslock_enabled")}</div>
             </>
         );
     }

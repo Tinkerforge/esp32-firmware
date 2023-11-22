@@ -89,6 +89,7 @@ function init() {
         m.init();
     }
 
+    util.initCapsLockCheck();
     util.setupEventSource(true, false, (ws: WebSocket, eventTarget: API.APIEventTarget) => registerEvents(eventTarget));
 }
 
