@@ -124,7 +124,11 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                     <FormRow label={__("ocpp.content.pass")}>
                         <InputPassword maxLength={64}
                                        value={state.pass}
-                                       onValue={this.set("pass")}/>
+                                       onValue={s => {
+                                           this.setState({pass: s});
+                                           if (s != null && s.length > 0)
+                                               this.setState({enable_auth: true});
+                                       }}/>
                     </FormRow>
                     <FormRow label={__("ocpp.content.reset")} label_muted={__("ocpp.content.reset_muted")}>
                         <Button variant="danger" className="form-control" onClick={async () =>{
