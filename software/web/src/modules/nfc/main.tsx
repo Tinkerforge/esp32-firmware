@@ -163,11 +163,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                         },
                                     ],
                                     onEditSubmit: async () => {
-                                        this.setState({
-                                            authorized_tags: state.authorized_tags.map((tag, k) => i === k ? state.editTag : tag),
-                                            editTag: {tag_id: "", user_id: 0, tag_type: "" as any}
-                                        });
-
+                                        this.setState({authorized_tags: state.authorized_tags.map((tag, k) => i === k ? state.editTag : tag)});
                                         this.setDirty(true);
                                     },
                                     onRemoveClick: async () => {
