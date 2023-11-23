@@ -398,10 +398,10 @@ static const MetersSunSpecParser::ModelData model_101_data = {
         { &get_model_101_DCA, MeterValueID::CurrentDC, 28 },
         { &get_model_101_DCV, MeterValueID::VoltageDC, 30 },
         { &get_model_101_DCW, MeterValueID::PowerDC, 32 },
-        { &get_model_101_TmpCab, MeterValueID::Temperature1, 37 },
-        { &get_model_101_TmpSnk, MeterValueID::Temperature2, 37 },
-        { &get_model_101_TmpTrns, MeterValueID::Temperature3, 37 },
-        { &get_model_101_TmpOt, MeterValueID::Temperature4, 37 },
+        { &get_model_101_TmpCab, MeterValueID::TemperatureCabinet, 37 },
+        { &get_model_101_TmpSnk, MeterValueID::TemperatureHeatSink, 37 },
+        { &get_model_101_TmpTrns, MeterValueID::TemperatureTransformer, 37 },
+        { &get_model_101_TmpOt, MeterValueID::Temperature, 37 },
     }
 };
 
@@ -713,10 +713,10 @@ static const MetersSunSpecParser::ModelData model_102_data = {
         { &get_model_102_DCA, MeterValueID::CurrentDC, 28 },
         { &get_model_102_DCV, MeterValueID::VoltageDC, 30 },
         { &get_model_102_DCW, MeterValueID::PowerDC, 32 },
-        { &get_model_102_TmpCab, MeterValueID::Temperature1, 37 },
-        { &get_model_102_TmpSnk, MeterValueID::Temperature2, 37 },
-        { &get_model_102_TmpTrns, MeterValueID::Temperature3, 37 },
-        { &get_model_102_TmpOt, MeterValueID::Temperature4, 37 },
+        { &get_model_102_TmpCab, MeterValueID::TemperatureCabinet, 37 },
+        { &get_model_102_TmpSnk, MeterValueID::TemperatureHeatSink, 37 },
+        { &get_model_102_TmpTrns, MeterValueID::TemperatureTransformer, 37 },
+        { &get_model_102_TmpOt, MeterValueID::Temperature, 37 },
     }
 };
 
@@ -1028,10 +1028,10 @@ static const MetersSunSpecParser::ModelData model_103_data = {
         { &get_model_103_DCA, MeterValueID::CurrentDC, 28 },
         { &get_model_103_DCV, MeterValueID::VoltageDC, 30 },
         { &get_model_103_DCW, MeterValueID::PowerDC, 32 },
-        { &get_model_103_TmpCab, MeterValueID::Temperature1, 37 },
-        { &get_model_103_TmpSnk, MeterValueID::Temperature2, 37 },
-        { &get_model_103_TmpTrns, MeterValueID::Temperature3, 37 },
-        { &get_model_103_TmpOt, MeterValueID::Temperature4, 37 },
+        { &get_model_103_TmpCab, MeterValueID::TemperatureCabinet, 37 },
+        { &get_model_103_TmpSnk, MeterValueID::TemperatureHeatSink, 37 },
+        { &get_model_103_TmpTrns, MeterValueID::TemperatureTransformer, 37 },
+        { &get_model_103_TmpOt, MeterValueID::Temperature, 37 },
     }
 };
 
@@ -1262,10 +1262,10 @@ static const MetersSunSpecParser::ModelData model_111_data = {
         { &get_model_111_DCA, MeterValueID::CurrentDC, 35 },
         { &get_model_111_DCV, MeterValueID::VoltageDC, 37 },
         { &get_model_111_DCW, MeterValueID::PowerDC, 39 },
-        { &get_model_111_TmpCab, MeterValueID::Temperature1, 41 },
-        { &get_model_111_TmpSnk, MeterValueID::Temperature2, 43 },
-        { &get_model_111_TmpTrns, MeterValueID::Temperature3, 45 },
-        { &get_model_111_TmpOt, MeterValueID::Temperature4, 47 },
+        { &get_model_111_TmpCab, MeterValueID::TemperatureCabinet, 41 },
+        { &get_model_111_TmpSnk, MeterValueID::TemperatureHeatSink, 43 },
+        { &get_model_111_TmpTrns, MeterValueID::TemperatureTransformer, 45 },
+        { &get_model_111_TmpOt, MeterValueID::Temperature, 47 },
     }
 };
 
@@ -1496,10 +1496,10 @@ static const MetersSunSpecParser::ModelData model_112_data = {
         { &get_model_112_DCA, MeterValueID::CurrentDC, 35 },
         { &get_model_112_DCV, MeterValueID::VoltageDC, 37 },
         { &get_model_112_DCW, MeterValueID::PowerDC, 39 },
-        { &get_model_112_TmpCab, MeterValueID::Temperature1, 41 },
-        { &get_model_112_TmpSnk, MeterValueID::Temperature2, 43 },
-        { &get_model_112_TmpTrns, MeterValueID::Temperature3, 45 },
-        { &get_model_112_TmpOt, MeterValueID::Temperature4, 47 },
+        { &get_model_112_TmpCab, MeterValueID::TemperatureCabinet, 41 },
+        { &get_model_112_TmpSnk, MeterValueID::TemperatureHeatSink, 43 },
+        { &get_model_112_TmpTrns, MeterValueID::TemperatureTransformer, 45 },
+        { &get_model_112_TmpOt, MeterValueID::Temperature, 47 },
     }
 };
 
@@ -1730,10 +1730,10 @@ static const MetersSunSpecParser::ModelData model_113_data = {
         { &get_model_113_DCA, MeterValueID::CurrentDC, 35 },
         { &get_model_113_DCV, MeterValueID::VoltageDC, 37 },
         { &get_model_113_DCW, MeterValueID::PowerDC, 39 },
-        { &get_model_113_TmpCab, MeterValueID::Temperature1, 41 },
-        { &get_model_113_TmpSnk, MeterValueID::Temperature2, 43 },
-        { &get_model_113_TmpTrns, MeterValueID::Temperature3, 45 },
-        { &get_model_113_TmpOt, MeterValueID::Temperature4, 47 },
+        { &get_model_113_TmpCab, MeterValueID::TemperatureCabinet, 41 },
+        { &get_model_113_TmpSnk, MeterValueID::TemperatureHeatSink, 43 },
+        { &get_model_113_TmpTrns, MeterValueID::TemperatureTransformer, 45 },
+        { &get_model_113_TmpOt, MeterValueID::Temperature, 47 },
     }
 };
 

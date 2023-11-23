@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment, ComponentChildren } from 'preact'
+import { h, Fragment, Component, ComponentChildren } from 'preact'
 import { __, translate_unchecked } from "../../ts/translation";
-import { StateUpdater, useState } from 'preact/hooks';
+import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/meters_defs";
-import { MeterValueID, METER_VALUE_ITEMS } from "../meters/meter_value_id";
+import { MeterValueID, MeterValueTreeType, METER_VALUE_INFOS, METER_VALUE_TREE } from "../meters/meter_value_id";
 import { MeterConfig } from "../meters/types";
 import { Table, TableRow } from "../../ts/components/table";
 import { FormRow } from "../../ts/components/form_row";
@@ -38,145 +38,194 @@ export type APIMetersConfig = [
     },
 ];
 
-function createItems(subset: any) {
-    let items: [string, string][] = [];
-    for (let key in subset) {
-        items.push([key, key]);
+interface MeterValueIDSelectorProps {
+    value_id: number|null
+    value_ids: number[]
+    on_value_id: (value_id: number) => void
+    edit_idx?: number
+}
+
+interface MeterValueIDSelectorState {
+    tree_path: string[]
+    is_valid: boolean
+}
+
+class MeterValueIDSelector extends Component<MeterValueIDSelectorProps, MeterValueIDSelectorState> {
+    constructor(props: MeterValueIDSelectorProps) {
+        super(props);
+
+        this.state = {
+            tree_path: props.value_id !== null ? METER_VALUE_INFOS[props.value_id].tree_path : [],
+            is_valid: true
+        } as any;
     }
-    return items;
-}
 
-interface MeterValueIDSelectorStage {
-    state: string,
-    isInvalid: boolean,
-}
+    tree_to_items(tree: MeterValueTreeType) {
+        let items: [string, string][] = [];
 
-let current_stage = 0
+        for (let key in tree) {
+            let name = translate_unchecked(`meters.content.fragment_${key}`);
 
-function getStage(i: number, stages: [MeterValueIDSelectorStage, StateUpdater<MeterValueIDSelectorStage>][], value_ids: any): any {
-    if (current_stage === i) {
-        current_stage = 0;
-        return value_ids;
-    } else if (!value_ids[stages[current_stage][0].state]) {
-        current_stage = 0;
-        return {};
-    } else {
-        current_stage += 1;
-        return getStage(i, stages, value_ids[stages[current_stage - 1][0].state]);
-    }
-}
+            if (typeof tree[key] === 'number') {
+                let unit = METER_VALUE_INFOS[tree[key] as MeterValueID].unit;
 
-function clearStagesFrom(i: number, stages: [MeterValueIDSelectorStage, StateUpdater<MeterValueIDSelectorStage>][]) {
-    for (; i < 5; ++i) {
-        stages[i][1]({
-            state: "",
-            isInvalid: false,
-        })
-    }
-}
-
-function reverseLookup(value_id: number) {
-    for (let a in METER_VALUE_ITEMS) {
-        for (let b in (METER_VALUE_ITEMS as any)[a]) {
-            if ((METER_VALUE_ITEMS as any)[a][b] === value_id) {
-                return [a, b]
-            }
-            for (let c in (METER_VALUE_ITEMS as any)[a][b]) {
-                if ((METER_VALUE_ITEMS as any)[a][b][c] === value_id) {
-                    return [a, b, c]
-                }
-                for (let d in (METER_VALUE_ITEMS as any)[a][b][c]) {
-                    if ((METER_VALUE_ITEMS as any)[a][b][c][d] === value_id) {
-                        return [a, b, c, d]
-                    }
-                    for (let e in (METER_VALUE_ITEMS as any)[a][b][c][d]) {
-                        if ((METER_VALUE_ITEMS as any)[a][b][c][d][e] === value_id) {
-                            return [a, b, c, d, e]
-                        }
-                    }
+                if (unit.length > 0) {
+                    name += " [" + unit + "]";
                 }
             }
+
+            items.push([key, name]);
         }
+
+        return items;
     }
-    return []
-}
 
-export function MeterValueIDSelector(state: {value_id: {value_id: number},
-        value_id_vec: Array<number>,
-        stages: [MeterValueIDSelectorStage, StateUpdater<MeterValueIDSelectorStage>][],
-        edit_idx?: number
-    }) {
+    render() {
+        let items: [string, string][][] = [];
+        let subtree: MeterValueID | MeterValueTreeType = METER_VALUE_TREE;
 
-    const e_idx = state.edit_idx;
-    const stages = state.stages;
-    const items: [string, string][][] = [];
-    for (let i = 0; i < 5; ++i) {
-        const stage = getStage(i, stages, METER_VALUE_ITEMS);
-        const item = createItems(stage);
-        if (item.length === 1) {
-            state.value_id.value_id = parseInt(stage["Register"])
-            if (state.value_id_vec.find((v, idx) => state.value_id.value_id === v && idx !== e_idx ) !== undefined && !stages[i - 1][0].isInvalid) {
-                stages[i - 1][1]({
-                    state: stages[i - 1][0].state,
-                    isInvalid: true,
-                });
+        items.push(this.tree_to_items(subtree));
+
+        for (let i = 0; i < this.state.tree_path.length; ++i) {
+            subtree = subtree[this.state.tree_path[i]];
+
+            if (typeof subtree !== 'object') {
+                break;
             }
-            items.push([])
-            continue
-        }
-        items.push(item)
-    }
 
-    const inputSelects = items.map((item, i) => {
-        if (item.length > 1) {
+            items.push(this.tree_to_items(subtree));
+        }
+
+        return items.map((item, i) => {
             return <div class={i > 0 ? "mt-2" : ""}>
-                    <InputSelect
-                        required
-                        items={item}
-                        onValue={(v) => {
-                            state.value_id.value_id = undefined;
+                <InputSelect
+                    required
+                    items={item}
+                    onValue={(v) => {
+                        let tree_path = this.state.tree_path.slice(0, i);
+                        let value_id: number = null;
+                        let subtree: MeterValueID | MeterValueTreeType = METER_VALUE_TREE;
 
-                            const stage = getStage(i, stages, METER_VALUE_ITEMS);
-                            const val_as_number = parseInt(stage[v]);
-                            if (!isNaN(val_as_number)) {
-                                state.value_id.value_id = val_as_number
+                        tree_path[i] = v;
+
+                        for (let k = 0; k < tree_path.length; ++k) {
+                            subtree = subtree[tree_path[k]];
+
+                            if (typeof subtree === 'number') {
+                                value_id = subtree;
+                                break;
                             }
+                        }
 
-                            let invalid = false;
-                            if (state.value_id_vec.find((v, idx) => state.value_id.value_id === v && idx !== e_idx) !== undefined ) {
-                                invalid = true;
+                        let is_valid = true;
+
+                        if (value_id !== null) {
+                            let idx = this.props.value_ids.findIndex((other) => other === value_id);
+
+                            if (idx >= 0 && idx !== this.props.edit_idx) {
+                                is_valid = false;
                             }
+                        }
 
-                            stages[i][1]({state: v, isInvalid: invalid});
-                            clearStagesFrom(i + 1, stages);
-                        }}
-                        placeholder={__("meters_api.content.placeholder")}
-                        value={stages[i][0].state}
-                        className = {'form-control' + (stages[i][0].isInvalid ? ' is-invalid' : '')}
-                        invalidFeedback={__("meters_api.content.invalid_feedback")}
-                    />
+                        this.setState({tree_path: tree_path, is_valid: is_valid});
+
+                        if (is_valid) {
+                            this.props.on_value_id(value_id);
+                        }
+                    }}
+                    placeholder={__("meters_api.content.placeholder")}
+                    value={this.state.tree_path[i]}
+                    className={'form-control' + (!this.state.is_valid && i == items.length - 1 ? ' is-invalid' : '')}
+                    invalidFeedback={__("meters_api.content.invalid_feedback")}
+                />
             </div>
-        }
-    })
+        });
+    }
+}
 
-    return <>{inputSelects}</>
+interface MeterValueIDTableProps {
+    config: APIMetersConfig,
+    on_config: (config: APIMetersConfig) => void
+}
+
+interface MeterValueIDTableState {
+    value_id: number
+}
+
+class MeterValueIDTable extends Component<MeterValueIDTableProps, MeterValueIDTableState> {
+    constructor() {
+        super();
+
+        this.state = {
+            value_id: null
+        } as any;
+    }
+
+    render() {
+        return <Table
+            nestingDepth={1}
+            rows={this.props.config[1].value_ids.map((value_id, i) => {
+                let name = translate_unchecked(`meters.content.value_${value_id}`);
+                let name_muted = translate_unchecked(`meters.content.value_${value_id}_muted`);
+                let unit = METER_VALUE_INFOS[value_id].unit;
+
+                if (name_muted.length > 0) {
+                    name += "; " + name_muted
+                }
+
+                if (unit.length > 0) {
+                    name += " [" + unit + "]"
+                }
+
+                const row: TableRow = {
+                    columnValues: [name],
+                    onRemoveClick: async () => {
+                        this.props.on_config(util.get_updated_union(this.props.config, {value_ids: this.props.config[1].value_ids.filter((v, k) => k !== i)}));
+                    },
+                    onEditShow: async () => {
+                        this.setState({value_id: value_id});
+                    },
+                    onEditSubmit: async () => {
+                        this.props.on_config(util.get_updated_union(this.props.config, {value_ids: this.props.config[1].value_ids.map((v, k) => k === i ? this.state.value_id : v)}));
+                    },
+                    onEditGetChildren: () => [
+                        <FormRow label={__("meters_api.content.config_value_id")}>
+                            <MeterValueIDSelector value_id={this.state.value_id} value_ids={this.props.config[1].value_ids} on_value_id={
+                                (value_id) => this.setState({value_id: value_id})
+                            } edit_idx={i} />
+                        </FormRow>
+                    ],
+                    editTitle: __("meters_api.content.edit_value_title"),
+                }
+                return row
+            })}
+            columnNames={[""]}
+            addEnabled={true}
+            addMessage={__("meters_api.content.add_value_count")(this.props.config[1].value_ids.length, MAX_VALUES)}
+            addTitle={__("meters_api.content.add_value_title")}
+            onAddShow={async () => {
+                this.setState({value_id: null});
+            }}
+            onAddGetChildren={() => [
+                <FormRow label={__("meters_api.content.config_value_id")}>
+                    <MeterValueIDSelector value_id={this.state.value_id} value_ids={this.props.config[1].value_ids} on_value_id={
+                        (value_id) => this.setState({value_id: value_id})
+                    } />
+                </FormRow>
+            ]}
+            onAddSubmit={async () => {
+                this.props.on_config(util.get_updated_union(this.props.config, {value_ids: this.props.config[1].value_ids.concat([this.state.value_id])}));
+            }}/>;
+    }
 }
 
 export function init() {
-    const value_id_obj = {value_id: -1}
-    let edit_idx = -1;
     return {
         [MeterClassID.API]: {
             name: __("meters_api.content.meter_class"),
             new_config: () => [MeterClassID.API, {display_name: "", value_ids: new Array<number>()}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
-            get_edit_children: (config: APIMetersConfig, on_value: (config: APIMetersConfig) => void): ComponentChildren => {
-                const stages: [MeterValueIDSelectorStage, StateUpdater<MeterValueIDSelectorStage>][]  = [];
-
-                for (let i = 0; i < 5; ++i) {
-                    stages.push(useState<MeterValueIDSelectorStage>({state: "", isInvalid: false}));
-                }
-
+            get_edit_children: (config: APIMetersConfig, on_config: (config: APIMetersConfig) => void): ComponentChildren => {
                 return [<>
                     <FormRow label={__("meters_api.content.config_display_name")}>
                         <InputText
@@ -184,67 +233,11 @@ export function init() {
                             maxLength={32}
                             value={config[1].display_name}
                             onValue={(v) => {
-                                config[1].display_name = v;
-                                on_value(config);
+                                on_config(util.get_updated_union(config, {display_name: v}));
                             }}/>
                     </FormRow>
                     <FormRow label={__("meters_api.content.config_value_ids")}>
-                        <Table
-                            nestingDepth={1}
-                            rows={config[1].value_ids.map((value_id) => {
-                                let name = translate_unchecked(`meters.content.value_${value_id}`);
-                                let name_muted = translate_unchecked(`meters.content.value_${value_id}_muted`);
-
-                                if (name_muted.length > 0) {
-                                    name += "; " + name_muted
-                                }
-
-                                const row: TableRow = {
-                                    columnValues: [name],
-                                    onRemoveClick: async () => {
-                                        on_value([config[0], {display_name: config[1].display_name, value_ids: config[1].value_ids.filter((v) => v !== value_id)}])
-                                    },
-                                    onEditShow: async () => {
-                                        value_id_obj.value_id = value_id;
-                                        edit_idx = config[1].value_ids.findIndex((v) => v === value_id);
-                                        clearStagesFrom(0, stages);
-                                        reverseLookup(value_id).map((v, i) => {
-                                            stages[i][1]({
-                                                state: v,
-                                                isInvalid: false,
-                                            });
-                                        });
-                                    },
-                                    onEditSubmit: async () => {
-                                        config[1].value_ids[edit_idx] = value_id_obj.value_id;
-                                        on_value(config)
-                                    },
-                                    onEditGetChildren: () => [
-                                        <FormRow label={__("meters_api.content.config_value_id")}>
-                                            <MeterValueIDSelector value_id={value_id_obj} edit_idx={edit_idx} value_id_vec={config[1].value_ids} stages={stages} />
-                                        </FormRow>
-                                    ],
-                                    editTitle: __("meters_api.content.edit_value_title"),
-                                }
-                                return row
-                            })}
-                            columnNames={[""]}
-                            addEnabled={true}
-                            addMessage={__("meters_api.content.add_value_count")(config[1].value_ids.length, MAX_VALUES)}
-                            addTitle={__("meters_api.content.add_value_title")}
-                            onAddShow={async () => {
-                                value_id_obj.value_id = -1;
-                                clearStagesFrom(0, stages);
-                            }}
-                            onAddGetChildren={() => [
-                                <FormRow label={__("meters_api.content.config_value_id")}>
-                                    <MeterValueIDSelector value_id={value_id_obj} value_id_vec={config[1].value_ids} stages={stages} />
-                                </FormRow>
-                            ]}
-                            onAddSubmit={async () => {
-                                config[1].value_ids.push(value_id_obj.value_id)
-                                on_value(config)
-                            }}/>
+                        <MeterValueIDTable config={config} on_config={on_config} />
                     </FormRow>
                 </>];
             },

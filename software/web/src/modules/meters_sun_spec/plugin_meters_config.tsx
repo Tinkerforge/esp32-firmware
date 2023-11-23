@@ -252,7 +252,7 @@ export function init() {
             name: __("meters_sun_spec.content.meter_class"),
             new_config: () => [MeterClassID.SunSpec, {display_name: "", host: "", port: 502, device_address: null, model_id: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
-            get_edit_children: (config: SunSpecMetersConfig, on_value: (config: SunSpecMetersConfig) => void): ComponentChildren => {
+            get_edit_children: (config: SunSpecMetersConfig, on_config: (config: SunSpecMetersConfig) => void): ComponentChildren => {
                 let model_ids: [string, string][] = [];
 
                 for (let model_info of SUN_SPEC_MODEL_INFOS) {
@@ -269,8 +269,7 @@ export function init() {
                             pattern="^[a-zA-Z0-9\-\.]+$"
                             value={config[1].host}
                             onValue={(v) => {
-                                config[1].host = v;
-                                on_value(config);
+                                on_config(util.get_updated_union(config, {host: v}));
                             }}
                             invalidFeedback={__("meters_sun_spec.content.config_host_invalid")} />
                     </FormRow>
@@ -281,16 +280,12 @@ export function init() {
                             max={65535}
                             value={config[1].port}
                             onValue={(v) => {
-                                config[1].port = v;
-                                on_value(config);
+                                on_config(util.get_updated_union(config, {port: v}));
                             }} />
                     </FormRow>
                     <hr/>
                     <DeviceScanner host={config[1].host} port={config[1].port} onResultSelected={(result: DeviceScannerResult) => {
-                        config[1].display_name = result.display_name;
-                        config[1].device_address = result.device_address;
-                        config[1].model_id = result.model_id;
-                        on_value(config);
+                        on_config(util.get_updated_union(config, {display_name: result.display_name, device_address: result.device_address, model_id: result.model_id}));
                     }} />
                     <hr/>
                     <FormRow label={__("meters_sun_spec.content.config_display_name")}>
@@ -299,8 +294,7 @@ export function init() {
                             maxLength={65}
                             value={config[1].display_name}
                             onValue={(v) => {
-                                config[1].display_name = v;
-                                on_value(config);
+                                on_config(util.get_updated_union(config, {display_name: v}));
                             }} />
                     </FormRow>
                     <FormRow label={__("meters_sun_spec.content.config_device_address")}>
@@ -310,8 +304,7 @@ export function init() {
                             max={247}
                             value={config[1].device_address}
                             onValue={(v) => {
-                                config[1].device_address = v;
-                                on_value(config);
+                                on_config(util.get_updated_union(config, {device_address: v}));
                             }} />
                     </FormRow>
                     <FormRow label={__("meters_sun_spec.content.config_model_id")}>
@@ -321,8 +314,7 @@ export function init() {
                             placeholder={__("meters_sun_spec.content.config_model_id_select")}
                             value={util.hasValue(config[1].model_id) ? config[1].model_id.toString() : config[1].model_id}
                             onValue={(v) => {
-                                config[1].model_id = parseInt(v);
-                                on_value(config);
+                                on_config(util.get_updated_union(config, {model_id: parseInt(v)}));
                             }} />
                     </FormRow>
                 </>];

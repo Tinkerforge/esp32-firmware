@@ -1,0 +1,58 @@
+fragment,display_name_en,display_name_de
+Voltage,Voltage,Spannung
+Current,Current,Strom
+Power,Power,Leistung
+Energy,Energy,Energie
+Power Factor,Power factor,Leistungsfaktor
+Frequency,Frequency,Frequenz
+Phase Angle,Phase angle,Phasenwinkel
+Voltage THD,Voltage THD,THD der Spannung
+Current THD,Current THD,THD des Stroms
+Temperature,Temperature,Temperatur
+Fan Speed,Fan speed,Lüfterdrehzahl
+State Of Charge,State of charge,Batterieladestand
+Current Offered,Current offered,Angebotener Strom
+Power Offered,Power offered,Angebotene Leistung
+Electric Charge,Transported electric charge,Transportierte elektrische Ladung
+Active,Active,Wirk
+Reactive,Reactive,Blind
+Apparent,Apparent,Schein
+ReactiveQ1,Reactive (Q1),Blind (induktiv motorisch)
+ReactiveQ2,Reactive (Q2),Blind (induktiv generatorisch)
+ReactiveQ3,Reactive (Q3),Blind (kapazitiv generatorisch)
+ReactiveQ4,Reactive (Q4),Blind (induktiv generatorisch)
+L1 N,L1-N,L1-N
+L2 N,L2-N,L2-N
+L3 N,L3-N,L3-N
+L1 L2,L1-L2,L1-L2
+L2 L3,L2-L3,L2-L3
+L3 L1,L3-L1,L3-L1
+L N Avg,"Average over L1-N, L2-N, L3-N","Durchschnitt über L1-N, L2-N, L3-N"
+L L Avg,"Average over L1-L2, L2-L3, L3-L1","Durchschnitt über L1-L2, L2-L3, L3-L1"
+DC,DC,DC
+L1,L1,L1
+L2,L2,L2
+L3,L3,L3
+N,Neutral,Neutral
+L Avg,"Average over L1, L2, L3","Durchschnitt über L1, L2, L3"
+L Sum,"Sum over L1, L2, L3","Summe über L1, L2, L3"
+Import,Draw,Bezug
+Export,Feed,Einspeisung
+Im Ex Sum,Draw plus feed,Bezug plus Einspeisung
+Im Ex Diff,Draw minus feed,Bezug minus Einspeisung
+Inductive,Inductive,Induktiv
+Capacitive,Capacitive,Kapazitiv
+Ind Cap Sum,Inductive plus capacitive,Induktiv plus kapazitiv
+Ind Cap Diff,Inductive minus capacitive,Induktiv minus kapazitiv
+Now,Now,Momentan
+Interval Avg,Average over interval,Durchschnitt über Zeitintervall
+Interval Max,Maximum in interval,Maximum in Zeitintervall
+Resettable,Since last reset,Seit letztem Zurücksetzen
+Interval,Interval,Intervall
+Directional,Directional,Gerichtet
+Absolute,Absolute,Absolut
+Virtual,Virtual,Virtuell
+Other,Other,Sonstige
+Cabinet,Cabinet,Gehäuse
+Heat Sink,Heat sink,Kühlkörper
+Transformer,Transformer,Transformator

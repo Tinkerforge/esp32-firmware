@@ -27,10 +27,10 @@ value_id_mappings_inverter = {
     "PPVphAB" : [ "VoltageL1L2",                 None  ],
     "PPVphBC" : [ "VoltageL2L3",                 None  ],
     "PPVphCA" : [ "VoltageL3L1",                 None  ],
-    "TmpCab"  : [ "Temperature1",                None  ], # Reihenfolge des Models
-    "TmpOt"   : [ "Temperature4",                None  ],
-    "TmpSnk"  : [ "Temperature2",                None  ],
-    "TmpTrns" : [ "Temperature3",                None  ],
+    "TmpCab"  : [ "TemperatureCabinet",          None  ], # Reihenfolge des Models
+    "TmpOt"   : [ "Temperature",                 None  ],
+    "TmpSnk"  : [ "TemperatureHeatSink",         None  ],
+    "TmpTrns" : [ "TemperatureTransformer",      None  ],
     "VA"      : [ "PowerApparentLSum",           None  ],
     "VAr"     : [ "PowerReactiveLSumIndCapDiff", None  ],
     "W"       : [ "PowerActiveLSumImExDiff",     -1.0  ],

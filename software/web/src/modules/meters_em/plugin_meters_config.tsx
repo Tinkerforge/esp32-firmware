@@ -19,6 +19,7 @@
 
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
+import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
@@ -37,7 +38,7 @@ export function init() {
             name: __("meters_em.content.meter_class"),
             new_config: () => [MeterClassID.EnergyManager, {display_name: ""}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
-            get_edit_children: (config: EMMetersConfig, on_value: (config: EMMetersConfig) => void): ComponentChildren => {
+            get_edit_children: (config: EMMetersConfig, on_config: (config: EMMetersConfig) => void): ComponentChildren => {
                 return [
                     <FormRow label={__("meters_em.content.config_display_name")}>
                         <InputText
@@ -45,8 +46,7 @@ export function init() {
                             maxLength={32}
                             value={config[1].display_name}
                             onValue={(v) => {
-                                config[1].display_name = v;
-                                on_value(config);
+                                on_config(util.get_updated_union(config, {display_name: v}));
                             }}/>
                     </FormRow>
                 ];

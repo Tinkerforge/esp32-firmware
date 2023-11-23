@@ -20,6 +20,8 @@ let x = {
 
             {{{groups}}},
 
+            {{{fragments}}},
+
             "table_display_name": "Anzeigename",
             "table_power": "Leistung",
             "table_energy_import": "Energiebezug",

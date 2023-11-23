@@ -682,3 +682,7 @@ export function joinNonEmpty(sep: string, lst: string[]) {
               .filter(x => x.length > 0)
               .join(sep);
 }
+
+export function get_updated_union<T extends object>(union: [number, T], update: Partial<T>): [number, T] {
+    return [union[0], {...union[1], ...update}];
+}
