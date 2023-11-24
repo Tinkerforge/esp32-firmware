@@ -22,11 +22,11 @@ import { useState } from "preact/hooks";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types";
-import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
 import * as API from "../../ts/api";
+import * as util from "../../ts/util";
 
 export type MqttCronTrigger = [
     CronTriggerID.MQTT,
@@ -38,68 +38,62 @@ export type MqttCronTrigger = [
     }
 ];
 
-function get_mqtt_table_children(trigger: CronTrigger) {
-    const value = (trigger as MqttCronTrigger)[1];
+function get_mqtt_table_children(trigger: MqttCronTrigger) {
     const mqtt_config = API.get("mqtt/config");
+    const topic = trigger[1].use_prefix ? mqtt_config.global_topic_prefix + "/cron_trigger/" + trigger[1].topic : trigger[1].topic;
 
-    const topic = value.use_prefix ? mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic : value.topic;
-
-    return __("mqtt.cron.cron_trigger_text")(topic, value.payload, value.retain);
+    return __("mqtt.cron.cron_trigger_text")(topic, trigger[1].payload, trigger[1].retain);
 }
 
-function get_mqtt_edit_children(cron: Cron, trigger: CronTrigger) {
-    const value = (trigger as MqttCronTrigger)[1];
+function get_mqtt_edit_children(trigger: MqttCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     const mqtt_config = API.get("mqtt/config");
     const [isInvalid, isInvalidSetter] = useState(false);
 
     return [<>
         <FormRow label={__("mqtt.cron.use_topic_prefix")}>
             <Switch
-                checked={value.use_prefix}
+                checked={trigger[1].use_prefix}
                 onClick={() => {
-                    value.use_prefix = !value.use_prefix;
-                    cron.setTriggerFromComponent(trigger);
+                    on_trigger(util.get_updated_union(trigger, {use_prefix: !trigger[1].use_prefix}));
                 }}
                 desc={__("mqtt.cron.use_topic_prefix_muted") + mqtt_config.global_topic_prefix + "/cron_trigger/"} />
         </FormRow>
         <FormRow label={__("mqtt.cron.topic")}>
             <InputText
                 required
-                maxLength={64}
-                value={value.topic}
+                value={trigger[1].topic}
                 class={isInvalid ? "is-invalid" : undefined}
+                maxLength={64}
                 onValue={(v) => {
-                    value.topic = v;
-                    if (value.topic.startsWith(mqtt_config.global_topic_prefix)) {
+                    if (v.startsWith(mqtt_config.global_topic_prefix)) {
                         isInvalidSetter(true);
                     } else {
                         isInvalidSetter(false);
                     }
-                    cron.setTriggerFromComponent(trigger);
+
+                    on_trigger(util.get_updated_union(trigger, {topic: v}));
                 }}
                 invalidFeedback={__("mqtt.cron.use_topic_prefix_invalid")} />
         </FormRow>
-        <FormRow label={__("mqtt.cron.full_topic")} hidden={!value.use_prefix}>
+        <FormRow label={__("mqtt.cron.full_topic")} hidden={!trigger[1].use_prefix}>
             <InputText
                 class="mt-2"
-                value={mqtt_config.global_topic_prefix + "/cron_trigger/" + value.topic}/>
+                value={mqtt_config.global_topic_prefix + "/cron_trigger/" + trigger[1].topic} />
         </FormRow>
         <FormRow label={__("mqtt.cron.payload")}>
             <InputText
                 placeholder={__("mqtt.cron.match_all")}
                 maxLength={64}
-                value={value.payload}
+                value={trigger[1].payload}
                 onValue={(v) => {
-                    value.payload = v;
-                    cron.setTriggerFromComponent(trigger);
+                    on_trigger(util.get_updated_union(trigger, {payload: v}));
                 }} />
         </FormRow>
         <FormRow label={__("mqtt.cron.accept_retain")}>
             <Switch
-                checked={value.retain}
+                checked={trigger[1].retain}
                 onClick={() => {
-                    value.retain = !value.retain;
-                    cron.setTriggerFromComponent(trigger);
+                    on_trigger(util.get_updated_union(trigger, {retain: !trigger[1].retain}));
                 }} />
         </FormRow>
     </>]

@@ -21,12 +21,12 @@ import { h, Fragment } from "preact";
 import { useState } from "preact/hooks";
 import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
-import { Cron } from "../cron/main";
 import { CronAction } from "../cron/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
 import * as API from "../../ts/api";
+import * as util from "../../ts/util";
 
 export type MqttCronAction = [
     CronActionID.MQTT,
@@ -38,67 +38,62 @@ export type MqttCronAction = [
     }
 ];
 
-function get_mqtt_table_children(action: CronAction) {
-    const value = (action as MqttCronAction)[1];
+function get_mqtt_table_children(action: MqttCronAction) {
     const mqtt_config = API.get("mqtt/config");
-    const topic = value.use_prefix ? mqtt_config.global_topic_prefix + "/cron_action/" + value.topic : value.topic;
+    const topic = action[1].use_prefix ? mqtt_config.global_topic_prefix + "/cron_action/" + action[1].topic : action[1].topic;
 
-    return __("mqtt.cron.cron_action_text")(topic, value.payload, value.retain);
+    return __("mqtt.cron.cron_action_text")(topic, action[1].payload, action[1].retain);
 }
 
-function get_mqtt_edit_children(cron: Cron, action: CronAction) {
-    let value = (action as MqttCronAction)[1];
+function get_mqtt_edit_children(action: MqttCronAction, on_action: (action: CronAction) => void) {
     const mqtt_config = API.get("mqtt/config");
     const [isInvalid, isInvalidSetter] = useState(false);
 
     return [<>
         <FormRow label={__("mqtt.cron.use_topic_prefix")}>
             <Switch
-                checked={value.use_prefix}
+                checked={action[1].use_prefix}
                 onClick={() => {
-                    value.use_prefix = !value.use_prefix;
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {use_prefix: !action[1].use_prefix}));
                 }}
                 desc={__("mqtt.cron.use_topic_prefix_muted") + mqtt_config.global_topic_prefix}/>
         </FormRow>
         <FormRow label={__("mqtt.cron.send_topic")}>
              <InputText
                 required
-                value={value.topic}
+                value={action[1].topic}
                 class={isInvalid ? "is-invalid" : undefined}
                 maxLength={64}
                 onValue={(v) => {
-                    value.topic = v;
-                    if (value.topic.startsWith(mqtt_config.global_topic_prefix)) {
+                    if (v.startsWith(mqtt_config.global_topic_prefix)) {
                         isInvalidSetter(true);
                     } else {
                         isInvalidSetter(false);
                     }
-                    cron.setActionFromComponent(action);
+
+                    on_action(util.get_updated_union(action, {topic: v}));
                 }}
                 invalidFeedback={__("mqtt.cron.use_topic_prefix_invalid")} />
         </FormRow>
-        <FormRow label={__("mqtt.cron.full_topic")} hidden={!value.use_prefix}>
+        <FormRow label={__("mqtt.cron.full_topic")} hidden={!action[1].use_prefix}>
             <InputText
                     class="mt-2"
-                    value={mqtt_config.global_topic_prefix + "/cron_action/" + value.topic}/>
+                    value={mqtt_config.global_topic_prefix + "/cron_action/" + action[1].topic}/>
         </FormRow>
         <FormRow label={__("mqtt.cron.send_payload")}>
             <InputText
                 required
                 maxLength={64}
-                value={value.payload}
+                value={action[1].payload}
                 onValue={(v) => {
-                    value.payload = v;
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {payload: v}));
                 }} />
         </FormRow>
         <FormRow label={__("mqtt.cron.retain")}>
             <Switch
-                checked={value.retain}
+                checked={action[1].retain}
                 onClick={() => {
-                    value.retain = !value.retain;
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {retain: !action[1].retain}));
                 }} />
         </FormRow>
     </>]

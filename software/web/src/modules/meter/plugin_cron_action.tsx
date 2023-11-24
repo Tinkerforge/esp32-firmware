@@ -18,7 +18,6 @@
  */
 
 import { __ } from "../../ts/translation";
-import { Cron } from "../cron/main";
 import { CronAction } from "../cron/types";
 import { CronActionID } from "../cron/cron_defs";
 import { ComponentChildren } from "preact";
@@ -28,11 +27,11 @@ export type MeterCronAction = [
     {}
 ]
 
-function get_meter_reset_table_children(_: CronAction) {
+function get_meter_reset_table_children(_: MeterCronAction) {
     return __("meter.cron.cron_action_text");
 }
 
-function get_meter_reset_edit_children(_: Cron, __: CronAction): ComponentChildren {
+function get_meter_reset_edit_children(_: MeterCronAction, __: (action: CronAction) => void): ComponentChildren {
     return [];
 }
 

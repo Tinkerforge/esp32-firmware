@@ -20,10 +20,10 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
-import { Cron } from "../cron/main";
 import { CronTrigger } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
+import * as util from "../../ts/util";
 
 export type IECChangeCronTrigger = [
     CronTriggerID.IECChange,
@@ -38,20 +38,6 @@ export type EVSEEexternalCurrentWdCronTrigger = [
     {}
 ];
 
-function get_iec_change_table_children(trigger: CronTrigger) {
-    let value = (trigger as IECChangeCronTrigger)[1];
-    const names = [
-        [__("evse.cron.any")],
-        [ __("evse.status.not_connected")],
-        [__("evse.status.waiting_for_charge_release")],
-        [__("evse.status.ready_to_charge")],
-        [__("evse.status.charging")],
-        [__("evse.status.error")]
-    ]
-
-    return __("evse.cron.cron_state_change_trigger")(names[value.old_charger_state + 1][0], names[value.new_charger_state + 1][0]);
-}
-
 function new_iec_change_config(): CronTrigger {
     return [
         CronTriggerID.IECChange,
@@ -62,8 +48,20 @@ function new_iec_change_config(): CronTrigger {
     ];
 }
 
-function get_iec_change_edit_children(cron: Cron, trigger: CronTrigger) {
-    let value = (trigger as IECChangeCronTrigger)[1];
+function get_iec_change_table_children(trigger: IECChangeCronTrigger) {
+    const names = [
+        [__("evse.cron.any")],
+        [__("evse.status.not_connected")],
+        [__("evse.status.waiting_for_charge_release")],
+        [__("evse.status.ready_to_charge")],
+        [__("evse.status.charging")],
+        [__("evse.status.error")]
+    ]
+
+    return __("evse.cron.cron_state_change_trigger")(names[trigger[1].old_charger_state + 1][0], names[trigger[1].new_charger_state + 1][0]);
+}
+
+function get_iec_change_edit_children(trigger: IECChangeCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     return [
         <FormRow label={__("evse.cron.from")}>
             <InputSelect
@@ -75,10 +73,9 @@ function get_iec_change_edit_children(cron: Cron, trigger: CronTrigger) {
                     ["3", __("evse.status.charging")],
                     ["4", __("evse.status.error")]
                 ]}
-                value={value.old_charger_state.toString()}
+                value={trigger[1].old_charger_state.toString()}
                 onValue={(v) => {
-                    value.old_charger_state = Number(v);
-                    cron.setTriggerFromComponent(trigger);
+                    on_trigger(util.get_updated_union(trigger, {old_charger_state: parseInt(v)}));
                 }} />
         </FormRow>,
         <FormRow label={__("evse.cron.to")}>
@@ -91,17 +88,12 @@ function get_iec_change_edit_children(cron: Cron, trigger: CronTrigger) {
                     ["3", __("evse.status.charging")],
                     ["4", __("evse.status.error")]
                 ]}
-                value={value.new_charger_state.toString()}
+                value={trigger[1].new_charger_state.toString()}
                 onValue={(v) => {
-                    value.new_charger_state = Number(v);
-                    cron.setTriggerFromComponent(trigger);
+                    on_trigger(util.get_updated_union(trigger, {new_charger_state: parseInt(v)}));
                 }} />
         </FormRow>
     ]
-}
-
-function get_external_current_wd_table_children(trigger: CronTrigger) {
-    return __("evse.cron.external_current_wd_trigger");
 }
 
 function new_external_current_wd_config(): CronTrigger {
@@ -111,7 +103,11 @@ function new_external_current_wd_config(): CronTrigger {
     ];
 }
 
-function get_external_current_wd_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
+function get_external_current_wd_table_children(_: EVSEEexternalCurrentWdCronTrigger) {
+    return __("evse.cron.external_current_wd_trigger");
+}
+
+function get_external_current_wd_edit_children(_: EVSEEexternalCurrentWdCronTrigger, __: (trigger: CronTrigger) => void): h.JSX.Element[] {
     return []
 }
 

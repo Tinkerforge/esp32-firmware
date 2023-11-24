@@ -19,7 +19,6 @@
 
 import * as API from "../../ts/api";
 import { ComponentChildren } from "preact";
-import { Cron } from "./main";
 
 type CronConfig = API.getType["cron/config"];
 export type Task = CronConfig["tasks"][0];
@@ -30,7 +29,7 @@ export interface CronTriggerComponent {
     name: string,
     new_config: () => CronTrigger,
     clone_config: (trigger: CronTrigger) => CronTrigger,
-    get_edit_children: (cron: Cron, trigger: CronTrigger) => ComponentChildren,
+    get_edit_children: (trigger: CronTrigger, on_trigger: (trigger: CronTrigger) => void) => ComponentChildren,
     get_table_children: (trigger: CronTrigger) => ComponentChildren,
     require_feature?: string,
 }
@@ -39,7 +38,7 @@ export interface CronActionComponent {
     name: string,
     new_config: () => CronAction,
     clone_config: (action: CronAction) => CronAction,
-    get_edit_children: (cron: Cron, action: CronAction) => ComponentChildren,
+    get_edit_children: (action: CronAction, on_action: (action: CronAction) => void) => ComponentChildren,
     get_table_children: (action: CronAction) => ComponentChildren,
     require_feature?: string,
 }

@@ -21,7 +21,6 @@ import { h, Fragment } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types";
-import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
@@ -37,11 +36,6 @@ export type NfcCronTrigger = [
     }
 ];
 
-function get_nfc_table_children(trigger: CronTrigger) {
-    const value = (trigger as NfcCronTrigger)[1];
-    return __("nfc.cron.cron_trigger_text")(value.tag_id, translate_unchecked("nfc.cron.type_" + value.tag_type))
-}
-
 function new_nfc_config(): CronTrigger {
     return [
         CronTriggerID.NFC,
@@ -52,15 +46,16 @@ function new_nfc_config(): CronTrigger {
     ]
 }
 
-function get_nfc_edit_children(cron: Cron, trigger: CronTrigger) {
-    const value = (trigger as NfcCronTrigger)[1];
+function get_nfc_table_children(trigger: NfcCronTrigger) {
+    return __("nfc.cron.cron_trigger_text")(trigger[1].tag_id, translate_unchecked("nfc.cron.type_" + trigger[1].tag_type))
+}
+
+function get_nfc_edit_children(trigger: NfcCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     const tags = API.get("nfc/seen_tags");
     const known_tags = API.get("nfc/config").authorized_tags;
     const seen_tags = tags.filter(t => t.tag_id != "" && !known_tags.find(tag => t.tag_id == tag.tag_id)).map(t => <ListGroupItem action type="button" onClick={() => {
         if (t.tag_id != "") {
-            value.tag_id = t.tag_id;
-            value.tag_type = t.tag_type;
-            cron.setTriggerFromComponent(trigger);
+            on_trigger(util.get_updated_union(trigger, {tag_id: t.tag_id, tag_type: t.tag_type}));
         }
         }}>
             <h5 class="mb-1 pr-2">{t.tag_id}</h5>
@@ -73,9 +68,7 @@ function get_nfc_edit_children(cron: Cron, trigger: CronTrigger) {
     const users = API.get("users/config").users;
     const known_items = API.get("nfc/config").authorized_tags.map(t => <ListGroupItem action type="button" onClick={() => {
         if (t.tag_id != "") {
-            value.tag_id = t.tag_id;
-            value.tag_type = t.tag_type;
-            cron.setTriggerFromComponent(trigger);
+            on_trigger(util.get_updated_union(trigger, {tag_id: t.tag_id, tag_type: t.tag_type}));
         }
         }}>
             <h5 class="mb-1 pr-2">{t.tag_id}</h5>
@@ -95,13 +88,13 @@ function get_nfc_edit_children(cron: Cron, trigger: CronTrigger) {
         </FormRow>
         <FormRow label={__("nfc.cron.table_tag_id")}>
             <InputText
-                value={value.tag_id}
                 required
+                value={trigger[1].tag_id}
                 onValue={(v) => {
-                    value.tag_id = v;
-                    cron.setTriggerFromComponent(trigger);
+                    on_trigger(util.get_updated_union(trigger, {tag_id: v}));
                 }}
-                minLength={8} maxLength={29}
+                minLength={8}
+                maxLength={29}
                 pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
                 invalidFeedback={__("nfc.cron.tag_id_invalid_feedback")} />
         </FormRow>
@@ -114,10 +107,9 @@ function get_nfc_edit_children(cron: Cron, trigger: CronTrigger) {
                     ["3",__("nfc.cron.type_3")],
                     ["4",__("nfc.cron.type_4")],
                 ]}
-                value={value.tag_type.toString()}
+                value={trigger[1].tag_type.toString()}
                 onValue={(v) => {
-                    value.tag_type = parseInt(v);
-                    cron.setTriggerFromComponent(trigger);
+                    on_trigger(util.get_updated_union(trigger, {tag_type: parseInt(v)}));
                 }} />
         </FormRow>
     </>]

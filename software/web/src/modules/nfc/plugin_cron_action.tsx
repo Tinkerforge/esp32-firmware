@@ -21,7 +21,6 @@ import { h, Fragment } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
 import { CronAction } from "../cron/types";
-import { Cron } from "../cron/main";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
@@ -38,25 +37,16 @@ export type NfcCronAction = [
     }
 ];
 
-const TRIGGER_CHARGE_ANY = 0;
-const TRIGGER_CHARGE_START = 1;
-const TRIGGER_CHARGE_STOP = 2;
-
-function get_nfc_inject_tag_table_children(action: CronAction) {
-    const value = (action as NfcCronAction)[1];
-
-    return __("nfc.cron.cron_action_text")(value.tag_id, translate_unchecked("nfc.cron.type_" + value.tag_type), value.tag_action);
+function get_nfc_inject_tag_table_children(action: NfcCronAction) {
+    return __("nfc.cron.cron_action_text")(action[1].tag_id, translate_unchecked("nfc.cron.type_" + action[1].tag_type), action[1].tag_action);
 }
 
-function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
-    const value = (action as NfcCronAction)[1];
+function get_nfc_inject_tag_edit_children(action: NfcCronAction, on_action: (action: CronAction) => void) {
     const tags = API.get("nfc/seen_tags");
     const known_tags = API.get("nfc/config").authorized_tags;
     const seen_tags = tags.filter(t => t.tag_id != "" && !known_tags.find(tag => t.tag_id == tag.tag_id)).map(t => <ListGroupItem action type="button" onClick={() => {
         if (t.tag_id != "") {
-            value.tag_id = t.tag_id;
-            value.tag_type = t.tag_type;
-            cron.setActionFromComponent(action);
+            on_action(util.get_updated_union(action, {tag_id: t.tag_id, tag_type: t.tag_type}));
         }
         }}>
             <h5 class="mb-1 pr-2">{t.tag_id}</h5>
@@ -69,9 +59,7 @@ function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
     const users = API.get("users/config").users;
     const known_items = API.get("nfc/config").authorized_tags.map(t => <ListGroupItem action type="button" onClick={() => {
         if (t.tag_id != "") {
-            value.tag_id = t.tag_id;
-            value.tag_type = t.tag_type;
-            cron.setActionFromComponent(action);
+            on_action(util.get_updated_union(action, {tag_id: t.tag_id, tag_type: t.tag_type}));
         }
         }}>
             <h5 class="mb-1 pr-2">{t.tag_id}</h5>
@@ -92,10 +80,9 @@ function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
         <FormRow label={__("nfc.cron.table_tag_id")}>
             <InputText
                 required
-                value={value.tag_id}
+                value={action[1].tag_id}
                 onValue={(v) => {
-                    value.tag_id = v;
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {tag_id: v}));
                 }}
                 minLength={8} maxLength={29}
                 pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
@@ -110,10 +97,9 @@ function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
                     ["3",__("nfc.cron.type_3")],
                     ["4",__("nfc.cron.type_4")],
                 ]}
-                value={value.tag_type.toString()}
+                value={action[1].tag_type.toString()}
                 onValue={(v) => {
-                    value.tag_type = parseInt(v);
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {tag_type: parseInt(v)}));
                 }} />
         </FormRow>
         <FormRow label={__("nfc.cron.tag_action")}>
@@ -123,10 +109,9 @@ function get_nfc_inject_tag_edit_children(cron: Cron, action: CronAction) {
                     ["1", __("nfc.cron.trigger_charge_start")],
                     ["2", __("nfc.cron.trigger_charge_stop")]
                 ]}
-                value={value.tag_action.toString()}
+                value={action[1].tag_action.toString()}
                 onValue={(v) => {
-                    value.tag_action = parseInt(v);
-                    cron.setActionFromComponent(action)
+                    on_action(util.get_updated_union(action, {tag_action: parseInt(v)}));
                 }} />
         </FormRow>
     </>]

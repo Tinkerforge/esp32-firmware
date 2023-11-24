@@ -21,11 +21,11 @@ import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
 import { CronAction } from "../cron/types"
-import { Cron } from "../cron/main"
 import { InputSelect } from "../../ts/components/input_select"
 import { InputFloat } from "../../ts/components/input_float"
 import { InputNumber } from "../../ts/components/input_number"
 import { FormRow } from "../../ts/components/form_row"
+import * as util from "../../ts/util";
 
 export type EvseCronAction = [
     CronActionID.SetCurrent,
@@ -42,13 +42,11 @@ export type EvseLedCronAction = [
     },
 ];
 
-function get_set_current_table_children(action: CronAction) {
-    const value = (action as EvseCronAction)[1];
-    return __("evse.cron.cron_action_text")(value.current / 1000);
+function get_set_current_table_children(action: EvseCronAction) {
+    return __("evse.cron.cron_action_text")(action[1].current / 1000);
 }
 
-function get_set_current_edit_children(cron: Cron, action: CronAction) {
-    const value = (action as EvseCronAction)[1];
+function get_set_current_edit_children(action: EvseCronAction, on_action: (action: CronAction) => void) {
     return [
         <FormRow label={__("evse.cron.allowed_charging_current")}>
             <InputFloat
@@ -56,10 +54,9 @@ function get_set_current_edit_children(cron: Cron, action: CronAction) {
                 min={0}
                 max={32000}
                 unit="A"
-                value={value.current}
+                value={action[1].current}
                 onValue={(v) => {
-                    value.current = v;
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {current: v}));
                 }} />
         </FormRow>
     ]
@@ -74,10 +71,9 @@ function new_set_current_config(): CronAction {
     ];
 }
 
-function get_led_table_children(action: CronAction) {
-    const value = (action as EvseLedCronAction)[1];
+function get_led_table_children(action: EvseLedCronAction) {
     let state = "";
-    switch (value.state) {
+    switch (action[1].state) {
         case 0:
             state = __("evse.cron.led_state_off");
             break;
@@ -98,15 +94,14 @@ function get_led_table_children(action: CronAction) {
             state = __("evse.cron.led_state_breathing");
             break;
     }
-    if (value.state > 2000 && value.state < 2011) {
-        state = __("evse.cron.led_state_error")(value.state - 2000);
+    if (action[1].state > 2000 && action[1].state < 2011) {
+        state = __("evse.cron.led_state_error")(action[1].state - 2000);
     }
 
-    return __("evse.cron.cron_led_action_text")(state, value.duration)
+    return __("evse.cron.cron_led_action_text")(state, action[1].duration)
 }
 
-function get_led_edit_children(cron: Cron, action: CronAction) {
-    const value = (action as EvseLedCronAction)[1];
+function get_led_edit_children(action: EvseLedCronAction, on_action: (action: CronAction) => void) {
     const items: [string, string][] = [
         ["0", __("evse.cron.led_state_off")],
         ["255", __("evse.cron.led_state_on")],
@@ -123,19 +118,17 @@ function get_led_edit_children(cron: Cron, action: CronAction) {
         <FormRow label={__("evse.cron.led_state")}>
             <InputSelect
                 items={items}
-                value={value.state.toString()}
+                value={action[1].state.toString()}
                 onValue={(v) => {
-                    value.state = parseInt(v);
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {state: parseInt(v)}));
                 }} />
         </FormRow>
         <FormRow label={ __("evse.cron.led_duration")}>
             <InputNumber
-                value={value.duration / 1000}
+                value={action[1].duration / 1000}
                 unit="s"
                 onValue={(v) => {
-                    value.duration = v * 1000;
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {duration: v * 1000}));
                 }} />
             <span class="text-muted mt-1">{__("evse.cron.api_must_be_enabled")}</span>
         </FormRow>

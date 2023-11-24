@@ -18,9 +18,9 @@
  */
 
 import { h } from "preact";
+import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
-import { Cron } from "../cron/main";
 import { CronAction } from "../cron/types";
 import { InputFloat } from "../../ts/components/input_float";
 import { FormRow } from "../../ts/components/form_row";
@@ -33,20 +33,17 @@ export type ChargeManagerCronAction = [
     },
 ];
 
-function get_set_manager_table_children(action: CronAction) {
-    let value = (action as ChargeManagerCronAction)[1];
-    return __("charge_manager.cron.cron_action_text")(value.current);
+function get_set_manager_table_children(action: ChargeManagerCronAction) {
+    return __("charge_manager.cron.cron_action_text")(action[1].current);
 }
 
-function get_set_manager_edit_children(cron: Cron, action: CronAction) {
-    let value = (action as ChargeManagerCronAction)[1];
+function get_set_manager_edit_children(action: ChargeManagerCronAction, on_action: (action: CronAction) => void) {
     return [
         <FormRow label={__("charge_manager.cron.max_current")}>
             <InputFloat
-                value={value.current}
+                value={action[1].current}
                 onValue={(v) => {
-                    value.current = v;
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {current: v}));
                 }}
                 min={0}
                 unit="A"

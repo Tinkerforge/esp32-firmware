@@ -20,10 +20,10 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
-import { Cron } from "../cron/main";
 import { CronTrigger } from "../cron/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
+import * as util from "../../ts/util";
 
 export type EMInputThreeCronTrigger = [
     CronTriggerID.EMInputThree,
@@ -67,28 +67,22 @@ export type EMGridPowerDrawCronTrigger = [
     },
 ];
 
-function get_em_input_three_table_children(trigger: CronTrigger) {
-    let value = (trigger as EMInputThreeCronTrigger)[1];
-    return __("energy_manager.cron.cron_input_text")(3, value.state);
+function get_em_input_three_table_children(trigger: EMInputThreeCronTrigger) {
+    return __("energy_manager.cron.cron_input_text")(3, trigger[1].state);
 }
 
-function get_em_input_three_edit_children(cron: Cron, trigger: CronTrigger) {
-    let value = (trigger as EMInputThreeCronTrigger)[1];
-    const states: [string, string][] = [
-        ['0', __("energy_manager.cron.open")],
-        ['1', __("energy_manager.cron.closed")],
-    ];
-
+function get_em_input_three_edit_children(trigger: EMInputThreeCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     return [
         <FormRow label={__("energy_manager.cron.state")}>
             <InputSelect
-                value={value.state == true ? '1' : '0'}
-                items = {states}
+                value={trigger[1].state == true ? '1' : '0'}
+                items = {[
+                    ['0', __("energy_manager.cron.open")],
+                    ['1', __("energy_manager.cron.closed")],
+                ]}
                 onValue={(v) => {
-                    value.state = v === '1';
-                    cron.setTriggerFromComponent(trigger);
-                }}
-            />
+                    on_trigger(util.get_updated_union(trigger, {state: v === '1'}));
+                }} />
         </FormRow>,
     ];
 }
@@ -102,29 +96,23 @@ function new_em_input_three_config(): CronTrigger {
     ];
 }
 
-function get_em_input_four_table_children(trigger: CronTrigger) {
-    let value = (trigger as EMInputFourCronTrigger)[1];
-    return __("energy_manager.cron.cron_input_text")(4, value.state);
+function get_em_input_four_table_children(trigger: EMInputFourCronTrigger) {
+    return __("energy_manager.cron.cron_input_text")(4, trigger[1].state);
 }
 
-function get_em_input_four_edit_children(cron: Cron, trigger: CronTrigger) {
-    let value = (trigger as EMInputFourCronTrigger)[1];
-    const states: [string, string][] = [
-        ['0', __("energy_manager.cron.open")],
-        ['1', __("energy_manager.cron.closed")],
-    ];
-
+function get_em_input_four_edit_children(trigger: EMInputFourCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     return [
         <FormRow label={__("energy_manager.cron.state")}>
             <InputSelect
-                value={value.state == true ? '1' : '0'}
-                items = {states}
+                value={trigger[1].state ? '1' : '0'}
+                items = {[
+                    ['0', __("energy_manager.cron.open")],
+                    ['1', __("energy_manager.cron.closed")],
+                ]}
                 onValue={(v) => {
-                    value.state = v === '1';
-                    cron.setTriggerFromComponent(trigger);
-                }}
-            />
-        </FormRow>,
+                    on_trigger(util.get_updated_union(trigger, {state: v === '1'}));
+                }} />
+        </FormRow>
     ];
 }
 
@@ -137,29 +125,23 @@ function new_em_input_four_config(): CronTrigger {
     ];
 }
 
-function get_em_phase_switch_table_children(trigger: CronTrigger) {
-    let value = (trigger as EMPhaseSwitchCronTrigger)[1];
-    return __("energy_manager.cron.cron_phase_switch_text")(value.phase);
+function get_em_phase_switch_table_children(trigger: EMPhaseSwitchCronTrigger) {
+    return __("energy_manager.cron.cron_phase_switch_text")(trigger[1].phase);
 }
 
-function get_em_phase_switch_edit_children(cron: Cron, trigger: CronTrigger) {
-    let value = (trigger as EMPhaseSwitchCronTrigger)[1];
-    const phases: [string, string][] = [
-        ['1', __("energy_manager.cron.single_phase")],
-        ['3', __("energy_manager.cron.three_phase")],
-    ];
-
+function get_em_phase_switch_edit_children(trigger: EMPhaseSwitchCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     return [
         <FormRow label={__("energy_manager.cron.phase")}>
             <InputSelect
-                value={value.phase.toString()}
-                items = {phases}
+                value={trigger[1].phase.toString()}
+                items = {[
+                    ['1', __("energy_manager.cron.single_phase")],
+                    ['3', __("energy_manager.cron.three_phase")],
+                ]}
                 onValue={(v) => {
-                    value.phase = parseInt(v);
-                    cron.setTriggerFromComponent(trigger);
-                }}
-            />
-        </FormRow>,
+                    on_trigger(util.get_updated_union(trigger, {phase: parseInt(v)}));
+                }} />
+        </FormRow>
     ];
 }
 
@@ -172,26 +154,22 @@ function new_em_phase_switch_config(): CronTrigger {
     ];
 }
 
-function get_em_contactor_monitoring_table_children(trigger: CronTrigger) {
-    let value = (trigger as EMContactorMonitoringCronTrigger)[1];
-    return __("energy_manager.cron.cron_contactor_monitoring_text")(value.contactor_okay);
+function get_em_contactor_monitoring_table_children(trigger: EMContactorMonitoringCronTrigger) {
+    return __("energy_manager.cron.cron_contactor_monitoring_text")(trigger[1].contactor_okay);
 }
 
-function get_em_contactor_monitoring_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
-    let value = (trigger as EMContactorMonitoringCronTrigger)[1];
+function get_em_contactor_monitoring_edit_children(trigger: EMContactorMonitoringCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     return [
         <FormRow label={__("energy_manager.cron.contactor_monitoring_state")}>
             <InputSelect
-                value={ value.contactor_okay ? '1' : '0'}
+                value={trigger[1].contactor_okay ? '1' : '0'}
                 items = {[
                     ['0', __("energy_manager.cron.contactor_error")],
                     ['1', __("energy_manager.cron.contactor_okay")],
                 ]}
                 onValue={(v) => {
-                    value.contactor_okay = v === '1';
-                    cron.setTriggerFromComponent(trigger);
-                }}
-            />
+                    on_trigger(util.get_updated_union(trigger, {contactor_okay: v === '1'}));
+                }} />
         </FormRow>
     ];
 }
@@ -205,28 +183,22 @@ function new_em_contactor_monitoring_config(): CronTrigger {
     ];
 }
 
-function get_em_power_available_table_children(trigger: CronTrigger) {
-    let value = (trigger as EMPowerAvailableCronTrigger)[1];
-    return __("energy_manager.cron.cron_power_available_text")(value.power_available);
+function get_em_power_available_table_children(trigger: EMPowerAvailableCronTrigger) {
+    return __("energy_manager.cron.cron_power_available_text")(trigger[1].power_available);
 }
 
-function get_em_power_available_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
-    let value = (trigger as EMPowerAvailableCronTrigger)[1];
-    const states: [string, string][] = [
-        ['0', __("energy_manager.cron.not_available")],
-        ['1', __("energy_manager.cron.available")],
-    ];
-
+function get_em_power_available_edit_children(trigger: EMPowerAvailableCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     return [
         <FormRow label={__("energy_manager.cron.power")}>
             <InputSelect
-                value={value.power_available == true ? '1' : '0'}
-                items = {states}
+                value={trigger[1].power_available ? '1' : '0'}
+                items = {[
+                    ['0', __("energy_manager.cron.not_available")],
+                    ['1', __("energy_manager.cron.available")],
+                ]}
                 onValue={(v) => {
-                    value.power_available = v === '1';
-                    cron.setTriggerFromComponent(trigger);
-                }}
-            />
+                    on_trigger(util.get_updated_union(trigger, {power_available: v === '1'}));
+                }} />
         </FormRow>
     ]
 }
@@ -240,28 +212,22 @@ function new_em_power_available_config(): CronTrigger {
     ];
 }
 
-function get_em_grid_power_draw_table_children(trigger: CronTrigger) {
-    let value = (trigger as EMGridPowerDrawCronTrigger)[1];
-    return __("energy_manager.cron.cron_grid_power_draw_text")(value.drawing_power);
+function get_em_grid_power_draw_table_children(trigger: EMGridPowerDrawCronTrigger) {
+    return __("energy_manager.cron.cron_grid_power_draw_text")(trigger[1].drawing_power);
 }
 
-function get_em_grid_power_draw_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
-    let value = (trigger as EMGridPowerDrawCronTrigger)[1];
-    const states: [string, string][] = [
-        ['0', __("energy_manager.cron.feeding")],
-        ['1', __("energy_manager.cron.drawing")],
-    ];
-
+function get_em_grid_power_draw_edit_children(trigger: EMGridPowerDrawCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     return [
         <FormRow label={__("energy_manager.cron.power")}>
             <InputSelect
-                value={value.drawing_power == true ? '1' : '0'}
-                items = {states}
+                value={trigger[1].drawing_power ? '1' : '0'}
+                items = {[
+                    ['0', __("energy_manager.cron.feeding")],
+                    ['1', __("energy_manager.cron.drawing")],
+                ]}
                 onValue={(v) => {
-                    value.drawing_power = v === '1';
-                    cron.setTriggerFromComponent(trigger);
-                }}
-            />
+                    on_trigger(util.get_updated_union(trigger, {drawing_power: v === '1'}));
+                }} />
         </FormRow>
     ]
 }
@@ -279,46 +245,46 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.EMInputThree]: {
+                name: __("energy_manager.cron.input")(3),
                 new_config: new_em_input_three_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_table_children: get_em_input_three_table_children,
                 get_edit_children: get_em_input_three_edit_children,
-                name: __("energy_manager.cron.input")(3),
-                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             },
             [CronTriggerID.EMInputFour]: {
+                name: __("energy_manager.cron.input")(4),
                 new_config: new_em_input_four_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_table_children: get_em_input_four_table_children,
                 get_edit_children: get_em_input_four_edit_children,
-                name: __("energy_manager.cron.input")(4),
-                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             },
             [CronTriggerID.EMPhaseSwitch]: {
+                name: __("energy_manager.cron.phase_switch"),
                 new_config: new_em_phase_switch_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_table_children: get_em_phase_switch_table_children,
                 get_edit_children: get_em_phase_switch_edit_children,
-                name: __("energy_manager.cron.phase_switch"),
-                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             },
             [CronTriggerID.EMContactorMonitoring]: {
+                name: __("energy_manager.cron.contactor_monitoring"),
                 new_config: new_em_contactor_monitoring_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_table_children: get_em_contactor_monitoring_table_children,
                 get_edit_children: get_em_contactor_monitoring_edit_children,
-                name: __("energy_manager.cron.contactor_monitoring"),
-                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             },
             [CronTriggerID.EMPowerAvailable]: {
+                name: __("energy_manager.cron.power_available"),
                 new_config: new_em_power_available_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_table_children: get_em_power_available_table_children,
                 get_edit_children: get_em_power_available_edit_children,
-                name: __("energy_manager.cron.power_available"),
-                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             },
             [CronTriggerID.EMGridPowerDraw]: {
+                name: __("energy_manager.cron.grid_power_draw"),
                 new_config: new_em_grid_power_draw_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_table_children: get_em_grid_power_draw_table_children,
                 get_edit_children: get_em_grid_power_draw_edit_children,
-                name: __("energy_manager.cron.grid_power_draw"),
-                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             },
         }
     }

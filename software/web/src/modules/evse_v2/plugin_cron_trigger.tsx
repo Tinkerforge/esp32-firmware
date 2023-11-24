@@ -17,13 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { h } from 'preact'
+import { __ } from "../../ts/translation"
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types"
-import { h } from 'preact'
-import { Cron } from "../cron/main"
-import { __ } from "../../ts/translation"
 import { InputSelect } from "../../ts/components/input_select"
 import { FormRow } from "../../ts/components/form_row"
+import * as util from "../../ts/util";
 
 export type EvseShutdownCronTrigger = [
     CronTriggerID.EVSEShutdownInput,
@@ -46,12 +46,11 @@ export type EvseButtonCronTrigger = [
     },
 ];
 
-function get_evse_button_table_children(trigger: CronTrigger) {
-    const value = (trigger as EvseButtonCronTrigger)[1];
-    return __("evse.cron.cron_button_trigger_text")(value.button_pressed);
+function get_evse_button_table_children(trigger: EvseButtonCronTrigger) {
+    return __("evse.cron.cron_button_trigger_text")(trigger[1].button_pressed);
 }
 
-function get_evse_button_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
+function get_evse_button_edit_children(_: EvseButtonCronTrigger, __: (trigger: CronTrigger) => void): h.JSX.Element[] {
     return []
 }
 
@@ -64,13 +63,11 @@ function new_evse_button_config(): CronTrigger {
     ];
 }
 
-function get_evse_shutdown_table_children(trigger: CronTrigger) {
-    const value = (trigger as EvseShutdownCronTrigger)[1];
-    return __("evse.cron.cron_sd_trigger_text")(value.high);
+function get_evse_shutdown_table_children(trigger: EvseGpInputCronTrigger) {
+    return __("evse.cron.cron_sd_trigger_text")(trigger[1].high);
 }
 
-function get_evse_shutdown_edit_children(cron: Cron, trigger: CronTrigger) {
-    const value = (trigger as EvseShutdownCronTrigger)[1];
+function get_evse_shutdown_edit_children(trigger: EvseGpInputCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     return [
         <FormRow label="">
             <InputSelect
@@ -78,10 +75,9 @@ function get_evse_shutdown_edit_children(cron: Cron, trigger: CronTrigger) {
                     ["0", __("evse.cron.cron_trigger_active_low")],
                     ["1", __("evse.cron.cron_trigger_active_high")]
                 ]}
-                value={value.high ? "1" : "0"}
+                value={trigger[1].high ? "1" : "0"}
                 onValue={(v) => {
-                    value.high = v == "1";
-                    cron.setTriggerFromComponent(trigger);
+                    on_trigger(util.get_updated_union(trigger, {high: v === "1"}));
                 }} />
         </FormRow>
     ]
@@ -96,13 +92,11 @@ function new_evse_shutdown_input_config(): CronTrigger {
     ];
 }
 
-function get_evse_gp_input_table_children(trigger: CronTrigger) {
-    const value = (trigger as EvseGpInputCronTrigger)[1];
-    return __("evse.cron.cron_gpin_trigger_text")(value.high);
+function get_evse_gp_input_table_children(trigger: EvseGpInputCronTrigger) {
+    return __("evse.cron.cron_gpin_trigger_text")(trigger[1].high);
 }
 
-function get_evse_gp_input_edit_children(cron: Cron, trigger: CronTrigger) {
-    const value = (trigger as EvseGpInputCronTrigger)[1];
+function get_evse_gp_input_edit_children(trigger: EvseGpInputCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     return [
         <FormRow label="">
             <InputSelect
@@ -110,10 +104,9 @@ function get_evse_gp_input_edit_children(cron: Cron, trigger: CronTrigger) {
                     ["0", __("evse.cron.cron_trigger_active_low")],
                     ["1", __("evse.cron.cron_trigger_active_high")]
                 ]}
-                value={value.high ? "1" : "0"}
+                value={trigger[1].high ? "1" : "0"}
                 onValue={(v) => {
-                    value.high = v == "1";
-                    cron.setTriggerFromComponent(trigger);
+                    on_trigger(util.get_updated_union(trigger, {high: v === "1"}));
                 }} />
         </FormRow>
     ]

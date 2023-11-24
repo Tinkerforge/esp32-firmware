@@ -29,11 +29,11 @@ export type ChargeManagerWdCronTrigger = [
     {},
 ];
 
-function get_charge_manager_wd_table_children(trigger: CronTrigger) {
+function get_charge_manager_wd_table_children(_: ChargeManagerWdCronTrigger) {
     return __("charge_manager.cron.cron_trigger_text");
 }
 
-function get_charge_manager_wd_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
+function get_charge_manager_wd_edit_children(_: ChargeManagerWdCronTrigger, __: (action: CronTrigger) => void): h.JSX.Element[] {
     return [];
 }
 
@@ -49,11 +49,11 @@ export function init() {
         return {
             trigger_components: {
                 [CronTriggerID.ChargeManagerWd]: {
+                    name: __("charge_manager.cron.charge_manager_wd"),
+                    clone_config: (action: CronTrigger) => [action[0], {...action[1]}] as CronTrigger,
                     new_config: new_charge_manager_wd_config,
                     get_table_children: get_charge_manager_wd_table_children,
                     get_edit_children: get_charge_manager_wd_edit_children,
-                    name: __("charge_manager.cron.charge_manager_wd"),
-                    clone_config: (action: CronTrigger) => [action[0], {...action[1]}] as CronTrigger
                 }
             }
         }

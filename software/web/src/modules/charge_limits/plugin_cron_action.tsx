@@ -21,12 +21,11 @@ import { h } from "preact";
 import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { Cron } from "../cron/main";
 import { CronActionID } from "../cron/cron_defs";
 import { CronAction } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
-import { Switch } from "src/ts/components/switch";
+import { Switch } from "../../ts/components/switch";
 
 export type ChargeLimitsCronAction = [
     CronActionID.ChargeLimits,
@@ -37,8 +36,7 @@ export type ChargeLimitsCronAction = [
     }
 ];
 
-function get_charge_limits_table_children(action: CronAction) {
-    const value = (action as ChargeLimitsCronAction)[1];
+function get_charge_limits_table_children(action: ChargeLimitsCronAction) {
     const durations = [
         __("charge_limits.cron.unlimited"),
         __("charge_limits.cron.min15"),
@@ -53,11 +51,10 @@ function get_charge_limits_table_children(action: CronAction) {
         __("charge_limits.cron.h12"),
     ]
 
-    return __("charge_limits.cron.cron_action_text")(durations[value.duration], value.energy_wh, value.reset);
+    return __("charge_limits.cron.cron_action_text")(durations[action[1].duration], action[1].energy_wh, action[1].reset);
 }
 
-function get_charge_limits_edit_children(cron: Cron, action: CronAction) {
-    const value = (action as ChargeLimitsCronAction)[1];
+function get_charge_limits_edit_children(action: ChargeLimitsCronAction, on_action: (action: CronAction) => void) {
     const energy_items: [string, string][] = [
         ["0", __("charge_limits.cron.unlimited")],
         ["5000", util.toLocaleFixed(5, 0) + " kWh"],
@@ -93,10 +90,9 @@ function get_charge_limits_edit_children(cron: Cron, action: CronAction) {
         <FormRow label={__("charge_limits.cron.energy")}>
             <InputSelect
                 items={energy_items}
-                value={value.energy_wh.toString()}
+                value={action[1].energy_wh.toString()}
                 onValue={(v) => {
-                    value.energy_wh = parseInt(v);
-                    cron.setActionFromComponent(action)
+                    on_action(util.get_updated_union(action, {energy_wh: parseInt(v)}));
                 }} />
         </FormRow>
     ] : [];
@@ -104,19 +100,17 @@ function get_charge_limits_edit_children(cron: Cron, action: CronAction) {
     return [
         <FormRow label={__("charge_limits.cron.reset")}>
             <Switch
-                checked={value.reset}
+                checked={action[1].reset}
                 onClick={(v) => {
-                    value.reset = !value.reset;
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {reset: !action[1].reset}));
                 }} />
         </FormRow>,
         <FormRow label={__("charge_limits.cron.duration")}>
             <InputSelect
                 items={duration_items}
-                value={value.duration.toString()}
+                value={action[1].duration.toString()}
                 onValue={(v) => {
-                    value.duration = parseInt(v);
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {duration: parseInt(v)}));
                 }} />
         </FormRow>
     ].concat(meter_entry);
@@ -137,11 +131,11 @@ export function init() {
     return {
         action_components: {
             [CronActionID.ChargeLimits]: {
-                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
+                name: __("charge_limits.cron.charge_limits"),
                 new_config: new_charge_limits_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 get_edit_children: get_charge_limits_edit_children,
                 get_table_children: get_charge_limits_table_children,
-                name: __("charge_limits.cron.charge_limits"),
             },
         },
     };

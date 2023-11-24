@@ -20,12 +20,12 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
-import { Cron } from "../cron/main";
 import { CronAction } from "../cron/types";
 import { FormRow } from "../../ts/components/form_row";
-import { InputSelect } from "src/ts/components/input_select";
-import { InputFloat } from "src/ts/components/input_float";
+import { InputSelect } from "../../ts/components/input_select";
+import { InputFloat } from "../../ts/components/input_float";
 import * as API from "../../ts/api";
+import * as util from "../../ts/util";
 
 export type EMPhaseSwitchCronAction = [
     CronActionID.EMPhaseSwitch,
@@ -63,13 +63,11 @@ export type EMBlockChargeCronAction = [
     },
 ];
 
-function get_em_phase_switch_table_children(action: CronAction) {
-    let value = (action as EMPhaseSwitchCronAction)[1];
-    return __("energy_manager.cron.cron_action_text")(value.phases_wanted);
+function get_em_phase_switch_table_children(action: EMPhaseSwitchCronAction) {
+    return __("energy_manager.cron.cron_action_text")(action[1].phases_wanted);
 }
 
-function get_em_phase_switch_edit_children(cron: Cron, action: CronAction) {
-    let value = (action as EMPhaseSwitchCronAction)[1];
+function get_em_phase_switch_edit_children(action: EMPhaseSwitchCronAction, on_action: (action: CronAction) => void) {
     const phases: [string, string][] = [
         ['1', __("energy_manager.cron.single_phase")],
         ['3', __("energy_manager.cron.three_phase")],
@@ -77,13 +75,11 @@ function get_em_phase_switch_edit_children(cron: Cron, action: CronAction) {
     return [
         <FormRow label={__("energy_manager.cron.phases_wanted")}>
             <InputSelect
-                value={value.phases_wanted.toString()}
-                onValue={(v) => {
-                    value.phases_wanted = parseInt(v);
-                    cron.setActionFromComponent(action);
-                }}
                 items={phases}
-            />
+                value={action[1].phases_wanted.toString()}
+                onValue={(v) => {
+                    on_action(util.get_updated_union(action, {phases_wanted: parseInt(v)}));
+                }} />
         </FormRow>
     ];
 }
@@ -97,13 +93,11 @@ function new_em_phase_switch_config(): CronAction {
     ];
 }
 
-function get_em_charge_mode_switch_table_children(action: CronAction) {
-    let value = (action as EMChargeModeSwitchCronAction)[1];
-    return __("energy_manager.cron.charge_mode_switch_action_text")(value.mode, API.get("energy_manager/config").default_mode);
+function get_em_charge_mode_switch_table_children(action: EMChargeModeSwitchCronAction) {
+    return __("energy_manager.cron.charge_mode_switch_action_text")(action[1].mode, API.get("energy_manager/config").default_mode);
 }
 
-function get_em_charge_mode_switch_edit_children(cron: Cron, action: CronAction) {
-    let value = (action as EMChargeModeSwitchCronAction)[1];
+function get_em_charge_mode_switch_edit_children(action: EMChargeModeSwitchCronAction, on_action: (action: CronAction) => void) {
     const modes: [string, string][] = [
         ['0', __("energy_manager.cron.fast")],
         ['1', __("energy_manager.cron.disabled")],
@@ -117,12 +111,10 @@ function get_em_charge_mode_switch_edit_children(cron: Cron, action: CronAction)
         <FormRow label={__("energy_manager.cron.charge_mode")}>
             <InputSelect
                 items={modes}
-                value={value.mode.toString()}
+                value={action[1].mode.toString()}
                 onValue={(v) => {
-                    value.mode = parseInt(v);
-                    cron.setActionFromComponent(action);
-                }}
-            />
+                    on_action(util.get_updated_union(action, {mode: parseInt(v)}));
+                }} />
         </FormRow>
     ]
 }
@@ -136,13 +128,11 @@ function new_em_charge_mode_switch_config(): CronAction {
     ];
 }
 
-function get_em_contactor_table_children(action: CronAction) {
-    let value = (action as EMContactorCronAction)[1];
-    return __("energy_manager.cron.relay_action_text")(value.state);
+function get_em_contactor_table_children(action: EMContactorCronAction) {
+    return __("energy_manager.cron.relay_action_text")(action[1].state);
 }
 
-function get_em_contactor_edit_children(cron: Cron, action: CronAction) {
-    let value = (action as EMContactorCronAction)[1];
+function get_em_contactor_edit_children(action: EMContactorCronAction, on_action: (action: CronAction) => void) {
     const states: [string, string][] = [
         ['1', __("energy_manager.cron.relay_state_closed")],
         ['0', __("energy_manager.cron.relay_state_open")],
@@ -152,12 +142,10 @@ function get_em_contactor_edit_children(cron: Cron, action: CronAction) {
         <FormRow label={__("energy_manager.cron.relay_state")}>
             <InputSelect
                 items={states}
-                value={value.state ? '1' : '0'}
+                value={action[1].state ? '1' : '0'}
                 onValue={(v) => {
-                    value.state = v == '1';
-                    cron.setActionFromComponent(action);
-                }}
-            />
+                    on_action(util.get_updated_union(action, {state: v == '1'}));
+                }} />
         </FormRow>
     ]
 }
@@ -171,13 +159,11 @@ function new_em_contactor_config(): CronAction {
     ];
 }
 
-function get_em_limit_max_current_table_children(action: CronAction) {
-    let value = (action as EMLimitMaxCurrentCronAction)[1];
-    return __("energy_manager.cron.cron_limit_max_current_action_text")(value.current, API.get("charge_manager/config").maximum_available_current);
+function get_em_limit_max_current_table_children(action: EMLimitMaxCurrentCronAction) {
+    return __("energy_manager.cron.cron_limit_max_current_action_text")(action[1].current, API.get("charge_manager/config").maximum_available_current);
 }
 
-function get_em_limit_max_current_edit_children(cron: Cron, action: CronAction) {
-    let value = (action as EMLimitMaxCurrentCronAction)[1];
+function get_em_limit_max_current_edit_children(action: EMLimitMaxCurrentCronAction, on_action: (action: CronAction) => void) {
     const items:[string, string][] = [
         ['0', __("energy_manager.cron.limit_max_current")],
         ['1', __("energy_manager.cron.reset_limit_max_current") + " (" + API.get("charge_manager/config").maximum_available_current / 1000 + "A)"]
@@ -187,18 +173,16 @@ function get_em_limit_max_current_edit_children(cron: Cron, action: CronAction) 
         <FormRow label={__("energy_manager.cron.limit_mode")}>
             <InputSelect
                 items={items}
-                value={value.current == -1 ? '1' : '0'}
+                value={action[1].current == -1 ? '1' : '0'}
                 onValue={(v) => {
-                    value.current = v == '1' ? -1 : 0;
-                    cron.setActionFromComponent(action);
-                }}/>
+                    on_action(util.get_updated_union(action, {current: '1' ? -1 : 0}));
+                }} />
         </FormRow>,
-        <FormRow label={__("energy_manager.cron.max_current")} hidden={value.current == -1}>
+        <FormRow label={__("energy_manager.cron.max_current")} hidden={action[1].current == -1}>
             <InputFloat
-                value={value.current}
+                value={action[1].current}
                 onValue={(v) => {
-                    value.current = v;
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {current: v}));
                 }}
                 min={0}
                 unit="A"
@@ -216,13 +200,11 @@ function new_em_limit_max_current_config(): CronAction {
     ];
 }
 
-function get_em_block_charge_table_children(action: CronAction) {
-    let value = (action as EMBlockChargeCronAction)[1];
-    return __("energy_manager.cron.cron_block_charge_action_text")(value.slot, value.block);
+function get_em_block_charge_table_children(action: EMBlockChargeCronAction) {
+    return __("energy_manager.cron.cron_block_charge_action_text")(action[1].slot, action[1].block);
 }
 
-function get_em_block_charge_edit_children(cron: Cron, action: CronAction) {
-    let value = (action as EMBlockChargeCronAction)[1];
+function get_em_block_charge_edit_children(action: EMBlockChargeCronAction, on_action: (action: CronAction) => void) {
     const items:[string, string][] = [
         ['0', __("energy_manager.cron.unblock_charge")],
         ['1', __("energy_manager.cron.block_charge")],
@@ -237,20 +219,18 @@ function get_em_block_charge_edit_children(cron: Cron, action: CronAction) {
         <FormRow label={__("energy_manager.cron.slot")}>
             <InputSelect
                 items={slot_items}
-                value={value.slot.toString()}
+                value={action[1].slot.toString()}
                 onValue={(v) => {
-                    value.slot = parseInt(v);
-                    cron.setActionFromComponent(action);
-                }}/>
+                    on_action(util.get_updated_union(action, {slot: parseInt(v)}));
+                }} />
         </FormRow>,
         <FormRow label={__("energy_manager.cron.block_mode")}>
             <InputSelect
                 items={items}
-                value={value.block ? '1' : '0'}
+                value={action[1].block ? '1' : '0'}
                 onValue={(v) => {
-                    value.block = v == '1';
-                    cron.setActionFromComponent(action);
-                }}/>
+                    on_action(util.get_updated_union(action, {block: v == '1'}));
+                }} />
         </FormRow>
     ];
 }
@@ -271,23 +251,23 @@ export function init() {
             [CronActionID.EMPhaseSwitch]: {
                 name: __("energy_manager.cron.set_phases"),
                 new_config: new_em_phase_switch_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 get_table_children: get_em_phase_switch_table_children,
                 get_edit_children: get_em_phase_switch_edit_children,
-                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction
             },
             [CronActionID.EMChargeModeSwitch]: {
                 name: __("energy_manager.cron.charge_mode_switch"),
                 new_config: new_em_charge_mode_switch_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 get_table_children: get_em_charge_mode_switch_table_children,
                 get_edit_children: get_em_charge_mode_switch_edit_children,
-                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction
             },
             [CronActionID.EMRelaySwitch]: {
                 name: __("energy_manager.cron.switch_relay"),
                 new_config: new_em_contactor_config,
+                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction,
                 get_table_children: get_em_contactor_table_children,
                 get_edit_children: get_em_contactor_edit_children,
-                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction
             },
             [CronActionID.EMLimitMaxCurrent]: {
                 name: __("energy_manager.cron.limit_max_current"),

@@ -18,7 +18,6 @@
  */
 
 import { __ } from "../../ts/translation";
-import { Cron } from "../cron/main";
 import { CronTrigger } from "../cron/types";
 import { CronTriggerID } from "../cron/cron_defs";
 import { ComponentChildren } from "preact";
@@ -28,11 +27,11 @@ export type ChargeLimitsCronTrigger = [
     {}
 ];
 
-function get_charge_limits_table_children(_: CronTrigger) {
+function get_charge_limits_table_children(_: ChargeLimitsCronTrigger) {
     return __("charge_limits.cron.cron_trigger_text");
 }
 
-function get_charge_limits_edit_children(_: Cron, __: CronTrigger): ComponentChildren {
+function get_charge_limits_edit_children(_: ChargeLimitsCronTrigger, __: (trigger: CronTrigger) => void): ComponentChildren {
     return []
 }
 

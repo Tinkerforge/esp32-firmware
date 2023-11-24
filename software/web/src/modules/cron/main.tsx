@@ -30,7 +30,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { __ } from "../../ts/translation";
 import { CronTriggerID, CronActionID } from "./cron_defs";
-import { CronAction, CronTrigger, Task, CronTriggerComponents, CronActionComponents } from "./types";
+import { Task, CronTriggerComponents, CronActionComponents } from "./types";
 import { plugins_init } from "./plugins";
 import { SubPage } from "src/ts/components/sub_page";
 
@@ -58,18 +58,6 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
                       action: [CronActionID.None, null]
                   }
              });
-    }
-
-    setTriggerFromComponent(update: CronTrigger) {
-        let edit_task = this.state.edit_task;
-        edit_task.trigger = update;
-        this.setState({edit_task: edit_task});
-    }
-
-    setActionFromComponent(update: CronAction) {
-        let edit_task = this.state.edit_task;
-        edit_task.action = update;
-        this.setState({edit_task: edit_task});
     }
 
     createSelectors() {
@@ -109,7 +97,9 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
         ];
 
         if (this.state.displayed_trigger != CronTriggerID.None) {
-            const trigger_config = cron_trigger_components[this.state.displayed_trigger].get_edit_children(this, this.state.edit_task.trigger);
+            const trigger_config = cron_trigger_components[this.state.displayed_trigger].get_edit_children(this.state.edit_task.trigger, (trigger) => {
+                this.setState({edit_task: {...this.state.edit_task, trigger: trigger}});
+            });
             triggerSelector = triggerSelector.concat(toChildArray(trigger_config));
         }
 
@@ -135,7 +125,9 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
         ];
 
         if (this.state.displayed_action != CronActionID.None) {
-            const action_config = cron_action_components[this.state.displayed_action].get_edit_children(this, this.state.edit_task.action);
+            const action_config = cron_action_components[this.state.displayed_action].get_edit_children(this.state.edit_task.action, (action) => {
+                this.setState({edit_task: {...this.state.edit_task, action: action}});
+            });
             actionSelector = actionSelector.concat(toChildArray(action_config));
         }
 

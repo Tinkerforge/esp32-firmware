@@ -23,7 +23,7 @@ import { CronActionID } from "../cron/cron_defs";
 import { CronAction } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
-import { Cron } from "../cron/main";
+import * as util from "../../ts/util";
 
 export type EvseGpOutputCronAction = [
     CronActionID.EVSEGPOutput,
@@ -32,13 +32,11 @@ export type EvseGpOutputCronAction = [
     },
 ];
 
-function get_evse_gp_output_table_children(action: CronAction) {
-    const value = (action as EvseGpOutputCronAction)[1];
-    return __("evse.cron.cron_gpout_action_text")(value.state);
+function get_evse_gp_output_table_children(action: EvseGpOutputCronAction) {
+    return __("evse.cron.cron_gpout_action_text")(action[1].state);
 }
 
-function get_evse_gp_output_edit_children(cron: Cron, action: CronAction) {
-    const value = (action as EvseGpOutputCronAction)[1];
+function get_evse_gp_output_edit_children(action: EvseGpOutputCronAction, on_action: (action: CronAction) => void) {
     return [
         <FormRow label={__("evse.cron.gpio_out")}>
             <InputSelect
@@ -46,10 +44,9 @@ function get_evse_gp_output_edit_children(cron: Cron, action: CronAction) {
                     ["0", __("evse.cron.gpio_out_low")],
                     ["1", __("evse.cron.gpio_out_high")]
                 ]}
-                value={value.state}
+                value={action[1].state}
                 onValue={(v) => {
-                    value.state = Number(v);
-                    cron.setActionFromComponent(action);
+                    on_action(util.get_updated_union(action, {state: parseInt(v)}));
                 }} />
         </FormRow>
     ]

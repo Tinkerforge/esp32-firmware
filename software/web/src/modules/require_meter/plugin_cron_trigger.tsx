@@ -21,18 +21,17 @@ import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types"
-import { Cron } from "../cron/main"
 
 export type RequireMeterCronTrigger = [
     CronTriggerID.RequireMeter,
     {}
 ]
 
-function get_require_meter_table_children(trigger: CronTrigger) {
+function get_require_meter_table_children(_: CronTrigger) {
     return __("require_meter.cron.cron_trigger_text");
 }
 
-function get_require_meter_edit_children(cron: Cron, trigger: CronTrigger): h.JSX.Element[] {
+function get_require_meter_edit_children(_: RequireMeterCronTrigger, __: (trigger: CronTrigger) => void): h.JSX.Element[] {
     return [];
 }
 
@@ -49,9 +48,9 @@ export function init() {
             [CronTriggerID.RequireMeter]: {
                 name: __("require_meter.cron.require_meter"),
                 new_config: new_require_meter_config,
+                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_table_children: get_require_meter_table_children,
                 get_edit_children: get_require_meter_edit_children,
-                clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger
             }
         }
     }

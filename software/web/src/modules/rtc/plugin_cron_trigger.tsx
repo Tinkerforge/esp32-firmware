@@ -21,9 +21,9 @@ import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types";
-import { Cron } from "../cron/main";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
+import * as util from "../../ts/util";
 
 export type RtcCronTrigger = [
     CronTriggerID.Cron,
@@ -35,15 +35,23 @@ export type RtcCronTrigger = [
     }
 ];
 
-function get_rtc_table_children(trigger: CronTrigger) {
-    const value = (trigger as RtcCronTrigger)[1];
-
-    return __("rtc.cron.cron_translation_function")(value.mday, value.wday, value.hour, value.minute);
+function new_rtc_config(): RtcCronTrigger {
+    return [
+        CronTriggerID.Cron,
+        {
+            mday: -1,
+            wday: -1,
+            hour: -1,
+            minute: -1,
+        },
+    ];
 }
 
-function get_rtc_edit_children(cron: Cron, trigger: CronTrigger) {
-    const value = (trigger as RtcCronTrigger)[1];
+function get_rtc_table_children(trigger: RtcCronTrigger) {
+    return __("rtc.cron.cron_translation_function")(trigger[1].mday, trigger[1].wday, trigger[1].hour, trigger[1].minute);
+}
 
+function get_rtc_edit_children(trigger: RtcCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     let hours: [string, string][] = [['-1','*']];
     let minutes: [string, string][] = [['-1','*']];
     let days: [string, string][] = [
@@ -73,60 +81,46 @@ function get_rtc_edit_children(cron: Cron, trigger: CronTrigger) {
         }
     }
 
-    const day = value.mday != -1 ? value.mday == 32 ? 10 : value.mday + 10 : value.wday;
+    const day = trigger[1].mday != -1 ? trigger[1].mday == 32 ? 10 : trigger[1].mday + 10 : trigger[1].wday;
 
     return [<>
         <FormRow label={__("rtc.cron.mday")}>
             <InputSelect
                 items={days}
-                value={day}
+                value={day.toString()}
                 onValue={(v) => {
                     const day = parseInt(v);
+                    let mday = -1;
+                    let wday = -1;
+
                     if (day == 10) {
-                        value.mday = 32;
-                        value.wday = -1;
+                        mday = 32;
                     } else if (day > 10) {
-                        value.mday = day - 10;
-                        value.wday = -1;
+                        mday = day - 10;
                     } else {
-                        value.mday = -1;
-                        value.wday = day;
+                        wday = day;
                     }
-                    console.log(value.mday, value.wday)
-                    cron.setTriggerFromComponent(trigger);
+
+                    on_trigger(util.get_updated_union(trigger, {mday: mday, wday: wday}));
                 }} />
         </FormRow>
         <FormRow label={__("rtc.cron.time")}>
             <div class="input-group mb-2">
                 <InputSelect
                     items={hours}
-                    value={value.hour}
+                    value={trigger[1].hour.toString()}
                     onValue={(v) => {
-                        value.hour = Number(v);
-                        cron.setTriggerFromComponent(trigger);
+                        on_trigger(util.get_updated_union(trigger, {hour: parseInt(v)}));
                     }} />
                 <InputSelect
                     items={minutes}
-                    value={value.minute}
+                    value={trigger[1].minute.toString()}
                     onValue={(v) => {
-                        value.minute = Number(v);
-                        cron.setTriggerFromComponent(trigger);
+                        on_trigger(util.get_updated_union(trigger, {minute: parseInt(v)}));
                     }} />
             </div>
         </FormRow>
     </>]
-}
-
-function new_rtc_config(): RtcCronTrigger {
-    return [
-        CronTriggerID.Cron,
-        {
-            mday: -1,
-            wday: -1,
-            hour: -1,
-            minute: -1,
-        },
-    ];
 }
 
 export function init() {

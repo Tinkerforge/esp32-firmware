@@ -19,7 +19,6 @@
 
 import { h } from "preact";
 import { __ } from "../../ts/translation";
-import { Cron } from "../cron/main";
 import { CronAction } from "../cron/types";
 import { CronActionID } from "../cron/cron_defs";
 
@@ -29,11 +28,11 @@ export type ChargeLimitsCronAction = [
     {}
 ]
 
-function get_charge_tracker_reset_table_children(action: CronAction) {
+function get_charge_tracker_reset_table_children(_: ChargeLimitsCronAction) {
     return __("charge_tracker.cron.cron_action_text");
 }
 
-function get_charge_tracker_reset_edit_chidren(cron: Cron, action: CronAction): h.JSX.Element[] {
+function get_charge_tracker_reset_edit_chidren(_: ChargeLimitsCronAction, __: (action: CronAction) => void): h.JSX.Element[] {
     return [];
 }
 
