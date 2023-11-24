@@ -6,12 +6,14 @@ ConfigRoot::ConfigRoot(Config cfg) : Config(cfg), validator(nullptr) {}
 
 ConfigRoot::ConfigRoot(Config cfg, std::function<String(Config &, ConfigSource)> validator) : Config(cfg), validator(validator) {}
 
-String ConfigRoot::update_from_file(File &file)
+String ConfigRoot::update_from_file(File &&file)
 {
     DynamicJsonDocument doc(this->json_size(false));
     DeserializationError error = deserializeJson(doc, file);
     if (error)
         return String("Failed to read file: ") + error.c_str();
+
+    file.close();
 
     return this->update_from_json(doc.as<JsonVariant>(), false, ConfigSource::File);
 }

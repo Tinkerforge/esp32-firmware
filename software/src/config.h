@@ -714,7 +714,7 @@ public:
 
     void update_from_copy(Config *copy);
 
-    String update_from_file(File &file);
+    String update_from_file(File &&file);
 
     // Intentionally take a non-const char * here:
     // This allows ArduinoJson to deserialize in zero-copy mode

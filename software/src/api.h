@@ -117,7 +117,7 @@ public:
 
     bool hasFeature(const char *name);
 
-    static void writeConfig(const String &path, ConfigRoot *config);
+    static void writeConfig(const String &path, Config *config);
     static void removeConfig(const String &path);
     static void removeAllConfig();
 
