@@ -439,6 +439,14 @@ int Users::get_display_name(uint8_t user_id, char *ret_buf)
     return strnlen(ret_buf, 32);
 }
 
+bool Users::is_user_configured(uint8_t user_id) {
+    for (auto &cfg : config.get("users"))
+        if (cfg.get("id")->asUint() == user_id)
+            return true;
+
+    return false;
+}
+
 static void check_waiting_for_start(Config *ignored) {
     (void) ignored;
 

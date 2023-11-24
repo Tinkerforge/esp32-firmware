@@ -65,6 +65,8 @@ void NFC::pre_setup()
         }
     }), [this](Config &cfg, ConfigSource source) -> String {
         Config *tags = (Config *)cfg.get("authorized_tags");
+
+        // Check tag_id format
         for(int tag = 0; tag < tags->count(); ++tag) {
             String id_copy = tags->get(tag)->get("tag_id")->asString();
             id_copy.toUpperCase();
@@ -77,6 +79,33 @@ void NFC::pre_setup()
                 if (i % 3 == 2 && c == ':')
                     continue;
                 return "Tag ID contains unexpected character. Expected format is hex bytes separated by colons. For example \"01:23:ab:3d\".";
+            }
+        }
+
+        // Add more validation above this block!
+        if (source == ConfigSource::File) {
+            // The validation below was missing in old firmwares.
+            // To make sure a config that is stored in the ESP's flash
+            // can be loaded on start-up, fix the mappings instead of
+            // returning an error.
+            bool update_file = false;
+            for(int tag = 0; tag < tags->count(); ++tag) {
+                uint8_t user_id = tags->get(tag)->get("user_id")->asUint();
+                if (!users.is_user_configured(user_id)) {
+                    logger.printfln("Fixing NFC tag %s referencing a deleted user.", tags->get(tag)->get("tag_id")->asEphemeralCStr());
+                    tags->get(tag)->get("user_id")->updateUint(0);
+                    update_file = true;
+                }
+            }
+            if (update_file)
+                API::writeConfig("nfc/config", &cfg);
+
+        } else {
+            // Check user_id_mappings
+            for(int tag = 0; tag < tags->count(); ++tag) {
+                uint8_t user_id = tags->get(tag)->get("user_id")->asUint();
+                if (!users.is_user_configured(user_id))
+                    return String("Unknown user with ID ") + (int)user_id + ".";
             }
         }
 
