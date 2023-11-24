@@ -132,8 +132,6 @@ with open('meter_value_id.csv', newline='', encoding='utf-8') as f:
         else:
             value_id_order.append([[identifier], None, None])
 
-import pprint
-pprint.pprint(tree_paths)
 for i, tree_path in enumerate(tree_paths):
     for k, other in enumerate(tree_paths):
         if i == k:
