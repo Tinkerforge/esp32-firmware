@@ -216,6 +216,6 @@ std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t id, size_t *out_cert_le
         buf_size -= f.read(result.get(), buf_size);
 
     *out_cert_len = f.size();
-    result[out_cert_len] = 0;
+    result[*out_cert_len] = 0;
     return result;
 }
