@@ -208,11 +208,14 @@ std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t id, size_t *out_cert_le
         return nullptr;
 
     File f = LittleFS.open(path, "r");
-    auto result = heap_alloc_array<unsigned char>(f.size());
+    // Allocate one byte more so that the cert is also null-terminated.
+    // Some ESP-IDF APIs need both a null-terminated string _and_ passing the strings length.
+    auto result = heap_alloc_array<unsigned char>(f.size() + 1);
     size_t buf_size = f.size();
     while (f.available())
         buf_size -= f.read(result.get(), buf_size);
 
     *out_cert_len = f.size();
+    result[out_cert_len] = 0;
     return result;
 }
