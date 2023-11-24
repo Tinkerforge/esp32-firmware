@@ -62,7 +62,7 @@ void Wireguard::pre_setup()
 
         {"allowed_ip",     Config::Str("0.0.0.0", 7, 15)},
         {"allowed_subnet", Config::Str("0.0.0.0", 7, 15)}
-    }), [](Config &cfg) -> String {
+    }), [](Config &cfg, ConfigSource source) -> String {
         IPAddress unused;
 
         if (!unused.fromString(cfg.get("internal_ip")->asEphemeralCStr()))

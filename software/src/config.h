@@ -61,6 +61,12 @@ struct ConfUnionPrototypeInternal;
 template<typename T>
 struct ConfUnionPrototype;
 
+enum class ConfigSource {
+    File, // The new config was read from the ESP's flash
+    API, // The new config was passed via the APi
+    Code // The new config was created from a ConfUpdate
+};
+
 struct Config {
     struct ConfString {
         using Slot = ConfStringSlot;
@@ -701,9 +707,9 @@ public:
 
     ConfigRoot(Config cfg);
 
-    ConfigRoot(Config cfg, std::function<String(Config &)> validator);
+    ConfigRoot(Config cfg, std::function<String(Config &, ConfigSource)> validator);
 
-    std::function<String(Config &)> validator;
+    std::function<String(Config &, ConfigSource)> validator;
     bool permit_null_updates = true;
 
     void update_from_copy(Config *copy);
@@ -713,23 +719,23 @@ public:
     // Intentionally take a non-const char * here:
     // This allows ArduinoJson to deserialize in zero-copy mode
     String update_from_cstr(char *c, size_t payload_len);
-    String get_updated_copy(char *c, size_t payload_len, Config *out_config);
+    String get_updated_copy(char *c, size_t payload_len, Config *out_config, ConfigSource source);
 
-    String update_from_json(JsonVariant root, bool force_same_keys);
-    String get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config);
+    String update_from_json(JsonVariant root, bool force_same_keys, ConfigSource source);
+    String get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source);
 
     String update(const Config::ConfUpdate *val);
 
-    String validate();
+    String validate(ConfigSource source);
 
     OwnedConfig get_owned_copy();
 
 private:
     template<typename T>
-    String update_from_visitor(T visitor);
+    String update_from_visitor(T visitor, ConfigSource source);
 
     template<typename T>
-    String get_updated_copy(T visitor, Config *out_config);
+    String get_updated_copy(T visitor, Config *out_config, ConfigSource source);
 };
 
 template<typename T>

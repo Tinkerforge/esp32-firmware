@@ -105,7 +105,7 @@ void ChargeManager::pre_setup()
             })},
             0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
         )}
-    }), [](Config &conf) -> String {
+    }), [](Config &conf, ConfigSource source) -> String {
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
         apply_energy_manager_config(conf);
 #else
@@ -166,7 +166,7 @@ void ChargeManager::pre_setup()
 
     available_current = ConfigRoot{Config::Object({
         {"current", Config::Uint32(0)},
-    }), [](const Config &conf) -> String {
+    }), [](const Config &conf, ConfigSource source) -> String {
         if (conf.get("current")->asUint() > max_avail_current)
             return "Current too large: maximum available current is configured to " + String(max_avail_current);
         return "";
@@ -175,7 +175,7 @@ void ChargeManager::pre_setup()
 
     available_phases = ConfigRoot{Config::Object({
         {"phases", Config::Uint(3, 1, 3)},
-    }), [](const Config &conf) -> String {
+    }), [](const Config &conf, ConfigSource source) -> String {
         if (conf.get("phases")->asUint() == 2)
             return "Two phases not supported.";
         return "";

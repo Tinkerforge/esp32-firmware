@@ -91,7 +91,7 @@ void NTP::pre_setup()
         {"timezone", Config::Str("Europe/Berlin", 0, 32)}, // Longest is America/Argentina/ComodRivadavia = 32 chars
         {"server", Config::Str("ptbtime1.ptb.de", 0, 64)}, // We've applied for a vendor zone @ pool.ntp.org, however this seems to take quite a while. Use the ptb servers for now.
         {"server2", Config::Str("ptbtime4.ptb.de", 0, 64)},
-    }), [](Config &conf) -> String {
+    }), [](Config &conf, ConfigSource source) -> String {
         if (lookup_timezone(conf.get("timezone")->asEphemeralCStr()) == nullptr)
             return "Can't update config: Failed to look up timezone.";
         return "";

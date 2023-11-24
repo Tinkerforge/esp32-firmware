@@ -48,7 +48,7 @@ void Certs::pre_setup() {
         {"id", Config::Uint(0, 0, MAX_CERTS)},
         {"name", Config::Str("", 0, 32)},
         {"cert", Config::Str("", 0, MAX_CERT_SIZE)}
-    }), [](Config &cfg) -> String {
+    }), [](Config &cfg, ConfigSource source) -> String {
         const auto &cert = cfg.get("cert")->asString();
         if (cert.length() == 0)
             return "";

@@ -32,7 +32,7 @@ void MqttAutoDiscovery::pre_setup()
     config = ConfigRoot(Config::Object({
         {"auto_discovery_mode", Config::Uint(MQTT_AUTO_DISCOVERY_MODE_MIN, MQTT_AUTO_DISCOVERY_MODE_MIN, MQTT_AUTO_DISCOVERY_MODE_MAX)},
         {"auto_discovery_prefix", Config::Str("homeassistant", 1, 64)}
-    }),  [](Config &cfg) -> String {
+    }),  [](Config &cfg, ConfigSource source) -> String {
         const String &global_topic_prefix = mqtt.config.get("global_topic_prefix")->asString();
         const String &auto_discovery_prefix = cfg.get("auto_discovery_prefix")->asString();
 

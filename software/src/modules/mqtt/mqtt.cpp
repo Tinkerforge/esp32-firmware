@@ -58,7 +58,7 @@ void Mqtt::pre_setup()
         {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + "/" + "ABC", 0, 64)},
         {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + "-" + "ABC", 1, 64)},
         {"interval", Config::Uint32(1)}
-    }), [](Config &cfg) -> String {
+    }), [](Config &cfg, ConfigSource source) -> String {
 #if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
         const String &global_topic_prefix = cfg.get("global_topic_prefix")->asString();
         const String &auto_discovery_prefix = mqtt_auto_discovery.config.get("auto_discovery_prefix")->asString();

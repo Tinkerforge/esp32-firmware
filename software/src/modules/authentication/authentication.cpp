@@ -33,7 +33,7 @@ void Authentication::pre_setup()
         {"enable_auth", Config::Bool(false)},
         {"username", Config::Str("", 0, 32)},
         {"digest_hash", Config::Str("", 0, 32)},
-    }), [this](Config &update) -> String {
+    }), [this](Config &update, ConfigSource source) -> String {
         if (update.get("enable_auth")->asBool() && update.get("digest_hash")->asString() == "")
             return "Authentication can not be enabled if no password/digest hash is set.";
 

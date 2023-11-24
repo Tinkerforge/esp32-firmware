@@ -181,7 +181,7 @@ void Users::pre_setup()
         {"display_name", Config::Str("", 0, USERNAME_LENGTH)},
         {"username", Config::Str("", 0, USERNAME_LENGTH)},
         {"digest_hash", Config::Str("", 0, 32)},
-    }), [this](Config &add) -> String {
+    }), [this](Config &add, ConfigSource source) -> String {
         if (config.get("next_user_id")->asUint() == 0)
             return "Can't add user. All user IDs in use.";
 
@@ -212,7 +212,7 @@ void Users::pre_setup()
 
     remove = ConfigRoot(Config::Object({
         {"id", Config::Uint8(0)}
-    }), [this](Config &remove) -> String {
+    }), [this](Config &remove, ConfigSource source) -> String {
         if (remove.get("id")->asUint() == 0)
             return "The anonymous user can't be removed.";
 
@@ -227,7 +227,7 @@ void Users::pre_setup()
 
     http_auth_update = ConfigRoot(Config::Object({
         {"enabled", Config::Bool(false)}
-    }), [this](Config &update) -> String {
+    }), [this](Config &update, ConfigSource source) -> String {
         if (!update.get("enabled")->asBool())
             return "";
 
@@ -610,7 +610,7 @@ void Users::register_urls()
         if (doc["digest_hash"] != nullptr)
             user->get("digest_hash")->updateString(doc["digest_hash"]);
 
-        String err = this->config.validate();
+        String err = this->config.validate(ConfigSource::API);
         if (err != "")
             return err;
 

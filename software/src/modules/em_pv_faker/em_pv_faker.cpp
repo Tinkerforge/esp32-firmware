@@ -41,7 +41,7 @@ void EmPvFaker::pre_setup()
         {"peak_power",  Config::Uint32(30*1000)},  // watt
         {"zero_at_lux", Config::Uint32(100)},      // lux
         {"peak_at_lux", Config::Uint32(105*1000)}, // lux
-    }), [](Config &conf) -> String {
+    }), [](Config &conf, ConfigSource source) -> String {
         if (conf.get("zero_at_lux")->asUint() >= conf.get("peak_at_lux")->asUint())
             return "Lux value for zero production must be less than lux value for peak production.";
 

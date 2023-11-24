@@ -4,7 +4,7 @@
 
 ConfigRoot::ConfigRoot(Config cfg) : Config(cfg), validator(nullptr) {}
 
-ConfigRoot::ConfigRoot(Config cfg, std::function<String(Config &)> validator) : Config(cfg), validator(validator) {}
+ConfigRoot::ConfigRoot(Config cfg, std::function<String(Config &, ConfigSource)> validator) : Config(cfg), validator(validator) {}
 
 String ConfigRoot::update_from_file(File &file)
 {
@@ -13,7 +13,7 @@ String ConfigRoot::update_from_file(File &file)
     if (error)
         return String("Failed to read file: ") + error.c_str();
 
-    return this->update_from_json(doc.as<JsonVariant>(), false);
+    return this->update_from_json(doc.as<JsonVariant>(), false, ConfigSource::File);
 }
 
 // Intentionally take a non-const char * here:
@@ -22,7 +22,7 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
 {
     ASSERT_MAIN_THREAD();
     Config copy;
-    String err = this->get_updated_copy(c, len, &copy);
+    String err = this->get_updated_copy(c, len, &copy, ConfigSource::API);
     if (err != "")
         return err;
 
@@ -30,13 +30,13 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
     return "";
 }
 
-String ConfigRoot::get_updated_copy(char *c, size_t payload_len, Config *out_config) {
+String ConfigRoot::get_updated_copy(char *c, size_t payload_len, Config *out_config, ConfigSource source) {
     DynamicJsonDocument doc(this->json_size(true));
     DeserializationError error = deserializeJson(doc, c, payload_len);
 
     switch (error.code()) {
         case DeserializationError::Ok:
-            return this->get_updated_copy(doc.as<JsonVariant>(), true, out_config);
+            return this->get_updated_copy(doc.as<JsonVariant>(), true, out_config, source);
         case DeserializationError::NoMemory:
             return String("Failed to deserialize: JSON payload was longer than expected and possibly contained unknown keys.");
         case DeserializationError::EmptyInput:
@@ -52,10 +52,10 @@ String ConfigRoot::get_updated_copy(char *c, size_t payload_len, Config *out_con
     }
 }
 
-String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys)
+String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys, ConfigSource source)
 {
     Config copy;
-    String err = this->get_updated_copy(root, force_same_keys, &copy);
+    String err = this->get_updated_copy(root, force_same_keys, &copy, source);
     if (err != "")
         return err;
 
@@ -63,9 +63,9 @@ String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys)
     return "";
 }
 
-String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config)
+String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source)
 {
-    String result = this->get_updated_copy(from_json{root, force_same_keys, this->permit_null_updates, true}, out_config);
+    String result = this->get_updated_copy(from_json{root, force_same_keys, this->permit_null_updates, true}, out_config, source);
     // The from_json visitor can report multiple errors with newlines at the end of each line. Remove the last newline.
     result.trim();
     return result;
@@ -73,7 +73,7 @@ String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Conf
 
 
 template<typename T>
-String ConfigRoot::get_updated_copy(T visitor, Config *out_config) {
+String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource source) {
     ASSERT_MAIN_THREAD();
     *out_config = *this;
     String err = Config::apply_visitor(visitor, out_config->value);
@@ -87,7 +87,7 @@ String ConfigRoot::get_updated_copy(T visitor, Config *out_config) {
         return err;
 
     if (this->validator != nullptr) {
-        err = this->validator(*out_config);
+        err = this->validator(*out_config, source);
         if (err != "")
             return err;
     }
@@ -95,11 +95,11 @@ String ConfigRoot::get_updated_copy(T visitor, Config *out_config) {
 }
 
 template<typename T>
-String ConfigRoot::update_from_visitor(T visitor) {
+String ConfigRoot::update_from_visitor(T visitor, ConfigSource source) {
     ASSERT_MAIN_THREAD();
     Config copy;
 
-    String err = this->get_updated_copy(visitor, &copy);
+    String err = this->get_updated_copy(visitor, &copy, source);
     if (err != "")
         return err;
 
@@ -110,14 +110,14 @@ String ConfigRoot::update_from_visitor(T visitor) {
 String ConfigRoot::update(const Config::ConfUpdate *val)
 {
     ASSERT_MAIN_THREAD();
-    return this->update_from_visitor(from_update{val});
+    return this->update_from_visitor(from_update{val}, ConfigSource::Code);
 }
 
-String ConfigRoot::validate()
+String ConfigRoot::validate(ConfigSource source)
 {
     ASSERT_MAIN_THREAD();
     if (this->validator != nullptr) {
-        return this->validator(*this);
+        return this->validator(*this, source);
     }
     return "";
 }

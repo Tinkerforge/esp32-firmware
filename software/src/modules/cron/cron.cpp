@@ -59,7 +59,7 @@ void Cron::pre_setup() {
     config = ConfigRoot(Config::Object({
         {"tasks", config}
     }),
-    [this](Config &cfg) -> String {
+    [this](Config &cfg, ConfigSource source) -> String {
         for (auto &task : cfg.get("tasks")) {
             auto &action_validator = this->action_map[task.get("action")->getTag<CronActionID>()].second;
             if (action_validator) {

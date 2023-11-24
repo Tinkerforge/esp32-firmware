@@ -113,7 +113,7 @@ void EnergyManager::pre_setup()
         {"input4_rule_is", Config::Uint8(0)},
         {"input4_rule_then_on_high", Config::Uint(MODE_DO_NOTHING, 0, 255)},
         {"input4_rule_then_on_low", Config::Uint(MODE_DO_NOTHING, 0, 255)},
-    }), [](const Config &cfg) -> String {
+    }), [](const Config &cfg, ConfigSource source) -> String {
         uint32_t max_current_ma = charge_manager.config.get("maximum_available_current")->asUint();
         uint32_t input3_rule_then_limit_ma = cfg.get("input3_rule_then_limit")->asUint();
         uint32_t input4_rule_then_limit_ma = cfg.get("input4_rule_then_limit")->asUint();

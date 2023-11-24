@@ -63,7 +63,7 @@ void NFC::pre_setup()
             0, MAX_AUTHORIZED_TAGS,
             Config::type_id<Config::ConfObject>())
         }
-    }), [this](Config &cfg) -> String {
+    }), [this](Config &cfg, ConfigSource source) -> String {
         Config *tags = (Config *)cfg.get("authorized_tags");
         for(int tag = 0; tag < tags->count(); ++tag) {
             String id_copy = tags->get(tag)->get("tag_id")->asString();
@@ -86,7 +86,7 @@ void NFC::pre_setup()
     inject_tag = ConfigRoot(Config::Object({
         {"tag_type", Config::Uint(0, 0, 4)},
         {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
-    }), [this](Config &cfg) -> String {
+    }), [this](Config &cfg, ConfigSource source) -> String {
         String id_copy = cfg.get("tag_id")->asString();
         id_copy.toUpperCase();
         cfg.get("tag_id")->updateString(id_copy);
