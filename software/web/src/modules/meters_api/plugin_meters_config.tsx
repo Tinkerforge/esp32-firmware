@@ -47,7 +47,24 @@ interface MeterValueIDSelectorProps {
 
 interface MeterValueIDSelectorState {
     tree_path: string[]
+    value_id: number|null
     is_valid: boolean
+}
+
+function get_value_id_name(value_id: number) {
+    let name = translate_unchecked(`meters.content.value_${value_id}`);
+    let name_muted = translate_unchecked(`meters.content.value_${value_id}_muted`);
+    let unit = METER_VALUE_INFOS[value_id].unit;
+
+    if (name_muted.length > 0) {
+        name += "; " + name_muted
+    }
+
+    if (unit.length > 0) {
+        name += " [" + unit + "]"
+    }
+
+    return name;
 }
 
 class MeterValueIDSelector extends Component<MeterValueIDSelectorProps, MeterValueIDSelectorState> {
@@ -56,6 +73,7 @@ class MeterValueIDSelector extends Component<MeterValueIDSelectorProps, MeterVal
 
         this.state = {
             tree_path: props.value_id !== null ? METER_VALUE_INFOS[props.value_id].tree_path : [],
+            value_id: props.value_id,
             is_valid: true
         } as any;
     }
@@ -96,50 +114,56 @@ class MeterValueIDSelector extends Component<MeterValueIDSelectorProps, MeterVal
             items.push(this.tree_to_items(subtree));
         }
 
-        return items.map((item, i) => {
-            return <div class={i > 0 ? "mt-2" : ""}>
-                <InputSelect
-                    required
-                    items={item}
-                    onValue={(v) => {
-                        let tree_path = this.state.tree_path.slice(0, i);
-                        let value_id: number = null;
-                        let subtree: MeterValueID | MeterValueTreeType = METER_VALUE_TREE;
+        return <>
+            {items.map((item, i) => {
+                return <div class={i > 0 ? "mt-2" : ""}>
+                    <InputSelect
+                        required
+                        items={item}
+                        onValue={(v) => {
+                            let tree_path = this.state.tree_path.slice(0, i);
+                            let value_id: number = null;
+                            let subtree: MeterValueID | MeterValueTreeType = METER_VALUE_TREE;
 
-                        tree_path[i] = v;
+                            tree_path[i] = v;
 
-                        for (let k = 0; k < tree_path.length; ++k) {
-                            subtree = subtree[tree_path[k]];
+                            for (let k = 0; k < tree_path.length; ++k) {
+                                subtree = subtree[tree_path[k]];
 
-                            if (typeof subtree === 'number') {
-                                value_id = subtree;
-                                break;
+                                if (typeof subtree === 'number') {
+                                    value_id = subtree;
+                                    break;
+                                }
                             }
-                        }
 
-                        let is_valid = true;
+                            let is_valid = true;
 
-                        if (value_id !== null) {
-                            let idx = this.props.value_ids.findIndex((other) => other === value_id);
+                            if (value_id !== null) {
+                                let idx = this.props.value_ids.findIndex((other) => other === value_id);
 
-                            if (idx >= 0 && idx !== this.props.edit_idx) {
-                                is_valid = false;
+                                if (idx >= 0 && idx !== this.props.edit_idx) {
+                                    is_valid = false;
+                                }
                             }
-                        }
 
-                        this.setState({tree_path: tree_path, is_valid: is_valid});
+                            this.setState({tree_path: tree_path, value_id: value_id, is_valid: is_valid});
 
-                        if (is_valid) {
-                            this.props.on_value_id(value_id);
-                        }
-                    }}
-                    placeholder={__("meters_api.content.placeholder")}
-                    value={this.state.tree_path[i]}
-                    className={'form-control' + (!this.state.is_valid && i == items.length - 1 ? ' is-invalid' : '')}
-                    invalidFeedback={__("meters_api.content.invalid_feedback")}
-                />
-            </div>
-        });
+                            if (is_valid) {
+                                this.props.on_value_id(value_id);
+                            }
+                        }}
+                        placeholder={__("meters_api.content.placeholder")}
+                        value={this.state.tree_path[i]}
+                        className={'form-control' + (!this.state.is_valid && i == items.length - 1 ? ' is-invalid' : '')}
+                        invalidFeedback={__("meters_api.content.invalid_feedback")}
+                    />
+                </div>
+            })}
+            {this.state.value_id !== null ?
+                <div class="mt-3"><span>{get_value_id_name(this.state.value_id)}</span></div>
+                : undefined
+            }
+            </>;
     }
 }
 
@@ -165,20 +189,8 @@ class MeterValueIDTable extends Component<MeterValueIDTableProps, MeterValueIDTa
         return <Table
             nestingDepth={1}
             rows={this.props.config[1].value_ids.map((value_id, i) => {
-                let name = translate_unchecked(`meters.content.value_${value_id}`);
-                let name_muted = translate_unchecked(`meters.content.value_${value_id}_muted`);
-                let unit = METER_VALUE_INFOS[value_id].unit;
-
-                if (name_muted.length > 0) {
-                    name += "; " + name_muted
-                }
-
-                if (unit.length > 0) {
-                    name += " [" + unit + "]"
-                }
-
                 const row: TableRow = {
-                    columnValues: [name],
+                    columnValues: [get_value_id_name(value_id)],
                     onRemoveClick: async () => {
                         this.props.on_config(util.get_updated_union(this.props.config, {value_ids: this.props.config[1].value_ids.filter((v, k) => k !== i)}));
                     },
