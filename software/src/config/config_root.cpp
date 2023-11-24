@@ -65,7 +65,10 @@ String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys)
 
 String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config)
 {
-    return this->get_updated_copy(from_json{root, force_same_keys, this->permit_null_updates, true}, out_config);
+    String result = this->get_updated_copy(from_json{root, force_same_keys, this->permit_null_updates, true}, out_config);
+    // The from_json visitor can report multiple errors with newlines at the end of each line. Remove the last newline.
+    result.trim();
+    return result;
 }
 
 

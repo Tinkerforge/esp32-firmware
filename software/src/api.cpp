@@ -311,7 +311,6 @@ bool API::restorePersistentConfig(const String &path, ConfigRoot *config)
     File file = LittleFS.open(filename);
     String error = config->update_from_file(file);
 
-    error.trim();
     file.close();
 
     if (error != "") {
