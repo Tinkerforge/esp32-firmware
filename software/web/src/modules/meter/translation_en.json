@@ -2,7 +2,7 @@
     "meter": {
         "status": {
             "power_history": null,
-            "current_power": "Power draw"
+            "current_power": "Power"
         },
         "navbar": {
             "energy_meter": "Energy Meter"
@@ -13,7 +13,7 @@
             "live": "Live",
             "statistics": "Statistics",
             "reset_statistics": "Reset",
-            "power": "Power draw",
+            "power": "Power",
             "energy": "Energy consumption",
             "energy_since_reset": "since last reset",
             "energy_lifetime": "since manufacturing of the energy meter",

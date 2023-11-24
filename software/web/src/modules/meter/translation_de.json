@@ -2,7 +2,7 @@
     "meter": {
         "status": {
             "power_history": null,
-            "current_power": "Leistungsaufnahme"
+            "current_power": "Leistung"
         },
         "navbar": {
             "energy_meter": "Stromzähler"
@@ -13,7 +13,7 @@
             "live": "Live",
             "statistics": "Statistiken",
             "reset_statistics": "Zurücksetzen",
-            "power": "Leistungsaufnahme",
+            "power": "Leistung",
             "energy": "Stromverbrauch",
             "energy_since_reset": "seit dem letzten Zurücksetzen",
             "energy_lifetime": "seit Herstellung des Stromzählers",

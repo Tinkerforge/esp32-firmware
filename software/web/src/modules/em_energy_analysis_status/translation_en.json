@@ -2,7 +2,7 @@
     "em_energy_analysis_status": {
         "status": {
             "power_history": "Power history",
-            "current_power": "Power draw"
+            "current_power": "Power"
         },
         "navbar": {
         },
