@@ -547,11 +547,11 @@ void Wifi::setup()
             state.get("sta_rssi")->updateInt(WiFi.RSSI());
 
             static int tries = 0;
-            if (tries < 10 || (tries - 10) % 8 == 0)
+            if (tries < 3 || tries % 3 == 2)
                 if (!apply_sta_config_and_connect(connection_state))
                     tries = 0;
             tries++;
-        }, 0, 5000);
+        }, 0, 10000);
     }
 
     if (ap_fallback_only) {
