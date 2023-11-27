@@ -556,22 +556,30 @@ void Wifi::setup()
 
     if (ap_fallback_only) {
         task_scheduler.scheduleWithFixedDelay([this]() {
-            bool connected = false;
+            bool connected = (WifiState)state.get("connection_state")->asInt() == WifiState::CONNECTED;
 
 #if MODULE_ETHERNET_AVAILABLE()
-            connected = ethernet.get_connection_state() == EthernetState::CONNECTED;
+            connected = connected || ethernet.get_connection_state() == EthernetState::CONNECTED;
 #endif
-            if (!connected)
-                connected = (WifiState)state.get("connection_state")->asInt() == WifiState::CONNECTED;
 
-            if (connected == soft_ap_running) {
-                if (connected) {
+            static int stop_soft_ap_runs = 0;
+
+            if (!connected)
+                stop_soft_ap_runs = 0;
+
+            // Start softAP immediately, but stop it only if
+            // we got a connection in the first 30 seconds after start-up
+            // or we had a connection for 5 minutes.
+
+            if (connected && soft_ap_running) {
+                ++stop_soft_ap_runs;
+                if (now_us() < 30_usec * 1000_usec * 1000_usec || stop_soft_ap_runs > 5 * 6) {
                     logger.printfln("Network connected. Stopping soft AP");
                     WiFi.softAPdisconnect(true);
                     soft_ap_running = false;
-                } else {
-                    apply_soft_ap_config_and_start();
                 }
+            } else if (!connected && !soft_ap_running) {
+                apply_soft_ap_config_and_start();
             }
         },
         enable_sta
