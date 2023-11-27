@@ -166,12 +166,6 @@ void Certs::register_urls()
 
         if (add.get("cert")->asString().length() != 0) {
             File f = LittleFS.open(String("/certs/") + cert_id, "w");
-
-            auto cert_name = add.get("name")->asString();
-            cert_name.replace('\n', ' ');
-            cert_name += '\n';
-            f.write((const uint8_t *) cert_name.c_str(), cert_name.length());
-
             // TODO: more robust writing
             auto &cert = add.get("cert")->asString();
             f.write((const uint8_t *) cert.c_str(), cert.length());
