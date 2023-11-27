@@ -396,15 +396,9 @@ void Wifi::setup()
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             uint8_t reason_code = info.wifi_sta_disconnected.reason;
-            static bool first = true;
             const char *reason = reason2str(reason_code);
             if (!this->was_connected) {
                 logger.printfln("Wifi failed to connect to %s: %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
-                if (first)
-                {
-                    first = false;
-                    this->apply_sta_config_and_connect();
-                }
             } else {
                 uint32_t now = millis();
                 uint32_t connected_for = now - last_connected_ms;
