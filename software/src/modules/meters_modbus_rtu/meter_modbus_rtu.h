@@ -1,0 +1,113 @@
+/* esp32-firmware
+ * Copyright (C) 2023 Erik Fleckstein <erik@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#pragma once
+
+#include "module_dependencies.h"
+
+#include <math.h>
+
+#include "bindings/bricklet_rs485.h"
+
+#include "config.h"
+#include "modules/meter/meter_defs.h" // FIXME: remove after port to meters module
+#include "modules/meters/imeter.h"
+
+#include "meter_defs.h"
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    //#include "gcc_warnings.h"
+    #pragma GCC diagnostic ignored "-Weffc++"
+#endif
+
+class MeterModbusRTU final : public IMeter
+{
+public:
+    MeterModbusRTU(uint32_t slot_, TF_RS485* rs485_, Config *state_, Config *config_, Config *errors_) : slot(slot_), rs485(rs485_), state(state_), config(config_), errors(errors_) {}
+
+    // IMeter
+    MeterClassID get_class() const override;
+    void setup() override;
+    void register_urls(const String &base_url) override;
+    bool supports_power()         override {return true;}
+    bool supports_energy_import() override {return true;}
+    bool supports_energy_export() override {return true;}
+    bool supports_currents()      override {return true;}
+
+    void setupMeter();
+    void tick();
+
+
+    enum class UserDataDone {
+        NOT_DONE,
+        DONE,
+        ERROR
+    };
+
+    struct UserData {
+        uint16_t *value_to_write;
+        uint8_t expected_request_id;
+        UserDataDone done;
+    };
+
+private:
+    void update_all_values();
+
+    uint32_t slot;
+    TF_RS485* rs485;
+    Config *state;
+    Config *config;
+public:
+    Config *errors;
+    MeterInfo *meter_in_use = nullptr;
+private:
+    void cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length);
+    void cb_read_values(TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t *regs, uint16_t regs_len);
+    void cb_write_reset(TF_RS485 *device, uint8_t request_id, int8_t exception_code);
+
+    uint32_t value_index_power      = UINT32_MAX;
+    uint32_t value_index_energy_rel = UINT32_MAX;
+    uint32_t value_index_energy_abs = UINT32_MAX;
+    uint32_t value_index_current_l1 = UINT32_MAX;
+    uint32_t value_index_voltage_l1 = UINT32_MAX;
+
+    bool meter_change_warning_printed = false;
+
+    const RegRead *getNextRead(bool *trigger_fast_read_done, bool *trigger_slow_read_done);
+
+    size_t modbus_read_state_fast = 0;
+    size_t modbus_read_state_slow = 0;
+    bool last_read_was_fast = false;
+
+    /*uint32_t next_modbus_read_deadline = 0;
+    uint32_t next_power_history_entry = 0;*/
+    UserData callback_data;
+
+    bool reset_requested;
+
+    uint32_t callback_deadline_ms = 0;
+    uint32_t next_read_deadline_ms = 0;
+
+    uint16_t meter_type = METER_TYPE_NONE;
+};
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
