@@ -3,8 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-// TODO remove me
-#define METER_ALL_VALUES_COUNT 85
+#include "modules/meters/meter_defs.h"
 
 #define PHASE_ACTIVE_CURRENT_THRES 0.3f // ampere
 #define PHASE_CONNECTED_VOLTAGE_THRES 180.0f // volts

@@ -24,7 +24,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "modules/meter/meter_defs.h"
+#include "meter_defs.h"
 
 // All code of the SDM helpers assumes 85 values.
 // If this is changed, almost all indices will be wrong.

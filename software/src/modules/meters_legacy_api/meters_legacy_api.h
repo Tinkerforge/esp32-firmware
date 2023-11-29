@@ -22,7 +22,7 @@
 #include <stdint.h>
 
 #include "config.h"
-#include "modules/meter/meter_defs.h"
+#include "modules/meters/meter_defs.h"
 #include "module.h"
 
 #define PHASE_CONNECTED_VOLTAGE_THRES 180.0f // V

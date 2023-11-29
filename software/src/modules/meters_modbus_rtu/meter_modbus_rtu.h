@@ -26,7 +26,7 @@
 #include "bindings/bricklet_rs485.h"
 
 #include "config.h"
-#include "modules/meter/meter_defs.h" // FIXME: remove after port to meters module
+#include "modules/meters/meter_defs.h"
 #include "modules/meters/imeter.h"
 
 #include "meter_defs.h"
