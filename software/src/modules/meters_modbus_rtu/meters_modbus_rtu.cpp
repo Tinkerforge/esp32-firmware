@@ -94,15 +94,15 @@ void MetersModbusRTU::checkRS485State()
     if (result != TF_E_OK) {
         if (!is_in_bootloader(result)) {
             logger.printfln("Failed to get RS485 mode, rc: %d", result);
-            // TODO: meter_instance could be null here!
-            //meter_instance->errors->get("bricklet")->updateUint(meter_instance->errors->get("bricklet")->asUint() + 1);
+            if (meter_instance != nullptr)
+                meter_instance->errors->get("bricklet")->updateUint(meter_instance->errors->get("bricklet")->asUint() + 1);
         }
         return;
     }
     if (mode != TF_RS485_MODE_MODBUS_MASTER_RTU) {
         logger.printfln("RS485 mode invalid (%u). Did the bricklet reset?", mode);
-        // TODO: meter_instance could be null here!
-        //meter_instance->errors->get("bricklet_reset")->updateUint(meter_instance->errors->get("bricklet_reset")->asUint() + 1);
+        if (meter_instance != nullptr)
+            meter_instance->errors->get("bricklet_reset")->updateUint(meter_instance->errors->get("bricklet_reset")->asUint() + 1);
         setupRS485();
     } else if (meter_instance != nullptr && meter_instance->meter_in_use == nullptr) {
         // Bricklet is fine, but reading the energy meter's type failed.
