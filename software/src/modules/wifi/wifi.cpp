@@ -656,7 +656,6 @@ void Wifi::setup()
     EapConfigID eap_config_id = wpa_eap_config.get("eap")->getTag<EapConfigID>();
     if (eap_config_id != EapConfigID::None) {
         Config *eap_config = (Config *)wpa_eap_config.get("eap")->get();
-        size_t len;
         int ca_id = wpa_eap_config.get("ca_cert_id")->asInt();
         if (ca_id != -1) {
             ca_cert = certs.get_cert(ca_id, &ca_cert_len);
