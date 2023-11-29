@@ -58,14 +58,43 @@ void Certs::pre_setup() {
         defer {mbedtls_pem_free(&ctx);};
 
         size_t ignored;
-        auto result = mbedtls_pem_read_buffer(
+        int result = mbedtls_pem_read_buffer(
                         &ctx,
                         "-----BEGIN CERTIFICATE-----",
                         "-----END CERTIFICATE-----",
                         (const unsigned char *)cert.c_str(),
                         nullptr, 0,
                         &ignored);
-        if (result != 0) {
+
+        mbedtls_pem_context key_ctx;
+        mbedtls_pem_init(&key_ctx);
+        defer {mbedtls_pem_free(&key_ctx);};
+
+        int enc_key_res = mbedtls_pem_read_buffer(
+                        &key_ctx,
+                        "-----BEGIN ENCRYPTED PRIVATE KEY-----",
+                        "-----END ENCRYPTED PRIVATE KEY-----",
+                        (const unsigned char *)cert.c_str(),
+                        nullptr, 0,
+                        &ignored);
+
+        int key_res = mbedtls_pem_read_buffer(
+                        &key_ctx,
+                        "-----BEGIN PRIVATE KEY-----",
+                        "-----END PRIVATE KEY-----",
+                        (const unsigned char *)cert.c_str(),
+                        nullptr, 0,
+                        &ignored);
+
+        key_res = mbedtls_pem_read_buffer(
+                        &key_ctx,
+                        "-----BEGIN RSA PRIVATE KEY-----",
+                        "-----END RSA PRIVATE KEY-----",
+                        (const unsigned char *)cert.c_str(),
+                        nullptr, 0,
+                        &ignored);
+
+        if (result != 0 && key_res != 0 && enc_key_res != 0) {
             char buf[256] = {0};
             mbedtls_strerror(result, buf, sizeof(buf));
             return String("Failed to parse certificate: ") + buf;
