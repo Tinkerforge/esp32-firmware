@@ -278,13 +278,15 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
             return <></>
         }
 
-        const cert_items: [string, string][] = [];
+        const cert_items: [string, string][] = [
+            ["-1", __("wifi.content.eap_ca_cert_placeholder")]
+        ];
         for (const cert of certs_config.certs) {
             cert_items.push([cert.id.toString(), cert.name]);
         }
 
         return <>
-            <FormRow label={__("wifi.content.wpa_auth_type")}>
+            <FormRow label={__("wifi.content.eap_method")}>
                 <InputSelect
                     items={[
                         ["0-disabled", __("wifi.content.eap_tls")],
@@ -320,7 +322,6 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                 <FormRow label={__("wifi.content.eap_ca_cert")}>
                     <InputSelect
                         items={cert_items}
-                        placeholder={__("wifi.content.eap_ca_cert_placeholder")}
                         value={state.eap_config.ca_cert_id.toString()}
                         onValue={(v) => {
                             this.setState({eap_config: {...state.eap_config, ca_cert_id: parseInt(v)}});
@@ -328,7 +329,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                 </FormRow>
 
                 {state.eap_config.eap[0] == EapConfigID.Login ? this.eap_login(state) : <></>}
-                {/* {state.eap_config.eap[0] == EapConfigID.Certificate ? this.eap_cert(state, cert_items) : <></>} */}
+                {/* {state.eap_config.eap[0] == EapConfigID.Certificate ? this.eap_cert(state, cert_items.filter((v) => v[0] != "-1")) : <></>} */}
 
         </>
     }
