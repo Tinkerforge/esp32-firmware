@@ -262,9 +262,7 @@ void Meters::register_urls()
             meter_slot.power_history.register_urls_empty(base_path);
         }
 
-        if (meter_slot.meter) {
-            meter_slot.meter->register_urls(base_path);
-        }
+        meter_slot.meter->register_urls(base_path);
     }
 
     server.on("/meters/history", HTTP_GET, [this](WebServerRequest request) {
