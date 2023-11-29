@@ -49,7 +49,21 @@ let x = {
             "confirm_title": "WLAN-Access-Point deaktivieren?",
             "confirm_content": null,
             "confirm_abort": "Abbrechen",
-            "confirm_confirm": "Deaktivieren"
+            "confirm_confirm": "Deaktivieren",
+
+            "wpa_personal": "WPA Personal",
+            "wpa_enterprise": "WPA Enterprise",
+            "wpa_auth_type": "Authentifizierung",
+            "eap_tls": "EAP-TLS (Bald verfügbar)",
+            "eap_peap_ttls": "PEAP/TTLS",
+            "eap_identity": "Identität",
+            "eap_username": "Benutzername",
+            "eap_password": "Passwort",
+            "eap_ca_cert": "CA-Zertifikat",
+            "eap_client_cert": "Client-Zertifikat",
+            "eap_client_key": "Client-Schlüssel",
+            "eap_client_key_password": "Client-Schlüssel-Passwort",
+            "eap_ca_cert_placeholder": "Zertiﬁkat auswählen"
         },
         "script": {
             "scan_wifi_init_failed": "Suche nach Netzwerken fehlgeschlagen. Konnte Scan nicht starten.",

@@ -30,6 +30,12 @@ enum class WifiState {
     CONNECTED
 };
 
+enum class EapConfigID: uint8_t {
+    None,
+    Certificate,
+    Login
+};
+
 class Wifi final : public IModule
 {
 public:
@@ -57,11 +63,25 @@ private:
     ConfigRoot ap_config;
     ConfigRoot sta_config;
     ConfigRoot state;
+    ConfigRoot wpa_eap_config;
 
     OwnedConfig ap_config_in_use;
     OwnedConfig sta_config_in_use;
 
     bool soft_ap_running = false;
+    std::unique_ptr<unsigned char []> ca_cert = nullptr;
+    size_t ca_cert_len = 0;
+    std::unique_ptr<unsigned char []> client_cert = nullptr;
+    size_t client_cert_len = 0;
+    std::unique_ptr<unsigned char []> client_key = nullptr;
+    size_t client_key_len = 0;
+
+    std::vector<ConfUnionPrototype<EapConfigID>> eap_config_prototypes;
+
+    CoolString client_key_password;
+    CoolString eap_username;
+    CoolString eap_password;
+    CoolString eap_identity;
 
     uint32_t last_connected_ms = 0;
 };

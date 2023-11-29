@@ -6,6 +6,40 @@ interface WifiInfo {
     encryption: number
 }
 
+export enum EapConfigID {
+    None = 0,
+    Certificate = 1,
+    Login = 2
+}
+
+type EapConfigNone = [
+    EapConfigID.None,
+    {}
+]
+
+export type EapConfigCertificate = [
+    EapConfigID.Certificate,
+    {
+        client_cert_id: number,
+        client_key_id: number,
+        key_password: string
+    }
+]
+
+export type EapConfigLogin = [
+    EapConfigID.Login,
+    {
+        username: string,
+        password: string
+    }
+]
+
+export interface wpa_eap_config {
+    identity: string,
+    ca_cert_id: number,
+    eap: EapConfigNone | EapConfigCertificate | EapConfigLogin
+}
+
 export type scan_results = WifiInfo[] | string;
 
 export interface sta_config {
