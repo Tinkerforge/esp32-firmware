@@ -325,8 +325,6 @@ bool Wifi::apply_sta_config_and_connect(WifiState current_state)
     logger.printfln("wifi connecting to %s", ssid);
 
 #if MODULE_CERTS_AVAILABLE()
-    // The wpa enterprise api expects the certificates to be null terminated.
-    // That is why we need to pass the length + 1.
     EapConfigID eap_config_id = wpa_eap_config.get("eap")->getTag<EapConfigID>();
         switch (eap_config_id) {
             case EapConfigID::None:
