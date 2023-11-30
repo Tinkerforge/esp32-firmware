@@ -64,6 +64,10 @@ void Meters::pre_setup()
 
     generators.reserve(METER_CLASSES);
     register_meter_generator(MeterClassID::None, &meter_generator_none);
+
+    last_reset_prototype = Config::Object({
+        {"last_reset", Config::Uint32(0)}
+    });
 }
 
 void Meters::setup()
@@ -121,6 +125,11 @@ void Meters::setup()
         }
         if (configured_meter_class != MeterClassID::None) {
             meter_slot.power_history.setup();
+        }
+        if (meter->supports_reset()) {
+            meter_slot.reset = *Config::Null();
+            meter_slot.last_reset = last_reset_prototype;
+            api.restorePersistentConfig(get_path(slot, Meters::PathType::LastReset), &meter_slot.last_reset);
         }
         meter->setup();
         meter_slot.meter = meter;
@@ -260,6 +269,25 @@ void Meters::register_urls()
             meter_slot.power_history.register_urls(base_path);
         } else {
             meter_slot.power_history.register_urls_empty(base_path);
+        }
+
+        if (meter_slot.meter->supports_reset()) {
+            api.addCommand(get_path(slot, Meters::PathType::Reset), &meter_slot.reset, {}, [this, &meter_slot, slot]() mutable {
+                if (!meter_slot.meter->reset())
+                    return;
+
+                struct timeval tv_now;
+
+                if (clock_synced(&tv_now)) {
+                    //FIXME not Y2038-safe
+                    meter_slot.last_reset.get("last_reset")->updateUint(static_cast<uint32_t>(tv_now.tv_sec));
+                } else {
+                    meter_slot.last_reset.get("last_reset")->updateUint(0);
+                }
+                api.writeConfig(get_path(slot, Meters::PathType::LastReset), &meter_slot.last_reset);
+            }, true);
+
+            api.addState(get_path(slot, Meters::PathType::LastReset), &meter_slot.last_reset);
         }
 
         meter_slot.meter->register_urls(base_path);

@@ -105,6 +105,8 @@ private:
         ConfigRoot config_union;
         ConfigRoot state;
         ConfigRoot errors;
+        ConfigRoot reset;
+        ConfigRoot last_reset;
 
         ValueHistory power_history;
     };
@@ -121,6 +123,7 @@ private:
     Config config_bool_false_prototype = Config::Bool(false);
     Config config_float_nan_prototype;
     Config config_uint_max_prototype;
+    ConfigRoot last_reset_prototype;
 
     std::vector<std::tuple<MeterClassID, MeterGenerator *>> generators;
 

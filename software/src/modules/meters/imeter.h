@@ -37,4 +37,10 @@ public:
     virtual bool supports_energy_export() {return false;}
     virtual bool supports_currents()      {return false;}
     //virtual bool supports_phases() {return false;}
+
+    // Should be true iff the meter has [...]Resettable values
+    virtual bool supports_reset()         {return false;}
+    // Should reset _all_ [...]Resettable values.
+    // Return false if the reset failed.
+    virtual bool reset()                  {return true; }
 };
