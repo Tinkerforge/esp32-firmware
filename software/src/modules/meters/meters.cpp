@@ -126,12 +126,16 @@ void Meters::setup()
         if (configured_meter_class != MeterClassID::None) {
             meter_slot.power_history.setup();
         }
+
+        meter->setup();
+        // Setup before calling supports_reset to allow a meter to decide in
+        // setup whether to support reset. This could for example depend on the
+        // meter's configuration.
         if (meter->supports_reset()) {
             meter_slot.reset = *Config::Null();
             meter_slot.last_reset = last_reset_prototype;
             api.restorePersistentConfig(get_path(slot, Meters::PathType::LastReset), &meter_slot.last_reset);
         }
-        meter->setup();
         meter_slot.meter = meter;
     }
 

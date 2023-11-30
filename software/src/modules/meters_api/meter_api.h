@@ -46,12 +46,16 @@ public:
     bool supports_energy_import() override {return true;}
     bool supports_energy_export() override {return true;}
     bool supports_currents()      override {return true;}
+    bool supports_reset()         override {return reset_supported;}
+    bool reset() override;
+
 private:
     uint32_t slot;
     Config *config;
     ConfigRoot push_values;
 
     uint32_t value_count;
+    bool reset_supported = false;
 };
 
 #if defined(__GNUC__)

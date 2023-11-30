@@ -46,6 +46,7 @@ void MeterAPI::setup()
     MeterValueID *ids = static_cast<MeterValueID *>(malloc(value_count * sizeof(MeterValueID)));
     for (uint16_t i = 0; i < value_count_u16; i++) {
         ids[i] = static_cast<MeterValueID>(value_ids->get(i)->asUint());
+        this->reset_supported |= getMeterValueKind(ids[i]) == MeterValueKind::Resettable;
     }
     meters.declare_value_ids(slot, ids, value_count);
     free(ids);
@@ -61,4 +62,12 @@ void MeterAPI::register_urls(const String &base_url)
     api.addCommand(base_url + "values_update", &push_values, {}, [this](){
         meters.update_all_values(this->slot, &push_values);
     }, false);
+}
+
+_ATTRIBUTE((const))
+bool MeterAPI::reset() {
+    // Resetting an API meter is a nop:
+    // The user of the API has to check meters/[slot]/last_reset
+    // and reset the [...]Resettable values when the timestamp changes.
+    return true;
 }
