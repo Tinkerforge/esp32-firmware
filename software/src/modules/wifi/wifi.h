@@ -32,8 +32,8 @@ enum class WifiState {
 
 enum class EapConfigID: uint8_t {
     None,
-    Certificate,
-    Login
+    TLS,
+    PEAP_TTLS
 };
 
 class Wifi final : public IModule
@@ -63,7 +63,6 @@ private:
     ConfigRoot ap_config;
     ConfigRoot sta_config;
     ConfigRoot state;
-    ConfigRoot wpa_eap_config;
 
     OwnedConfig ap_config_in_use;
     OwnedConfig sta_config_in_use;
@@ -78,7 +77,6 @@ private:
 
     std::vector<ConfUnionPrototype<EapConfigID>> eap_config_prototypes;
 
-    CoolString client_key_password;
     CoolString eap_username;
     CoolString eap_password;
     CoolString eap_identity;

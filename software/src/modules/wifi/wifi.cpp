@@ -70,6 +70,40 @@ void Wifi::pre_setup()
 
         return "";
     });
+    state = Config::Object({
+        {"connection_state", Config::Int((int32_t)WifiState::NOT_CONFIGURED)},
+        {"connection_start", Config::Uint32(0)},
+        {"connection_end", Config::Uint32(0)},
+        {"ap_state", Config::Int(0)},
+        {"ap_bssid", Config::Str("", 0, 20)},
+        {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
+        {"sta_subnet", Config::Str("0.0.0.0", 7, 15)},
+        {"sta_rssi", Config::Int8(0)},
+        {"sta_bssid", Config::Str("", 0, 20)}
+    });
+
+    eap_config_prototypes.push_back({EapConfigID::None, *Config::Null()});
+
+    // Currently not used.
+    eap_config_prototypes.push_back({EapConfigID::TLS, Config::Object({
+        {"ca_cert_id", Config::Int(-1, -1, MAX_CERTS)},
+        {"identity", Config::Str("", 0, 32)},
+        {"client_cert_id", Config::Int(0, 0, MAX_CERTS)},
+        {"client_key_id", Config::Int(0, 0, MAX_CERTS)}
+    })});
+
+    eap_config_prototypes.push_back({EapConfigID::PEAP_TTLS, Config::Object({
+        {"ca_cert_id", Config::Int(-1, -1, MAX_CERTS)},
+        {"identity", Config::Str("", 0, 32)},
+        {"username", Config::Str("", 0, 32)},
+        {"password", Config::Str("", 0, 32)}
+    })});
+
+    Config eap_proto = Config::Union<EapConfigID>(
+        *Config::Null(),
+        EapConfigID::None,
+        eap_config_prototypes.data(),
+        eap_config_prototypes.size());
 
     sta_config = ConfigRoot(Config::Object({
         {"enable_sta", Config::Bool(false)},
@@ -95,6 +129,7 @@ void Wifi::pre_setup()
         {"subnet", Config::Str("0.0.0.0", 7, 15)},
         {"dns", Config::Str("0.0.0.0", 7, 15)},
         {"dns2", Config::Str("0.0.0.0", 7, 15)},
+        {"wpa_eap_config", eap_proto}
     }), [](Config &cfg, ConfigSource source) -> String {
         const String &phrase = cfg.get("passphrase")->asString();
         if (phrase.length() > 0 && phrase.length() < 8)
@@ -129,44 +164,6 @@ void Wifi::pre_setup()
 
         return "";
     });
-
-    state = Config::Object({
-        {"connection_state", Config::Int((int32_t)WifiState::NOT_CONFIGURED)},
-        {"connection_start", Config::Uint32(0)},
-        {"connection_end", Config::Uint32(0)},
-        {"ap_state", Config::Int(0)},
-        {"ap_bssid", Config::Str("", 0, 20)},
-        {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
-        {"sta_subnet", Config::Str("0.0.0.0", 7, 15)},
-        {"sta_rssi", Config::Int8(0)},
-        {"sta_bssid", Config::Str("", 0, 20)}
-    });
-
-#if MODULE_CERTS_AVAILABLE()
-
-    eap_config_prototypes.push_back({EapConfigID::None, *Config::Null()});
-    eap_config_prototypes.push_back({EapConfigID::Certificate, Config::Object({
-        {"client_cert_id", Config::Int(0, 0, MAX_CERTS)},
-        {"client_key_id", Config::Int(0, 0, MAX_CERTS)},
-        {"key_password", Config::Str("", 0, 32)}
-    })});
-    eap_config_prototypes.push_back({EapConfigID::Login, Config::Object({
-        {"username", Config::Str("", 0, 32)},
-        {"password", Config::Str("", 0, 32)}
-    })});
-
-    Config proto = Config::Union<EapConfigID>(
-        *Config::Null(),
-        EapConfigID::None,
-        eap_config_prototypes.data(),
-        eap_config_prototypes.size());
-
-    wpa_eap_config = Config::Object({
-        {"ca_cert_id", Config::Int(-1, -1, MAX_CERTS)},
-        {"identity", Config::Str("", 0, 32)},
-        {"eap", proto}
-    });
-#endif
 }
 
 float rssi_to_weight(int rssi)
@@ -323,43 +320,57 @@ bool Wifi::apply_sta_config_and_connect(WifiState current_state)
     }
 
     logger.printfln("wifi connecting to %s", ssid);
+    EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);
+    switch (eap_config_id) {
+        case EapConfigID::None:
+            WiFi.begin(ssid, passphrase, 0, bssid_lock ? bssid : nullptr, true);
+            break;
 
-#if MODULE_CERTS_AVAILABLE()
-    EapConfigID eap_config_id = wpa_eap_config.get("eap")->getTag<EapConfigID>();
-        switch (eap_config_id) {
-            case EapConfigID::None:
-                WiFi.begin(ssid, passphrase, 0, bssid_lock ? bssid : nullptr, true);
+            case EapConfigID::TLS:
+                {
+                    WiFi.begin(ssid,
+                            wpa2_auth_method_t::WPA2_AUTH_TLS,
+                            eap_identity.c_str(),
+                            nullptr,
+                            nullptr,
+                            (char *)ca_cert.get(),
+                            ca_cert_len,
+                            (char *)client_cert.get(),
+                            client_cert_len,
+                            (char *)client_key.get(),
+                            client_key_len,
+                            "",
+                            0,
+                            bssid_lock ? bssid : nullptr,
+                            true);
+                }
                 break;
+        /**
+         * The auth method can be hardcoded here because arduino is not controlling the actual method and we need to
+         * set the username and password.
+         * The user cert and key are unused because using them breaks it atm.
+        */
+        case EapConfigID::PEAP_TTLS:
+            WiFi.begin(ssid,
+                    wpa2_auth_method_t::WPA2_AUTH_PEAP,
+                    eap_identity.c_str(),
+                    eap_username.c_str(),
+                    eap_password.c_str(),
+                    (char *)ca_cert.get(),
+                    ca_cert_len,
+                    nullptr,
+                    0,
+                    nullptr,
+                    0,
+                    nullptr,
+                    0,
+                    bssid_lock ? bssid : nullptr,
+                    true);
+            break;
 
-            /**
-             * The auth method can be hardcoded here because arduino is not controlling the actual method and we need to
-             * set the username and password.
-             * The user cert and key are unused because using them breaks it atm.
-            */
-            case EapConfigID::Login:
-                WiFi.begin(ssid,
-                        wpa2_auth_method_t::WPA2_AUTH_PEAP,
-                        eap_identity.c_str(),
-                        eap_username.c_str(),
-                        eap_password.c_str(),
-                        (char *)ca_cert.get(),
-                        ca_cert_len,
-                        nullptr,
-                        0,
-                        nullptr,
-                        0,
-                        nullptr,
-                        0,
-                        bssid_lock ? bssid : nullptr,
-                        true);
-                break;
-
-            default:
-                break;
-        }
-#else
-    WiFi.begin(ssid, passphrase, 0, bssid_lock ? bssid : nullptr, true);
-#endif
+        default:
+            break;
+    }
     WiFi.setSleep(false);
     return true;
 }
@@ -651,23 +662,30 @@ void Wifi::setup()
         ? 30 * 1000 : 1000, 10 * 1000);
     }
 
-#if MODULE_CERTS_AVAILABLE()
-    api.restorePersistentConfig("wifi/wpa_eap_config", &wpa_eap_config);
-    EapConfigID eap_config_id = wpa_eap_config.get("eap")->getTag<EapConfigID>();
+    EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);
     if (eap_config_id != EapConfigID::None) {
-        Config *eap_config = (Config *)wpa_eap_config.get("eap")->get();
-        int ca_id = wpa_eap_config.get("ca_cert_id")->asInt();
+        const OwnedConfig::OwnedConfigWrap &eap_config = sta_config_in_use.get("wpa_eap_config")->get();
+        int ca_id = eap_config->get("ca_cert_id")->asInt();
+        eap_identity = eap_config->get("identity")->asString();
         if (ca_id != -1) {
             ca_cert = certs.get_cert(ca_id, &ca_cert_len);
         }
         switch (eap_config_id) {
-            case EapConfigID::Certificate:
+            case EapConfigID::TLS:
+            {
                 client_cert = certs.get_cert(eap_config->get("client_cert_id")->asInt(), &client_cert_len);
                 client_key = certs.get_cert(eap_config->get("client_key_id")->asInt(), &client_key_len);
-                client_key_password = eap_config->get("key_password")->asString();
+
+                const CoolString &tmp_identity = eap_config->get("identity")->asString();
+                if (tmp_identity.length() > 0) {
+                    eap_identity = tmp_identity;
+                } else {
+                    eap_identity = "anonymous";
+                }
+            }
                 break;
 
-            case EapConfigID::Login:
+            case EapConfigID::PEAP_TTLS:
                 eap_username = eap_config->get("username")->asString();
                 eap_password = eap_config->get("password")->asString();
                 break;
@@ -676,7 +694,6 @@ void Wifi::setup()
                 break;
         }
     }
-#endif
 
     initialized = true;
 }
@@ -804,7 +821,6 @@ void Wifi::register_urls()
 
     api.addPersistentConfig("wifi/sta_config", &sta_config, {"passphrase"});
     api.addPersistentConfig("wifi/ap_config", &ap_config, {"passphrase"});
-    api.addPersistentConfig("wifi/wpa_eap_config", &wpa_eap_config, {"key_password", "password"});
 }
 
 WifiState Wifi::get_connection_state() const

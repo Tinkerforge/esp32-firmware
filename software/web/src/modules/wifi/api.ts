@@ -8,8 +8,8 @@ interface WifiInfo {
 
 export enum EapConfigID {
     None = 0,
-    Certificate = 1,
-    Login = 2
+    TLS = 1,
+    PEAP_TTLS = 2
 }
 
 type EapConfigNone = [
@@ -18,27 +18,24 @@ type EapConfigNone = [
 ]
 
 export type EapConfigCertificate = [
-    EapConfigID.Certificate,
+    EapConfigID.TLS,
     {
+        identity: string,
+        ca_cert_id: number,
         client_cert_id: number,
-        client_key_id: number,
-        key_password: string
+        client_key_id: number
     }
 ]
 
 export type EapConfigLogin = [
-    EapConfigID.Login,
+    EapConfigID.PEAP_TTLS,
     {
+        identity: string,
+        ca_cert_id: number,
         username: string,
         password: string
     }
 ]
-
-export interface wpa_eap_config {
-    identity: string,
-    ca_cert_id: number,
-    eap: EapConfigNone | EapConfigCertificate | EapConfigLogin
-}
 
 export type scan_results = WifiInfo[] | string;
 
@@ -53,6 +50,7 @@ export interface sta_config {
     subnet: string,
     dns: string,
     dns2: string,
+    wpa_eap_config: EapConfigNone | EapConfigCertificate | EapConfigLogin
 }
 
 export interface ap_config {
