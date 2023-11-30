@@ -916,7 +916,11 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
     override async sendSave(t: "meters/0/config", new_config: MetersConfig) {
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            await API.save_unchecked(`meters/${meter_slot}/config`, this.state.configs_table[meter_slot], __("meters.script.save_failed"));
+            await API.save_unchecked(
+                `meters/${meter_slot}/config`,
+                this.state.configs_table[meter_slot],
+                __("meters.script.save_failed"),
+                meter_slot == METERS_SLOTS - 1 ? this.reboot_string : undefined);
         }
     }
 
