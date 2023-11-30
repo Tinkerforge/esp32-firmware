@@ -109,3 +109,9 @@ void MeterEVSEV2::update_all_values()
         meters.update_all_values(slot, values);
     }
 }
+
+bool MeterEVSEV2::reset()
+{
+    evse_v2.reset_energy_meter_relative_energy();
+    return true;
+}

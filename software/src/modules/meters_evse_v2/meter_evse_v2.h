@@ -46,6 +46,8 @@ public:
     bool supports_energy_import() override {return true;}
     bool supports_energy_export() override {return true;}
     bool supports_currents()      override {return true;}
+    bool supports_reset()         override {return true;}
+    bool reset() override;
 
     void update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data);
 private:
