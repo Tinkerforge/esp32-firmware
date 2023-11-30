@@ -43,9 +43,9 @@ static void sdm72dmv2_fast_read_done(const uint16_t *all_regs, uint32_t meter_sl
     float fast_values[sizeof(sdm72dmv2_registers_fast_to_read)/sizeof(sdm72dmv2_registers_fast_to_read[0])];
     convert_to_float(all_regs, fast_values, sdm72dmv2_registers_fast_to_read, sizeof(sdm72dmv2_registers_fast_to_read) / sizeof(sdm72dmv2_registers_fast_to_read[0]));
 
-    // TODO: Handle reset
     meters.update_value(meter_slot, idx_power,          fast_values[Power]);
     meters.update_value(meter_slot, idx_energy_abs,     fast_values[EnergyAbs]);
+    // TODO
     //meters.update_value(meter_slot, idx_energy_rel,     fast_values[EnergyRel]);
     meters.update_value(meter_slot, idx_voltage_l1,     fast_values[VoltagePhase0]);
     meters.update_value(meter_slot, idx_voltage_l1 + 1, fast_values[VoltagePhase1]);

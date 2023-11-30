@@ -50,6 +50,8 @@ public:
     bool supports_energy_import() override {return true;}
     bool supports_energy_export() override {return true;}
     bool supports_currents()      override {return true;}
+    bool supports_reset()         override {return true;}
+    bool reset() override;
 
     void setupMeter();
     void tick();

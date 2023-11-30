@@ -231,14 +231,13 @@ void MeterModbusRTU::setup()
     }, 0, 10);
 }
 
-void MeterModbusRTU::register_urls(const String &base_url) {
-    // TODO: this is registered automatically?
-    //api.addState(base_url + "error_counters", &error_counters, {}, 1000);
+bool MeterModbusRTU::reset() {
+    this->reset_requested = true;
+    return true;
+}
 
-    // TODO: How to implement the reset?
-    //meter.registerResetCallback([this]() {
-        //this->reset_requested = true;
-    //});
+void MeterModbusRTU::register_urls(const String &base_url) {
+
 }
 
 
@@ -300,7 +299,7 @@ void MeterModbusRTU::tick() {
         reset_requested = false;
 
         if (this->meter_in_use->custom_reset_fn != nullptr) {
-            this->meter_in_use->custom_reset_fn();
+            this->meter_in_use->custom_reset_fn(slot);
         } else {
             callback_data.done = UserDataDone::NOT_DONE;
             callback_data.value_to_write = nullptr;

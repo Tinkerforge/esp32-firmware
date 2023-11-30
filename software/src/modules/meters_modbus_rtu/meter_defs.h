@@ -26,7 +26,7 @@ struct MeterInfo {
     void (*const slow_read_done_fn)(const uint16_t *registers, uint32_t meter_slot);
     void (*const fast_read_done_fn)(const uint16_t *registers, uint32_t meter_slot, uint32_t idx_power, uint32_t idx_energy_rel, uint32_t idx_energy_abs, uint32_t idx_current_l1, uint32_t idx_voltage_l1);
     const char *meter_name;
-    void (*const custom_reset_fn)(); // set to nullptr if reset via register 61457 is supported
+    void (*const custom_reset_fn)(uint32_t meter_slot); // set to nullptr if reset via register 61457 is supported
 };
 
 void convert_to_float(const uint16_t *regs, float *target, const uint16_t *indices, size_t count);
