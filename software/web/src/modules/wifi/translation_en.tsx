@@ -52,11 +52,9 @@ let x = {
             "confirm_confirm": "Disable",
 
             "wpa_personal": "WPA2/3 Personal",
-            "wpa_enterprise": "WPA2 Enterprise",
             "wpa_auth_type": "Authentication",
-            "eap_method": "EAP Method",
-            "eap_tls": "TLS (Coming soon)",
-            "eap_peap_ttls": "PEAP/TTLS",
+            "eap_tls": "WPA2 Enterprise - EAP-TLS",
+            "eap_peap_ttls": "WPA2 Enterprise - EAP-PEAP/TTLS",
             "eap_identity": "Identity",
             "eap_username": "Username",
             "eap_password": "Password",
