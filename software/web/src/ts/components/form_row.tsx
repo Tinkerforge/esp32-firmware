@@ -32,6 +32,7 @@ import { Switch } from "./switch";
 import { InputDate } from "./input_date";
 import { InputFile } from "./input_file";
 import { InputText } from "./input_text";
+import { InputTime } from "./input_time";
 import { InputMonth } from "./input_month";
 import { OutputFloat } from "./output_float";
 
@@ -64,6 +65,7 @@ const components_using_id_context: any = [
     InputPassword,
     InputSelect,
     InputText,
+    InputTime,
     OutputDatetime,
     OutputFloat,
     Switch
