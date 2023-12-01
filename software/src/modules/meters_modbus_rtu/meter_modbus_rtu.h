@@ -56,6 +56,8 @@ public:
     void setupMeter();
     void tick();
 
+    void changeMeterType(size_t supported_meter_idx);
+
 
     enum class UserDataDone {
         NOT_DONE,

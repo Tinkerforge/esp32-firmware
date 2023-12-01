@@ -45,6 +45,24 @@ MeterClassID MeterModbusRTU::get_class() const
     return MeterClassID::ModbusRTU;
 }
 
+void MeterModbusRTU::changeMeterType(size_t supported_meter_idx) {
+    this->meter_in_use = supported_meters[supported_meter_idx];
+
+    this->meter_type = this->meter_in_use->meter_type;
+    state->get("type")->updateUint(meter_type);
+
+    MeterValueID ids[METER_ALL_VALUES_COUNT];
+    uint32_t id_count = METER_ALL_VALUES_COUNT;
+    sdm_helper_get_value_ids(meter_type, ids, &id_count);
+    meters.declare_value_ids(slot, ids, id_count);
+
+    value_index_power      = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
+    value_index_energy_rel = meters_find_id_index(ids, id_count, MeterValueID::EnergyActiveLSumImExSumResettable);
+    value_index_energy_abs = meters_find_id_index(ids, id_count, MeterValueID::EnergyActiveLSumImExSum);
+    value_index_current_l1 = meters_find_id_index(ids, id_count, MeterValueID::CurrentL1ImExSum);
+    value_index_voltage_l1 = meters_find_id_index(ids, id_count, MeterValueID::VoltageL1N);
+}
+
 void MeterModbusRTU::cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length) {
     if (request_id != callback_data.expected_request_id || callback_data.expected_request_id == 0) {
         logger.printfln("Unexpected request id %u, expected %u", request_id, callback_data.expected_request_id);
@@ -75,38 +93,14 @@ void MeterModbusRTU::cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id, int
         if (meter_id != supported_meters[i]->meter_id)
             continue;
 
-        this->meter_type = supported_meters[i]->meter_type;
-        state->get("type")->updateUint(meter_type);
-        this->meter_in_use = supported_meters[i];
-
-        MeterValueID ids[METER_ALL_VALUES_COUNT];
-        uint32_t id_count = METER_ALL_VALUES_COUNT;
-        sdm_helper_get_value_ids(meter_type, ids, &id_count);
-        meters.declare_value_ids(slot, ids, id_count);
-
-        value_index_power      = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
-        value_index_energy_rel = meters_find_id_index(ids, id_count, MeterValueID::EnergyActiveLSumImExSumResettable);
-        value_index_energy_abs = meters_find_id_index(ids, id_count, MeterValueID::EnergyActiveLSumImExSum);
-        value_index_current_l1 = meters_find_id_index(ids, id_count, MeterValueID::CurrentL1ImExSum);
-        value_index_voltage_l1 = meters_find_id_index(ids, id_count, MeterValueID::VoltageL1N);
+        this->changeMeterType(i);
 
         logger.printfln("%s detected.", this->meter_in_use->meter_name);
         return;
     }
 
     logger.printfln("Found unknown meter type 0x%x. Assuming this is a SDM72DM.", meter_id);
-    this->meter_type = supported_meters[0]->meter_type;
-    state->get("type")->updateUint(meter_type);
-    this->meter_in_use = supported_meters[0];
-
-    MeterValueID ids[METER_ALL_VALUES_COUNT];
-    uint32_t id_count = METER_ALL_VALUES_COUNT;
-    sdm_helper_get_value_ids(meter_type, ids, &id_count);
-    meters.declare_value_ids(slot, ids, id_count);
-
-    value_index_power      = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
-    value_index_energy_rel = meters_find_id_index(ids, id_count, MeterValueID::EnergyActiveLSumImExSumResettable);
-    value_index_energy_abs = meters_find_id_index(ids, id_count, MeterValueID::EnergyActiveLSumImExSum);
+    this->changeMeterType(0);
 }
 
 
@@ -178,9 +172,7 @@ void MeterModbusRTU::setupMeter() {
     uint8_t type_ = config->get("type_override")->asUint();
 
     if ((type_ - 1) < ARRAY_SIZE(supported_meters)) {
-        this->meter_in_use = supported_meters[type_ - 1];
-        //meter.updateMeterState(2, this->meter_in_use->meter_type);
-        logger.printfln("Meter type override not implemented yet!");
+        this->changeMeterType(type_ - 1);
         logger.printfln("Meter type override set to %s.", this->meter_in_use->meter_name);
     } else {
         if (type_ != METER_TYPE_AUTO_DETECT)
