@@ -27,4 +27,5 @@ export type MeterConfigPlugin = {
     new_config: () => MeterConfig
     clone_config: (config: MeterConfig) => MeterConfig
     get_edit_children: (config: MeterConfig, on_config: (config: MeterConfig) => void) => ComponentChildren
+    get_extra_rows?: (meter_slot: number) => ComponentChildren
 };

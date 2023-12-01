@@ -1141,7 +1141,12 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                 if (allValues.length == 0) {
                                     allValues = [<div class="form-group row"><span class="col-12">{__("meters.content.detailed_values_none")}</span></div>];
                                 }
-                                let extraValue = meter_reset_row.concat(allValues);
+
+                                let extraValue = meter_reset_row;
+                                if (config_plugins[config[0]].get_extra_rows)
+                                    extraValue = extraValue.concat(toChildArray(config_plugins[config[0]].get_extra_rows(meter_slot)))
+
+                                extraValue = extraValue.concat(allValues);
 
                                 return {
                                     columnValues: [
