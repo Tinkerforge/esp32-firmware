@@ -63,7 +63,14 @@ let x = {
             "eap_client_key": "Client-Key",
             "eap_client_key_password": "Client-Key-Password",
             "eap_cert_placeholder": "No certificate",
-            "eap_key_placeholder": "No key"
+            "eap_key_placeholder": "No key",
+            "optional_eap_cert_muted": /*FFN*/ () => {
+                return <>optional <a href="#certs">Certifficate administration</a></>
+            } /*NF*/,
+            "eap_cert_muted": /*FFN*/ () => {
+                return <a href="#certs">Certifficate administration</a>
+            } /*NF*/,
+            "optional": "optional"
         },
         "script": {
             "scan_wifi_init_failed": "Search for networks failed. Failed to start scan.",
