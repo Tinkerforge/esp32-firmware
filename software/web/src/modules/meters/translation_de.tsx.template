@@ -41,7 +41,16 @@ let x = {
             "edit_meter_class": "Klasse",
             "edit_meter_class_select": "Auswählen...",
 
-            "settings": "Einstellungen"
+            "settings": "Einstellungen",
+
+            "last_reset": "Stromzähler zuletzt zurückgesetzt",
+            "reset": "Stromzähler zurücksetzen",
+
+            "reset_modal": "Zählerwerte zurücksetzen?",
+            "reset_modal_body": /*SFN*/(meter_name: string) => `Zurücksetzbare Werte von ${meter_name} wirklich zurücksetzen?`/*NF*/,
+            "reset_modal_abort": "Abbrechen",
+            "reset_modal_confirm": "Zurücksetzen",
+            "reset_failed": "Zurücksetzen des Zählerwerte fehlgeschlagen"
         },
         "script": {
             "time": "Uhrzeit",

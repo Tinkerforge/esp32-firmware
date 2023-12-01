@@ -40,6 +40,8 @@ import { MeterConfig, MeterConfigPlugin } from "./types";
 import { Table } from "../../ts/components/table";
 import { PageHeader } from "../../ts/components/page_header";
 import { plugins_init } from "./plugins";
+import { InputDate } from "src/ts/components/input_date";
+import { InputTime } from "src/ts/components/input_time";
 
 const PHASE_CONNECTED_VOLTAGE_THRESHOLD = 180.0 // V
 const PHASE_ACTIVE_CURRENT_THRESHOLD = 0.3 // A
@@ -1085,7 +1087,42 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                     "a": <Zap/>,
                                 };
 
-                                let extraValue = METER_VALUE_ORDER.filter((order) => order.ids.filter((id) => util.hasValue(state.values_by_id[meter_slot][id])).length > 0)
+                                let meter_is_resettable = false;
+                                for (let value_id in state.values_by_id[meter_slot]) {
+                                    let path = METER_VALUE_INFOS[parseInt(value_id)].tree_path;
+                                    meter_is_resettable ||= path[path.length - 1] == "resettable";
+                                }
+
+                                let meter_reset_row: ComponentChild[] = !meter_is_resettable ? [] : [
+                                    <FormRow label={__("meters.content.last_reset")} small>
+                                        <div class="row mx-n1 mx-xl-n3">
+                                            <div class="col-sm-4 px-1 px-xl-3">
+                                                <InputDate className={"form-control-sm"} date={new Date(API.get_unchecked(`meters/${meter_slot}/last_reset`).last_reset * 1000)}/>
+                                            </div>
+                                            <div class="col-sm-4 px-1 px-xl-3">
+                                                <InputTime className={"form-control-sm"} date={new Date(API.get_unchecked(`meters/${meter_slot}/last_reset`).last_reset * 1000)}/>
+                                            </div>
+                                            <div class="col-sm-4 px-1 px-xl-3">
+                                                <Button size="sm" className="form-control" variant="danger" onClick={async () => {
+                                                    const modal = util.async_modal_ref.current;
+                                                    if (!await modal.show({
+                                                            title: __("meters.content.reset_modal"),
+                                                            body: __("meters.content.reset_modal_body")(get_meter_name(state.configs_table, meter_slot)),
+                                                            no_text: __("meters.content.reset_modal_abort"),
+                                                            yes_text: __("meters.content.reset_modal_confirm"),
+                                                            no_variant: "secondary",
+                                                            yes_variant: "danger"
+                                                        }))
+                                                        return;
+
+                                                    API.call_unchecked(`meters/${meter_slot}/reset`, null, __("meters.content.reset_failed"))
+                                                    }}>{__("meters.content.reset")}</Button>
+                                            </div>
+                                        </div>
+                                    </FormRow>
+                                ]
+
+                                let allValues = METER_VALUE_ORDER.filter((order) => order.ids.filter((id) => util.hasValue(state.values_by_id[meter_slot][id])).length > 0)
                                     .map((order) => order.group ?
                                         <FormRow label={translate_unchecked(`meters.content.group_${order.group}`)} label_muted={util.joinNonEmpty("; ", [translate_unchecked(`meters.content.group_${order.group}_muted`), order.phases])} small={true}>
                                             <div class="row mx-n1 mx-xl-n3">
@@ -1101,9 +1138,10 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                             </div></div>
                                         </FormRow>);
 
-                                if (extraValue.length == 0) {
-                                    extraValue = [<div class="form-group row"><span class="col-12">{__("meters.content.detailed_values_none")}</span></div>];
+                                if (allValues.length == 0) {
+                                    allValues = [<div class="form-group row"><span class="col-12">{__("meters.content.detailed_values_none")}</span></div>];
                                 }
+                                let extraValue = meter_reset_row.concat(allValues);
 
                                 return {
                                     columnValues: [

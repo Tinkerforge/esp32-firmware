@@ -41,7 +41,16 @@ let x = {
             "edit_meter_class": "Class",
             "edit_meter_class_select": "Select...",
 
-            "settings": "Settings"
+            "settings": "Settings",
+
+            "last_reset": "Last energy meter reset",
+            "reset": "Reset energy meter",
+
+            "reset_modal": "Reset meter values?",
+            "reset_modal_body": /*SFN*/(meter_name: string) => `Really reset all resettable meter values of ${meter_name}?`/*NF*/,
+            "reset_modal_abort": "Abort",
+            "reset_modal_confirm": "Reset",
+            "reset_failed": "Failed to reset meter values"
         },
         "script": {
             "time": "Time of day",
