@@ -686,3 +686,16 @@ export function joinNonEmpty(sep: string, lst: string[]) {
 export function get_updated_union<T extends object>(union: [number, T], update: Partial<T>): [number, T] {
     return [union[0], {...union[1], ...update}];
 }
+
+export function toIsoString(date: Date) {
+    const pad = function(num: number) {
+        return (num < 10 ? '0' : '') + num;
+    };
+
+    return date.getFullYear() +
+        '-' + pad(date.getMonth() + 1) +
+        '-' + pad(date.getDate()) +
+        'T' + pad(date.getHours()) +
+        ':' + pad(date.getMinutes()) +
+        ':' + pad(date.getSeconds());
+}

@@ -38,13 +38,7 @@ export function InputDate(props: InputDateProps) {
     const input = useRef<HTMLInputElement>();
     const id = !props.idContext ? util.useId() : useContext(props.idContext);
 
-    const dateToValue = (date: Date) => {
-        try {
-            return util.leftPad(date.getFullYear(), 0, 4) + "-" + util.leftPad((date.getMonth() + 1), 0, 2) + "-" + util.leftPad(date.getDate(), 0, 2);
-        } catch (e) {
-            return "";
-        }
-    };
+    const dateToValue = (date: Date) => util.toIsoString(date).split("T")[0];
 
     const valueToDate = (value: string) => {
         let [y, mIdx, d] = value.split(/-/g).map(x => parseInt(x));
