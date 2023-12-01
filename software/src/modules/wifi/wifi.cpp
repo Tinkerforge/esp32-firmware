@@ -321,7 +321,7 @@ bool Wifi::apply_sta_config_and_connect(WifiState current_state)
         WiFi.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
     }
 
-    logger.printfln("wifi connecting to %s", ssid);
+    logger.printfln("Wifi connecting to %s", ssid);
     EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);
     switch (eap_config_id) {
         case EapConfigID::None:
@@ -825,7 +825,7 @@ void Wifi::register_urls()
         return request.send(200, "application/json; charset=utf-8", result.c_str());
     });
 
-    api.addPersistentConfig("wifi/sta_config", &sta_config, {"passphrase"});
+    api.addPersistentConfig("wifi/sta_config", &sta_config, {"passphrase", "password"});
     api.addPersistentConfig("wifi/ap_config", &ap_config, {"passphrase"});
 }
 
