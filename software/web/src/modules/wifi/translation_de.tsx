@@ -62,7 +62,8 @@ let x = {
             "eap_client_cert": "Client-Zertifikat",
             "eap_client_key": "Client-Schlüssel",
             "eap_client_key_password": "Client-Schlüssel-Passwort",
-            "eap_ca_cert_placeholder": "Kein Zertifikat"
+            "eap_cert_placeholder": "Kein Zertifikat",
+            "eap_key_placeholder": "Kein Schlüssel"
         },
         "script": {
             "scan_wifi_init_failed": "Suche nach Netzwerken fehlgeschlagen. Konnte Scan nicht starten.",

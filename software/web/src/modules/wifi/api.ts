@@ -17,7 +17,7 @@ type EapConfigNone = [
     {}
 ]
 
-export type EapConfigCertificate = [
+export type EapConfigTLS = [
     EapConfigID.TLS,
     {
         identity: string,
@@ -27,13 +27,15 @@ export type EapConfigCertificate = [
     }
 ]
 
-export type EapConfigLogin = [
+export type EapConfigPEAPTTLS = [
     EapConfigID.PEAP_TTLS,
     {
         identity: string,
         ca_cert_id: number,
         username: string,
-        password: string
+        password: string,
+        client_cert_id: number,
+        client_key_id: number
     }
 ]
 
@@ -50,7 +52,7 @@ export interface sta_config {
     subnet: string,
     dns: string,
     dns2: string,
-    wpa_eap_config: EapConfigNone | EapConfigCertificate | EapConfigLogin
+    wpa_eap_config: EapConfigNone | EapConfigTLS | EapConfigPEAPTTLS
 }
 
 export interface ap_config {

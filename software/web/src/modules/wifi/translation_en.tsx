@@ -62,7 +62,8 @@ let x = {
             "eap_client_cert": "Client-Certificate",
             "eap_client_key": "Client-Key",
             "eap_client_key_password": "Client-Key-Password",
-            "eap_ca_cert_placeholder": "No certificate"
+            "eap_cert_placeholder": "No certificate",
+            "eap_key_placeholder": "No key"
         },
         "script": {
             "scan_wifi_init_failed": "Search for networks failed. Failed to start scan.",

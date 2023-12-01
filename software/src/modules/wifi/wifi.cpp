@@ -96,7 +96,9 @@ void Wifi::pre_setup()
         {"ca_cert_id", Config::Int(-1, -1, MAX_CERTS)},
         {"identity", Config::Str("", 0, 32)},
         {"username", Config::Str("", 0, 32)},
-        {"password", Config::Str("", 0, 32)}
+        {"password", Config::Str("", 0, 32)},
+        {"client_cert_id", Config::Int(-1, -1, MAX_CERTS)},
+        {"client_key_id", Config::Int(-1, -1, MAX_CERTS)}
     })});
 
     Config eap_proto = Config::Union<EapConfigID>(
@@ -688,6 +690,10 @@ void Wifi::setup()
             case EapConfigID::PEAP_TTLS:
                 eap_username = eap_config->get("username")->asString();
                 eap_password = eap_config->get("password")->asString();
+
+                client_cert = certs.get_cert(eap_config->get("client_cert_id")->asInt(), &client_cert_len);
+                client_key = certs.get_cert(eap_config->get("client_key_id")->asInt(), &client_key_len);
+
                 break;
 
             default:
