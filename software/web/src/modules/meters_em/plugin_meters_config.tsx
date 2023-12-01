@@ -18,12 +18,13 @@
  */
 
 import { h, ComponentChildren } from "preact";
-import { __ } from "../../ts/translation";
+import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
+import * as API from "../../ts/api";
 
 export type EMMetersConfig = [
     MeterClassID.EnergyManager,
@@ -51,6 +52,12 @@ export function init() {
                     </FormRow>
                 ];
             },
+            get_extra_rows: (meter_slot: number) => <FormRow label={__("meters.content.meter_type")} small>
+                <div class="row mx-n1 mx-xl-n3"><div class="col-sm-4 px-1 px-xl-3">
+                    <InputText class="form-control-sm"
+                               value={translate_unchecked(`meters.script.meter_type_${API.get_unchecked(`meters/${meter_slot}/state`).type}`)}/>
+                </div></div>
+            </FormRow>
         },
     };
 }

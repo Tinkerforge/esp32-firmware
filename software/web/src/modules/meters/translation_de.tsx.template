@@ -50,14 +50,26 @@ let x = {
             "reset_modal_body": /*SFN*/(meter_name: string) => `Zurücksetzbare Werte von ${meter_name} wirklich zurücksetzen?`/*NF*/,
             "reset_modal_abort": "Abbrechen",
             "reset_modal_confirm": "Zurücksetzen",
-            "reset_failed": "Zurücksetzen des Zählerwerte fehlgeschlagen"
+            "reset_failed": "Zurücksetzen des Zählerwerte fehlgeschlagen",
+
+            "meter_type": "Stromzählertyp"
         },
         "script": {
             "time": "Uhrzeit",
             "power": "Leistung",
             "save_failed": "Speichern der Stromzähler-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "Stromzähler-Einstellungen",
-            "meter": /*SFN*/(slot: number|"?") => "Zähler #" + slot/*NF*/
+            "meter": /*SFN*/(slot: number|"?") => "Zähler #" + slot/*NF*/,
+
+            "meter_type_0": "Kein Stromzähler angeschlossen",
+            "meter_type_1": "Eastron SDM72",
+            "meter_type_2": "Eastron SDM630",
+            "meter_type_3": "Eastron SDM72V2",
+            "meter_type_4": "Eastron SDM72CTM",
+            "meter_type_5": "Eastron SDM630MCT",
+            "meter_type_6": "Eltako DSZ15DZMOD",
+            "meter_type_7": "YTL DEM4A",
+            "meter_type_254": "intern"
         }
     }
 }
