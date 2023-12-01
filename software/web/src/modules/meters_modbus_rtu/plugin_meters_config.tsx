@@ -25,11 +25,13 @@ import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api";
+import { InputSelect } from "src/ts/components/input_select";
 
 export type ModbusRTUMetersConfig = [
     MeterClassID.ModbusRTU,
     {
-        display_name: string;
+        display_name: string,
+        type_override: number
     },
 ];
 
@@ -49,6 +51,18 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }}/>
+                    </FormRow>,
+                    <FormRow label={__("meters_modbus_rtu.content.type_override")}>
+                        <InputSelect items={[
+                                ["255", __("meters.script.meter_type_255")],
+                                ["1",   __("meters.script.meter_type_1")],
+                                ["2",   __("meters.script.meter_type_2")],
+                                ["3",   __("meters.script.meter_type_3")],
+                                ["0",   __("meters.script.meter_type_0")],
+                            ]}
+                            value={config[1].type_override}
+                            onValue={(v) => on_config(util.get_updated_union(config, {type_override: parseInt(v)}))}
+                            />
                     </FormRow>
                 ];
             },

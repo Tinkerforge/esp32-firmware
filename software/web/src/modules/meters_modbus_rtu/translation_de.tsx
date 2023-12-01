@@ -5,7 +5,8 @@ let x = {
         "content": {
             "meter_class": "Wallbox-intern",
 
-            "config_display_name": "Anzeigename"
+            "config_display_name": "Anzeigename",
+            "type_override": "Zählertyp"
         }
     }
 }
