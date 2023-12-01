@@ -325,7 +325,7 @@ bool Wifi::apply_sta_config_and_connect(WifiState current_state)
     EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);
     switch (eap_config_id) {
         case EapConfigID::None:
-            WiFi.begin(ssid, passphrase, 0, bssid_lock ? bssid : nullptr, true);
+            WiFi.begin(ssid, passphrase, 0, bssid_lock ? bssid : nullptr, true, (uint8_t)3);
             break;
 
             case EapConfigID::TLS:
@@ -344,7 +344,8 @@ bool Wifi::apply_sta_config_and_connect(WifiState current_state)
                             "",
                             0,
                             bssid_lock ? bssid : nullptr,
-                            true);
+                            true,
+                            3);
                 }
                 break;
         /**
@@ -367,7 +368,8 @@ bool Wifi::apply_sta_config_and_connect(WifiState current_state)
                     nullptr,
                     0,
                     bssid_lock ? bssid : nullptr,
-                    true);
+                    true,
+                    3);
             break;
 
         default:
