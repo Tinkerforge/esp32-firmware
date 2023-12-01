@@ -53,7 +53,7 @@ let x = {
 
             "wpa_personal": "WPA2/3 Personal",
             "wpa_auth_type": "Authentifizierung",
-            "eap_tls": "TWPA2 Enterprise - EAP-TLS",
+            "eap_tls": "WPA2 Enterprise - EAP-TLS",
             "eap_peap_ttls": "WPA2 Enterprise - EAP-PEAP/TTLS",
             "eap_identity": "Identität",
             "eap_username": "Benutzername",
