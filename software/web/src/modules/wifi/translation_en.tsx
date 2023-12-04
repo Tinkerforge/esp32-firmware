@@ -65,10 +65,10 @@ let x = {
             "eap_cert_placeholder": "No certificate",
             "eap_key_placeholder": "No key",
             "optional_eap_cert_muted": /*FFN*/ () => {
-                return <>optional <a href="#certs">Certifficate administration</a></>
+                return <>optional <a href="#certs">Certificate administration</a></>
             } /*NF*/,
             "eap_cert_muted": /*FFN*/ () => {
-                return <a href="#certs">Certifficate administration</a>
+                return <a href="#certs">Certificate administration</a>
             } /*NF*/,
             "optional": "optional"
         },
