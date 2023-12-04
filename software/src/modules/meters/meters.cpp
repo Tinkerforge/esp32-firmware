@@ -705,6 +705,28 @@ bool Meters::get_cached_power_index(uint32_t slot, uint32_t *index)
     return *index != UINT32_MAX;
 }
 
+void Meters::fill_index_cache(uint32_t slot, size_t find_value_count, const MeterValueID find_value_ids[], uint32_t index_cache[])
+{
+    if (slot >= METERS_SLOTS) {
+        logger.printfln("meters: Tried to fill an index cache for meter in non-existent slot %u.", slot);
+        return;
+    }
+
+    Config &value_ids = meter_slots[slot].value_ids;
+
+    uint16_t value_id_count = static_cast<uint16_t>(value_ids.count());
+    MeterValueID *value_ids_arr = static_cast<MeterValueID *>(malloc(value_id_count * sizeof(MeterValueID)));
+    for (uint16_t i = 0; i < value_id_count; i++) {
+        value_ids_arr[i] = static_cast<MeterValueID>(value_ids.get(i)->asUint());
+    }
+
+    for (size_t i = 0; i < find_value_count; i++) {
+        index_cache[i] = meters_find_id_index(value_ids_arr, value_id_count, find_value_ids[i]);
+    }
+
+    free(value_ids_arr);
+}
+
 static const char *meters_path_postfixes[] = {"", "config", "state", "value_ids", "values", "errors", "reset", "last_reset"};
 static_assert(ARRAY_SIZE(meters_path_postfixes) == static_cast<uint32_t>(Meters::PathType::_max) + 1, "Path postfix length mismatch");
 

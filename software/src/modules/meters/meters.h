@@ -80,6 +80,8 @@ public:
 
     bool get_cached_power_index(uint32_t slot, uint32_t *index);
 
+    void fill_index_cache(uint32_t slot, size_t value_count, const MeterValueID value_ids[], uint32_t index_cache[]);
+
     String get_path(uint32_t slot, PathType path_type);
 
     const Config * get_config_bool_false_prototype() const _ATTRIBUTE((const));
