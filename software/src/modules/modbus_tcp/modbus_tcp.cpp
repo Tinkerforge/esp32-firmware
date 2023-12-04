@@ -41,7 +41,7 @@ extern uint32_t local_uid_num;
 template<typename T>
 static void calloc_struct(T **out)
 {
-    *out = (T *)calloc(1, sizeof(T));
+    *out = (T *)heap_caps_calloc_prefer(1, sizeof(T), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 }
 
 // We can't implicit convert from an uint32_t to this, as the conversion is done by a constructor.
