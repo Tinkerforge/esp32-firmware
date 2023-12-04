@@ -21,7 +21,7 @@
 
 #include "config.h"
 
-#include "meter_defs.h"
+#include "modules/meters/meter_defs.h"
 #include "module.h"
 #include "value_history.h"
 
@@ -29,7 +29,7 @@ class Meter final : public IModule
 {
 private:
     void resetMeters();
-    
+
 public:
     Meter(){}
     void pre_setup() override;
