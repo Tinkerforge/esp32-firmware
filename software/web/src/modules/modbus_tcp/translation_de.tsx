@@ -30,7 +30,7 @@ let x = {
                 </thead>
                 <thead>
                     <tr>
-                        <th colSpan={5}>Input Registers</th>
+                        <th colSpan={5}>Input Registers (Funktionscodes: Lesen: 4)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -228,7 +228,7 @@ let x = {
                 </tbody>
                 <thead>
                     <tr>
-                        <th colSpan={5}>Holding Registers</th>
+                        <th colSpan={5}>Holding Registers (Funktionscodes: Lesen: 3, Schreiben: 16)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -297,7 +297,7 @@ let x = {
                 </tbody>
                 <thead>
                     <tr>
-                        <th colSpan={5}>Discrete Inputs</th>
+                        <th colSpan={5}>Discrete Inputs (Funktionscodes: Lesen: 2)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -390,7 +390,7 @@ let x = {
                 </tbody>
                 <thead>
                     <tr>
-                        <th colSpan={5}>Coils</th>
+                        <th colSpan={5}>Coils (Funktionscodes: Lesen: 1, Einzelschreiben: 5, Mehrfachschreiben: 15)</th>
                     </tr>
                 </thead>
                 <tbody>
