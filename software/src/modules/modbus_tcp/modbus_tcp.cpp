@@ -968,14 +968,21 @@ void ModbusTcp::update_keba_regs()
             keba_read_charge->charged_energy = fromUint(0);
         else
             keba_read_charge->charged_energy = fromUint((uint32_t)((meter_absolute - meter_start) * 1000));
-
-        if (api.getState("charge_tracker/current_charge")->get("authorization_type")->asUint() == 2)
-        {
-            const auto &tag_id = api.getState("charge_tracker/current_charge")->get("authorization_info")->get("tag_id")->asString();
-            keba_read_charge_cpy->rfid_tag = fromUint(export_tag_id_as_uint32(tag_id));
-        }
+    }
+#endif
 #endif
 
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+    if (api.getState("charge_tracker/current_charge")->get("authorization_type")->asUint() == 2)
+    {
+        const auto &tag_id = api.getState("charge_tracker/current_charge")->get("authorization_info")->get("tag_id")->asString();
+        keba_read_charge_cpy->rfid_tag = fromUint(export_tag_id_as_uint32(tag_id));
+    }
+#endif
+
+#if MODULE_METER_AVAILABLE()
+    if (api.hasFeature("meter"))
+    {
         if (api.hasFeature("meter_all_values"))
         {
             auto meter_all_values = api.getState("meter/all_values");
