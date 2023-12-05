@@ -104,7 +104,7 @@ private:
     uint32_t next_power_history_entry = 0;*/
     UserData callback_data;
 
-    bool reset_requested;
+    bool reset_requested = false;
 
     uint32_t callback_deadline_ms = 0;
     uint32_t next_read_deadline_ms = 0;
