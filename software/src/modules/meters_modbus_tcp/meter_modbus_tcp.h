@@ -35,10 +35,10 @@
 class MeterModbusTCP final : protected GenericModbusTCPClient, public IMeter
 {
 public:
-    MeterModbusTCP(uint32_t slot_, const Config *config_, Config *state_, Config *errors_, ModbusTCP *mb_) : GenericModbusTCPClient(mb_), slot(slot_), config(config_), state(state_), errors(errors_) {}
+    MeterModbusTCP(uint32_t slot_, Config *state_, Config *errors_, ModbusTCP *mb_) : GenericModbusTCPClient(mb_), slot(slot_), state(state_), errors(errors_) {}
 
     MeterClassID get_class() const override _ATTRIBUTE((const));
-    void setup() override;
+    void setup(Config &ephemeral_config) override;
 
     bool supports_power()         override {return true;}
     bool supports_energy_import() override {return true;}
@@ -52,7 +52,6 @@ private:
     void handle_data();
 
     const uint32_t slot;
-    const Config *config;
     Config * const state;
     Config * const errors;
 

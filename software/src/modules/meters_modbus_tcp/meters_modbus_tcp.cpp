@@ -77,14 +77,14 @@ MeterClassID MetersModbusTCP::get_class() const
     return MeterClassID::ModbusTCP;
 }
 
-IMeter * MetersModbusTCP::new_meter(uint32_t slot, Config *state, Config *config, Config *errors)
+IMeter * MetersModbusTCP::new_meter(uint32_t slot, Config *state, Config *errors)
 {
     if (instance_count >= MODBUSIP_MAX_CLIENTS) {
         logger.printfln("meters_modbus_tcp: Cannot create more than " MACRO_VALUE_TO_STRING(MODBUSIP_MAX_CLIENTS) " meters of class ModbusTCP.");
         return nullptr;
     }
     instance_count++;
-    return new MeterModbusTCP(slot, config, state, errors, &mb);
+    return new MeterModbusTCP(slot, state, errors, &mb);
 }
 
 const Config * MetersModbusTCP::get_config_prototype()

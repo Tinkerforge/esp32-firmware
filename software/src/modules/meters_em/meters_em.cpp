@@ -50,7 +50,7 @@ MeterClassID MetersEM::get_class() const
     return MeterClassID::EnergyManager;
 }
 
-IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config * /*config*/, Config * errors)
+IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config * errors)
 {
     if (meter_instance) {
         logger.printfln("meters_em: Cannot create more than one meter of class EnergyManager.");

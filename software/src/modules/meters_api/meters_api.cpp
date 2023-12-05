@@ -42,9 +42,9 @@ MeterClassID MetersAPI::get_class() const
     return MeterClassID::API;
 }
 
-IMeter * MetersAPI::new_meter(uint32_t slot, Config * /*state*/, Config *config, Config * /*errors*/)
+IMeter * MetersAPI::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
 {
-    return new MeterAPI(slot, config);
+    return new MeterAPI(slot);
 }
 
 _ATTRIBUTE((const))

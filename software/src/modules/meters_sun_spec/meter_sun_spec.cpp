@@ -42,12 +42,12 @@ MeterClassID MeterSunSpec::get_class() const
     return MeterClassID::SunSpec;
 }
 
-void MeterSunSpec::setup()
+void MeterSunSpec::setup(Config &ephemeral_config)
 {
-    host_name      = config->get("host")->asString();
-    port           = static_cast<uint16_t>(config->get("port")->asUint());
-    device_address = static_cast<uint8_t>(config->get("device_address")->asUint());
-    model_id       = static_cast<uint16_t>(config->get("model_id")->asUint());
+    host_name      = ephemeral_config.get("host")->asString();
+    port           = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
+    device_address = static_cast<uint8_t>(ephemeral_config.get("device_address")->asUint());
+    model_id       = static_cast<uint16_t>(ephemeral_config.get("model_id")->asUint());
 
     model_parser = MetersSunSpecParser::new_parser(slot, model_id);
     if (!model_parser) {

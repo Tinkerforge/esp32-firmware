@@ -134,13 +134,13 @@ MeterClassID MetersModbusRTU::get_class() const
     return MeterClassID::ModbusRTU;
 }
 
-IMeter * MetersModbusRTU::new_meter(uint32_t slot, Config *state, Config * config, Config * errors)
+IMeter * MetersModbusRTU::new_meter(uint32_t slot, Config *state, Config * errors)
 {
     if (meter_instance != nullptr) {
         logger.printfln("meters_modbus_rtu: Cannot create more than one meter of class ModbusRTU.");
         return nullptr;
     }
-    meter_instance = new MeterModbusRTU(slot, &device, state, config, errors);
+    meter_instance = new MeterModbusRTU(slot, &device, state, errors);
     return meter_instance;
 }
 

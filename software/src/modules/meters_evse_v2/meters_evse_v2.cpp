@@ -49,7 +49,7 @@ MeterClassID MetersEVSEV2::get_class() const
     return MeterClassID::EVSEV2;
 }
 
-IMeter * MetersEVSEV2::new_meter(uint32_t slot, Config *state, Config * /*config*/, Config * errors)
+IMeter * MetersEVSEV2::new_meter(uint32_t slot, Config *state, Config * errors)
 {
     if (meter_instance) {
         logger.printfln("meters_evsev2: Cannot create more than one meter of class EVSEV2.");

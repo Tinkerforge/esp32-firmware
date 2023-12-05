@@ -114,20 +114,19 @@ void Meters::setup()
         meter_slot.errors = *generator->get_errors_prototype();
 
         // Create meter from config.
-        Config *meter_conf = static_cast<Config *>(meter_slot.config_union.get());
         Config *meter_state = &meter_slot.state;
         Config *meter_errors = &meter_slot.errors;
 
-        IMeter *meter = new_meter_of_class(configured_meter_class, slot, meter_state, meter_conf, meter_errors);
+        IMeter *meter = new_meter_of_class(configured_meter_class, slot, meter_state, meter_errors);
         if (!meter) {
             logger.printfln("meters: Failed to create meter of class %u in slot %u.", static_cast<uint32_t>(configured_meter_class), slot);
-            meter = new_meter_of_class(MeterClassID::None, slot, meter_state, meter_conf, meter_errors);
+            meter = new_meter_of_class(MeterClassID::None, slot, meter_state, meter_errors);
         }
         if (configured_meter_class != MeterClassID::None) {
             meter_slot.power_history.setup();
         }
 
-        meter->setup();
+        meter->setup(*static_cast<Config *>(meter_slot.config_union.get()));
         // Setup before calling supports_reset to allow a meter to decide in
         // setup whether to support reset. This could for example depend on the
         // meter's configuration.
@@ -417,14 +416,14 @@ MeterGenerator *Meters::get_generator_for_class(MeterClassID meter_class)
     return get_generator_for_class(MeterClassID::None);
 }
 
-IMeter *Meters::new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *config_, Config *errors)
+IMeter *Meters::new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state,  Config *errors)
 {
     MeterGenerator *generator = get_generator_for_class(meter_class);
 
     if (!generator)
         return nullptr;
 
-    return generator->new_meter(slot, state, config_, errors);
+    return generator->new_meter(slot, state, errors);
 }
 
 IMeter *Meters::get_meter(uint32_t slot)

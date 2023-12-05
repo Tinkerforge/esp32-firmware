@@ -40,11 +40,11 @@
 class MeterModbusRTU final : public IMeter
 {
 public:
-    MeterModbusRTU(uint32_t slot_, TF_RS485* rs485_, Config *state_, Config *config_, Config *errors_) : slot(slot_), rs485(rs485_), state(state_), config(config_), errors(errors_) {}
+    MeterModbusRTU(uint32_t slot_, TF_RS485* rs485_, Config *state_, Config *errors_) : slot(slot_), rs485(rs485_), state(state_), errors(errors_) {}
 
     // IMeter
     MeterClassID get_class() const override;
-    void setup() override;
+    void setup(Config &ephemeral_config) override;
     void register_urls(const String &base_url) override;
     bool supports_power()         override {return true;}
     bool supports_energy_import() override {return true;}
@@ -77,7 +77,7 @@ private:
     uint32_t slot;
     TF_RS485* rs485;
     Config *state;
-    Config *config;
+    uint8_t type_override;
 public:
     Config *errors;
     MeterInfo *meter_in_use = nullptr;

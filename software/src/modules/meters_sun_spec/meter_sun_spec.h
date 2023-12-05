@@ -37,10 +37,10 @@
 class MeterSunSpec final : protected GenericModbusTCPClient, public IMeter
 {
 public:
-    MeterSunSpec(uint32_t slot_, Config *config_, Config *state_, Config *errors_, ModbusTCP *mb_) : GenericModbusTCPClient(mb_), slot(slot_), config(config_), state(state_), errors(errors_) {}
+    MeterSunSpec(uint32_t slot_, Config *state_, Config *errors_, ModbusTCP *mb_) : GenericModbusTCPClient(mb_), slot(slot_), state(state_), errors(errors_) {}
 
     MeterClassID get_class() const override _ATTRIBUTE((const));
-    void setup() override;
+    void setup(Config &ephemeral_config) override;
     //void register_urls(const String &base_url) override;
 
     bool supports_power()         override {return true;}
@@ -69,7 +69,6 @@ private:
     void scan_next();
 
     uint32_t slot;
-    Config *config;
     Config *state;
     Config *errors;
 

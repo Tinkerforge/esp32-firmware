@@ -169,14 +169,12 @@ void MeterModbusRTU::setupMeter() {
     // Just setting all bits to one works and we don't have to think about the register byte order.
     memset(registers, 0xFF, sizeof(registers));
 
-    uint8_t type_ = config->get("type_override")->asUint();
-
-    if ((type_ - 1) < ARRAY_SIZE(supported_meters)) {
-        this->changeMeterType(type_ - 1);
+    if ((this->type_override - 1) < ARRAY_SIZE(supported_meters)) {
+        this->changeMeterType(this->type_override - 1);
         logger.printfln("Meter type override set to %s.", this->meter_in_use->meter_name);
     } else {
-        if (type_ != METER_TYPE_AUTO_DETECT)
-            logger.printfln("Meter type override set to unknown value %u. Ignoring", type_);
+        if (this->type_override != METER_TYPE_AUTO_DETECT)
+            logger.printfln("Meter type override set to unknown value %u. Ignoring", this->type_override);
 
         callback_data.value_to_write = &this->meter_type;
         tf_rs485_register_modbus_master_read_holding_registers_response_callback(
@@ -209,11 +207,13 @@ void MeterModbusRTU::setupMeter() {
         this);
 }
 
-void MeterModbusRTU::setup()
+void MeterModbusRTU::setup(Config &ephemeral_config)
 {
     // TODO Trigger meter value update, in case other modules expect meter values during setup.
 
-    if (config->get("type_override")->asUint() == METER_TYPE_NONE) {
+    this->type_override = ephemeral_config.get("type_override")->asUint();
+
+    if (this->type_override == METER_TYPE_NONE) {
         logger.printfln("Meter type override set to NONE (0). Disabling energy meter support.");
         return;
     }

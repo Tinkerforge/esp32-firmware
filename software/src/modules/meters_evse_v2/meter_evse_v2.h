@@ -39,7 +39,7 @@ public:
     MeterEVSEV2(uint32_t slot_, Config *state_, Config *errors_) : slot(slot_), state(state_), errors(errors_) {}
 
     MeterClassID get_class() const override;
-    void setup() override;
+    void setup(Config &ephemeral_config) override;
     //void register_urls(const String &base_url) override;
 
     bool supports_power()         override {return true;}

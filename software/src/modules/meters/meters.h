@@ -114,7 +114,7 @@ private:
     };
 
     MeterGenerator *get_generator_for_class(MeterClassID meter_class);
-    IMeter *new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *config, Config *errors);
+    IMeter *new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *errors);
 
     MeterValueAvailability get_single_value(uint32_t slot, uint32_t kind, float *value, micros_t max_age_us);
 
