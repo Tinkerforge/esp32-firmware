@@ -57,6 +57,7 @@ void Meters::pre_setup()
         );
 
         meter_slot.values_last_updated_at = INT64_MIN;
+        meter_slot.values_last_changed_at = INT64_MIN;
 
         init_uint32_array(meter_slot.index_cache_single_values, INDEX_CACHE_SINGLE_VALUES_COUNT, UINT32_MAX);
         init_uint32_array(meter_slot.index_cache_currents,      INDEX_CACHE_CURRENT_COUNT,       UINT32_MAX);
@@ -459,11 +460,12 @@ MeterClassID Meters::get_meter_class(uint32_t slot)
 
 bool Meters::meter_is_fresh(uint32_t slot, micros_t max_age_us)
 {
-    if (deadline_elapsed(meter_slots[slot].values_last_updated_at + max_age_us)) {
-        return false;
-    } else {
-        return true;
-    }
+    return !deadline_elapsed(meter_slots[slot].values_last_updated_at + max_age_us);
+}
+
+bool Meters::meter_has_value_changed(uint32_t slot, micros_t max_age_us)
+{
+    return !deadline_elapsed(meter_slots[slot].values_last_changed_at + max_age_us);
 }
 
 MeterValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, float *value_out, micros_t max_age)
@@ -587,7 +589,9 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 
     MeterSlot &meter_slot = meter_slots[slot];
 
-    meter_slot.values.get(static_cast<uint16_t>(index))->updateFloat(new_value);
+    if (meter_slot.values.get(static_cast<uint16_t>(index))->updateFloat(new_value))
+        meter_slot.values_last_changed_at = now_us();
+
     meter_slot.values_last_updated_at = now_us();
 
     if (index == meter_slot.index_cache_single_values[INDEX_CACHE_POWER]) {
@@ -607,6 +611,7 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
     Config &values = meter_slot.values;
     auto value_count = values.count();
     bool updated_any_value = false;
+    bool changed_any_value = false;
 
     for (uint16_t i = 0; i < value_count; i++) {
         if (!isnan(new_values[i])) {
@@ -614,10 +619,13 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
             //auto old_value = wrap->asFloat();
             //bool changed = wrap->updateFloat(new_values[i]) && !isnan(old_value);
             //(void)changed;
-            values.get(i)->updateFloat(new_values[i]);
+            changed_any_value |= values.get(i)->updateFloat(new_values[i]);
             updated_any_value = true;
         }
     }
+
+    if (changed_any_value)
+        meter_slot.values_last_changed_at = now_us();
 
     if (updated_any_value) {
         meter_slot.values_last_updated_at = now_us();
@@ -641,6 +649,7 @@ void Meters::update_all_values(uint32_t slot, Config *new_values)
     ConfigRoot &values = meter_slot.values;
     auto value_count = values.count();
     bool updated_any_value = false;
+    bool changed_any_value = false;
 
     if (new_values->count() != value_count) {
         logger.printfln("meters: Update all values element count mismatch: %i != %i", new_values->count(), value_count);
@@ -650,10 +659,13 @@ void Meters::update_all_values(uint32_t slot, Config *new_values)
     for (uint16_t i = 0; i < value_count; i++) {
         float val = new_values->get(i)->asFloat();
         if (!isnan(val)) {
-            values.get(i)->updateFloat(val);
+            changed_any_value |= values.get(i)->updateFloat(val);
             updated_any_value = true;
         }
     }
+
+    if (changed_any_value)
+        meter_slot.values_last_changed_at = now_us();
 
     if (updated_any_value) {
         meter_slot.values_last_updated_at = now_us();

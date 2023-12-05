@@ -67,6 +67,7 @@ public:
     uint32_t get_meters(MeterClassID meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
     MeterClassID get_meter_class(uint32_t slot);
     bool meter_is_fresh(uint32_t slot, micros_t max_age_us);
+    bool meter_has_value_changed(uint32_t slot, micros_t max_age_us);
 
     MeterValueAvailability get_power(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
     MeterValueAvailability get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age = 0_usec);
@@ -96,6 +97,7 @@ private:
         ConfigRoot values;
 
         micros_t values_last_updated_at;
+        micros_t values_last_changed_at;
         bool     values_declared;
 
         IMeter *meter;
