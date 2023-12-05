@@ -577,6 +577,9 @@ uint32_t Meters::get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_
 */
 void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 {
+    if (isnan(new_value))
+        return;
+
     if (slot >= METERS_SLOTS) {
         logger.printfln("meters: Tried to update value %u for meter in non-existent slot %u.", index, slot);
         return;
@@ -587,7 +590,7 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
     meter_slot.values.get(static_cast<uint16_t>(index))->updateFloat(new_value);
     meter_slot.values_last_updated_at = now_us();
 
-    if (!isnan(new_value) && index == meter_slot.index_cache_single_values[INDEX_CACHE_POWER]) {
+    if (index == meter_slot.index_cache_single_values[INDEX_CACHE_POWER]) {
         meter_slot.power_history.add_sample(new_value);
     }
 }
