@@ -630,7 +630,7 @@ private:
             logger.printfln("update_value: Config has wrong type. This is a %s. new value is a %s", this->value.getVariantName(), value_type);
 #ifdef DEBUG_FS_ENABLE
             logger.printfln("Content is %s", this->to_string().c_str());
-            logger.printfln("value is is %s", String(value).c_str());
+            logger.printfln("value is %s", String(value).c_str());
 #endif
             esp_system_abort("");
         }
