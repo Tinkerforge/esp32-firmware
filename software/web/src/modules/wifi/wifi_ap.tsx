@@ -139,6 +139,8 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                         onValue={(v) => this.setState(v)}
                         value={state}
                         setValid={(v) => this.ipconfig_valid = v}
+                        min_subnet_prefix={24}
+                        max_subnet_prefix={30}
                         forbidNetwork={[
                                 {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
                             ].concat(

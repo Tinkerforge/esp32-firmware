@@ -48,6 +48,9 @@ interface IPConfigurationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInput
     gateway_label?: string
     subnet_label?: string
 
+    min_subnet_prefix?: number
+    max_subnet_prefix?: number
+
     forbidNetwork?: {ip: number, subnet: number, name: string}[]
 }
 
@@ -126,6 +129,8 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                         required={!props.showDhcp || !dhcp}
                         value={props.value.subnet}
                         onValue={(v) => this.onUpdate("subnet", v)}
+                        minPrefixLength={props.min_subnet_prefix}
+                        maxPrefixLength={props.max_subnet_prefix}
                         placeholder={__("component.ip_configuration.subnet_placeholder")}
                     />
                 {captured_subnet_name != "" ? <div class="invalid-feedback">{__("component.ip_configuration.subnet_captures_prefix") + captured_subnet_name + " (" + captured_subnet_ip + ") " + __("component.ip_configuration.subnet_captures_suffix")}</div> : <></>}

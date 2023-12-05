@@ -62,6 +62,10 @@ void Wifi::pre_setup()
         if (!is_valid_subnet_mask(subnet_mask))
             return "Invalid subnet mask passed: Expected format is 255.255.255.0";
 
+        uint8_t cidr = WiFiGenericClass::calculateSubnetCIDR(subnet_mask);
+        if (cidr < 24 || cidr > 30)
+            return "Invalid subnet mask passed: Subnet mask must be at least /30 and not bigger than /24.";
+
         if (ip_addr != IPAddress(0,0,0,0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127,0,0,1)))
             return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi AP.";
 
