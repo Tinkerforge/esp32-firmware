@@ -31,6 +31,11 @@
 #pragma GCC diagnostic ignored "-Wuseless-cast"
 #endif
 
+// string_length_visitor assumes that a float is max. 20 byte long
+// We need n+1 bytes extra for n meter values for '[', ',' and ']'
+// The MQTT send buffer is 2K on a WARP1 -> 2048/21 ~ 97,5.
+#define METERS_MAX_VALUES_PER_METER 96
+
 static MeterGeneratorNone meter_generator_none;
 
 static void init_uint32_array(uint32_t *arr, size_t len, uint32_t val)
@@ -49,11 +54,11 @@ void Meters::pre_setup()
     for (MeterSlot &meter_slot : meter_slots) {
         meter_slot.value_ids = Config::Array({},
             get_config_uint_max_prototype(),
-            0, UINT16_MAX - 1, Config::type_id<Config::ConfUint>()
+            0, METERS_MAX_VALUES_PER_METER, Config::type_id<Config::ConfUint>()
         );
         meter_slot.values = Config::Array({},
             get_config_float_nan_prototype(),
-            0, UINT16_MAX - 1, Config::type_id<Config::ConfFloat>()
+            0, METERS_MAX_VALUES_PER_METER, Config::type_id<Config::ConfFloat>()
         );
 
         meter_slot.values_last_updated_at = INT64_MIN;
