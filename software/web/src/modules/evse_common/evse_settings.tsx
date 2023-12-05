@@ -40,7 +40,6 @@ interface EVSESettingsState {
     auto_start_charging: API.getType['evse/auto_start_charging'];
     require_meter_enabled: API.getType['require_meter/config'];
     led_configuration: API.getType['evse/led_configuration'];
-    meter_abs: number
     evse_uptime: number
     is_evse_v2: boolean
 }
@@ -76,10 +75,6 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
 
         util.addApiEventListener('evse/slots', () => {
             this.setState({slots: API.get('evse/slots')});
-        });
-
-        util.addApiEventListener("meter/values", () => {
-            this.setState({meter_abs: API.get("meter/values").energy_abs});
         });
 
         util.addApiEventListener("evse/low_level_state", () => {
