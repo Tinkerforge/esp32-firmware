@@ -103,6 +103,7 @@ public:
 
 private:
     bool all_chargers_seen = false;
+    bool printed_all_chargers_seen = false;
     std::function<void(uint32_t)> allocated_current_callback;
 
     std::unique_ptr<char[]> distribution_log;

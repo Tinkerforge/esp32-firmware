@@ -526,7 +526,13 @@ const char* ChargeManager::get_charger_name(uint8_t idx) {
 
 void ChargeManager::distribute_current()
 {
-    uint32_t available_current_init = available_current.get("current")->asUint();
+    bool seen_all_chargers_local = seen_all_chargers();
+    if (seen_all_chargers_local && !printed_all_chargers_seen) {
+        logger.printfln("Charge manager: Seen all chargers.");
+        printed_all_chargers_seen = true;
+    }
+
+    uint32_t available_current_init = seen_all_chargers_local ? available_current.get("current")->asUint() : 0;
     uint32_t available_current = available_current_init;
 
     bool use_3phase_minimum_current = available_phases.get("phases")->asUint() >= 3;
