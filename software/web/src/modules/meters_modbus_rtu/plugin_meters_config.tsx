@@ -66,12 +66,17 @@ export function init() {
                     </FormRow>
                 ];
             },
-            get_extra_rows: (meter_slot: number) => <FormRow label={__("meters.content.meter_type")} small>
-                <div class="row mx-n1 mx-xl-n3"><div class="col-sm-4 px-1 px-xl-3">
-                    <InputText class="form-control-sm"
-                               value={translate_unchecked(`meters.script.meter_type_${API.get_unchecked(`meters/${meter_slot}/state`).type}`)}/>
-                </div></div>
-            </FormRow>
+            get_extra_rows: (meter_slot: number) => {
+                let meter_type = API.get_unchecked(`meters/${meter_slot}/state`)?.type;
+                let meter_type_string = meter_type == null ? __('meters.script.reboot_required') : translate_unchecked(`meters.script.meter_type_${meter_type}`)
+
+                return <FormRow label={__("meters.content.meter_type")} small>
+                    <div class="row mx-n1 mx-xl-n3"><div class="col-sm-4 px-1 px-xl-3">
+                        <InputText class="form-control-sm"
+                                value={meter_type_string}/>
+                    </div></div>
+                </FormRow>
+            }
         },
     };
 }
