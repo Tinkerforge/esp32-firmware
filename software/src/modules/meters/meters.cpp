@@ -496,7 +496,7 @@ MeterValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, fl
         return MeterValueAvailability::Unavailable;
     }
 
-    MeterSlot &meter_slot = meter_slots[slot];
+    const MeterSlot &meter_slot = meter_slots[slot];
 
     uint32_t cached_index = meter_slot.index_cache_single_values[kind];
 
@@ -522,10 +522,7 @@ MeterValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, fl
         }
     }
 
-    Config *val = static_cast<Config *>(meter_slot.values.get(static_cast<uint16_t>(cached_index)));
-    assert(val); // If an index is cached, it must be in values.
-
-    *value_out = val->asFloat();
+    *value_out = meter_slot.values.get(static_cast<uint16_t>(cached_index))->asFloat();
 
     if (max_age != 0_usec && deadline_elapsed(meter_slot.values_last_updated_at + max_age)) {
         return MeterValueAvailability::Stale;
