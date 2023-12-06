@@ -593,16 +593,15 @@ void Wifi::setup()
     esp_wifi_set_ps(WIFI_PS_NONE);
 
     // We don't need the additional speed of HT40 and it only causes more errors.
-    if (enable_sta) {
-        esp_err_t err = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
-        if (err != ESP_OK)
-            logger.printfln("WiFi: Setting HT20 for station failed: %i", err);
-    }
-    if (enable_ap) {
-        esp_err_t err = esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
-        if (err != ESP_OK)
-            logger.printfln("WiFi: Setting HT20 for AP failed: %i", err);
-    }
+    // Always disable on both interfaces but only print warnings for interfaces we care about.
+    esp_err_t err;
+    err = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
+    if (enable_sta && err != ESP_OK)
+        logger.printfln("WiFi: Setting HT20 for station failed: %i", err);
+
+    err = esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
+    if (enable_ap && err != ESP_OK)
+        logger.printfln("WiFi: Setting HT20 for AP failed: %i", err);
 
     WiFi.setTxPower(WIFI_POWER_19_5dBm);
 
