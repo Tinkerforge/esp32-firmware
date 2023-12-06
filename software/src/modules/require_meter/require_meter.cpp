@@ -63,16 +63,15 @@ void RequireMeter::register_urls() {
         // We've never seen an energy meter.
         // Listen to info/features in case a meter shows up.
         event.registerEvent("info/features", {}, [this](Config *_ignored){
-            if (config.get("config")->asUint() != WARP_SMART)
-                return;
+            if (!api.hasFeature("meter"))
+                return EventResult::OK;
 
-            if (api.hasFeature("meter")) {
-                logger.printfln("Seen energy meter for the first time (since factory reset). Will require up-to-date meter readings to start charging from now on.");
-                config.get("config")->updateUint(WARP_PRO_ENABLED);
-                api.writeConfig("require_meter/config", &config);
-                evse_common.set_require_meter_enabled(true);
-                start_task();
-            }
+            logger.printfln("Seen energy meter for the first time (since factory reset). Will require up-to-date meter readings to start charging from now on.");
+            config.get("config")->updateUint(WARP_PRO_ENABLED);
+            api.writeConfig("require_meter/config", &config);
+            evse_common.set_require_meter_enabled(true);
+            start_task();
+            return EventResult::Deregister;
         });
     }
 }

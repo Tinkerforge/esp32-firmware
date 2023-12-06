@@ -24,6 +24,7 @@
 #include "config.h"
 #include "modules/meters/meter_defs.h"
 #include "module.h"
+#include "modules/event/event.h"
 
 #define PHASE_CONNECTED_VOLTAGE_THRES 180.0f // V
 #define PHASE_ACTIVE_CURRENT_THRES      0.3f // A
@@ -40,7 +41,7 @@ public:
     uint32_t get_linked_meter_slot();
 
 private:
-    void on_value_ids_change(const Config *value_ids);
+    EventResult on_value_ids_change(const Config *value_ids);
     void on_values_change(const Config *values);
     void on_last_reset_change(const Config *last_reset);
 

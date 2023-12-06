@@ -248,7 +248,7 @@ void MetersLegacyAPI::register_events()
         on_value_ids_change(old_value_ids);
     } else {
         event.registerEvent(value_ids_path, {}, [this](Config *event_value_ids) {
-            on_value_ids_change(event_value_ids);
+            return on_value_ids_change(event_value_ids);
         });
     }
 }
@@ -281,14 +281,8 @@ static bool is_values_value(MeterValueID value_id)
     return false;
 }
 
-void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
+EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
 {
-    if (meter_setup_done) {
-        logger.printfln("meters_legacy_api: Value IDs changed but meter setup already done.");
-        return;
-    }
-
-
     // ==== Fill index arrays ====
 
     auto cnt = value_ids->count();
@@ -296,7 +290,7 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         if (show_blank_value_id_update_warnings) {
             logger.printfln("meters_legacy_api: Ignoring blank value IDs update from linked meter in slot %u.", linked_meter_slot);
         }
-        return;
+        return EventResult::OK;
     }
 
     linked_meter_value_count = cnt;
@@ -406,7 +400,7 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     if (meter_type == METER_TYPE_NONE) {
         logger.printfln("meters_legacy_api: Meter type detection failed. 72=%u 72v2=%u 630=%u", can_be_sdm72, can_be_sdm72v2, can_be_sdm630);
         legacy_state.get("state")->updateUint(1); // 1 - initialization error
-        return;
+        return EventResult::Deregister;
     }
 
 
@@ -435,12 +429,10 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         on_values_change(old_values);
     }
 
-    // Cannot register an event from within an event handler. Use a task to do it.
-    task_scheduler.scheduleOnce([this, values_path](){
-        event.registerEvent(values_path, {}, [this](Config *event_values) {
-            on_values_change(event_values);
-        });
-    }, 0);
+    event.registerEvent(values_path, {}, [this](Config *event_values) {
+        on_values_change(event_values);
+        return EventResult::OK;
+    });
 
 
     // ==== Check reset support ====
@@ -452,12 +444,10 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
 
         on_last_reset_change(last_reset_config);
 
-        // Cannot register an event from within an event handler. Use a task to do it.
-        task_scheduler.scheduleOnce([this, last_reset_path](){
-            event.registerEvent(last_reset_path, {}, [this](Config *event_last_reset) {
-                on_last_reset_change(event_last_reset);
-            });
-        }, 0);
+        event.registerEvent(last_reset_path, {}, [this](Config *event_last_reset) {
+            on_last_reset_change(event_last_reset);
+            return EventResult::OK;
+        });
     }
 
 
@@ -482,6 +472,8 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         state.get("writable")->updateBool(true);
         meter_writable = true;
     }
+
+    return EventResult::Deregister;
 }
 
 static void update_config_values(uint16_t *indices, uint16_t index_count, const Config *source_values, Config *target_values)

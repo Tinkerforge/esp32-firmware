@@ -29,14 +29,10 @@ void Event::setup()
     initialized = true;
 }
 
-void Event::registerEvent(const String &path, const std::vector<ConfPath> values, std::function<void(Config *)> callback)
+int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(Config *)> callback)
 {
-    if (state_update_in_progress.load(std::memory_order_consume)) {
-        logger.printfln("BUG: event: Tried to register an event handler for path '%s' from within an event handler.", path.c_str());
-        return;
-    }
-
-    for (size_t i = 0; i < api.states.size(); i++) {
+    auto api_states = api.states.size();
+    for (size_t i = 0; i < api_states; i++) {
         if (api.states[i].path != path) {
             continue;
         }
@@ -55,24 +51,43 @@ void Event::registerEvent(const String &path, const std::vector<ConfPath> values
                     logger.printfln("Value %s in state %s not found", *strict_variant::get<const char *>(&value), path.c_str());
                 else
                     logger.printfln("Index %u in state %s not found", *strict_variant::get<uint16_t>(&value), path.c_str());
-                return;
+                return -1;
             }
         }
 
-        state_updates.push_back({i, config, callback});
+        int64_t eventID = ++lastEventID;
+
+        state_updates.push_back({eventID, i, config, callback});
 
         // If the config updated flag is currently set
         // pushStateUpdate will call the callback soon.
         // If not, trigger the callback to make sure
         // it is always called at least once.
         if (!config->was_updated(1 << backendIdx)) {
-            callback(config);
+            if (callback(config) == EventResult::Deregister) {
+                state_updates.pop_back();
+            }
         }
 
-        return;
+        return eventID;
     }
 
     logger.printfln("State %s not found", path.c_str());
+    return -1;
+}
+
+void Event::deregisterEvent(int64_t eventID) {
+    if (state_update_in_progress.load(std::memory_order_consume)) {
+        logger.printfln("BUG: event: Tried to deregister an event handler for eventID %llu from within an event handler.", eventID);
+        return;
+    }
+
+    for (auto it = state_updates.begin(); it != state_updates.end(); ++it) {
+        if (it->eventID == eventID) {
+            state_updates.erase(it);
+            return;
+        }
+    }
 }
 
 void Event::addCommand(size_t commandIdx, const CommandRegistration &reg)
@@ -95,10 +110,17 @@ bool Event::pushStateUpdate(size_t stateIdx, const String &payload, const String
 {
     state_update_in_progress.store(true, std::memory_order_release);
 
-    for (const StateUpdateRegistration &reg : state_updates) {
+    for (size_t i = 0; i < state_updates.size();) {
+        EventResult result = EventResult::OK;
+
+        const auto &reg = state_updates[i];
         if (reg.stateIdx == stateIdx && reg.config->was_updated(1 << backendIdx)) {
-            reg.callback(reg.config);
+            result = reg.callback(reg.config);
+            state_updates.erase(state_updates.begin() + i);
         }
+
+        if (result != EventResult::Deregister)
+            ++i;
     }
 
     state_update_in_progress.store(false, std::memory_order_release);

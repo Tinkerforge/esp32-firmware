@@ -24,10 +24,17 @@
 
 #include "api.h"
 
+
+enum class EventResult {
+    OK = 0,
+    Deregister
+};
+
 struct StateUpdateRegistration {
+    int64_t eventID;
     size_t stateIdx;
     Config *config;
-    std::function<void(Config *)> callback;
+    std::function<EventResult(Config *)> callback;
 };
 
 class Event final : public IAPIBackend
@@ -42,7 +49,8 @@ public:
         uint16_t
     > ConfPath;
 
-    void registerEvent(const String &path, const std::vector<ConfPath> values, std::function<void(Config *)> callback);
+    int64_t registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(Config *)> callback);
+    void deregisterEvent(int64_t eventID);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
@@ -56,4 +64,6 @@ private:
     size_t backendIdx;
     std::vector<StateUpdateRegistration> state_updates;
     std::atomic<bool> state_update_in_progress;
+
+    int64_t lastEventID = -1;
 };

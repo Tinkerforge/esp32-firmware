@@ -584,6 +584,7 @@ void EvseCommon::register_urls() {
                 cron.trigger_action(CronTriggerID::IECChange, (void *)states, &trigger_action);
                 last_state = state_now;
             }
+            return EventResult::OK;
         });
     }
 
