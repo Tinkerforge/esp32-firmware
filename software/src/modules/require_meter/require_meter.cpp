@@ -27,7 +27,7 @@ extern RequireMeter require_meter;
 #define METER_TIMEOUT micros_t{24ll * 60 * 60 * 1000 * 1000}
 // #define METER_TIMEOUT micros_t{10 * 1000 * 1000}
 
-#define METER_BOOTUP_ENERGY_TIMEOUT micros_t{90ll * 1000 * 1000}
+#define METER_BOOTUP_GRACE_PERIOD micros_t{90ll * 1000 * 1000}
 
 #define WARP_SMART 0
 #define WARP_PRO_DISABLED 1
@@ -101,22 +101,57 @@ void RequireMeter::start_task() {
     task_scheduler.scheduleWithFixedDelay([this]() {
         bool meter_timeout = false;
 
+        if (!meters.meter_has_value_changed(evse_common.get_charger_meter(), METER_TIMEOUT)) {
+            // No value was _changed_ (i.e. was written to a _different_ value than it had before) for METER_TIMEOUT.
+            // This can for example happen on a WARP2 when unplugging the meter from the EVSE.
+            // The EVSE will then continue to report the last seen values until a reboot.
+            meter_timeout = true;
+        }
 
         float energy;
         MeterValueAvailability value_availability = evse_common.get_charger_meter_energy(&energy, METER_TIMEOUT);
 
-        // Check if energy value is stuck for METER_TIMEOUT.
-        if (value_availability == MeterValueAvailability::Fresh) {
-            // Everything is good. No need to set meter_timeout.
-        } else if (value_availability == MeterValueAvailability::Unavailable) {
-            // Energy value will never be available, always block.
-            meter_timeout = true;
-        } else {
-            // Energy value is stale or unknown, block after METER_BOOTUP_ENERGY_TIMEOUT or if we are already blocked.
-            if (deadline_elapsed(METER_BOOTUP_ENERGY_TIMEOUT) || evse_common.get_require_meter_blocking()) {
+        switch (value_availability) {
+            case MeterValueAvailability::Fresh:
+                // Value is considered fresh. Nothing to do here.
+                // If the value is written successfully,
+                // but did not change for METER_TIMEOUT
+                // meter_timeout was already set above.
+                // Note that this assumes that either all measurands
+                // hang on their last value, or none do.
+                // This is fine, because we want to detect a broken
+                // communication link between the ESP and the meter.
+                // Detecting a bugged meter firmware (i.e. one that
+                // still reports some values but not the energy)
+                // is out of scope.
+                break;
+            case MeterValueAvailability::Stale:
+                // meter_timeout was probably already set to true above.
+                // (Because "This value was changed" is stronger than "This value was written")
+                // But set it again for good measure.
                 meter_timeout = true;
-            }
+                break;
+            case MeterValueAvailability::CurrentlyUnknown:
+                // Meter has never set the value and it is yet unknown whether
+                // the meter supports the energy measurand.
+                meter_timeout = true;
+                break;
+            case MeterValueAvailability::Unavailable:
+                // Meter does not support the energy measurand.
+                meter_timeout = true;
+                break;
         }
+
+        // We want to give all hardware some time to boot up,
+        // but don't want to unblock if we were already blocked before the reboot
+        // so only consider the meter timed out if
+        // - the boot grace period is elapsed
+        // - or the EVSE is already blocking (because we blocked it before a reboot)
+        // - or the energy value is unavailable (because the used meter will never be able to report it).
+        meter_timeout = meter_timeout && (
+                            deadline_elapsed(METER_BOOTUP_GRACE_PERIOD)
+                            || evse_common.get_require_meter_blocking()
+                            || value_availability == MeterValueAvailability::Unavailable);
 
         evse_common.set_require_meter_blocking(meter_timeout);
 
