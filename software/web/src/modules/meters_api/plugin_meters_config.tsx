@@ -231,6 +231,83 @@ class MeterValueIDTable extends Component<MeterValueIDTableProps, MeterValueIDTa
     }
 }
 
+interface PresetSelectorProps {
+    config: APIMetersConfig,
+    on_config: (config: APIMetersConfig) => void
+}
+
+interface PresetSelectorState {
+    preset: string
+}
+
+class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState> {
+    constructor(props: PresetSelectorProps) {
+        super(props);
+
+        this.state = {
+            preset: "0"
+        } as any;
+    }
+
+    render() {
+        return <>
+            <InputSelect
+                items={[
+                    ["0", __("meters_api.content.api_meter_no_preset")],
+                    ["1", "test"],
+                    ["2", "test2"],
+                    ["3", "test3"]
+                ]}
+                value={this.state.preset}
+                onValue={async (v) => {
+                    const presets = [
+                        [],
+                        [0, 1, 2],
+                        [3, 4, 5],
+                        [6, 7, 8]
+                    ]
+
+                    let value_ids: number[] = [];
+                    switch (v) {
+                        case "0":
+                            value_ids = presets[0];
+                            break;
+
+                        case "1":
+                            value_ids = presets[1];
+                            break;
+
+                        case "2":
+                            value_ids = presets[2];
+                            break;
+
+                        case "3":
+                            value_ids = presets[3];
+                            break;
+                    }
+
+                    if (this.props.config[1].value_ids.toString() !== presets[parseInt(this.state.preset)].toString()) {
+                        if (!await util.async_modal_ref.current.show({
+                            title: __("meters_api.content.override_modal_title"),
+                            body: __("meters_api.content.override_modal_body"),
+                            yes_text: __("meters_api.content.override_modal_confirm"),
+                            no_text: __("meters_api.content.override_modal_cancel"),
+                            yes_variant: "danger",
+                            no_variant: "secondary",
+                            nestingDepth: 2
+                        })) {
+                            this.setState({preset: this.state.preset});
+                            return;
+                        }
+                    }
+
+                    this.setState({preset: v});
+                    this.props.on_config(util.get_updated_union(this.props.config, {value_ids: value_ids}));
+                }}/>
+        </>
+    }
+}
+
 export function init() {
     return {
         [MeterClassID.API]: {
@@ -247,6 +324,9 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }}/>
+                    </FormRow>
+                    <FormRow label={__("meters_api.content.api_meter_preset")}>
+                        <PresetSelector config={config} on_config={on_config} />
                     </FormRow>
                     <FormRow label={__("meters_api.content.config_value_ids")}>
                         <MeterValueIDTable config={config} on_config={on_config} />

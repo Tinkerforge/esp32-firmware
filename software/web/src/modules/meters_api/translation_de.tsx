@@ -12,7 +12,13 @@ let x = {
             "placeholder": "Auswählen...",
             "add_value_title": "Wert hinzufügen",
             "add_value_count": /*SFN*/(x: number, max: number) => x + " von " + max + " Werten konfiguriert"/*NF*/,
-            "edit_value_title": "Wert bearbeiten"
+            "edit_value_title": "Wert bearbeiten",
+            "api_meter_preset": "Vorlagen",
+            "api_meter_no_preset": "Keine Vorlage ausgewählt",
+            "override_modal_title": "Stromzälerwerte überschreiben",
+            "override_modal_body": "Die Stromzählerwerte werden überschrieben. Sind Sie sicher?",
+            "override_modal_confirm": "Überschreiben",
+            "override_modal_cancel": "Abbrechen"
         }
     }
 }
