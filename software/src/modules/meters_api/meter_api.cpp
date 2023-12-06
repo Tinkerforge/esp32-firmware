@@ -34,13 +34,7 @@ MeterClassID MeterAPI::get_class() const
 void MeterAPI::setup(Config &ephemeral_config)
 {
     Config *value_ids = static_cast<Config *>(ephemeral_config.get("value_ids"));
-    ssize_t id_count = value_ids->count();
-    if (id_count < 0) {
-        logger.printfln("meter_api: Invalid ID count: %i", id_count);
-        return;
-    }
-
-    value_count = static_cast<uint32_t>(id_count);
+    value_count = value_ids->count();
     uint16_t value_count_u16 = static_cast<uint16_t>(value_count);
 
     MeterValueID *ids = static_cast<MeterValueID *>(malloc(value_count * sizeof(MeterValueID)));

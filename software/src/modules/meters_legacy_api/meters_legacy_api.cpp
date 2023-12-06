@@ -291,13 +291,7 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
 
     // ==== Fill index arrays ====
 
-    ssize_t cnt = value_ids->count();
-    if (cnt < 0) {
-        logger.printfln("meters_legacy_api: Invalid value ID count: %i", cnt);
-        legacy_state.get("state")->updateUint(1); // 1 - initialization error
-        return;
-    }
-
+    auto cnt = value_ids->count();
     if (cnt == 0) {
         if (show_blank_value_id_update_warnings) {
             logger.printfln("meters_legacy_api: Ignoring blank value IDs update from linked meter in slot %u.", linked_meter_slot);
@@ -305,7 +299,7 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         return;
     }
 
-    linked_meter_value_count = static_cast<size_t>(cnt);
+    linked_meter_value_count = cnt;
     meter_setup_done = true;
 
     MeterValueID *meter_value_ids = static_cast<MeterValueID *>(malloc(linked_meter_value_count * sizeof(MeterValueID)));
@@ -429,7 +423,7 @@ void MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     // ==== Get values and set up event handler ====
 
     if (has_all_values) {
-        for (int i = legacy_all_values.count(); i < METER_ALL_VALUES_COUNT; ++i) {
+        for (size_t i = legacy_all_values.count(); i < METER_ALL_VALUES_COUNT; ++i) {
             legacy_all_values.add();
         }
     }

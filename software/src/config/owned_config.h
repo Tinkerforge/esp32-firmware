@@ -57,7 +57,7 @@ struct OwnedConfig {
     const OwnedConfigWrap get(uint16_t i) const;
     const OwnedConfigWrap get(const String &key) const;
 
-    ssize_t count() const;
+    size_t count() const;
     const std::vector<OwnedConfig>::const_iterator cbegin() const;
     const std::vector<OwnedConfig>::const_iterator cend() const;
 

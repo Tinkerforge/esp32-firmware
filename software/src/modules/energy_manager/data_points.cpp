@@ -44,17 +44,12 @@ void EnergyManager::register_events()
 
         // Passing no values will register on the ConfigRoot.
         event.registerEvent(meters.get_path(slot, Meters::PathType::ValueIDs), {}, [this, slot](Config *config){
+            size_t count = config->count();
             if (history_meter_setup_done[slot]) {
                 logger.printfln("data_points: Value IDs changed but meter setup for slot %u already done.", slot);
                 return;
             }
 
-            ssize_t count = config->count();
-
-            if (count < 0) {
-                logger.printfln("data_points: Invalid value ID count meter in slot %u: %zi", slot, count);
-                return;
-            }
 
             if (count == 0) {
                 if (show_blank_value_id_update_warnings) {

@@ -545,7 +545,7 @@ public:
     bool removeLast();
     bool removeAll();
     bool remove(size_t i);
-    ssize_t count() const;
+    size_t count() const;
     std::vector<Config>::iterator begin();
     std::vector<Config>::iterator end();
 

@@ -334,7 +334,7 @@ bool Config::remove(size_t i)
     return true;
 }
 
-ssize_t Config::count() const
+size_t Config::count() const
 {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {

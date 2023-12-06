@@ -58,7 +58,7 @@ const OwnedConfig::OwnedConfigWrap OwnedConfig::get(const String &key) const
     esp_system_abort("");
 }
 
-ssize_t OwnedConfig::count() const
+size_t OwnedConfig::count() const
 {
     if (!this->is<OwnedConfig::OwnedConfigArray>()) {
         logger.printfln("Config is not an array!");

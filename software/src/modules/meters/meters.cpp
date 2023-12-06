@@ -662,7 +662,7 @@ void Meters::update_all_values(uint32_t slot, Config *new_values)
     bool changed_any_value = false;
 
     if (new_values->count() != value_count) {
-        logger.printfln("meters: Update all values element count mismatch: %i != %i", new_values->count(), value_count);
+        logger.printfln("meters: Update all values element count mismatch: %u != %u", new_values->count(), value_count);
         return;
     }
 
@@ -702,7 +702,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     Config &values    = meter_slot.values;
 
     if (value_ids.count() != 0) {
-        logger.printfln("meters: Meter in slot %u already declared %i values. Refusing to re-declare %u values.", slot, value_ids.count(), value_id_count);
+        logger.printfln("meters: Meter in slot %u already declared %u values. Refusing to re-declare %u values.", slot, value_ids.count(), value_id_count);
         return;
     }
 
