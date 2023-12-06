@@ -39,7 +39,7 @@ export function init() {
     return {
         [MeterClassID.ModbusRTU]: {
             name: __("meters_modbus_rtu.content.meter_class"),
-            new_config: () => [MeterClassID.ModbusRTU, {display_name: ""}] as MeterConfig,
+            new_config: () => [MeterClassID.ModbusRTU, {display_name: "", type_override: 255}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: ModbusRTUMetersConfig, on_config: (config: ModbusRTUMetersConfig) => void): ComponentChildren => {
                 return [
