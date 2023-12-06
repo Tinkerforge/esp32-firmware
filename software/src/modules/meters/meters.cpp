@@ -594,7 +594,9 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 
     MeterSlot &meter_slot = meter_slots[slot];
 
-    if (meter_slot.values.get(static_cast<uint16_t>(index))->updateFloat(new_value))
+    // Think about ordering and short-circuting issues before changing this!
+    bool was_nan = isnan(meter_slot.values.get(static_cast<uint16_t>(index))->asFloat());
+    if (meter_slot.values.get(static_cast<uint16_t>(index))->updateFloat(new_value) && !was_nan)
         meter_slot.values_last_changed_at = now_us();
 
     meter_slot.values_last_updated_at = now_us();
@@ -624,7 +626,10 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
             //auto old_value = wrap->asFloat();
             //bool changed = wrap->updateFloat(new_values[i]) && !isnan(old_value);
             //(void)changed;
-            changed_any_value |= values.get(i)->updateFloat(new_values[i]);
+
+            // Think about ordering and short-circuting issues before changing this!
+            bool was_nan = isnan(values.get(i)->asFloat());
+            changed_any_value |= values.get(i)->updateFloat(new_values[i]) && !was_nan;
             updated_any_value = true;
         }
     }
@@ -664,7 +669,9 @@ void Meters::update_all_values(uint32_t slot, Config *new_values)
     for (uint16_t i = 0; i < value_count; i++) {
         float val = new_values->get(i)->asFloat();
         if (!isnan(val)) {
-            changed_any_value |= values.get(i)->updateFloat(val);
+            // Think about ordering and short-circuting issues before changing this!
+            bool was_nan = isnan(values.get(i)->asFloat());
+            changed_any_value |= values.get(i)->updateFloat(val) && !was_nan;
             updated_any_value = true;
         }
     }
