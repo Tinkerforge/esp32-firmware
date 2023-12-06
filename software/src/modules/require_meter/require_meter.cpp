@@ -98,19 +98,10 @@ void RequireMeter::start_task() {
     if (is_running)
         return;
 
-#if MODULE_METER_AVAILABLE()
-    meter.last_value_change = 0;
-#endif
     task_scheduler.scheduleWithFixedDelay([this]() {
         bool meter_timeout = false;
 
-#if MODULE_METER_AVAILABLE()
-        // Block if we have not seen any energy_abs value after METER_BOOTUP_ENERGY_TIMEOUT or if we are already blocked.
-        meter_timeout |= isnan(meter.values.get("energy_abs")->asFloat()) && (deadline_elapsed(METER_BOOTUP_ENERGY_TIMEOUT) || evse_common.get_require_meter_blocking());
 
-        // Block if all seen meter values are stuck for METER_TIMEOUT.
-        meter_timeout |= deadline_elapsed(meter.last_value_change + METER_TIMEOUT);
-#elif MODULE_METERS_AVAILABLE()
         float energy;
         MeterValueAvailability value_availability = evse_common.get_charger_meter_energy(&energy, METER_TIMEOUT);
 
@@ -126,9 +117,6 @@ void RequireMeter::start_task() {
                 meter_timeout = true;
             }
         }
-#else
-#warning "No meter(s) module available. require_meter is non-functional and never blocks."
-#endif
 
         evse_common.set_require_meter_blocking(meter_timeout);
 
