@@ -100,7 +100,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
               __("charge_tracker.script.reboot_content_changed"), {
                   user_filter: "-2",
                   file_type: "0",
-                  csv_flavor: 'excel'
+                  csv_flavor: 'excel',
+                  start_date: new Date(NaN),
+                  end_date: new Date(NaN),
               });
 
         util.addApiEventListener('users/config', () => {
