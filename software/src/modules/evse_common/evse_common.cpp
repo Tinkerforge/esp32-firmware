@@ -631,34 +631,20 @@ void EvseCommon::set_modbus_enabled(bool enabled) {
     backend->set_charging_slot_max_current(CHARGING_SLOT_MODBUS_TCP_ENABLE, enabled ? 32000 : 0);
 }
 
+uint32_t EvseCommon::get_charger_meter()
+{
+    return 0; // TODO: Make a config option for this.
+}
+
 MeterValueAvailability EvseCommon::get_charger_meter_power(float *power, micros_t max_age)
 {
-#if MODULE_METER_AVAILABLE()
-    *power = meter.values.get("power")->asFloat();
-    return MeterValueAvailability::CurrentlyUnknown;
-#elif MODULE_METERS_AVAILABLE()
-    uint32_t slot = 0; // TODO: Make a config option for this.
-    return meters.get_power(slot, power, max_age);
-#else
-    #warning "No meter(s) module available. Any module requiring meter values will be non-functional."
-    *power = NAN;
-    return MeterValueAvailability::Unavailable;
-#endif
+    return meters.get_power(this->get_charger_meter(), power, max_age);
 }
 
 MeterValueAvailability EvseCommon::get_charger_meter_energy(float *energy, micros_t max_age)
 {
     // TODO: This function must handle the change from EnergyImExSum to EnergyImport.
-#if MODULE_METER_AVAILABLE()
-    *energy = meter.values.get("energy_abs")->asFloat();
-    return MeterValueAvailability::CurrentlyUnknown;
-#elif MODULE_METERS_AVAILABLE()
-    uint32_t slot = 0; // TODO: Make a config option for this.
-    return meters.get_energy_import(slot, energy, max_age);
-#else
-    *energy = NAN;
-    return MeterValueAvailability::Unavailable;
-#endif
+    return meters.get_energy_import(this->get_charger_meter(), energy, max_age);
 }
 
 void EvseCommon::set_require_meter_blocking(bool blocking) {

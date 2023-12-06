@@ -133,6 +133,7 @@ public:
     void set_modbus_current(uint16_t);
     void set_modbus_enabled(bool);
 
+    uint32_t get_charger_meter();
     MeterValueAvailability get_charger_meter_power(float *power, micros_t max_age = 0_usec);
     MeterValueAvailability get_charger_meter_energy(float *energy, micros_t max_age = 0_usec);
 
