@@ -581,7 +581,7 @@ void ModbusTcp::update_bender_regs()
 #endif
     }
 
-#if MODULE_METER_AVAILABLE()
+#if MODULE_METERS_LEGACY_API_AVAILABLE()
     if (api.hasFeature("meter"))
     {
         if (api.hasFeature("meter_all_values"))
@@ -781,7 +781,7 @@ void ModbusTcp::update_regs()
 #endif
     }
 
-#if MODULE_METER_AVAILABLE()
+#if MODULE_METERS_LEGACY_API_AVAILABLE()
     if (api.hasFeature("meter"))
     {
         discrete_inputs_copy->meter = true;
@@ -955,7 +955,7 @@ void ModbusTcp::update_keba_regs()
         keba_read_max_cpy->max_hardware_current = fromUint(api.getState("evse/slots")->get(CHARGING_SLOT_INCOMING_CABLE)->get("max_current")->asUint());
     }
 
-#if MODULE_METER_AVAILABLE()
+#if MODULE_METERS_LEGACY_API_AVAILABLE()
     if (api.hasFeature("meter"))
     {
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
@@ -982,7 +982,7 @@ void ModbusTcp::update_keba_regs()
     }
 #endif
 
-#if MODULE_METER_AVAILABLE()
+#if MODULE_METERS_LEGACY_API_AVAILABLE()
     if (api.hasFeature("meter"))
     {
         if (api.hasFeature("meter_all_values"))
