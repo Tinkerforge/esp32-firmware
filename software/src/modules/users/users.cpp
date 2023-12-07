@@ -39,16 +39,12 @@
 // are registered.
 void set_data_storage(uint8_t *buf)
 {
-#if MODULE_EVSE_COMMON_AVAILABLE()
     evse_common.set_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
-#endif
 }
 
 void get_data_storage(uint8_t *buf)
 {
-#if MODULE_EVSE_COMMON_AVAILABLE()
     evse_common.get_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
-#endif
 }
 
 void zero_user_slot_info()
@@ -60,18 +56,12 @@ void zero_user_slot_info()
 
 uint8_t get_charger_state()
 {
-#if MODULE_EVSE_COMMON_AVAILABLE()
     return evse_common.get_state().get("charger_state")->asUint();
-#endif
-    return 0;
 }
 
 Config *get_user_slot()
 {
-#if MODULE_EVSE_COMMON_AVAILABLE()
     return (Config *)evse_common.get_slots().get(CHARGING_SLOT_USER);
-#endif
-    return nullptr;
 }
 
 float get_energy()
