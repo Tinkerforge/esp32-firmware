@@ -77,6 +77,9 @@ int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> val
 }
 
 void Event::deregisterEvent(int64_t eventID) {
+    if (eventID == -1)
+        return;
+
     if (state_update_in_progress.load(std::memory_order_consume)) {
         logger.printfln("BUG: event: Tried to deregister an event handler for eventID %llu from within an event handler.", eventID);
         return;
