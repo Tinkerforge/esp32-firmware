@@ -76,7 +76,7 @@ Config *get_user_slot()
 
 float get_energy()
 {
-    float energy;
+    float energy = NAN;
     evse_common.get_charger_meter_energy(&energy);
     return energy;
 }
@@ -276,33 +276,8 @@ void Users::setup()
 
     if (charge_start_tracked && !charging) {
         float override_value = get_energy();
-
-        // This can be 0 if the EVSE 2.0 already reports the meter as available,
-        // but has not read any value from it.
-        if (std::isnan(override_value) || override_value == 0.0f)
-        {
-            auto start = millis();
-#warning "The meter checks below must be migrated to the meters framework."
-// TODO: The condition above check if override_value is NAN, but the loops below don't do anything when that is the case?
-#if MODULE_EVSE_AVAILABLE() && MODULE_MODBUS_METER_AVAILABLE()
-            while(!deadline_elapsed(start + 10000) && meter.values.get("energy_abs")->asFloat() == 0)
-            {
-                modbus_meter.checkRS485State();
-                modbus_meter.loop();
-                delay(50);
-            }
-            override_value = meter.values.get("energy_abs")->asFloat();
-#elif MODULE_EVSE_V2_AVAILABLE()
-            while(!deadline_elapsed(start + 10000) && evse_v2.energy_meter_values.get("energy_abs")->asFloat() == 0)
-            {
-                evse_v2.update_all_data();
-                delay(250);
-            }
-            override_value = evse_v2.energy_meter_values.get("energy_abs")->asFloat();
-#endif
-        }
-
-        // ChargeTracker::endCharge replaces 0 with NAN.
+        // The energy value can be NaN if the meter is not readable yet.
+        // This will be repaired when starting the next charge.
         this->stop_charging(0, true, override_value);
     }
 
