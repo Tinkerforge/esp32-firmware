@@ -119,11 +119,12 @@ bool Event::pushStateUpdate(size_t stateIdx, const String &payload, const String
         const auto &reg = state_updates[i];
         if (reg.stateIdx == stateIdx && reg.config->was_updated(1 << backendIdx)) {
             result = reg.callback(reg.config);
-            state_updates.erase(state_updates.begin() + i);
         }
 
-        if (result != EventResult::Deregister)
+        if (result == EventResult::OK)
             ++i;
+        else
+            state_updates.erase(state_updates.begin() + i);
     }
 
     state_update_in_progress.store(false, std::memory_order_release);
