@@ -417,26 +417,29 @@ void ModbusTcp::setup()
 {
     api.restorePersistentConfig("modbus_tcp/config", &config);
 
-    if (config.get("enable")->asBool())
-    {
-        void *modbus_handle = NULL;
-        esp_err_t err = mbc_slave_init_tcp(&modbus_handle);
-        if (err != ESP_OK || modbus_handle == NULL)
-            printf("Modbus init failed with code %i", err);
+    if (!config.get("enable")->asBool()) {
+        initialized = true;
+        return;
+    }
 
-        mb_communication_info_t comm_info;
-        comm_info.ip_addr = NULL;
-        comm_info.mode = MB_MODE_TCP;
-        comm_info.ip_addr_type = MB_IPV4;
-        comm_info.ip_port = config.get("port")->asUint();
-        // For some reason, mbc_slave_setup asserts that comm_info.ip_netif_ptr is not null,
-        // but the ip_netif_ptr is never used.
-        // Fortunately this means that we can just pass anything to circumvent the assertion
-        // and the modbus_tcp server will listen on any network interface.
-        comm_info.ip_netif_ptr = (void *) 0x12345678;
-        ESP_ERROR_CHECK(mbc_slave_setup((void *)&comm_info));
+    void *modbus_handle = NULL;
+    esp_err_t err = mbc_slave_init_tcp(&modbus_handle);
+    if (err != ESP_OK || modbus_handle == NULL)
+        printf("Modbus init failed with code %i", err);
 
-        mb_register_area_descriptor_t reg_area;
+    mb_communication_info_t comm_info;
+    comm_info.ip_addr = NULL;
+    comm_info.mode = MB_MODE_TCP;
+    comm_info.ip_addr_type = MB_IPV4;
+    comm_info.ip_port = config.get("port")->asUint();
+    // For some reason, mbc_slave_setup asserts that comm_info.ip_netif_ptr is not null,
+    // but the ip_netif_ptr is never used.
+    // Fortunately this means that we can just pass anything to circumvent the assertion
+    // and the modbus_tcp server will listen on any network interface.
+    comm_info.ip_netif_ptr = (void *) 0x12345678;
+    ESP_ERROR_CHECK(mbc_slave_setup((void *)&comm_info));
+
+    mb_register_area_descriptor_t reg_area;
 
 #define REGISTER_DESCRIPTOR(x) do { \
     reg_area.type = x->TYPE; \
@@ -446,47 +449,46 @@ void ModbusTcp::setup()
     ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area)); \
 } while (0)
 
-        if (config.get("table")->asUint() == 0)
-        {
-            allocate_table();
+    if (config.get("table")->asUint() == 0)
+    {
+        allocate_table();
 
-            REGISTER_DESCRIPTOR(evse_input_regs);
-            REGISTER_DESCRIPTOR(meter_input_regs);
-            REGISTER_DESCRIPTOR(meter_all_values_input_regs);
-            REGISTER_DESCRIPTOR(input_regs);
-            REGISTER_DESCRIPTOR(holding_regs);
-            REGISTER_DESCRIPTOR(evse_holding_regs);
-            REGISTER_DESCRIPTOR(meter_holding_regs);
-            REGISTER_DESCRIPTOR(discrete_inputs);
-            REGISTER_DESCRIPTOR(meter_discrete_inputs);
-            REGISTER_DESCRIPTOR(evse_coils);
-            REGISTER_DESCRIPTOR(nfc_input_regs);
+        REGISTER_DESCRIPTOR(evse_input_regs);
+        REGISTER_DESCRIPTOR(meter_input_regs);
+        REGISTER_DESCRIPTOR(meter_all_values_input_regs);
+        REGISTER_DESCRIPTOR(input_regs);
+        REGISTER_DESCRIPTOR(holding_regs);
+        REGISTER_DESCRIPTOR(evse_holding_regs);
+        REGISTER_DESCRIPTOR(meter_holding_regs);
+        REGISTER_DESCRIPTOR(discrete_inputs);
+        REGISTER_DESCRIPTOR(meter_discrete_inputs);
+        REGISTER_DESCRIPTOR(evse_coils);
+        REGISTER_DESCRIPTOR(nfc_input_regs);
 
-            evse_holding_regs->led_blink_state = fromUint(-2);
-        }
-        else if (config.get("table")->asUint() == 1)
-        {
-            allocate_bender_table();
-
-            REGISTER_DESCRIPTOR(bender_general);
-            REGISTER_DESCRIPTOR(bender_phases);
-            REGISTER_DESCRIPTOR(bender_dlm);
-            REGISTER_DESCRIPTOR(bender_charge);
-            REGISTER_DESCRIPTOR(bender_hems);
-            REGISTER_DESCRIPTOR(bender_write_uid);
-        }
-        else if (config.get("table")->asUint() == 2)
-        {
-            allocate_keba_table();
-
-            REGISTER_DESCRIPTOR(keba_read_charge);
-            REGISTER_DESCRIPTOR(keba_read_general);
-            REGISTER_DESCRIPTOR(keba_read_max);
-            REGISTER_DESCRIPTOR(keba_write);
-        }
-
-        ESP_ERROR_CHECK(mbc_slave_start());
+        evse_holding_regs->led_blink_state = fromUint(-2);
     }
+    else if (config.get("table")->asUint() == 1)
+    {
+        allocate_bender_table();
+
+        REGISTER_DESCRIPTOR(bender_general);
+        REGISTER_DESCRIPTOR(bender_phases);
+        REGISTER_DESCRIPTOR(bender_dlm);
+        REGISTER_DESCRIPTOR(bender_charge);
+        REGISTER_DESCRIPTOR(bender_hems);
+        REGISTER_DESCRIPTOR(bender_write_uid);
+    }
+    else if (config.get("table")->asUint() == 2)
+    {
+        allocate_keba_table();
+
+        REGISTER_DESCRIPTOR(keba_read_charge);
+        REGISTER_DESCRIPTOR(keba_read_general);
+        REGISTER_DESCRIPTOR(keba_read_max);
+        REGISTER_DESCRIPTOR(keba_write);
+    }
+
+    ESP_ERROR_CHECK(mbc_slave_start());
 
     initialized = true;
 }
