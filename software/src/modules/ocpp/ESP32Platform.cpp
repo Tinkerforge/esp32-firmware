@@ -18,6 +18,7 @@
 #include "task_scheduler.h"
 #include "module_dependencies.h"
 #include "ocpp.h"
+#include "modules/meters/meter_defs.h"
 
 // A module can't have a dependency on itself. Manually declare it here.
 extern Ocpp ocpp;
@@ -772,8 +773,8 @@ void platform_reset(bool hard) {
         ongoing transaction.
         */
         evse_common.reset();
-#if MODULE_MODBUS_METER_AVAILABLE()
-        modbus_meter.reset();
+#if MODULE_METERS_MODBUS_RTU_AVAILABLE()
+        meters_modbus_rtu.reset();
 #endif
 #if MODULE_NFC_AVAILABLE()
         nfc.reset();
