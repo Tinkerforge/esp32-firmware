@@ -475,7 +475,8 @@ bool Meters::meter_has_value_changed(uint32_t slot, micros_t max_age_us)
 
 MeterValueAvailability Meters::get_value_by_index(uint32_t slot, uint32_t index, float *value_out, micros_t max_age)
 {
-    if (slot >= METERS_SLOTS) {
+    if (slot >= METERS_SLOTS || index == UINT32_MAX) {
+        *value_out = NAN;
         return MeterValueAvailability::Unavailable;
     }
 
