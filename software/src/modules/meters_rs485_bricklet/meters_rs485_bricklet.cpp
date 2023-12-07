@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meters_modbus_rtu.h"
+#include "meters_rs485_bricklet.h"
 
 //#include "gcc_warnings.h"
 
-void MetersModbusRTU::pre_setup()
+void MetersRS485Bricklet::pre_setup()
 {
     this->DeviceModule::pre_setup();
 
@@ -46,7 +46,7 @@ void MetersModbusRTU::pre_setup()
 #define MODBUS_SLAVE_ADDRESS 1
 #define MODBUS_MASTER_REQUEST_TIMEOUT 1000
 
-void MetersModbusRTU::setupRS485() {
+void MetersRS485Bricklet::setupRS485() {
     if (!this->DeviceModule::setup_device()) {
         return;
     }
@@ -87,7 +87,7 @@ void MetersModbusRTU::setupRS485() {
     meter_instance->setupMeter();
 }
 
-void MetersModbusRTU::checkRS485State()
+void MetersRS485Bricklet::checkRS485State()
 {
     uint8_t mode = 0;
     int result = tf_rs485_get_mode(&device, &mode);
@@ -110,7 +110,7 @@ void MetersModbusRTU::checkRS485State()
     }
 }
 
-void MetersModbusRTU::setup() {
+void MetersRS485Bricklet::setup() {
     setupRS485();
     if (!device_found)
         return;
@@ -120,44 +120,44 @@ void MetersModbusRTU::setup() {
     }, 10 * 1000, 10 * 1000);
 }
 
-void MetersModbusRTU::register_urls() {
+void MetersRS485Bricklet::register_urls() {
     this->DeviceModule::register_urls();
 }
 
-void MetersModbusRTU::loop() {
+void MetersRS485Bricklet::loop() {
     this->DeviceModule::loop();
 }
 
 _ATTRIBUTE((const))
-MeterClassID MetersModbusRTU::get_class() const
+MeterClassID MetersRS485Bricklet::get_class() const
 {
-    return MeterClassID::ModbusRTU;
+    return MeterClassID::RS485Bricklet;
 }
 
-IMeter * MetersModbusRTU::new_meter(uint32_t slot, Config *state, Config * errors)
+IMeter * MetersRS485Bricklet::new_meter(uint32_t slot, Config *state, Config * errors)
 {
     if (meter_instance != nullptr) {
-        logger.printfln("meters_modbus_rtu: Cannot create more than one meter of class ModbusRTU.");
+        logger.printfln("meters_rs485_bricklet: Cannot create more than one meter of class ModbusRTU.");
         return nullptr;
     }
-    meter_instance = new MeterModbusRTU(slot, &device, state, errors);
+    meter_instance = new MeterRS485Bricklet(slot, &device, state, errors);
     return meter_instance;
 }
 
 _ATTRIBUTE((const))
-const Config * MetersModbusRTU::get_config_prototype()
+const Config * MetersRS485Bricklet::get_config_prototype()
 {
     return &config_prototype;
 }
 
 _ATTRIBUTE((const))
-const Config * MetersModbusRTU::get_state_prototype()
+const Config * MetersRS485Bricklet::get_state_prototype()
 {
     return &state_prototype;
 }
 
 _ATTRIBUTE((const))
-const Config * MetersModbusRTU::get_errors_prototype()
+const Config * MetersRS485Bricklet::get_errors_prototype()
 {
     return &errors_prototype;
 }

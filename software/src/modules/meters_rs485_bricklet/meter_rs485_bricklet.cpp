@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meter_modbus_rtu.h"
+#include "meter_rs485_bricklet.h"
 
 #include "modules/meters/meter_value_id.h"
 #include "modules/meters/sdm_helpers.h"
@@ -40,12 +40,12 @@ static MeterInfo *supported_meters[] = {
 };
 
 _ATTRIBUTE((const))
-MeterClassID MeterModbusRTU::get_class() const
+MeterClassID MeterRS485Bricklet::get_class() const
 {
-    return MeterClassID::ModbusRTU;
+    return MeterClassID::RS485Bricklet;
 }
 
-void MeterModbusRTU::changeMeterType(size_t supported_meter_idx) {
+void MeterRS485Bricklet::changeMeterType(size_t supported_meter_idx) {
     this->meter_in_use = supported_meters[supported_meter_idx];
 
     this->meter_type = this->meter_in_use->meter_type;
@@ -63,29 +63,29 @@ void MeterModbusRTU::changeMeterType(size_t supported_meter_idx) {
     value_index_voltage_l1 = meters_find_id_index(ids, id_count, MeterValueID::VoltageL1N);
 }
 
-void MeterModbusRTU::cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length) {
+void MeterRS485Bricklet::cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length) {
     if (request_id != callback_data.expected_request_id || callback_data.expected_request_id == 0) {
         logger.printfln("Unexpected request id %u, expected %u", request_id, callback_data.expected_request_id);
-        callback_data.done = MeterModbusRTU::UserDataDone::ERROR;
+        callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
 
     if (exception_code != 0) {
         if (exception_code != -1)
             logger.printfln("Request %u: Exception code %d", request_id, exception_code);
-        callback_data.done = MeterModbusRTU::UserDataDone::ERROR;
+        callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
 
     if (callback_data.value_to_write == nullptr) {
         logger.printfln("value to write was nullptr");
-        callback_data.done = MeterModbusRTU::UserDataDone::ERROR;
+        callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
 
     memcpy(callback_data.value_to_write, holding_registers, holding_registers_length * sizeof(uint16_t));
 
-    callback_data.done = MeterModbusRTU::UserDataDone::DONE;
+    callback_data.done = MeterRS485Bricklet::UserDataDone::DONE;
 
     uint16_t meter_id = *callback_data.value_to_write;
 
@@ -104,22 +104,22 @@ void MeterModbusRTU::cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id, int
 }
 
 
-void MeterModbusRTU::cb_read_values(TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t *input_registers, uint16_t input_registers_length) {
+void MeterRS485Bricklet::cb_read_values(TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t *input_registers, uint16_t input_registers_length) {
     if (request_id != callback_data.expected_request_id || callback_data.expected_request_id == 0) {
         logger.printfln("Unexpected request id %u, expected %u", request_id, callback_data.expected_request_id);
-        callback_data.done = MeterModbusRTU::UserDataDone::ERROR;
+        callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
 
     if (exception_code != 0) {
         logger.printfln("Request %u: Exception code %d", request_id, exception_code);
-        callback_data.done = MeterModbusRTU::UserDataDone::ERROR;
+        callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
 
     if (callback_data.value_to_write == nullptr) {
         logger.printfln("value to write was nullptr");
-        callback_data.done = MeterModbusRTU::UserDataDone::ERROR;
+        callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
 
@@ -131,13 +131,13 @@ void MeterModbusRTU::cb_read_values(TF_RS485 *device, uint8_t request_id, int8_t
     //if (meter.state.get("state")->asUint() != 2)
     //    meter.updateMeterState(2);
 
-    callback_data.done = MeterModbusRTU::UserDataDone::DONE;
+    callback_data.done = MeterRS485Bricklet::UserDataDone::DONE;
 }
 
-void MeterModbusRTU::cb_write_reset(TF_RS485 *device, uint8_t request_id, int8_t exception_code) {
+void MeterRS485Bricklet::cb_write_reset(TF_RS485 *device, uint8_t request_id, int8_t exception_code) {
     if (request_id != callback_data.expected_request_id || callback_data.expected_request_id == 0) {
         logger.printfln("Unexpected request id %u, expected %u", request_id, callback_data.expected_request_id);
-        callback_data.done = MeterModbusRTU::UserDataDone::ERROR;
+        callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
 
@@ -152,17 +152,17 @@ void MeterModbusRTU::cb_write_reset(TF_RS485 *device, uint8_t request_id, int8_t
     // making sure that it is a small enough value and retrying the reset if not.
     if (exception_code != 0 && exception_code != TF_RS485_EXCEPTION_CODE_TIMEOUT) {
         logger.printfln("Exception code %d", exception_code);
-        callback_data.done = MeterModbusRTU::UserDataDone::ERROR;
+        callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
 
-    callback_data.done = MeterModbusRTU::UserDataDone::DONE;
+    callback_data.done = MeterRS485Bricklet::UserDataDone::DONE;
 }
 
-void MeterModbusRTU::setupMeter() {
+void MeterRS485Bricklet::setupMeter() {
     callback_data.expected_request_id = 0;
     callback_data.value_to_write = nullptr;
-    callback_data.done = MeterModbusRTU::UserDataDone::DONE;
+    callback_data.done = MeterRS485Bricklet::UserDataDone::DONE;
 
     // We want to prefill all registers with NaN if two regs are interpreted as float.
     // A NaN is encoded with the exponent filled with ones and the mantissa filled with a non-zero number.
@@ -180,7 +180,7 @@ void MeterModbusRTU::setupMeter() {
         tf_rs485_register_modbus_master_read_holding_registers_response_callback(
             rs485,
             [](TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t *regs, uint16_t regs_len, void *user_data){
-                auto *m = (MeterModbusRTU *) user_data;
+                auto *m = (MeterRS485Bricklet *) user_data;
                 m->cb_read_meter_type(device, request_id, exception_code, regs, regs_len);
             },
             &meter_type,
@@ -192,7 +192,7 @@ void MeterModbusRTU::setupMeter() {
     tf_rs485_register_modbus_master_read_input_registers_response_callback(
         rs485,
         [](TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t *regs, uint16_t regs_len, void *user_data){
-            auto *m = (MeterModbusRTU *) user_data;
+            auto *m = (MeterRS485Bricklet *) user_data;
             m->cb_read_values(device, request_id, exception_code, regs, regs_len);
         },
         write_buf,
@@ -201,13 +201,13 @@ void MeterModbusRTU::setupMeter() {
     tf_rs485_register_modbus_master_write_multiple_registers_response_callback(
         rs485,
         [](TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data){
-            auto *m = (MeterModbusRTU *) user_data;
+            auto *m = (MeterRS485Bricklet *) user_data;
             m->cb_write_reset(device, request_id, exception_code);
         },
         this);
 }
 
-void MeterModbusRTU::setup(Config &ephemeral_config)
+void MeterRS485Bricklet::setup(Config &ephemeral_config)
 {
     // TODO Trigger meter value update, in case other modules expect meter values during setup.
 
@@ -223,17 +223,17 @@ void MeterModbusRTU::setup(Config &ephemeral_config)
     }, 0, 10);
 }
 
-bool MeterModbusRTU::reset() {
+bool MeterRS485Bricklet::reset() {
     this->reset_requested = true;
     return true;
 }
 
-void MeterModbusRTU::register_urls(const String &base_url) {
+void MeterRS485Bricklet::register_urls(const String &base_url) {
 
 }
 
 
-const RegRead *MeterModbusRTU::getNextRead(bool *trigger_fast_read_done, bool *trigger_slow_read_done)
+const RegRead *MeterRS485Bricklet::getNextRead(bool *trigger_fast_read_done, bool *trigger_slow_read_done)
 {
     *trigger_fast_read_done = false;
     *trigger_slow_read_done = false;
@@ -271,7 +271,7 @@ const RegRead *MeterModbusRTU::getNextRead(bool *trigger_fast_read_done, bool *t
     return result;
 }
 
-void MeterModbusRTU::tick() {
+void MeterRS485Bricklet::tick() {
     if (this->meter_in_use == nullptr)
         return;
 
@@ -281,7 +281,7 @@ void MeterModbusRTU::tick() {
     if (callback_data.done == UserDataDone::NOT_DONE) {
         logger.printfln("rs485 deadline reached!");
         // TODO
-        //meters_modbus_rtu.checkRS485State();
+        //meters_rs485_bricklet.checkRS485State();
     }
 
     if (callback_data.done != UserDataDone::NOT_DONE && !deadline_elapsed(next_read_deadline_ms))
@@ -301,7 +301,7 @@ void MeterModbusRTU::tick() {
             /*TODO is_in_bootloader(*/tf_rs485_modbus_master_write_multiple_registers(rs485, 1, 61457, &payload, 1, &callback_data.expected_request_id)/*)*/;
             if (callback_data.expected_request_id == 0) {
                 // TODO
-                //meters_modbus_rtu.checkRS485State();
+                //meters_rs485_bricklet.checkRS485State();
             }
         }
         return;
@@ -320,7 +320,7 @@ void MeterModbusRTU::tick() {
     if (callback_data.expected_request_id == 0) {
         logger.printfln("Failed to read energy meter registers starting at %u: request_id: %u", next_read->start, callback_data.expected_request_id);
         // TODO
-        //meters_modbus_rtu.checkRS485State();
+        //meters_rs485_bricklet.checkRS485State();
     }
 
     if (trigger_fast_read_done) {

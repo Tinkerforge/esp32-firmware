@@ -773,8 +773,8 @@ void platform_reset(bool hard) {
         ongoing transaction.
         */
         evse_common.reset();
-#if MODULE_METERS_MODBUS_RTU_AVAILABLE()
-        meters_modbus_rtu.reset();
+#if MODULE_METERS_RS485_BRICKLET_AVAILABLE()
+        meters_rs485_bricklet.reset();
 #endif
 #if MODULE_NFC_AVAILABLE()
         nfc.reset();

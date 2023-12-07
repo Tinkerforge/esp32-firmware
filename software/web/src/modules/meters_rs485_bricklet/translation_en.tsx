@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 let x = {
-    "meters_modbus_rtu": {
+    "meters_rs485_bricklet": {
         "content": {
             "meter_class": "Wallbox-internal",
 

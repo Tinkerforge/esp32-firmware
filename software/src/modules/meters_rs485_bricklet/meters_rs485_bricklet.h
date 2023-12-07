@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "meter_modbus_rtu.h"
+#include "meter_rs485_bricklet.h"
 #include "module_dependencies.h"
 
 #include <stdint.h>
@@ -40,7 +40,7 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-class MetersModbusRTU final : public DeviceModule<TF_RS485,
+class MetersRS485Bricklet final : public DeviceModule<TF_RS485,
                                                   rs485_bricklet_firmware_bin_data,
                                                   rs485_bricklet_firmware_bin_length,
                                                   tf_rs485_create,
@@ -50,7 +50,7 @@ class MetersModbusRTU final : public DeviceModule<TF_RS485,
                                                   false>, public MeterGenerator
 {
 public:
-    MetersModbusRTU() : DeviceModule("rs485", "RS485", "Modbus Meter", [this](){this->setupRS485();}) {}
+    MetersRS485Bricklet() : DeviceModule("rs485", "RS485", "Modbus Meter", [this](){this->setupRS485();}) {}
 
     // for DeviceModule
     void pre_setup() override;
@@ -73,7 +73,7 @@ private:
     ConfigRoot state_prototype;
     ConfigRoot errors_prototype;
 
-    MeterModbusRTU *meter_instance = nullptr;
+    MeterRS485Bricklet *meter_instance = nullptr;
 };
 
 #if defined(__GNUC__)

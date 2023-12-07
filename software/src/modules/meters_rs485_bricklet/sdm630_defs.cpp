@@ -3,7 +3,7 @@
 
 #include "api.h"
 
-// FIXME: Move this into the meter_modbus_rtu?
+// FIXME: Move this into the meter_rs485_bricklet?
 static ConfigRoot sdm630_reset;
 
 static const RegRead sdm630_slow[] {

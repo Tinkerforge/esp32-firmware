@@ -37,10 +37,10 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-class MeterModbusRTU final : public IMeter
+class MeterRS485Bricklet final : public IMeter
 {
 public:
-    MeterModbusRTU(uint32_t slot_, TF_RS485* rs485_, Config *state_, Config *errors_) : slot(slot_), rs485(rs485_), state(state_), errors(errors_) {}
+    MeterRS485Bricklet(uint32_t slot_, TF_RS485* rs485_, Config *state_, Config *errors_) : slot(slot_), rs485(rs485_), state(state_), errors(errors_) {}
 
     // IMeter
     MeterClassID get_class() const override;

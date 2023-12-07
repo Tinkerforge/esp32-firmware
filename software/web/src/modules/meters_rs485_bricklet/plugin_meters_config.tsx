@@ -27,8 +27,8 @@ import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api";
 import { InputSelect } from "src/ts/components/input_select";
 
-export type ModbusRTUMetersConfig = [
-    MeterClassID.ModbusRTU,
+export type RS485BrickletMetersConfig = [
+    MeterClassID.RS485Bricklet,
     {
         display_name: string,
         type_override: number
@@ -37,13 +37,13 @@ export type ModbusRTUMetersConfig = [
 
 export function init() {
     return {
-        [MeterClassID.ModbusRTU]: {
-            name: __("meters_modbus_rtu.content.meter_class"),
-            new_config: () => [MeterClassID.ModbusRTU, {display_name: "", type_override: 255}] as MeterConfig,
+        [MeterClassID.RS485Bricklet]: {
+            name: __("meters_rs485_bricklet.content.meter_class"),
+            new_config: () => [MeterClassID.RS485Bricklet, {display_name: "", type_override: 255}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
-            get_edit_children: (config: ModbusRTUMetersConfig, on_config: (config: ModbusRTUMetersConfig) => void): ComponentChildren => {
+            get_edit_children: (config: RS485BrickletMetersConfig, on_config: (config: RS485BrickletMetersConfig) => void): ComponentChildren => {
                 return [
-                    <FormRow label={__("meters_modbus_rtu.content.config_display_name")}>
+                    <FormRow label={__("meters_rs485_bricklet.content.config_display_name")}>
                         <InputText
                             required
                             maxLength={32}
@@ -52,7 +52,7 @@ export function init() {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }}/>
                     </FormRow>,
-                    <FormRow label={__("meters_modbus_rtu.content.type_override")}>
+                    <FormRow label={__("meters_rs485_bricklet.content.type_override")}>
                         <InputSelect items={[
                                 ["255", __("meters.script.meter_type_255")],
                                 ["1",   __("meters.script.meter_type_1")],
