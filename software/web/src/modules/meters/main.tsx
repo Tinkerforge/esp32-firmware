@@ -1143,7 +1143,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                 }
 
                                 let extraValue = meter_reset_row;
-                                if (config_plugins[config[0]].get_extra_rows)
+                                if (config_plugins[config[0]]?.get_extra_rows)
                                     extraValue = extraValue.concat(toChildArray(config_plugins[config[0]].get_extra_rows(meter_slot)))
 
                                 extraValue = extraValue.concat(allValues);
