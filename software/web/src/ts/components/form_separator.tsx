@@ -28,10 +28,6 @@ interface FormSeparatorProps {
 }
 
 export class FormSeparator extends Component<FormSeparatorProps, {}> {
-    constructor() {
-        super();
-    }
-
     render(props: FormSeparatorProps) {
         return (
             <div class={"row mb-3 " + (!props.first ? "pt-3" : "pt-0") + " " + (props.extraClasses === undefined ? "" : props.extraClasses)}>

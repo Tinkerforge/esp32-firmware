@@ -55,10 +55,6 @@ interface IPConfigurationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInput
 }
 
 export class IPConfiguration extends Component<IPConfigurationProps, {}> {
-    constructor() {
-        super();
-    }
-
     onUpdate<T extends keyof IPConfig>(k: T, v: IPConfig[T]) {
         this.props.value[k] = v;
         this.props.onValue(this.props.value);

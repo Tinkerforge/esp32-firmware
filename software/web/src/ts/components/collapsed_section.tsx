@@ -31,10 +31,6 @@ interface CollapsedSectionState {
 }
 
 export class CollapsedSection extends Component<CollapsedSectionProps, CollapsedSectionState> {
-    constructor() {
-        super();
-    }
-
     render(props: CollapsedSectionProps, state: Readonly<CollapsedSectionState>) {
         return (
             <>

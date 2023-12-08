@@ -41,10 +41,6 @@ interface AsyncModalState extends AsyncModalStrings {
 }
 
 export class AsyncModal extends Component<AsyncModalProps, AsyncModalState> {
-    constructor() {
-        super();
-    }
-
     show = async (strings: AsyncModalStrings) => {
         return new Promise<boolean>((resolve) => {
             this.setState({
