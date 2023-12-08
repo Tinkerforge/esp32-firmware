@@ -85,9 +85,10 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                 if (props.forbidNetwork) {
                     for (let net of props.forbidNetwork) {
                         let common_subnet = subnet & net.subnet;
-                        if ((ip & common_subnet) == (net.ip & common_subnet))
+                        if ((ip & common_subnet) == (net.ip & common_subnet)) {
                             captured_subnet_name = net.name;
                             captured_subnet_ip = unparseIP(net.ip);
+                        }
                     }
                 }
             }
