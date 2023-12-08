@@ -62,13 +62,6 @@ let x = {
             "min_only": /*SFN*/ (min: string) => `At least ${min} characters required`/*NF*/,
             "max_only": /*SFN*/ (max: string) => `At most ${max} characters allowed`/*NF*/,
             "min_max": /*SFN*/ (min: string, max: string) => `At least ${min} but at most ${max} characters allowed`/*NF*/,
-            "min_only_prefix": "At least ",
-            "min_only_suffix": " characters required",
-            "max_only_prefix": "At most ",
-            "max_only_suffix": " characters allowed",
-            "min_max_prefix": "At least ",
-            "min_max_infix": " but at most ",
-            "min_max_suffix": " characters allowed",
             "required": "Field must not be empty"
         },
         "input_file": {
