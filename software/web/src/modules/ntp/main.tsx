@@ -141,11 +141,11 @@ export class NTP extends ConfigComponent<'ntp/config'> {
     }
 }
 
-render(<NTP/>, $('#ntp')[0])
+render(<NTP />, $("#ntp")[0]);
 
 interface NTPStatusState {
-    state: API.getType['ntp/state']
-    config: API.getType['ntp/config'];
+    state: API.getType["ntp/state"];
+    config: API.getType["ntp/config"];
 }
 
 export class NTPStatus extends Component<{}, NTPStatusState>

@@ -31,9 +31,9 @@ import * as util from "../../ts/util";
 export type NfcCronTrigger = [
     CronTriggerID.NFC,
     {
-        tag_type: number,
-        tag_id: string
-    }
+        tag_type: number;
+        tag_id: string;
+    },
 ];
 
 function new_nfc_config(): CronTrigger {
@@ -41,9 +41,9 @@ function new_nfc_config(): CronTrigger {
         CronTriggerID.NFC,
         {
             tag_type: 0,
-            tag_id: ""
-        }
-    ]
+            tag_id: "",
+        },
+    ];
 }
 
 function get_nfc_table_children(trigger: NfcCronTrigger) {

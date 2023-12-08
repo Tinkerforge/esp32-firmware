@@ -20,8 +20,8 @@
 import { ComponentChildren, h, toChildArray } from "preact";
 
 interface SubPageProps {
-    children: ComponentChildren
-    colClasses?: string
+    children: ComponentChildren;
+    colClasses?: string;
 }
 
 export function SubPage(props: SubPageProps) {

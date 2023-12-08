@@ -20,8 +20,8 @@
 import { h, Component, ComponentChildren } from "preact";
 
 export interface PageHeaderProps {
-    title: ComponentChildren
-    children?: ComponentChildren
+    title: ComponentChildren;
+    children?: ComponentChildren;
 }
 
 export class PageHeader extends Component<PageHeaderProps, any> {

@@ -26,42 +26,42 @@ import { ItemModal } from "./item_modal";
 import * as util from "../../ts/util";
 
 export interface TableRow {
-    key?: string
-    columnValues: ComponentChild[]
-    extraShow?: boolean
-    extraFieldName?: string
-    extraValue?: ComponentChild
-    extraKey?: string
-    fieldNames?: string[]
-    fieldValues?: ComponentChild[]
-    fieldWithBox?: boolean[]
-    editTitle?: string
-    onEditShow?: () => Promise<void>
-    onEditGetChildren?: () => ComponentChildren
-    onEditCheck?: () => Promise<boolean>
-    onEditSubmit?: () => Promise<void>
-    onEditHide?: () => Promise<void>
-    onRemoveClick?: () => Promise<void>
+    key?: string;
+    columnValues: ComponentChild[];
+    extraShow?: boolean;
+    extraFieldName?: string;
+    extraValue?: ComponentChild;
+    extraKey?: string;
+    fieldNames?: string[];
+    fieldValues?: ComponentChild[];
+    fieldWithBox?: boolean[];
+    editTitle?: string;
+    onEditShow?: () => Promise<void>;
+    onEditGetChildren?: () => ComponentChildren;
+    onEditCheck?: () => Promise<boolean>;
+    onEditSubmit?: () => Promise<void>;
+    onEditHide?: () => Promise<void>;
+    onRemoveClick?: () => Promise<void>;
 }
 
 export interface TableProps {
-    columnNames: string[]
-    rows: TableRow[]
-    addEnabled?: boolean
-    addMessage?: string
-    addTitle?: string
-    onAddShow?: () => Promise<void>
-    onAddGetChildren?: () => ComponentChildren
-    onAddCheck?: () => Promise<boolean>
-    onAddSubmit?: () => Promise<void>
-    onAddHide?: () => Promise<void>
-    tableTill?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-    nestingDepth?: number
+    columnNames: string[];
+    rows: TableRow[];
+    addEnabled?: boolean;
+    addMessage?: string;
+    addTitle?: string;
+    onAddShow?: () => Promise<void>;
+    onAddGetChildren?: () => ComponentChildren;
+    onAddCheck?: () => Promise<boolean>;
+    onAddSubmit?: () => Promise<void>;
+    onAddHide?: () => Promise<void>;
+    tableTill?: "xs" | "sm" | "md" | "lg" | "xl";
+    nestingDepth?: number;
 }
 
 interface TableState {
-    showAddModal: boolean
-    showEditModal: number
+    showAddModal: boolean;
+    showEditModal: number;
 }
 
 const value_or_else = (value: ComponentChild, replacement: ComponentChild): ComponentChild => {

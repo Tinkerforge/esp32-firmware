@@ -22,12 +22,12 @@ import { Button, Collapse } from "react-bootstrap";
 import { __ } from "../../ts/translation";
 
 interface CollapsedSectionProps {
-    label: string
-    children: ComponentChildren
+    label: string;
+    children: ComponentChildren;
 }
 
 interface CollapsedSectionState {
-    show: boolean
+    show: boolean;
 }
 
 export class CollapsedSection extends Component<CollapsedSectionProps, CollapsedSectionState> {

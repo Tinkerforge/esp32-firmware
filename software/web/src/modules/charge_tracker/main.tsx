@@ -43,15 +43,15 @@ type Charge = API.getType["charge_tracker/last_charges"][0];
 type ChargeTrackerConfig = API.getType["charge_tracker/config"];
 
 interface S {
-    user_filter: string
-    user_filter_items: [string, string][]
-    start_date: Date
-    end_date: Date
-    file_type: string
-    pdf_text: string
-    csv_flavor: 'excel' | 'rfc4180'
-    show_spinner: boolean
-    last_charges: Readonly<Charge[]>
+    user_filter: string;
+    user_filter_items: [string, string][];
+    start_date: Date;
+    end_date: Date;
+    file_type: string;
+    pdf_text: string;
+    csv_flavor: "excel" | "rfc4180";
+    show_spinner: boolean;
+    last_charges: Readonly<Charge[]>;
 }
 
 type ChargeTrackerState = S & API.getType['charge_tracker/state'];

@@ -21,9 +21,9 @@ import { h, Component, createRef } from "preact";
 import { JSXInternal } from "preact/src/jsx";
 
 interface OutputTextareaProps extends Omit<JSXInternal.HTMLAttributes<HTMLTextAreaElement>, "readonly" | "onScroll" | "ref"> {
-    value: string
-    moreClass?: string
-    resize?: 'both' | 'horizontal' | 'vertical' | 'none'
+    value: string;
+    moreClass?: string;
+    resize?: "both" | "horizontal" | "vertical" | "none";
 }
 
 export class OutputTextarea extends Component<OutputTextareaProps, {}> {

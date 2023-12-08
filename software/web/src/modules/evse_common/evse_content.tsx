@@ -147,7 +147,7 @@ export class EVSE extends Component<{}, {}> {
                                             no_text: __("evse.content.abort"),
                                             yes_text: __("evse.content.reset"),
                                             no_variant: "secondary",
-                                            yes_variant: "danger"
+                                            yes_variant: "danger",
                                         }))
                                         return false;
 

@@ -38,8 +38,8 @@ export type EMChargeModeSwitchCronAction = [
     CronActionID.EMChargeModeSwitch,
     {
         mode: number;
-    }
-]
+    },
+];
 
 export type EMContactorCronAction = [
     CronActionID.EMRelaySwitch,

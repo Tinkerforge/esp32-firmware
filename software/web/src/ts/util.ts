@@ -148,7 +148,7 @@ export function toLocaleFixed(i: number, fractionDigits?: number) {
 
     return i.toLocaleString(undefined, {
         minimumFractionDigits: fractionDigits,
-        maximumFractionDigits: fractionDigits
+        maximumFractionDigits: fractionDigits,
     });
 }
 
@@ -287,7 +287,7 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
 
             allow_render.value = true;
         });
-    }
+    };
 
     continuation(ws, eventTarget);
 }
@@ -467,7 +467,7 @@ export function getShowRebootModalFn(changed_value_name: string) {
     return () => {
         $('#reboot_content_changed').html(changed_value_name);
         $('#reboot').modal('show');
-    }
+    };
 }
 
 function timestamp_to_date(timestamp: number, time_fmt: any) {

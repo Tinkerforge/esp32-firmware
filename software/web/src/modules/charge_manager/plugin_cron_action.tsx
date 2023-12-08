@@ -48,7 +48,7 @@ function get_set_manager_edit_children(action: ChargeManagerCronAction, on_actio
                 min={0}
                 unit="A"
                 digits={3} />
-        </FormRow>
+        </FormRow>,
     ];
 }
 

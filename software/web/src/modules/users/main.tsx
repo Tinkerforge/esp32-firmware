@@ -44,9 +44,9 @@ type User = (API.getType['users/config']['users'][0]) & {password: string, is_in
 type UsersConfig = Omit<API.getType['users/config'], 'users'> & {users: User[]};
 
 interface UsersState {
-    userSlotEnabled: boolean
-    addUser: User
-    editUser: User
+    userSlotEnabled: boolean;
+    addUser: User;
+    editUser: User;
 }
 
 // This is a bit hacky: the user modification API can take some time because it writes the changed user/display name to flash
@@ -110,7 +110,8 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                     password: "",
                     is_invalid: 0,
                 },
-            });
+            },
+        );
 
         util.addApiEventListener('evse/slots', () => {
             this.setState({userSlotEnabled: API.get('evse/slots')[EVSE_SLOT_USER].active});
@@ -275,7 +276,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     override getIsModified(t: "users/config"): boolean {
         if (this.state.users.length > 1 || this.state.users[0].display_name != "Anonymous")
             return true;
-        return false
+        return false;
     }
 
     async checkUsername(user: User, ignore_i: number): Promise<number> {
@@ -500,7 +501,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                 this.setState({users: state.users.concat({...state.addUser, id: -1, roles: 0xFFFF})});
                                 this.setDirty(true);
                             }}
-                            />
+                        />
                     </FormRow>
                 </ConfigForm>
             </SubPage>

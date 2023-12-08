@@ -25,18 +25,18 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
 
 interface InputFloatReadonlyProps {
-    idContext?: Context<string>
-    value: number
-    digits: number
-    unit: string
-    class?: string
+    idContext?: Context<string>;
+    value: number;
+    digits: number;
+    unit: string;
+    class?: string;
 }
 
 interface InputFloatProps extends InputFloatReadonlyProps {
-    onValue: (value: number) => void
-    min: number
-    max: number
-    showMinMax?: boolean
+    onValue: (value: number) => void;
+    min: number;
+    max: number;
+    showMinMax?: boolean;
 }
 
 export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
@@ -78,7 +78,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
 
         setTarget(target * pow10);
         setInputInFlight(null);
-    }
+    };
 
     let floatMin = 'min' in props ? props.min / pow10 : 0;
     let floatMax = 'max' in props ? props.max / pow10 : 0;

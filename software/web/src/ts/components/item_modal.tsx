@@ -21,18 +21,18 @@ import { h, Component, ComponentChildren } from "preact";
 import { Button, Modal, ModalProps } from "react-bootstrap";
 
 interface ItemModalProps extends ModalProps {
-    onCheck?: () => Promise<boolean>
-    onSubmit: () => Promise<void>
-    onHide: () => Promise<void>
+    onCheck?: () => Promise<boolean>;
+    onSubmit: () => Promise<void>;
+    onHide: () => Promise<void>;
 
-    show: boolean
+    show: boolean;
 
-    title: string
-    children: ComponentChildren
-    no_variant: string
-    no_text: string
-    yes_variant: string
-    yes_text: string
+    title: string;
+    children: ComponentChildren;
+    no_variant: string;
+    no_text: string;
+    yes_variant: string;
+    yes_text: string;
 }
 
 export class ItemModal extends Component<ItemModalProps, any> {

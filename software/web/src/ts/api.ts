@@ -25,7 +25,7 @@ export {type ConfigMap as getType, type Modules};
 
 export type EventMap = {
     [key in keyof ConfigMap]: MessageEvent<Readonly<ConfigMap[key]>>;
-}
+};
 
 function update_cache_item(left: any, right: any) {
     for (let key in left) {

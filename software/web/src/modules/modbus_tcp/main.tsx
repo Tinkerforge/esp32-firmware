@@ -37,7 +37,7 @@ import { CollapsedSection } from "../../ts/components/collapsed_section";
 type ModbusTCPConfig = API.getType["modbus_tcp/config"];
 
 interface config {
-    evse_enable: boolean
+    evse_enable: boolean;
 }
 
 export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> {

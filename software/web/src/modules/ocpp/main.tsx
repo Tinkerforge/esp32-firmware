@@ -259,11 +259,11 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
     }
 }
 
-render(<Ocpp/>, $('#ocpp')[0])
+render(<Ocpp />, $("#ocpp")[0]);
 
 interface OcppStatusState {
-    state: API.getType['ocpp/state']
-    config: API.getType['ocpp/config'];
+    state: API.getType["ocpp/state"];
+    config: API.getType["ocpp/config"];
 }
 
 export class OcppStatus extends Component<{}, OcppStatusState>

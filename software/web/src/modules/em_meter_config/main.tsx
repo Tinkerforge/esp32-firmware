@@ -35,7 +35,7 @@ import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
 
 interface EMMeterConfigState {
-    meter_state: API.getType['energy_manager/meter_state']
+    meter_state: API.getType["energy_manager/meter_state"];
 }
 
 export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config', {}, EMMeterConfigState> {
@@ -51,7 +51,7 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
 
     render(props: {}, state: Readonly<API.getType['energy_manager/meter_config'] & EMMeterConfigState>) {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
-            return <></>
+            return <></>;
 
         let meter_state = state.meter_state;
         let local_meter_type;
@@ -123,11 +123,11 @@ export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config'
                     </Collapse>
                 </ConfigForm>
             </SubPage>
-        )
+        );
     }
 }
 
-render(<EMMeterConfig/>, $('#em_meter_config')[0])
+render(<EMMeterConfig />, $("#em_meter_config")[0]);
 
 export function init() {}
 

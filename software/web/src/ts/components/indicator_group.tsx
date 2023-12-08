@@ -23,11 +23,11 @@ import { Button, ButtonGroup } from "react-bootstrap";
 type variant = "primary" | "secondary" | "success" |  "danger" | "warning" | "info" | "light" | "dark" | "link"
 
 interface IndicatorProps {
-    value: number,
+    value: number;
     items: [variant, ComponentChildren][];
-    class?: string
-    vertical?: boolean
-    style?: string
+    class?: string;
+    vertical?: boolean;
+    style?: string;
 }
 
 export function IndicatorGroup(props: IndicatorProps) {

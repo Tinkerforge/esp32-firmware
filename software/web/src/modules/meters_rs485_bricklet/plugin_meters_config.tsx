@@ -30,8 +30,8 @@ import { InputSelect } from "src/ts/components/input_select";
 export type RS485BrickletMetersConfig = [
     MeterClassID.RS485Bricklet,
     {
-        display_name: string,
-        type_override: number
+        display_name: string;
+        type_override: number;
     },
 ];
 

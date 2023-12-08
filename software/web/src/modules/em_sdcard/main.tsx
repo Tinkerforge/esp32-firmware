@@ -49,7 +49,7 @@ export class EMSDcard extends Component {
                             ["warning", __("em_sdcard.content.error_no_card")],
                         ]} />
                 </SubPage>
-            )
+            );
         }
 
         let manufacturer;

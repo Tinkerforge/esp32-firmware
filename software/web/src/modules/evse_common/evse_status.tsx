@@ -31,11 +31,11 @@ import { InputFloat } from "src/ts/components/input_float";
 import { InputText } from "src/ts/components/input_text";
 
 interface EVSEStatusState {
-    state: API.getType['evse/state']
-    auto_start: API.getType['evse/auto_start_charging']
-    slots: Readonly<API.getType['evse/slots']>
-    configured_current: number
-    is_evse_v2: boolean
+    state: API.getType["evse/state"];
+    auto_start: API.getType["evse/auto_start_charging"];
+    slots: Readonly<API.getType["evse/slots"]>;
+    configured_current: number;
+    is_evse_v2: boolean;
 }
 
 export class EVSEStatus extends Component<{}, EVSEStatusState>

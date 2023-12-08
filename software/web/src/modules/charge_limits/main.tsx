@@ -42,7 +42,7 @@ function ChargeLimitsStatus() {
     const get_duration_left = () => {
         let ret = "";
         if (config_in_use.duration == 0)
-            ret = __("charge_limits.content.unlimited")
+            ret = __("charge_limits.content.unlimited");
         else {
             let duration: number;
             duration = state.target_timestamp_ms;
@@ -55,7 +55,7 @@ function ChargeLimitsStatus() {
         }
 
         return ret;
-    }
+    };
 
     let duration_items: [string, string][] = [
         ["0", __("charge_limits.content.unlimited")],
@@ -68,7 +68,7 @@ function ChargeLimitsStatus() {
         ["7", __("charge_limits.content.h4")],
         ["8", __("charge_limits.content.h6")],
         ["9", __("charge_limits.content.h8")],
-        ["10", __("charge_limits.content.h12")]
+        ["10", __("charge_limits.content.h12")],
     ];
 
     let duration_placeholder = duration_items[config_in_use.duration][1];
@@ -80,7 +80,7 @@ function ChargeLimitsStatus() {
     if (config.duration != config_in_use.duration)
         duration_items[config_in_use.duration][1] += " " + __("charge_limits.content.overridden");
 
-    let energy_row = <></>
+    let energy_row = <></>;
 
     if (API.hasFeature("meter")) {
         let meter_abs = API.get("meter/values").energy_abs;
@@ -88,7 +88,7 @@ function ChargeLimitsStatus() {
         const get_energy_left = () => {
             let ret = "";
             if (config_in_use.energy_wh == 0)
-                ret = __("charge_limits.content.unlimited")
+                ret = __("charge_limits.content.unlimited");
             else {
                 let energy = state.target_energy_kwh - meter_abs;
                 if (state.start_energy_kwh == null)
@@ -100,7 +100,7 @@ function ChargeLimitsStatus() {
             }
 
             return ret;
-        }
+        };
 
         let energy_items: [string, string][] = [
             ["0", __("charge_limits.content.unlimited")],
@@ -116,7 +116,7 @@ function ChargeLimitsStatus() {
             ["70000", util.toLocaleFixed(70, 0) + " kWh"],
             ["80000", util.toLocaleFixed(80, 0) + " kWh"],
             ["90000", util.toLocaleFixed(90, 0) + " kWh"],
-            ["100000", util.toLocaleFixed(100, 0) + " kWh"]
+            ["100000", util.toLocaleFixed(100, 0) + " kWh"],
         ];
 
         if (electricity_price > 0) {

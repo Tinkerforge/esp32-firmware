@@ -30,10 +30,10 @@ import { Switch } from "../../ts/components/switch";
 export type ChargeLimitsCronAction = [
     CronActionID.ChargeLimits,
     {
-        reset: boolean,
-        duration: number,
-        energy_wh: number
-    }
+        reset: boolean;
+        duration: number;
+        energy_wh: number;
+    },
 ];
 
 function get_charge_limits_table_children(action: ChargeLimitsCronAction) {
@@ -49,7 +49,7 @@ function get_charge_limits_table_children(action: ChargeLimitsCronAction) {
         __("charge_limits.cron.h6"),
         __("charge_limits.cron.h8"),
         __("charge_limits.cron.h12"),
-    ]
+    ];
 
     return __("charge_limits.cron.cron_action_text")(durations[action[1].duration], action[1].energy_wh, action[1].reset);
 }

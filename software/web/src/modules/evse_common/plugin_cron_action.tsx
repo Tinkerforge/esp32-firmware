@@ -20,11 +20,11 @@
 import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { CronActionID } from "../cron/cron_defs";
-import { CronAction } from "../cron/types"
-import { InputSelect } from "../../ts/components/input_select"
-import { InputFloat } from "../../ts/components/input_float"
-import { InputNumber } from "../../ts/components/input_number"
-import { FormRow } from "../../ts/components/form_row"
+import { CronAction } from "../cron/types";
+import { InputSelect } from "../../ts/components/input_select";
+import { InputFloat } from "../../ts/components/input_float";
+import { InputNumber } from "../../ts/components/input_number";
+import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
 
 export type EvseCronAction = [
@@ -58,8 +58,8 @@ function get_set_current_edit_children(action: EvseCronAction, on_action: (actio
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {current: v}));
                 }} />
-        </FormRow>
-    ]
+        </FormRow>,
+    ];
 }
 
 function new_set_current_config(): CronAction {
@@ -98,7 +98,7 @@ function get_led_table_children(action: EvseLedCronAction) {
         state = __("evse.cron.led_state_error")(action[1].state - 2000);
     }
 
-    return __("evse.cron.cron_led_action_text")(state, action[1].duration)
+    return __("evse.cron.cron_led_action_text")(state, action[1].duration);
 }
 
 function get_led_edit_children(action: EvseLedCronAction, on_action: (action: CronAction) => void) {
@@ -107,7 +107,7 @@ function get_led_edit_children(action: EvseLedCronAction, on_action: (action: Cr
         ["255", __("evse.cron.led_state_on")],
         ["1001", __("evse.cron.led_state_blinking")],
         ["1002", __("evse.cron.led_state_flickering")],
-        ["1003", __("evse.cron.led_state_breathing")]
+        ["1003", __("evse.cron.led_state_breathing")],
     ];
 
     for (let i = 1; i <= 10; i++) {

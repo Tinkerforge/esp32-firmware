@@ -36,7 +36,7 @@ type RTCTime = API.getType['rtc/time'];
 type RTCConfig = API.getType['rtc/config'];
 
 interface RtcPageState {
-    state: RTCTime
+    state: RTCTime;
 }
 
 export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
@@ -83,7 +83,7 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
             hour: date.getUTCHours(),
             minute: date.getUTCMinutes(),
             second: date.getUTCSeconds(),
-            weekday: date.getUTCDay()
+            weekday: date.getUTCDay(),
         };
 
         API.save("rtc/time", time, __("rtc.script.save_failed"));

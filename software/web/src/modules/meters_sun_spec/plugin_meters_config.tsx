@@ -35,39 +35,39 @@ import { SUN_SPEC_MODEL_INFOS, SUN_SPEC_MODEL_IS_METER_LIKE, SUN_SPEC_MODEL_IS_S
 export type SunSpecMetersConfig = [
     MeterClassID.SunSpec,
     {
-        display_name: string
-        host: string,
-        port: number,
-        device_address: number,
-        model_id: number,
+        display_name: string;
+        host: string;
+        port: number;
+        device_address: number;
+        model_id: number;
     },
 ];
 
 interface DeviceScannerResult {
-    unique_id: string
-    manufacturer_name: string
-    model_name: string
-    display_name: string
-    options: string
-    version: string
-    serial_number: string
-    device_address: number
-    model_id: number
+    unique_id: string;
+    manufacturer_name: string;
+    model_name: string;
+    display_name: string;
+    options: string;
+    version: string;
+    serial_number: string;
+    device_address: number;
+    model_id: number;
 }
 
 interface DeviceScannerProps {
-    host: string
-    port: number
-    onResultSelected: (result: DeviceScannerResult) => void
+    host: string;
+    port: number;
+    onResultSelected: (result: DeviceScannerResult) => void;
 }
 
 interface DeviceScannerState {
-    scan_running: boolean
-    scan_cookie: number
-    scan_progress: number
-    scan_log: string
-    scan_show_log: boolean
-    scan_results: DeviceScannerResult[]
+    scan_running: boolean;
+    scan_cookie: number;
+    scan_progress: number;
+    scan_log: string;
+    scan_show_log: boolean;
+    scan_results: DeviceScannerResult[];
 }
 
 class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {

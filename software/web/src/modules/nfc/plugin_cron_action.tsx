@@ -31,10 +31,10 @@ import * as util from "../../ts/util";
 export type NfcCronAction = [
     CronActionID.NFCInjectTag,
     {
-        tag_type: number,
-        tag_id: string,
-        tag_action: number
-    }
+        tag_type: number;
+        tag_id: string;
+        tag_action: number;
+    },
 ];
 
 function get_nfc_inject_tag_table_children(action: NfcCronAction) {

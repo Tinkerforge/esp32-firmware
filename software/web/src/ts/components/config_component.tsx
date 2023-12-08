@@ -75,7 +75,7 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         cfg = await this.transformSave(cfg);
 
         await this.sendSave(this.t, cfg);
-    }
+    };
 
     reset = async () => {
         const modal = util.async_modal_ref.current;
@@ -89,20 +89,20 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
             }))
             return;
         await this.sendReset(this.t);
-    }
+    };
 
     isModified = () => {
         return this.getIsModified(this.t);
-    }
+    };
 
     isDirty = () => {
         return this.state.internal_isDirty;
-    }
+    };
 
     setDirty = (dirty: boolean) => {
         if (this.state.internal_isDirty != dirty)
             this.setState({internal_isDirty: dirty} as any);
-    }
+    };
 
     set<T extends keyof (API.getType[Config] & S & ConfigComponentState)>(x: T) {
         return (s: (API.getType[Config] & S & ConfigComponentState)[T]) => this.setState({ [x]: s } as unknown as Partial<API.getType[Config] & S & ConfigComponentState>);

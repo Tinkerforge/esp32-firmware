@@ -43,7 +43,7 @@ export function InputTime(props: InputTimeProps) {
         let [h, m, s] = value.split(/:/g).map(x => parseInt(x));
 
         return new Date(0, 0, 1, h, m, s, 0);
-    }
+    };
 
     let inner =
         <>

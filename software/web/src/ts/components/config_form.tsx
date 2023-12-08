@@ -21,21 +21,21 @@ import { h, Component, Fragment, ComponentChildren } from "preact";
 import { __ } from "../translation";
 
 interface ConfigFormState {
-    saveInProgress: boolean
-    wasValidated: boolean
-    showSpinner: boolean
+    saveInProgress: boolean;
+    wasValidated: boolean;
+    showSpinner: boolean;
 }
 
 interface ConfigFormProps {
-    children: ComponentChildren
-    id: string
-    title: ComponentChildren
-    isModified: boolean
-    isDirty: boolean
-    onSave: () => Promise<void>
-    onReset: () => Promise<void>
-    onDirtyChange: (dirty: boolean) => void
-    small?: boolean
+    children: ComponentChildren;
+    id: string;
+    title: ComponentChildren;
+    isModified: boolean;
+    isDirty: boolean;
+    onSave: () => Promise<void>;
+    onReset: () => Promise<void>;
+    onDirtyChange: (dirty: boolean) => void;
+    small?: boolean;
 }
 
 export class ConfigForm extends Component<ConfigFormProps, ConfigFormState> {
@@ -103,6 +103,6 @@ export class ConfigForm extends Component<ConfigFormProps, ConfigFormState> {
                     {props.children}
                 </form>
             </>
-        )
+        );
     }
 }

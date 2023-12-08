@@ -171,8 +171,8 @@ render(<Mqtt/>, $('#mqtt')[0])
 
 
 interface MqttStatusState {
-    state: API.getType['mqtt/state']
-    config: API.getType['mqtt/config'];
+    state: API.getType["mqtt/state"];
+    config: API.getType["mqtt/config"];
 }
 
 export class MqttStatus extends Component<{}, MqttStatusState>

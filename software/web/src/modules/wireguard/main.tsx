@@ -159,8 +159,7 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
     }
 }
 
-render(<WireGuard/>, $('#wireguard')[0])
-
+render(<WireGuard />, $("#wireguard")[0]);
 
 function WireGuardStatus()
 {

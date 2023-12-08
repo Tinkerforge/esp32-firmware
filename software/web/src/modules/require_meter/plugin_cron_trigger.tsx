@@ -20,7 +20,7 @@
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
-import { CronTrigger } from "../cron/types"
+import { CronTrigger } from "../cron/types";
 
 export type RequireMeterCronTrigger = [
     CronTriggerID.RequireMeter,
@@ -51,7 +51,7 @@ export function init() {
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_table_children: get_require_meter_table_children,
                 get_edit_children: get_require_meter_edit_children,
-            }
-        }
-    }
+            },
+        },
+    };
 }

@@ -44,7 +44,7 @@ export class EMDebug extends Component {
 
     render() {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
-            return <></>
+            return <></>;
 
         let ll_state = API.get('energy_manager/low_level_state');
         let state    = API.get('energy_manager/state');

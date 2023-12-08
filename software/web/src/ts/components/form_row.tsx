@@ -37,19 +37,19 @@ import { InputMonth } from "./input_month";
 import { OutputFloat } from "./output_float";
 
 export interface FormRowProps {
-    label: ComponentChildren
-    label_muted?: ComponentChildren
+    label: ComponentChildren;
+    label_muted?: ComponentChildren;
     // Don't use ComponentChildren here: We want to pass in the idContext. This only works on VNodes.
-    children: VNode | VNode[]
-    labelColClasses?: string
-    contentColClasses?: string
-    hidden?: boolean
-    label_prefix ?: VNode
-    label_infix ?: VNode
-    label_suffix ?: VNode
-    help?: ComponentChildren
-    error?: ComponentChildren
-    small?: boolean
+    children: VNode | VNode[];
+    labelColClasses?: string;
+    contentColClasses?: string;
+    hidden?: boolean;
+    label_prefix?: VNode;
+    label_infix?: VNode;
+    label_suffix?: VNode;
+    help?: ComponentChildren;
+    error?: ComponentChildren;
+    small?: boolean;
 }
 
 let id_counter = 0;
@@ -68,7 +68,7 @@ const components_using_id_context: any = [
     InputTime,
     OutputDatetime,
     OutputFloat,
-    Switch
+    Switch,
 ];
 
 export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {

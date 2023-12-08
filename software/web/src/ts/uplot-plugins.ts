@@ -170,13 +170,13 @@ export function uPlotTimelinePlugin(options: any) {
                     },
                     points: {
                         show: false,
-                    }
+                    },
                 },
                 scales: {
                     y: {
                         range: [0, 1],
-                    }
-                }
+                    },
+                },
             });
 
             uPlot.assign(opts.axes[1], {
@@ -229,6 +229,6 @@ export function uPlotTimelinePlugin(options: any) {
                     });
                 }
             });
-        }
+        },
     };
 }

@@ -39,16 +39,16 @@ export type APIMetersConfig = [
 ];
 
 interface MeterValueIDSelectorProps {
-    value_id: number|null
-    value_ids: number[]
-    on_value_id: (value_id: number) => void
-    edit_idx?: number
+    value_id: number | null;
+    value_ids: number[];
+    on_value_id: (value_id: number) => void;
+    edit_idx?: number;
 }
 
 interface MeterValueIDSelectorState {
-    tree_path: string[]
-    value_id: number|null
-    is_valid: boolean
+    tree_path: string[];
+    value_id: number | null;
+    is_valid: boolean;
 }
 
 function get_value_id_name(value_id: number) {
@@ -57,11 +57,11 @@ function get_value_id_name(value_id: number) {
     let unit = METER_VALUE_INFOS[value_id].unit;
 
     if (name_muted.length > 0) {
-        name += "; " + name_muted
+        name += "; " + name_muted;
     }
 
     if (unit.length > 0) {
-        name += " [" + unit + "]"
+        name += " [" + unit + "]";
     }
 
     return name;
@@ -74,7 +74,7 @@ class MeterValueIDSelector extends Component<MeterValueIDSelectorProps, MeterVal
         this.state = {
             tree_path: props.value_id !== null ? METER_VALUE_INFOS[props.value_id].tree_path : [],
             value_id: props.value_id,
-            is_valid: true
+            is_valid: true,
         } as any;
     }
 
@@ -168,12 +168,12 @@ class MeterValueIDSelector extends Component<MeterValueIDSelectorProps, MeterVal
 }
 
 interface MeterValueIDTableProps {
-    config: APIMetersConfig,
-    on_config: (config: APIMetersConfig) => void
+    config: APIMetersConfig;
+    on_config: (config: APIMetersConfig) => void;
 }
 
 interface MeterValueIDTableState {
-    value_id: number
+    value_id: number;
 }
 
 class MeterValueIDTable extends Component<MeterValueIDTableProps, MeterValueIDTableState> {
@@ -181,7 +181,7 @@ class MeterValueIDTable extends Component<MeterValueIDTableProps, MeterValueIDTa
         super();
 
         this.state = {
-            value_id: null
+            value_id: null,
         } as any;
     }
 

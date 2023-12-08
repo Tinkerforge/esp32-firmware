@@ -24,11 +24,11 @@ import { JSXInternal } from "preact/src/jsx";
 import * as util from "../../ts/util";
 
 interface OutputDatetimeProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>, "value" | "class" | "id" | "type" | "onInput" | "disabled"> {
-    idContext?: Context<string>
-    date: Date
-    onClick?: () => void
-    buttonText?: string
-    disabled?: boolean
+    idContext?: Context<string>;
+    date: Date;
+    onClick?: () => void;
+    buttonText?: string;
+    disabled?: boolean;
 }
 
 export function OutputDatetime(props: OutputDatetimeProps) {

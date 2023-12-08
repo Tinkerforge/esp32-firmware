@@ -144,7 +144,7 @@ export class Certs extends Component<{}, State> {
     }
 }
 
-render(<Certs/>, $('#certs')[0])
+render(<Certs />, $("#certs")[0]);
 
 export function init() {}
 

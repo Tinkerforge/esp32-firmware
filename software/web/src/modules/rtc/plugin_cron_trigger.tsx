@@ -28,11 +28,11 @@ import * as util from "../../ts/util";
 export type RtcCronTrigger = [
     CronTriggerID.Cron,
     {
-        mday: number,
-        wday: number,
-        hour: number,
-        minute: number
-    }
+        mday: number;
+        wday: number;
+        hour: number;
+        minute: number;
+    },
 ];
 
 function new_rtc_config(): RtcCronTrigger {

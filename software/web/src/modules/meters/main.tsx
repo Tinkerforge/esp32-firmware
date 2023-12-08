@@ -43,8 +43,8 @@ import { plugins_init } from "./plugins";
 import { InputDate } from "src/ts/components/input_date";
 import { InputTime } from "src/ts/components/input_time";
 
-const PHASE_CONNECTED_VOLTAGE_THRESHOLD = 180.0 // V
-const PHASE_ACTIVE_CURRENT_THRESHOLD = 0.3 // A
+const PHASE_CONNECTED_VOLTAGE_THRESHOLD = 180.0; // V
+const PHASE_ACTIVE_CURRENT_THRESHOLD = 0.3; // A
 
 let config_plugins: {[meter_class: number]: MeterConfigPlugin} = {};
 
@@ -173,8 +173,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             return {
                 width: div.clientWidth,
                 height: Math.floor((div.clientWidth + (window.innerWidth - document.documentElement.clientWidth)) / aspect_ratio),
-            }
-        }
+            };
+        };
 
         let options = {
             ...get_size(),
@@ -291,7 +291,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
                         return values;
                     },
-                }
+                },
             ],
             scales: {
                 y: {
@@ -335,7 +335,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                 ctx.stroke();
                                 ctx.translate(-offset, -offset);
                                 ctx.restore();
-                            }
+                            },
                         ],
                     },
                 },
@@ -726,7 +726,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
             if (this.live_data.timestamps.length == 0) {
                 // received live_samples before live cache initialization
                 this.update_live_cache();
-                return
+                return;
             }
 
             let live = API.get("meters/live_samples");
@@ -762,7 +762,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
             if (this.history_data.timestamps.length == 0) {
                 // received history_samples before history cache initialization
                 this.update_history_cache();
-                return
+                return;
             }
 
             let history = API.get("meters/history_samples");
@@ -815,7 +815,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         this.pending_live_data = {timestamps: [], samples: []}
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            this.pending_live_data.samples.push([])
+            this.pending_live_data.samples.push([]);
         }
 
         return true;
@@ -943,7 +943,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
     render(props: {}, state: Readonly<MetersState>) {
         if (!util.render_allowed()) {
-            return (<></>);
+            return <></>;
         }
 
         let active_meter_slots = Object.keys(state.configs_table).filter((meter_slot_str) => state.configs_table[parseInt(meter_slot_str)][0] != MeterClassID.None);
@@ -1300,7 +1300,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                     </div>
                 </ConfigForm>
             </SubPage>
-        )
+        );
     }
 }
 

@@ -38,11 +38,11 @@ import { InputSelect } from "src/ts/components/input_select";
 type STAConfig = API.getType["wifi/sta_config"];
 
 type WifiSTAState = {
-    scan_running: boolean
-    scan_results: Readonly<WifiInfo[]>
-    passphrase_required: boolean,
-    passphrase_placeholder: string,
-}
+    scan_running: boolean;
+    scan_results: Readonly<WifiInfo[]>;
+    passphrase_required: boolean;
+    passphrase_placeholder: string;
+};
 
 type WifiInfo = Exclude<API.getType['wifi/scan_results'], string>[0];
 
@@ -116,7 +116,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         this.scan_timeout = window.setTimeout(async () => {
             this.scan_timeout = null;
 
-            let result = ""
+            let result = "";
             try {
                 result = await util.download("/wifi/scan_results").then(blob => blob.text())
             } catch (e) {
@@ -199,20 +199,20 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         username: "",
         password: "",
         client_cert_id: -1,
-        client_key_id: -1
-    }
+        client_key_id: -1,
+    };
 
     eap_peap_ttls(state: Readonly<WifiSTAState & STAConfig>) {
         const certs_config = API.get("certs/state");
         const cert_items: [string, string][] = [
-            ["-1", __("wifi.content.eap_cert_placeholder")]
+            ["-1", __("wifi.content.eap_cert_placeholder")],
         ];
         const key_items: [string, string][] = [
-            ["-1", __("wifi.content.eap_key_placeholder")]
-        ]
+            ["-1", __("wifi.content.eap_key_placeholder")],
+        ];
         for (const cert of certs_config.certs) {
             cert_items.push([cert.id.toString(), cert.name]);
-            key_items.push([cert.id.toString(), cert.name])
+            key_items.push([cert.id.toString(), cert.name]);
         }
 
         if (state.wpa_eap_config[0] === EapConfigID.PEAP_TTLS) {
@@ -294,7 +294,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
     eap_tls(state: Readonly<WifiSTAState & STAConfig>) {
         const certs_config = API.get("certs/state");
         const cert_items: [string, string][] = [
-            ["-1", __("wifi.content.eap_cert_placeholder")]
+            ["-1", __("wifi.content.eap_cert_placeholder")],
         ];
         for (const cert of certs_config.certs) {
             cert_items.push([cert.id.toString(), cert.name]);
@@ -409,7 +409,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             items={[
                                 ["0", __("wifi.content.wpa_personal")],
                                 ["1", __("wifi.content.eap_tls")],
-                                ["2", __("wifi.content.eap_peap_ttls")]
+                                ["2", __("wifi.content.eap_peap_ttls")],
                             ]}
                             value={state.wpa_eap_config[0].toString()}
                             onValue={(v) => {

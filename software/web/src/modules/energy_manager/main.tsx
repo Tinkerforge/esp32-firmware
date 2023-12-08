@@ -207,14 +207,13 @@ export class EnergyManagerStatus extends Component {
     }
 }
 
-render(<EnergyManagerStatus/>, $('#status-energy_manager')[0])
+render(<EnergyManagerStatus />, $("#status-energy_manager")[0]);
 
 export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, API.getType['energy_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
     old_input4_rule_then = -1;
 
     // Need to use any here in case the cron module is not available.
     cron_config: any;
-
 
     constructor() {
         super('energy_manager/config',

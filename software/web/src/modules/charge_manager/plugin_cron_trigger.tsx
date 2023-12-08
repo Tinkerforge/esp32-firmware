@@ -53,9 +53,9 @@ export function init() {
                     new_config: new_charge_manager_wd_config,
                     get_table_children: get_charge_manager_wd_table_children,
                     get_edit_children: get_charge_manager_wd_edit_children,
-                }
-            }
-        }
+                },
+            },
+        };
     }
     return {};
 }

@@ -20,11 +20,11 @@
 import { h, Component, ComponentChildren } from "preact";
 
 interface FormSeparatorProps {
-    heading?: string
-    colClasses?: string
-    first?: boolean
-    extraClasses?: string
-    children?: ComponentChildren
+    heading?: string;
+    colClasses?: string;
+    first?: boolean;
+    extraClasses?: string;
+    children?: ComponentChildren;
 }
 
 export class FormSeparator extends Component<FormSeparatorProps, {}> {

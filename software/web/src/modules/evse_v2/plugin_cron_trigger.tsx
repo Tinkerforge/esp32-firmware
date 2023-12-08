@@ -17,12 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, ComponentChildren } from 'preact'
-import { __ } from "../../ts/translation"
+import { h, ComponentChildren } from "preact";
+import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
-import { CronTrigger } from "../cron/types"
-import { InputSelect } from "../../ts/components/input_select"
-import { FormRow } from "../../ts/components/form_row"
+import { CronTrigger } from "../cron/types";
+import { InputSelect } from "../../ts/components/input_select";
+import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
 
 export type EvseShutdownCronTrigger = [
@@ -73,14 +73,14 @@ function get_evse_shutdown_edit_children(trigger: EvseGpInputCronTrigger, on_tri
             <InputSelect
                 items={[
                     ["0", __("evse.cron.cron_trigger_active_low")],
-                    ["1", __("evse.cron.cron_trigger_active_high")]
+                    ["1", __("evse.cron.cron_trigger_active_high")],
                 ]}
                 value={trigger[1].high ? "1" : "0"}
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {high: v === "1"}));
                 }} />
-        </FormRow>
-    ]
+        </FormRow>,
+    ];
 }
 
 function new_evse_shutdown_input_config(): CronTrigger {
@@ -102,14 +102,14 @@ function get_evse_gp_input_edit_children(trigger: EvseGpInputCronTrigger, on_tri
             <InputSelect
                 items={[
                     ["0", __("evse.cron.cron_trigger_active_low")],
-                    ["1", __("evse.cron.cron_trigger_active_high")]
+                    ["1", __("evse.cron.cron_trigger_active_high")],
                 ]}
                 value={trigger[1].high ? "1" : "0"}
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {high: v === "1"}));
                 }} />
-        </FormRow>
-    ]
+        </FormRow>,
+    ];
 }
 
 function new_evse_gp_input_config(): CronTrigger {

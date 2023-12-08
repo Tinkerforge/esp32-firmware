@@ -25,19 +25,19 @@ interface AsyncModalProps {
 }
 
 interface AsyncModalStrings {
-    title: string
-    body: ComponentChildren
-    no_variant: string
-    no_text: string
+    title: string;
+    body: ComponentChildren;
+    no_variant: string;
+    no_text: string;
 
-    yes_variant: string
-    yes_text: string
+    yes_variant: string;
+    yes_text: string;
 }
 
 interface AsyncModalState extends AsyncModalStrings {
-    show: boolean
+    show: boolean;
 
-    promiseResolve: (value: boolean | PromiseLike<boolean>) => void
+    promiseResolve: (value: boolean | PromiseLike<boolean>) => void;
 }
 
 export class AsyncModal extends Component<AsyncModalProps, AsyncModalState> {
@@ -46,18 +46,18 @@ export class AsyncModal extends Component<AsyncModalProps, AsyncModalState> {
             this.setState({
                 show: true,
                 promiseResolve: resolve,
-                ...strings
+                ...strings,
             });
         });
-    }
+    };
 
     hide = (b: boolean) => {
         this.state.promiseResolve(b);
         this.setState({
             show: false,
-            promiseResolve: null
+            promiseResolve: null,
         });
-    }
+    };
 
     render(props: AsyncModalProps, state: Readonly<AsyncModalState>) {
         return (

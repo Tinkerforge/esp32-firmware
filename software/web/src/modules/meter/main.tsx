@@ -36,12 +36,12 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import { SubPage } from "../../ts/components/sub_page";
 
 interface DetailedViewEntry {
-    i: number,
-    name: string,
-    desc: string,
-    three_phase: boolean,
-    unit: string
-    digits: 0|1|2|3
+    i: number;
+    name: string;
+    desc: string;
+    three_phase: boolean;
+    unit: string;
+    digits: 0 | 1 | 2 | 3;
 }
 
 function entry(name: string, three_phase: boolean, unit: string, digits: 0|1|2|3) : DetailedViewEntry {
@@ -168,8 +168,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             return {
                 width: div.clientWidth,
                 height: Math.floor((div.clientWidth + (window.innerWidth - document.documentElement.clientWidth)) / aspect_ratio),
-            }
-        }
+            };
+        };
 
         let options = {
             ...get_size(),
@@ -623,7 +623,7 @@ export class Meter extends Component<{}, MeterState> {
 
     render(props: {}, state: Readonly<MeterState>) {
         if (!util.render_allowed() || !API.hasFeature("meter")) {
-            return (<></>);
+            return <></>;
         }
 
         return (
@@ -758,7 +758,7 @@ export class Meter extends Component<{}, MeterState> {
                         }
                     </CollapsedSection> : undefined}
             </SubPage>
-        )
+        );
     }
 }
 

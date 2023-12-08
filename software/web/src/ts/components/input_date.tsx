@@ -44,7 +44,7 @@ export function InputDate(props: InputDateProps) {
         let [y, mIdx, d] = value.split(/-/g).map(x => parseInt(x));
 
         return new Date(y, mIdx - 1, d);
-    }
+    };
 
     let inner =
         <>

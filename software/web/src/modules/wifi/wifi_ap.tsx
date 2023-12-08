@@ -127,7 +127,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                                 ["10", "10"],
                                 ["11", "11"],
                                 ["12", "12"],
-                                ["13", "13"]
+                                ["13", "13"],
                             ]}
                         />
                     </FormRow>

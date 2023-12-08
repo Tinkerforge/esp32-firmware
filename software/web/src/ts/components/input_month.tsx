@@ -52,7 +52,7 @@ export function InputMonth(props: InputMonthProps) {
         let [y, mIdx] = value.split(/-/g).map(x => parseInt(x));
 
         return new Date(y, mIdx - 1);
-    }
+    };
 
     let inner =
         <>

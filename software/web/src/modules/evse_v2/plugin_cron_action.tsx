@@ -42,14 +42,14 @@ function get_evse_gp_output_edit_children(action: EvseGpOutputCronAction, on_act
             <InputSelect
                 items={[
                     ["0", __("evse.cron.gpio_out_low")],
-                    ["1", __("evse.cron.gpio_out_high")]
+                    ["1", __("evse.cron.gpio_out_high")],
                 ]}
                 value={action[1].state}
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {state: parseInt(v)}));
                 }} />
-        </FormRow>
-    ]
+        </FormRow>,
+    ];
 }
 
 function new_evse_gp_output_config(): CronAction {

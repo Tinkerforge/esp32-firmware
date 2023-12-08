@@ -24,8 +24,8 @@ import { unparseIP } from "../util";
 import { useMemo } from "preact/hooks";
 
 export interface InputSubnetProps extends Omit<InputSelectProps, "items"> {
-    minPrefixLength?: number
-    maxPrefixLength?: number
+    minPrefixLength?: number;
+    maxPrefixLength?: number;
 }
 
 export function InputSubnet(props: InputSubnetProps) {

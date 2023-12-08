@@ -30,13 +30,13 @@ import { WifiSTA, wifi_symbol } from "./wifi_sta";
 import { FormRow } from "../../ts/components/form_row";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 
-render(<WifiAP/>, $('#wifi-ap')[0])
-render(<WifiSTA/>, $('#wifi-sta')[0])
+render(<WifiAP />, $("#wifi-ap")[0]);
+render(<WifiSTA />, $("#wifi-sta")[0]);
 
 interface WifiStatusState {
-    state: API.getType['wifi/state']
-    ap_config: API.getType['wifi/ap_config'];
-    sta_config: API.getType['wifi/sta_config'];
+    state: API.getType["wifi/state"];
+    ap_config: API.getType["wifi/ap_config"];
+    sta_config: API.getType["wifi/sta_config"];
 }
 
 export class WifiStatus extends Component<{}, WifiStatusState>

@@ -36,9 +36,9 @@ import { FormRow } from "../../ts/components/form_row";
 
 type NfcConfig = API.getType['nfc/config'];
 interface NfcState {
-    userCfg: API.getType['users/config'];
-    addTag: NfcConfig['authorized_tags'][0]
-    editTag: NfcConfig['authorized_tags'][0]
+    userCfg: API.getType["users/config"];
+    addTag: NfcConfig["authorized_tags"][0];
+    editTag: NfcConfig["authorized_tags"][0];
 }
 
 export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
@@ -49,13 +49,13 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                 addTag: {
                     tag_id: "",
                     user_id: 0,
-                    tag_type: "" as any
+                    tag_type: "" as any,
                 },
                 editTag: {
                     tag_id: "",
                     user_id: 0,
-                    tag_type: "" as any
-                }
+                    tag_type: "" as any,
+                },
             });
 
         util.addApiEventListener('users/config', () => {

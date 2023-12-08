@@ -40,8 +40,8 @@ interface InputPasswordProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputEl
 }
 
 interface InputPasswordState {
-    show: boolean
-    clearSelected: boolean
+    show: boolean;
+    clearSelected: boolean;
 }
 
 export class InputPassword extends Component<InputPasswordProps, InputPasswordState> {

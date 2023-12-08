@@ -29,11 +29,11 @@ import { InputSelect } from "./input_select";
 import { InputSubnet } from "./input_subnet";
 
 export interface IPConfig {
-    ip: string,
-    gateway: string,
-    subnet: string,
-    dns?: string,
-    dns2?: string,
+    ip: string;
+    gateway: string;
+    subnet: string;
+    dns?: string;
+    dns2?: string;
 }
 
 interface IPConfigurationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "value" | "disabled"> {

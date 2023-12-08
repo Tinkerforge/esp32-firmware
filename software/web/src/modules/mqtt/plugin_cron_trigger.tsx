@@ -31,11 +31,11 @@ import * as util from "../../ts/util";
 export type MqttCronTrigger = [
     CronTriggerID.MQTT,
     {
-        topic: string,
-        payload: string,
-        retain: boolean,
-        use_prefix: boolean
-    }
+        topic: string;
+        payload: string;
+        retain: boolean;
+        use_prefix: boolean;
+    },
 ];
 
 function get_mqtt_table_children(trigger: MqttCronTrigger) {

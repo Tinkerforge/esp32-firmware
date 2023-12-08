@@ -73,7 +73,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                                 no_text: __("firmware_update.content.abort_downgrade"),
                                 yes_text: __("firmware_update.content.confirm_downgrade"),
                                 no_variant: "secondary",
-                                yes_variant: "danger"
+                                yes_variant: "danger",
                             }))
                             return false;
                     } else {

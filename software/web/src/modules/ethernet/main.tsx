@@ -99,7 +99,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
     }
 }
 
-render(<Ethernet/>, $('#ethernet')[0])
+render(<Ethernet />, $("#ethernet")[0]);
 
 export class EthernetStatus extends Component
 {
