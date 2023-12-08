@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from 'preact'
+import { h, ComponentChildren } from 'preact'
 import { __ } from "../../ts/translation"
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types"
@@ -50,7 +50,7 @@ function get_evse_button_table_children(trigger: EvseButtonCronTrigger) {
     return __("evse.cron.cron_button_trigger_text")(trigger[1].button_pressed);
 }
 
-function get_evse_button_edit_children(_: EvseButtonCronTrigger, __: (trigger: CronTrigger) => void): h.JSX.Element[] {
+function get_evse_button_edit_children(_: EvseButtonCronTrigger, __: (trigger: CronTrigger) => void): ComponentChildren {
     return []
 }
 

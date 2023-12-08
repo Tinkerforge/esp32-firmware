@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from "preact";
+import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types"
@@ -31,7 +31,7 @@ function get_require_meter_table_children(_: CronTrigger) {
     return __("require_meter.cron.cron_trigger_text");
 }
 
-function get_require_meter_edit_children(_: RequireMeterCronTrigger, __: (trigger: CronTrigger) => void): h.JSX.Element[] {
+function get_require_meter_edit_children(_: RequireMeterCronTrigger, __: (trigger: CronTrigger) => void): ComponentChildren {
     return [];
 }
 

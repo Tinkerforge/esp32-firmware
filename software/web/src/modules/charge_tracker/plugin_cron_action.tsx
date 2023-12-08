@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact";
+import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { CronAction } from "../cron/types";
 import { CronActionID } from "../cron/cron_defs";
@@ -32,7 +32,7 @@ function get_charge_tracker_reset_table_children(_: ChargeLimitsCronAction) {
     return __("charge_tracker.cron.cron_action_text");
 }
 
-function get_charge_tracker_reset_edit_chidren(_: ChargeLimitsCronAction, __: (action: CronAction) => void): h.JSX.Element[] {
+function get_charge_tracker_reset_edit_chidren(_: ChargeLimitsCronAction, __: (action: CronAction) => void): ComponentChildren {
     return [];
 }
 

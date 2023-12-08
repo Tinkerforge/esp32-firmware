@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact";
+import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
 import { CronTrigger } from "../cron/types";
@@ -32,7 +32,7 @@ function get_charge_manager_wd_table_children(_: ChargeManagerWdCronTrigger) {
     return __("charge_manager.cron.cron_trigger_text");
 }
 
-function get_charge_manager_wd_edit_children(_: ChargeManagerWdCronTrigger, __: (action: CronTrigger) => void): h.JSX.Element[] {
+function get_charge_manager_wd_edit_children(_: ChargeManagerWdCronTrigger, __: (action: CronTrigger) => void): ComponentChildren {
     return [];
 }
 
