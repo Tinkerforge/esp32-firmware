@@ -178,7 +178,7 @@ export class Table extends Component<TableProps, TableState> {
                 </table>
                 </Card.Body></Card>
 
-                <div class={`d-block d-${props.tableTill ? props.tableTill : 'sm'}-none` + " table-card-mode"}>
+                <div class={`d-block d-${props.tableTill ? props.tableTill : 'sm'}-none table-card-mode`}>
                     {props.rows.map((row, i) => {
                         let card_fields = this.get_card_fields(row);
                         let needs_body = card_fields.length > 0 || (row.extraValue && row.extraShow);
