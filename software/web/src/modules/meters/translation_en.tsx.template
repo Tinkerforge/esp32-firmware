@@ -54,6 +54,11 @@ let x = {
 
             "meter_type": "Energy meter type"
         },
+        "cron": {
+            "meter_reset": "Energy Meter reset",
+            "cron_action_text": /*SFN*/(meter_name: string) => `reset energy consumption for meter ${meter_name}.`/*NF*/,
+            "meter_slot": "Meter"
+        },
         "script": {
             "time": "Time of day",
             "power": "Power",

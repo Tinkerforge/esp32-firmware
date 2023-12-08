@@ -54,6 +54,11 @@ let x = {
 
             "meter_type": "Stromzählertyp"
         },
+        "cron": {
+            "meter_reset": "Stromzähler zurücksetzen",
+            "cron_action_text": /*SFN*/(meter_name: string) => `setze den Stromverbrauchswert für Zähler ${meter_name} zurück.` /*NF*/,
+            "meter_slot": "Meter"
+        },
         "script": {
             "time": "Uhrzeit",
             "power": "Leistung",

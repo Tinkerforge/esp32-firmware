@@ -74,6 +74,19 @@ void Meters::pre_setup()
     last_reset_prototype = Config::Object({
         {"last_reset", Config::Uint32(0)}
     });
+
+
+#if MODULE_CRON_AVAILABLE()
+    cron.register_action(
+        CronActionID::MeterReset,
+        Config::Object({
+            {"meter_slot", Config::Uint(0, 0, METERS_SLOTS - 1)}
+        }),
+        [this](const Config *config) {
+            api.callCommand(get_path(config->get("meter_slot")->asUint(), Meters::PathType::Reset).c_str(), {});
+        }
+    );
+#endif
 }
 
 void Meters::setup()
@@ -136,6 +149,7 @@ void Meters::setup()
         // Setup before calling supports_reset to allow a meter to decide in
         // setup whether to support reset. This could for example depend on the
         // meter's configuration.
+        logger.printfln("meter supports reset: %d", meter->supports_reset());
         if (meter->supports_reset()) {
             meter_slot.reset = *Config::Null();
             meter_slot.last_reset = last_reset_prototype;
