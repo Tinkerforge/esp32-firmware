@@ -242,6 +242,7 @@ private:
     int32_t  overall_min_power_w = 0;
     int32_t  threshold_3to1_w    = 0;
     int32_t  threshold_1to3_w    = 0;
+    uint32_t max_phases          = 0;
 
     void update_history_meter_power(uint32_t slot, float power /* W */);
     void collect_data_points();

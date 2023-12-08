@@ -414,10 +414,13 @@ void EnergyManager::setup()
     int32_t min_phases;
     if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_1PHASE) {
         min_phases = 1;
+        max_phases = 1;
     } else if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE) {
         min_phases = 3;
+        max_phases = 3;
     } else { // automatic, external or PV1P/FAST3P
         min_phases = 1;
+        max_phases = 3;
     }
     if (min_phases < 3) {
         overall_min_power_w = static_cast<int32_t>(230 * 1 * min_current_1p_ma / 1000);
@@ -1009,7 +1012,7 @@ void EnergyManager::update_energy()
 
         switch (mode) {
             case MODE_FAST:
-                power_available_w          = static_cast<int32_t>(230 * 3 * max_current_limited_ma / 1000);
+                power_available_w          = static_cast<int32_t>(230 * max_phases * max_current_limited_ma / 1000);
                 power_available_filtered_w = power_available_w;
                 break;
             case MODE_OFF:
