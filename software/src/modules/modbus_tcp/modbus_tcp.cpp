@@ -436,7 +436,7 @@ void ModbusTcp::setup()
     // but the ip_netif_ptr is never used.
     // Fortunately this means that we can just pass anything to circumvent the assertion
     // and the modbus_tcp server will listen on any network interface.
-    comm_info.ip_netif_ptr = (void *) 0x12345678;
+    comm_info.ip_netif_ptr = (void *) 0x00000004;
     ESP_ERROR_CHECK(mbc_slave_setup((void *)&comm_info));
 
     mb_register_area_descriptor_t reg_area;
