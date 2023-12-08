@@ -56,11 +56,11 @@ export class EVSE extends Component<{}, {}> {
         let min = Math.min(...slots.filter(s => s.active).map(s => s.max_current));
 
         let pe_error = state.error_state == 4 && ((!is_evse_v3 && state.contactor_error == 4)
-                                                    || is_evse_v3 && (state.contactor_error & 1) == 1);
+                                                    || (is_evse_v3 && (state.contactor_error & 1) == 1));
 
         // EVSE 3.0 can report both a PE and a contactor error!
         let contactor_error = state.error_state == 4 && ((!is_evse_v3 && state.contactor_error != 4)
-                                                           || is_evse_v3 && (state.contactor_error & 1) == 0);
+                                                           || (is_evse_v3 && (state.contactor_error & 1) == 0));
 
         return <SubPage>
             <PageHeader title={__("evse.content.status")} />
