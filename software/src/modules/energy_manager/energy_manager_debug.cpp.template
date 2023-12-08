@@ -1,3 +1,5 @@
+// WARNING: Edit only energy_manager_debug.cpp.template. Do not edit energy_manager_debug.cpp.
+
 #include "energy_manager.h"
 #include "tools.h"
 

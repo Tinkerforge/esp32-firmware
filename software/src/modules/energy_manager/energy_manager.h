@@ -132,6 +132,7 @@ public:
     bool get_sdcard_info(struct sdcard_info *data);
     bool format_sdcard();
     uint16_t get_energy_meter_detailed_values(float *ret_values);
+    bool reset_energy_meter_relative_energy();
     void set_output(bool output);
     void set_rgb_led(uint8_t pattern, uint16_t hue);
 

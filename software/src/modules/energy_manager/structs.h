@@ -32,8 +32,7 @@ typedef struct {
     uint8_t rgb_value_b;
 
     float power;
-    float energy_import;
-    float energy_export;
+    float current[3];
 
     uint8_t energy_meter_type;
     uint32_t error_count[6];

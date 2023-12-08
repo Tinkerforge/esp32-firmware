@@ -759,8 +759,7 @@ void EnergyManager::update_all_data_struct()
         &all_data.rgb_value_g,
         &all_data.rgb_value_b,
         &all_data.power,
-        &all_data.energy_import,
-        &all_data.energy_export,
+        all_data.current,
         &all_data.energy_meter_type,
         all_data.error_count,
         all_data.input,
@@ -1348,6 +1347,15 @@ uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
     check_bricklet_reachable(rc, "get_energy_meter_detailed_values");
 
     return rc == TF_E_OK ? len : 0;
+}
+
+bool EnergyManager::reset_energy_meter_relative_energy()
+{
+    int rc = tf_warp_energy_manager_reset_energy_meter_relative_energy(&device);
+
+    check_bricklet_reachable(rc, "reset_energy_meter_relative_energy");
+
+    return rc == TF_E_OK;
 }
 
 void EnergyManager::set_output(bool output_value)
