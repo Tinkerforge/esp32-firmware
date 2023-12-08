@@ -665,7 +665,7 @@ export function compareArrays(a: Array<any>, b: Array<any>): boolean
 
 // https://stackoverflow.com/a/1535650
 export let nextId = (function() {
-    var id = 0;
+    let id = 0;
     return function() {return "ID-" + (++id).toString();};
 })();
 
