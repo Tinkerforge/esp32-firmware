@@ -90,7 +90,7 @@ void MeterEM::update_all_values()
 {
     // No need to initialize the array because either all values are written or it is rejected entirely.
     float values[METER_ALL_VALUES_RESETTABLE_COUNT];
-    if (energy_manager.get_energy_meter_detailed_values(values) != METER_ALL_VALUES_COUNT) // TODO: Switch to new API. Remove marked code below.
+    if (energy_manager.get_energy_meter_detailed_values(values) != METER_ALL_VALUES_COUNT) // TODO: Switch to new API. Remove marked code below. Implement reset.
         return;
 
     uint32_t values_len = ARRAY_SIZE(values);
@@ -112,7 +112,6 @@ void MeterEM::update_all_values()
 
 bool MeterEM::reset()
 {
-    //reset_energy_meter_relative_energy();
-    #warning "meter_em: Reset not implemented"
+    // TODO: reset_energy_meter_relative_energy();
     return true;
 }
