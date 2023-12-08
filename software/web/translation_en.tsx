@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "main": {
         "title": "{{{display_name}}} Web Interface",
         "navbar_login": "Sign In",
@@ -57,6 +59,9 @@
             "hide": "Hide"
         },
         "input_text": {
+            "min_only": /*SFN*/ (min: string) => `At least ${min} characters required`/*NF*/,
+            "max_only": /*SFN*/ (max: string) => `At most ${max} characters allowed`/*NF*/,
+            "min_max": /*SFN*/ (min: string, max: string) => `At least ${min} but at most ${max} characters allowed`/*NF*/,
             "min_only_prefix": "At least ",
             "min_only_suffix": " characters required",
             "max_only_prefix": "At most ",

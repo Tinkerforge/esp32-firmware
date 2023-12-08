@@ -43,18 +43,17 @@ interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<H
 
 export function InputText<T extends (InputTextProps | InputTextWithValidationProps)>(props: util.NoExtraProperties<InputTextProps, T> | InputTextWithValidationProps) {
     const id = !props.idContext ? util.useId() : useContext(props.idContext);
-
     let invalidFeedback = undefined;
     if ("invalidFeedback" in props && props.invalidFeedback)
         invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
     else if ("required" in props && !props.value)
         invalidFeedback = <div class="invalid-feedback">{__("component.input_text.required")}</div>;
-    else if ("minLength" in props && !("maxLength" in props))
-        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_only_prefix") + props.minLength.toString() + __("component.input_text.min_only_suffix")}</div>;
-    else if (!("minLength" in props) && "maxLength" in props)
-        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.max_only_prefix") + props.maxLength.toString() + __("component.input_text.max_only_suffix")}</div>;
-    else if ("minLength" in props && "maxLength" in props)
-        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_max_prefix") + props.minLength.toString() + __("component.input_text.min_max_infix") + props.maxLength.toString() + __("component.input_text.min_max_suffix")}</div>;
+    else if ("minLength" in props && !("maxLength" in props) && props.minLength)
+        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_only")(props.minLength.toString())}</div>;
+    else if (!("minLength" in props) && "maxLength" in props && props.maxLength)
+        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.max_only")(props.maxLength.toString())}</div>;
+    else if ("minLength" in props && "maxLength" in props && props.minLength && props.maxLength)
+        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_max")(props.minLength.toString(), props.maxLength.toString())}</div>;
 
     let inner = <input {...props}
                     class={"form-control " + (props.class ?? "")}
