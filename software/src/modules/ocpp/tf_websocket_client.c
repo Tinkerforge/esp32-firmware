@@ -528,11 +528,11 @@ esp_err_t tf_websocket_client_set_uri(tf_websocket_client_handle_t client, const
                 pass ++;
                 free(client->config->password);
                 client->config->password = strdup(pass);
-                ESP_WS_CLIENT_MEM_CHECK(TAG, client->config->password, return ESP_ERR_NO_MEM);
+                ESP_WS_CLIENT_MEM_CHECK(TAG, client->config->password, free(user_info); return ESP_ERR_NO_MEM);
             }
             free(client->config->username);
             client->config->username = strdup(user_info);
-            ESP_WS_CLIENT_MEM_CHECK(TAG, client->config->username, return ESP_ERR_NO_MEM);
+            ESP_WS_CLIENT_MEM_CHECK(TAG, client->config->username, free(user_info); return ESP_ERR_NO_MEM);
             free(user_info);
         } else {
             return ESP_ERR_NO_MEM;
@@ -636,7 +636,7 @@ static void tf_websocket_client_task(void *pv)
             case WEBSOCKET_STATE_CONNECTED:
                 if ((CLOSE_FRAME_SENT_BIT & xEventGroupGetBits(client->status_bits)) == 0) { // only send and check for PING
                                                                                                           // if closing hasn't been initiated
-                    if (_tick_get_ms() - client->ping_tick_ms > client->config->ping_interval_sec*1000) {
+                    if (_tick_get_ms() - client->ping_tick_ms > client->config->ping_interval_sec*1000ull) {
                         client->ping_tick_ms = _tick_get_ms();
                         ESP_LOGD(TAG, "Sending PING...");
                         esp_transport_ws_send_raw(client->transport, WS_TRANSPORT_OPCODES_PING | WS_TRANSPORT_OPCODES_FIN, NULL, 0, client->config->network_timeout_ms);
@@ -647,7 +647,7 @@ static void tf_websocket_client_task(void *pv)
                         }
                     }
 
-                    if ( _tick_get_ms() - client->pingpong_tick_ms > client->config->pingpong_timeout_sec*1000 ) {
+                    if ( _tick_get_ms() - client->pingpong_tick_ms > client->config->pingpong_timeout_sec*1000ull ) {
                         if (client->wait_for_pong_resp) {
                             ESP_LOGE(TAG, "Error, no PONG received for more than %d seconds after PING", client->config->pingpong_timeout_sec);
                             tf_websocket_client_abort_connection(client);
