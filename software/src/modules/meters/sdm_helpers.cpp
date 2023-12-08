@@ -26,7 +26,7 @@
 
 #include "gcc_warnings.h"
 
-const MeterValueID sdm_helper_all_ids[METER_ALL_VALUES_COUNT] = {
+const MeterValueID sdm_helper_all_ids[METER_ALL_VALUES_RESETTABLE_COUNT] = {
     MeterValueID::VoltageL1N,
     MeterValueID::VoltageL2N,
     MeterValueID::VoltageL3N,
@@ -112,6 +112,9 @@ const MeterValueID sdm_helper_all_ids[METER_ALL_VALUES_COUNT] = {
     MeterValueID::EnergyReactiveL1IndCapSum,
     MeterValueID::EnergyReactiveL2IndCapSum,
     MeterValueID::EnergyReactiveL3IndCapSum,
+    MeterValueID::EnergyActiveLSumImportResettable,
+    MeterValueID::EnergyActiveLSumExportResettable,
+    MeterValueID::EnergyActiveLSumImExSumResettable,
 };
 
 const MeterValueID sdm_helper_72v1_ids[3] = {
@@ -120,7 +123,7 @@ const MeterValueID sdm_helper_72v1_ids[3] = {
     MeterValueID::EnergyActiveLSumImExSum,
 };
 
-const uint32_t sdm_helper_72v2_all_value_indices[34] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,22,23,24,25,26,27,29,30,31,42,43,44,45,46,65,66};
+const uint32_t sdm_helper_72v2_all_value_indices[37] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,22,23,24,25,26,27,29,30,31,42,43,44,45,46,65,66,85,86,87};
 
 static void copy_value_ids(MeterValueID *dst, const MeterValueID *src, size_t *dst_len, size_t src_len)
 {

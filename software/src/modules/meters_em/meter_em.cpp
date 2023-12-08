@@ -55,8 +55,8 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
         meter_type = all_data.energy_meter_type;
         state->get("type")->updateUint(meter_type);
 
-        MeterValueID ids[METER_ALL_VALUES_COUNT];
-        uint32_t id_count = METER_ALL_VALUES_COUNT;
+        MeterValueID ids[METER_ALL_VALUES_RESETTABLE_COUNT];
+        uint32_t id_count = METER_ALL_VALUES_RESETTABLE_COUNT;
         sdm_helper_get_value_ids(meter_type, ids, &id_count);
         meters.declare_value_ids(slot, ids, id_count);
 
@@ -89,8 +89,8 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
 void MeterEM::update_all_values()
 {
     // No need to initialize the array because either all values are written or it is rejected entirely.
-    float values[METER_ALL_VALUES_COUNT];
-    if (energy_manager.get_energy_meter_detailed_values(values) != METER_ALL_VALUES_COUNT)
+    float values[METER_ALL_VALUES_RESETTABLE_COUNT];
+    if (energy_manager.get_energy_meter_detailed_values(values) != METER_ALL_VALUES_COUNT) // TODO: Switch to new API. Remove marked code below.
         return;
 
     uint32_t values_len = ARRAY_SIZE(values);
@@ -99,6 +99,20 @@ void MeterEM::update_all_values()
     if (values_len == 0) {
         logger.printfln("meter_em: Cannot pack values into array of size %u.", ARRAY_SIZE(values));
     } else {
+        // TODO: Remove NAN padding after switching to new API.
+        if (values_len <= METER_ALL_VALUES_RESETTABLE_COUNT - 3) {
+            uint32_t resettable_len = values_len + 3;
+            for (uint32_t i = values_len; i < resettable_len; i++) {
+                values[i] = NAN;
+            }
+        }
         meters.update_all_values(slot, values);
     }
+}
+
+bool MeterEM::reset()
+{
+    //reset_energy_meter_relative_energy();
+    #warning "meter_em: Reset not implemented"
+    return true;
 }

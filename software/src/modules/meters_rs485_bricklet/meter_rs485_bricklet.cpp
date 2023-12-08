@@ -51,8 +51,8 @@ void MeterRS485Bricklet::changeMeterType(size_t supported_meter_idx) {
     this->meter_type = this->meter_in_use->meter_type;
     state->get("type")->updateUint(meter_type);
 
-    MeterValueID ids[METER_ALL_VALUES_COUNT];
-    uint32_t id_count = METER_ALL_VALUES_COUNT;
+    MeterValueID ids[METER_ALL_VALUES_RESETTABLE_COUNT];
+    uint32_t id_count = METER_ALL_VALUES_RESETTABLE_COUNT;
     sdm_helper_get_value_ids(meter_type, ids, &id_count);
     meters.declare_value_ids(slot, ids, id_count);
 

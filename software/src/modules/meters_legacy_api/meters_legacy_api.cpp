@@ -87,7 +87,7 @@ void MetersLegacyAPI::setup()
 
     legacy_all_values = Config::Array({},
         meters.get_config_float_nan_prototype(),
-        0, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>()
+        0, METER_ALL_VALUES_LEGACY_COUNT, Config::type_id<Config::ConfFloat>()
     );
 
     legacy_last_reset = Config::Object({
@@ -120,7 +120,7 @@ void MetersLegacyAPI::setup()
 
     legacy_all_values_update = Config::Array({},
         meters.get_config_float_nan_prototype(),
-        METER_ALL_VALUES_COUNT, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
+        METER_ALL_VALUES_LEGACY_COUNT, METER_ALL_VALUES_LEGACY_COUNT, Config::type_id<Config::ConfFloat>());
     // END from old api_meter.cpp pre_setup()
 
     task_scheduler.scheduleOnce([this]() {
@@ -218,7 +218,7 @@ void MetersLegacyAPI::register_urls()
             *--values_end = NAN;
         } while (values_end > values);
 
-        for (uint16_t source_index = 0; source_index < METER_ALL_VALUES_COUNT; source_index++) {
+        for (uint16_t source_index = 0; source_index < METER_ALL_VALUES_LEGACY_COUNT; source_index++) {
             uint16_t target_index = this->value_indices_legacy_all_values_to_linked_meter[source_index];
             if (target_index >= this->linked_meter_value_count) {
                 // Value not present in target.
@@ -301,19 +301,19 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         meter_value_ids[i] = static_cast<MeterValueID>(value_ids->get(i)->asUint());
     }
 
-    fill_index_array(value_indices_legacy_values_to_linked_meter, sdm_helper_72v1_ids, ARRAY_SIZE(sdm_helper_72v1_ids), meter_value_ids, linked_meter_value_count);
-    fill_index_array(value_indices_legacy_all_values_to_linked_meter, sdm_helper_all_ids, ARRAY_SIZE(sdm_helper_all_ids), meter_value_ids, linked_meter_value_count);
+    fill_index_array(value_indices_legacy_values_to_linked_meter, sdm_helper_72v1_ids, METER_VALUES_LEGACY_COUNT, meter_value_ids, linked_meter_value_count);
+    fill_index_array(value_indices_legacy_all_values_to_linked_meter, sdm_helper_all_ids, METER_ALL_VALUES_LEGACY_COUNT, meter_value_ids, linked_meter_value_count);
 
 
     // ==== Meter type detection ====
 
-    bool all_values_present[METER_ALL_VALUES_COUNT];
+    bool all_values_present[METER_ALL_VALUES_LEGACY_COUNT];
     bool has_any_known_value = false;
     uint32_t can_be_sdm72   = 1;
     uint32_t can_be_sdm72v2 = 1;
     uint32_t can_be_sdm630  = 1;
 
-    for (uint32_t i = 0; i < METER_ALL_VALUES_COUNT; i++) {
+    for (uint32_t i = 0; i < METER_ALL_VALUES_LEGACY_COUNT; i++) {
         uint16_t value_index = value_indices_legacy_all_values_to_linked_meter[i];
         if (value_index >= linked_meter_value_count) {
             // Linked meter doesn't have this value.
@@ -342,12 +342,14 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         }
     }
 
-    bool sdm72v2_values_present[METER_ALL_VALUES_COUNT] = {false};
+    bool sdm72v2_values_present[METER_ALL_VALUES_LEGACY_COUNT] = {false};
     for (uint32_t i = 0; i < ARRAY_SIZE(sdm_helper_72v2_all_value_indices); i++) {
-        sdm72v2_values_present[sdm_helper_72v2_all_value_indices[i]] = true;
+        uint32_t index = sdm_helper_72v2_all_value_indices[i];
+        if (index < ARRAY_SIZE(sdm72v2_values_present))
+            sdm72v2_values_present[index] = true;
     }
 
-    for (uint32_t i = 0; i < METER_ALL_VALUES_COUNT; i++) {
+    for (uint32_t i = 0; i < METER_ALL_VALUES_LEGACY_COUNT; i++) {
         if (sdm72v2_values_present[i] != all_values_present[i]) {
             can_be_sdm72v2 = 0;
             break;
@@ -417,7 +419,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     // ==== Get values and set up event handler ====
 
     if (has_all_values) {
-        for (size_t i = legacy_all_values.count(); i < METER_ALL_VALUES_COUNT; ++i) {
+        for (size_t i = legacy_all_values.count(); i < METER_ALL_VALUES_LEGACY_COUNT; ++i) {
             legacy_all_values.add();
         }
     }

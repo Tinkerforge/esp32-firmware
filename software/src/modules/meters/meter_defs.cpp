@@ -19,7 +19,7 @@
 
 #include "meter_defs.h"
 
-const char * const meter_all_values_names[METER_ALL_VALUES_COUNT] = {
+const char * const meter_all_values_names[METER_ALL_VALUES_LEGACY_COUNT] = {
     "line_to_neutral_volts_l1",
     "line_to_neutral_volts_l2",
     "line_to_neutral_volts_l3",
