@@ -18,7 +18,7 @@
  */
 
 import { __ } from "../translation";
-import { h, Component, Fragment, VNode, ComponentChild, ComponentChildren } from "preact";
+import { h, Component, Fragment, ComponentChild, ComponentChildren } from "preact";
 import { Card, Button, Collapse } from "react-bootstrap";
 import { Plus, Edit3, Trash2 } from "react-feather";
 import { FormRow } from "./form_row";

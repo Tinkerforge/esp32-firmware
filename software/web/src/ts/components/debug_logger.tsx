@@ -21,7 +21,7 @@ import * as util from "../../ts/util";
 import { h, Component, Fragment } from "preact";
 import { Button } from "react-bootstrap";
 import { FormRow } from "./form_row";
-import { __, translate_unchecked } from "../translation";
+import { translate_unchecked } from "../translation";
 import { ConfigMap } from "../api_defs";
 import { InputText } from "./input_text";
 

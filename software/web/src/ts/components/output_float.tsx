@@ -20,7 +20,7 @@
 import * as util from "../util";
 
 import { h, Context } from "preact";
-import { useContext, useState } from "preact/hooks";
+import { useContext } from "preact/hooks";
 
 interface OutputFloatProps {
     idContext?: Context<string>

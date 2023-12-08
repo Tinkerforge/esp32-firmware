@@ -20,7 +20,6 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { CronTriggerID } from "../cron/cron_defs";
-import { Cron } from "../cron/main";
 import { CronTrigger } from "../cron/types";
 import { IS_ENERGY_MANAGER } from "src/build";
 

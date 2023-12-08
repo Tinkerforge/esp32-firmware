@@ -35,8 +35,6 @@ import { IndicatorGroup  } from "../../ts/components/indicator_group";
 import { InputFloat      } from "../../ts/components/input_float";
 import { InputNumber     } from "../../ts/components/input_number";
 import { InputSelect     } from "../../ts/components/input_select";
-import { InputTime       } from "../../ts/components/input_time";
-import { InputText       } from "../../ts/components/input_text";
 import { Switch          } from "../../ts/components/switch";
 import { SubPage         } from "../../ts/components/sub_page";
 import { MeterConfig     } from "../meters/types";

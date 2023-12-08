@@ -18,7 +18,7 @@
  */
 
 import { h, Context, Fragment } from "preact";
-import { useContext, useRef, useState } from "preact/hooks";
+import { useContext, useRef } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
