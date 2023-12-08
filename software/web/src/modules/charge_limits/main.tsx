@@ -120,7 +120,7 @@ function ChargeLimitsStatus() {
         ];
 
         if (electricity_price > 0) {
-            for(let i = 1; i < energy_items.length; ++i) {
+            for (let i = 1; i < energy_items.length; ++i) {
                 energy_items[i][1] += ` (~ ${util.toLocaleFixed(electricity_price / 10000 * parseFloat(energy_items[i][0]) / 1000, 2)} €)`
             }
         }

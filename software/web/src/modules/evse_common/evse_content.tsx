@@ -21,7 +21,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import {  h, Component, Fragment } from "preact";
+import { h, Component, Fragment } from "preact";
 import { Button } from "react-bootstrap";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
 import { DebugLogger } from "src/ts/components/debug_logger";

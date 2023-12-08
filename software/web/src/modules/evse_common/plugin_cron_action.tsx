@@ -57,7 +57,8 @@ function get_set_current_edit_children(action: EvseCronAction, on_action: (actio
                 value={action[1].current}
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {current: v}));
-                }} />
+                }}
+            />
         </FormRow>,
     ];
 }

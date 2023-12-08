@@ -122,8 +122,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
     override async sendSave(t: "charge_manager/config", cfg: ChargeManagerConfig) {
         const modal = util.async_modal_ref.current;
         let illegal_chargers = "";
-        for (let i = 0; i < cfg.chargers.length; i++)
-        {
+        for (let i = 0; i < cfg.chargers.length; i++) {
             if (this.isMultiOrBroadcastIp(cfg.chargers[i].host))
                 illegal_chargers += cfg.chargers[i].name + ": " + cfg.chargers[i].host + "<br>";
         }
@@ -167,8 +166,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         this.setState({chargers: c})
     }
 
-    async scan_services()
-    {
+    async scan_services() {
         try {
             await API.call('charge_manager/scan', {}, __("charge_manager.script.scan_failed"))
         } catch {
@@ -185,8 +183,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         return part4 + "." + part3 + "." + part2 + "." + part1;
     }
 
-    isMultiOrBroadcastIp(v: string): boolean
-    {
+    isMultiOrBroadcastIp(v: string): boolean {
         const ip = util.parseIP(v);
         if (isNaN(ip))
             return false;
@@ -219,7 +216,6 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         const ap_broadcast =  (~ap_subnet) | ap_network;
         if (API.get("wifi/ap_config").subnet != "255.255.255.254" && (v == this.intToIP(ap_network) || v == this.intToIP(ap_broadcast)))
             return true;
-
     }
 
     render(props: {}, state: ChargeManagerConfig & ChargeManagerState) {
@@ -411,7 +407,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                         <InputText value={state.editCharger.name}
                                             onValue={(v) => this.setState({editCharger: {...state.editCharger, name: v}})}
                                             maxLength={32}
-                                            required/>
+                                            required
+                                        />
                                     </FormRow>
                                     <FormRow label={__("charge_manager.content.edit_charger_host")}>
                                         <InputText value={state.editCharger.host}
@@ -447,7 +444,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                 <InputText value={state.addCharger.name}
                                     onValue={(v) => this.setState({addCharger: {...state.addCharger, name: v}})}
                                     maxLength={32}
-                                    required/>
+                                    required
+                                />
                             </FormRow>
                             <FormRow label={__("charge_manager.content.add_charger_host")}>
                                 <InputText value={state.addCharger.host}
@@ -526,9 +524,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                 </Collapse>
 
                                 <Collapse in={!state.showExpert}>
-                                    <div>
-                                        {available_current}
-                                    </div>
+                                    <div>{available_current}</div>
                                 </Collapse>
 
                                 {minimum_current}
@@ -542,7 +538,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
     }
 }
 
-render(<ChargeManager/>, $('#charge_manager')[0]);
+render(<ChargeManager />, $("#charge_manager")[0]);
 
 interface ChargeManagerStatusState {
     state: API.getType['charge_manager/state']

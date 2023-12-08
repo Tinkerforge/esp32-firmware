@@ -22,7 +22,6 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-
 import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 
@@ -39,7 +38,6 @@ interface State {
 
 const MAX_CERTS = 8;
 const MAX_CERT_SIZE = 4027;
-
 
 export class Certs extends Component<{}, State> {
     render(props: {}, state: Readonly<State>) {

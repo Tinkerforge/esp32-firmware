@@ -76,7 +76,8 @@ function get_iec_change_edit_children(trigger: IECChangeCronTrigger, on_trigger:
                 value={trigger[1].old_charger_state.toString()}
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {old_charger_state: parseInt(v)}));
-                }} />
+                }}
+            />
         </FormRow>,
         <FormRow label={__("evse.cron.to")}>
             <InputSelect
@@ -91,7 +92,8 @@ function get_iec_change_edit_children(trigger: IECChangeCronTrigger, on_trigger:
                 value={trigger[1].new_charger_state.toString()}
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {new_charger_state: parseInt(v)}));
-                }} />
+                }}
+            />
         </FormRow>,
     ];
 }

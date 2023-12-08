@@ -121,8 +121,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     isChangedUser(changed_user: User): boolean {
         let users = API.get("users/config").users;
 
-        for (let user of users)
-        {
+        for (let user of users) {
             if (user.username == changed_user.username && user.id == changed_user.id)
                 return false;
         }
@@ -264,7 +263,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         this.setState({users: users});
     }
 
-    override async sendReset(t: "users/config"){
+    override async sendReset(t: "users/config") {
         let new_users = this.state.users.slice(0);
         new_users = [new_users[0]];
         new_users[0].display_name = "";
@@ -524,7 +523,7 @@ export function getAllUsernames() {
             }
 
             const decoder = new TextDecoder("utf-8");
-            for(let i = 0; i < 256; ++i) {
+            for (let i = 0; i < 256; ++i) {
                 let view = new DataView(buffer, i * 64, 32);
                 let username = decoder.decode(view).replace(/\0/g, "");
 

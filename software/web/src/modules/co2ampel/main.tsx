@@ -57,7 +57,7 @@ export class Co2 extends ConfigComponent<"co2/config"> {
                             digits={2}
                             min={-4000}
                             max={12000}
-                            />
+                        />
                     </FormRow>
                 </ConfigForm>
             </SubPage>
@@ -98,7 +98,8 @@ export class Co2Status extends Component<{}, Co2StatusState>
                             ["success", __("co2.status.led_green")],
                             ["warning", __("co2.status.led_yellow")],
                             ["danger", __("co2.status.led_red")],
-                        ]}/>
+                        ]}
+                    />
                 </FormRow>
 
                 <FormRow label={__("co2.status.co2")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">

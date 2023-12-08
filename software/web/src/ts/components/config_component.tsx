@@ -25,8 +25,8 @@ import * as util from "../util";
 
 // https://github.com/piotrwitek/utility-types#pickbyvaluet-valuetype
 type PickByValue<T, ValueType> = Pick<
-  T,
-  { [Key in keyof T]-?: T[Key] extends ValueType ? Key : never }[keyof T]
+    T,
+    { [Key in keyof T]-?: T[Key] extends ValueType ? Key : never }[keyof T]
 >;
 
 export interface ConfigComponentState {

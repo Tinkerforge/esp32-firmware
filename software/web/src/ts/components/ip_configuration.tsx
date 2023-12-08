@@ -180,13 +180,11 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                             ["hide", __("component.ip_configuration.dhcp")],
                             ["show", __("component.ip_configuration.static")]
                         ]}
-                        />
+                    />
                 </FormRow>
 
                 <Collapse in={!dhcp}>
-                    <div>
-                        {inner}
-                    </div>
+                    <div>{inner}</div>
                 </Collapse>
             </>
         );

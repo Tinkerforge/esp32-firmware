@@ -222,7 +222,8 @@ function get_em_block_charge_edit_children(action: EMBlockChargeCronAction, on_a
                 value={action[1].slot.toString()}
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {slot: parseInt(v)}));
-                }} />
+                }}
+            />
         </FormRow>,
         <FormRow label={__("energy_manager.cron.block_mode")}>
             <InputSelect

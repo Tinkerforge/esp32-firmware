@@ -161,8 +161,7 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
 
 render(<WireGuard />, $("#wireguard")[0]);
 
-function WireGuardStatus()
-{
+function WireGuardStatus() {
     if (!util.render_allowed() || !API.get("wireguard/config").enable)
         return <></>;
 

@@ -23,7 +23,7 @@ import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __, translate_unchecked } from "../../ts/translation";
 
-import { h, render, Fragment, Component} from "preact";
+import { h, render, Fragment, Component } from "preact";
 import { Button         } from "react-bootstrap";
 import { FormRow        } from "../../ts/components/form_row";
 import { FormSeparator  } from "../../ts/components/form_separator";
@@ -63,7 +63,8 @@ export class Debug extends Component {
                         items={[
                             ["success", __("debug.content.heap_integrity_ok")],
                             ["danger", __("debug.content.heap_integrity_fail")],
-                        ]} />
+                        ]}
+                    />
                 </FormRow>
 
                 <FormRow label={__("debug.content.heap_integrity_runtime")} label_muted={__("debug.content.heap_integrity_runtime_muted")}>

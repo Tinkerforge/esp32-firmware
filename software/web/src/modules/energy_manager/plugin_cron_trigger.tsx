@@ -82,7 +82,8 @@ function get_em_input_three_edit_children(trigger: EMInputThreeCronTrigger, on_t
                 ]}
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {state: v === '1'}));
-                }} />
+                }}
+            />
         </FormRow>,
     ];
 }

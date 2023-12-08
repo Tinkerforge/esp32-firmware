@@ -99,7 +99,8 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
                             }}
                         }
                         disabled={toBeCleared}
-                        {...props} />
+                        {...props}
+                    />
                     <div class="input-group-append">
                         { props.showAlways ? null :
                             <Button variant="primary" className={"px-1" + (props.hideClear ? " rounded-right" : "")} style="line-height: 20px;" onClick={() => this.setState({show: !state.show})} disabled={toBeCleared}>{state.show ? <EyeOff/> : <Eye/>}</Button>

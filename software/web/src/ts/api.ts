@@ -21,7 +21,7 @@ import {ConfigMap, api_cache, Modules, ConfigModified, ConfigModifiedKey} from '
 
 import * as util from "./util";
 
-export {type ConfigMap as getType, type Modules};
+export { type ConfigMap as getType, type Modules };
 
 export type EventMap = {
     [key in keyof ConfigMap]: MessageEvent<Readonly<ConfigMap[key]>>;

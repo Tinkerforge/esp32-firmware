@@ -300,7 +300,6 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
             cert_items.push([cert.id.toString(), cert.name]);
         }
 
-
         if (state.wpa_eap_config[0] == EapConfigID.TLS) {
             this.last_state = state.wpa_eap_config[1];
         }

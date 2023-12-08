@@ -78,7 +78,8 @@ function get_evse_shutdown_edit_children(trigger: EvseGpInputCronTrigger, on_tri
                 value={trigger[1].high ? "1" : "0"}
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {high: v === "1"}));
-                }} />
+                }}
+            />
         </FormRow>,
     ];
 }
@@ -107,7 +108,8 @@ function get_evse_gp_input_edit_children(trigger: EvseGpInputCronTrigger, on_tri
                 value={trigger[1].high ? "1" : "0"}
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {high: v === "1"}));
-                }} />
+                }}
+            />
         </FormRow>,
     ];
 }

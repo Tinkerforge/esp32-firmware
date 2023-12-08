@@ -27,7 +27,7 @@ import { EVSEStatus } from "./evse_status";
 
 render(<EVSE />, $('#evse')[0]);
 
-render(<EVSESettings/>, $('#evse-settings')[0]);
+render(<EVSESettings />, $("#evse-settings")[0]);
 
 render(<EVSEStatus />, $("#status-evse")[0]);
 

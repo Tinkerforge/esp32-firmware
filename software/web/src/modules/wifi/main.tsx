@@ -39,10 +39,8 @@ interface WifiStatusState {
     sta_config: API.getType["wifi/sta_config"];
 }
 
-export class WifiStatus extends Component<{}, WifiStatusState>
-{
-    constructor()
-    {
+export class WifiStatus extends Component<{}, WifiStatusState> {
+    constructor() {
         super();
 
         util.addApiEventListener('wifi/state', () => {
@@ -58,8 +56,7 @@ export class WifiStatus extends Component<{}, WifiStatusState>
         });
     }
 
-    render(props: {}, state: WifiStatusState)
-    {
+    render(props: {}, state: WifiStatusState) {
         if (!util.render_allowed())
             return <></>;
 

@@ -48,7 +48,8 @@ export function init() {
                             value={config[1].display_name}
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {display_name: v}));
-                            }}/>
+                            }}
+                        />
                     </FormRow>,
                 ];
             },

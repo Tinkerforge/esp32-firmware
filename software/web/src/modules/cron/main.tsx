@@ -92,7 +92,8 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
                             },
                         });
                     }}
-                    value={this.state.displayed_trigger.toString()} />
+                    value={this.state.displayed_trigger.toString()}
+                />
             </FormRow>,
         ];
 
@@ -103,7 +104,7 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
             triggerSelector = triggerSelector.concat(toChildArray(trigger_config));
         }
 
-        triggerSelector = triggerSelector.concat(<hr/>);
+        triggerSelector = triggerSelector.concat(<hr />);
 
         let actionSelector: ComponentChild[] = [
             <FormRow label={__("cron.content.action")}>
@@ -120,7 +121,8 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
                             }
                         });
                     }}
-                    value={this.state.displayed_action.toString()} />
+                    value={this.state.displayed_action.toString()}
+                />
             </FormRow>,
         ];
 

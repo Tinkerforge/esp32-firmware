@@ -47,7 +47,8 @@ function get_evse_gp_output_edit_children(action: EvseGpOutputCronAction, on_act
                 value={action[1].state}
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {state: parseInt(v)}));
-                }} />
+                }}
+            />
         </FormRow>,
     ];
 }

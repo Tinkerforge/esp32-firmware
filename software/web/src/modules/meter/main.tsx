@@ -487,7 +487,7 @@ function calculate_live_data(offset: number, samples_per_second: number, samples
         step = 1 / samples_per_second * 1000;
     }
 
-    for(let i = 0; i < samples.length; ++i) {
+    for (let i = 0; i < samples.length; ++i) {
         data.timestamps[i] = (start + i * step) / 1000;
     }
 
@@ -507,7 +507,7 @@ function calculate_history_data(offset: number, samples: number[]): UplotData {
     // sampling interval
     let start = Math.round((now - (samples.length - 1) * step - offset) / step) * step;
 
-    for(let i = 0; i < samples.length; ++i) {
+    for (let i = 0; i < samples.length; ++i) {
         data.timestamps[i] = (start + i * step) / 1000;
     }
 
@@ -531,7 +531,7 @@ export class Meter extends Component<{}, MeterState> {
         super();
 
         let i = 0;
-        for(let e of entries) {
+        for (let e of entries) {
             e.i = i;
             i += e.three_phase ? 3 : 1;
         }
