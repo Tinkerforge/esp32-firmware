@@ -325,6 +325,19 @@ static const ConfigMigration migrations[] = {
             migrate_charge_manager_minimum_current();
         }
     },
+    {
+        2, 2, 0,
+        // 2.2.0 changes
+        // - Add a marker file to continue using EnergyImExSum until the next factory reset or deletion of tracked charges.
+        [](){
+            if (!LittleFS.exists("/charge-records"))
+                return;
+            File f = LittleFS.open("/charge-records/use_imexsum");
+            f.write((uint8_t)'T');
+
+            // TODO: migrate meter/sdm630_reset
+        }
+    }
 #endif
 
 #if defined(BUILD_NAME_ENERGY_MANAGER)

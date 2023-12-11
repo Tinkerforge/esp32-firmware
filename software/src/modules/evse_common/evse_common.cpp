@@ -140,6 +140,10 @@ void EvseCommon::pre_setup() {
 
     require_meter_enabled_update = require_meter_enabled;
 
+    meter_config = Config::Object({
+        {"slot", Config::Uint8(0)}
+    });
+
 #if MODULE_CRON_AVAILABLE()
     cron.register_trigger(
         CronTriggerID::IECChange,
@@ -267,6 +271,17 @@ void EvseCommon::apply_defaults()
 #endif
 
 void EvseCommon::setup() {
+    api.restorePersistentConfig("evse/meter_config", &meter_config);
+    charger_meter_slot = meter_config.get("slot")->asUint();
+
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+    use_imexsum = LittleFS.exists(String(CHARGE_RECORD_FOLDER) + "/use_imexsum");
+    if (use_imexsum) {
+        logger.printfln("Continuing to use sum of imported and exported energy for charge tracker.");
+        logger.printfln("Remove tracked charges to switch to imported energy.");
+    }
+#endif
+
     setup_evse();
 
     if (!backend->initialized)
@@ -570,6 +585,8 @@ void EvseCommon::register_urls() {
         }
     }, false);
 
+    api.addPersistentConfig("evse/meter_config", &meter_config);
+
     backend->post_register_urls();
 
 #if MODULE_CRON_AVAILABLE()
@@ -634,7 +651,7 @@ void EvseCommon::set_modbus_enabled(bool enabled) {
 
 uint32_t EvseCommon::get_charger_meter()
 {
-    return 0; // TODO: Make a config option for this.
+    return charger_meter_slot;
 }
 
 MeterValueAvailability EvseCommon::get_charger_meter_power(float *power, micros_t max_age)
@@ -644,8 +661,14 @@ MeterValueAvailability EvseCommon::get_charger_meter_power(float *power, micros_
 
 MeterValueAvailability EvseCommon::get_charger_meter_energy(float *energy, micros_t max_age)
 {
-    // TODO: This function must handle the change from EnergyImExSum to EnergyImport.
-    return meters.get_energy_import(this->get_charger_meter(), energy, max_age);
+    if (!this->use_imexsum)
+        return meters.get_energy_import(this->get_charger_meter(), energy, max_age);
+
+    auto result = meters.get_energy_imexsum(this->get_charger_meter(), energy, max_age);
+    if (result == MeterValueAvailability::Unavailable)
+        return meters.get_energy_import(this->get_charger_meter(), energy, max_age);
+
+    return result;
 }
 
 void EvseCommon::set_require_meter_blocking(bool blocking) {

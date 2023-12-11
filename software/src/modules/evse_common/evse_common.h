@@ -206,4 +206,10 @@ private:
     ConfigRoot ocpp_enabled_update;
     ConfigRoot require_meter_enabled;
     ConfigRoot require_meter_enabled_update;
+
+    // Stored on ESP
+    ConfigRoot meter_config;
+    uint32_t charger_meter_slot = 0;
+
+    bool use_imexsum = false;
 };

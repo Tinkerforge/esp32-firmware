@@ -27,6 +27,8 @@
 
 #define CHARGE_TRACKER_MAX_REPAIR 200
 
+#define CHARGE_RECORD_FOLDER "/charge-records"
+
 class ChargeTracker final : public IModule
 {
 public:
