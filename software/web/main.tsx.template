@@ -63,7 +63,7 @@ function update_modules() {
             //        energy manager firmware. should be solved in a better way
         }
         else if (hash == "" || hash == '#status' || elem.length == 0 || elem.prop("hidden")) {
-            window.location.hash = "#status";
+            history.replaceState({ page: "status" }, "Status", "#status");
             show_page();
             return;
         }
@@ -121,7 +121,6 @@ function login() {
 function setup_normal() {
     window.setTimeout(show_page, 1000);
 
-    history.replaceState({ page: "status" }, "Status", "#status");
     $('#sidebar-login').prop('hidden', true);
     $('#sidebar-status').addClass('active');
     $('#status').addClass(['show', 'active']);
