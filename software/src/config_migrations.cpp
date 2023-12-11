@@ -39,6 +39,25 @@ struct ConfigMigration {
 };
 
 ATTRIBUTE_UNUSED
+static bool rename_config_file(const char *config, const char *new_name) {
+    String s = config;
+    s.replace('/', '_');
+    String filename = "/migration/" + s;
+
+    s = new_name;
+    s.replace('/', '_');
+    String target_filename = "/migration/" + s;
+
+    if (!LittleFS.exists(filename)) {
+        logger.printfln("Skipping migration of %s: File %s not found", config, filename.c_str());
+        return false;
+    }
+
+    LittleFS.rename(filename, target_filename);
+    return true;
+}
+
+ATTRIBUTE_UNUSED
 static bool read_config_file(const char *config, JsonDocument &json)
 {
     String s = config;
@@ -329,13 +348,25 @@ static const ConfigMigration migrations[] = {
         2, 2, 0,
         // 2.2.0 changes
         // - Add a marker file to continue using EnergyImExSum until the next factory reset or deletion of tracked charges.
+        // - Move meter/sdm630_reset to meters/0/sdm630_reset, track total, import and export value on reset
+        // - Move meter/last_reset to meters/0/last_reset
         [](){
-            if (!LittleFS.exists("/charge-records"))
-                return;
-            File f = LittleFS.open("/charge-records/use_imexsum");
-            f.write((uint8_t)'T');
+            if (LittleFS.exists("/charge-records")) {
+                File f = LittleFS.open("/charge-records/use_imexsum");
+                f.write((uint8_t)'T');
+            }
 
-            // TODO: migrate meter/sdm630_reset
+            DynamicJsonDocument json{1024};
+            DynamicJsonDocument json2{1024};
+            if (read_config_file("meter/sdm630_reset", json)) {
+                float energy_total = json.as<float>();
+                json2["energy_total"] = energy_total;
+                json2["energy_import"] = 0.0f;
+                json2["energy_export"] = 0.0f;
+                write_config_file("meters/0/sdm630_reset", json2);
+            }
+
+            rename_config_file("meter/last_reset", "meters/0/last_reset");
         }
     }
 #endif
