@@ -149,7 +149,6 @@ void Meters::setup()
         // Setup before calling supports_reset to allow a meter to decide in
         // setup whether to support reset. This could for example depend on the
         // meter's configuration.
-        logger.printfln("meter supports reset: %d", meter->supports_reset());
         if (meter->supports_reset()) {
             meter_slot.reset = *Config::Null();
             meter_slot.last_reset = last_reset_prototype;
