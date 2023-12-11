@@ -43,6 +43,7 @@ public:
 
     bool supports_power()         override {return true;}
     bool supports_energy_import() override {return true;}
+    bool supports_energy_imexsum()override {return true;}
     bool supports_energy_export() override {return true;}
     bool supports_currents()      override {return true;}
     bool supports_reset()         override {return true;}

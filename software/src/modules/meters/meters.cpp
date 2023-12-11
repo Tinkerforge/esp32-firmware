@@ -526,6 +526,7 @@ MeterValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, fl
         switch (kind) {
             case INDEX_CACHE_POWER:         supported = meter_slot.meter->supports_power();  break;
             case INDEX_CACHE_ENERGY_IMPORT: supported = meter_slot.meter->supports_energy_import(); break;
+            case INDEX_CACHE_ENERGY_IMEXSUM: supported = meter_slot.meter->supports_energy_imexsum(); break;
             case INDEX_CACHE_ENERGY_EXPORT: supported = meter_slot.meter->supports_energy_export(); break;
             default: supported = false;
         }
@@ -554,6 +555,12 @@ MeterValueAvailability Meters::get_energy_import(uint32_t slot, float *total_imp
 {
     return get_single_value(slot, INDEX_CACHE_ENERGY_IMPORT, total_import_kwh, max_age);
 }
+
+MeterValueAvailability Meters::get_energy_imexsum(uint32_t slot, float *total_imexsum_kwh, micros_t max_age)
+{
+    return get_single_value(slot, INDEX_CACHE_ENERGY_IMEXSUM, total_imexsum_kwh, max_age);
+}
+
 
 MeterValueAvailability Meters::get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age)
 {
@@ -741,13 +748,14 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         values.add();
     }
 
-    meter_slot.index_cache_single_values[INDEX_CACHE_POWER]         = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiff);
-    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_IMPORT] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumImport);
-    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_EXPORT] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumExport);
-    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_N  ]        = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentNImport);
-    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L1 ]        = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL1Import);
-    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L2 ]        = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL2Import);
-    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L3 ]        = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL3Import);
+    meter_slot.index_cache_single_values[INDEX_CACHE_POWER]          = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiff);
+    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_IMPORT]  = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumImport);
+    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_IMEXSUM] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumImExSum);
+    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_EXPORT]  = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumExport);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_N  ]         = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentNImport);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L1 ]         = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL1Import);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L2 ]         = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL2Import);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L3 ]         = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL3Import);
 
     meter_slot.values_declared = true;
     logger.printfln("meters: Meter in slot %u declared %u values.", slot, value_id_count);

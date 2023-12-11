@@ -35,6 +35,7 @@ public:
 
     virtual bool supports_power()         {return false;}
     virtual bool supports_energy_import() {return false;}
+    virtual bool supports_energy_imexsum(){return false;}
     virtual bool supports_energy_export() {return false;}
     virtual bool supports_currents()      {return false;}
     //virtual bool supports_phases() {return false;}
