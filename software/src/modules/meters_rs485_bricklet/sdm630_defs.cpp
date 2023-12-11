@@ -14,9 +14,8 @@ static const RegRead sdm630_slow[] {
 };
 
 static const RegRead sdm630_fast[]{
-    {1, 12}, // current per phase
+    {7, 6}, // current per phase
     {53, 2}, // power
-    {343, 2} // energy_abs
 };
 
 static const uint16_t sdm630_registers_to_read[] = {
@@ -25,38 +24,21 @@ static const uint16_t sdm630_registers_to_read[] = {
 
 enum FastValues {
     Power,
-    EnergyAbs,
-    VoltagePhase0,
-    VoltagePhase1,
-    VoltagePhase2,
     CurrentPhase0,
     CurrentPhase1,
     CurrentPhase2,
 };
 
 static const uint16_t sdm630_registers_fast_to_read[] = {
-	53, 343, 1, 3, 5, 7, 9, 11 // power, energy_abs, voltage per phase, current per phase
+	53, 7, 9, 11 // power, current per phase
 };
 
 static void sdm630_fast_read_done(const uint16_t *all_regs, uint32_t meter_slot, uint32_t idx_power, uint32_t idx_energy_rel, uint32_t idx_energy_abs, uint32_t idx_current_l1, uint32_t idx_voltage_l1)
 {
-    static bool first_run = true;
-    if (first_run) {
-        first_run = false;
-        sdm630_reset = Config::Float(0);
-        api.restorePersistentConfig(meters.get_path(meter_slot, Meters::PathType::Base) + "sdm630_reset", &sdm630_reset);
-    }
-
-    float fast_values[8];
+    float fast_values[7];
     convert_to_float(all_regs, fast_values, sdm630_registers_fast_to_read, sizeof(sdm630_registers_fast_to_read) / sizeof(sdm630_registers_fast_to_read[0]));
 
     meters.update_value(meter_slot, idx_power,          fast_values[Power]);
-    meters.update_value(meter_slot, idx_energy_abs,     fast_values[EnergyAbs]);
-    // TODO
-    //meters.update_value(meter_slot, idx_energy_rel,     fast_values[EnergyAbs] - sdm630_reset.asFloat());
-    meters.update_value(meter_slot, idx_voltage_l1,     fast_values[VoltagePhase0]);
-    meters.update_value(meter_slot, idx_voltage_l1 + 1, fast_values[VoltagePhase1]);
-    meters.update_value(meter_slot, idx_voltage_l1 + 2, fast_values[VoltagePhase2]);
     meters.update_value(meter_slot, idx_current_l1,     fast_values[CurrentPhase0]);
     meters.update_value(meter_slot, idx_current_l1 + 1, fast_values[CurrentPhase1]);
     meters.update_value(meter_slot, idx_current_l1 + 2, fast_values[CurrentPhase2]);

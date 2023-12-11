@@ -117,13 +117,18 @@ const MeterValueID sdm_helper_all_ids[METER_ALL_VALUES_RESETTABLE_COUNT] = {
     MeterValueID::EnergyActiveLSumExportResettable,
 };
 
-const MeterValueID sdm_helper_72v1_ids[3] = {
+const MeterValueID sdm_helper_72v1_ids[7] = {
     MeterValueID::PowerActiveLSumImExDiff,
-    MeterValueID::EnergyActiveLSumImExSumResettable,
+    MeterValueID::EnergyActiveLSumImport,
+    MeterValueID::EnergyActiveLSumExport,
     MeterValueID::EnergyActiveLSumImExSum,
+    MeterValueID::EnergyActiveLSumImExSumResettable,
+    MeterValueID::EnergyActiveLSumImportResettable,
+    MeterValueID::EnergyActiveLSumExportResettable
 };
 
 const uint32_t sdm_helper_72v2_all_value_indices[38] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,21,22,23,24,25,26,27,29,30,31,42,43,44,45,46,65,66,85,86,87};
+//const uint32_t sdm_helper_72_all_value_indices[7] = {24,30,31,65,85,86,87};
 
 static void copy_value_ids(MeterValueID *dst, const MeterValueID *src, size_t *dst_len, size_t src_len)
 {
