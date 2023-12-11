@@ -30,6 +30,12 @@
 
 #include "gcc_warnings.h"
 
+static const MeterValueID legacy_values_ids[3] = {
+    MeterValueID::PowerActiveLSumImExDiff,
+    MeterValueID::EnergyActiveLSumImExSumResettable,
+    MeterValueID::EnergyActiveLSumImExSum,
+};
+
 static const char *values_names[] = {
     "power",
     "energy_rel",
@@ -274,8 +280,8 @@ static void fill_index_array(uint16_t *indices, const MeterValueID *needles, uin
 
 static bool is_values_value(MeterValueID value_id)
 {
-    for (uint32_t i = 0; i < ARRAY_SIZE(sdm_helper_72v1_ids); i++) {
-        if (value_id == sdm_helper_72v1_ids[i])
+    for (uint32_t i = 0; i < ARRAY_SIZE(legacy_values_ids); i++) {
+        if (value_id == legacy_values_ids[i])
             return true;
     }
     return false;
@@ -301,7 +307,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         meter_value_ids[i] = static_cast<MeterValueID>(value_ids->get(i)->asUint());
     }
 
-    fill_index_array(value_indices_legacy_values_to_linked_meter, sdm_helper_72v1_ids, METER_VALUES_LEGACY_COUNT, meter_value_ids, linked_meter_value_count);
+    fill_index_array(value_indices_legacy_values_to_linked_meter, legacy_values_ids, METER_VALUES_LEGACY_COUNT, meter_value_ids, linked_meter_value_count);
     fill_index_array(value_indices_legacy_all_values_to_linked_meter, sdm_helper_all_ids, METER_ALL_VALUES_LEGACY_COUNT, meter_value_ids, linked_meter_value_count);
 
 
