@@ -121,6 +121,7 @@ function login() {
 function setup_normal() {
     window.setTimeout(show_page, 1000);
 
+    history.replaceState({ page: "status" }, "Status", "#status");
     $('#sidebar-login').prop('hidden', true);
     $('#sidebar-status').addClass('active');
     $('#status').addClass(['show', 'active']);
