@@ -18,5 +18,5 @@
             "jquery": ["./node_modules/jquery/dist/jquery.slim.min"]
         }
     },
-    "include": ["src/typings/*.ts", "src/main.ts"]
+    "include": ["src/typings/*.ts", "src/main.tsx"]
 }

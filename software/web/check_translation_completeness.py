@@ -61,7 +61,7 @@ def check_mismatch(translation_values, key, p):
     return mismatches
 
 def main():
-    ts_files = [os.path.join("src", "main.ts")]
+    ts_files = [os.path.join("src", "main.tsx")]
 
     ts_files += get_all_ts_files("./src/ts")
     ts_files += get_all_ts_files("./src/typings")

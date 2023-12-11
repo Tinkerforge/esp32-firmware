@@ -28,7 +28,7 @@ for frontend_module in sys.argv[1:]:
     if os.path.exists(os.path.join(folder, "translation_en.ts")):
         ts_files.append(os.path.join(folder, "translation_en.ts"))
 
-ts_files.append(os.path.join("src", "main.ts"))
+ts_files.append(os.path.join("src", "main.tsx"))
 
 js_ids = set()
 for file in ts_files:

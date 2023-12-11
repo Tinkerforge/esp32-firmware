@@ -815,7 +815,7 @@ def main():
         '{{{theme_color}}}': color
     })
 
-    util.specialize_template(os.path.join("web", "main.ts.template"), os.path.join("web", "src", "main.ts"), {
+    util.specialize_template(os.path.join("web", "main.tsx.template"), os.path.join("web", "src", "main.tsx"), {
         '{{{module_imports}}}': '\n'.join(['import * as {0} from "./modules/{0}/main";'.format(x) for x in main_ts_entries]),
         '{{{modules}}}': ', '.join([x for x in main_ts_entries]),
         '{{{preact_debug}}}': 'import "preact/debug";' if frontend_debug else ''
