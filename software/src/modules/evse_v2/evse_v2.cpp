@@ -1006,9 +1006,10 @@ uint16_t EVSEV2::get_all_energy_meter_values(float *ret_values)
     return len;
 }
 
-void EVSEV2::reset_energy_meter_relative_energy()
+bool EVSEV2::reset_energy_meter_relative_energy()
 {
     tf_evse_v2_reset_energy_meter_relative_energy(&device);
+    return true;
 }
 
 uint8_t EVSEV2::get_energy_meter_type()

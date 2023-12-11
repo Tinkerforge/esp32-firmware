@@ -83,7 +83,7 @@ public:
     // End IEvseBackend implementation
 
     uint16_t get_all_energy_meter_values(float *ret_values);
-    void reset_energy_meter_relative_energy();
+    bool reset_energy_meter_relative_energy();
     uint8_t get_energy_meter_type();
 
     struct meter_data {
