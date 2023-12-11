@@ -22,6 +22,7 @@ import { useContext, useRef } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
+import { __ } from "../translation";
 
 import * as util from "../util";
 
@@ -30,62 +31,86 @@ interface InputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElem
     value: number
     onValue?: (value: number) => void
     unit?: string
+    invalidFeedback?: string
 }
 
 export function InputNumber(props: InputNumberProps) {
     const id = !props.idContext ? util.useId() : useContext(props.idContext);
 
     const input = useRef<HTMLInputElement>();
+    let value: number;
+    try {
+        value = parseInt(props.value.toString(), 10);
+    } catch {
+        value = NaN;
+    }
+    const invalid = isNaN(value) || (props.min !== undefined && value < parseInt(props.min.toString())) || (props.max !== undefined && value > parseInt(props.max.toString()));
 
-    return (
-        <div class="input-group">
-            <input class="form-control no-spin"
-                       ref={input}
-                       id={id}
-                       type="number"
-                       disabled={props.onValue === undefined}
-                       onInput={props.onValue === undefined ? undefined : (e) => {
-                            // Chrome prints a console warning if NaN is assigned as an input's value; null works.
-                            let value = parseInt((e.target as HTMLInputElement).value, 10);
-                            if (isNaN(value))
-                                value = null;
-                            props.onValue(value);
-                        }}
-                       inputMode="numeric"
-                       {...props}/>
-            {props.unit || props.onValue ? <div class="input-group-append">
-                {props.unit ? <div class="form-control input-group-text">{this.props.unit}</div> : undefined}
-                {props.onValue ? <>
-                <Button variant="primary"
-                        className="form-control px-1"
-                        style="margin-right: .125rem !important;"
-                        onClick={() => {
-                            if (util.hasValue(props.value) && !isNaN(props.value)) {
-                                props.onValue(util.clamp(props.min as number, props.value - 1, props.max as number));
-                            }
-                            else {
-                                props.onValue(props.min as number);
-                            }
 
-                            input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-                        }}>
-                    <Minus/>
-                </Button>
-                <Button variant="primary"
-                        className="form-control px-1 rounded-right"
-                        onClick={() => {
-                            if (util.hasValue(props.value) && !isNaN(props.value)) {
-                                props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number));
-                            }
-                            else {
-                                props.onValue(props.max as number);
-                            }
+    let invalidFeedback = undefined;
+    if ("invalidFeedback" in props && props.invalidFeedback) {
+        invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
+    } else if (invalid) {
+        if ("required" in props && props.value === null) {
+            invalidFeedback = <div class="invalid-feedback">{__("component.input_number.required")}</div>;
+        } else if ("min" in props && !("max" in props)) {
+            invalidFeedback = <div class="invalid-feedback">{__("component.input_number.min_only")(props.min.toString(), props.unit ? props.unit : "")}</div>;
+        } else if (!("min" in props) && "max" in props) {
+            invalidFeedback = <div class="invalid-feedback">{__("component.input_number.max_only")(props.max.toString(), props.unit ? props.unit : "")}</div>;
+        } else if ("min" in props && "max" in props) {
+            invalidFeedback = <div class="invalid-feedback">{__("component.input_number.min_max")(props.min.toString(), props.max.toString(), props.unit ? props.unit : "")}</div>;
+        }
+    }
 
-                            input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-                        }}>
-                    <Plus/>
-                </Button> </> : null}
-            </div> : null }
-        </div>
-    );
+    return <div class="input-group has-validation">
+        <input class="form-control no-spin"
+                ref={input}
+                id={id}
+                type="number"
+                disabled={props.onValue === undefined}
+                onInput={props.onValue === undefined ? undefined : (e) => {
+                        // Chrome prints a console warning if NaN is assigned as an input's value; null works.
+                        let value = parseInt((e.target as HTMLInputElement).value, 10);
+                        if (isNaN(value))
+                            value = null;
+                        props.onValue(value);
+                    }}
+                inputMode="numeric"
+                {...props}/>
+        {props.unit || props.onValue ? <div class="input-group-append">
+            {props.unit ? <div class="form-control input-group-text">{this.props.unit}</div> : undefined}
+            {props.onValue ? <>
+            <Button variant="primary"
+                    className="form-control px-1"
+                    style="margin-right: .125rem !important;"
+                    onClick={() => {
+                        if (util.hasValue(props.value) && !isNaN(props.value)) {
+                            props.onValue(util.clamp(props.min as number, props.value - 1, props.max as number));
+                        }
+                        else {
+                            props.onValue(props.min as number);
+                        }
+
+                        input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
+                    }}>
+                <Minus/>
+            </Button>
+            <Button variant="primary"
+                    className="form-control px-1 rounded-right"
+                    onClick={() => {
+                        if (util.hasValue(props.value) && !isNaN(props.value)) {
+                            props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number));
+                        }
+                        else {
+                            props.onValue(props.max as number);
+                        }
+
+                        input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
+                    }}>
+                <Plus/>
+            </Button> </> : null}
+        </div> : null }
+        {invalidFeedback}
+    </div>;
+
 }

@@ -64,6 +64,12 @@ let x = {
             "min_max": /*SFN*/ (min: string, max: string) => `Mindestens ${min}, aber maximal ${max} Zeichen erforderlich`/*NF*/,
             "required": "Feld darf nicht leer sein"
         },
+        "input_number": {
+            "min_only": /*SFN*/ (min: string, unit: string) => `Mindestens ${min} ${unit} erforderlich`/*NF*/,
+            "max_only": /*SFN*/ (max: string, unit: string) => `Maximal ${max} ${unit} erlaubt`/*NF*/,
+            "min_max": /*SFN*/ (min: string, max: string, unit: string) => `Mindestens ${min}, aber maximal ${max} ${unit} erforderlich`/*NF*/,
+            "required": "Feld darf nicht leer sein"
+        },
         "input_file": {
             "uploading": "wird hochgeladen..."
         },
