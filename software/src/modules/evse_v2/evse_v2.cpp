@@ -112,26 +112,6 @@ void EVSEV2::pre_setup()
         {"dc_fault_sensor_type", Config::Uint8(0)}
     });
 
-    energy_meter_values = Config::Object({
-        {"power", Config::Float(0)},
-        {"energy_rel", Config::Float(0)},
-        {"energy_abs", Config::Float(0)},
-        {"phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            new Config{Config::Bool(false)},
-            3, 3, Config::type_id<Config::ConfBool>())},
-        {"phases_connected", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            new Config{Config::Bool(false)},
-            3, 3, Config::type_id<Config::ConfBool>())}
-    });
-
-    energy_meter_errors = Config::Object({
-        {"local_timeout", Config::Uint32(0)},
-        {"global_timeout", Config::Uint32(0)},
-        {"illegal_function", Config::Uint32(0)},
-        {"illegal_data_access", Config::Uint32(0)},
-        {"illegal_data_value", Config::Uint32(0)},
-        {"slave_device_failure", Config::Uint32(0)},
-    });
 
     // Actions
 
@@ -949,29 +929,6 @@ void EVSEV2::update_all_data()
 
     evse_common.auto_start_charging.get("auto_start_charging")->updateBool(
         !evse_common.slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("clear_on_disconnect")->asBool());
-
-
-    // TODO: Remove meter values and errors? Also remove meter type?
-    if (meter_data.meter_type != 0) {
-        // get_energy_meter_values
-        energy_meter_values.get("power")->updateFloat(meter_data.power);
-        energy_meter_values.get("energy_rel")->updateFloat(meter_data.energy_relative);
-        energy_meter_values.get("energy_abs")->updateFloat(meter_data.energy_absolute);
-
-        for (int i = 0; i < 3; ++i)
-            energy_meter_values.get("phases_active")->get(i)->updateBool(meter_data.phases_active[i]);
-
-        for (int i = 0; i < 3; ++i)
-            energy_meter_values.get("phases_connected")->get(i)->updateBool(meter_data.phases_connected[i]);
-    }
-
-    // get_energy_meter_errors
-    energy_meter_errors.get("local_timeout")->updateUint(meter_data.error_count[0]);
-    energy_meter_errors.get("global_timeout")->updateUint(meter_data.error_count[1]);
-    energy_meter_errors.get("illegal_function")->updateUint(meter_data.error_count[2]);
-    energy_meter_errors.get("illegal_data_access")->updateUint(meter_data.error_count[3]);
-    energy_meter_errors.get("illegal_data_value")->updateUint(meter_data.error_count[4]);
-    energy_meter_errors.get("slave_device_failure")->updateUint(meter_data.error_count[5]);
 
     // get_gpio_configuration
     gpio_configuration.get("shutdown_input")->updateUint(shutdown_input_configuration);

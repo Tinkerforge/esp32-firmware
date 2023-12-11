@@ -96,8 +96,6 @@ public:
         uint32_t error_count[6];
     };
 
-    ConfigRoot energy_meter_values;
-    ConfigRoot energy_meter_errors;
 private:
     ConfigRoot reset_dc_fault_current_state;
     ConfigRoot gpio_configuration;
