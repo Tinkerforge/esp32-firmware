@@ -72,6 +72,7 @@ private:
     ConfigRoot config_prototype;
     ConfigRoot state_prototype;
     ConfigRoot errors_prototype;
+    ConfigRoot sdm630_reset_prototype;
 
     MeterRS485Bricklet *meter_instance = nullptr;
 };

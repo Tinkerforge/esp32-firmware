@@ -40,6 +40,12 @@ void MetersRS485Bricklet::pre_setup()
         {"bricklet_reset", Config::Uint32(0)},
     });
 
+    sdm630_reset_prototype = Config::Object({
+        {"energy_total", Config::Float(0)},
+        {"energy_import", Config::Float(0)},
+        {"energy_export", Config::Float(0)}
+    });
+
     meters.register_meter_generator(get_class(), this);
 }
 
@@ -140,7 +146,8 @@ IMeter * MetersRS485Bricklet::new_meter(uint32_t slot, Config *state, Config * e
         logger.printfln("meters_rs485_bricklet: Cannot create more than one meter of class ModbusRTU.");
         return nullptr;
     }
-    meter_instance = new MeterRS485Bricklet(slot, &device, state, errors);
+    // FIXME: sdm630_reset_prototype should be copied?
+    meter_instance = new MeterRS485Bricklet(slot, &device, state, errors, &sdm630_reset_prototype);
     return meter_instance;
 }
 

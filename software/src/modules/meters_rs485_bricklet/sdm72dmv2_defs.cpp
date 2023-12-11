@@ -39,7 +39,7 @@ static void sdm72dmv2_fast_read_done(const uint16_t *all_regs, uint32_t meter_sl
     meters.update_value(meter_slot, idx_current_l1 + 2, fast_values[CurrentPhase2]);
 }
 
-static void sdm72dmv2_slow_read_done(const uint16_t *all_regs, uint32_t meter_slot)
+static void sdm72dmv2_slow_read_done(const uint16_t *all_regs, uint32_t meter_slot, ConfigRoot *reset)
 {
     float all_values[ARRAY_SIZE(sdm72dmv2_registers_to_read)];
     convert_to_float(all_regs, all_values, sdm72dmv2_registers_to_read, ARRAY_SIZE(sdm72dmv2_registers_to_read));

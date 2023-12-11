@@ -21,7 +21,7 @@ static void sdm72dm_fast_read_done(const uint16_t *all_regs, uint32_t meter_slot
     meters.update_all_values(meter_slot, fast_values);
 }
 
-static void sdm72dm_slow_read_done(const uint16_t *all_regs, uint32_t meter_slot)
+static void sdm72dm_slow_read_done(const uint16_t *all_regs, uint32_t meter_slot, ConfigRoot *reset)
 {
 
 }

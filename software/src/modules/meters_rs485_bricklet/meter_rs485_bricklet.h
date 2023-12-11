@@ -40,7 +40,7 @@
 class MeterRS485Bricklet final : public IMeter
 {
 public:
-    MeterRS485Bricklet(uint32_t slot_, TF_RS485* rs485_, Config *state_, Config *errors_) : slot(slot_), rs485(rs485_), state(state_), errors(errors_) {}
+    MeterRS485Bricklet(uint32_t slot_, TF_RS485* rs485_, Config *state_, Config *errors_, ConfigRoot *sdm630_reset_) : slot(slot_), rs485(rs485_), state(state_), errors(errors_), sdm630_reset(sdm630_reset_) {}
 
     // IMeter
     MeterClassID get_class() const override;
@@ -80,6 +80,7 @@ private:
     uint8_t type_override;
 public:
     Config *errors;
+    ConfigRoot *sdm630_reset;
     MeterInfo *meter_in_use = nullptr;
 private:
     void cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length);

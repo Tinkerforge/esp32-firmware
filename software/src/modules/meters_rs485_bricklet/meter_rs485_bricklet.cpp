@@ -291,7 +291,7 @@ void MeterRS485Bricklet::tick() {
         reset_requested = false;
 
         if (this->meter_in_use->custom_reset_fn != nullptr) {
-            this->meter_in_use->custom_reset_fn(slot);
+            this->meter_in_use->custom_reset_fn(slot, sdm630_reset);
         } else {
             callback_data.done = UserDataDone::NOT_DONE;
             callback_data.value_to_write = nullptr;
@@ -328,7 +328,7 @@ void MeterRS485Bricklet::tick() {
     }
 
     if (trigger_slow_read_done) {
-        this->meter_in_use->slow_read_done_fn(registers, slot);
+        this->meter_in_use->slow_read_done_fn(registers, slot, sdm630_reset);
     }
 
     if (last_callback_data_done == UserDataDone::DONE) {
