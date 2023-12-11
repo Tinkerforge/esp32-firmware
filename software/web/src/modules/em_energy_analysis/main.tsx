@@ -473,7 +473,14 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             return;
         }
 
-        this.uplot.setSize(size);
+        if (this.uplot) {
+            this.uplot.setSize(size);
+        }
+        else {
+            window.setTimeout(() => {
+                this.resize();
+            }, 100);
+        }
     }
 
     get_size() {
@@ -880,7 +887,14 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             return;
         }
 
-        this.uplot.setSize(size);
+        if (this.uplot) {
+            this.uplot.setSize(size);
+        }
+        else {
+            window.setTimeout(() => {
+                this.resize();
+            }, 100);
+        }
     }
 
     get_size() {

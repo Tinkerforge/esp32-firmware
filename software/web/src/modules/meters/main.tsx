@@ -162,22 +162,8 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             this.visible = false;
         });
 
-        let get_size = () => {
-            let div = this.div_ref.current;
-            let aspect_ratio = parseFloat(getComputedStyle(div).aspectRatio);
-
-            if (isNaN(aspect_ratio)) {
-                aspect_ratio = this.props.aspect_ratio;
-            }
-
-            return {
-                width: div.clientWidth,
-                height: Math.floor((div.clientWidth + (window.innerWidth - document.documentElement.clientWidth)) / aspect_ratio),
-            };
-        };
-
         let options = {
-            ...get_size(),
+            ...this.get_size(),
             pxAlign: 0,
             cursor: {
                 drag: {
@@ -345,29 +331,19 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         let div = this.div_ref.current;
         this.uplot = new uPlot(options, [], div);
 
-        let resize = () => {
-            let size = get_size();
-
-            if (size.width == 0 || size.height == 0) {
-                return;
-            }
-
-            this.uplot.setSize(size);
-        };
-
         try {
             this.observer = new ResizeObserver(() => {
-                resize();
+                this.resize();
             });
 
             this.observer.observe(div);
         } catch (e) {
             setInterval(() => {
-                resize();
+                this.resize();
             }, 500);
 
             window.addEventListener("resize", e => {
-                resize();
+                this.resize();
             });
         }
 
@@ -379,6 +355,37 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
     render(props?: UplotWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
         // the plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow
         return <div><div ref={this.div_ref} id={props.id} class={props.class} style={`display: ${props.show ? 'block' : 'none'};`} /></div>;
+    }
+
+    resize() {
+        let size = this.get_size();
+
+        if (size.width == 0 || size.height == 0) {
+            return;
+        }
+
+        if (this.uplot) {
+            this.uplot.setSize(size);
+        }
+        else {
+            window.setTimeout(() => {
+                this.resize();
+            }, 100);
+        }
+    }
+
+    get_size() {
+        let div = this.div_ref.current;
+        let aspect_ratio = parseFloat(getComputedStyle(div).aspectRatio);
+
+        if (isNaN(aspect_ratio)) {
+            aspect_ratio = this.props.aspect_ratio;
+        }
+
+        return {
+            width: div.clientWidth,
+            height: Math.floor((div.clientWidth + (window.innerWidth - document.documentElement.clientWidth)) / aspect_ratio),
+        }
     }
 
     set_show(show: boolean) {
