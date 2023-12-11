@@ -101,8 +101,6 @@ void MetersLegacyAPI::setup()
     });
     // END from old meter.cpp pre_setup()
 
-    api.restorePersistentConfig("meter/last_reset", &legacy_last_reset);
-
     // BEGIN from old api_meter.cpp pre_setup()
     legacy_state_update = Config::Object({
         {"state", Config::Uint8(0)}, // 0 - no energy meter, 1 - initialization error, 2 - meter available
@@ -146,7 +144,7 @@ void MetersLegacyAPI::register_urls()
     api.addState("meter/values", &legacy_values, {}, 1000);
     api.addState("meter/phases", &legacy_phases, {}, 1000);
     api.addState("meter/all_values", &legacy_all_values, {}, 1000);
-    // meter/last_reset registered in on_value_ids_change handler
+    api.addState("meter/last_reset", &legacy_last_reset, {}, 1000);
     // meter/error_counters registered in meters module
 
     api.addCommand("meter/reset", Config::Null(), {}, [this](){
@@ -448,8 +446,6 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     String last_reset_path = meters.get_path(linked_meter_slot, Meters::PathType::LastReset);
     const Config *last_reset_config = api.getState(last_reset_path, false);
     if (last_reset_config) {
-        api.addState("meter/last_reset", &legacy_last_reset, {}, 1000);
-
         on_last_reset_change(last_reset_config);
 
         event.registerEvent(last_reset_path, {}, [this](Config *event_last_reset) {
