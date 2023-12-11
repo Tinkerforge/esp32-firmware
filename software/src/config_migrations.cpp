@@ -575,21 +575,24 @@ static const ConfigMigration migrations[] = {
                 write_config_file("energy_manager/config", json);
             }
 
-            // const char *old_config_path = "energy_manager/meter_config";
-            // DynamicJsonDocument json{128};
+            // Migrate meter config to new meters framework.
+            {
+                const char *old_config_path = "energy_manager/meter_config";
+                DynamicJsonDocument old_json{128};
 
-            // if (read_config_file(old_config_path, json)) {
-            //     if (json.containsKey("meter_source")) {
-            //         uint32_t meter_source = json["meter_source"].as<uint32_t>();
-            //         if (meter_source == 100) {
-            //             File file = LittleFS.open("/migration/meters_0_config", "w");
-            //             const char *new_config_str = "[4,{\"display_name\":\"API-Stromzähler\",\"value_ids\":[0,1,2,15,27,39,91,103,115,203,206,209,152,164,176,411,412,413,423,424,425,6,63,75,139,215,200,414,426,422,255,258,303,306,405,453,140,141,216,217,52,53,3,4,5,7,51,427,428,429,435,436,437,433,438,16,28,40,17,29,41,430,431,432,434,261,309,219,231,243,222,234,246,225,237,249,267,279,291,270,282,294,273,285,297]}]";
-            //             file.write(reinterpret_cast<const uint8_t *>(new_config_str), strlen(new_config_str));
-            //             file.close();
-            //         }
-            //     }
-            //     delete_config_file(old_config_path);
-            // }
+                if (read_config_file(old_config_path, old_json)) {
+                    if (old_json.containsKey("meter_source")) {
+                        uint32_t meter_source = old_json["meter_source"].as<uint32_t>();
+                        if (meter_source == 100) {
+                            const char *new_config_str = "[4,{\"display_name\":\"API-Stromzähler\",\"value_ids\":[0,1,2,15,27,39,91,103,115,203,206,209,152,164,176,411,412,413,423,424,425,6,63,75,139,215,200,414,426,422,255,258,303,306,405,453,140,141,216,217,52,53,3,4,5,7,51,427,428,429,435,436,437,433,438,16,28,40,17,29,41,430,431,432,434,261,309,219,231,243,222,234,246,225,237,249,267,279,291,270,282,294,273,285,297,256,259,262]}]";
+                            File file = LittleFS.open("/migration/meters_0_config", "w");
+                            file.write(reinterpret_cast<const uint8_t *>(new_config_str), strlen(new_config_str));
+                            file.close();
+                        }
+                    }
+                    delete_config_file(old_config_path);
+                }
+            }
         }
     }
 #endif
