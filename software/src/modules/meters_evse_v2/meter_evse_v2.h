@@ -59,8 +59,7 @@ private:
 
     uint32_t meter_type = METER_TYPE_NONE;
     uint32_t value_index_power      = UINT32_MAX;
-    uint32_t value_index_energy_rel = UINT32_MAX;
-    uint32_t value_index_energy_abs = UINT32_MAX;
+    uint32_t value_index_currents[3]= {UINT32_MAX, UINT32_MAX, UINT32_MAX};
 
     bool meter_change_warning_printed = false;
 };

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-11-09.      *
+ * This file was automatically generated on 2023-12-11.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -1031,7 +1031,7 @@ int tf_evse_v2_get_charging_slot_default(TF_EVSEV2 *evse_v2, uint8_t slot, uint1
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_evse_v2_get_energy_meter_values(TF_EVSEV2 *evse_v2, float *ret_power, float *ret_energy_relative, float *ret_energy_absolute, bool ret_phases_active[3], bool ret_phases_connected[3]) {
+int tf_evse_v2_get_energy_meter_values(TF_EVSEV2 *evse_v2, float *ret_power, float ret_current[3], bool ret_phases_active[3], bool ret_phases_connected[3]) {
     if (evse_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1049,6 +1049,7 @@ int tf_evse_v2_get_energy_meter_values(TF_EVSEV2 *evse_v2, float *ret_power, flo
     bool _response_expected = true;
     tf_tfp_prepare_send(evse_v2->tfp, TF_EVSE_V2_FUNCTION_GET_ENERGY_METER_VALUES, 0, _response_expected);
 
+    size_t _i;
     uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
     uint8_t _error_code = 0;
@@ -1062,12 +1063,11 @@ int tf_evse_v2_get_energy_meter_values(TF_EVSEV2 *evse_v2, float *ret_power, flo
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(evse_v2->tfp);
-        if (_error_code != 0 || _length != 14) {
+        if (_error_code != 0 || _length != 18) {
             tf_packet_buffer_remove(_recv_buf, _length);
         } else {
             if (ret_power != NULL) { *ret_power = tf_packet_buffer_read_float(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
-            if (ret_energy_relative != NULL) { *ret_energy_relative = tf_packet_buffer_read_float(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
-            if (ret_energy_absolute != NULL) { *ret_energy_absolute = tf_packet_buffer_read_float(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_current != NULL) { for (_i = 0; _i < 3; ++_i) ret_current[_i] = tf_packet_buffer_read_float(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 12); }
             if (ret_phases_active != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_phases_active, 3);} else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_phases_connected != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_phases_connected, 3);} else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
@@ -1083,7 +1083,7 @@ int tf_evse_v2_get_energy_meter_values(TF_EVSEV2 *evse_v2, float *ret_power, flo
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
-    if (_error_code == 0 && _length != 14) {
+    if (_error_code == 0 && _length != 18) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
@@ -2118,7 +2118,7 @@ int tf_evse_v2_get_control_pilot_disconnect(TF_EVSEV2 *evse_v2, bool *ret_contro
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint8_t *ret_dc_fault_current_state, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, uint8_t *ret_evse_version, uint8_t *ret_energy_meter_type, float *ret_power, float *ret_energy_relative, float *ret_energy_absolute, bool ret_phases_active[3], bool ret_phases_connected[3], uint32_t ret_error_count[6]) {
+int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint8_t *ret_dc_fault_current_state, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, uint8_t *ret_evse_version, uint8_t *ret_energy_meter_type, float *ret_power, float ret_current[3], bool ret_phases_active[3], bool ret_phases_connected[3], uint32_t ret_error_count[6]) {
     if (evse_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -2150,7 +2150,7 @@ int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, u
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(evse_v2->tfp);
-        if (_error_code != 0 || _length != 51) {
+        if (_error_code != 0 || _length != 55) {
             tf_packet_buffer_remove(_recv_buf, _length);
         } else {
             if (ret_iec61851_state != NULL) { *ret_iec61851_state = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
@@ -2166,8 +2166,7 @@ int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, u
             if (ret_evse_version != NULL) { *ret_evse_version = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_energy_meter_type != NULL) { *ret_energy_meter_type = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_power != NULL) { *ret_power = tf_packet_buffer_read_float(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
-            if (ret_energy_relative != NULL) { *ret_energy_relative = tf_packet_buffer_read_float(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
-            if (ret_energy_absolute != NULL) { *ret_energy_absolute = tf_packet_buffer_read_float(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_current != NULL) { for (_i = 0; _i < 3; ++_i) ret_current[_i] = tf_packet_buffer_read_float(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 12); }
             if (ret_phases_active != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_phases_active, 3);} else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_phases_connected != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_phases_connected, 3);} else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_error_count != NULL) { for (_i = 0; _i < 6; ++_i) ret_error_count[_i] = tf_packet_buffer_read_uint32_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 24); }
@@ -2184,7 +2183,7 @@ int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, u
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
-    if (_error_code == 0 && _length != 51) {
+    if (_error_code == 0 && _length != 55) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
@@ -3528,7 +3527,7 @@ int tf_evse_v2_get_identity(TF_EVSEV2 *evse_v2, char ret_uid[8], char ret_connec
 
 static int tf_evse_v2_get_all_energy_meter_values_ll_wrapper(void *device, void *wrapper_data, uint32_t *ret_stream_length, uint32_t *ret_chunk_offset, void *chunk_data) {
     (void)wrapper_data;
-    uint16_t values_length = 85;
+    uint16_t values_length = 88;
     uint16_t values_chunk_offset = 0;
     float *values_chunk_data = (float *) chunk_data;
     int ret = tf_evse_v2_get_all_energy_meter_values_low_level((TF_EVSEV2 *)device, &values_chunk_offset, values_chunk_data);

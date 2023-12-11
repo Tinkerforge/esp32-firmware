@@ -91,8 +91,7 @@ public:
         bool phases_connected[3];
         uint8_t meter_type;
         float power;
-        float energy_relative;
-        float energy_absolute;
+        float currents[3];
         uint32_t error_count[6];
     };
 

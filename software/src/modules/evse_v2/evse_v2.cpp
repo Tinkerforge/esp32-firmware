@@ -381,8 +381,9 @@ String EVSEV2::get_evse_debug_header()
            "energy_meter_type,"
            "ENERGY METER,"
            "power,"
-           "energy_relative,"
-           "energy_absolute,"
+           "current_0,"
+           "current_1,"
+           "current_2,"
            "phase_0_active,"
            "phase_1_active,"
            "phase_2_active,"
@@ -485,8 +486,7 @@ String EVSEV2::get_evse_debug_line()
     uint8_t evse_version;
     uint8_t energy_meter_type;
     float power;
-    float energy_relative;
-    float energy_absolute;
+    float currents[3];
     bool phases_active[3];
     bool phases_connected[3];
     uint32_t error_count[6];
@@ -521,8 +521,7 @@ String EVSEV2::get_evse_debug_line()
                                        &evse_version,
                                        &energy_meter_type,
                                        &power,
-                                       &energy_relative,
-                                       &energy_absolute,
+                                       currents,
                                        phases_active,
                                        phases_connected,
                                        error_count);
@@ -566,7 +565,7 @@ String EVSEV2::get_evse_debug_line()
              "\"%lu,,"
              "%u,%u,%u,%u,%u,%u,%u,%u,,"
              "%u,%c,%u,%u,,"
-             "%.3f,%.3f,%.3f,%c,%c,%c,%c,%c,%c,,"
+             "%.3f,%.3f,%.3f,%.3f,%c,%c,%c,%c,%c,%c,,"
              "%u,%u,%u,%u,%u,%u,,"
              "%u,%u,%u,%u,%u,,"
              "%u,%u,%u,%u,%u,%u,%u,,"
@@ -590,8 +589,9 @@ String EVSEV2::get_evse_debug_line()
              energy_meter_type,
 
              power,
-             energy_relative,
-             energy_absolute,
+             currents[0],
+             currents[1],
+             currents[2],
              phases_active[0] ? '1' : '0',
              phases_active[1] ? '1' : '0',
              phases_active[2] ? '1' : '0',
@@ -749,8 +749,7 @@ void EVSEV2::update_all_data()
                                        &evse_version,
                                        &meter_data.meter_type,
                                        &meter_data.power,
-                                       &meter_data.energy_relative,
-                                       &meter_data.energy_absolute,
+                                       meter_data.currents,
                                        meter_data.phases_active,
                                        meter_data.phases_connected,
                                        meter_data.error_count);

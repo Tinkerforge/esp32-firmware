@@ -74,9 +74,10 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data)
         sdm_helper_get_value_ids(meter_type, ids, &id_count);
         meters.declare_value_ids(slot, ids, id_count);
 
-        value_index_power      = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
-        value_index_energy_rel = meters_find_id_index(ids, id_count, MeterValueID::EnergyActiveLSumImExSumResettable);
-        value_index_energy_abs = meters_find_id_index(ids, id_count, MeterValueID::EnergyActiveLSumImExSum);
+        value_index_power       = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
+        value_index_currents[0] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL1ImExSum);
+        value_index_currents[1] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL2ImExSum);
+        value_index_currents[2] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL3ImExSum);
 
         task_scheduler.scheduleWithFixedDelay([this](){
             update_all_values();
@@ -84,20 +85,15 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data)
     }
 
     meters.update_value(slot, value_index_power, meter_data->power);
-    //meters.update_value(slot, value_index_energy_rel, meter_data->energy_relative); // TODO: Add me
-    meters.update_value(slot, value_index_energy_abs, meter_data->energy_absolute);
-
-    //TODO API change: replace import/export with phase currents
-    //METER_ALL_VALUES_CURRENT_L1_A
-    //METER_ALL_VALUES_CURRENT_L2_A
-    //METER_ALL_VALUES_CURRENT_L3_A
+    for(size_t i = 0; i < ARRAY_SIZE(value_index_currents); ++i)
+        meters.update_value(slot, value_index_currents[i], meter_data->currents[i]);
 }
 
 void MeterEVSEV2::update_all_values()
 {
     // No need to initialize the array because either all values are written or it is rejected entirely.
     float values[METER_ALL_VALUES_RESETTABLE_COUNT];
-    if (evse_v2.get_all_energy_meter_values(values) != METER_ALL_VALUES_COUNT) // TODO: Use new API. Remove marked code below.
+    if (evse_v2.get_all_energy_meter_values(values) != METER_ALL_VALUES_RESETTABLE_COUNT)
         return;
 
     uint32_t values_len = ARRAY_SIZE(values);
@@ -106,13 +102,6 @@ void MeterEVSEV2::update_all_values()
     if (values_len == 0) {
         logger.printfln("meter_em: Cannot pack values into array of size %u.", ARRAY_SIZE(values));
     } else {
-        // TODO: Remove NAN padding after switching to new API.
-        if (values_len <= METER_ALL_VALUES_RESETTABLE_COUNT - 3) {
-            uint32_t resettable_len = values_len + 3;
-            for (uint32_t i = values_len; i < resettable_len; i++) {
-                values[i] = NAN;
-            }
-        }
         meters.update_all_values(slot, values);
     }
 }
