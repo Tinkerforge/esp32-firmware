@@ -112,9 +112,9 @@ const MeterValueID sdm_helper_all_ids[METER_ALL_VALUES_RESETTABLE_COUNT] = {
     MeterValueID::EnergyReactiveL1IndCapSum,
     MeterValueID::EnergyReactiveL2IndCapSum,
     MeterValueID::EnergyReactiveL3IndCapSum,
+    MeterValueID::EnergyActiveLSumImExSumResettable,
     MeterValueID::EnergyActiveLSumImportResettable,
     MeterValueID::EnergyActiveLSumExportResettable,
-    MeterValueID::EnergyActiveLSumImExSumResettable,
 };
 
 const MeterValueID sdm_helper_72v1_ids[3] = {
