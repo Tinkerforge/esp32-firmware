@@ -136,6 +136,7 @@ public:
     uint32_t get_charger_meter();
     MeterValueAvailability get_charger_meter_power(float *power, micros_t max_age = 0_usec);
     MeterValueAvailability get_charger_meter_energy(float *energy, micros_t max_age = 0_usec);
+    bool get_use_imexsum();
 
     void set_require_meter_blocking(bool);
     void set_require_meter_enabled(bool);

@@ -671,6 +671,11 @@ MeterValueAvailability EvseCommon::get_charger_meter_energy(float *energy, micro
     return result;
 }
 
+bool EvseCommon::get_use_imexsum()
+{
+    return use_imexsum;
+}
+
 void EvseCommon::set_require_meter_blocking(bool blocking) {
     backend->set_charging_slot_max_current(CHARGING_SLOT_REQUIRE_METER, blocking ? 0 : 32000);
 }
