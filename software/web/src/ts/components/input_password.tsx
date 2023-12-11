@@ -80,7 +80,7 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
 
         return (
             <>
-                <div class="input-group">
+                <div class="input-group has-validation">
                     <input class={"form-control" + (props.showAlways && props.hideClear ? " rounded-right" : "")}
                         id={id}
                         type={state.show || props.showAlways ? "text" : "password"}
