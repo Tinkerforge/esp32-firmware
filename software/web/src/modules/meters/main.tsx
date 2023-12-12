@@ -1016,18 +1016,29 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                 let energy_export: number = null;
                                 let phases: ["?"|"d"|"c"|"a", "?"|"d"|"c"|"a", "?"|"d"|"c"|"a"] = ["?", "?", "?"]; // [d]isconected, [c]onnected, [a]ctive
                                 let values_by_id = state.values_by_id[meter_slot];
+                                let highlighted_value_ids: number[] = [];
 
                                 if (util.hasValue(values_by_id)) {
                                     power = values_by_id[MeterValueID.PowerActiveLSumImExDiff];
+                                    highlighted_value_ids.push(MeterValueID.PowerActiveLSumImExDiff);
+
                                     energy_import = values_by_id[MeterValueID.EnergyActiveLSumImportResettable];
                                     energy_export = values_by_id[MeterValueID.EnergyActiveLSumExportResettable];
 
-                                    if (!util.hasValue(energy_import)) {
+                                    if (util.hasValue(energy_import)) {
+                                        highlighted_value_ids.push(MeterValueID.EnergyActiveLSumImportResettable);
+                                    }
+                                    else {
                                         energy_import = values_by_id[MeterValueID.EnergyActiveLSumImport];
+                                        highlighted_value_ids.push(MeterValueID.EnergyActiveLSumImport);
                                     }
 
-                                    if (!util.hasValue(energy_export)) {
+                                    if (util.hasValue(energy_export)) {
+                                        highlighted_value_ids.push(MeterValueID.EnergyActiveLSumExportResettable);
+                                    }
+                                    else {
                                         energy_export = values_by_id[MeterValueID.EnergyActiveLSumExport];
+                                        highlighted_value_ids.push(MeterValueID.EnergyActiveLSumExport);
                                     }
 
                                     let voltage_L1 = values_by_id[MeterValueID.VoltageL1N];
@@ -1146,14 +1157,30 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                             <div class="row mx-n1 mx-xl-n3">
                                             {order.ids.map((id) =>
                                                 <div class="col-sm-4 px-1 px-xl-3">
-                                                    <OutputFloat value={util.hasValue(state.values_by_id[meter_slot][id]) ? this.state.values_by_id[meter_slot][id] : null} digits={METER_VALUE_INFOS[id].digits} scale={0} unit={METER_VALUE_INFOS[id].unit} small={true}/>
+                                                    <OutputFloat
+                                                        value={util.hasValue(state.values_by_id[meter_slot][id]) ? this.state.values_by_id[meter_slot][id] : null}
+                                                        digits={METER_VALUE_INFOS[id].digits}
+                                                        scale={0}
+                                                        unit={METER_VALUE_INFOS[id].unit}
+                                                        small={true}
+                                                        class={util.hasValue(state.values_by_id[meter_slot][id]) ? (highlighted_value_ids.indexOf(id) >= 0 ? "input-indicator input-indicator-primary" : undefined) : "input-indicator input-indicator-warning"}
+                                                    />
                                                 </div>)}
                                             </div>
                                         </FormRow>
                                         : <FormRow label={translate_unchecked(`meters.content.value_${order.ids[0]}`)} label_muted={translate_unchecked(`meters.content.value_${order.ids[0]}_muted`)} small={true}>
-                                            <div class="row mx-n1 mx-xl-n3"><div class="col-sm-4 px-1 px-xl-3">
-                                                <OutputFloat value={this.state.values_by_id[meter_slot][order.ids[0]]} digits={METER_VALUE_INFOS[order.ids[0]].digits} scale={0} unit={METER_VALUE_INFOS[order.ids[0]].unit} small={true}/>
-                                            </div></div>
+                                            <div class="row mx-n1 mx-xl-n3">
+                                                <div class="col-sm-4 px-1 px-xl-3">
+                                                    <OutputFloat
+                                                        value={this.state.values_by_id[meter_slot][order.ids[0]]}
+                                                        digits={METER_VALUE_INFOS[order.ids[0]].digits}
+                                                        scale={0}
+                                                        unit={METER_VALUE_INFOS[order.ids[0]].unit}
+                                                        small={true}
+                                                        class={util.hasValue(state.values_by_id[meter_slot][order.ids[0]]) ? (highlighted_value_ids.indexOf(order.ids[0]) >= 0 ? "input-indicator input-indicator-primary" : undefined) : "input-indicator input-indicator-warning"}
+                                                    />
+                                                </div>
+                                            </div>
                                         </FormRow>);
 
                                 if (allValues.length == 0) {
