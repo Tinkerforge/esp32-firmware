@@ -292,6 +292,24 @@ static bool is_values_value(MeterValueID value_id)
     return false;
 }
 
+static bool indices_match_meter_indices(const bool all_values_present[], const uint32_t all_value_indices[], uint32_t all_value_indices_length)
+{
+    bool values_present[METER_ALL_VALUES_LEGACY_COUNT] = {false};
+    for (uint32_t i = 0; i < all_value_indices_length; i++) {
+        uint32_t index = all_value_indices[i];
+        if (index < ARRAY_SIZE(values_present))
+            values_present[index] = true;
+    }
+
+    for (uint32_t i = 0; i < METER_ALL_VALUES_LEGACY_COUNT; i++) {
+        if (values_present[i] != all_values_present[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
 {
     // ==== Fill index arrays ====
@@ -347,8 +365,8 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
 
     bool all_values_present[METER_ALL_VALUES_LEGACY_COUNT];
     bool has_any_known_value = false;
-    uint32_t can_be_sdm72   = 1;
-    uint32_t can_be_sdm72v2 = 1;
+    uint32_t can_be_sdm72;
+    uint32_t can_be_sdm72v2;
     uint32_t can_be_sdm630  = 1;
 
     for (uint32_t i = 0; i < METER_ALL_VALUES_LEGACY_COUNT; i++) {
@@ -365,34 +383,12 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
             MeterValueID value_id = meter_value_ids[value_index];
             if (!is_values_value(value_id)) {
                 has_all_values = true;
-                can_be_sdm72 = 0;
             }
         }
     }
 
-    if (can_be_sdm72) {
-        for (uint32_t i = 0; i < ARRAY_SIZE(value_indices_legacy_values_to_linked_meter); i++) {
-            if (value_indices_legacy_values_to_linked_meter[i] >= linked_meter_value_count) {
-                // Linked meter doesn't have this value.
-                can_be_sdm72 = 0;
-                break;
-            }
-        }
-    }
-
-    bool sdm72v2_values_present[METER_ALL_VALUES_LEGACY_COUNT] = {false};
-    for (uint32_t i = 0; i < ARRAY_SIZE(sdm_helper_72v2_all_value_indices); i++) {
-        uint32_t index = sdm_helper_72v2_all_value_indices[i];
-        if (index < ARRAY_SIZE(sdm72v2_values_present))
-            sdm72v2_values_present[index] = true;
-    }
-
-    for (uint32_t i = 0; i < METER_ALL_VALUES_LEGACY_COUNT; i++) {
-        if (sdm72v2_values_present[i] != all_values_present[i]) {
-            can_be_sdm72v2 = 0;
-            break;
-        }
-    }
+    can_be_sdm72   = indices_match_meter_indices(all_values_present, sdm_helper_72_all_value_indices,   ARRAY_SIZE(sdm_helper_72_all_value_indices));
+    can_be_sdm72v2 = indices_match_meter_indices(all_values_present, sdm_helper_72v2_all_value_indices, ARRAY_SIZE(sdm_helper_72v2_all_value_indices));
 
     uint32_t can_be_count = can_be_sdm72 + can_be_sdm72v2 + can_be_sdm630;
     uint32_t meter_type = METER_TYPE_NONE;
