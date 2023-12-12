@@ -1132,7 +1132,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                                 {input_time}
                                             </div>
                                             <div class="col-sm-4 px-1 px-xl-3">
-                                                <Button size="sm" className="form-control" variant="danger" onClick={async () => {
+                                                <Button size="sm" className="form-control" variant="danger" style="height: calc(1.5em + .5rem + 2px);" onClick={async () => {
                                                     const modal = util.async_modal_ref.current;
                                                     if (!await modal.show({
                                                             title: __("meters.content.reset_modal"),
