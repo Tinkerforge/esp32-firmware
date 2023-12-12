@@ -139,7 +139,7 @@ class MeterValueIDSelector extends Component<MeterValueIDSelectorProps, MeterVal
                             let is_valid = true;
 
                             if (value_id !== null) {
-                                let idx = this.props.value_ids.findIndex((other) => other === value_id);
+                                let idx = this.props.value_ids.indexOf(value_id);
 
                                 if (idx >= 0 && idx !== this.props.edit_idx) {
                                     is_valid = false;
