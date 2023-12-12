@@ -39,9 +39,9 @@ import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputSubnet } from "../../ts/components/input_subnet";
 import { SubPage } from "../../ts/components/sub_page";
 
-type WireGuardConfig = API.getType["wireguard/config"];
+type WireguardConfig = API.getType["wireguard/config"];
 
-export class WireGuard extends ConfigComponent<'wireguard/config'> {
+export class Wireguard extends ConfigComponent<'wireguard/config'> {
     ipconfig_valid: boolean = true;
     constructor() {
         super('wireguard/config',
@@ -49,7 +49,7 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
               __("wireguard.script.reboot_content_changed"));
     }
 
-    render(props: {}, state: Readonly<WireGuardConfig>) {
+    render(props: {}, state: Readonly<WireguardConfig>) {
         if (!util.render_allowed())
             return <></>
 
@@ -159,9 +159,9 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
     }
 }
 
-render(<WireGuard />, $("#wireguard")[0]);
+render(<Wireguard />, $("#wireguard")[0]);
 
-function WireGuardStatus() {
+function WireguardStatus() {
     if (!util.render_allowed() || !API.get("wireguard/config").enable)
         return <></>;
 
@@ -181,7 +181,7 @@ function WireGuardStatus() {
         </>;
 }
 
-render(<WireGuardStatus />, $("#status-wireguard")[0]);
+render(<WireguardStatus />, $("#status-wireguard")[0]);
 
 export function init() {}
 
