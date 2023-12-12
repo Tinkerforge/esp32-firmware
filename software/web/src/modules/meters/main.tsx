@@ -1217,7 +1217,15 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                     extraValue: extraValue,
                                     fieldWithBox: [true, true, true, true, false],
                                     editTitle: __("meters.content.edit_meter_title"),
-                                    onEditShow: async () => this.setState({editMeterSlot: meter_slot, editMeter: config_plugins[config[0]].clone_config(config)}),
+                                    onEditShow: async () => {
+                                        let config_plugin = config_plugins[config[0]];
+                                        if (!config_plugin) {
+                                            console.log("No config plugin available for meter type", config[0]);
+                                            this.setState({editMeterSlot: meter_slot, editMeter: [0, null]});
+                                            return;
+                                        }
+                                        this.setState({editMeterSlot: meter_slot, editMeter: config_plugin.clone_config(config)});
+                                    },
                                     onEditGetChildren: () => {
                                         let slots: [string, string][] = [];
                                         let classes: [string, string][] = [];
