@@ -20,22 +20,21 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
 import { h, Component, Fragment } from "preact";
 import { Button } from "react-bootstrap";
-import { CollapsedSection } from "src/ts/components/collapsed_section";
-import { DebugLogger } from "src/ts/components/debug_logger";
-import { FormRow } from "src/ts/components/form_row";
-import { FormSeparator } from "src/ts/components/form_separator";
-import { IndicatorGroup } from "src/ts/components/indicator_group";
-import { InputFile } from "src/ts/components/input_file";
-import { InputIndicator } from "src/ts/components/input_indicator";
-import { InputText } from "src/ts/components/input_text";
-import { PageHeader } from "src/ts/components/page_header";
-import { SubPage } from "src/ts/components/sub_page";
-import { __, translate_unchecked } from "src/ts/translation";
+import { CollapsedSection } from "../../ts/components/collapsed_section";
+import { DebugLogger } from "../../ts/components/debug_logger";
+import { FormRow } from "../../ts/components/form_row";
+import { FormSeparator } from "../../ts/components/form_separator";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
+import { InputFile } from "../../ts/components/input_file";
+import { InputIndicator } from "../../ts/components/input_indicator";
+import { InputText } from "../../ts/components/input_text";
+import { PageHeader } from "../../ts/components/page_header";
+import { SubPage } from "../../ts/components/sub_page";
+import { __, translate_unchecked } from "../../ts/translation";
 import { EVSE_SLOT_EXTERNAL } from "./api";
-import { OutputFloat } from "src/ts/components/output_float";
+import { OutputFloat } from "../../ts/components/output_float";
 
 let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
 

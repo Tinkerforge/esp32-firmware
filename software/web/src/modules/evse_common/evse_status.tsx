@@ -25,10 +25,10 @@ import { __ } from "../../ts/translation";
 
 import { h, Fragment, Component } from "preact";
 import { Button } from "react-bootstrap";
-import { FormRow } from "src/ts/components/form_row";
-import { IndicatorGroup } from "src/ts/components/indicator_group";
-import { InputFloat } from "src/ts/components/input_float";
-import { InputText } from "src/ts/components/input_text";
+import { FormRow } from "../../ts/components/form_row";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
+import { InputFloat } from "../../ts/components/input_float";
+import { InputText } from "../../ts/components/input_text";
 
 interface EVSEStatusState {
     state: API.getType["evse/state"];

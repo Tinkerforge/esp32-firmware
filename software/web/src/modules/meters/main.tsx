@@ -40,9 +40,9 @@ import { MeterConfig, MeterConfigPlugin } from "./types";
 import { Table } from "../../ts/components/table";
 import { PageHeader } from "../../ts/components/page_header";
 import { plugins_init } from "./plugins";
-import { InputDate } from "src/ts/components/input_date";
-import { InputTime } from "src/ts/components/input_time";
-import { InputText } from "src/ts/components/input_text";
+import { InputDate } from "../../ts/components/input_date";
+import { InputTime } from "../../ts/components/input_time";
+import { InputText } from "../../ts/components/input_text";
 
 const PHASE_CONNECTED_VOLTAGE_THRESHOLD = 180.0; // V
 const PHASE_ACTIVE_CURRENT_THRESHOLD = 0.3; // A
