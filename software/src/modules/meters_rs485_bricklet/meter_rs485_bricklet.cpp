@@ -19,6 +19,7 @@
 
 #include "meter_rs485_bricklet.h"
 
+#include "meters_rs485_bricklet.h"
 #include "modules/meters/meter_value_id.h"
 #include "modules/meters/sdm_helpers.h"
 #include "task_scheduler.h"
@@ -280,8 +281,7 @@ void MeterRS485Bricklet::tick() {
 
     if (callback_data.done == UserDataDone::NOT_DONE) {
         logger.printfln("rs485 deadline reached!");
-        // TODO
-        //meters_rs485_bricklet.checkRS485State();
+        generator->checkRS485State();
     }
 
     if (callback_data.done != UserDataDone::NOT_DONE && !deadline_elapsed(next_read_deadline_ms))
@@ -300,8 +300,7 @@ void MeterRS485Bricklet::tick() {
             uint16_t payload = 0x0003;
             /*TODO is_in_bootloader(*/tf_rs485_modbus_master_write_multiple_registers(rs485, 1, 61457, &payload, 1, &callback_data.expected_request_id)/*)*/;
             if (callback_data.expected_request_id == 0) {
-                // TODO
-                //meters_rs485_bricklet.checkRS485State();
+                generator->checkRS485State();
             }
         }
         return;
@@ -319,8 +318,7 @@ void MeterRS485Bricklet::tick() {
     /*TODO is_in_bootloader(*/tf_rs485_modbus_master_read_input_registers(rs485, 1, next_read->start, next_read->len, &callback_data.expected_request_id)/*)*/;
     if (callback_data.expected_request_id == 0) {
         logger.printfln("Failed to read energy meter registers starting at %u: request_id: %u", next_read->start, callback_data.expected_request_id);
-        // TODO
-        //meters_rs485_bricklet.checkRS485State();
+        generator->checkRS485State();
     }
 
     if (trigger_fast_read_done) {
