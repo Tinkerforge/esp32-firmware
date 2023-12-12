@@ -40,11 +40,6 @@ void MeterEVSEV2::setup(Config &ephemeral_config)
 
 void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data)
 {
-    // TODO: Add stale data check.
-    // Reject stale data older than five seconds.
-    //if (deadline_elapsed(all_data.last_update + 5 * 1000))
-    //    return;
-
     // Always update error counters, even if no meter could be detected.
     errors->get("local_timeout"       )->updateUint(meter_data->error_count[0]);
     errors->get("global_timeout"      )->updateUint(meter_data->error_count[1]);
