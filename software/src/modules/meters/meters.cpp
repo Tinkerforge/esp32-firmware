@@ -31,11 +31,6 @@
 #pragma GCC diagnostic ignored "-Wuseless-cast"
 #endif
 
-// string_length_visitor assumes that a float is max. 20 byte long
-// We need n+1 bytes extra for n meter values for '[', ',' and ']'
-// The MQTT send buffer is 2K on a WARP1 -> 2048/21 ~ 97,5.
-#define METERS_MAX_VALUES_PER_METER 96
-
 static MeterGeneratorNone meter_generator_none;
 
 static void init_uint32_array(uint32_t *arr, size_t len, uint32_t val)
