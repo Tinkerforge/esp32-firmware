@@ -105,8 +105,6 @@ private:
     size_t modbus_read_state_slow = 0;
     bool last_read_was_fast = false;
 
-    /*uint32_t next_modbus_read_deadline = 0;
-    uint32_t next_power_history_entry = 0;*/
     UserData callback_data;
 
     bool reset_requested = false;
