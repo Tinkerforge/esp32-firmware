@@ -39,6 +39,14 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
     if (deadline_elapsed(all_data.last_update + 5 * 1000))
         return;
 
+    // Always update error counters, even if no meter could be detected.
+    errors->get("local_timeout"       )->updateUint(all_data.error_count[0]);
+    errors->get("global_timeout"      )->updateUint(all_data.error_count[1]);
+    errors->get("illegal_function"    )->updateUint(all_data.error_count[2]);
+    errors->get("illegal_data_access" )->updateUint(all_data.error_count[3]);
+    errors->get("illegal_data_value"  )->updateUint(all_data.error_count[4]);
+    errors->get("slave_device_failure")->updateUint(all_data.error_count[5]);
+
     // Do nothing if no meter was detected.
     if (all_data.energy_meter_type == METER_TYPE_NONE)
         return;
@@ -69,13 +77,6 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
             update_all_values();
         }, 0, 990);
     }
-
-    errors->get("local_timeout"       )->updateUint(all_data.error_count[0]);
-    errors->get("global_timeout"      )->updateUint(all_data.error_count[1]);
-    errors->get("illegal_function"    )->updateUint(all_data.error_count[2]);
-    errors->get("illegal_data_access" )->updateUint(all_data.error_count[3]);
-    errors->get("illegal_data_value"  )->updateUint(all_data.error_count[4]);
-    errors->get("slave_device_failure")->updateUint(all_data.error_count[5]);
 
     meters.update_value(slot, value_index_power,  all_data.power);
     for (uint32_t i = 0; i < ARRAY_SIZE(value_index_current); i++) {
