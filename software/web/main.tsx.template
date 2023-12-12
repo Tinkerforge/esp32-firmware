@@ -25,7 +25,6 @@ import * as feather from 'feather-icons';
 import * as util from "./ts/util";
 import * as API from "./ts/api";
 import { translate_data_i18n/*, select_language*/ } from "./ts/translation";
-
 import { init_async_modal } from "./ts/components/async_modal";
 
 {{{module_imports}}}

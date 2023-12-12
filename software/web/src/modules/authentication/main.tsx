@@ -18,15 +18,11 @@
  */
 
 import $ from "../../ts/jq";
-
 import YaMD5 from "../../ts/yamd5";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
 import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
-
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
@@ -113,9 +109,11 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
 
 render(<Authentication />, $("#authentication")[0]);
 
-export function init() {}
+export function init() {
+}
 
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
     $("#sidebar-authentication").prop("hidden", !module_init.authentication);

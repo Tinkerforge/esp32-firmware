@@ -18,13 +18,10 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
 import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
-
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -187,10 +184,10 @@ export class NTPStatus extends Component<{}, NTPStatusState>
 render(<NTPStatus />, $("#status-ntp")[0]);
 
 export function init() {
-
 }
 
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
     $("#sidebar-ntp").prop("hidden", !module_init.ntp);

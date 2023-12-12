@@ -18,10 +18,8 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-
 import { METERS_SLOTS } from "../../build";
 import { h, render, createRef, Fragment, Component, ComponentChild, RefObject, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
@@ -2967,11 +2965,9 @@ render(<EMEnergyAnalysisStatus ref={status_ref} />, $('#status-em_energy_analysi
 render(<EMEnergyAnalysis status_ref={status_ref} />, $('#em_energy_analysis')[0]);
 
 export function init() {
-
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
-
 }
 
 export function update_sidebar_state(module_init: any) {

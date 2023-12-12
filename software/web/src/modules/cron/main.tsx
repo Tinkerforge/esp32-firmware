@@ -18,10 +18,8 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
 import { Fragment, render, h, ComponentChild, toChildArray } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { Table, TableRow } from "../../ts/components/table";

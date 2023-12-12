@@ -18,13 +18,10 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
 import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
-
 import { InputText } from "../../ts/components/input_text";
 import { SubPage } from "../../ts/components/sub_page";
 import { PageHeader } from "../../ts/components/page_header";
@@ -144,9 +141,11 @@ export class Certs extends Component<{}, State> {
 
 render(<Certs />, $("#certs")[0]);
 
-export function init() {}
+export function init() {
+}
 
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-certs').prop('hidden', !module_init.certs);

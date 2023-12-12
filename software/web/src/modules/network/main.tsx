@@ -18,10 +18,8 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
 import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
@@ -85,9 +83,11 @@ export class Network extends ConfigComponent<'network/config'> {
 
 render(<Network />, $("#network")[0]);
 
-export function init() {}
+export function init() {
+}
 
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
     $("#sidebar-network").prop("hidden", !module_init.network);

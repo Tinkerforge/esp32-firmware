@@ -18,13 +18,10 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-
 import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
-
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { Table } from "react-bootstrap";
@@ -141,9 +138,11 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
 
 render(<Proxy />, $("#proxy")[0]);
 
-export function init() {}
+export function init() {
+}
 
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
     $("#sidebar-proxy").prop("hidden", !module_init.proxy);

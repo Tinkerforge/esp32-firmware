@@ -18,13 +18,10 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
 import { Component, h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
-
 import { WifiAP } from "./wifi_ap";
 import { WifiSTA, wifi_symbol } from "./wifi_sta";
 import { FormRow } from "../../ts/components/form_row";

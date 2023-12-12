@@ -18,10 +18,8 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
 import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
@@ -248,7 +246,6 @@ export function init() {
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
-
 }
 
 export function update_sidebar_state(module_init: any) {

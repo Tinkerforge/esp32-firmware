@@ -18,11 +18,9 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
-
 import { h, render, Fragment } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm      } from "../../ts/components/config_form";
@@ -64,10 +62,12 @@ export class ModbusMeterSimulator extends ConfigComponent<'modbus_meter_simulato
     }
 }
 
+export function init() {
+}
 render(<ModbusMeterSimulator />, $("#modbus_meter_simulator")[0]);
 
-export function init() {}
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-modbus_meter_simulator').prop('hidden', !module_init.modbus_meter_simulator);

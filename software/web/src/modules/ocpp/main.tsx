@@ -18,13 +18,10 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-
 import { h, render, Component, Fragment } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
-
 import { Switch } from "../../ts/components/switch";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
@@ -365,9 +362,11 @@ export class OcppStatus extends Component<{}, OcppStatusState>
 
 render(<OcppStatus />, $("#status-ocpp")[0]);
 
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function init() {
+}
 
-export function init() {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
     $("#sidebar-ocpp").prop("hidden", !module_init.ocpp);

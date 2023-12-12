@@ -18,14 +18,11 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
 import { h, render, Fragment, Component } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
-
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputFile } from "../../ts/components/input_file";
@@ -209,9 +206,11 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
 
 render(<FirmwareUpdate />, $("#flash")[0]);
 
-export function init() {}
+export function init() {
+}
 
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
     $("#sidebar-flash").prop("hidden", !module_init.firmware_update);

@@ -18,7 +18,6 @@
  */
 
 import $ from "../../ts/jq";
-
 import { METERS_SLOTS } from "../../build";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";

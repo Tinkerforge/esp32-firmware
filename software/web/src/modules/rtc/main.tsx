@@ -18,12 +18,9 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-
 import { h, render, Fragment } from "preact";
-
 import { ConfigComponent } from "../../ts/components/config_component";
 import { OutputDatetime } from "../../ts/components/output_datetime";
 import { FormRow } from "../../ts/components/form_row";
@@ -123,13 +120,13 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
         }
 }
 
+export function init() {
+}
 render(<Rtc />, $("#rtc")[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('info/features', () => $('#sidebar-rtc').prop('hidden', !API.hasFeature('rtc')));
 }
 
-export function init() {
+export function update_sidebar_state(module_init: any) {
 }
-
-export function update_sidebar_state(module_init: any) {}

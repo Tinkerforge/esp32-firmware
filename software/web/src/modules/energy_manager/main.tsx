@@ -18,12 +18,10 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 import { METERS_SLOTS } from "../../build";
-
 import { h, render, Fragment, Component } from "preact";
 import { Button, ButtonGroup, Collapse } from "react-bootstrap";
 import { CheckCircle, Circle } from "react-feather";
@@ -566,9 +564,11 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
 render(<EnergyManager />, $("#energy_manager")[0]);
 
-export function init() {}
+export function init() {
+}
 
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
     $("#sidebar-energy_manager").prop("hidden", !module_init.energy_manager);

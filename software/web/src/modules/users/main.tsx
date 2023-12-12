@@ -18,15 +18,11 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
 import YaMD5 from "../../ts/yamd5";
-
 import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
-
 import { ConfigComponent, ConfigComponentState } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
@@ -538,7 +534,6 @@ export function getAllUsernames() {
 }
 
 export function init() {
-
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {

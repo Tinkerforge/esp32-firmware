@@ -18,13 +18,10 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __ } from "../../ts/translation";
-
 import { h, render, Fragment } from "preact";
-
 import { InputText } from "../../ts/components/input_text";
 import { Button } from "react-bootstrap";
 import { Save } from "react-feather";
@@ -76,5 +73,4 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-
 }

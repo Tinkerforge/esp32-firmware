@@ -20,9 +20,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
 import { __ } from "../../ts/translation";
-
 import { h, Fragment, Component } from "preact";
 import { Button } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
@@ -95,7 +93,6 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
 
         return status_string;
     }
-
 
     timeoutSave(current: number, theoretical_max: number)
     {

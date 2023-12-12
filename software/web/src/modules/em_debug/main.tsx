@@ -18,11 +18,9 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
-
 import { h, render, Fragment, Component } from "preact";
 import { DebugLogger    } from "../../ts/components/debug_logger";
 import { FormRow        } from "../../ts/components/form_row";
@@ -218,10 +216,12 @@ export class EMDebug extends Component {
     }
 }
 
+export function init() {
+}
 render(<EMDebug />, $("#em_debug")[0]);
 
-export function init() {}
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
     $("#sidebar-em_debug").prop("hidden", !module_init.energy_manager);

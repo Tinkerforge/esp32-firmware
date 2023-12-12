@@ -19,6 +19,8 @@
 
 import $ from "jquery";
 
+export function init() {
+}
 import { h, render } from "preact";
 
 import { EVSE } from "./evse_content";
@@ -29,10 +31,10 @@ render(<EVSE />, $('#evse')[0]);
 
 render(<EVSESettings />, $("#evse-settings")[0]);
 
+export function add_event_listeners() {
+}
 render(<EVSEStatus />, $("#status-evse")[0]);
 
-export function init(){}
-export function add_event_listeners(){}
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-evse').prop('hidden', !module_init.evse_v2 && !module_init.evse);
     $('#sidebar-evse-settings').prop('hidden', !module_init.evse_v2 && !module_init.evse);

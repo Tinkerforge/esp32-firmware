@@ -18,13 +18,10 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-
 import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
-
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
@@ -214,9 +211,11 @@ export class MqttStatus extends Component<{}, MqttStatusState>
 
 render(<MqttStatus />, $("#status-mqtt")[0]);
 
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function init() {
+}
 
-export function init() {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
     $("#sidebar-mqtt").prop("hidden", !module_init.mqtt);

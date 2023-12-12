@@ -20,7 +20,6 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
 import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
