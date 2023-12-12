@@ -551,7 +551,7 @@ void Mqtt::register_urls()
     api.addState("mqtt/state", &state);
 
 #if MODULE_CRON_AVAILABLE()
-    if (cron.is_trigger_active(CronTriggerID::MQTT)) {
+    if (cron.is_trigger_active(CronTriggerID::MQTT) && config.get("enable_mqtt")->asBool()) {
         ConfigVec trigger_config = cron.get_configured_triggers(CronTriggerID::MQTT);
         std::vector<String> subscribed_topics;
         for (auto &conf: trigger_config) {
