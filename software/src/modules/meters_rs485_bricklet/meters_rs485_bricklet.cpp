@@ -26,7 +26,7 @@ void MetersRS485Bricklet::pre_setup()
     this->DeviceModule::pre_setup();
 
     config_prototype = Config::Object({
-        {"display_name", Config::Str("Wallbox", 0, 32)}, // FIXME: translate
+        {"display_name", Config::Str("WARP Charger", 0, 32)},
         {"type_override", Config::Uint8(METER_TYPE_AUTO_DETECT)}
     });
 

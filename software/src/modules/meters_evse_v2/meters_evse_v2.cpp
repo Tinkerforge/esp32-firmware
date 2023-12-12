@@ -24,7 +24,7 @@
 void MetersEVSEV2::pre_setup()
 {
     config_prototype = Config::Object({
-        {"display_name", Config::Str("Wallbox", 0, 32)} // FIXME: translate
+        {"display_name", Config::Str("WARP Charger", 0, 32)}
     });
 
     state_prototype = Config::Object({

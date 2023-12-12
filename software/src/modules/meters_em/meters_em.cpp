@@ -25,7 +25,7 @@
 void MetersEM::pre_setup()
 {
     config_prototype = Config::Object({
-        {"display_name", Config::Str("Lokal", 0, 32)} // FIXME: translate
+        {"display_name", Config::Str("WARP Energy Manager", 0, 32)}
     });
 
     state_prototype = Config::Object({
