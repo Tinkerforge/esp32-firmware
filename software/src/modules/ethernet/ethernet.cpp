@@ -161,6 +161,13 @@ void Ethernet::setup()
                 state.get("connection_state")->updateUint((uint)connection_state);
                 state.get("link_speed" )->updateUint(link_speed);
                 state.get("full_duplex")->updateBool(full_duplex);
+
+#if MODULE_WIFI_AVAILABLE()
+                if (wifi.is_sta_enabled()) {
+                    logger.printfln("Warning: Ethernet is connected and WiFi is enabled at the same time.");
+                    logger.printfln("         This can lead to connectivity issues and is not recommended.");
+                }
+#endif
             }, 0);
         },
         ARDUINO_EVENT_ETH_CONNECTED);
