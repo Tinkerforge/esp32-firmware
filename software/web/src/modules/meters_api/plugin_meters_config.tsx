@@ -28,7 +28,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from '../../ts/components/input_select';
 
-const MAX_VALUES = 100;
+const MAX_VALUES = 96;
 
 export type APIMetersConfig = [
     MeterClassID.API,
