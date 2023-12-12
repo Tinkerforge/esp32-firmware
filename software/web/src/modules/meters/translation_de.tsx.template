@@ -44,7 +44,9 @@ let x = {
             "settings": "Einstellungen",
 
             "last_reset": "Stromzähler zuletzt zurückgesetzt",
+            "last_reset_unknown": "Unbekannt",
             "reset": "Stromzähler zurücksetzen",
+            "never": "Nie",
 
             "reset_modal": "Zählerwerte zurücksetzen?",
             "reset_modal_body": /*SFN*/(meter_name: string) => `Zurücksetzbare Werte von ${meter_name} wirklich zurücksetzen?`/*NF*/,

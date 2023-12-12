@@ -42,6 +42,7 @@ import { PageHeader } from "../../ts/components/page_header";
 import { plugins_init } from "./plugins";
 import { InputDate } from "src/ts/components/input_date";
 import { InputTime } from "src/ts/components/input_time";
+import { InputText } from "src/ts/components/input_text";
 
 const PHASE_CONNECTED_VOLTAGE_THRESHOLD = 180.0; // V
 const PHASE_ACTIVE_CURRENT_THRESHOLD = 0.3; // A
@@ -1100,14 +1101,28 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                     meter_is_resettable ||= path[path.length - 1] == "resettable";
                                 }
 
+                                let input_time: h.JSX.Element;
+                                let input_date: h.JSX.Element;
+                                const last_reset = API.get_unchecked(`meters/${meter_slot}/last_reset`);
+                                if (!last_reset) {
+                                    input_time = <InputText class="form-control-sm" value={__("meters.content.never")}/>
+                                    input_date = <InputText class="form-control-sm" value={__("meters.content.never")}/>
+                                } else if (last_reset.last_reset * 1000 < 1000000000) {
+                                    input_time = <InputText class="form-control-sm" value={__("meters.content.last_reset_unknown")}/>
+                                    input_date = <InputText class="form-control-sm" value={__("meters.content.last_reset_unknown")}/>
+                                } else {
+                                    input_date = <InputDate className={"form-control-sm"} date={new Date(last_reset.last_reset * 1000)}/>
+                                    input_time = <InputTime className={"form-control-sm"} date={new Date(last_reset.last_reset * 1000)}/>
+                                }
+
                                 let meter_reset_row: ComponentChild[] = !meter_is_resettable ? [] : [
                                     <FormRow label={__("meters.content.last_reset")} small>
                                         <div class="row mx-n1 mx-xl-n3">
                                             <div class="col-sm-4 px-1 px-xl-3">
-                                                <InputDate className={"form-control-sm"} date={new Date(API.get_unchecked(`meters/${meter_slot}/last_reset`).last_reset * 1000)}/>
+                                                {input_date}
                                             </div>
                                             <div class="col-sm-4 px-1 px-xl-3">
-                                                <InputTime className={"form-control-sm"} date={new Date(API.get_unchecked(`meters/${meter_slot}/last_reset`).last_reset * 1000)}/>
+                                                {input_time}
                                             </div>
                                             <div class="col-sm-4 px-1 px-xl-3">
                                                 <Button size="sm" className="form-control" variant="danger" onClick={async () => {

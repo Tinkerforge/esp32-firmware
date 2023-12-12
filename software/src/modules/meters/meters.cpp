@@ -304,7 +304,12 @@ void Meters::register_urls()
                     //FIXME not Y2038-safe
                     meter_slot.last_reset.get("last_reset")->updateUint(static_cast<uint32_t>(tv_now.tv_sec));
                 } else {
-                    meter_slot.last_reset.get("last_reset")->updateUint(0);
+                    uint32_t last = meter_slot.last_reset.get("last_reset")->asUint();
+                    if (last < 1000000000) {
+                        meter_slot.last_reset.get("last_reset")->updateUint(last + 1);
+                    } else {
+                        meter_slot.last_reset.get("last_reset")->updateUint(1);
+                    }
                 }
                 api.writeConfig(get_path(slot, Meters::PathType::LastReset), &meter_slot.last_reset);
             }, true);

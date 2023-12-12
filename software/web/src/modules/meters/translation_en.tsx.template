@@ -44,7 +44,9 @@ let x = {
             "settings": "Settings",
 
             "last_reset": "Last energy meter reset",
+            "last_reset_unknown": "Unknown",
             "reset": "Reset energy meter",
+            "never": "Never",
 
             "reset_modal": "Reset meter values?",
             "reset_modal_body": /*SFN*/(meter_name: string) => `Really reset all resettable meter values of ${meter_name}?`/*NF*/,
