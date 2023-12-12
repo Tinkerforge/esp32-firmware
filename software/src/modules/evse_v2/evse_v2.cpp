@@ -257,6 +257,7 @@ void EVSEV2::post_register_urls() {
         }
     }, true);
 
+#if MODULE_DEBUG_AVAILABLE()
     api.addCommand("evse/debug_switch_to_one_phase", Config::Null(), {}, [this]() {
         is_in_bootloader(tf_evse_v2_set_phase_control(&device, 1));
     }, true);
@@ -264,6 +265,7 @@ void EVSEV2::post_register_urls() {
     api.addCommand("evse/debug_switch_to_three_phases", Config::Null(), {}, [this]() {
         is_in_bootloader(tf_evse_v2_set_phase_control(&device, 3));
     }, true);
+#endif
 
     // Configurations. Note that those are _not_ configs in the api.addPersistentConfig sense:
     // The configs are stored on the EVSE itself, not the ESP's flash.
