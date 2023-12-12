@@ -34,14 +34,15 @@ import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 import { FormRow } from "../../ts/components/form_row";
 
-type NfcConfig = API.getType['nfc/config'];
-interface NfcState {
+type NFCConfig = API.getType['nfc/config'];
+
+interface NFCState {
     userCfg: API.getType["users/config"];
-    addTag: NfcConfig["authorized_tags"][0];
-    editTag: NfcConfig["authorized_tags"][0];
+    addTag: NFCConfig["authorized_tags"][0];
+    editTag: NFCConfig["authorized_tags"][0];
 }
 
-export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
+export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
     constructor() {
         super('nfc/config',
               __("nfc.script.save_failed"),
@@ -77,7 +78,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
         });*/
     }
 
-    render(props: {}, state: NfcConfig & NfcState) {
+    render(props: {}, state: NFCConfig & NFCState) {
         if (!util.render_allowed() || !API.hasFeature("nfc"))
             return <></>
 
@@ -233,7 +234,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
     }
 }
 
-render(<Nfc />, $("#nfc")[0]);
+render(<NFC />, $("#nfc")[0]);
 
 export function init() {
 }
