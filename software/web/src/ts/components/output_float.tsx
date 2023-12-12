@@ -31,6 +31,7 @@ interface OutputFloatProps {
     maxFractionalDigitsOnPage?: number;
     maxUnitLengthOnPage?: number;
     small?: boolean;
+    class?: string;
 }
 
 export function OutputFloat(props: OutputFloatProps) {
@@ -57,12 +58,12 @@ export function OutputFloat(props: OutputFloatProps) {
 
     return (
         <div class={"input-group" + (props.small ? " input-group-sm" : "")}>
-            <input class={"form-control" + (props.small ? " form-control-sm" : "") + " no-spin text-right text-monospace"}
-                    style={pad_right}
-                       id={id}
-                       type="text"
-                       disabled
-                       value={val}/>
+            <input class={"form-control" + (props.small ? " form-control-sm" : "") + " no-spin text-right text-monospace " + (props.class ? props.class : "")}
+                   style={pad_right}
+                   id={id}
+                   type="text"
+                   disabled
+                   value={val}/>
             <div class="input-group-append">
                 <div class={"form-control" + (props.small ? " form-control-sm" : "") + " input-group-text"} style={`width: ${maxUnitLength + 1.5}rem;`}>
                     {this.props.unit}
