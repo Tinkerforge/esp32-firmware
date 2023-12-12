@@ -211,7 +211,7 @@ let x = {
             "adc_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail</> : <>CP/PE, PP/PE</> /*NF*/,
             "voltage_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail</> : <>CP/PE, PP/PE,<br/> CP/PE (high)</> /*NF*/,
             "dc_fault_sensor_type": "Version des DC-Fehlerschutzsensors",
-            "dc_fault_pins": "Pins des DC-Fehlerschutzsensor",
+            "dc_fault_pins": "Pins des DC-Fehlerschutzsensors",
             "temperature": "Temperatur",
             "phases_current": "Phasen geschaltet",
             "phases_requested": "Phasen angefordert",
