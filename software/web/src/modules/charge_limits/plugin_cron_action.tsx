@@ -30,7 +30,7 @@ import { Switch } from "../../ts/components/switch";
 export type ChargeLimitsCronAction = [
     CronActionID.ChargeLimits,
     {
-        reset: boolean;
+        restart: boolean;
         duration: number;
         energy_wh: number;
     },
@@ -51,7 +51,7 @@ function get_charge_limits_table_children(action: ChargeLimitsCronAction) {
         __("charge_limits.cron.h12"),
     ];
 
-    return __("charge_limits.cron.cron_action_text")(durations[action[1].duration], action[1].energy_wh, action[1].reset);
+    return __("charge_limits.cron.cron_action_text")(durations[action[1].duration], action[1].energy_wh, action[1].restart);
 }
 
 function get_charge_limits_edit_children(action: ChargeLimitsCronAction, on_action: (action: CronAction) => void) {
@@ -98,11 +98,11 @@ function get_charge_limits_edit_children(action: ChargeLimitsCronAction, on_acti
     ] : [];
 
     return [
-        <FormRow label={__("charge_limits.cron.reset")}>
+        <FormRow label={__("charge_limits.cron.restart")}>
             <Switch
-                checked={action[1].reset}
+                checked={action[1].restart}
                 onClick={(v) => {
-                    on_action(util.get_updated_union(action, {reset: !action[1].reset}));
+                    on_action(util.get_updated_union(action, {restart: !action[1].restart}));
                 }} />
         </FormRow>,
         <FormRow label={__("charge_limits.cron.duration")}>
@@ -120,7 +120,7 @@ function new_charge_limits_config(): CronAction {
     return [
         CronActionID.ChargeLimits,
         {
-            reset: false,
+            restart: false,
             duration: 0,
             energy_wh: 0,
         },

@@ -86,13 +86,13 @@ void ChargeLimits::pre_setup()
     cron.register_action(
         CronActionID::ChargeLimits,
         Config::Object({
-            {"reset", Config::Bool(false)},
+            {"restart", Config::Bool(false)},
             {"duration", Config::Uint32(0)},
             {"energy_wh", Config::Uint32(0)}
         }),
         [this](const Config *conf) {
-            if (conf->get("reset")->asBool()) {
-                api.callCommand("charge_limits/reset", {});
+            if (conf->get("restart")->asBool()) {
+                api.callCommand("charge_limits/restart", {});
             }
             config_in_use.get("duration")->updateUint(conf->get("duration")->asUint());
             state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint() + map_duration(conf->get("duration")->asUint()));
@@ -133,7 +133,7 @@ void ChargeLimits::register_urls()
         state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + override_energy.get("energy_wh")->asUint() / 1000.0);
     }, true);
 
-    api.addCommand("charge_limits/reset", Config::Null(), {}, [this]() {
+    api.addCommand("charge_limits/restart", Config::Null(), {}, [this]() {
         if (charge_tracker.current_charge.get("user_id")->asInt() == -1) {
             return;
         }
