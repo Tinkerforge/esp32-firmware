@@ -34,13 +34,13 @@ import { SubPage } from "../../ts/components/sub_page";
 import { EVSE_SLOT_MODBUS_TCP } from "../evse_common/api";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 
-type ModbusTCPConfig = API.getType["modbus_tcp/config"];
+type ModbusTcpConfig = API.getType["modbus_tcp/config"];
 
 interface config {
     evse_enable: boolean;
 }
 
-export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> {
+export class ModbusTcp extends ConfigComponent<'modbus_tcp/config', {}, config> {
     constructor() {
         super('modbus_tcp/config',
                 __("modbus_tcp.script.save_failed"),
@@ -51,7 +51,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
         });
     }
 
-    override async sendSave(t: "modbus_tcp/config", cfg: config & ModbusTCPConfig) {
+    override async sendSave(t: "modbus_tcp/config", cfg: config & ModbusTcpConfig) {
         await API.save_unchecked('evse/modbus_tcp_enabled', {enabled: this.state.evse_enable}, __("evse.script.save_failed"));
         await super.sendSave(t, cfg);
     }
@@ -68,7 +68,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
         return super.getIsModified(t);
     }
 
-    render(props: {}, state: ModbusTCPConfig & config) {
+    render(props: {}, state: ModbusTcpConfig & config) {
         if (!util.render_allowed())
             return (<></>);
 
@@ -119,7 +119,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
     }
 }
 
-render(<ModbusTCP />, $("#modbus_tcp")[0]);
+render(<ModbusTcp />, $("#modbus_tcp")[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {
 }
