@@ -30,7 +30,7 @@ extern TF_HAL hal;
 
 void Kransteuerung::button_pressed_handler(bool left, uint8_t button_l, uint8_t button_r, uint8_t led_l, uint8_t led_r)
 {
-    bool value[4] = {false};
+    bool value[4] = {false, false, false, false};
     tf_industrial_quad_relay_v2_get_value(&relay, value);
 
     if (button_l != last_button_states[left ? 0 : 2] && button_l == TF_DUAL_BUTTON_V2_BUTTON_STATE_PRESSED) {
@@ -65,11 +65,11 @@ void Kransteuerung::setup()
         return;
     }
 
-    bool value[4];
-    tf_industrial_quad_relay_v2_get_value(&relay, value);
+    bool setup_value[4] = {false, false, false, false};
+    tf_industrial_quad_relay_v2_get_value(&relay, setup_value);
 
-    tf_dual_button_v2_set_led_state(&left,  TF_DUAL_BUTTON_V2_LED_STATE_ON, value[1] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF);
-    tf_dual_button_v2_set_led_state(&right, value[2] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF, value[3] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF);
+    tf_dual_button_v2_set_led_state(&left,  TF_DUAL_BUTTON_V2_LED_STATE_ON, setup_value[1] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF);
+    tf_dual_button_v2_set_led_state(&right, setup_value[2] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF, setup_value[3] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF);
 
 
     tf_dual_button_v2_register_state_changed_callback(&left, [](struct TF_DualButtonV2 *device, uint8_t button_l, uint8_t button_r, uint8_t led_l, uint8_t led_r, void *user_data){
@@ -88,10 +88,10 @@ void Kransteuerung::setup()
     tf_dual_button_v2_set_state_changed_callback_configuration(&right, true);
 
     task_scheduler.scheduleWithFixedDelay([this](){
-        bool value[4] = {false};
-        tf_industrial_quad_relay_v2_get_value(&relay, value);
-        tf_dual_button_v2_set_led_state(&left,  TF_DUAL_BUTTON_V2_LED_STATE_ON, value[1] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF);
-        tf_dual_button_v2_set_led_state(&right, value[2] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF, value[3] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF);
+        bool task_value[4] = {false, false, false, false};
+        tf_industrial_quad_relay_v2_get_value(&relay, task_value);
+        tf_dual_button_v2_set_led_state(&left,  TF_DUAL_BUTTON_V2_LED_STATE_ON, task_value[1] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF);
+        tf_dual_button_v2_set_led_state(&right, task_value[2] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF, task_value[3] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF);
     }, 100, 100);
 
     initialized = true;
