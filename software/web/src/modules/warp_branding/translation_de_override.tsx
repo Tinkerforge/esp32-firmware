@@ -60,11 +60,6 @@ let x = {
             "charge_tracker_remove_modal_text": <>Alle aufgezeichneten Ladevorgänge und der Benutzernamen-Verlauf werden gelöscht. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Danach wird die Wallbox neugestartet.</>
         }
     },
-    "meter": {
-        "status": {
-            "power_history": "Ladeverlauf"
-        }
-    },
     "meters": {
         "status": {
             "power_history": "Ladeverlauf"
