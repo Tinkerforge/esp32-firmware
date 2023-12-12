@@ -264,7 +264,11 @@ int32_t platform_get_energy(int32_t connectorId) {
     if (meter_all_values == nullptr)
         return 0;
 
-    return meter_all_values->get(METER_ALL_VALUES_TOTAL_IMPORT_KWH )->asFloat() * 1000;
+    float result = meter_all_values->get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat();
+    if (isnan(result))
+        return 0;
+
+    return result * 1000;
 }
 
 bool platform_get_signed_meter_value(int32_t connectorId, SampledValueMeasurand measurand, SampledValuePhase phase, SampledValueLocation location, char buf[OCPP_PLATFORM_MEASURAND_MAX_DATA_LEN]){
