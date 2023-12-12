@@ -176,14 +176,10 @@ function ChargeLimitsStatus() {
 
 render(<ChargeLimitsStatus />, $("#charge_limits_override")[0]);
 
-export function init()
-{
-
+export function init() {
 }
 
-export function add_event_listeners()
-{
-
+export function add_event_listeners() {
 }
 
 export function update_sidebar_state(module_init: any) {
