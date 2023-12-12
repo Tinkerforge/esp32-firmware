@@ -30,7 +30,7 @@ import { Button } from "react-bootstrap";
 import { Save } from "react-feather";
 import { ConfigComponent } from "../../ts/components/config_component";
 
-export class DeviceName extends ConfigComponent<"info/display_name"> {
+export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
     constructor() {
         super('info/display_name', __("device_name.script.save_failed"));
     }
@@ -67,12 +67,12 @@ export class DeviceName extends ConfigComponent<"info/display_name"> {
     }
 }
 
-render(<DeviceName />, $("#status-device_name")[0]);
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
+render(<DeviceNameStatus />, $("#status-device_name")[0]);
 
 export function init() {
+}
+
+export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
