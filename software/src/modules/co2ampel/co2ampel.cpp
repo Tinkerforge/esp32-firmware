@@ -108,7 +108,7 @@ void Co2Ampel::setup()
         return;
     }
 
-    api.restorePersistentConfig("co2/config", &config);
+    api.restorePersistentConfig("co2ampel/config", &config);
 
     tf_co2_v2_set_temperature_offset(&co2, static_cast<uint16_t>(config.get("temperature_offset")->asUint()));
     tf_lcd_128x64_clear_display(&lcd);
@@ -191,9 +191,9 @@ void Co2Ampel::setup()
 
 void Co2Ampel::register_urls()
 {
-    api.addPersistentConfig("co2/config", &config, {}, 1000);
-    api.addState("co2/state", &state, {}, 1000);
-    api.addCommand("co2/stop_blink", Config::Null(), {}, [](){
+    api.addPersistentConfig("co2ampel/config", &config, {}, 1000);
+    api.addState("co2ampel/state", &state, {}, 1000);
+    api.addCommand("co2ampel/stop_blink", Config::Null(), {}, [](){
         blink_allowed = false;
     }, true);
 }
