@@ -33,23 +33,23 @@ import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
 
-type Co2Config = API.getType["co2/config"];
+type Co2AmpelConfig = API.getType["co2ampel/config"];
 
-export class Co2 extends ConfigComponent<"co2/config"> {
+export class Co2Ampel extends ConfigComponent<"co2ampel/config"> {
     constructor() {
-        super('co2/config',
-              __("co2.script.save_failed"),
-              __("co2.script.reboot_content_changed"));
+        super('co2ampel/config',
+              __("co2ampel.script.save_failed"),
+              __("co2ampel.script.reboot_content_changed"));
     }
 
-    render(props: {}, state: Readonly<Co2Config>) {
+    render(props: {}, state: Readonly<Co2AmpelConfig>) {
         if (!util.render_allowed())
             return <></>
 
         return (
             <SubPage>
-                <ConfigForm id="co2_config_form" title={__("co2.content.co2")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    <FormRow label={__("co2.content.temperature_offset")} label_muted={__("co2.content.temperature_offset_muted")}>
+                <ConfigForm id="co2ampel_config_form" title={__("co2ampel.content.co2ampel")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                    <FormRow label={__("co2ampel.content.temperature_offset")} label_muted={__("co2ampel.content.temperature_offset_muted")}>
                         <InputFloat
                             unit="°C"
                             value={state.temperature_offset}
@@ -65,64 +65,64 @@ export class Co2 extends ConfigComponent<"co2/config"> {
     }
 }
 
-render(<Co2 />, $("#co2ampel")[0]);
+render(<Co2Ampel />, $("#co2ampel")[0]);
 
-interface Co2StatusState {
-    state: API.getType["co2/state"];
+interface Co2AmpelStatusState {
+    state: API.getType["co2ampel/state"];
 }
 
-export class Co2Status extends Component<{}, Co2StatusState>
+export class Co2AmpelStatus extends Component<{}, Co2AmpelStatusState>
 {
     constructor()
     {
         super();
 
-        util.addApiEventListener('co2/state', () => {
-            this.setState({state: API.get('co2/state')})
+        util.addApiEventListener('co2ampel/state', () => {
+            this.setState({state: API.get('co2ampel/state')})
         });
     }
 
-    render(props: {}, state: Co2StatusState)
+    render(props: {}, state: Co2AmpelStatusState)
     {
         if (!util.render_allowed())
             return <></>;
 
         return <>
-                <FormRow label={__("co2.status.led_state")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("co2ampel.status.led_state")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <IndicatorGroup
                         style="width: 100%"
                         class="flex-wrap"
                         value={state.state.led}
                         items={[
-                            ["secondary", __("co2.status.led_off")],
-                            ["success", __("co2.status.led_green")],
-                            ["warning", __("co2.status.led_yellow")],
-                            ["danger", __("co2.status.led_red")],
+                            ["secondary", __("co2ampel.status.led_off")],
+                            ["success", __("co2ampel.status.led_green")],
+                            ["warning", __("co2ampel.status.led_yellow")],
+                            ["danger", __("co2ampel.status.led_red")],
                         ]}
                     />
                 </FormRow>
 
-                <FormRow label={__("co2.status.co2")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("co2ampel.status.co2")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <OutputFloat value={state.state.co2} digits={0} scale={0} unit="ppm"/>
                 </FormRow>
 
-                <FormRow label={__("co2.status.temperature")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("co2ampel.status.temperature")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <OutputFloat value={state.state.temperature} digits={2} scale={2} unit="°C"/>
                 </FormRow>
 
-                <FormRow label={__("co2.status.humidity")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("co2ampel.status.humidity")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <OutputFloat value={state.state.humidity} digits={2} scale={2} unit="% RH"/>
                 </FormRow>
             </>;
     }
 }
 
-render(<Co2Status />, $("#status-co2")[0]);
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
+render(<Co2AmpelStatus />, $("#status-co2ampel")[0]);
 
 export function init() {
+}
+
+export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {

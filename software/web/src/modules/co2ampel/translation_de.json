@@ -1,5 +1,5 @@
 {
-    "co2": {
+    "co2ampel": {
         "status": {
             "led_state": "CO2-Zustand",
             "co2": "CO2",
@@ -11,16 +11,16 @@
             "led_red": ">= 1500 ppm"
         },
         "navbar": {
-            "co2": "CO2"
+            "co2ampel": "CO2-Ampel"
         },
         "content": {
-            "co2": "CO2",
+            "co2ampel": "CO2-Ampel",
             "temperature_offset": "Temperatur-Offset",
             "temperature_offset_muted": "wird von der gemessenen Temperatur abgezogen"
         },
         "script": {
-            "save_failed": "Speichern der CO2-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "CO2-Einstellungen"
+            "save_failed": "Speichern der CO2-Ampel-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "CO2-Ampel-Einstellungen"
         }
     }
 }

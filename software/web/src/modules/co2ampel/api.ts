@@ -1,4 +1,4 @@
-//APIPath:co2/
+//APIPath:co2ampel/
 
 export interface config {
     temperature_offset: number;
@@ -13,5 +13,4 @@ export interface state {
 }
 
 export interface stop_blink {
-
 }
