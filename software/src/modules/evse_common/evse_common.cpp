@@ -311,10 +311,16 @@ bool EvseCommon::action_triggered(Config *config, void *data) {
     uint32_t *states = (uint32_t*)data;
     switch (config->getTag<CronTriggerID>()) {
         case CronTriggerID::IECChange:
-                if ((cfg->get("new_charger_state")->asInt() == states[1]
-                    || cfg->get("new_charger_state")->asInt() == -1)
-                    && (cfg->get("old_charger_state")->asInt() == states[0] || cfg->get("old_charger_state")->asInt() == -1) )
-                    return true;
+        {
+            if (states == nullptr) {
+                states = new uint32_t[2];
+            }
+            defer { delete[] states;};
+            if ((cfg->get("new_charger_state")->asInt() == states[1]
+                || cfg->get("new_charger_state")->asInt() == -1)
+                && (cfg->get("old_charger_state")->asInt() == states[0] || cfg->get("old_charger_state")->asInt() == -1) )
+                return true;
+        }
             break;
 
         case CronTriggerID::EVSEExternalCurrentWd:
