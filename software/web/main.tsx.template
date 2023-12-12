@@ -58,11 +58,7 @@ function update_modules() {
     if (first_module_init) {
         let hash = window.location.hash;
         let elem = $(`a[href="${hash}"]`);
-        if (hash == "#meter") {
-            // FIXME: brute force solution to allow hidden meter module in
-            //        energy manager firmware. should be solved in a better way
-        }
-        else if (hash == "" || hash == '#status' || elem.length == 0 || elem.prop("hidden")) {
+        if (hash == "" || hash == '#status' || elem.length == 0 || elem.prop("hidden")) {
             history.replaceState({ page: "status" }, "Status", "#status");
             show_page();
             return;
@@ -185,11 +181,7 @@ $(window).on('pageshow', (ev) => {
         if (event.oldURL != event.newURL) {
             let hash = window.location.hash;
             let elem = $(`a[href="${hash}"]`);
-            if (hash == "#meter") {
-                // FIXME: brute force solution to allow hidden meter module in
-                //        energy manager firmware. should be solved in a better way
-            }
-            else if (hash == "" || elem.length == 0/* || elem.prop("hidden")*/) {
+            if (hash == "" || elem.length == 0 || elem.prop("hidden")) {
                 window.location.hash = "#status";
                 return;
             }
