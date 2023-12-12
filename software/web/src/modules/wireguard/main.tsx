@@ -20,7 +20,7 @@
 import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, render, Fragment } from "preact";
+import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -158,24 +158,26 @@ export class Wireguard extends ConfigComponent<'wireguard/config'> {
 
 render(<Wireguard />, $("#wireguard")[0]);
 
-function WireguardStatus() {
-    if (!util.render_allowed() || !API.get("wireguard/config").enable)
-        return <></>;
+export class WireguardStatus extends Component {
+    render() {
+        if (!util.render_allowed() || !API.get("wireguard/config").enable)
+            return <></>;
 
-    return <>
-            <FormRow label={__("wireguard.status.connection")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
-                <IndicatorGroup
-                    style="width: 100%"
-                    class="flex-wrap"
-                    value={API.get("wireguard/state").state}
-                    items={[
-                        ["primary", __("wireguard.status.not_configured")],
-                        ["warning", __("wireguard.status.waiting_for_timesync")],
-                        ["warning", __("wireguard.status.not_connected")],
-                        ["success", __("wireguard.status.connected")]
-                    ]}/>
-            </FormRow>
-        </>;
+        return <>
+                <FormRow label={__("wireguard.status.connection")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                    <IndicatorGroup
+                        style="width: 100%"
+                        class="flex-wrap"
+                        value={API.get("wireguard/state").state}
+                        items={[
+                            ["primary", __("wireguard.status.not_configured")],
+                            ["warning", __("wireguard.status.waiting_for_timesync")],
+                            ["warning", __("wireguard.status.not_connected")],
+                            ["success", __("wireguard.status.connected")]
+                        ]}/>
+                </FormRow>
+            </>;
+    }
 }
 
 render(<WireguardStatus />, $("#status-wireguard")[0]);
