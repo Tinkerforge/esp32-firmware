@@ -614,12 +614,11 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
     history_data: CachedData = {timestamps: [], samples: []};
     uplot_wrapper_live_ref = createRef();
     uplot_wrapper_history_ref = createRef();
-    status_ref: RefObject<MetersStatus> = null;
     value_ids: {[meter_slot: number]: Readonly<number[]>} = {};
     value_idx_by_id: {[meter_slot: number]: NumberToNumber} = {};
     values: {[meter_slot: number]: Readonly<number[]>} = {};
 
-    constructor(props: MetersProps) {
+    constructor() {
         super('meters/0/config',
               __("meters.script.save_failed"),
               __("meters.script.reboot_content_changed"), {
@@ -633,10 +632,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                   editMeterSlot: null,
                   editMeter: [MeterClassID.None, null],
                   extraShow: new Array<boolean>(7),
-              },
-              props);
-
-        this.status_ref = props.status_ref;
+              });
 
         this.state.extraShow.fill(false);
 
@@ -905,14 +901,14 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
     }
 
     update_status_uplot() {
-        if (this.status_ref.current && this.status_ref.current.uplot_wrapper_ref.current) {
+        if (this.props.status_ref && this.props.status_ref.current && this.props.status_ref.current.uplot_wrapper_ref.current) {
             let status_data: UplotData = {
                 keys: [null],
                 names: [null],
                 values: [this.history_data.timestamps],
             };
 
-            let meter_slot = this.status_ref.current.state.meter_slot;
+            let meter_slot = this.props.status_ref.current.state.meter_slot;
 
             if (this.history_data.samples[meter_slot].length > 0) {
                 status_data.keys.push('meter_' + meter_slot);
@@ -920,7 +916,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 status_data.values.push(this.history_data.samples[meter_slot]);
             }
 
-            this.status_ref.current.uplot_wrapper_ref.current.set_data(status_data);
+            this.props.status_ref.current.uplot_wrapper_ref.current.set_data(status_data);
         }
     }
 

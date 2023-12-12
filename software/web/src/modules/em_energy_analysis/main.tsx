@@ -1282,7 +1282,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     uplot_legend_div_5min_flags_ref = createRef();
     uplot_loader_daily_ref = createRef();
     uplot_wrapper_daily_ref = createRef();
-    status_ref: RefObject<EMEnergyAnalysisStatus> = null;
     uplot_update_timeout: number = null;
     uplot_5min_flags_cache: {[id: string]: UplotData} = {};
     uplot_5min_power_cache: {[id: string]: UplotData} = {};
@@ -1295,10 +1294,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     cache_limit = 100;
     chargers: Charger[] = [];
 
-    constructor(props: EMEnergyAnalysisProps) {
-        super(props);
-
-        this.status_ref = props.status_ref;
+    constructor() {
+        super();
 
         let current_5min_date: Date = new Date();
 
@@ -2705,7 +2702,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         }
 
-        if (this.status_ref.current && this.status_ref.current.uplot_wrapper_ref.current) {
+        if (this.props.status_ref.current && this.props.status_ref.current.uplot_wrapper_ref.current) {
             let status_date: Date = new Date();
 
             status_date.setHours(0);
@@ -2718,8 +2715,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let key = this.date_to_5min_key(status_date);
             let data = this.uplot_5min_status_cache[key];
 
-            this.status_ref.current.uplot_loader_ref.current.set_data(data);
-            this.status_ref.current.uplot_wrapper_ref.current.set_data(data);
+            this.props.status_ref.current.uplot_loader_ref.current.set_data(data);
+            this.props.status_ref.current.uplot_wrapper_ref.current.set_data(data);
         }
     }
 
