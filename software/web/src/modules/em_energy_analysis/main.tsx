@@ -378,7 +378,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                             self.ctx.restore();
                         }
 
-                        this.y_size = Math.ceil(size / devicePixelRatio) + 10;
+                        this.y_size = Math.ceil(size / devicePixelRatio) + 20;
                         size = Math.max(this.y_size, this.y_other_size);
 
                         if (this.props.y_sync_ref && this.props.y_sync_ref.current) {
