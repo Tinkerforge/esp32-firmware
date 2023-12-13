@@ -163,16 +163,16 @@ with open('sun_spec_model_id.h', 'w') as f:
     f.write('    SunSpecModelID model_id;\n')
     f.write('    const char *model_name;\n')
     f.write('};\n\n')
-    f.write('extern SunSpecModelSpec sun_spec_model_specs[];\n\n')
-    f.write('extern size_t sun_spec_model_specs_length;\n')
+    f.write('extern const SunSpecModelSpec sun_spec_model_specs[];\n\n')
+    f.write('extern const size_t sun_spec_model_specs_length;\n')
 
 with open('sun_spec_model_id.cpp', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('#include "sun_spec_model_id.h"\n\n')
-    f.write('SunSpecModelSpec sun_spec_model_specs[] = {\n')
+    f.write('const SunSpecModelSpec sun_spec_model_specs[] = {\n')
     f.write(''.join(spec_values))
     f.write('};\n\n')
-    f.write(f'size_t sun_spec_model_specs_length = {len(model_specs)};\n')
+    f.write(f'const size_t sun_spec_model_specs_length = {len(model_specs)};\n')
 
 for lang in translation_values:
     util.specialize_template(f'../../../web/src/modules/meters_sun_spec/translation_{lang}.tsx.template', f'../../../web/src/modules/meters_sun_spec/translation_{lang}.tsx', {
