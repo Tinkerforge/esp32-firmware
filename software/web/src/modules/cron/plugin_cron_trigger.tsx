@@ -48,24 +48,24 @@ function new_rtc_config(): RtcCronTrigger {
 }
 
 function get_rtc_table_children(trigger: RtcCronTrigger) {
-    return __("rtc.cron.cron_translation_function")(trigger[1].mday, trigger[1].wday, trigger[1].hour, trigger[1].minute);
+    return __("cron.cron.cron_translation_function")(trigger[1].mday, trigger[1].wday, trigger[1].hour, trigger[1].minute);
 }
 
 function get_rtc_edit_children(trigger: RtcCronTrigger, on_trigger: (trigger: CronTrigger) => void) {
     let hours: [string, string][] = [['-1','*']];
     let minutes: [string, string][] = [['-1','*']];
     let days: [string, string][] = [
-        ['-1', __("rtc.cron.every")],
-        ['1', __("rtc.cron.monday")],
-        ['2', __("rtc.cron.tuesday")],
-        ['3', __("rtc.cron.wednesday")],
-        ['4', __("rtc.cron.thursday")],
-        ['5', __("rtc.cron.friday")],
-        ['6', __("rtc.cron.saturday")],
-        ['0', __("rtc.cron.sunday")],
-        ['8', __("rtc.cron.weekdays")],
-        ['9', __("rtc.cron.weekends")],
-        ['10', __("rtc.cron.month_end")]
+        ['-1', __("cron.cron.every")],
+        ['1', __("cron.cron.monday")],
+        ['2', __("cron.cron.tuesday")],
+        ['3', __("cron.cron.wednesday")],
+        ['4', __("cron.cron.thursday")],
+        ['5', __("cron.cron.friday")],
+        ['6', __("cron.cron.saturday")],
+        ['0', __("cron.cron.sunday")],
+        ['8', __("cron.cron.weekdays")],
+        ['9', __("cron.cron.weekends")],
+        ['10', __("cron.cron.month_end")]
     ];
 
     const date = new Date();
@@ -84,7 +84,7 @@ function get_rtc_edit_children(trigger: RtcCronTrigger, on_trigger: (trigger: Cr
     const day = trigger[1].mday != -1 ? trigger[1].mday == 32 ? 10 : trigger[1].mday + 10 : trigger[1].wday;
 
     return [<>
-        <FormRow label={__("rtc.cron.mday")}>
+        <FormRow label={__("cron.cron.mday")}>
             <InputSelect
                 items={days}
                 value={day.toString()}
@@ -104,7 +104,7 @@ function get_rtc_edit_children(trigger: RtcCronTrigger, on_trigger: (trigger: Cr
                     on_trigger(util.get_updated_union(trigger, {mday: mday, wday: wday}));
                 }} />
         </FormRow>
-        <FormRow label={__("rtc.cron.time")}>
+        <FormRow label={__("cron.cron.time")}>
             <div class="input-group mb-2">
                 <InputSelect
                     items={hours}
@@ -127,7 +127,7 @@ export function init() {
     return {
         trigger_components: {
             [CronTriggerID.Cron]: {
-                name: __("rtc.cron.clock"),
+                name: __("cron.cron.clock"),
                 new_config: new_rtc_config,
                 clone_config: (trigger: CronTrigger) => [trigger[0], {...trigger[1]}] as CronTrigger,
                 get_edit_children: get_rtc_edit_children,
