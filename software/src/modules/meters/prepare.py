@@ -284,13 +284,16 @@ classes = [
     'API',
     'Sun Spec',
     'Modbus TCP',
-    'MQTT Subscription'
+    #'MQTT Subscription'
 ]
 
 class_values = []
 
 for i, name in enumerate(classes):
     class_values.append('    {0} = {1},\n'.format(util.FlavoredName(name).get().camel, i))
+
+# Unofficial meter classes
+class_values.append('    {0} = {1},\n'.format(util.FlavoredName('Mqtt Mirror').get().camel, 200))
 
 with open('meters_defs.h', 'w') as f:
     f.write('// WARNING: This file is generated.\n\n')
