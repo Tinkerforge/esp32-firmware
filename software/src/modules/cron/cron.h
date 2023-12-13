@@ -55,5 +55,7 @@ public:
     bool trigger_action(CronTriggerID number, void *data, std::function<bool(Config *, void *)> cb);
     bool is_trigger_active(CronTriggerID number);
 
+    bool action_triggered(Config *conf, void *data);
+
     ConfigVec get_configured_triggers(CronTriggerID number);
 };

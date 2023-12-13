@@ -19,6 +19,7 @@
 
 #include "cron.h"
 #include "api.h"
+#include "task_scheduler.h"
 
 Cron::Cron() {
     trigger_vec.push_back({CronTriggerID::None, *Config::Null()});
@@ -34,6 +35,15 @@ void Cron::pre_setup() {
         [this](const Config *cfg) {
             logger.printfln("Got message: %s", cfg->get("message")->asString().c_str());
         }
+    );
+    register_trigger(
+        CronTriggerID::Cron,
+        Config::Object({
+            {"mday", Config::Int(-1, -1, 32)},
+            {"wday", Config::Int(-1, -1, 9)},
+            {"hour", Config::Int(-1, -1, 23)},
+            {"minute", Config::Int(-1, -1, 59)}
+        })
     );
     Config trigger_prototype = Config::Union<CronTriggerID>(
                     *Config::Null(),
@@ -104,6 +114,25 @@ void Cron::setup() {
     config_in_use = config;
     enabled_in_use = enabled;
 
+    if (is_trigger_active(CronTriggerID::Cron)) {
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            static int last_min = 0;
+            auto func = [this](Config *cfg, void *data) -> bool {
+                return action_triggered(cfg, data);
+            };
+            timeval tv;
+            clock_synced(&tv);
+
+            tm time_struct;
+            localtime_r(&tv.tv_sec, &time_struct);
+            if (time_struct.tm_min != last_min) {
+                last_min = time_struct.tm_min;
+                trigger_action(CronTriggerID::Cron, &time_struct, func);
+            }
+        }, 0, 1000);
+    }
+
+
     initialized = true;
 }
 
@@ -155,4 +184,40 @@ ConfigVec Cron::get_configured_triggers(CronTriggerID number) {
         }
     }
     return vec;
+}
+static bool is_last_day (struct tm time) {
+    const int mon = time.tm_mon;
+    time_t next_day = mktime(&time) + 86400;
+    time = *localtime(&next_day);
+    return time.tm_mon != mon;
+}
+
+bool Cron::action_triggered(Config *conf, void *data) {
+    Config *cfg = (Config*)conf->get();
+    tm *time_struct = (tm *)data;
+    bool triggered = false;
+
+    if (cfg->get("wday")->asInt() == -1) {
+        triggered |= cfg->get("mday")->asInt() == time_struct->tm_mday || cfg->get("mday")->asInt() == -1 || cfg->get("mday")->asInt() == 0;
+        triggered |= cfg->get("mday")->asInt() == 32 && is_last_day(*time_struct);
+    } else if (cfg->get("wday")->asInt() > 7) {
+        triggered |= cfg->get("wday")->asInt() == 8 && time_struct->tm_wday > 0 && time_struct->tm_wday < 6;
+        triggered |= cfg->get("wday")->asInt() == 9 && (time_struct->tm_wday == 0 || time_struct->tm_wday >= 6);
+    } else {
+        triggered |= (cfg->get("wday")->asInt() % 7) == time_struct->tm_wday || cfg->get("wday")->asInt() == -1;
+    }
+    triggered = (cfg->get("hour")->asInt() == time_struct->tm_hour || cfg->get("hour")->asInt() == -1) && triggered;
+    triggered = (cfg->get("minute")->asInt() == time_struct->tm_min || cfg->get("minute")->asInt() == -1) && triggered;
+
+    switch (conf->getTag<CronTriggerID>()) {
+        case CronTriggerID::Cron:
+            if (triggered) {
+                return true;
+            }
+            break;
+
+        default:
+            return false;
+    }
+    return false;
 }
