@@ -53,7 +53,7 @@ void MeterAPI::setup(Config &ephemeral_config)
 
 void MeterAPI::register_urls(const String &base_url)
 {
-    api.addCommand(base_url + "values_update", &push_values, {}, [this](){
+    api.addCommand(base_url + "update", &push_values, {}, [this](){
         meters.update_all_values(this->slot, &push_values);
     }, false);
 }
