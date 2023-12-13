@@ -609,8 +609,10 @@ function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
 type MetersConfig = API.getType['meters/0/config'];
 
 export class Meters extends ConfigComponent<'meters/0/config', MetersProps, MetersState> {
+    live_initialized = false;
     live_data: CachedData = {timestamps: [], samples: []};
     pending_live_data: CachedData;
+    history_initialized = false;
     history_data: CachedData = {timestamps: [], samples: []};
     uplot_wrapper_live_ref = createRef();
     uplot_wrapper_history_ref = createRef();
@@ -727,7 +729,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         }
 
         util.addApiEventListener("meters/live_samples", () => {
-            if (this.live_data.timestamps.length == 0) {
+            if (!this.live_initialized) {
                 // received live_samples before live cache initialization
                 this.update_live_cache();
                 return;
@@ -763,7 +765,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         });
 
         util.addApiEventListener("meters/history_samples", () => {
-            if (this.history_data.timestamps.length == 0) {
+            if (!this.history_initialized) {
                 // received history_samples before history cache initialization
                 this.update_history_cache();
                 return;
@@ -815,6 +817,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
         let payload = JSON.parse(response);
 
+        this.live_initialized = true;
         this.live_data = calculate_live_data(payload.offset, payload.samples_per_second, payload.samples);
         this.pending_live_data = {timestamps: [], samples: []}
 
@@ -852,6 +855,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
         let payload = JSON.parse(response);
 
+        this.history_initialized = true;
         this.history_data = calculate_history_data(payload.offset, payload.samples);
 
         return true;
