@@ -45,6 +45,7 @@ let x = {
 
             "last_reset": "Last energy meter reset",
             "last_reset_unknown": "Unknown",
+            "last_reset_counter": /*SFN*/ (n: number) => `${n} times resetted`/*NF*/,
             "reset": "Reset energy meter",
             "never": "Never",
 

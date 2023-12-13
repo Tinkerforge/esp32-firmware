@@ -1111,11 +1111,11 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                 let input_time: h.JSX.Element;
                                 let input_date: h.JSX.Element;
                                 const last_reset = API.get_unchecked(`meters/${meter_slot}/last_reset`);
-                                if (!last_reset) {
+                                if (!last_reset || !last_reset.last_reset) {
                                     input_time = <InputText class="form-control-sm" value={__("meters.content.never")}/>
                                     input_date = <InputText class="form-control-sm" value={__("meters.content.never")}/>
                                 } else if (last_reset.last_reset * 1000 < 1000000000) {
-                                    input_time = <InputText class="form-control-sm" value={__("meters.content.last_reset_unknown")}/>
+                                    input_time = <InputText class="form-control-sm" value={__("meters.content.last_reset_counter")(last_reset.last_reset)}/>
                                     input_date = <InputText class="form-control-sm" value={__("meters.content.last_reset_unknown")}/>
                                 } else {
                                     input_date = <InputDate className={"form-control-sm"} date={new Date(last_reset.last_reset * 1000)}/>
