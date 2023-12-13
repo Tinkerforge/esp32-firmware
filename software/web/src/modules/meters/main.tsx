@@ -987,7 +987,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
                 <UplotWrapper ref={this.uplot_wrapper_live_ref}
                                 id="meters_chart_live"
-                                class="meters-chart pb-4"
+                                class="meters-chart pb-3"
                                 sidebar_id="meters"
                                 show={false}
                                 legend_time_with_seconds={true}
@@ -997,7 +997,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                 y_diff_min={100} />
                 <UplotWrapper ref={this.uplot_wrapper_history_ref}
                                 id="meters_chart_history"
-                                class="meters-chart pb-4"
+                                class="meters-chart pb-3"
                                 sidebar_id="meters"
                                 show={true}
                                 legend_time_with_seconds={false}
