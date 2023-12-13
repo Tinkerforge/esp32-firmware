@@ -312,10 +312,11 @@ bool EvseCommon::action_triggered(Config *config, void *data) {
     switch (config->getTag<CronTriggerID>()) {
         case CronTriggerID::IECChange:
         {
+            uint32_t tmp_states[2] = {0};
             if (states == nullptr) {
-                states = new uint32_t[2];
+                states = tmp_states;
             }
-            defer { delete[] states;};
+
             if ((cfg->get("new_charger_state")->asInt() == states[1]
                 || cfg->get("new_charger_state")->asInt() == -1)
                 && (cfg->get("old_charger_state")->asInt() == states[0] || cfg->get("old_charger_state")->asInt() == -1) )
