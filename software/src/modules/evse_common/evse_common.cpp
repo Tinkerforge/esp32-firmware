@@ -437,7 +437,7 @@ void EvseCommon::register_urls() {
 
     api.addState("evse/external_current", &external_current, {}, 1000);
     api.addCommand("evse/external_current_update", &external_current_update, {}, [this](){
-        this->last_current_update = millis();
+        this->last_external_update = millis();
         backend->set_charging_slot_max_current(CHARGING_SLOT_EXTERNAL, external_current_update.get("current")->asUint());
     }, false);
 
