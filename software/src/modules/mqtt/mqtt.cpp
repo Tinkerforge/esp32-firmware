@@ -393,7 +393,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     // The spec says:
     // It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client
     // because it matches an established subscription regardless of how the flag was set in the message it received [MQTT-3.3.1-9].
-    if (!retain && memcmp(topic, "cron_action/", 12))
+    if (!retain && memcmp(topic, "cron_trigger/", 13) && memcmp(topic, "cron_action/", 12))
         logger.printfln("MQTT: Received message on unknown topic '%.*s' (data_len=%u)", static_cast<int>(topic_len), topic, data_len);
 }
 
@@ -566,7 +566,6 @@ void Mqtt::register_urls()
                 if (conf.second->get("use_prefix")->asBool()) {
                     topic = config.get("global_topic_prefix")->asString() + "/cron_trigger/" + topic;
                 }
-
                 subscribe(topic, [this, idx](const char *tpic, size_t tpic_len, char * data, size_t data_len) {
                     MqttMessage msg;
                     msg.topic = String(tpic).substring(0, tpic_len);
@@ -574,8 +573,8 @@ void Mqtt::register_urls()
                     msg.retained = false;
                     if (cron.trigger_action(CronTriggerID::MQTT, &msg, &trigger_action))
                         return;
-                }, false);
-                subscribed_topics.push_back(topic);
+                }, !conf.second->get("retain")->asBool());
+                 subscribed_topics.push_back(topic);
             }
         }
     }
@@ -614,11 +613,19 @@ void Mqtt::register_events() {
 bool Mqtt::action_triggered(Config *config, void *data) {
     Config *cfg = (Config*)config->get();
     MqttMessage *msg = (MqttMessage *)data;
-    auto &payload = cfg->get("payload")->asString();
+    const CoolString &payload = cfg->get("payload")->asString();
+
+    CoolString topic = cfg->get("topic")->asString();
+    if (cfg->get("use_prefix")->asBool()) {
+        topic = this->config.get("global_topic_prefix")->asString();
+        topic += "/cron_trigger/";
+        topic += cfg->get("topic")->asString();
+    }
+
     switch (config->getTag<CronTriggerID>())
     {
-        case CronTriggerID::MQTT:
-        if (msg->topic == cfg->get("topic")->asString() && (payload == msg->payload || payload.length() == 0))
+    case CronTriggerID::MQTT:
+        if (msg->topic == topic && (payload == msg->payload || payload.length() == 0))
             return true;
         break;
 
