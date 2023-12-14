@@ -61,8 +61,12 @@ let x = {
             "last_seen_and_known_tags": "Last seen tags and known tags",
 
             "cron_action_text": /*FFN*/(tag_id: string, tag_type: string, tag_action: number) => {
+                let action = <></>;
+                if (tag_action !== 0) {
+                    action = <> to {tag_action == 1 ? "start a charge" : tag_action == 2 ? "stop a charge" : ""}</>
+                }
                 return <>
-                    fake the presence of the NFC tag <b>{tag_id}</b> ({tag_type}) to {tag_action == 1 ? "start a charge." : tag_action == 2 ? "stop a charge." : "."}
+                    fake the presence of the NFC tag <b>{tag_id}</b> ({tag_type}).
                 </>
             }/*NF*/,
             "cron_trigger_text": /*FFN*/(tag_id: string, tag_type: string) => {

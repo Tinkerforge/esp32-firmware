@@ -60,8 +60,12 @@ let x = {
             "last_seen_suffix": "",
             "last_seen_and_known_tags": "Zuletzt erkannte und bekannte Tags",
             "cron_action_text": /*FFN*/(tag_id: string, tag_type: string, tag_action: number) => {
+                let action = <></>;
+                if (tag_action !== 0) {
+                    action = <> um einen Ladevorgang zu {tag_action == 1 ? "starten" : tag_action == 2 ? "stoppen" : ""}</>;
+                }
                 return <>
-                    fake das vorhalten des NFC-Tag <b>{tag_id}</b> ({tag_type}) um einen Ladevorgang zu {tag_action == 1 ? "starten." : tag_action == 2 ? "stoppen." : "."}.
+                    fake das vorhalten des NFC-Tag <b>{tag_id}</b> ({tag_type}){action}.
                 </>
             }/*NF*/,
             "cron_trigger_text": /*FFN*/(tag_id: string, tag_type: string) => {
