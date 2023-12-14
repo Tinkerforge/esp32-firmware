@@ -53,15 +53,6 @@
 #define PHASE_SWITCHING_PV1P_FAST3P         4
 #define PHASE_SWITCHING_MAX                 4
 
-#define INPUT_CONFIG_DISABLED               0
-#define INPUT_CONFIG_CONTACTOR_CHECK        1
-#define INPUT_CONFIG_BLOCK_CHARGING         2
-#define INPUT_CONFIG_LIMIT_MAX_CURRENT      3
-#define INPUT_CONFIG_SWITCH_MODE            4
-
-#define INPUT_CONFIG_WHEN_HIGH              0
-#define INPUT_CONFIG_WHEN_LOW               1
-
 #define HYSTERESIS_MIN_TIME_MINUTES         5
 
 #define ERROR_FLAGS_BAD_CONFIG_BIT_POS      31
