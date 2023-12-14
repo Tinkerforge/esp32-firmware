@@ -41,4 +41,7 @@ public:
 
     uint32_t duration_left;
     uint32_t energy_left;
+
+private:
+    bool was_triggered = false;
 };

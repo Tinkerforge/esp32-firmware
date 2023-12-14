@@ -34,9 +34,9 @@ static uint32_t map_duration(uint32_t val)
     switch (val)
     {
         case 1:
-            return 15 * 60 * 1000;
+            return 15 * 1000;
         case 2:
-            return 30 * 60 * 1000;
+            return 30 * 1000;
         case 3:
             return 45 * 60 * 1000;
         case 4:
@@ -124,11 +124,13 @@ void ChargeLimits::register_urls()
     api.addState("charge_limits/active_limits", &config_in_use, {}, 1000);
 
     api.addCommand("charge_limits/override_duration", &override_duration, {}, [this]() {
+        was_triggered = false;
         config_in_use.get("duration")->updateUint(override_duration.get("duration")->asUint());
         state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint() + map_duration(override_duration.get("duration")->asUint()));
     }, true);
 
     api.addCommand("charge_limits/override_energy", &override_energy, {}, [this]() {
+        was_triggered = false;
         config_in_use.get("energy_wh")->updateUint(override_energy.get("energy_wh")->asUint());
         state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + override_energy.get("energy_wh")->asUint() / 1000.0);
     }, true);
@@ -138,6 +140,7 @@ void ChargeLimits::register_urls()
             return;
         }
 
+        was_triggered = false;
         auto time_now = evse_common.get_low_level_state().get("uptime")->asUint();
         state.get("start_timestamp_ms")->updateUint(time_now);
         state.get("target_timestamp_ms")->updateUint(time_now + map_duration(config_in_use.get("duration")->asUint()));
@@ -214,7 +217,6 @@ void ChargeLimits::register_urls()
         }
 
 #if MODULE_CRON_AVAILABLE()
-        static bool was_triggered = false;
         if (target_current == 0 && !was_triggered) {
             cron.trigger_action(CronTriggerID::ChargeLimits, nullptr, &trigger_action);
             was_triggered = true;
