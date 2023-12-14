@@ -186,7 +186,7 @@ export class EVSE extends Component<{}, {}> {
 
                     <FormSeparator heading={__("evse.content.charging_current")}/>
 
-                    {slots.slice(0, 14).map((slot, i) => {
+                    {slots.map((slot, i) => {
                         let variant = "";
                         let value = "";
 
