@@ -51,6 +51,11 @@ let x = {
             "use_topic_prefix_muted": "Konfigurierter Topic-Präfix: ",
             "use_topic_prefix_invalid": "Das Topic darf nicht mit dem konfigurierten Topic-Präfix beginnen, es sei denn \"Topic-Präfix benutzen\" ist aktiviert.",
             "cron_action_text": /*FFN*/(topic: string, payload: string, retain: boolean) => {
+                if (retain && payload.length == 0) {
+                    return <>
+                        <b>lösche</b> gespeicherte Nachrichten von Topic '<b>{topic}</b>'.
+                    </>
+                }
                 return <>
                     sende MQTT-Nachricht '<b>{payload}</b>' an Topic '<b>{topic}</b>'{retain ? " und speichere sie." : "."}
                 </>
@@ -66,7 +71,8 @@ let x = {
                     {ret} an Topic '<b>{topic}</b>' empfangen wird{retained ? " (Gespeicherte Nachrichten werden akzeptiert)" : ""}{", "}
                 </>
             }/*NF*/,
-            "cron_trigger_mqtt": "MQTT-Nachricht empfangen"
+            "cron_trigger_mqtt": "MQTT-Nachricht empfangen",
+            "delete_reatianed_message": "Gespeicherte Nachricht löschen"
         },
         "script": {
             "save_failed": "Speichern der MQTT-Einstellungen fehlgeschlagen.",

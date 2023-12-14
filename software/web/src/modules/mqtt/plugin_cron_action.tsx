@@ -82,7 +82,8 @@ function get_mqtt_edit_children(action: MqttCronAction, on_action: (action: Cron
         </FormRow>
         <FormRow label={__("mqtt.cron.send_payload")}>
             <InputText
-                required
+                required={!action[1].retain}
+                placeholder={!action[1].retain ? "" : __("mqtt.cron.delete_reatianed_message")}
                 maxLength={64}
                 value={action[1].payload}
                 onValue={(v) => {
