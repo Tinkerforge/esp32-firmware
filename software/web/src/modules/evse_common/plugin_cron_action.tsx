@@ -43,7 +43,7 @@ export type EvseLedCronAction = [
 ];
 
 function get_set_current_table_children(action: EvseCronAction) {
-    return __("evse.cron.cron_action_text")(action[1].current / 1000);
+    return __("evse.cron.cron_action_text")((action[1].current / 1000).toLocaleString());
 }
 
 function get_set_current_edit_children(action: EvseCronAction, on_action: (action: CronAction) => void) {

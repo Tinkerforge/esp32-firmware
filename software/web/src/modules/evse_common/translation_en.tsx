@@ -243,7 +243,7 @@ let x = {
             "any": "Any state",
             "allowed_charging_current": "Allowed charging current",
             "cron_state_change_trigger": /*FFN*/(old_state: string, new_state: string) => <>If the charge status changes from "<b>{old_state}</b>" to "<b>{new_state}</b>",{" "}</>/*NF*/,
-            "cron_action_text": /*FFN*/(current: number) => <>set the allowed charging current to <b>{current} A</b>.</>/*NF*/,
+            "cron_action_text": /*FFN*/(current: string) => <>set the allowed charging current to <b>{current} A</b>.</>/*NF*/,
             "cron_led_action_text": /*FFN*/(state: string, duration: number) => state == "An" || state == "Aus" ? <>turn the status-LED <b>{state}</b> for <b>{duration} seconds</b>.</> : <>show <b>{state}</b> for <b>{duration / 1000} seconds</b> on the status-LED.</>/*NF*/
         },
         "script": {
