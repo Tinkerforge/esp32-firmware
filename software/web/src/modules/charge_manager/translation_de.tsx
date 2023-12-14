@@ -81,7 +81,7 @@ let x = {
             "charge_manager_wd": "Lastmanagement Watchdog",
             "cron_trigger_text": "Wenn der Watchdog des Lastmanagements auslöst, ",
             "set_charge_manager": "Lastmanagement",
-            "cron_action_text": /*FFN*/(current: number) => <>setze den maximal durch den Lastmanager verteilbaren Gesamtstrom auf <b>{current / 1000} A</b>.</> /*NF*/,
+            "cron_action_text": /*FFN*/(current: string) => <>setze den maximal durch den Lastmanager verteilbaren Gesamtstrom auf <b>{current} A</b>.</> /*NF*/,
             "max_current": "Maximaler Strom"
         },
         "script": {
