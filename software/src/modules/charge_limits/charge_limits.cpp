@@ -34,9 +34,9 @@ static uint32_t map_duration(uint32_t val)
     switch (val)
     {
         case 1:
-            return 15 * 1000;
+            return 15 * 60 * 1000;
         case 2:
-            return 30 * 1000;
+            return 30 * 60 * 1000;
         case 3:
             return 45 * 60 * 1000;
         case 4:
