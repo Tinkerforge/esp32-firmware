@@ -43,13 +43,19 @@ let x = {
             "h12": "12 Stunden",
             "cron_trigger_text": "Wenn das Ladelimit erreicht ist, ",
             "cron_action_text": /*FFN*/(duration: string, energy: number, restart: boolean) => {
-                let restart_text = <></>;
                 if (restart) {
-                    restart_text = <>zurück </>
+                    return <>
+                        erlaube weitere{" "}
+                        {duration !== "Unbegrenzt" && <b>{duration}</b>}
+                        {duration !== "Unbegrenzt" && energy !== 0 && " und "}
+                        {energy !== 0 && <b>{energy / 1000} kWh</b>}
+                        {duration === "Unbegrenzt" && energy === 0 && <b>unbegrenzt</b>}
+                        {"."}
+                    </>;
                 }
                 return (
                   <>
-                    setze das {restart_text}Ladelimit auf{" "}
+                    setze das Ladelimit auf{" "}
                     {duration !== "Unbegrenzt" && <b>{duration}</b>}
                     {duration !== "Unbegrenzt" && energy !== 0 && " und "}
                     {energy !== 0 && <b>{energy / 1000} kWh</b>}

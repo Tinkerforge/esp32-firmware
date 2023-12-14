@@ -26,6 +26,7 @@ import { CronAction } from "../cron/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
+import { Collapse } from "react-bootstrap";
 
 export type ChargeLimitsCronAction = [
     CronActionID.ChargeLimits,
@@ -92,28 +93,37 @@ function get_charge_limits_edit_children(action: ChargeLimitsCronAction, on_acti
                 items={energy_items}
                 value={action[1].energy_wh.toString()}
                 onValue={(v) => {
-                    on_action(util.get_updated_union(action, {energy_wh: parseInt(v)}));
+                    const restart = v === "0" && action[1].duration === 0 ? false : action[1].restart;
+                    on_action(util.get_updated_union(action, {energy_wh: parseInt(v), restart: restart}));
                 }} />
         </FormRow>
     ] : [];
 
+    const reset = [
+        <Collapse in={action[1].energy_wh !== 0 || action[1].duration !== 0}>
+            <div>
+                <FormRow label={__("charge_limits.cron.restart")}>
+                    <Switch
+                        checked={action[1].restart}
+                        onClick={(v) => {
+                            on_action(util.get_updated_union(action, {restart: !action[1].restart}));
+                        }} />
+                </FormRow>
+            </div>
+        </Collapse>
+    ]
+
     return [
-        <FormRow label={__("charge_limits.cron.restart")}>
-            <Switch
-                checked={action[1].restart}
-                onClick={(v) => {
-                    on_action(util.get_updated_union(action, {restart: !action[1].restart}));
-                }} />
-        </FormRow>,
         <FormRow label={__("charge_limits.cron.duration")}>
             <InputSelect
                 items={duration_items}
                 value={action[1].duration.toString()}
                 onValue={(v) => {
-                    on_action(util.get_updated_union(action, {duration: parseInt(v)}));
+                    const restart = v === "0" && action[1].energy_wh === 0 ? false : action[1].restart;
+                    on_action(util.get_updated_union(action, {duration: parseInt(v), restart: restart}));
                 }} />
         </FormRow>
-    ].concat(meter_entry);
+    ].concat(meter_entry).concat(reset);
 }
 
 function new_charge_limits_config(): CronAction {

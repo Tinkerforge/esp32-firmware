@@ -43,13 +43,19 @@ let x = {
             "h12": "12 Hours",
             "cron_trigger_text": "If the charge limit is reached, ",
             "cron_action_text": /*FFN*/(duration: string, energy: number, restart: boolean) => {
-                let restart_text = <>set</>;
                 if (restart) {
-                    restart_text = <>reset</>
+                    return <>
+                        allow another{" "}
+                        {duration !== "Unlimited" && <b>{duration}</b>}
+                        {duration !== "Unlimited" && energy !== 0 && " and "}
+                        {energy !== 0 && <b>{energy / 1000} kWh</b>}
+                        {duration === "Unlimited" && energy === 0 && "unlimited"}
+                        {"."}
+                    </>
                 }
                 return (
                   <>
-                    {restart_text} the charge limit to{" "}
+                    the charge limit to{" "}
                     {duration !== "Unlimited" && <b>{duration}</b>}
                     {duration !== "Unlimited" && energy !== 0 && " and "}
                     {energy !== 0 && <b>{energy / 1000} kWh</b>}
