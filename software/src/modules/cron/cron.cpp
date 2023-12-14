@@ -117,18 +117,21 @@ void Cron::setup() {
     if (is_trigger_active(CronTriggerID::Cron)) {
         task_scheduler.scheduleWithFixedDelay([this]() {
             static int last_min = 0;
+            static bool was_synced = false;
             auto func = [this](Config *cfg, void *data) -> bool {
                 return action_triggered(cfg, data);
             };
             timeval tv;
-            clock_synced(&tv);
+            bool is_synced = clock_synced(&tv);
 
             tm time_struct;
             localtime_r(&tv.tv_sec, &time_struct);
-            if (time_struct.tm_min != last_min) {
-                last_min = time_struct.tm_min;
+            if (was_synced && time_struct.tm_min != last_min) {
                 trigger_action(CronTriggerID::Cron, &time_struct, func);
             }
+
+            last_min = time_struct.tm_min;
+            was_synced = is_synced;
         }, 0, 1000);
     }
 
