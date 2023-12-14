@@ -36,6 +36,9 @@ export type MeterCronAction = [
 
 function get_meter_reset_table_children(action: MeterCronAction) {
     const meter = API.get_unchecked(`meters/${action[1].meter_slot}/config`);
+    if (!meter) {
+        return __("meters.content.unknown_slot")(action[1].meter_slot);
+    }
     return __("meters.cron.cron_action_text")(meter[1].display_name);
 }
 

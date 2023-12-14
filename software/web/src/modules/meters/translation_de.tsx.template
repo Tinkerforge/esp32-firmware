@@ -38,6 +38,7 @@ let x = {
 
             "edit_meter_title": "Stromzähler bearbeiten",
             "edit_meter_slot": "Nummer",
+            "unknown_slot": /*SFN*/ (slot: number) => `Unbekannter Stromzähler nummer ${slot}`/*NF*/,
             "edit_meter_class": "Klasse",
             "edit_meter_class_select": "Auswählen...",
 

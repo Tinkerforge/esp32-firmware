@@ -38,6 +38,7 @@ let x = {
 
             "edit_meter_title": "Edit energy meter",
             "edit_meter_slot": "Number",
+            "unknown_slot": /*SFN*/ (slot: number) => `Unknown meter number ${slot}`/*NF*/,
             "edit_meter_class": "Class",
             "edit_meter_class_select": "Select...",
 
