@@ -23,16 +23,16 @@ import { CronAction } from "../cron/types";
 import { CronActionID } from "../cron/cron_defs";
 
 
-export type ChargeLimitsCronAction = [
+export type ChargeTrackerResetCronAction = [
     CronActionID.ChargeTrackerReset,
     {}
 ]
 
-function get_charge_tracker_reset_table_children(_: ChargeLimitsCronAction) {
+function get_charge_tracker_reset_table_children(_: ChargeTrackerResetCronAction) {
     return __("charge_tracker.cron.cron_action_text");
 }
 
-function get_charge_tracker_reset_edit_chidren(_: ChargeLimitsCronAction, __: (action: CronAction) => void): ComponentChildren {
+function get_charge_tracker_reset_edit_chidren(_: ChargeTrackerResetCronAction, __: (action: CronAction) => void): ComponentChildren {
     return [];
 }
 
@@ -46,13 +46,13 @@ function new_charge_tracker_reset_config(): CronAction {
 export function init() {
     return {
         action_components: {
-            [CronActionID.ChargeTrackerReset]: {
-                name: __("charge_tracker.cron.charge_tracker_reset"),
-                get_table_children: get_charge_tracker_reset_table_children,
-                get_edit_children: get_charge_tracker_reset_edit_chidren,
-                new_config: new_charge_tracker_reset_config,
-                clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction
-            },
+            // [CronActionID.ChargeTrackerReset]: {
+            //     name: __("charge_tracker.cron.charge_tracker_reset"),
+            //     get_table_children: get_charge_tracker_reset_table_children,
+            //     get_edit_children: get_charge_tracker_reset_edit_chidren,
+            //     new_config: new_charge_tracker_reset_config,
+            //     clone_config: (action: CronAction) => [action[0], {...action[1]}] as CronAction
+            // },
         },
     };
 }
