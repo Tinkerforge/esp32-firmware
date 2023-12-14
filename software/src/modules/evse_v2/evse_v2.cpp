@@ -199,7 +199,6 @@ void EVSEV2::post_setup() {
 
 #if MODULE_CRON_AVAILABLE()
     task_scheduler.scheduleOnce([this]() {
-        cron.trigger_action(CronTriggerID::EVSEButton, nullptr, trigger_action);
         cron.trigger_action(CronTriggerID::EVSEGPInput, nullptr, trigger_action);
         cron.trigger_action(CronTriggerID::EVSEShutdownInput, nullptr, trigger_action);
     }, 0);
