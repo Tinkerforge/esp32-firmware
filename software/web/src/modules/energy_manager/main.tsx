@@ -263,7 +263,6 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                     hysteresis_time: this.state.hysteresis_time,
                 }, __("energy_manager.script.save_failed"));
         }
-        console.log(API.hasModule("cron"))
         if (API.hasModule("cron")) {
             await API.save_unchecked('cron/config', this.cron_config, __("energy_manager.script.save_failed"));
         }
