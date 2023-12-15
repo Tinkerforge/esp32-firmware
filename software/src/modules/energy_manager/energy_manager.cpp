@@ -352,7 +352,7 @@ void EnergyManager::setup()
 
     // Set up meter power filter.
     uint32_t power_mavg_span_s;
-    switch (mode) {
+    switch (pm_config->get("cloud_filter_mode")->asUint()) {
         default:
         case CLOUD_FILTER_OFF:    power_mavg_span_s =   0; break;
         case CLOUD_FILTER_LIGHT:  power_mavg_span_s = 120; break;
