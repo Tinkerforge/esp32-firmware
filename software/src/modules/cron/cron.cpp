@@ -156,15 +156,18 @@ void Cron::register_trigger(CronTriggerID id, Config cfg, ValidatorCb validator)
 
 bool Cron::trigger_action(CronTriggerID number, void *data, std::function<bool(Config *, void *)> cb) {
     bool triggered = false;
+    int current_rule = 1;
     for (auto &conf: config_in_use.get("tasks")) {
         if (conf.get("trigger")->getTag<CronTriggerID>() == number && cb((Config *)conf.get("trigger"), data)) {
             triggered = true;
+            logger.printfln("Running rule #%d", current_rule);
             auto action_ident = conf.get("action")->getTag<CronActionID>();
             if (action_map.find(action_ident) != action_map.end() && action_ident != CronActionID::None)
                 action_map[action_ident].first((Config *)conf.get("action")->get());
             else
                 logger.printfln("There is no action with ident-nr %u!", (uint8_t)action_ident);
         }
+        current_rule++;
     }
     return triggered;
 }
