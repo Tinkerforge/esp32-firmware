@@ -383,240 +383,274 @@ static const ConfigMigration migrations[] = {
     {
         2, 0, 0,
         // 2.0.0 changes
-        // - Migrate energy manager rules to cron
+        // - Migrate energy manager rules to cron.
+        // - Migrate some settings from Energy Manager config to Power Manager config.
+        // - Migrate meter config to new meters framework.
         [] () {
-            DynamicJsonDocument json{16384};
-            DynamicJsonDocument tasks{16384};
+            // - Migrate energy manager rules to cron.
+            {
+                DynamicJsonDocument json{16384};
+                DynamicJsonDocument tasks{16384};
 
-            if (read_config_file("energy_manager/config", json)) {
-                auto config = json.as<JsonObject>();
-                if (config["relay_config"] == 1) {
-                    int when = config["relay_rule_when"];
-                    DynamicJsonDocument task{16384};
-                    auto trigger = task.createNestedArray("trigger");
-                    trigger.add(0);
-                    auto trigger_config = trigger.createNestedObject();
-                    switch (when) {
-                        case 0:
-                            trigger[0] = 12;
-                            trigger_config["state"] = config["relay_rule_is"] == 1 ? false : true;
-                            break;
+                if (read_config_file("energy_manager/config", json)) {
+                    auto config = json.as<JsonObject>();
+                    if (config["relay_config"] == 1) {
+                        int when = config["relay_rule_when"];
+                        DynamicJsonDocument task{16384};
+                        auto trigger = task.createNestedArray("trigger");
+                        trigger.add(0);
+                        auto trigger_config = trigger.createNestedObject();
+                        switch (when) {
+                            case 0:
+                                trigger[0] = 12;
+                                trigger_config["state"] = config["relay_rule_is"] == 1 ? false : true;
+                                break;
 
-                        case 1:
-                            trigger[0] = 13;
-                            trigger_config["state"] = config["relay_rule_is"] == 1 ? false : true;
-                            break;
+                            case 1:
+                                trigger[0] = 13;
+                                trigger_config["state"] = config["relay_rule_is"] == 1 ? false : true;
+                                break;
 
-                        case 2:
-                            trigger[0] = 14;
-                            trigger_config["phase"] = config["relay_rule_is"] == 2 ? 1 : 3;
-                            break;
+                            case 2:
+                                trigger[0] = 14;
+                                trigger_config["phase"] = config["relay_rule_is"] == 2 ? 1 : 3;
+                                break;
 
-                        case 3:
-                            trigger[0] = 15;
-                            trigger_config["contactor_okay"] = config["relay_rule_is"] == 5 ? true : false;
-                            break;
+                            case 3:
+                                trigger[0] = 15;
+                                trigger_config["contactor_okay"] = config["relay_rule_is"] == 5 ? true : false;
+                                break;
 
-                        case 4:
-                            trigger[0] = 16;
-                            trigger_config["power_available"] = config["relay_rule_is"] == 6 ? true : false;
-                            break;
+                            case 4:
+                                trigger[0] = 16;
+                                trigger_config["power_available"] = config["relay_rule_is"] == 6 ? true : false;
+                                break;
 
-                        case 5:
-                            trigger[0] = 17;;
-                            trigger_config["drawing_power"] = config["relay_rule_is"] == 8 ? true : false;
-                    }
-                    auto action = task.createNestedArray("action");
-                    action.add(13);
-                    auto action_config = action.createNestedObject();
-                    action_config["state"] = true;
-                    tasks.add(task);
-                }
-
-                if (config["input3_rule_then"] != 0) {
-
-                    DynamicJsonDocument task{16384};
-                    auto trigger = task.createNestedArray("trigger");
-                    trigger.add(12);
-                    auto trigger_config = trigger.createNestedObject();
-                    trigger_config["state"] = config["input3_rule_is"] == 0 ? true : false;
-                    auto action = task.createNestedArray("action");
-                    action.add(0);
-                    auto action_config = action.createNestedObject();
-
-                    DynamicJsonDocument reset_task{16384};
-                    auto reset_trigger = reset_task.createNestedArray("trigger");
-                    reset_trigger.add(12);
-                    auto reset_trigger_config = reset_trigger.createNestedObject();
-                    reset_trigger_config["state"] = config["input3_rule_is"] == 0 ? false : true;
-                    auto reset_action = reset_task.createNestedArray("action");
-                    reset_action.add(0);
-                    auto reset_action_config = reset_action.createNestedObject();
-
-                    bool ignore_high = false;
-                    bool ignore_low = false;
-                    switch (config["input3_rule_then"].as<int>()) {
-                        case 2:
-                            action[0] = 15;
-                            action_config["slot"] = 0;
-                            action_config["block"] = true;
-                            reset_action[0] = 15;
-                            reset_action_config["slot"] = 0;
-                            reset_action_config["block"] = false;
-                            break;
-
-                        case 3:
-                            action[0] = 14;
-                            action_config["current"] = config["input3_rule_then_limit"];
-                            reset_action[0] = 14;
-                            reset_action_config["current"] = -1;
-                            break;
-
-                        case 4:
-                        {
-                            int on_high = config["input3_rule_then_on_high"];
-                            if (on_high == 255) {
-                                ignore_high = true;
-                            } else {
-                                action[0] = 12;
-                                action_config["mode"] = on_high;
-                                trigger_config["state"] = true;
-                            }
-                            int on_low = config["input3_rule_then_on_low"];
-                            if (on_low == 255) {
-                                ignore_low = true;
-                            } else {
-                                reset_action[0] = 12;
-                                reset_action_config["mode"] = on_low;
-                                reset_trigger_config["state"] = false;
-                            }
+                            case 5:
+                                trigger[0] = 17;;
+                                trigger_config["drawing_power"] = config["relay_rule_is"] == 8 ? true : false;
                         }
-                            break;
-                    }
-                    if (!ignore_high) {
+                        auto action = task.createNestedArray("action");
+                        action.add(13);
+                        auto action_config = action.createNestedObject();
+                        action_config["state"] = true;
                         tasks.add(task);
                     }
-                    if (!ignore_low) {
-                        tasks.add(reset_task);
-                    }
-                }
 
-                if (config["input4_rule_then"] != 0 && config["input4_rule_then"] != 1) {
-                    DynamicJsonDocument task{16384};
-                    auto trigger = task.createNestedArray("trigger");
-                    trigger.add(13);
-                    auto trigger_config = trigger.createNestedObject();
-                    trigger_config["state"] = config["input4_rule_is"] == 0 ? true : false;
-                    auto action = task.createNestedArray("action");
-                    action.add(0);
-                    auto action_config = action.createNestedObject();
+                    if (config["input3_rule_then"] != 0) {
 
-                    DynamicJsonDocument reset_task{16384};
-                    auto reset_trigger = reset_task.createNestedArray("trigger");
-                    reset_trigger.add(13);
-                    auto reset_trigger_config = reset_trigger.createNestedObject();
-                    reset_trigger_config["state"] = config["input4_rule_is"] == 0 ? false : true;
-                    auto reset_action = reset_task.createNestedArray("action");
-                    reset_action.add(0);
-                    auto reset_action_config = reset_action.createNestedObject();
+                        DynamicJsonDocument task{16384};
+                        auto trigger = task.createNestedArray("trigger");
+                        trigger.add(12);
+                        auto trigger_config = trigger.createNestedObject();
+                        trigger_config["state"] = config["input3_rule_is"] == 0 ? true : false;
+                        auto action = task.createNestedArray("action");
+                        action.add(0);
+                        auto action_config = action.createNestedObject();
 
-                    bool ignore_high = false;
-                    bool ignore_low = false;
-                    logger.printfln("!!!!!!!!%d",config["input4_rule_then"].as<int>());
-                    switch (config["input4_rule_then"].as<int>()) {
-                        case 2:
-                            action[0] = 15;
-                            action_config["slot"] = 0;
-                            action_config["block"] = true;
-                            reset_action[0] = 15;
-                            reset_action_config["slot"] = 0;
-                            reset_action_config["block"] = false;
-                            break;
+                        DynamicJsonDocument reset_task{16384};
+                        auto reset_trigger = reset_task.createNestedArray("trigger");
+                        reset_trigger.add(12);
+                        auto reset_trigger_config = reset_trigger.createNestedObject();
+                        reset_trigger_config["state"] = config["input3_rule_is"] == 0 ? false : true;
+                        auto reset_action = reset_task.createNestedArray("action");
+                        reset_action.add(0);
+                        auto reset_action_config = reset_action.createNestedObject();
 
-                        case 3:
-                            action[0] = 14;
-                            action_config["current"] = config["input4_rule_then_limit"];
-                            reset_action[0] = 14;
-                            reset_action_config["current"] = -1;
-                            break;
+                        bool ignore_high = false;
+                        bool ignore_low = false;
+                        switch (config["input3_rule_then"].as<int>()) {
+                            case 2:
+                                action[0] = 15;
+                                action_config["slot"] = 0;
+                                action_config["block"] = true;
+                                reset_action[0] = 15;
+                                reset_action_config["slot"] = 0;
+                                reset_action_config["block"] = false;
+                                break;
 
-                        case 4:
-                        {
-                            int on_high = config["input4_rule_then_on_high"];
-                            if (on_high == 255) {
-                                ignore_high = true;
-                            } else {
-                                action[0] = 12;
-                                action_config["mode"] = on_high;
-                                trigger_config["state"] = true;
+                            case 3:
+                                action[0] = 14;
+                                action_config["current"] = config["input3_rule_then_limit"];
+                                reset_action[0] = 14;
+                                reset_action_config["current"] = -1;
+                                break;
+
+                            case 4:
+                            {
+                                int on_high = config["input3_rule_then_on_high"];
+                                if (on_high == 255) {
+                                    ignore_high = true;
+                                } else {
+                                    action[0] = 12;
+                                    action_config["mode"] = on_high;
+                                    trigger_config["state"] = true;
+                                }
+                                int on_low = config["input3_rule_then_on_low"];
+                                if (on_low == 255) {
+                                    ignore_low = true;
+                                } else {
+                                    reset_action[0] = 12;
+                                    reset_action_config["mode"] = on_low;
+                                    reset_trigger_config["state"] = false;
+                                }
                             }
-                            int on_low = config["input4_rule_then_on_low"];
-                            if (on_low == 255) {
-                                ignore_low = true;
-                            } else {
-                                reset_action[0] = 12;
-                                reset_action_config["mode"] = on_low;
-                                reset_trigger_config["state"] = false;
-                            }
+                                break;
                         }
-                            break;
+                        if (!ignore_high) {
+                            tasks.add(task);
+                        }
+                        if (!ignore_low) {
+                            tasks.add(reset_task);
+                        }
                     }
-                    if (!ignore_high) {
+
+                    if (config["input4_rule_then"] != 0 && config["input4_rule_then"] != 1) {
+                        DynamicJsonDocument task{16384};
+                        auto trigger = task.createNestedArray("trigger");
+                        trigger.add(13);
+                        auto trigger_config = trigger.createNestedObject();
+                        trigger_config["state"] = config["input4_rule_is"] == 0 ? true : false;
+                        auto action = task.createNestedArray("action");
+                        action.add(0);
+                        auto action_config = action.createNestedObject();
+
+                        DynamicJsonDocument reset_task{16384};
+                        auto reset_trigger = reset_task.createNestedArray("trigger");
+                        reset_trigger.add(13);
+                        auto reset_trigger_config = reset_trigger.createNestedObject();
+                        reset_trigger_config["state"] = config["input4_rule_is"] == 0 ? false : true;
+                        auto reset_action = reset_task.createNestedArray("action");
+                        reset_action.add(0);
+                        auto reset_action_config = reset_action.createNestedObject();
+
+                        bool ignore_high = false;
+                        bool ignore_low = false;
+                        logger.printfln("!!!!!!!!%d",config["input4_rule_then"].as<int>());
+                        switch (config["input4_rule_then"].as<int>()) {
+                            case 2:
+                                action[0] = 15;
+                                action_config["slot"] = 0;
+                                action_config["block"] = true;
+                                reset_action[0] = 15;
+                                reset_action_config["slot"] = 0;
+                                reset_action_config["block"] = false;
+                                break;
+
+                            case 3:
+                                action[0] = 14;
+                                action_config["current"] = config["input4_rule_then_limit"];
+                                reset_action[0] = 14;
+                                reset_action_config["current"] = -1;
+                                break;
+
+                            case 4:
+                            {
+                                int on_high = config["input4_rule_then_on_high"];
+                                if (on_high == 255) {
+                                    ignore_high = true;
+                                } else {
+                                    action[0] = 12;
+                                    action_config["mode"] = on_high;
+                                    trigger_config["state"] = true;
+                                }
+                                int on_low = config["input4_rule_then_on_low"];
+                                if (on_low == 255) {
+                                    ignore_low = true;
+                                } else {
+                                    reset_action[0] = 12;
+                                    reset_action_config["mode"] = on_low;
+                                    reset_trigger_config["state"] = false;
+                                }
+                            }
+                                break;
+                        }
+                        if (!ignore_high) {
+                            tasks.add(task);
+                        }
+                        if (!ignore_low) {
+                            tasks.add(reset_task);
+                        }
+                    }
+
+                    if (config["auto_reset_mode"] == true) {
+                        DynamicJsonDocument task{16384};
+                        auto trigger = task.createNestedArray("trigger");
+                        trigger.add(1);
+                        auto trigger_config = trigger.createNestedObject();
+                        trigger_config["mday"] = -1;
+                        trigger_config["mday"] = -1;
+                        trigger_config["hour"] = config["auto_reset_time"].as<int>() / 60;
+                        trigger_config["minute"] = config["auto_reset_time"].as<int>() % 60;
+
+                        auto action = task.createNestedArray("action");
+                        action.add(0);
+                        auto action_config = action.createNestedObject();
+                        action[0] = 12;
+                        action_config["mode"] = 4;
                         tasks.add(task);
                     }
-                    if (!ignore_low) {
-                        tasks.add(reset_task);
+
+                    DynamicJsonDocument cron_json{16384};
+                    if (LittleFS.exists("/migration/cron_config")) {
+                        read_config_file("cron/config", cron_json);
+                    } else {
+                        cron_json.createNestedArray("tasks");
                     }
+                    auto cron_config = cron_json.as<JsonObject>();
+                    for (auto task : tasks.as<JsonArray>()) {
+                        cron_config["tasks"].add(task);
+                    }
+                    write_config_file("cron/config", cron_json);
+
+                    config.remove("auto_reset_mode");
+                    config.remove("auto_reset_time");
+                    config.remove("relay_config");
+                    config.remove("relay_rule_when");
+                    config.remove("relay_rule_when");
+                    config.remove("relay_rule_is");
+                    config.remove("input3_rule_then");
+                    config.remove("input3_rule_then_limit");
+                    config.remove("input3_rule_is");
+                    config.remove("input3_rule_then_on_high");
+                    config.remove("input3_rule_then_on_low");
+                    config.remove("input4_rule_then");
+                    config.remove("input4_rule_then_limit");
+                    config.remove("input4_rule_is");
+                    config.remove("input4_rule_then_on_high");
+                    config.remove("input4_rule_then_on_low");
+
+                    write_config_file("energy_manager/config", json);
+                }
+            }
+
+            // Migrate some settings from Energy Manager config to Power Manager config.
+            {
+                StaticJsonDocument<384> em_cfg;
+
+                if (read_config_file("energy_manager/config", em_cfg)) {
+                    StaticJsonDocument<384> pm_cfg;
+                    pm_cfg.to<JsonObject>();
+
+                    pm_cfg["excess_charging_enable"] = em_cfg["excess_charging_enable"];
+                    pm_cfg["default_mode"]           = em_cfg["default_mode"];
+                    pm_cfg["meter_slot_grid_power"]  = em_cfg["meter_slot_grid_power"];
+                    pm_cfg["target_power_from_grid"] = em_cfg["target_power_from_grid"];
+                    pm_cfg["guaranteed_power"]       = em_cfg["guaranteed_power"];
+                    pm_cfg["cloud_filter_mode"]      = em_cfg["cloud_filter_mode"];
+
+                    em_cfg.remove("excess_charging_enable");
+                    em_cfg.remove("default_mode");
+                    em_cfg.remove("meter_slot_grid_power");
+                    em_cfg.remove("target_power_from_grid");
+                    em_cfg.remove("guaranteed_power");
+                    em_cfg.remove("cloud_filter_mode");
+
+                    write_config_file("energy_manager/config", em_cfg);
+                    write_config_file("power_manager/config", pm_cfg);
                 }
 
-                if (config["auto_reset_mode"] == true) {
-                    DynamicJsonDocument task{16384};
-                    auto trigger = task.createNestedArray("trigger");
-                    trigger.add(1);
-                    auto trigger_config = trigger.createNestedObject();
-                    trigger_config["mday"] = -1;
-                    trigger_config["mday"] = -1;
-                    trigger_config["hour"] = config["auto_reset_time"].as<int>() / 60;
-                    trigger_config["minute"] = config["auto_reset_time"].as<int>() % 60;
-
-                    auto action = task.createNestedArray("action");
-                    action.add(0);
-                    auto action_config = action.createNestedObject();
-                    action[0] = 12;
-                    action_config["mode"] = 4;
-                    tasks.add(task);
-                }
-
-                DynamicJsonDocument cron_json{16384};
-                if (LittleFS.exists("/migration/cron_config")) {
-                    read_config_file("cron/config", cron_json);
-                } else {
-                    cron_json.createNestedArray("tasks");
-                }
-                auto cron_config = cron_json.as<JsonObject>();
-                for (auto task : tasks.as<JsonArray>()) {
-                    cron_config["tasks"].add(task);
-                }
-                write_config_file("cron/config", cron_json);
-
-                config.remove("auto_reset_mode");
-                config.remove("auto_reset_time");
-                config.remove("relay_config");
-                config.remove("relay_rule_when");
-                config.remove("relay_rule_when");
-                config.remove("relay_rule_is");
-                config.remove("input3_rule_then");
-                config.remove("input3_rule_then_limit");
-                config.remove("input3_rule_is");
-                config.remove("input3_rule_then_on_high");
-                config.remove("input3_rule_then_on_low");
-                config.remove("input4_rule_then");
-                config.remove("input4_rule_then_limit");
-                config.remove("input4_rule_is");
-                config.remove("input4_rule_then_on_high");
-                config.remove("input4_rule_then_on_low");
-
-                write_config_file("energy_manager/config", json);
+                rename_config_file("energy_manager/debug_config", "power_manager/debug_config");
             }
 
             // Migrate meter config to new meters framework.

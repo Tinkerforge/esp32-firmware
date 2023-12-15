@@ -1179,8 +1179,8 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
             });
         }
 
-        util.addApiEventListener("energy_manager/config", () => {
-            let config = API.get("energy_manager/config");
+        util.addApiEventListener("power_manager/config", () => {
+            let config = API.get("power_manager/config");
 
             this.setState({meter_slot: config.meter_slot_grid_power});
         });
@@ -1547,8 +1547,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         });
 
-        util.addApiEventListener("energy_manager/config", () => {
-            let config = API.get("energy_manager/config");
+        util.addApiEventListener("power_manager/config", () => {
+            let config = API.get("power_manager/config");
 
             this.setState({meter_slot_status: config.meter_slot_grid_power});
         });

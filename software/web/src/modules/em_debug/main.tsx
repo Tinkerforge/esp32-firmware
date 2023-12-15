@@ -46,8 +46,9 @@ export class EMDebug extends Component {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
             return <></>;
 
-        let ll_state = API.get('energy_manager/low_level_state');
-        let state    = API.get('energy_manager/state');
+        let ll_state    = API.get('energy_manager/low_level_state');
+        let state       = API.get('energy_manager/state');
+        let pm_ll_state = API.get('power_manager/low_level_state');
 
         return (
             <SubPage>
@@ -58,38 +59,38 @@ export class EMDebug extends Component {
 
                 <FormSeparator heading={__("em_debug.content.internal_state")} />
                 <FormRow label="power at meter smooth">
-                    <OutputFloat value={ll_state.power_at_meter} digits={3} scale={3} unit={'kW'} />
+                    <OutputFloat value={pm_ll_state.power_at_meter} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
                 <FormRow label="power at meter filtered">
-                    <OutputFloat value={ll_state.power_at_meter_filtered} digits={3} scale={3} unit={'kW'} />
+                    <OutputFloat value={pm_ll_state.power_at_meter_filtered} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
                 <FormRow label="power available">
-                    <OutputFloat value={ll_state.power_available} digits={3} scale={3} unit={'kW'} />
+                    <OutputFloat value={pm_ll_state.power_available} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
                 <FormRow label="power available filtered">
-                    <OutputFloat value={ll_state.power_available_filtered} digits={3} scale={3} unit={'kW'} />
+                    <OutputFloat value={pm_ll_state.power_available_filtered} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
                 <FormRow label="overall min power">
-                    <OutputFloat value={ll_state.overall_min_power} digits={3} scale={3} unit={'kW'} />
+                    <OutputFloat value={pm_ll_state.overall_min_power} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
                 <FormRow label="threshold 3to1">
-                    <OutputFloat value={ll_state.threshold_3to1} digits={3} scale={3} unit={'kW'} />
+                    <OutputFloat value={pm_ll_state.threshold_3to1} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
                 <FormRow label="threshold 1to3">
-                    <OutputFloat value={ll_state.threshold_1to3} digits={3} scale={3} unit={'kW'} />
+                    <OutputFloat value={pm_ll_state.threshold_1to3} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
                 <FormRow label="CM available current">
-                    <OutputFloat value={ll_state.charge_manager_available_current} digits={3} scale={3} unit={'A'} />
+                    <OutputFloat value={pm_ll_state.charge_manager_available_current} digits={3} scale={3} unit={'A'} />
                 </FormRow>
                 <FormRow label="CM allocated current">
-                    <OutputFloat value={ll_state.charge_manager_allocated_current} digits={3} scale={3} unit={'A'} />
+                    <OutputFloat value={pm_ll_state.charge_manager_allocated_current} digits={3} scale={3} unit={'A'} />
                 </FormRow>
                 <FormRow label="max current limited">
-                    <OutputFloat value={ll_state.max_current_limited} digits={3} scale={3} unit={'A'} />
+                    <OutputFloat value={pm_ll_state.max_current_limited} digits={3} scale={3} unit={'A'} />
                 </FormRow>
                 <FormRow label="uptime past hysteresis">
                     <IndicatorGroup
-                        value={ll_state.uptime_past_hysteresis ? 1 : 0}
+                        value={pm_ll_state.uptime_past_hysteresis ? 1 : 0}
                         items={[
                             ["secondary", "false"],
                             ["primary",   "true" ],
@@ -97,7 +98,7 @@ export class EMDebug extends Component {
                 </FormRow>
                 <FormRow label="is 3phase">
                     <IndicatorGroup
-                        value={ll_state.is_3phase ? 1 : 0}
+                        value={pm_ll_state.is_3phase ? 1 : 0}
                         items={[
                             ["secondary", "false"],
                             ["primary",   "true" ],
@@ -105,7 +106,7 @@ export class EMDebug extends Component {
                 </FormRow>
                 <FormRow label="wants 3phase">
                     <IndicatorGroup
-                        value={ll_state.wants_3phase ? 1 : 0}
+                        value={pm_ll_state.wants_3phase ? 1 : 0}
                         items={[
                             ["secondary", "false"],
                             ["primary",   "true" ],
@@ -113,7 +114,7 @@ export class EMDebug extends Component {
                 </FormRow>
                 <FormRow label="wants 3phase last">
                     <IndicatorGroup
-                        value={ll_state.wants_3phase_last ? 1 : 0}
+                        value={pm_ll_state.wants_3phase_last ? 1 : 0}
                         items={[
                             ["secondary", "false"],
                             ["primary",   "true" ],
@@ -121,7 +122,7 @@ export class EMDebug extends Component {
                 </FormRow>
                 <FormRow label="is on last">
                     <IndicatorGroup
-                        value={ll_state.is_on_last ? 1 : 0}
+                        value={pm_ll_state.is_on_last ? 1 : 0}
                         items={[
                             ["secondary", "false"],
                             ["primary",   "true" ],
@@ -129,7 +130,7 @@ export class EMDebug extends Component {
                 </FormRow>
                 <FormRow label="wants on last">
                     <IndicatorGroup
-                        value={ll_state.wants_on_last ? 1 : 0}
+                        value={pm_ll_state.wants_on_last ? 1 : 0}
                         items={[
                             ["secondary", "false"],
                             ["primary",   "true" ],
@@ -137,31 +138,31 @@ export class EMDebug extends Component {
                 </FormRow>
                 <FormRow label="phase state change blocked">
                     <IndicatorGroup
-                        value={ll_state.phase_state_change_blocked ? 1 : 0}
+                        value={pm_ll_state.phase_state_change_blocked ? 1 : 0}
                         items={[
                             ["secondary", "false"],
                             ["primary",   "true" ],
                         ]} />
                 </FormRow>
                 <FormRow label="phase state change delay">
-                    <InputText value={this.ms2time(ll_state.phase_state_change_delay)}/>
+                    <InputText value={this.ms2time(pm_ll_state.phase_state_change_delay)}/>
                 </FormRow>
                 <FormRow label="on state change blocked">
                     <IndicatorGroup
-                        value={ll_state.on_state_change_blocked ? 1 : 0}
+                        value={pm_ll_state.on_state_change_blocked ? 1 : 0}
                         items={[
                             ["secondary", "false"],
                             ["primary",   "true" ],
                         ]} />
                 </FormRow>
                 <FormRow label="on state change delay">
-                    <InputText value={this.ms2time(ll_state.on_state_change_delay)}/>
+                    <InputText value={this.ms2time(pm_ll_state.on_state_change_delay)}/>
                 </FormRow>
                 <FormRow label="charging blocked">
-                    <InputText value={"0x" + ll_state.charging_blocked.toString(16)}/>
+                    <InputText value={"0x" + pm_ll_state.charging_blocked.toString(16)}/>
                 </FormRow>
                 <FormRow label="switching state">
-                    <InputText value={ll_state.switching_state}/>
+                    <InputText value={pm_ll_state.switching_state}/>
                 </FormRow>
                 <FormRow label="consecutive bricklet errors">
                     <InputText value={ll_state.consecutive_bricklet_errors}/>

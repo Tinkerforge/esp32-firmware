@@ -34,27 +34,6 @@
 #define EM_TASK_DELAY_MS                    250
 #define CURRENT_POWER_SMOOTHING_SAMPLES     4
 
-#define MODE_FAST                           0
-#define MODE_OFF                            1
-#define MODE_PV                             2
-#define MODE_MIN_PV                         3
-#define MODE_DO_NOTHING                     255
-
-#define CLOUD_FILTER_OFF                    0
-#define CLOUD_FILTER_LIGHT                  1
-#define CLOUD_FILTER_MEDIUM                 2
-#define CLOUD_FILTER_STRONG                 3
-
-#define PHASE_SWITCHING_MIN                 0
-#define PHASE_SWITCHING_AUTOMATIC           0
-#define PHASE_SWITCHING_ALWAYS_1PHASE       1
-#define PHASE_SWITCHING_ALWAYS_3PHASE       2
-#define PHASE_SWITCHING_EXTERNAL_CONTROL    3
-#define PHASE_SWITCHING_PV1P_FAST3P         4
-#define PHASE_SWITCHING_MAX                 4
-
-#define HYSTERESIS_MIN_TIME_MINUTES         5
-
 #define ERROR_FLAGS_BAD_CONFIG_BIT_POS      31
 #define ERROR_FLAGS_BAD_CONFIG_MASK         (1u<< ERROR_FLAGS_BAD_CONFIG_BIT_POS)
 #define ERROR_FLAGS_SDCARD_BIT_POS          25
@@ -109,12 +88,15 @@ public:
     void register_events() override;
     void loop() override;
 
+    const Config * get_config() _ATTRIBUTE((const));
+
     // Called in energy_manager_meter setup
     void update_all_data();
 
     void limit_max_current(uint32_t limit_ma);
     void reset_limit_max_current();
     void switch_mode(uint32_t new_mode);
+    void update_charge_mode(const Config &charge_mode_update);
 
     void setup_energy_manager();
     String get_energy_manager_debug_header();
@@ -134,33 +116,6 @@ public:
 
     bool action_triggered(Config *config, void *data);
 
-    bool debug = false;
-
-    ConfigRoot state;
-    ConfigRoot low_level_state;
-    ConfigRoot config;
-    ConfigRoot config_in_use;
-    ConfigRoot debug_config;
-    ConfigRoot debug_config_in_use;
-    ConfigRoot charge_mode;
-    ConfigRoot charge_mode_update;
-    ConfigRoot external_control;
-    ConfigRoot external_control_update;
-
-    EnergyManagerAllData all_data;
-
-    union {
-        uint32_t combined;
-        uint8_t  pin[4];
-    } charging_blocked               = {0};
-
-    uint32_t error_flags             = 0;
-    uint32_t config_error_flags      = 0;
-    bool     contactor_check_tripped = false;
-    bool     is_3phase               = false;
-    bool     wants_on_last           = false;
-    float    power_at_meter_raw_w    = NAN;
-
 private:
     void update_status_led();
     void clr_error(uint32_t error_mask);
@@ -178,22 +133,41 @@ private:
     void check_debug();
     String prepare_fmtstr();
 
+    ConfigRoot state;
+    ConfigRoot low_level_state;
+    ConfigRoot config;
+    ConfigRoot external_control;
+    ConfigRoot external_control_update;
+
+    Config *pm_low_level_state;
+    const Config *pm_config;
+    Config *pm_charge_mode;
+
+    EnergyManagerAllData all_data;
+
     EmRgbLed rgb_led;
 
+    uint32_t error_flags        = 0;
+    uint32_t config_error_flags = 0;
+
     uint32_t last_debug_keep_alive               = 0;
+    bool     debug                               = false;
     bool     printed_not_seen_all_chargers       = false;
     bool     printed_seen_all_chargers           = false;
     bool     printed_skipping_energy_update      = false;
     bool     uptime_past_hysteresis              = false;
-    uint32_t consecutive_bricklet_errors         = 0;
+    bool     contactor_check_tripped             = false;
     bool     bricklet_reachable                  = true;
+    uint32_t consecutive_bricklet_errors         = 0;
     SwitchingState switching_state               = SwitchingState::Monitoring;
     uint32_t switching_start                     = 0;
     uint32_t mode                                = 0;
     uint32_t have_phases                         = 0;
+    bool     is_3phase                           = false;
     bool     wants_3phase                        = false;
     bool     wants_3phase_last                   = false;
     bool     is_on_last                          = false;
+    bool     wants_on_last                       = false;
     bool     just_switched_phases                = false;
     bool     just_switched_mode                  = false;
     uint32_t phase_state_change_blocked_until    = 0;
@@ -202,8 +176,15 @@ private:
     uint32_t charge_manager_allocated_current_ma = 0;
     uint32_t max_current_limited_ma              = 0;
 
+    union {
+        uint32_t combined;
+        uint8_t  pin[4];
+    } charging_blocked               = {0};
+
     int32_t  power_available_w                   = 0;
     int32_t  power_available_filtered_w          = 0;
+
+    float    power_at_meter_raw_w                = NAN;
 
     int32_t  power_at_meter_smooth_w             = INT32_MAX;
     int32_t  power_at_meter_smooth_values_w[CURRENT_POWER_SMOOTHING_SAMPLES];

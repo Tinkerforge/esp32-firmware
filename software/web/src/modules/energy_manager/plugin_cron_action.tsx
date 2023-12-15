@@ -94,7 +94,7 @@ function new_em_phase_switch_config(): CronAction {
 }
 
 function get_em_charge_mode_switch_table_children(action: EMChargeModeSwitchCronAction) {
-    return __("energy_manager.cron.charge_mode_switch_action_text")(action[1].mode, API.get("energy_manager/config").default_mode);
+    return __("energy_manager.cron.charge_mode_switch_action_text")(action[1].mode, API.get("power_manager/config").default_mode);
 }
 
 function get_em_charge_mode_switch_edit_children(action: EMChargeModeSwitchCronAction, on_action: (action: CronAction) => void) {
@@ -105,7 +105,7 @@ function get_em_charge_mode_switch_edit_children(action: EMChargeModeSwitchCronA
         ['3', __("energy_manager.cron.guaranteed_power")],
     ]
 
-    modes.push(['4', __("energy_manager.cron.charge_mode_default") + " (" + modes[API.get("energy_manager/config").default_mode][1] + ")"])
+    modes.push(['4', __("energy_manager.cron.charge_mode_default") + " (" + modes[API.get("power_manager/config").default_mode][1] + ")"])
 
     return [
         <FormRow label={__("energy_manager.cron.charge_mode")}>

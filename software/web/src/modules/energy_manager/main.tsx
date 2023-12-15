@@ -44,7 +44,7 @@ type StringStringTuple = [string, string];
 
 export class EnergyManagerStatus extends Component {
     change_mode(mode: number) {
-        API.save('energy_manager/charge_mode', {"mode": mode}, __("energy_manager.script.mode_change_failed"));
+        API.save('power_manager/charge_mode', {"mode": mode}, __("energy_manager.script.mode_change_failed"));
     }
 
     generate_config_error_label(generate: number, label: string) {
@@ -92,8 +92,9 @@ export class EnergyManagerStatus extends Component {
 
         let status           = API.get('energy_manager/state');
         let config           = API.get('energy_manager/config');
-        let charge_mode      = API.get('energy_manager/charge_mode');
+        let charge_mode      = API.get('power_manager/charge_mode');
         let external_control = API.get('energy_manager/external_control');
+        let pm_config        = API.get('power_manager/config');
 
         let error_flags_ok        = status.error_flags == 0;
         let error_flags_config    = status.error_flags & 0x80000000;
@@ -115,18 +116,18 @@ export class EnergyManagerStatus extends Component {
                     <Button
                         style="display: flex;align-items: center;justify-content: center;"
                         className="m-1 rounded-left rounded-right"
-                        variant={config.excess_charging_enable ? (charge_mode.mode == 2 ? "success" : "primary") : "secondary"}
-                        disabled={!config.excess_charging_enable || charge_mode.mode == 2}
+                        variant={pm_config.excess_charging_enable ? (charge_mode.mode == 2 ? "success" : "primary") : "secondary"}
+                        disabled={!pm_config.excess_charging_enable || charge_mode.mode == 2}
                         onClick={() => this.change_mode(2)}>
-                        {!config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 2 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.mode_pv")}</span>
+                        {!pm_config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 2 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.mode_pv")}</span>
                     </Button>
                     <Button
                         style="display: flex;align-items: center;justify-content: center;"
                         className="m-1 rounded-left rounded-right"
-                        variant={config.excess_charging_enable ? (charge_mode.mode == 3 ? "success" : "primary") : "secondary"}
-                        disabled={!config.excess_charging_enable || charge_mode.mode == 3}
+                        variant={pm_config.excess_charging_enable ? (charge_mode.mode == 3 ? "success" : "primary") : "secondary"}
+                        disabled={!pm_config.excess_charging_enable || charge_mode.mode == 3}
                         onClick={() => this.change_mode(3)}>
-                        {!config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 3 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.mode_min_pv")}</span>
+                        {!pm_config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 3 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.mode_min_pv")}</span>
                     </Button>
                     <Button
                         style="display: flex;align-items: center;justify-content: center;"
@@ -209,7 +210,7 @@ export class EnergyManagerStatus extends Component {
 
 render(<EnergyManagerStatus />, $("#status-energy_manager")[0]);
 
-export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, API.getType['energy_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
+export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
     old_input4_rule_then = -1;
 
     // Need to use any here in case the cron module is not available.
@@ -220,8 +221,12 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
             __("energy_manager.script.save_failed"),
             __("energy_manager.script.reboot_content_changed"));
 
-        util.addApiEventListener('energy_manager/debug_config', () => {
-            this.setState({...API.get('energy_manager/debug_config')});
+        util.addApiEventListener('power_manager/config', () => {
+            this.setState({...API.get('power_manager/config')});
+        });
+
+        util.addApiEventListener('power_manager/debug_config', () => {
+            this.setState({...API.get('power_manager/debug_config')});
         });
 
         util.addApiEventListener_unchecked('cron/config', () => {
@@ -243,8 +248,18 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
     }
 
     override async sendSave(t: "energy_manager/config", cfg: API.getType['energy_manager/config']) {
+        if (API.hasModule("power_manager")) {
+            await API.save('power_manager/config', {
+                    excess_charging_enable: this.state.excess_charging_enable,
+                    default_mode:           this.state.default_mode,
+                    meter_slot_grid_power:  this.state.meter_slot_grid_power,
+                    target_power_from_grid: this.state.target_power_from_grid,
+                    guaranteed_power:       this.state.guaranteed_power,
+                    cloud_filter_mode:      this.state.cloud_filter_mode,
+                }, __("energy_manager.script.save_failed"));
+        }
         if (API.hasModule("debug")) {
-            await API.save('energy_manager/debug_config', {
+            await API.save('power_manager/debug_config', {
                     hysteresis_time: this.state.hysteresis_time,
                 }, __("energy_manager.script.save_failed"));
         }
@@ -256,15 +271,22 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
     }
 
     override async sendReset(t: "energy_manager/config") {
+        if (API.hasModule("power_manager")) {
+            await API.reset('power_manager/config', super.error_string, super.reboot_string);
+        }
         if (API.hasModule("debug")) {
-            await API.reset('energy_manager/debug_config', super.error_string, super.reboot_string);
+            await API.reset('power_manager/debug_config', super.error_string, super.reboot_string);
         }
 
         await super.sendReset(t);
     }
 
     override getIsModified(t: "energy_manager/config"): boolean {
-        if (API.hasModule("debug") && API.is_modified('energy_manager/debug_config')) {
+        if (API.hasModule("power_manager") && API.is_modified('power_manager/config')) {
+            return true;
+        }
+
+        if (API.hasModule("debug") && API.is_modified('power_manager/debug_config')) {
             return true;
         }
 
@@ -328,7 +350,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         return has_rule;
     }
 
-    render(props: {}, s: Readonly<API.getType['energy_manager/config'] & API.getType['energy_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}>) {
+    render(props: {}, s: Readonly<API.getType['energy_manager/config'] & API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}>) {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
             return <></>
 
@@ -408,7 +430,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                                 if (v == "2") {
                                     this.setState({guaranteed_power: Math.max(this.state.guaranteed_power, 230 * 6 * 3)});
                                 } else if (this.state.guaranteed_power == (230 * 6 * 3)) {
-                                    this.setState({guaranteed_power: Math.max(230 * 6, API.get("energy_manager/config").guaranteed_power)});
+                                    this.setState({guaranteed_power: Math.max(230 * 6, API.get("power_manager/config").guaranteed_power)});
                                 }
                                 if (v == "3") {
                                     this.setState({
