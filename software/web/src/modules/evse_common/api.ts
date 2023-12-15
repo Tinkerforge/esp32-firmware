@@ -18,6 +18,9 @@ export const EVSE_SLOT_EXTERNAL = 8;
 export const EVSE_SLOT_MODBUS_TCP = 9;
 export const EVSE_SLOT_MODBUS_TCP_ENABLE = 10;
 export const EVSE_SLOT_OCPP = 11;
+export const EVSE_SLOT_CHARGE_LIMITS = 12;
+export const EVSE_SLOT_REQUIRE_METER = 13;
+export const EVSE_SLOT_CRON = 14;
 
 export type slots = Slot[];
 
