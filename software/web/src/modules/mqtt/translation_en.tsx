@@ -53,11 +53,11 @@ let x = {
             "cron_action_text": /*FFN*/(topic: string, payload: string, retain: boolean) => {
                 if (retain && payload.length == 0) {
                     return <>
-                        <b>delete</b> retained messages from topic '<b>{topic}</b>'.
+                        <b>delete</b> retained messages from topic "<b>{topic}</b>".
                     </>
                 }
                 return <>
-                    send MQTT message '<b>{payload}</b>' to topic '<b>{topic}</b>'{retain ? " and retain it." : "."}
+                    send MQTT message "<b>{payload}</b>" to topic "<b>{topic}</b>"{retain ? " and retain it." : "."}
                 </>
             }/*NF*/,
             "cron_trigger_text": /*FFN*/(topic: string, payload: string, retained: boolean) => {
@@ -65,10 +65,10 @@ let x = {
                 if (payload.length == 0) {
                     ret = <>If any MQTT message</>;
                 } else {
-                    ret = <>If  MQTT message '<b>{payload}</b>'</>;
+                    ret = <>If  MQTT message "<b>{payload}</b>"</>;
                 }
                 return <>
-                    {ret} is received on topic '<b>{topic}</b>'{retained ? " (Retained messages are accepted)" : ""}{", "}
+                    {ret} is received on topic "<b>{topic}</b>"{retained ? " (Retained messages are accepted)" : ""}{", "}
                 </>
             }/*NF*/,
             "cron_trigger_mqtt": "MQTT message received",

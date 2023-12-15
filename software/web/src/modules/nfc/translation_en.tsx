@@ -66,12 +66,12 @@ let x = {
                     action = <> to {tag_action == 1 ? "start a charge" : tag_action == 2 ? "stop a charge" : ""}</>
                 }
                 return <>
-                    fake the presence of the NFC tag <b>{tag_id}</b> ({tag_type}).
+                    fake the presence of the NFC tag "<b>{tag_id}</b>" ({tag_type}).
                 </>
             }/*NF*/,
             "cron_trigger_text": /*FFN*/(tag_id: string, tag_type: string) => {
                 return <>
-                    If NFC tag '<b>{tag_id}</b>' ({tag_type}) is detected,{" "}
+                    If NFC tag "<b>{tag_id}</b>" ({tag_type}) is detected,{" "}
                 </>
             }/*NF*/,
             "cron_trigger_nfc": "NFC tag seen"

@@ -65,13 +65,13 @@ let x = {
                     action = <> um einen Ladevorgang zu {tag_action == 1 ? "starten" : tag_action == 2 ? "stoppen" : ""}</>;
                 }
                 return <>
-                    fake das vorhalten des NFC-Tag <b>{tag_id}</b> ({tag_type}){action}.
+                    fake das vorhalten des NFC-Tag "<b>{tag_id}</b>" ({tag_type}){action}.
                 </>
             }/*NF*/,
             "cron_trigger_text": /*FFN*/(tag_id: string, tag_type: string) => {
                 return (
                 <>
-                    Wenn das NFC-Tag '<b>{tag_id}</b>' ({tag_type}) erkannt wird,{" "}
+                    Wenn das NFC-Tag "<b>{tag_id}</b>" ({tag_type}) erkannt wird,{" "}
                 </>
                 )
             }/*NF*/,

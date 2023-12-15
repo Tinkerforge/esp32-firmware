@@ -53,11 +53,11 @@ let x = {
             "cron_action_text": /*FFN*/(topic: string, payload: string, retain: boolean) => {
                 if (retain && payload.length == 0) {
                     return <>
-                        <b>lösche</b> gespeicherte Nachrichten von Topic '<b>{topic}</b>'.
+                        <b>lösche</b> gespeicherte Nachrichten von Topic "<b>{topic}</b>".
                     </>
                 }
                 return <>
-                    sende MQTT-Nachricht '<b>{payload}</b>' an Topic '<b>{topic}</b>'{retain ? " und speichere sie." : "."}
+                    sende MQTT-Nachricht "<b>{payload}</b>" an Topic "<b>{topic}</b>"{retain ? " und speichere sie." : "."}
                 </>
             }/*NF*/,
             "cron_trigger_text": /*FFN*/(topic: string, payload: string, retained: boolean) => {
@@ -65,10 +65,10 @@ let x = {
                 if (payload.length == 0) {
                     ret = <>Wenn beliebige MQTT-Nachricht</>;
                 } else {
-                    ret = <>Wenn MQTT-Nachricht '<b>{payload}</b>'</>;
+                    ret = <>Wenn MQTT-Nachricht "<b>{payload}</b>"</>;
                 }
                 return <>
-                    {ret} an Topic '<b>{topic}</b>' empfangen wird{retained ? " (Gespeicherte Nachrichten werden akzeptiert)" : ""}{", "}
+                    {ret} an Topic "<b>{topic}</b>" empfangen wird{retained ? " (Gespeicherte Nachrichten werden akzeptiert)" : ""}{", "}
                 </>
             }/*NF*/,
             "cron_trigger_mqtt": "MQTT-Nachricht empfangen",
