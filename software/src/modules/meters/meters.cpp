@@ -627,11 +627,17 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
         return;
     }
 
+    if (index == UINT32_MAX) {
+        logger.printfln("meters: Tried to update a value for meter in slot %u that is known to not exist (index = UINT32_MAX).", slot);
+        return;
+    }
+
     MeterSlot &meter_slot = meter_slots[slot];
 
+    Config::Wrap val_wrap = meter_slot.values.get(static_cast<uint16_t>(index));
     // Think about ordering and short-circuting issues before changing this!
-    bool was_nan = isnan(meter_slot.values.get(static_cast<uint16_t>(index))->asFloat());
-    if (meter_slot.values.get(static_cast<uint16_t>(index))->updateFloat(new_value) && !was_nan)
+    bool was_nan = isnan(val_wrap->asFloat());
+    if (val_wrap->updateFloat(new_value) && !was_nan)
         meter_slot.values_last_changed_at = now_us();
 
     meter_slot.values_last_updated_at = now_us();
