@@ -14,6 +14,7 @@ import time
 import re
 import json
 import glob
+from pathlib import PurePath
 from base64 import b64encode
 from zlib import crc32
 import util
@@ -178,7 +179,6 @@ def generate_module_dependencies_header(info_path, header_path, backend_module, 
                     if conflict_module:
                         print(f"Error: Module '{module_name}' conflicts with module '{conflict_name}'.", file=sys.stderr)
                         sys.exit(1)
-
 
             if backend_module:
                 cur_module_index = backend_modules.index(backend_module)
@@ -617,11 +617,40 @@ def main():
     if nightly:
         backend_modules.append(util.FlavoredName("Debug").get())
 
+    with ChangedDirectory('src'):
+        excluded_bindings = [PurePath(x).as_posix() for x in glob.glob('bindings/brick_*') + glob.glob('bindings/bricklet_*')]
+
+    excluded_bindings.remove('bindings/bricklet_unknown.h')
+    excluded_bindings.remove('bindings/bricklet_unknown.c')
+
+    def include_bindings(path):
+        if not path.endswith('.h') and not path.endswith('.c') and not path.endswith('.cpp'):
+            return
+
+        with open(path, 'r', encoding='utf-8') as f:
+            for line in f.readlines():
+                m = p.match(line)
+
+                if m != None:
+                    binding = m.group(1)
+
+                    if binding + '.h' in excluded_bindings:
+                        excluded_bindings.remove(binding + '.h')
+
+                    if binding + '.c' in excluded_bindings:
+                        excluded_bindings.remove(binding + '.c')
+
+    p = re.compile(r'#\s*include\s+[<"](bindings/brick(?:let)?_.*)\.h[>"]')
+
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
             print("Backend module {} not found.".format(backend_module.space, mod_path))
+
+        for root, dirs, files in os.walk(mod_path):
+            for name in files:
+                include_bindings(os.path.join(root, name))
 
         excluded_backend_modules.remove(backend_module.under)
 
@@ -637,11 +666,23 @@ def main():
             with ChangedDirectory(mod_path):
                 subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_module], env=environ)
 
-    if build_src_filter != None:
-        for excluded_backend_module in excluded_backend_modules:
-            build_src_filter.append('-<modules/{0}/*>'.format(excluded_backend_module))
+    for root, dirs, files in os.walk('src'):
+        root_path = PurePath(root)
+        root_parents = [root_path] + list(root_path.parents)
 
-        env.Replace(SRC_FILTER=[' '.join(build_src_filter)])
+        if PurePath('src', 'bindings') in root_parents or PurePath('src', 'modules') in root_parents:
+            continue
+
+        for name in files:
+            include_bindings(os.path.join(root, name))
+
+    for excluded_backend_module in excluded_backend_modules:
+        build_src_filter.append('-<modules/{0}/*>'.format(excluded_backend_module))
+
+    for excluded_binding in excluded_bindings:
+        build_src_filter.append('-<{0}>'.format(excluded_binding))
+
+    env.Replace(SRC_FILTER=[' '.join(build_src_filter)])
 
     all_mods = []
     for existing_backend_module in os.listdir(os.path.join('src', 'modules')):
@@ -941,7 +982,6 @@ def main():
         print('Web interface dependencies are not up-to-date ({0}), updating now'.format(node_modules_reason))
 
         util.remove_digest('web', 'node_modules', env=env)
-
 
         def clear_directory(path):
             if not os.path.exists(path):
