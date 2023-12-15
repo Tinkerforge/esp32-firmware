@@ -101,7 +101,7 @@ def main():
     ], shell=sys.platform == 'win32')
 
     if build_args.css_source_map:
-        with open(os.path.join(BUILD_DIR, 'main.min.css'), 'r') as f:
+        with open(os.path.join(BUILD_DIR, 'main.min.css'), 'r', encoding='utf-8') as f:
             css_src = f.read()
 
         with open(os.path.join(BUILD_DIR, 'main.min.css.map'), 'rb') as f:
@@ -111,7 +111,7 @@ def main():
 
         css_src = css_src.replace('sourceMappingURL=main.min.css.map', 'sourceMappingURL=data:text/json;base64,{0}'.format(css_map))
 
-        with open(os.path.join(BUILD_DIR, 'main.min.css'), 'w') as f:
+        with open(os.path.join(BUILD_DIR, 'main.min.css'), 'w', encoding='utf-8') as f:
             f.write(css_src)
 
     print('html-minifier-terser...')

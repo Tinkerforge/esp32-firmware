@@ -70,7 +70,7 @@ for trigger in triggers:
 for action in actions:
     action_values.append('    {0} = {1},\n'.format(util.FlavoredName(action[0]).get().camel, action[1]))
 
-with open('cron_defs.h', 'w') as f:
+with open('cron_defs.h', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('#include <stdint.h>\n\n')
     f.write('#pragma once\n\n')
@@ -81,7 +81,7 @@ with open('cron_defs.h', 'w') as f:
     f.write(''.join(action_values))
     f.write('};\n')
 
-with open('../../../web/src/modules/cron/cron_defs.ts', 'w') as f:
+with open('../../../web/src/modules/cron/cron_defs.ts', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('export const enum CronTriggerID {\n')
     f.write(''.join(trigger_values))

@@ -372,7 +372,7 @@ def file_to_embedded_ts(path):
     data_url = file_to_data_url(path)
     basename = os.path.basename(path).replace(".", "_")
     path = path.replace(os.path.basename(path), basename)
-    with open(path + ".embedded.ts", 'w') as f:
+    with open(path + ".embedded.ts", 'w', encoding='utf-8') as f:
         f.write('export let {} = "{}";'.format(basename, data_url))
 
 FrontendPlugin = collections.namedtuple('FrontendPlugin', 'module_name import_name interface_names')

@@ -351,7 +351,7 @@ for model_id in model_ids:
     print_header(r"#endif")
 
     struct_header_output.seek(0)
-    with open(f"model_{model_id:03d}.h", "w") as outfile:
+    with open(f"model_{model_id:03d}.h", "w", encoding="utf-8") as outfile:
         shutil.copyfileobj(struct_header_output, outfile)
 
     model = {}
@@ -652,5 +652,5 @@ print_cpp(r"    }")
 print_cpp(r"};")
 
 cpp_output.seek(0)
-with open(f"model_parser_gen.cpp", "w") as outfile:
+with open(f"model_parser_gen.cpp", "w", encoding="utf-8") as outfile:
     shutil.copyfileobj(cpp_output, outfile)

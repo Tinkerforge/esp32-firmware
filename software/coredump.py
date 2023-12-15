@@ -170,7 +170,7 @@ def get_tf_coredump_data(coredump_path: str):
 core_dump_path = os.path.join(tempfile.gettempdir(), "tf_coredump.elf")
 
 def get_core_dump_from_debug_report(path):
-    with open(path) as file:
+    with open(path, 'r', encoding='utf-8') as file:
         file_str = file.read()
         core_dump_start_pos = file_str.rfind("___CORE_DUMP_START___\n\n")
         if core_dump_start_pos < 0:
@@ -275,7 +275,7 @@ if __name__ == '__main__':
         def run_gdb(repo_dir="../"):
             coredump_py_gdb_cmds = ""
             if os.path.exists("coredump_py_gdb_cmds"):
-                with open("coredump_py_gdb_cmds") as f:
+                with open("coredump_py_gdb_cmds", "r", encoding="utf-8") as f:
                     coredump_py_gdb_cmds = f.read().replace("\n", " ")
 
             os.system(f"{gdb} " +

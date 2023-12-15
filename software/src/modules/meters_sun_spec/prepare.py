@@ -151,7 +151,7 @@ for model_spec in model_specs:
     model_is_meter_like.append(f'    {model_spec.model_id}: {str(model_spec.is_meter_like).lower()},\n')
     model_is_supported.append(f'    {model_spec.model_id}: {str(model_spec.is_supported).lower()},\n')
 
-with open('sun_spec_model_id.h', 'w') as f:
+with open('sun_spec_model_id.h', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('#include <stdint.h>\n')
     f.write('#include <stdlib.h>\n\n')
@@ -166,7 +166,7 @@ with open('sun_spec_model_id.h', 'w') as f:
     f.write('extern const SunSpecModelSpec sun_spec_model_specs[];\n\n')
     f.write('extern const size_t sun_spec_model_specs_length;\n')
 
-with open('sun_spec_model_id.cpp', 'w') as f:
+with open('sun_spec_model_id.cpp', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('#include "sun_spec_model_id.h"\n\n')
     f.write('const SunSpecModelSpec sun_spec_model_specs[] = {\n')
@@ -179,7 +179,7 @@ for lang in translation_values:
         '{{{models}}}': ',\n            '.join(translation_values[lang]),
     })
 
-with open('../../../web/src/modules/meters_sun_spec/sun_spec_model_specs.ts', 'w') as f:
+with open('../../../web/src/modules/meters_sun_spec/sun_spec_model_specs.ts', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('export const SUN_SPEC_MODEL_INFOS: {model_id: number, is_meter_like: boolean, is_supported: boolean}[] = [\n')
     f.write(''.join(model_infos))

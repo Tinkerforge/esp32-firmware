@@ -20,7 +20,7 @@ if 'software' not in sys.modules:
 
 from software import util
 
-with open(os.path.join(software_dir, "web", "src", "build.ts")) as f:
+with open(os.path.join(software_dir, "web", "src", "build.ts"), "r", encoding='utf-8') as f:
     content = f.read()
     match = re.search(r"export const METERS_SLOTS = (\d+);", content)
     if match is None:

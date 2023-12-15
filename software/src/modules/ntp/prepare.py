@@ -90,12 +90,12 @@ def generate(name, nested_dict):
 if not os.path.isdir(ZONES_DIR):
     sys.exit(0)
 
-with open("timezones.c", "r") as f:
+with open("timezones.c", "r", encoding="utf-8") as f:
     f.readline()
     generated_db_version = f.readline().split(';')[0].strip()
 
 try:
-    with open(os.path.join(ZONES_DIR, "tzdata.zi"), "r") as f:
+    with open(os.path.join(ZONES_DIR, "tzdata.zi"), "r", encoding='utf-8') as f:
         installed_db_version = f.readline().split("version")[1].strip()
 except FileNotFoundError:
     util.log("Skipping timezone database generation. No timezone information available")

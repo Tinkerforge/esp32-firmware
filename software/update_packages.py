@@ -42,7 +42,7 @@ for name in sorted(os.listdir('packages')):
             package_json_path = os.path.join('packages', name, 'package.json')
 
             try:
-                with open(os.path.join(package_json_path), 'r') as f:
+                with open(os.path.join(package_json_path), 'r', encoding='utf-8') as f:
                     package_json = f.read()
             except FileNotFoundError:
                 package_json = None
@@ -55,7 +55,7 @@ for name in sorted(os.listdir('packages')):
                 util.log('Clearing {0}'.format(name))
                 os.makedirs(package_path)
 
-                with open(package_json_path, 'w') as f:
+                with open(package_json_path, 'w', encoding='utf-8') as f:
                     f.write(package_json)
 
         continue
@@ -68,7 +68,7 @@ for name in sorted(os.listdir('packages')):
     url = config[name]['url']
 
     try:
-        with open(tinkerforge_json_path, 'r') as f:
+        with open(tinkerforge_json_path, 'r', encoding='utf-8') as f:
             tinkerforge_json = json.loads(f.read())
 
             if tinkerforge_json.get('version') == VERSION and tinkerforge_json.get('url') == url:
@@ -122,10 +122,10 @@ for name in sorted(os.listdir('packages')):
             with open(path, 'wb') as f:
                 f.write(data)
 
-    with open(os.path.join('packages', name, '.gitignore'), 'w') as f:
+    with open(os.path.join('packages', name, '.gitignore'), 'w', encoding='utf-8') as f:
         f.write('*\n!package.json\n')
 
-    with open(tinkerforge_json_path, 'w') as f:
+    with open(tinkerforge_json_path, 'w', encoding='utf-8') as f:
         f.write(json.dumps({'version': VERSION, 'url': url}))
 
     os.remove(zip_path)

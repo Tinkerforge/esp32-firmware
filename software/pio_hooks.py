@@ -333,7 +333,7 @@ def collect_translation(path, override=False):
             try:
                 translation[language] = json.loads(content)
             except:
-                with open("/tmp/out.json", "w") as f:
+                with open("/tmp/out.json", "w", encoding='utf-8') as f:
                     f.write(content)
                 print('JSON error in', translation_path)
                 raise
