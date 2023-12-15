@@ -145,6 +145,12 @@ void EvseCommon::pre_setup() {
     });
 
 #if MODULE_CRON_AVAILABLE()
+    cron_current = Config::Object({
+        {"current", Config::Uint16(32000)}
+    });
+
+    cron_current_update = cron_current;
+
     cron.register_trigger(
         CronTriggerID::IECChange,
         Config::Object({
@@ -624,6 +630,11 @@ void EvseCommon::register_urls() {
             }
         }, 1000, 1000);
     }
+
+    api.addState("evse/cron_current", &cron_current);
+    api.addCommand("evse/cron_current_update", &cron_current_update, {}, [this](){
+        backend->set_charging_slot_max_current(CHARGING_SLOT_CRON, cron_current_update.get("current")->asUint());
+    }, false); //TODO: should this be an action?
 #endif
 
 }

@@ -207,6 +207,8 @@ private:
     ConfigRoot ocpp_enabled_update;
     ConfigRoot require_meter_enabled;
     ConfigRoot require_meter_enabled_update;
+    ConfigRoot cron_current;
+    ConfigRoot cron_current_update;
 
     // Stored on ESP
     ConfigRoot meter_config;

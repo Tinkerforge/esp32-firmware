@@ -88,6 +88,10 @@ export interface external_defaults {
     clear_on_disconnect: boolean
 }
 
+export interface cron_current {
+    current: number;
+}
+
 export interface start_charging {
 
 }

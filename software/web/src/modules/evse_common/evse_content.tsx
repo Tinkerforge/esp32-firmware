@@ -33,7 +33,7 @@ import { InputText } from "../../ts/components/input_text";
 import { PageHeader } from "../../ts/components/page_header";
 import { SubPage } from "../../ts/components/sub_page";
 import { __, translate_unchecked } from "../../ts/translation";
-import { EVSE_SLOT_EXTERNAL } from "./api";
+import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_CRON } from "./api";
 import { OutputFloat } from "../../ts/components/output_float";
 
 let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
@@ -207,35 +207,49 @@ export class EVSE extends Component<{}, {}> {
                             variant = slot.max_current == min ? "warning" : "primary";
                         }
 
-                        if (i != EVSE_SLOT_EXTERNAL)
-                            return <FormRow key={i} label={__("evse.content.slot")(i)}>
-                                <InputIndicator value={value} variant={variant as any} />
-                            </FormRow>
-
-                        return <FormRow key={i} label={__("evse.content.slot")(i)}>
-                            <InputIndicator value={value} variant={variant as any}
-                                onReset={
-                                    () => {
-                                        API.save('evse/external_defaults', {
-                                                "current": 32000,
-                                                "clear_on_disconnect": false
-                                            },
-                                            __("evse.script.reset_slot_failed"));
+                        switch (i) {
+                            case EVSE_SLOT_EXTERNAL:
+                                return <FormRow key={i} label={__("evse.content.slot")(i)}>
+                                    <InputIndicator value={value} variant={variant as any}
+                                        onReset={
+                                            () => {
+                                                API.save('evse/external_defaults', {
+                                                        "current": 32000,
+                                                        "clear_on_disconnect": false
+                                                    },
+                                                    __("evse.script.reset_slot_failed"));
 
 
-                                        API.save('evse/external_current',
-                                            {"current": 32000},
-                                            __("evse.script.reset_slot_failed"));
+                                                API.save('evse/external_current',
+                                                    {"current": 32000},
+                                                    __("evse.script.reset_slot_failed"));
 
-                                        API.save('evse/external_clear_on_disconnect',
-                                            {"clear_on_disconnect": false},
-                                            __("evse.script.reset_slot_failed"));
-                                    }
-                                }
-                                resetVariant="danger"
-                                resetText={__("evse.content.reset_slot")}
-                                resetHidden={!slot.active || slot.max_current == 32000}/>
-                        </FormRow>
+                                                API.save('evse/external_clear_on_disconnect',
+                                                    {"clear_on_disconnect": false},
+                                                    __("evse.script.reset_slot_failed"));
+                                            }
+                                        }
+                                        resetVariant="danger"
+                                        resetText={__("evse.content.reset_slot")}
+                                        resetHidden={!slot.active || slot.max_current == 32000}/>
+                                </FormRow>
+                            case EVSE_SLOT_CRON:
+                                return <FormRow key={i} label={__("evse.content.slot")(i)}>
+                                    <InputIndicator value={value} variant={variant as any}
+                                        onReset={
+                                            () => API.save('evse/cron_current',
+                                                    {"current": 32000},
+                                                    __("evse.script.reset_slot_failed"))
+                                        }
+                                        resetVariant="danger"
+                                        resetText={__("evse.content.reset_slot")}
+                                        resetHidden={!slot.active || slot.max_current == 32000}/>
+                                </FormRow>
+                            default:
+                                return <FormRow key={i} label={__("evse.content.slot")(i)}>
+                                    <InputIndicator value={value} variant={variant as any} />
+                                </FormRow>
+                        }
                     })}
 
                     <FormSeparator heading={__("evse.content.configuration")}/>
