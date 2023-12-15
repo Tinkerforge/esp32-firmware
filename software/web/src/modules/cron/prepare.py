@@ -2,6 +2,7 @@ import os
 import sys
 import importlib.util
 import importlib.machinery
+from pathlib import PurePath
 
 software_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 
@@ -25,7 +26,7 @@ actions = []
 inits = []
 
 for plugin in util.find_frontend_plugins('Cron', 'Trigger'):
-    import_path = os.path.join('..', plugin.module_name, plugin.import_name)
+    import_path = PurePath('..', plugin.module_name, plugin.import_name).as_posix()
 
     if import_path not in already_imported:
         imports.append("import * as {0}_trigger from '{1}'".format(plugin.module_name, import_path))
@@ -36,7 +37,7 @@ for plugin in util.find_frontend_plugins('Cron', 'Trigger'):
         triggers.append('{0}_trigger.{1}'.format(plugin.module_name, interface_name))
 
 for plugin in util.find_frontend_plugins('Cron', 'Action'):
-    import_path = os.path.join('..', plugin.module_name, plugin.import_name)
+    import_path = PurePath('..', plugin.module_name, plugin.import_name).as_posix()
 
     if import_path not in already_imported:
         imports.append("import * as {0}_action from '{1}'".format(plugin.module_name, import_path))
