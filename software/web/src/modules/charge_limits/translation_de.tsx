@@ -45,7 +45,7 @@ let x = {
             "cron_trigger_text": "Wenn das Ladelimit erreicht ist, ",
             "cron_action_text": /*FFN*/(duration: string, energy: number, restart: boolean) => {
                 if (duration === undefined && energy === -1 && restart) {
-                    return <>starte das aktuelle Ladelimit neu.</>;
+                    return <>erlaube das aktuelle Ladelimit nochmal.</>;
                 } else if (duration === undefined && energy === -1) {
                     return <>lasse das Ladelimit unverändert.</>
                 } else if (duration === "Unbegrenzt" && energy === 0) {
@@ -55,7 +55,7 @@ let x = {
                 if (restart) {
                     let duration_limit = <></>;
                     if (duration === undefined) {
-                        duration_limit = <>starte das aktuelle Zeitlimit neu</>
+                        duration_limit = <>erlaube das aktuelle Zeitlimit nochmal</>
                     } else if (duration !== "Unbegrenzt") {
                         duration_limit = <>erlaube weitere <b>{duration}</b></>
                     } else if (duration === "Unbegrenzt") {
@@ -71,7 +71,7 @@ let x = {
 
                     let energy_limit = <></>;
                     if (energy === -1) {
-                        energy_limit = <>starte das aktuelle Energielimit neu</>
+                        energy_limit = <>erlaube das aktuelle Energielimit nochmal</>
                     } else if (energy !== 0) {
                         energy_limit = <><b>{energy / 1000} kWh</b></>
                     } else if (energy === 0) {

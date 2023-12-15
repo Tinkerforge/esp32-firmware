@@ -45,7 +45,7 @@ let x = {
             "cron_trigger_text": "If the charge limit is reached, ",
             "cron_action_text": /*FFN*/(duration: string, energy: number, restart: boolean) => {
                 if (duration === undefined && energy === -1 && restart) {
-                    return <>restart the current charge limit.</>;
+                    return <>allow the current charge limit again.</>;
                 } else if (duration === undefined && energy === -1) {
                     return <>leave the charge limit <b>unchanged</b>.</>
                 } else if (duration === "Unlimited" && energy === 0) {
@@ -55,7 +55,7 @@ let x = {
                 if (restart) {
                         let duration_limit = <></>;
                         if (duration === undefined) {
-                            duration_limit = <>restart the current time limit</>
+                            duration_limit = <>allow the current time limit again</>
                         } else if (duration !== "Unlimited") {
                             duration_limit = <>allow another <b>{duration.toLowerCase()}</b></>
                         } else if (duration === "Unlimited") {
@@ -72,7 +72,7 @@ let x = {
 
                         let energy_limit = <></>;
                         if (energy === -1) {
-                            energy_limit = <>restart the current energy limit</>
+                            energy_limit = <>allow the current energy limit again</>
                         } else if (energy !== 0) {
                             energy_limit = <><b>{energy / 1000} kWh</b></>
                         } else if (energy === 0) {
