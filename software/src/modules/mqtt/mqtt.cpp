@@ -80,8 +80,8 @@ void Mqtt::pre_setup()
     cron.register_trigger(
         CronTriggerID::MQTT,
         Config::Object({
-            {"topic", Config::Str("", 0, 64)},
-            {"payload", Config::Str("", 0, 64)},
+            {"topic", Config::Str("", 0, 32)},
+            {"payload", Config::Str("", 0, 32)},
             {"retain", Config::Bool(false)},
             {"use_prefix", Config::Bool(false)}
         }),
@@ -97,8 +97,8 @@ void Mqtt::pre_setup()
     cron.register_action(
         CronActionID::MQTT,
         Config::Object({
-            {"topic", Config::Str("", 0, 64)},
-            {"payload", Config::Str("", 0, 64)},
+            {"topic", Config::Str("", 0, 32)},
+            {"payload", Config::Str("", 0, 32)},
             {"retain", Config::Bool(false)},
             {"use_prefix", Config::Bool(false)}
         }),

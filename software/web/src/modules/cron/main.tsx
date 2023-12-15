@@ -34,7 +34,7 @@ import { Task, CronTriggerComponents, CronActionComponents } from "./types";
 import { plugins_init } from "./plugins";
 import { SubPage } from "src/ts/components/sub_page";
 
-const MAX_RULES = 20;
+const MAX_RULES = 14;
 
 type CronState = {
     displayed_trigger: number;
