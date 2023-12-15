@@ -142,6 +142,9 @@ export class Cron extends ConfigComponent<"cron/config", {}, CronState> {
         if (action_children) {
             preview.push(action_children.get_table_children(this.state.edit_task.action));
         }
+        if (preview.length === 0) {
+            return triggerSelector.concat(actionSelector);
+        }
         return triggerSelector.concat(actionSelector).concat(<hr/>).concat(<div class="pb-3">{preview}</div>);
     }
 
