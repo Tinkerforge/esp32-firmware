@@ -20,7 +20,7 @@ let x = {
             "weekdays": "Weekdays",
             "weekends": "Weekends",
             "month_end": "Month End",
-            "cron_translation_function": /*SFN*/(mday: number, wday: number, hour: number, minute: number) => {
+            "cron_translation_function": /*FFN*/(mday: number, wday: number, hour: number, minute: number) => {
                 const wdays = [
                     "Sundays",
                     "Mondays",
@@ -31,46 +31,59 @@ let x = {
                     "Saturdays",
                     "Sundays"
                 ];
-
-                const date = new Date();
-
-                let ret = "";
+                let day = <></>;
                 if (mday != -1) {
                     if (mday == 32) {
-                        ret += "On the last day of the month";
+                        day = <>On the <b>last day</b> of the month</>;
                     } else {
-                        ret += "Every " + mday + "th of the month";
+                        let extension = "th";
+                        if (mday == 1 || mday == 21 || mday == 31) {
+                            extension = "st";
+                        } else if (mday == 2 || mday == 22) {
+                            extension = "nd";
+                        } else if (mday == 3 || mday == 23) {
+                            extension = "rd";
+                        }
+                        day = <>Every <b>{mday}{extension}</b> of the month</>;
                         if (mday >= 29) {
-                            ret += " (only executed in months with " + mday + " days)";
+                            day = <>{day} (only executed in months with {mday} days)</>;
                         }
                     }
                 } else if (wday == 8) {
-                    ret += "Weekdays";
+                    day = <><b>Weekdays</b></>;
                 } else if (wday == 9) {
-                    ret += "Weekends";
+                    day = <><b>Weekends</b></>;
                 } else if (wday != -1) {
-                    ret += wdays[wday];
+                    day = <><b>{wdays[wday]}</b></>;
                 }
                 else {
-                    ret += "Every day";
+                    day = <>Every day</>;
                 }
 
+                const date = new Date();
+                let time = <></>;
                 if (hour != -1 && minute != -1) {
                     date.setMinutes(minute);
                     date.setHours(hour);
-                    ret += " at " + date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                    let time_string = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                    time = <> at <b>{time_string}</b></>;
                 } else if (hour != -1) {
-                    date.setHours(hour)
-                    ret += ", every minute from " + date.toLocaleTimeString([], { hour: "2-digit" });
+                    date.setHours(hour);
+                    const start = date.toLocaleTimeString([], { hour: "2-digit" });
                     date.setHours(hour + 1);
-                    ret += " until " + date.toLocaleTimeString([], { hour: "2-digit" });
+                    const end = date.toLocaleTimeString([], { hour: "2-digit" });
+                    time = <>, every minute from <b>{start}</b> until <b>{end}</b></>
                 } else if (minute != -1) {
-                    ret += ", every hour at minute " + minute;
+                    if (minute == 0) {
+                        time = <>, every hour</>;
+                    } else {
+                        time = <>, every hour at minute <b>{minute}</b></>;
+                    }
                 } else {
-                    ret += ", every minute";
+                    time = <>, every minute</>
                 }
 
-                return ret + ", ";
+                return <>{day}{time}, </>;
             }/*NF*/
         },
         "content": {

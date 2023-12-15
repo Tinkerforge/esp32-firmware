@@ -20,7 +20,7 @@ let x = {
             "weekdays": "Wochentags",
             "weekends": "Am Wochenende",
             "month_end": "Monatsende",
-            "cron_translation_function": /*SFN*/(mday: number, wday: number, hour: number, minute: number) => {
+            "cron_translation_function": /*FFN*/(mday: number, wday: number, hour: number, minute: number) => {
                 const wdays = [
                     "Sonntags",
                     "Montags",
@@ -32,48 +32,54 @@ let x = {
                     "Sonntags"
                 ];
 
-                let ret = "";
+                let day = <></>;
                 if (mday != -1) {
                     if (mday == 32) {
-                        ret += "Am letzten Tag des Monats";
+                        day = <>Am <b>letzten Tag</b> des Monats</>;
                     } else {
-                        ret += "Jeden " + mday + ". des Monats";
+                        day = <>Jeden <b>{mday}.</b> des Monats</>;
                         if (mday >= 29) {
-                            ret += " (wird nur in Monaten mit " + mday + " Tagen ausgeführt)";
+                            day = <>{day} (wird nur in Monaten mit {mday} Tagen ausgeführt)</>;
                         }
                     }
                 } else if (wday == 8) {
-                    ret += "Wochentags";
+                    day = <><b>Wochentags</b></>;
                 } else if (wday == 9) {
-                    ret += "Am Wochenende";
+                    day = <><b>Am Wochenende</b></>;
                 } else if (wday != -1) {
-                    ret += wdays[wday];
+                    day = <><b>{wdays[wday]}</b></>;
                 }
                 else {
-                    ret += "Täglich";
+                    day = <>Täglich</>;
                 }
 
                 const date = new Date();
-
+                let time = <></>;
                 if (hour != -1 && minute != -1) {
                     date.setMinutes(minute);
                     date.setHours(hour);
-                    ret += " um " + date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-                    if (!ret.endsWith("AM") && !ret.endsWith("PM")) {
-                        ret += " Uhr";
+                    let time_string = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                    if (!time_string.endsWith("AM") && !time_string.endsWith("PM")) {
+                        time_string += " Uhr";
                     }
+                    time = <> um <b>{time_string}</b></>;
                 } else if (hour != -1) {
                     date.setHours(hour);
-                    ret += ", minütlich von " + date.toLocaleTimeString([], { hour: "2-digit" }) + " bis ";
+                    const start = date.toLocaleTimeString([], { hour: "2-digit" });
                     date.setHours(hour + 1);
-                    ret += date.toLocaleTimeString([], { hour: "2-digit" });
+                    const end = date.toLocaleTimeString([], { hour: "2-digit" });
+                    time = <>, minütlich von <b>{start}</b> bis <b>{end}</b></>
                 } else if (minute != -1) {
-                    ret += ", stündlich zur " + minute + ". Minute";
+                    if (minute == 0) {
+                        time = <>, stündlich</>;
+                    } else {
+                        time = <>, stündlich zur <b>{minute}.</b> Minute</>;
+                    }
                 } else {
-                    ret += ", minütlich";
+                    time = <>, minütlich</>
                 }
 
-                return ret + ", ";
+                return <>{day}{time}, </>;
             }/*NF*/
         },
         "content": {
