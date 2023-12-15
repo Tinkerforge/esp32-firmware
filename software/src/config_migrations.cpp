@@ -526,7 +526,6 @@ static const ConfigMigration migrations[] = {
 
                         bool ignore_high = false;
                         bool ignore_low = false;
-                        logger.printfln("!!!!!!!!%d",config["input4_rule_then"].as<int>());
                         switch (config["input4_rule_then"].as<int>()) {
                             case 2:
                                 action[0] = 15;
