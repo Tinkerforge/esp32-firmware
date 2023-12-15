@@ -50,14 +50,14 @@ env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.elf",
     env.VerboseAction(lambda env, **kwargs: copy2(env.subst("$BUILD_DIR/${PROGNAME}.elf"),
                                                   "build/{}.elf".format(firmware_basename)),
-                      "Copying $BUILD_DIR/${PROGNAME}.elf")
+                      f"Copying $BUILD_DIR{os.sep}${{PROGNAME}}.elf")
 )
 
 env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.bin",
     env.VerboseAction(lambda env, **kwargs: copy2(env.subst("$BUILD_DIR/${PROGNAME}.bin"),
                                                   "build/{}.bin".format(firmware_basename)),
-                      "Copying $BUILD_DIR/${PROGNAME}.bin")
+                      f"Copying $BUILD_DIR{os.sep}${{PROGNAME}}.bin")
 )
 
 def check_call(*args): # hide subprocess.check_call return value
