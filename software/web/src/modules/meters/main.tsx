@@ -1361,7 +1361,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
     }
 }
 
-interface MeterStatusState {
+interface MetersStatusState {
     meter_slot: number,
     meter_configs: {[meter_slot: number]: MeterConfig},
 }
@@ -1376,7 +1376,7 @@ function get_meter_name(meter_configs: {[meter_slot: number]: MeterConfig}, mete
     return meter_name;
 }
 
-export class MetersStatus extends Component<{}, MeterStatusState> {
+export class MetersStatus extends Component<{}, MetersStatusState> {
     uplot_wrapper_ref = createRef();
 
     constructor() {
@@ -1400,7 +1400,7 @@ export class MetersStatus extends Component<{}, MeterStatusState> {
         }
     }
 
-    render(props: {}, state: MeterStatusState) {
+    render(props: {}, state: MetersStatusState) {
         // Don't check util.render_allowed() here.
         // We can receive graph data points with the first web socket packet and
         // want to push them into the uplot graph immediately.
