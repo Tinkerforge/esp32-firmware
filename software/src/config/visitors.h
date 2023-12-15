@@ -202,6 +202,20 @@ struct to_json {
     const std::vector<String> &keys_to_censor;
 };
 
+// Tested to match the returned length of snprintf([...],"%u") for every 32 bit number.
+static size_t chars_per_uint(uint32_t u) {
+    if (u == 0)
+        return 1;
+    return (size_t)(floor(log10(u) + 1));
+}
+
+// Tested to match the returned length of snprintf([...],"%d") for every 32 bit number.
+static size_t chars_per_int(int32_t u) {
+    if (u == 0)
+        return 1;
+    return (size_t)(floor(log10(fabs((double)u)) + 1) + (u < 0 ? 1 : 0));
+}
+
 struct max_string_length_visitor {
     size_t operator()(const Config::ConfString &x)
     {
@@ -214,11 +228,12 @@ struct max_string_length_visitor {
     }
     size_t operator()(const Config::ConfInt &x)
     {
-        return 11;
+        return max(chars_per_int(x.getSlot()->max),
+                   chars_per_int(x.getSlot()->min));
     }
     size_t operator()(const Config::ConfUint &x)
     {
-        return 10;
+        return chars_per_uint(x.getSlot()->max);
     }
     size_t operator()(const Config::ConfBool &x)
     {
@@ -254,10 +269,13 @@ struct max_string_length_visitor {
         const auto *slot = x.getSlot();
 
         size_t max_len = Config::apply_visitor(max_string_length_visitor{}, x.getVal()->value);
+        uint8_t max_tag = 0;
         for (size_t i = 0; i < slot->prototypes_len; ++i) {
             max_len = std::max(max_len, Config::apply_visitor(max_string_length_visitor{}, slot->prototypes[i].config.value));
+            max_tag = std::max(max_tag, slot->prototypes[i].tag);
         }
-        return max_len + 6; // [255,]
+        max_len += chars_per_uint(max_tag); // tag
+        return max_len + 3; // [,]
     }
 };
 
