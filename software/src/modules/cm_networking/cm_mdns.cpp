@@ -28,6 +28,7 @@
 #include "tools.h"
 #include "cool_string.h"
 #include "web_server.h"
+#include "modules/cm_networking/cm_networking_defs.h"
 
 #include <ESPmDNS.h>
 #include "lwip/ip_addr.h"

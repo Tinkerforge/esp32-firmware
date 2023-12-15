@@ -26,6 +26,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "time.h"
+#include "modules/cm_networking/cm_networking_defs.h"
 
 #include "api.h"
 #include "build.h"

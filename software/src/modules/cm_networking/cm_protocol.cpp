@@ -22,6 +22,7 @@
 
 #include <Arduino.h>
 
+#include "cm_networking_defs.h"
 #include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
