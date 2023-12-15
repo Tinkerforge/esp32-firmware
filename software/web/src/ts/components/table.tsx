@@ -42,6 +42,9 @@ export interface TableRow {
     onEditSubmit?: () => Promise<void>;
     onEditHide?: () => Promise<void>;
     onRemoveClick?: () => Promise<void>;
+    onEditStart?: never;
+    onEditCommit?: never;
+    onEditAbort?: never;
 }
 
 export interface TableProps {
@@ -57,6 +60,9 @@ export interface TableProps {
     onAddHide?: () => Promise<void>;
     tableTill?: "xs" | "sm" | "md" | "lg" | "xl";
     nestingDepth?: number;
+    onAddStart?: never;
+    onAddCommit?: never;
+    onAddAbort?: never;
 }
 
 interface TableState {
