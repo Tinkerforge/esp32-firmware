@@ -57,6 +57,7 @@ function get_charge_limits_table_children(action: ChargeLimitsCronAction) {
 
 function get_charge_limits_edit_children(action: ChargeLimitsCronAction, on_action: (action: CronAction) => void) {
     const energy_items: [string, string][] = [
+        ["-1", __("charge_limits.cron.unchanged")],
         ["0", __("charge_limits.cron.unlimited")],
         ["5000", util.toLocaleFixed(5, 0) + " kWh"],
         ["10000", util.toLocaleFixed(10, 0) + " kWh"],
@@ -74,6 +75,7 @@ function get_charge_limits_edit_children(action: ChargeLimitsCronAction, on_acti
     ];
 
     const duration_items: [string, string][] = [
+        ["-1", __("charge_limits.cron.unchanged")],
         ["0", __("charge_limits.cron.unlimited")],
         ["1", __("charge_limits.cron.min15")],
         ["2", __("charge_limits.cron.min30")],
