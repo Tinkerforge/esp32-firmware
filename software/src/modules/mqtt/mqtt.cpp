@@ -393,7 +393,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     // The spec says:
     // It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client
     // because it matches an established subscription regardless of how the flag was set in the message it received [MQTT-3.3.1-9].
-    if (!retain && strncmp(topic, "cron_trigger/", strlen(topic)) != 0 && strncmp(topic, "cron_action/", strlen(topic)) != 0)
+    if (!retain && strncmp(topic, "cron_trigger/", topic_len) != 0 && strncmp(topic, "cron_action/", topic_len) != 0)
         logger.printfln("MQTT: Received message on unknown topic '%.*s' (data_len=%u)", static_cast<int>(topic_len), topic, data_len);
 }
 
