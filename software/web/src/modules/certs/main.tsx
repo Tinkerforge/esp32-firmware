@@ -58,7 +58,7 @@ export class Certs extends Component<{}, State> {
                                         [cert.name]
                                     ],
                                     editTitle: __("certs.content.edit_cert_title"),
-                                    onEditStart: async () => this.setState({editCert: {id: cert.id, name: cert.name, cert: "", file: null, file_too_large: false}}),
+                                    onEditShow: async () => this.setState({editCert: {id: cert.id, name: cert.name, cert: "", file: null, file_too_large: false}}),
                                     onEditGetChildren: () => [<>
                                         <FormRow label={__("certs.content.cert_name")}>
                                             <InputText value={state.editCert.name}
@@ -81,7 +81,7 @@ export class Certs extends Component<{}, State> {
                                             </div>
                                         </FormRow>
                                     </>],
-                                    onEditCommit: async () => {
+                                    onEditSubmit: async () => {
                                         await API.call('certs/modify', {
                                             id: state.editCert.id,
                                             name: state.editCert.name,
