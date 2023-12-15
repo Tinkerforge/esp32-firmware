@@ -31,11 +31,11 @@ import { InputText } from "../../ts/components/input_text";
 import { ConfigForm } from "../../ts/components/config_form";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { Button } from "react-bootstrap";
-import { CollapsedSection } from "src/ts/components/collapsed_section";
-import { InputPassword } from "src/ts/components/input_password";
-import { IndicatorGroup } from "src/ts/components/indicator_group";
-import { SubPage } from "src/ts/components/sub_page";
-import { InputSelect } from "src/ts/components/input_select";
+import { CollapsedSection } from "../../ts/components/collapsed_section";
+import { InputPassword } from "../../ts/components/input_password";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
+import { SubPage } from "../../ts/components/sub_page";
+import { InputSelect } from "../../ts/components/input_select";
 
 type OcppConfig = API.getType["ocpp/config"];
 

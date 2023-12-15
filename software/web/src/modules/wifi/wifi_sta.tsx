@@ -33,7 +33,7 @@ import { InputPassword } from "../../ts/components/input_password";
 import { Lock, Unlock } from "react-feather";
 import { SubPage } from "../../ts/components/sub_page";
 import { EapConfigID, EapConfigPEAPTTLS, EapConfigTLS } from "./api";
-import { InputSelect } from "src/ts/components/input_select";
+import { InputSelect } from "../../ts/components/input_select";
 
 type STAConfig = API.getType["wifi/sta_config"];
 

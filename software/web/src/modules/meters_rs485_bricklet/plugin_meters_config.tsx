@@ -25,7 +25,7 @@ import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api";
-import { InputSelect } from "src/ts/components/input_select";
+import { InputSelect } from "../../ts/components/input_select";
 
 export type RS485BrickletMetersConfig = [
     MeterClassID.RS485Bricklet,
