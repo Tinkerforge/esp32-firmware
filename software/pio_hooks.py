@@ -309,7 +309,7 @@ def collect_translation(path, override=False):
         print(f"Found translation_*.tsx and translation_*.json in same module ({path})! Use either tsx or json translations!")
         sys.exit(1)
 
-    for translation_path in glob.glob(os.path.join(path, 'translation_*.tsx')) + glob.glob(os.path.join(path, 'translation_*.json')):
+    for translation_path in tsxs + jsons:
         m = re.match(r'translation_([a-z]+){0}\.(tsx|json)'.format('_override' if override else ''), os.path.split(translation_path)[-1])
 
         if m == None:
