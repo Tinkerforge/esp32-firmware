@@ -219,7 +219,7 @@ class UplotLoader extends Component<UplotLoaderProps, {}> {
 
     set_loading() {
         this.no_data_ref.current.style.visibility = 'hidden';
-        this.loading_ref.current.style.visibility = 'visible';
+        this.loading_ref.current.style.visibility = 'inherit';
     }
 
     set_show(show: boolean) {
@@ -231,7 +231,7 @@ class UplotLoader extends Component<UplotLoaderProps, {}> {
         this.loading_ref.current.style.visibility = 'hidden';
 
         if (!data || data.keys.length <= 1) {
-            this.no_data_ref.current.style.visibility = 'visible';
+            this.no_data_ref.current.style.visibility = 'inherit';
         }
         else {
             this.no_data_ref.current.style.visibility = 'hidden';
@@ -244,7 +244,7 @@ class UplotLoader extends Component<UplotLoaderProps, {}> {
                 <div ref={this.no_data_ref} style={`position: absolute; width: 100%; height: 100%; visibility: hidden; display: ${props.show ? 'flex' : 'none'};`}>
                     <span class={props.marker_class} style="margin: auto;">{__("em_energy_analysis.content.no_data")}</span>
                 </div>
-                <div ref={this.loading_ref} style={`position: absolute; width: 100%; height: 100%; visibility: ${props.show ? 'visible' : 'hidden'}; display: ${props.show ? 'flex' : 'none'};`}>
+                <div ref={this.loading_ref} style={`position: absolute; width: 100%; height: 100%; visibility: ${props.show ? 'inherit' : 'hidden'}; display: ${props.show ? 'flex' : 'none'};`}>
                     <span class={props.marker_class} style="margin: auto;">{__("em_energy_analysis.content.loading")}</span>
                 </div>
                 {props.children}
@@ -565,10 +565,10 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             }
         }
         else {
-            this.div_ref.current.style.visibility = 'visible';
+            this.div_ref.current.style.visibility = 'inherit';
 
             if (this.props.legend_div_ref.current) {
-                this.props.legend_div_ref.current.style.visibility = 'visible';
+                this.props.legend_div_ref.current.style.visibility = 'inherit';
             }
 
             while (this.uplot.series.length > 1) {
@@ -1102,10 +1102,10 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             }
         }
         else {
-            this.div_ref.current.style.visibility = 'visible';
+            this.div_ref.current.style.visibility = 'inherit';
 
             if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
-                this.props.legend_div_ref.current.style.visibility = 'visible';
+                this.props.legend_div_ref.current.style.visibility = 'inherit';
             }
 
             while (this.uplot.series.length > 1) {
