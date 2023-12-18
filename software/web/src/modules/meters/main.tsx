@@ -744,7 +744,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 this.pending_live_data.samples[meter_slot].push(...live_extra.samples[meter_slot]);
             }
 
-            if (this.pending_live_data.samples.length >= 5) {
+            if (this.pending_live_data.timestamps.length >= 5) {
                 this.live_data.timestamps = array_append(this.live_data.timestamps, this.pending_live_data.timestamps, 720);
 
                 for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
