@@ -292,6 +292,15 @@ static bool trigger_action(Config *cfg, void *data) {
 }
 #endif
 
+static bool filter_mqtt_log(const char *topic, size_t topic_len) {
+#if MODULE_CRON_AVAILABLE()
+    if (topic_len >= 12 && strncmp(topic, "cron_action/", 12) == 0)
+        return false;
+#endif
+
+    return true;
+}
+
 void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
 {
     for (auto &c : commands) {
@@ -393,7 +402,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     // The spec says:
     // It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client
     // because it matches an established subscription regardless of how the flag was set in the message it received [MQTT-3.3.1-9].
-    if (!retain && strncmp(topic, "cron_trigger/", topic_len) != 0 && strncmp(topic, "cron_action/", topic_len) != 0)
+    if (!retain && filter_mqtt_log(topic, topic_len))
         logger.printfln("MQTT: Received message on unknown topic '%.*s' (data_len=%u)", static_cast<int>(topic_len), topic, data_len);
 }
 
