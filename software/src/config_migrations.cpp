@@ -394,7 +394,9 @@ static const ConfigMigration migrations[] = {
 
                 if (read_config_file("energy_manager/config", json)) {
                     auto config = json.as<JsonObject>();
-                    if (config["relay_config"] == 1) {
+
+                    // It seems like there is an error in the != operator overload for ints in arduino json which causes statements that should return false to return true.
+                    if (config["relay_config"].as<int>() == 1) {
                         int when = config["relay_rule_when"];
                         DynamicJsonDocument task{16384};
                         auto trigger = task.createNestedArray("trigger");
@@ -403,32 +405,32 @@ static const ConfigMigration migrations[] = {
                         switch (when) {
                             case 0:
                                 trigger[0] = 12;
-                                trigger_config["state"] = config["relay_rule_is"] == 1 ? false : true;
+                                trigger_config["state"] = config["relay_rule_is"].as<int>() == 1 ? false : true;
                                 break;
 
                             case 1:
                                 trigger[0] = 13;
-                                trigger_config["state"] = config["relay_rule_is"] == 1 ? false : true;
+                                trigger_config["state"] = config["relay_rule_is"].as<int>() == 1 ? false : true;
                                 break;
 
                             case 2:
                                 trigger[0] = 14;
-                                trigger_config["phase"] = config["relay_rule_is"] == 2 ? 1 : 3;
+                                trigger_config["phase"] = config["relay_rule_is"].as<int>() == 2 ? 1 : 3;
                                 break;
 
                             case 3:
                                 trigger[0] = 15;
-                                trigger_config["contactor_okay"] = config["relay_rule_is"] == 5 ? true : false;
+                                trigger_config["contactor_okay"] = config["relay_rule_is"].as<int>() == 5 ? true : false;
                                 break;
 
                             case 4:
                                 trigger[0] = 16;
-                                trigger_config["power_available"] = config["relay_rule_is"] == 6 ? true : false;
+                                trigger_config["power_available"] = config["relay_rule_is"].as<int>() == 6 ? true : false;
                                 break;
 
                             case 5:
                                 trigger[0] = 17;;
-                                trigger_config["drawing_power"] = config["relay_rule_is"] == 8 ? true : false;
+                                trigger_config["drawing_power"] = config["relay_rule_is"].as<int>() == 8 ? true : false;
                         }
                         auto action = task.createNestedArray("action");
                         action.add(13);
@@ -437,13 +439,12 @@ static const ConfigMigration migrations[] = {
                         tasks.add(task);
                     }
 
-                    if (config["input3_rule_then"] != 0) {
-
+                    if (config["input3_rule_then"].as<int>() != 0) {
                         DynamicJsonDocument task{16384};
                         auto trigger = task.createNestedArray("trigger");
                         trigger.add(12);
                         auto trigger_config = trigger.createNestedObject();
-                        trigger_config["state"] = config["input3_rule_is"] == 0 ? true : false;
+                        trigger_config["state"] = config["input3_rule_is"].as<int>() == 0 ? true : false;
                         auto action = task.createNestedArray("action");
                         action.add(0);
                         auto action_config = action.createNestedObject();
@@ -452,7 +453,7 @@ static const ConfigMigration migrations[] = {
                         auto reset_trigger = reset_task.createNestedArray("trigger");
                         reset_trigger.add(12);
                         auto reset_trigger_config = reset_trigger.createNestedObject();
-                        reset_trigger_config["state"] = config["input3_rule_is"] == 0 ? false : true;
+                        reset_trigger_config["state"] = config["input3_rule_is"].as<int>() == 0 ? false : true;
                         auto reset_action = reset_task.createNestedArray("action");
                         reset_action.add(0);
                         auto reset_action_config = reset_action.createNestedObject();
@@ -505,12 +506,12 @@ static const ConfigMigration migrations[] = {
                         }
                     }
 
-                    if (config["input4_rule_then"] != 0 && config["input4_rule_then"] != 1) {
+                    if (config["input4_rule_then"].as<int>() != 0 && config["input4_rule_then"].as<int>() != 1) {
                         DynamicJsonDocument task{16384};
                         auto trigger = task.createNestedArray("trigger");
                         trigger.add(13);
                         auto trigger_config = trigger.createNestedObject();
-                        trigger_config["state"] = config["input4_rule_is"] == 0 ? true : false;
+                        trigger_config["state"] = config["input4_rule_is"].as<int>() == 0 ? true : false;
                         auto action = task.createNestedArray("action");
                         action.add(0);
                         auto action_config = action.createNestedObject();
@@ -519,7 +520,7 @@ static const ConfigMigration migrations[] = {
                         auto reset_trigger = reset_task.createNestedArray("trigger");
                         reset_trigger.add(13);
                         auto reset_trigger_config = reset_trigger.createNestedObject();
-                        reset_trigger_config["state"] = config["input4_rule_is"] == 0 ? false : true;
+                        reset_trigger_config["state"] = config["input4_rule_is"].as<int>() == 0 ? false : true;
                         auto reset_action = reset_task.createNestedArray("action");
                         reset_action.add(0);
                         auto reset_action_config = reset_action.createNestedObject();
@@ -572,7 +573,7 @@ static const ConfigMigration migrations[] = {
                         }
                     }
 
-                    if (config["auto_reset_mode"] == true) {
+                    if (config["auto_reset_mode"].as<bool>() == true) {
                         DynamicJsonDocument task{16384};
                         auto trigger = task.createNestedArray("trigger");
                         trigger.add(1);
