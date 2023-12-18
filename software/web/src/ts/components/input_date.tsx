@@ -18,7 +18,7 @@
  */
 
 import { h, Context, Fragment, ComponentChildren } from "preact";
-import { useContext, useRef } from "preact/hooks";
+import { useContext, useRef, useState } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { ArrowLeft, ArrowRight } from "react-feather";
@@ -38,12 +38,32 @@ export function InputDate(props: InputDateProps) {
     const input = useRef<HTMLInputElement>();
     const id = !props.idContext ? util.useId() : useContext(props.idContext);
 
+    const [inputInFlight, setInputInFlight] = useState<string | null>(null);
+    const [lastEvent, setLastEvent] = useState<'key' | 'click' | null>(null);
+
     const dateToValue = (date: Date) => util.toIsoString(date).split("T")[0];
 
     const valueToDate = (value: string) => {
         let [y, mIdx, d] = value.split(/-/g).map(x => parseInt(x));
 
         return new Date(y, mIdx - 1, d);
+    };
+
+    // If a user is currently typing, we have to preserve the input
+    // (even if it does currently not confirm to the number format).
+    // Otherwise set value to the given property.
+    let value = inputInFlight === null ? dateToValue(props.date) : inputInFlight;
+
+    const sendInFlight = (override?: string) => {
+        let value = override !== undefined ? override : inputInFlight;
+
+        if (value === null || value === "") {
+            return;
+        }
+
+        props.onDate(valueToDate(value))
+        setInputInFlight(null);
+        input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
     };
 
     let inner =
@@ -54,17 +74,28 @@ export function InputDate(props: InputDateProps) {
                    id={id}
                    type="date"
                    style={props.style ?? ""}
-                   onInput={
-                       props.onDate ? (e) => {
-                           let timeString = (e.target as HTMLInputElement).value;
-                           if (timeString == "")
-                               return;
-
-                           props.onDate(valueToDate(timeString));
-                       } : undefined
-                   }
+                   onInput={props.onDate ? (e) => {
+                       let value = (e.target as HTMLInputElement).value;
+                       setInputInFlight(value);
+                       if (lastEvent == 'click') {
+                           // need to pass value directly, because the state
+                           // change by setInputInFlight is not immediate
+                           sendInFlight(value);
+                       }
+                   } : undefined}
+                   // onfocusout is not triggered if a user submits the form by pressing enter
+                   onKeyDown={props.onDate ? (e: KeyboardEvent) => {
+                       setLastEvent('key');
+                       if (e.key == 'Enter') {
+                           sendInFlight();
+                       }
+                   } : undefined}
+                   onClick={() => {
+                       setLastEvent('click');
+                   }}
+                   onfocusout={props.onDate ? () => sendInFlight() : undefined}
                    disabled={!props.onDate}
-                   value={dateToValue(props.date)} />
+                   value={value} />
         </>;
 
     if ((!props.onDate || !props.buttons) && !props.children) {
@@ -79,7 +110,7 @@ export function InputDate(props: InputDateProps) {
                         className="form-control px-1"
                         style="margin-right: .125rem !important;"
                         onClick={() => {
-                            let date = valueToDate(dateToValue(props.date));
+                            let date = valueToDate(value);
 
                             if (props.buttons == "year") {
                                 date.setFullYear(date.getFullYear() - 1);
@@ -101,7 +132,7 @@ export function InputDate(props: InputDateProps) {
                 <Button variant="primary"
                         className="form-control px-1 rounded-right"
                         onClick={() => {
-                            let date = valueToDate(dateToValue(props.date));
+                            let date = valueToDate(value);
 
                             if (props.buttons == "year") {
                                 date.setFullYear(date.getFullYear() + 1);
