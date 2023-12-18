@@ -56,7 +56,7 @@ function get_mqtt_edit_children(action: MqttCronAction, on_action: (action: Cron
                 onClick={() => {
                     on_action(util.get_updated_union(action, {use_prefix: !action[1].use_prefix}));
                 }}
-                desc={__("mqtt.cron.use_topic_prefix_muted") + mqtt_config.global_topic_prefix}/>
+                desc={__("mqtt.cron.use_topic_prefix_muted") + mqtt_config.global_topic_prefix + "/cron_action/"}/>
         </FormRow>
         <FormRow label={__("mqtt.cron.send_topic")}>
              <InputText
