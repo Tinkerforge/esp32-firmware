@@ -182,5 +182,4 @@ export function add_event_listeners() {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $("#sidebar-charge_limits").prop("hidden", !module_init.charge_limits);
 }
