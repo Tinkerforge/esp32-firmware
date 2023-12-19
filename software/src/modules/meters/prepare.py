@@ -92,7 +92,7 @@ direction_map = []
 kinds = ['None']
 kind_map = []
 
-last_id = -1
+last_id = 0
 with open('meter_value_id.csv', newline='', encoding='utf-8') as f:
     for row in csv.DictReader(f):
         if len(row['id']) == 0:
@@ -199,6 +199,7 @@ with open('meter_value_id.h', 'w', encoding='utf-8') as f:
     f.write('#include <stdint.h>\n')
     f.write('#include <stddef.h>\n\n')
     f.write('enum class MeterValueID {\n')
+    f.write('    NotSupported = 0,\n')
     f.write(''.join(value_id_enum))
     f.write('\n};\n')
 
