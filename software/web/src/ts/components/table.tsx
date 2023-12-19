@@ -129,7 +129,7 @@ export class Table extends Component<TableProps, TableState> {
                         {props.rows.map((row, i) => <>
                             <tr key={row.key}>
                                 {row.columnValues.map((value) => (
-                                    <td class={"text-break" + (row.extraValue ? " pb-0" : "")} style={"vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>{value}</td>
+                                    <td class={row.extraValue ? " pb-0" : ""} style={"word-wrap: break-word; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>{value}</td>
                                 ))}
                                 <td class={row.extraValue ? "pb-0" : undefined} style={"width: 1%; white-space: nowrap; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>
                                     <Button variant="primary"
