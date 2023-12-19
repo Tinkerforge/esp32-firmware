@@ -367,14 +367,13 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     bool has_any_known_value = false;
     uint32_t can_be_sdm72;
     uint32_t can_be_sdm72v2;
-    uint32_t can_be_sdm630  = 1;
+    uint32_t can_be_sdm630;
 
     for (uint32_t i = 0; i < METER_ALL_VALUES_LEGACY_COUNT; i++) {
         uint16_t value_index = value_indices_legacy_all_values_to_linked_meter[i];
         if (value_index >= linked_meter_value_count) {
             // Linked meter doesn't have this value.
             all_values_present[i] = false;
-            can_be_sdm630 = 0;
         } else {
             // Linked meter has this value.
             all_values_present[i] = true;
@@ -389,6 +388,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
 
     can_be_sdm72   = indices_match_meter_indices(all_values_present, sdm_helper_72_all_value_indices,   ARRAY_SIZE(sdm_helper_72_all_value_indices));
     can_be_sdm72v2 = indices_match_meter_indices(all_values_present, sdm_helper_72v2_all_value_indices, ARRAY_SIZE(sdm_helper_72v2_all_value_indices));
+    can_be_sdm630  = indices_match_meter_indices(all_values_present, sdm_helper_630_all_value_indices,  ARRAY_SIZE(sdm_helper_630_all_value_indices));
 
     uint32_t can_be_count = can_be_sdm72 + can_be_sdm72v2 + can_be_sdm630;
     uint32_t meter_type = METER_TYPE_NONE;

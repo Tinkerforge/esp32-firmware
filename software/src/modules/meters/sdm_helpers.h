@@ -31,8 +31,8 @@
 static_assert(METER_ALL_VALUES_RESETTABLE_COUNT == 88);
 
 extern const MeterValueID sdm_helper_all_ids[METER_ALL_VALUES_RESETTABLE_COUNT];
-extern const MeterValueID sdm_helper_72v1_ids[7];
 
+extern const uint32_t sdm_helper_630_all_value_indices[76];
 extern const uint32_t sdm_helper_72v2_all_value_indices[38];
 extern const uint32_t sdm_helper_72_all_value_indices[7];
 

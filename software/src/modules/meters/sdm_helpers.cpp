@@ -117,88 +117,88 @@ const MeterValueID sdm_helper_all_ids[METER_ALL_VALUES_RESETTABLE_COUNT] = {
     MeterValueID::EnergyActiveLSumExportResettable,
 };
 
-const MeterValueID sdm_helper_72v1_ids[7] = {
-    MeterValueID::PowerActiveLSumImExDiff,
-    MeterValueID::EnergyActiveLSumImport,
-    MeterValueID::EnergyActiveLSumExport,
-    MeterValueID::EnergyActiveLSumImExSum,
-    MeterValueID::EnergyActiveLSumImExSumResettable,
-    MeterValueID::EnergyActiveLSumImportResettable,
-    MeterValueID::EnergyActiveLSumExportResettable
-};
-
+const uint32_t sdm_helper_630_all_value_indices[76]  = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,42,43,44,45,46,47,48,49,50,51,52,53,54,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87};
 const uint32_t sdm_helper_72v2_all_value_indices[38] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,21,22,23,24,25,26,27,29,30,31,42,43,44,45,46,65,66,85,86,87};
-const uint32_t sdm_helper_72_all_value_indices[7] = {24,30,31,65,85,86,87};
-
-static void copy_value_ids(MeterValueID *dst, const MeterValueID *src, size_t *dst_len, size_t src_len)
-{
-    if (*dst_len < src_len) {
-        logger.printfln("sdm_helpers: Passed array of length %u too short for %u value IDs.", *dst_len, src_len);
-        *dst_len = 0;
-        return;
-    }
-    memcpy(dst, src, src_len * sizeof(MeterValueID));
-    *dst_len = src_len;
-}
+const uint32_t sdm_helper_72_all_value_indices[7]    = {24,30,31,65,85,86,87};
 
 void sdm_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size_t *value_ids_len)
 {
+    const uint32_t *all_value_indices;
+    size_t id_count = 0;
+
     switch (meter_type) {
         case METER_TYPE_SDM630:
         case METER_TYPE_SDM630MCTV2:
-            copy_value_ids(value_ids, sdm_helper_all_ids, value_ids_len, ARRAY_SIZE(sdm_helper_all_ids));
+            all_value_indices = sdm_helper_630_all_value_indices;
+            id_count = ARRAY_SIZE(sdm_helper_630_all_value_indices);
+            break;
+
+        case METER_TYPE_SDM72DMV2:
+            all_value_indices = sdm_helper_72v2_all_value_indices;
+            id_count = ARRAY_SIZE(sdm_helper_72v2_all_value_indices);
             break;
 
         case METER_TYPE_SDM72DM:
-            copy_value_ids(value_ids, sdm_helper_72v1_ids, value_ids_len, ARRAY_SIZE(sdm_helper_72v1_ids));
+            all_value_indices = sdm_helper_72_all_value_indices;
+            id_count = ARRAY_SIZE(sdm_helper_72_all_value_indices);
             break;
 
-        case METER_TYPE_SDM72DMV2: {
-            size_t id_count = ARRAY_SIZE(sdm_helper_72v2_all_value_indices);
-            if (*value_ids_len < id_count) {
-                logger.printfln("sdm_helpers: Passed array of length %u too short for %u value IDs for an SDM72v2.", *value_ids_len, id_count);
-                *value_ids_len = 0;
-                break;
-            }
-            for (size_t i = 0; i < id_count; i++) {
-                size_t src_i = sdm_helper_72v2_all_value_indices[i];
-                value_ids[i] = sdm_helper_all_ids[src_i];
-            }
-            *value_ids_len = id_count;
-            break;
-        }
         default:
             logger.printfln("sdm_helpers: Value IDs unsupported for meter type %u.", meter_type);
             *value_ids_len = 0;
-            break;
+            return;
     }
+
+    if (*value_ids_len < id_count) {
+        logger.printfln("sdm_helpers: Passed array of length %u too short for %u value IDs for meter type %u.", *value_ids_len, id_count, meter_type);
+        *value_ids_len = 0;
+        return;
+    }
+
+    for (size_t i = 0; i < id_count; i++) {
+        size_t src_i = all_value_indices[i];
+        value_ids[i] = sdm_helper_all_ids[src_i];
+    }
+    *value_ids_len = id_count;
 }
 
 void sdm_helper_pack_all_values(uint32_t meter_type, float *values, size_t *values_len)
 {
+    const uint32_t *all_value_indices;
+    size_t values_count = 0;
+
     switch (meter_type) {
         case METER_TYPE_SDM630:
         case METER_TYPE_SDM630MCTV2:
-            // Nothing to pack.
+            all_value_indices = sdm_helper_630_all_value_indices;
+            values_count = ARRAY_SIZE(sdm_helper_630_all_value_indices);
             break;
 
-        case METER_TYPE_SDM72DMV2: {
-            size_t values_count = ARRAY_SIZE(sdm_helper_72v2_all_value_indices);
-            if (*values_len < values_count) {
-                logger.printfln("sdm_helpers: Not enough space to pack %u 72v2 values into an array of size %u.", values_count, *values_len);
-                *values_len = 0;
-                break;
-            }
-            for (size_t i = 0; i < values_count; i++) {
-                size_t src_i = sdm_helper_72v2_all_value_indices[i];
-                values[i] = values[src_i];
-            }
-            *values_len = values_count;
+        case METER_TYPE_SDM72DMV2:
+            all_value_indices = sdm_helper_72v2_all_value_indices;
+            values_count = ARRAY_SIZE(sdm_helper_72v2_all_value_indices);
             break;
-        }
+
+        case METER_TYPE_SDM72DM:
+            all_value_indices = sdm_helper_72_all_value_indices;
+            values_count = ARRAY_SIZE(sdm_helper_72_all_value_indices);
+            break;
+
         default:
             logger.printfln("sdm_helpers: Cannot pack values for meter type %u.", meter_type);
             *values_len = 0;
-            break;
+            return;
     }
+
+    if (*values_len < values_count) {
+        logger.printfln("sdm_helpers: Not enough space to pack %u values for meter type %u into an array of size %u.", values_count, meter_type, *values_len);
+        *values_len = 0;
+        return;
+    }
+
+    for (size_t i = 0; i < values_count; i++) {
+        size_t src_i = all_value_indices[i];
+        values[i] = values[src_i];
+    }
+    *values_len = values_count;
 }

@@ -662,7 +662,7 @@ static const ConfigMigration migrations[] = {
                     if (old_json.containsKey("meter_source")) {
                         uint32_t meter_source = old_json["meter_source"].as<uint32_t>();
                         if (meter_source == 100) {
-                            const char *new_config_str = "[4,{\"display_name\":\"API-Stromzähler\",\"value_ids\":[0,1,2,15,27,39,91,103,115,203,206,209,152,164,176,411,412,413,423,424,425,6,63,75,139,215,200,414,426,422,255,258,303,306,405,453,140,141,216,217,52,53,3,4,5,7,51,427,428,429,435,436,437,433,438,16,28,40,17,29,41,430,431,432,434,261,309,219,231,243,222,234,246,225,237,249,267,279,291,270,282,294,273,285,297,256,259,262]}]";
+                            const char *new_config_str = "[4,{\"display_name\":\"API-Stromzähler\",\"value_ids\":[1,2,3,13,17,21,39,48,57,122,130,138,83,91,99,353,354,355,365,366,367,7,29,33,74,154,115,356,368,364,209,211,273,275,341,388,4,5,6,8,25,369,370,371,377,378,379,375,380,372,373,374,376,213,277,161,177,193,163,179,195,165,181,197,225,241,257,227,243,259,229,245,261,214,210,212]}]";
                             File file = LittleFS.open("/migration/meters_0_config", "w");
                             file.write(reinterpret_cast<const uint8_t *>(new_config_str), strlen(new_config_str));
                             file.close();
