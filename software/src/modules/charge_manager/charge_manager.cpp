@@ -561,8 +561,7 @@ void ChargeManager::distribute_current()
         printed_all_chargers_seen = true;
     }
 
-    uint32_t available_current_init = seen_all_chargers_local ? available_current.get("current")->asUint() : 0;
-    uint32_t available_current = available_current_init;
+    uint32_t available_current = seen_all_chargers_local ? available_current.get("current")->asUint() : 0;
 
     bool use_3phase_minimum_current = available_phases.get("phases")->asUint() >= 3;
     uint32_t minimum_current = use_3phase_minimum_current ? this->minimum_current :
@@ -912,8 +911,14 @@ void ChargeManager::distribute_current()
     }
 
     if (allocated_current_callback) {
+        uint32_t allocated_current = 0;
+        for (int i = 0; i < charger_count; ++i) {
+            auto &charger = this->charger_state[i];
+            allocated_current += charger.allocated_current;
+        }
+
         // Inform callback about how much current we distributed to chargers.
-        allocated_current_callback(available_current_init - available_current);
+        allocated_current_callback(allocated_current);
     }
 
 #if MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
