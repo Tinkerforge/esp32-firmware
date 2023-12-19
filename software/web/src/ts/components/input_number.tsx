@@ -62,7 +62,7 @@ export function InputNumber(props: InputNumberProps) {
         }
     }
 
-    return <div class="input-group has-validation">
+    return <div class="input-group">
         <input class="form-control no-spin"
                 ref={input}
                 id={id}

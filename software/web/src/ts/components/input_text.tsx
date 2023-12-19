@@ -69,7 +69,7 @@ export function InputText<T extends (InputTextProps | InputTextWithValidationPro
                     readonly={!props.onValue}/>
 
     if (props.prefixChildren || props.children) {
-        return <div class="input-group has-validation">
+        return <div class="input-group">
                 {props.prefixChildren}
                 {inner}
                 {props.children}

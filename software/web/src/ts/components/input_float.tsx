@@ -90,7 +90,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
         invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
     }
 
-    return <div class={"input-group has-validation " + (props.class ? props.class : "")}>
+    return <div class={"input-group " + (props.class ? props.class : "")}>
     <input class="form-control no-spin"
                id={id}
                type="number"
