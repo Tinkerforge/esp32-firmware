@@ -106,7 +106,7 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
                             <Button variant="primary" className={"px-1" + (props.hideClear ? " rounded-right" : "")} style="line-height: 20px;" onClick={() => this.setState({show: !state.show})} disabled={toBeCleared}>{state.show ? <EyeOff/> : <Eye/>}</Button>
                         }
                         { props.hideClear ? null :
-                            <div class="input-group-text custom-control custom-switch rounded-right" style="padding-left: 2.5rem;">
+                            <div class="input-group-text custom-control custom-switch rounded-right" style="padding-left: 2.75rem; padding-right: 0.5rem;">
                                 <input id={id+"-clear"} type="checkbox" class="custom-control-input" aria-label="Clear password" onClick={() => this.toggleClear()} checked={toBeCleared}/>
                                 <label class="custom-control-label" for={id+"-clear"} style="line-height: 20px;">{props.clearSymbol ?? <Trash2/>}</label>
                             </div>
