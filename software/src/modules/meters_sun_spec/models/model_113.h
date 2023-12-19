@@ -16,39 +16,39 @@
 // ====================
 
 struct SunSpecInverterFLOATModel113_s {
-                         uint16_t ID;      //  0
-                         uint16_t L;       //  1
-    _ATTRIBUTE((packed)) uint32_t A;       //  2
-    _ATTRIBUTE((packed)) uint32_t AphA;    //  4
-    _ATTRIBUTE((packed)) uint32_t AphB;    //  6
-    _ATTRIBUTE((packed)) uint32_t AphC;    //  8
-    _ATTRIBUTE((packed)) uint32_t PPVphAB; // 10
-    _ATTRIBUTE((packed)) uint32_t PPVphBC; // 12
-    _ATTRIBUTE((packed)) uint32_t PPVphCA; // 14
-    _ATTRIBUTE((packed)) uint32_t PhVphA;  // 16
-    _ATTRIBUTE((packed)) uint32_t PhVphB;  // 18
-    _ATTRIBUTE((packed)) uint32_t PhVphC;  // 20
-    _ATTRIBUTE((packed)) uint32_t W;       // 22
-    _ATTRIBUTE((packed)) uint32_t Hz;      // 24
-    _ATTRIBUTE((packed)) uint32_t VA;      // 26
-    _ATTRIBUTE((packed)) uint32_t VAr;     // 28
-    _ATTRIBUTE((packed)) uint32_t PF;      // 30
-    _ATTRIBUTE((packed)) uint32_t WH;      // 32
-    _ATTRIBUTE((packed)) uint32_t DCA;     // 34
-    _ATTRIBUTE((packed)) uint32_t DCV;     // 36
-    _ATTRIBUTE((packed)) uint32_t DCW;     // 38
-    _ATTRIBUTE((packed)) uint32_t TmpCab;  // 40
-    _ATTRIBUTE((packed)) uint32_t TmpSnk;  // 42
-    _ATTRIBUTE((packed)) uint32_t TmpTrns; // 44
-    _ATTRIBUTE((packed)) uint32_t TmpOt;   // 46
-                         uint16_t St;      // 48
-                         uint16_t StVnd;   // 49
-    _ATTRIBUTE((packed)) uint32_t Evt1;    // 50
-    _ATTRIBUTE((packed)) uint32_t Evt2;    // 52
-    _ATTRIBUTE((packed)) uint32_t EvtVnd1; // 54
-    _ATTRIBUTE((packed)) uint32_t EvtVnd2; // 56
-    _ATTRIBUTE((packed)) uint32_t EvtVnd3; // 58
-    _ATTRIBUTE((packed)) uint32_t EvtVnd4; // 60
+                    uint16_t ID;      //  0
+                    uint16_t L;       //  1
+    [[gnu::packed]] uint32_t A;       //  2
+    [[gnu::packed]] uint32_t AphA;    //  4
+    [[gnu::packed]] uint32_t AphB;    //  6
+    [[gnu::packed]] uint32_t AphC;    //  8
+    [[gnu::packed]] uint32_t PPVphAB; // 10
+    [[gnu::packed]] uint32_t PPVphBC; // 12
+    [[gnu::packed]] uint32_t PPVphCA; // 14
+    [[gnu::packed]] uint32_t PhVphA;  // 16
+    [[gnu::packed]] uint32_t PhVphB;  // 18
+    [[gnu::packed]] uint32_t PhVphC;  // 20
+    [[gnu::packed]] uint32_t W;       // 22
+    [[gnu::packed]] uint32_t Hz;      // 24
+    [[gnu::packed]] uint32_t VA;      // 26
+    [[gnu::packed]] uint32_t VAr;     // 28
+    [[gnu::packed]] uint32_t PF;      // 30
+    [[gnu::packed]] uint32_t WH;      // 32
+    [[gnu::packed]] uint32_t DCA;     // 34
+    [[gnu::packed]] uint32_t DCV;     // 36
+    [[gnu::packed]] uint32_t DCW;     // 38
+    [[gnu::packed]] uint32_t TmpCab;  // 40
+    [[gnu::packed]] uint32_t TmpSnk;  // 42
+    [[gnu::packed]] uint32_t TmpTrns; // 44
+    [[gnu::packed]] uint32_t TmpOt;   // 46
+                    uint16_t St;      // 48
+                    uint16_t StVnd;   // 49
+    [[gnu::packed]] uint32_t Evt1;    // 50
+    [[gnu::packed]] uint32_t Evt2;    // 52
+    [[gnu::packed]] uint32_t EvtVnd1; // 54
+    [[gnu::packed]] uint32_t EvtVnd2; // 56
+    [[gnu::packed]] uint32_t EvtVnd3; // 58
+    [[gnu::packed]] uint32_t EvtVnd4; // 60
 };
 
 #define SUNSPEC_MODEL_113_NAME "Inverter FLOAT"

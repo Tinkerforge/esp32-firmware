@@ -25,7 +25,7 @@
 
 #include "gcc_warnings.h"
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 MeterClassID MeterAPI::get_class() const
 {
     return MeterClassID::API;
@@ -58,7 +58,7 @@ void MeterAPI::register_urls(const String &base_url)
     }, false);
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 bool MeterAPI::reset() {
     // Resetting an API meter is a nop:
     // The user of the API has to check meters/[slot]/last_reset

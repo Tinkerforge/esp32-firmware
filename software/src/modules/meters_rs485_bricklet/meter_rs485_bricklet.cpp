@@ -40,7 +40,7 @@ static MeterInfo *supported_meters[] = {
     &sdm72dmv2
 };
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 MeterClassID MeterRS485Bricklet::get_class() const
 {
     return MeterClassID::RS485Bricklet;

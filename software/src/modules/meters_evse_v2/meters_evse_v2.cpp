@@ -43,7 +43,7 @@ void MetersEVSEV2::pre_setup()
     meters.register_meter_generator(get_class(), this);
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 MeterClassID MetersEVSEV2::get_class() const
 {
     return MeterClassID::EVSEV2;
@@ -59,13 +59,13 @@ IMeter * MetersEVSEV2::new_meter(uint32_t slot, Config *state, Config * errors)
     return meter_instance;
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersEVSEV2::get_config_prototype()
 {
     return &config_prototype;
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersEVSEV2::get_state_prototype()
 {
     return &state_prototype;

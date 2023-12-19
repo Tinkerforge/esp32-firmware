@@ -71,7 +71,7 @@ void MetersModbusTCP::loop()
     mb.task();
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 MeterClassID MetersModbusTCP::get_class() const
 {
     return MeterClassID::ModbusTCP;

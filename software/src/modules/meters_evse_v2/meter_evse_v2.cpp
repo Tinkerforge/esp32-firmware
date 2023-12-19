@@ -26,7 +26,7 @@
 
 #include "gcc_warnings.h"
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 MeterClassID MeterEVSEV2::get_class() const
 {
     return MeterClassID::EVSEV2;

@@ -16,14 +16,14 @@
 // ============
 
 struct SunSpecCommonModel001_s {
-                         uint16_t ID;      //  0
-                         uint16_t L;       //  1
-                         char     Mn[32];  //  2
-                         char     Md[32];  // 18
-                         char     Opt[16]; // 34
-                         char     Vr[16];  // 42
-                         char     SN[32];  // 50
-                         uint16_t DA;      // 66
+                    uint16_t ID;      //  0
+                    uint16_t L;       //  1
+                    char     Mn[32];  //  2
+                    char     Md[32];  // 18
+                    char     Opt[16]; // 34
+                    char     Vr[16];  // 42
+                    char     SN[32];  // 50
+                    uint16_t DA;      // 66
 };
 
 #define SUNSPEC_MODEL_001_NAME "Common"

@@ -251,9 +251,9 @@ for model_id in model_ids:
             exit(1)
 
         if field_bytes > 2:
-            packed = "_ATTRIBUTE((packed))"
+            packed = "[[gnu::packed]]"
         else:
-            packed = "                    "
+            packed = " " * len("[[gnu::packed]]")
 
         if is_array:
             field_bytes *= field_length

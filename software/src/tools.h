@@ -39,12 +39,6 @@
 // Indirection expands macro. See https://gcc.gnu.org/onlinedocs/gcc-3.4.3/cpp/Stringification.html
 #define MACRO_VALUE_TO_STRING(x) MACRO_NAME_TO_STRING(x)
 
-#ifdef __GNUC__
-#define ATTRIBUTE_UNUSED __attribute__((unused))
-#else
-#define ATTRIBUTE_UNUSED
-#endif
-
 const char *tf_reset_reason();
 
 bool a_after_b(uint32_t a, uint32_t b);
@@ -112,7 +106,7 @@ time_t ms_until_datetime(int *year, int *month, int *day, int *hour, int *minute
 time_t ms_until_time(int h, int m);
 
 // Unchecked snprintf that returns size_t
-_ATTRIBUTE ((__format__ (__printf__, 3, 4)))
+[[gnu::format(__printf__, 3, 4)]]
 size_t snprintf_u(char *buf, size_t len, const char *format, ...);
 
 size_t vsnprintf_u(char *buf, size_t len, const char *format, va_list args);

@@ -59,11 +59,11 @@ public:
     void loop() override;
 
     // for MeterGenerator
-    MeterClassID get_class() const override _ATTRIBUTE((const));
+    [[gnu::const]] MeterClassID get_class() const override;
     virtual IMeter *new_meter(uint32_t slot, Config *state, Config *errors) override;
-    virtual const Config *get_config_prototype() override _ATTRIBUTE((const));
-    virtual const Config *get_state_prototype()  override _ATTRIBUTE((const));
-    virtual const Config *get_errors_prototype() override _ATTRIBUTE((const));
+    [[gnu::const]] virtual const Config *get_config_prototype() override;
+    [[gnu::const]] virtual const Config *get_state_prototype()  override;
+    [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
     void setupRS485();
     void checkRS485State();

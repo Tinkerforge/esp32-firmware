@@ -36,7 +36,7 @@ void MetersAPI::pre_setup()
     meters.register_meter_generator(get_class(), this);
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 MeterClassID MetersAPI::get_class() const
 {
     return MeterClassID::API;
@@ -47,19 +47,19 @@ IMeter * MetersAPI::new_meter(uint32_t slot, Config * /*state*/, Config * /*erro
     return new MeterAPI(slot);
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersAPI::get_config_prototype()
 {
     return &config_prototype;
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersAPI::get_state_prototype()
 {
     return Config::Null();
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersAPI::get_errors_prototype()
 {
     return Config::Null();

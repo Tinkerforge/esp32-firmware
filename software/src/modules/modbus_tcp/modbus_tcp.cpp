@@ -145,7 +145,7 @@ struct meter_holding_regs_t {
     uint32swapped_t trigger_reset;
 };
 
-struct bender_general_s {
+struct [[gnu::packed]] bender_general_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint16_t OFFSET = 100;
     char firmware_version[4];
@@ -171,9 +171,9 @@ struct bender_general_s {
     uint16_t device_id;
     uint32swapped_t charger_model[5];
     uint16_t pluglock_detected;
-} __attribute__((packed));
+};
 
-struct bender_phases_s {
+struct [[gnu::packed]] bender_phases_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint16_t OFFSET = 200;
     uint32swapped_t energy[3];
@@ -182,9 +182,9 @@ struct bender_phases_s {
     uint32swapped_t total_energy;
     uint32swapped_t total_power;
     uint32swapped_t voltage[3];
-} __attribute__((packed));
+};
 
-struct bender_dlm_s {
+struct [[gnu::packed]] bender_dlm_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 600;
     uint16_t dlm_mode;
@@ -197,9 +197,9 @@ struct bender_dlm_s {
     uint16_t padding3[8];
     uint16_t overall_current_applied[3];
     uint16_t overall_current_available[3];
-} __attribute__((packed));
+};
 
-struct bender_charge_s {
+struct [[gnu::packed]] bender_charge_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 700;
     uint16_t padding[5];
@@ -216,22 +216,22 @@ struct bender_charge_s {
     uint32swapped_t user_id[5];
     uint16_t padding3[10];
     uint32swapped_t evccid[3];
-} __attribute__((packed));
+};
 
-struct bender_hems_s {
+struct [[gnu::packed]] bender_hems_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 1000;
     uint16_t hems_limit;
-} __attribute__((packed));
+};
 
-struct bender_write_uid_s {
+struct [[gnu::packed]] bender_write_uid_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 1110;
     uint32swapped_t user_id[5];
-} __attribute__((packed));
+};
 
 
-struct keba_read_general_s {
+struct [[gnu::packed]] keba_read_general_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 1000;
     uint32swapped_t charging_state;
@@ -248,24 +248,24 @@ struct keba_read_general_s {
     uint32swapped_t padding3;
     uint32swapped_t voltages[3];
     uint32swapped_t power_factor;
-} __attribute__((packed));
+};
 
-struct keba_read_max_s {
+struct [[gnu::packed]] keba_read_max_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 1100;
     uint32swapped_t max_current;
     uint16_t padding[8];
     uint32swapped_t max_hardware_current;
-} __attribute__((packed));
+};
 
-struct keba_read_charge_s {
+struct [[gnu::packed]] keba_read_charge_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 1500;
     uint32swapped_t rfid_tag;
     uint32swapped_t charged_energy;
-} __attribute__((packed));
+};
 
-struct keba_write_s {
+struct [[gnu::packed]] keba_write_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 5004;
     uint16_t set_charging_current;
@@ -281,7 +281,7 @@ struct keba_write_s {
     uint16_t failsafe_timeout;
     uint16_t padding6;
     uint16_t failsafe_persist;
-} __attribute__((packed));
+};
 
 //-------------------
 // Discrete Inputs

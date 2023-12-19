@@ -874,10 +874,10 @@ typedef struct {
 
 static StreamMetadata metadata_array[4];
 
-typedef struct {
+struct [[gnu::packed]] Wallbox5minData {
     uint8_t flags; // bit 0-2 = charger state, bit 7 = no data (read only)
     uint16_t power; // W
-} __attribute__((__packed__)) Wallbox5minData;
+};
 
 static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[60], void *user_data)
 {
@@ -1290,10 +1290,10 @@ void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
     check_bricklet_reachable(rc, "history_wallbox_daily_response");
 }
 
-typedef struct {
+struct [[gnu::packed]] EnergyManager5MinData {
     uint8_t flags; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data
     int32_t power[7]; // W
-} __attribute__((__packed__)) EnergyManager5MinData;
+};
 
 static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device,
                                                     uint16_t data_length,

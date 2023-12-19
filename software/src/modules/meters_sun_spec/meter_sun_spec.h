@@ -39,7 +39,7 @@ class MeterSunSpec final : protected GenericModbusTCPClient, public IMeter
 public:
     MeterSunSpec(uint32_t slot_, Config *state_, Config *errors_, ModbusTCP *mb_) : GenericModbusTCPClient(mb_), slot(slot_), state(state_), errors(errors_) {}
 
-    MeterClassID get_class() const override _ATTRIBUTE((const));
+    [[gnu::const]] MeterClassID get_class() const override;
     void setup(Config &ephemeral_config) override;
     //void register_urls(const String &base_url) override;
 

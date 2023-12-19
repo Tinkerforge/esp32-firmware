@@ -38,7 +38,7 @@ struct ConfigMigration {
     void (*const fn)(void);
 };
 
-ATTRIBUTE_UNUSED
+[[gnu::unused]]
 static bool rename_config_file(const char *config, const char *new_name) {
     String s = config;
     s.replace('/', '_');
@@ -57,7 +57,7 @@ static bool rename_config_file(const char *config, const char *new_name) {
     return true;
 }
 
-ATTRIBUTE_UNUSED
+[[gnu::unused]]
 static bool read_config_file(const char *config, JsonDocument &json)
 {
     String s = config;
@@ -83,7 +83,7 @@ static bool read_config_file(const char *config, JsonDocument &json)
     return true;
 }
 
-ATTRIBUTE_UNUSED
+[[gnu::unused]]
 static void write_config_file(const char *config, JsonDocument &json)
 {
     String s = config;
@@ -95,7 +95,7 @@ static void write_config_file(const char *config, JsonDocument &json)
     file.close();
 }
 
-ATTRIBUTE_UNUSED
+[[gnu::unused]]
 static void delete_config_file(const char *config)
 {
     String s = config;
@@ -105,7 +105,7 @@ static void delete_config_file(const char *config)
     LittleFS.remove(filename);
 }
 
-ATTRIBUTE_UNUSED
+[[gnu::unused]]
 static void migrate_charge_manager_minimum_current()
 {
     DynamicJsonDocument json{16384};

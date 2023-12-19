@@ -16,51 +16,51 @@
 // ==============
 
 struct SunSpecInverterModel101_s {
-                         uint16_t ID;      //  0
-                         uint16_t L;       //  1
-                         uint16_t A;       //  2
-                         uint16_t AphA;    //  3
-                         uint16_t AphB;    //  4
-                         uint16_t AphC;    //  5
-                         int16_t  A_SF;    //  6
-                         uint16_t PPVphAB; //  7
-                         uint16_t PPVphBC; //  8
-                         uint16_t PPVphCA; //  9
-                         uint16_t PhVphA;  // 10
-                         uint16_t PhVphB;  // 11
-                         uint16_t PhVphC;  // 12
-                         int16_t  V_SF;    // 13
-                         int16_t  W;       // 14
-                         int16_t  W_SF;    // 15
-                         uint16_t Hz;      // 16
-                         int16_t  Hz_SF;   // 17
-                         int16_t  VA;      // 18
-                         int16_t  VA_SF;   // 19
-                         int16_t  VAr;     // 20
-                         int16_t  VAr_SF;  // 21
-                         int16_t  PF;      // 22
-                         int16_t  PF_SF;   // 23
-    _ATTRIBUTE((packed)) uint32_t WH;      // 24
-                         int16_t  WH_SF;   // 26
-                         uint16_t DCA;     // 27
-                         int16_t  DCA_SF;  // 28
-                         uint16_t DCV;     // 29
-                         int16_t  DCV_SF;  // 30
-                         int16_t  DCW;     // 31
-                         int16_t  DCW_SF;  // 32
-                         int16_t  TmpCab;  // 33
-                         int16_t  TmpSnk;  // 34
-                         int16_t  TmpTrns; // 35
-                         int16_t  TmpOt;   // 36
-                         int16_t  Tmp_SF;  // 37
-                         uint16_t St;      // 38
-                         uint16_t StVnd;   // 39
-    _ATTRIBUTE((packed)) uint32_t Evt1;    // 40
-    _ATTRIBUTE((packed)) uint32_t Evt2;    // 42
-    _ATTRIBUTE((packed)) uint32_t EvtVnd1; // 44
-    _ATTRIBUTE((packed)) uint32_t EvtVnd2; // 46
-    _ATTRIBUTE((packed)) uint32_t EvtVnd3; // 48
-    _ATTRIBUTE((packed)) uint32_t EvtVnd4; // 50
+                    uint16_t ID;      //  0
+                    uint16_t L;       //  1
+                    uint16_t A;       //  2
+                    uint16_t AphA;    //  3
+                    uint16_t AphB;    //  4
+                    uint16_t AphC;    //  5
+                    int16_t  A_SF;    //  6
+                    uint16_t PPVphAB; //  7
+                    uint16_t PPVphBC; //  8
+                    uint16_t PPVphCA; //  9
+                    uint16_t PhVphA;  // 10
+                    uint16_t PhVphB;  // 11
+                    uint16_t PhVphC;  // 12
+                    int16_t  V_SF;    // 13
+                    int16_t  W;       // 14
+                    int16_t  W_SF;    // 15
+                    uint16_t Hz;      // 16
+                    int16_t  Hz_SF;   // 17
+                    int16_t  VA;      // 18
+                    int16_t  VA_SF;   // 19
+                    int16_t  VAr;     // 20
+                    int16_t  VAr_SF;  // 21
+                    int16_t  PF;      // 22
+                    int16_t  PF_SF;   // 23
+    [[gnu::packed]] uint32_t WH;      // 24
+                    int16_t  WH_SF;   // 26
+                    uint16_t DCA;     // 27
+                    int16_t  DCA_SF;  // 28
+                    uint16_t DCV;     // 29
+                    int16_t  DCV_SF;  // 30
+                    int16_t  DCW;     // 31
+                    int16_t  DCW_SF;  // 32
+                    int16_t  TmpCab;  // 33
+                    int16_t  TmpSnk;  // 34
+                    int16_t  TmpTrns; // 35
+                    int16_t  TmpOt;   // 36
+                    int16_t  Tmp_SF;  // 37
+                    uint16_t St;      // 38
+                    uint16_t StVnd;   // 39
+    [[gnu::packed]] uint32_t Evt1;    // 40
+    [[gnu::packed]] uint32_t Evt2;    // 42
+    [[gnu::packed]] uint32_t EvtVnd1; // 44
+    [[gnu::packed]] uint32_t EvtVnd2; // 46
+    [[gnu::packed]] uint32_t EvtVnd3; // 48
+    [[gnu::packed]] uint32_t EvtVnd4; // 50
 };
 
 #define SUNSPEC_MODEL_101_NAME "Inverter"

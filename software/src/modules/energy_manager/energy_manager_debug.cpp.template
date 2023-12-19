@@ -19,7 +19,7 @@ extern inline const char* fmt(void          ) {return "";    }
 
 static char *fmtstr;
 
-__attribute((noinline))
+[[gnu::noinline]]
 String EnergyManager::prepare_fmtstr() {
     const char * const fmts[2+{{{varcount}}}] = {
         "%u",

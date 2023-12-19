@@ -44,7 +44,7 @@ public:
     // (none)
 
     // for both
-    MeterClassID get_class() const override _ATTRIBUTE((const));
+    [[gnu::const]] MeterClassID get_class() const override;
 };
 
 #if defined(__GNUC__)

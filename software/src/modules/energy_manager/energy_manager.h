@@ -88,7 +88,7 @@ public:
     void register_events() override;
     void loop() override;
 
-    const Config * get_config() _ATTRIBUTE((const));
+    [[gnu::const]] const Config * get_config();
 
     // Called in energy_manager_meter setup
     void update_all_data();

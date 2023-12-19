@@ -23,7 +23,7 @@
 #include "gcc_warnings.h"
 
 // for MeterGenerator
-_ATTRIBUTE((const))
+[[gnu::const]]
 IMeter * MeterGeneratorNone::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
 {
     return this;
@@ -45,7 +45,7 @@ const Config * MeterGeneratorNone::get_errors_prototype()
 }
 
 // for both
-_ATTRIBUTE((const))
+[[gnu::const]]
 MeterClassID MeterGeneratorNone::get_class() const
 {
     return MeterClassID::None;

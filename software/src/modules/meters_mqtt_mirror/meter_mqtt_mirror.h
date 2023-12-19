@@ -33,7 +33,7 @@ class MeterMqttMirror final : public IMeter
 public:
     MeterMqttMirror(uint32_t slot_) : slot(slot_) {}
 
-    MeterClassID get_class() const override _ATTRIBUTE((const));
+    [[gnu::const]] MeterClassID get_class() const override;
     void setup(Config &ephemeral_config) override;
     //void register_urls(const String &base_url) override;
 

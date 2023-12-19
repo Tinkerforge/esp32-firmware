@@ -368,8 +368,8 @@ static void restore_locale(char *buf)
 }
 
 #ifndef SKIP_ATTRIBUTE
-static int dstr_printf(struct dstr *str, const char *fmt, ...)
-    __attribute__((format(printf, 2, 3)));
+[[gnu::format(printf, 2, 3)]]
+static int dstr_printf(struct dstr *str, const char *fmt, ...);
 #endif
 static int dstr_printf(struct dstr *str, const char *fmt, ...)
 {
@@ -425,8 +425,9 @@ static void dstr_free(struct dstr *str)
  */
 
 #ifndef SKIP_ATTRIBUTE
+[[gnu::format(printf, 3, 4)]]
 static int pdf_set_err(struct pdf_doc *doc, int errval, const char *buffer,
-                       ...) __attribute__((format(printf, 3, 4)));
+                       ...);
 #endif
 static int pdf_set_err(struct pdf_doc *doc, int errval, const char *buffer,
                        ...)

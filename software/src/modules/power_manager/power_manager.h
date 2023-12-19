@@ -55,10 +55,10 @@ public:
     //void register_events() override;
     //void loop() override;
 
-    Config *       get_config_low_level_state() _ATTRIBUTE((const));
-    const Config * get_config()                 _ATTRIBUTE((const));
-    const Config * get_debug_config()           _ATTRIBUTE((const));
-    Config *       get_config_charge_mode()     _ATTRIBUTE((const));
+    [[gnu::const]] Config *       get_config_low_level_state();
+    [[gnu::const]] const Config * get_config();
+    [[gnu::const]] const Config * get_debug_config();
+    [[gnu::const]] Config *       get_config_charge_mode();
 
 private:
     ConfigRoot low_level_state;

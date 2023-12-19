@@ -39,13 +39,13 @@
 #define CM_NETWORKING_ERROR_INVALID_HEADER 2
 #define CM_NETWORKING_ERROR_NOT_MANAGED 3
 
-struct cm_packet_header {
+struct [[gnu::packed]] cm_packet_header {
     uint16_t magic;
     uint16_t length;
     uint16_t seq_num;
     uint8_t version;
     uint8_t padding;
-} __attribute__((packed));
+};
 
 #define CM_PACKET_HEADER_LENGTH (sizeof(cm_packet_header))
 static_assert(CM_PACKET_HEADER_LENGTH == 8);
@@ -54,7 +54,7 @@ static_assert(CM_PACKET_HEADER_LENGTH == 8);
 #define CM_COMMAND_FLAGS_CPPDISC_MASK (1 << CM_COMMAND_FLAGS_CPPDISC_BIT_POS)
 #define CM_COMMAND_FLAGS_CPPDISC_IS_SET(FLAGS) (((FLAGS) & CM_COMMAND_FLAGS_CPPDISC_MASK) != 0)
 
-struct cm_command_v1 {
+struct [[gnu::packed]] cm_command_v1 {
     uint16_t allocated_current;
     /* command_flags
     bit 6 - control pilot permanently disconnected
@@ -62,15 +62,15 @@ struct cm_command_v1 {
     */
     uint8_t command_flags;
     uint8_t padding;
-} __attribute__((packed));
+};
 
 #define CM_COMMAND_V1_LENGTH (sizeof(cm_command_v1))
 static_assert(CM_COMMAND_V1_LENGTH == 4);
 
-struct cm_command_packet {
+struct [[gnu::packed]] cm_command_packet {
     cm_packet_header header;
     cm_command_v1 v1;
-} __attribute__((packed));
+};
 
 #define CM_COMMAND_PACKET_LENGTH (sizeof(cm_command_packet))
 static_assert(CM_COMMAND_PACKET_LENGTH == 12);
@@ -128,7 +128,7 @@ static_assert(CM_COMMAND_PACKET_LENGTH == 12);
 #define CM_STATE_FLAGS_ACTIVE_MASK (0x7 << CM_STATE_FLAGS_ACTIVE_BIT_POS)
 #define CM_STATE_FLAGS_ACTIVE_GET(FLAGS) ((FLAGS) & CM_STATE_FLAGS_ACTIVE_MASK)
 
-struct cm_state_v1 {
+struct [[gnu::packed]] cm_state_v1 {
     /* feature_flags
     bit 6 - has cp_disconnect
     bit 5 - has evse
@@ -166,23 +166,23 @@ struct cm_state_v1 {
     float power_total;
     float energy_rel;
     float energy_abs;
-} __attribute__((packed));
+};
 
 #define CM_STATE_V1_LENGTH (sizeof(cm_state_v1))
 static_assert(CM_STATE_V1_LENGTH == 72, "Unexpected CM_STATE_V1_LENGTH");
 
-struct cm_state_v2 {
+struct [[gnu::packed]] cm_state_v2 {
     uint32_t time_since_state_change;
-} __attribute__((packed));
+};
 
 #define CM_STATE_V2_LENGTH (sizeof(cm_state_v2))
 static_assert(CM_STATE_V2_LENGTH == 4, "Unexpected CM_STATE_V2_LENGTH");
 
-struct cm_state_packet {
+struct [[gnu::packed]] cm_state_packet {
     cm_packet_header header;
     cm_state_v1 v1;
     cm_state_v2 v2;
-} __attribute__((packed));
+};
 
 #define CM_STATE_PACKET_LENGTH (sizeof(cm_state_packet))
 static_assert(CM_STATE_PACKET_LENGTH == 84, "Unexpected CM_STATE_PACKET_LENGTH");

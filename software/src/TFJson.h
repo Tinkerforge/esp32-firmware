@@ -65,7 +65,7 @@ private:
     void write(const char *c, size_t len = TFJSON_USE_STRLEN);
     void write(char c);
     void writeUnescaped(const char *c, size_t len);
-    void writeFmt(const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
+    [[gnu::format(__printf__, 2, 3)]] void writeFmt(const char *fmt, ...);
 };
 
 struct TFJsonDeserializer {

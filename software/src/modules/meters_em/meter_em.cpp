@@ -27,7 +27,7 @@
 
 #include "gcc_warnings.h"
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 MeterClassID MeterEM::get_class() const
 {
     return MeterClassID::EnergyManager;

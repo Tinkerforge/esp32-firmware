@@ -29,7 +29,7 @@
     //#pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-const char* get_modbus_result_code_name(Modbus::ResultCode event) _ATTRIBUTE((const));
+[[gnu::const]] const char* get_modbus_result_code_name(Modbus::ResultCode event);
 
 void modbus_bswap_registers(uint16_t *register_start, size_t register_count);
 

@@ -543,7 +543,7 @@ void MetersSunSpec::loop()
     modbus.task();
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 MeterClassID MetersSunSpec::get_class() const
 {
     return MeterClassID::SunSpec;
@@ -555,19 +555,19 @@ IMeter * MetersSunSpec::new_meter(uint32_t slot, Config *state, Config *errors)
     return new MeterSunSpec(slot, state, errors, meters_modbus_tcp.get_modbus_tcp_handle());
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersSunSpec::get_config_prototype()
 {
     return &config_prototype;
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersSunSpec::get_state_prototype()
 {
     return Config::Null();
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersSunSpec::get_errors_prototype()
 {
     return Config::Null();

@@ -134,7 +134,7 @@ void MetersRS485Bricklet::loop() {
     this->DeviceModule::loop();
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 MeterClassID MetersRS485Bricklet::get_class() const
 {
     return MeterClassID::RS485Bricklet;
@@ -151,19 +151,19 @@ IMeter * MetersRS485Bricklet::new_meter(uint32_t slot, Config *state, Config * e
     return meter_instance;
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersRS485Bricklet::get_config_prototype()
 {
     return &config_prototype;
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersRS485Bricklet::get_state_prototype()
 {
     return &state_prototype;
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersRS485Bricklet::get_errors_prototype()
 {
     return &errors_prototype;

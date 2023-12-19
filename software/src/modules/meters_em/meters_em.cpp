@@ -44,7 +44,7 @@ void MetersEM::pre_setup()
     meters.register_meter_generator(get_class(), this);
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 MeterClassID MetersEM::get_class() const
 {
     return MeterClassID::EnergyManager;
@@ -60,13 +60,13 @@ IMeter * MetersEM::new_meter(uint32_t slot, Config *state, Config * errors)
     return meter_instance;
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersEM::get_config_prototype()
 {
     return &config_prototype;
 }
 
-_ATTRIBUTE((const))
+[[gnu::const]]
 const Config * MetersEM::get_state_prototype()
 {
     return &state_prototype;
