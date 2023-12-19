@@ -199,7 +199,7 @@ void ChargeLimits::register_urls()
 
             if (!was_charging) {
                 state.get("start_timestamp_ms")->updateUint(charge_tracker.current_charge.get("evse_uptime_start")->asUint());
-                if (!isnan(energy_now_kwh) && !isnan(charge_tracker.current_charge.get("meter_start")->asFloat())) // TODO: Is the check for energy_now_kwh even needed?
+                if (!isnan(charge_tracker.current_charge.get("meter_start")->asFloat()))
                     state.get("start_energy_kwh")->updateFloat(charge_tracker.current_charge.get("meter_start")->asFloat());
             }
 
