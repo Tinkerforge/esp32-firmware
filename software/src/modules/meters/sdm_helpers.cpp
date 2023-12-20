@@ -191,14 +191,14 @@ void sdm_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VAL
 
         if (i_out != value_ids_len) {
             if (!value_ids_len) {
-                logger.printfln("sdm_helper: Can't validate value IDs for meter type %u.", meter_type);
+                logger.printfln("sdm_helpers: Can't validate value IDs for meter type %u.", meter_type);
             } else {
-                logger.printfln("sdm_helper: Value ID count mismatch for meter type %u: detected %u but expected %u.", meter_type, i_out, value_ids_len);
+                logger.printfln("sdm_helpers: Value ID count mismatch for meter type %u: detected %u but expected %u.", meter_type, i_out, value_ids_len);
             }
         } else {
             for (size_t i = 0; i < value_ids_len; i++) {
                 if (value_ids[i] != static_value_ids[i]) {
-                    logger.printfln("sdm_helper: Value ID mismatch at position %u for meter type %u: detected %u but expected %u.", i, meter_type, static_cast<uint32_t>(value_ids[i]), static_cast<uint32_t>(static_value_ids[i]));
+                    logger.printfln("sdm_helpers: Value ID mismatch at position %u for meter type %u: detected %u but expected %u.", i, meter_type, static_cast<uint32_t>(value_ids[i]), static_cast<uint32_t>(static_value_ids[i]));
                 }
             }
         }
