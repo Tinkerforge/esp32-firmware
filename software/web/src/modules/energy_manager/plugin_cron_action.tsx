@@ -168,14 +168,14 @@ function get_em_limit_max_current_edit_children(action: EMLimitMaxCurrentCronAct
         ['0', __("energy_manager.cron.limit_max_current")],
         ['1', __("energy_manager.cron.reset_limit_max_current") + " (" + API.get("charge_manager/config").maximum_available_current / 1000 + "A)"]
     ]
-
+    
     return [
         <FormRow label={__("energy_manager.cron.limit_mode")}>
             <InputSelect
                 items={items}
-                value={action[1].current == -1 ? '1' : '0'}
+                value={action[1].current === -1 ? '1' : '0'}
                 onValue={(v) => {
-                    on_action(util.get_updated_union(action, {current: '1' ? -1 : 0}));
+                    on_action(util.get_updated_union(action, {current: v === '1' ? -1 : 0}));
                 }} />
         </FormRow>,
         <FormRow label={__("energy_manager.cron.max_current")} hidden={action[1].current == -1}>
