@@ -63,7 +63,7 @@ export class Certs extends Component<{}, State> {
                                                         maxLength={32}
                                                         required/>
                                         </FormRow>
-                                        <FormRow label={__("certs.content.cert_file")}>
+                                        <FormRow label={__("certs.content.cert_file")} label_muted={__("certs.content.cert_file_muted")}>
                                             <div class="custom-file">
                                                 <input type="file"
                                                         class={"custom-file-input form-control" + (this.state.editCert.file_too_large ? " is-invalid" : "")}
@@ -101,7 +101,7 @@ export class Certs extends Component<{}, State> {
                                         maxLength={32}
                                         required/>
                                 </FormRow>
-                                <FormRow label={__("certs.content.cert_file")}>
+                                <FormRow label={__("certs.content.cert_file")} label_muted={__("certs.content.cert_file_muted")}>
                                     <div class="custom-file">
                                         <input type="file"
                                                 class={"custom-file-input form-control" + (this.state.addCert.file_too_large ? " is-invalid" : "")}

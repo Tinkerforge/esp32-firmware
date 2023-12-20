@@ -45,7 +45,6 @@ let x = {
             "error_switch": "Switch",
             "error_contactor": /*SFN*/(pe_error: boolean, contactor_error: boolean) => (contactor_error == pe_error ? "Contactor/PE" : (pe_error ? "PE" : "Contactor"))/*NF*/,
             "error_communication": "Communication",
-            "error_pe": "PE",
             "lock_state": "Cable lock",
             "lock_init": "Init",
             "lock_open": "Open",
@@ -247,7 +246,6 @@ let x = {
             "cron_led_action_text": /*FFN*/(state: string, duration: number) => state == "An" || state == "Aus" ? <>turn the status-LED <b>{state}</b> for <b>{duration} seconds</b>.</> : <>show <b>{state}</b> for <b>{duration / 1000} seconds</b> on the status-LED.</>/*NF*/
         },
         "script": {
-            "error_code": "Error code",
             "set_charging_current_failed": "Failed to set charging current",
             "start_charging_failed": "Failed to start charging",
             "stop_charging_failed": "Failed to stop charging",

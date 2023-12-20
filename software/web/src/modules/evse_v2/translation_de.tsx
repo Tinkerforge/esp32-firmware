@@ -3,9 +3,6 @@ import { h } from "preact";
 let x = {
     "evse": {
         "cron": {
-            "button_pressed": "Drücken des Tasters",
-            "button_released": "Loslassen des Tasters",
-            "button_configuration": "Tastereinstellung",
             "gpio_out_high": "Hochohmig",
             "gpio_out_low": "Verbunden mit Masse",
             "gpio_out": "Konfigurierbarer Ausgang",

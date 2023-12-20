@@ -45,7 +45,6 @@ let x = {
             "error_switch": "Schalter",
             "error_contactor": /*SFN*/(pe_error: boolean, contactor_error: boolean) => (contactor_error == pe_error ? "Schütz/PE" : (pe_error ? "PE" : "Schütz"))/*NF*/,
             "error_communication": "Kommunikation",
-            "error_pe": "PE",
             "lock_state": "Kabelverriegelung",
             "lock_init": "Start",
             "lock_open": "Offen",
@@ -240,14 +239,13 @@ let x = {
             }/*NF*/,
             "from": "Von",
             "to": "Zu",
-            "any": "Beliebiger status",
+            "any": "Beliebiger Status",
             "allowed_charging_current": "Erlaubter Ladestrom",
             "cron_state_change_trigger": /*FFN*/(old_state: string, new_state: string) => <>Wenn der Ladecontroller vom Zustand "<b>{old_state}</b>" auf Zustand "<b>{new_state}</b>" wechselt,{" "}</>/*NF*/,
             "cron_action_text": /*FFN*/(current: string) => <>setze den erlaubten Ladestrom auf <b>{current} A</b>.</>/*NF*/,
             "cron_led_action_text": /*FFN*/(state: string, duration: number) => (state == "An" || state == "Aus") ? <>schalte die Status-LED für <b>{duration / 1000} Sekunden</b> <b>{state}</b>.</> : <>zeige <b>{state}</b> für <b>{duration / 1000} Sekunden</b> auf der Status-LED.</>/*NF*/
         },
         "script": {
-            "error_code": "Fehlercode",
             "set_charging_current_failed": "Konnte Ladestrom nicht setzen",
             "start_charging_failed": "Ladestart auslösen fehlgeschlagen",
             "stop_charging_failed": "Ladestop auslösen fehlgeschlagen",

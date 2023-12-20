@@ -61,7 +61,6 @@ let x = {
             "eap_ca_cert": "CA-Zertifikat",
             "eap_client_cert": "Client-Zertifikat",
             "eap_client_key": "Client-Schlüssel",
-            "eap_client_key_password": "Client-Schlüssel-Passwort",
             "eap_cert_placeholder": "Kein Zertifikat",
             "eap_key_placeholder": "Kein Schlüssel",
             "optional_eap_cert_muted": /*FFN*/ () => {

@@ -86,7 +86,7 @@ let x = {
         },
         "script": {
             "charge_state_0": "Kein Fahrzeug angeschlossen",
-            "charge_state_1": "Warte auf Benutzer-/NFC-Freigabe",
+            "charge_state_1": "Warte auf lokale Freigabe",
             "charge_state_2": "Warte auf Manager-Freigabe",
             "charge_state_3": "Laden freigegeben",
             "charge_state_4": "Lädt",

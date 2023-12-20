@@ -14,7 +14,7 @@ let x = {
             "edit_cert_title": "TLS-Zertifikat bearbeiten",
             "cert_name": "Zertifikatsname",
             "cert_file": "Zertifikatsdatei",
-            "cert_file_muted": "(PEM-Format)",
+            "cert_file_muted": "(im PEM-Format)",
 
             "add_cert_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Zertifikaten konfiguriert.`/*NF*/,
 
