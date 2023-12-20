@@ -93,9 +93,6 @@ bool ChargeManager::action_triggered(Config *config, void *data) {
 static bool trigger_action(Config *config, void *data) {
     return charge_manager.action_triggered(config, data);
 }
-void ChargeManager::trigger_wd() {
-    cron.trigger_action(CronTriggerID::ChargeManagerWd, nullptr, trigger_action);
-}
  #endif
 #endif
 
@@ -474,6 +471,9 @@ void ChargeManager::check_watchdog()
     this->available_current.get("current")->updateUint(default_available_current);
 
     last_available_current_update = millis();
+#if MODULE_CRON_AVAILABLE()
+    cron.trigger_action(CronTriggerID::ChargeManagerWd, nullptr, trigger_action);
+#endif
 }
 
 bool ChargeManager::have_chargers() {

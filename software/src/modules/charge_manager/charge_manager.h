@@ -47,7 +47,6 @@ public:
 
 #if MODULE_CRON_AVAILABLE()
     bool action_triggered(Config *config, void *data);
-    void trigger_wd();
 #endif
 
     ConfigRoot config;

@@ -393,9 +393,6 @@ void EvseCommon::register_urls() {
         }
         if(!shutdown_logged) {
             logger.printfln("Got no managed current update for more than 30 seconds. Setting managed current to 0");
-#if MODULE_CRON_AVAILABLE() && MODULE_CHARGE_MANAGER_AVAILABLE()
-            charge_manager.trigger_wd();
-#endif
         }
         shutdown_logged = true;
         backend->set_charging_slot_max_current(CHARGING_SLOT_CHARGE_MANAGER, 0);
