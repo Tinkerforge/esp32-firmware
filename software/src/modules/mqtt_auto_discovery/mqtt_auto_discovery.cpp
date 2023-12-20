@@ -70,7 +70,7 @@ void MqttAutoDiscovery::setup()
     discovery_topic.concat(mqtt.config_in_use.get("client_name")->asString());
     discovery_topic.concat("/+/config");
 
-    mqtt.subscribe_mqtt_thread(discovery_topic, [this](const char *topic, size_t topic_len, char *data, size_t data_len) {
+    mqtt.subscribe(discovery_topic, [this](const char *topic, size_t topic_len, char *data, size_t data_len) {
         check_discovery_topic(topic, topic_len, data_len);
     }, false);
 }
