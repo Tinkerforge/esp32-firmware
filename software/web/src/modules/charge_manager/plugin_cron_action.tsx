@@ -25,6 +25,7 @@ import { CronAction } from "../cron/types";
 import { InputFloat } from "../../ts/components/input_float";
 import { FormRow } from "../../ts/components/form_row";
 import { IS_ENERGY_MANAGER } from "src/build";
+import * as API from "../../ts/api"
 
 export type ChargeManagerCronAction = [
     CronActionID.SetManagerCurrent,
@@ -46,6 +47,7 @@ function get_set_manager_edit_children(action: ChargeManagerCronAction, on_actio
                     on_action(util.get_updated_union(action, {current: v}));
                 }}
                 min={0}
+                max={API.get("charge_manager/config").maximum_available_current}
                 unit="A"
                 digits={3} />
         </FormRow>,
