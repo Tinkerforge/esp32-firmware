@@ -37,4 +37,6 @@ extern const uint32_t sdm_helper_72v2_all_value_indices[38];
 extern const uint32_t sdm_helper_72_all_value_indices[7];
 
 extern void sdm_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size_t *value_ids_len);
+extern void sdm_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VALUES_RESETTABLE_COUNT], size_t *value_count, MeterValueID *value_ids, uint8_t *packing_cache);
 extern void sdm_helper_pack_all_values(uint32_t meter_type, float *values, size_t *values_len);
+extern void sdm_helper_pack_all_values(float *values, size_t values_len, uint8_t *packing_cache);

@@ -39,7 +39,6 @@ public:
 
     MeterClassID get_class() const override;
     //void setup() override;
-    //void register_urls(const String &base_url) override;
 
     bool supports_power()         override {return true;}
     bool supports_energy_import() override {return true;}
@@ -51,15 +50,17 @@ public:
 
     void update_from_em_all_data(EnergyManagerAllData &all_data);
 private:
-    void update_all_values();
+    void update_all_values(float *values);
 
     uint32_t slot;
     Config *state;
     Config *errors;
 
     uint32_t meter_type = METER_TYPE_NONE;
-    uint32_t value_index_power  = UINT32_MAX;
-    uint32_t value_index_current[3] = {UINT32_MAX, UINT32_MAX, UINT32_MAX};
+    uint32_t value_index_power       = UINT32_MAX;
+    uint32_t value_index_currents[3] = {UINT32_MAX, UINT32_MAX, UINT32_MAX};
+    uint8_t value_packing_cache[METER_ALL_VALUES_RESETTABLE_COUNT];
+    size_t value_count = 0;
 
     bool meter_change_warning_printed = false;
 };

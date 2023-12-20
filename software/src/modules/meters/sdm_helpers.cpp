@@ -162,6 +162,49 @@ void sdm_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size
     *value_ids_len = id_count;
 }
 
+void sdm_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VALUES_RESETTABLE_COUNT], size_t *value_count, MeterValueID *value_ids, uint8_t *packing_cache)
+{
+    size_t i_out = 0;
+    for (size_t i_in = 0; i_in < METER_ALL_VALUES_RESETTABLE_COUNT; i_in++) {
+        if (!isnan(all_values[i_in])) {
+            if (i_out >= *value_count) {
+                logger.printfln("sdm_helpers: Not enough space for all value IDs: %u", *value_count);
+                break;
+            }
+        }
+
+        MeterValueID value_id = sdm_helper_all_ids[i_in];
+        if (value_id == MeterValueID::NotSupported)
+            continue;
+
+        value_ids[i_out] = value_id;
+        packing_cache[i_out] = static_cast<uint8_t>(i_in);
+        i_out++;
+    }
+
+    *value_count = i_out;
+
+    if (meter_type != METER_TYPE_NONE && meter_type < 100) {
+        MeterValueID static_value_ids[METER_ALL_VALUES_RESETTABLE_COUNT];
+        size_t value_ids_len = METER_ALL_VALUES_RESETTABLE_COUNT;
+        sdm_helper_get_value_ids(meter_type, static_value_ids, &value_ids_len);
+
+        if (i_out != value_ids_len) {
+            if (!value_ids_len) {
+                logger.printfln("sdm_helper: Can't validate value IDs for meter type %u.", meter_type);
+            } else {
+                logger.printfln("sdm_helper: Value ID count mismatch for meter type %u: detected %u but expected %u.", meter_type, i_out, value_ids_len);
+            }
+        } else {
+            for (size_t i = 0; i < value_ids_len; i++) {
+                if (value_ids[i] != static_value_ids[i]) {
+                    logger.printfln("sdm_helper: Value ID mismatch at position %u for meter type %u: detected %u but expected %u.", i, meter_type, static_cast<uint32_t>(value_ids[i]), static_cast<uint32_t>(static_value_ids[i]));
+                }
+            }
+        }
+    }
+}
+
 void sdm_helper_pack_all_values(uint32_t meter_type, float *values, size_t *values_len)
 {
     const uint32_t *all_value_indices;
@@ -201,4 +244,12 @@ void sdm_helper_pack_all_values(uint32_t meter_type, float *values, size_t *valu
         values[i] = values[src_i];
     }
     *values_len = values_count;
+}
+
+void sdm_helper_pack_all_values(float *values, size_t values_len, uint8_t *packing_cache)
+{
+    for (size_t i = 0; i < values_len; i++) {
+        uint8_t source_index = packing_cache[i];
+        values[i] = values[source_index];
+    }
 }

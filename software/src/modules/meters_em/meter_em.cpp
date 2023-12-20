@@ -47,7 +47,7 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
     errors->get("illegal_data_value"  )->updateUint(all_data.error_count[4]);
     errors->get("slave_device_failure")->updateUint(all_data.error_count[5]);
 
-    // Do nothing if no meter was detected.
+    // No data to handle if no meter was detected.
     if (all_data.energy_meter_type == METER_TYPE_NONE)
         return;
 
@@ -60,45 +60,54 @@ void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
             return;
         }
 
+        // No need to initialize the array because either all values are written or it is rejected entirely.
+        float all_values[METER_ALL_VALUES_RESETTABLE_COUNT];
+        if (energy_manager.get_energy_meter_detailed_values(all_values) != METER_ALL_VALUES_RESETTABLE_COUNT)
+            return;
+
         meter_type = all_data.energy_meter_type;
         state->get("type")->updateUint(meter_type);
 
         MeterValueID ids[METER_ALL_VALUES_RESETTABLE_COUNT];
         uint32_t id_count = METER_ALL_VALUES_RESETTABLE_COUNT;
-        sdm_helper_get_value_ids(meter_type, ids, &id_count);
+        sdm_helper_parse_values(meter_type, all_values, &id_count, ids, value_packing_cache);
+        value_count = id_count;
         meters.declare_value_ids(slot, ids, id_count);
 
-        value_index_power      = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
-        value_index_current[0] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL1ImExSum);
-        value_index_current[1] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL2ImExSum);
-        value_index_current[2] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL3ImExSum);
+        value_index_power       = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
+        value_index_currents[0] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL1ImExSum);
+        value_index_currents[1] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL2ImExSum);
+        value_index_currents[2] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL3ImExSum);
+
+        update_all_values(all_values);
 
         task_scheduler.scheduleWithFixedDelay([this](){
-            update_all_values();
-        }, 0, 990);
+            update_all_values(nullptr);
+        }, 990, 990);
+
+        return;
     }
 
-    meters.update_value(slot, value_index_power,  all_data.power);
-    for (uint32_t i = 0; i < ARRAY_SIZE(value_index_current); i++) {
-        meters.update_value(slot, value_index_current[i], all_data.current[i]);
+    meters.update_value(slot, value_index_power, all_data.power);
+    for (size_t i = 0; i < ARRAY_SIZE(value_index_currents); i++) {
+        meters.update_value(slot, value_index_currents[i], all_data.current[i]);
     }
 }
 
-void MeterEM::update_all_values()
+void MeterEM::update_all_values(float *values)
 {
     // No need to initialize the array because either all values are written or it is rejected entirely.
-    float values[METER_ALL_VALUES_RESETTABLE_COUNT];
-    if (energy_manager.get_energy_meter_detailed_values(values) != METER_ALL_VALUES_RESETTABLE_COUNT)
-        return;
+    float local_values[METER_ALL_VALUES_RESETTABLE_COUNT];
 
-    uint32_t values_len = ARRAY_SIZE(values);
-    sdm_helper_pack_all_values(meter_type, values, &values_len);
-
-    if (values_len == 0) {
-        logger.printfln("meter_em: Cannot pack values into array of size %u.", ARRAY_SIZE(values));
-    } else {
-        meters.update_all_values(slot, values);
+    if (!values) {
+        values = local_values;
+        if (energy_manager.get_energy_meter_detailed_values(values) != METER_ALL_VALUES_RESETTABLE_COUNT)
+            return;
     }
+
+    sdm_helper_pack_all_values(values, value_count, value_packing_cache);
+
+    meters.update_all_values(slot, values);
 }
 
 bool MeterEM::reset()
