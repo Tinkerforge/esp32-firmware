@@ -131,7 +131,7 @@ Entity(True, Component.NUMBER, Feature.EVSE, "globalcurrent", "evse/external_cur
      "min": 0,
      "max": 32000,
      "step": 1000,
-     "mode": "box",
+     "mode": "auto",
      "icon": "mdi:gauge"},
     {}),
 
