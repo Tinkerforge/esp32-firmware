@@ -35,7 +35,7 @@ export type ChargeManagerCronAction = [
 ];
 
 function get_set_manager_table_children(action: ChargeManagerCronAction) {
-    return __("charge_manager.cron.cron_action_text")((action[1].current / 1000).toLocaleString());
+    return __("charge_manager.cron.cron_action_text")(util.toLocaleFixed(action[1].current / 1000, 3));
 }
 
 function get_set_manager_edit_children(action: ChargeManagerCronAction, on_action: (action: CronAction) => void) {
