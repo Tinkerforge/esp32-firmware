@@ -128,7 +128,7 @@ Entity(True, Component.SENSOR, Feature.EVSE, "chargerstate", "evse/state", "Fahr
 Entity(True, Component.NUMBER, Feature.EVSE, "globalcurrent", "evse/external_current", "Konfigurierter Ladestrom", "Configured charging current", "evse/external_enabled", "{\\\\\\\"enabled\\\\\\\":true}", "{\\\\\\\"enabled\\\\\\\":false}",
     {"value_template":"{{value_json.current}}",
      "unit_of_measurement":"mA",
-     "min": 6000,
+     "min": 0,
      "max": 32000,
      "step": 1000,
      "mode": "box",
