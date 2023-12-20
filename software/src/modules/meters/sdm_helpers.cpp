@@ -166,11 +166,12 @@ void sdm_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VAL
 {
     size_t i_out = 0;
     for (size_t i_in = 0; i_in < METER_ALL_VALUES_RESETTABLE_COUNT; i_in++) {
-        if (!isnan(all_values[i_in])) {
-            if (i_out >= *value_count) {
-                logger.printfln("sdm_helpers: Not enough space for all value IDs: %u", *value_count);
-                break;
-            }
+        if (isnan(all_values[i_in]))
+            continue;
+
+        if (i_out >= *value_count) {
+            logger.printfln("sdm_helpers: Not enough space for all value IDs: %u", *value_count);
+            break;
         }
 
         MeterValueID value_id = sdm_helper_all_ids[i_in];
