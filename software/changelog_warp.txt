@@ -455,10 +455,10 @@
 - Fix potential deadlock when calling API commands
 - Fix handling of missing line currents in charge manager resulting in too low charging currents
 - Fix API meter not updating last_value_change
-- Fix boost mode after startup (through EVSE Bricklet firmware 2.1.6)
-- Make ID.3 mode work for state changes that go from C directly to A (through EVSE Bricklet firmware 2.1.6)
-- Wait for at least 30 seconds until contactor is turned on again after leaving state D (through EVSE Bricklet firmware 2.1.6)
-- Wait for at least 5 seconds until contactor is turned on again after charging was stopped (through EVSE Bricklet firmware 2.1.6)
+- Fix boost mode after startup (through EVSE Bricklet firmware 2.1.8)
+- Make ID.3 mode work for state changes that go from C directly to A (through EVSE Bricklet firmware 2.1.8)
+- Wait for at least 30 seconds until contactor is turned on again after leaving state D (through EVSE Bricklet firmware 2.1.8)
+- Wait for at least 5 seconds until contactor is turned on again after charging was stopped (through EVSE Bricklet firmware 2.1.8)
 - Fix WireGuard crashing after a multiple of 7 days
 
 2023-10-30: 2.1.5 (720dd21d)
@@ -479,3 +479,39 @@
 - Improve Translations
 - Improve WebSocket connection establishment reliability and performance
 - Fix reverse proxy support.
+
+2023-12-21: 2.1.90 (<unknown>)
+- 2.2.0 Beta 1
+- Add automation
+- Add WPA Enterprise EAP-TLS, EAP-PEAP and EAP-TTLS support
+- Add SunSpec meter/inverter support
+- Rework meter handling. Support 2 energy meters. Add meters API.
+- Add configurable API meter
+- Add resettable import/export energy values
+- Use import energy for charge tracker etc. Switch over when factory resetting or removing all tracked charges
+- Add API to restart charge limits
+- Add event log message when meter becomes stuck or unreachable
+- Add warning to event log if ethernet and WiFi station are used at the same time
+- Improve translations
+- Improve charge manager packet burst robustness
+- Improve performance when sendings lots of data over MQTT
+- Improve OCPP UI
+- Improve WiFi softAP performance while connecting to WiFi network
+- Improve error feedback in web interface forms
+- Separate Contactor/PE errors
+- Show hint if capslock is enabled when entering passwords
+- Remove support of TLS versions older than 1.2
+- Keep WiFi softAP open for five minutes if connection establishment takes some time
+- Make sure to connect to AP with best RSSI
+- Allow /24 to /30 subnets for softAP
+- Charge manager: Don't distribute current if not all chargers are known yet
+- Make sure that WiFi HT40 mode is always disabled
+- Fix RFID tag registers in Keba emulation when no energy meter is available
+- Fix web interface labels referencing non-existing IDs
+- Fix modification of certificates
+- Fix NFC tag to user mapping on boot-up
+- Fix 0% progress bar width
+- Fix missing "average line to neutral voltage"-value of SDM72DMv2
+- Fix browser's back button not working when accessing web interface main page
+- Fix date input keyboard entry
+- Fix reported range of external current in MQTT auto discovery

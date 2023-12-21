@@ -468,3 +468,44 @@
 - Improve WebSocket connection establishment reliability and performance
 - Fix reverse proxy support
 - Don't draw zero line outside plot area
+
+2023-12-21: 2.1.90 (<unknown>)
+- 2.2.0 Beta 1
+- Add automation
+- Add WPA Enterprise EAP-TLS, EAP-PEAP and EAP-TTLS support
+- Add SunSpec meter/inverter support
+- Rework meter handling. Support 2 energy meters. Add meters API.
+- Add configurable API meter
+- Support Eltako DSZ15DZMOD and YTL DEM4A
+- Add resettable import/export energy values
+- Use import energy for charge tracker etc. Switch over when factory resetting or removing all tracked charges
+- Support up to 32 managed chargers, NFC tags and users
+- Add API to restart charge limits
+- Add event log message when meter becomes stuck or unreachable
+- Add warning to event log if ethernet and WiFi station are used at the same time
+- Add OCPP transaction ID to sent meter values
+- Improve translations
+- Improve charge manager packet burst robustness
+- Improve performance when sendings lots of data over MQTT
+- Improve OCPP UI
+- Improve WiFi softAP performance while connecting to WiFi network
+- Improve error feedback in web interface forms
+- Improve DC fault sensor UI. Support X804. (through EVSE Bricklet firmware 2.2.0)
+- Improve diode detection (through EVSE Bricklet firmware 2.2.0)
+- Separate Contactor/PE errors
+- Show hint if capslock is enabled when entering passwords
+- Remove support of TLS versions older than 1.2
+- Keep WiFi softAP open for five minutes if connection establishment takes some time
+- Make sure to connect to AP with best RSSI
+- Allow /24 to /30 subnets for softAP
+- Charge manager: Don't distribute current if not all chargers are known yet
+- Make sure that WiFi HT40 mode is always disabled
+- Fix RFID tag registers in Keba emulation when no energy meter is available
+- Fix web interface labels referencing non-existing IDs
+- Fix modification of certificates
+- Fix NFC tag to user mapping on boot-up
+- Fix 0% progress bar width
+- Fix missing "average line to neutral voltage"-value of SDM72DMv2
+- Fix browser's back button not working when accessing web interface main page
+- Fix date input keyboard entry
+- Fix reported range of external current in MQTT auto discovery
