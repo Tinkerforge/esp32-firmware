@@ -368,6 +368,9 @@ void EnergyManager::setup()
 
     // Bricklet and meter access, requires power filter to be set up
     update_all_data();
+    task_scheduler.scheduleOnce([this]() {
+        cron.trigger_action(CronTriggerID::EMPhaseSwitch, nullptr, trigger_action);
+    }, 0);
 
     // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
     uint32_t hysteresis_min_ms = 10 * 1000;  // milliseconds
