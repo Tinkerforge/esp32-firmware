@@ -94,7 +94,28 @@ void API::setup()
                 continue;
             }
 
-            String payload = reg.config->to_string_except(reg.keys_to_censor);
+            auto wsu = IAPIBackend::WantsStateUpdate::No;
+            for (size_t backend_idx = 0; backend_idx < this->backends.size(); ++backend_idx) {
+                auto backend_wsu = this->backends[backend_idx]->wantsStateUpdate(state_idx);
+                if ((int) wsu < (int) backend_wsu) {
+                    wsu = backend_wsu;
+                }
+            }
+            // If no backend wants the state update because (for example)
+            // - this backend does not push state updates (HTTP)
+            // - there is no active connection (WS, MQTT)
+            // - there is no registration for this state index (MQTT)
+            // we don't have to do anything.
+            if (wsu == IAPIBackend::WantsStateUpdate::No) {
+                reg.config->clear_updated(0xFF);
+                continue;
+            }
+
+            String payload = "";
+            // If no backend wants the state update as string
+            // don't serialize the payload.
+            if (wsu == IAPIBackend::WantsStateUpdate::AsString)
+                payload = reg.config->to_string_except(reg.keys_to_censor);
 
             uint8_t sent = 0;
 

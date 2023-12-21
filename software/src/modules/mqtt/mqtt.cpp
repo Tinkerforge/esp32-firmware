@@ -214,6 +214,12 @@ bool Mqtt::pushRawStateUpdate(const String &payload, const String &path)
     return this->publish_with_prefix(path, payload);
 }
 
+IAPIBackend::WantsStateUpdate Mqtt::wantsStateUpdate(size_t stateIdx) {
+    return this->state.get("connection_state")->asInt() == (int)MqttConnectionState::CONNECTED ?
+           IAPIBackend::WantsStateUpdate::AsString :
+           IAPIBackend::WantsStateUpdate::No;
+}
+
 void Mqtt::resubscribe() {
     if (this->state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
         return;

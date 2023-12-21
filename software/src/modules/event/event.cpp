@@ -136,3 +136,13 @@ bool Event::pushRawStateUpdate(const String &payload, const String &path)
 {
     return true;
 }
+
+IAPIBackend::WantsStateUpdate Event::wantsStateUpdate(size_t stateIdx) {
+    for (size_t i = 0; i < state_updates.size(); ++i) {
+        const auto &reg = state_updates[i];
+        if (reg.stateIdx == stateIdx) {
+            return IAPIBackend::WantsStateUpdate::AsConfig;
+        }
+    }
+    return IAPIBackend::WantsStateUpdate::No;
+}

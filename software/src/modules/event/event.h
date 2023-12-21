@@ -59,6 +59,7 @@ public:
     void addResponse(size_t responseIdx, const ResponseRegistration &reg) override;
     bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
     bool pushRawStateUpdate(const String &payload, const String &path) override;
+    WantsStateUpdate wantsStateUpdate(size_t stateIdx) override;
 
 private:
     size_t backendIdx;

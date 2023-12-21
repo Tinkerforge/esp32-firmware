@@ -318,3 +318,7 @@ bool Http::pushRawStateUpdate(const String &payload, const String &path)
 {
     return true;
 }
+
+IAPIBackend::WantsStateUpdate Http::wantsStateUpdate(size_t stateIdx) {
+    return IAPIBackend::WantsStateUpdate::No;
+}

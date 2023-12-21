@@ -71,6 +71,12 @@ public:
     virtual void addResponse(size_t responseIdx, const ResponseRegistration &reg) = 0;
     virtual bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) = 0;
     virtual bool pushRawStateUpdate(const String &payload, const String &path) = 0;
+    enum class WantsStateUpdate {
+        No,
+        AsConfig,
+        AsString
+    };
+    virtual WantsStateUpdate wantsStateUpdate(size_t stateIdx);
 };
 
 class API

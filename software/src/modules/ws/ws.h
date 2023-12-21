@@ -41,6 +41,7 @@ public:
     void addResponse(size_t responseIdx, const ResponseRegistration &reg) override;
     bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
     bool pushRawStateUpdate(const String &payload, const String &path) override;
+    WantsStateUpdate wantsStateUpdate(size_t stateIdx) override;
 
     WebSockets web_sockets;
     std::vector<std::function<void(WebSocketsClient)>> on_connect_callbacks;

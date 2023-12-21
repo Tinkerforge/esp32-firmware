@@ -152,3 +152,9 @@ bool WS::pushRawStateUpdate(const String &payload, const String &path)
 {
     return pushStateUpdate(0, payload, path);
 }
+
+IAPIBackend::WantsStateUpdate WS::wantsStateUpdate(size_t stateIdx) {
+    return web_sockets.haveActiveClient() ?
+           IAPIBackend::WantsStateUpdate::AsString :
+           IAPIBackend::WantsStateUpdate::No;
+}
