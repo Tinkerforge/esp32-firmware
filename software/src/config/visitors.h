@@ -287,8 +287,10 @@ struct string_length_visitor {
     }
     size_t operator()(const Config::ConfFloat &x)
     {
-        // Educated guess, FLT_MAX is ~3*10^38 however it is unlikely that a user will send enough float values longer than 20.
-        return 20;
+        // ArduinoJson will switch to scientific notation >= 1e9.
+        // The max length then is -1.123456789e-12 (max. 9 decimal places,
+        // exponents max 12 chars because of FLT_MAX)
+        return 16;
     }
     size_t operator()(const Config::ConfInt &x)
     {
