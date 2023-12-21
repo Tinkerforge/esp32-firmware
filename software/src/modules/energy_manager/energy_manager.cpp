@@ -256,7 +256,7 @@ bool EnergyManager::action_triggered(Config *cron_config, void *data) {
             return (*static_cast<bool *>(data) == cfg->get("power_available")->asBool());
 
         case CronTriggerID::EMGridPowerDraw:
-            return (*static_cast<bool *>(data) == cfg->get("drawing_power")->asBool());
+            return ((power_at_meter_raw_w > 0) == cfg->get("drawing_power")->asBool());
 
         default:
             break;
@@ -370,6 +370,7 @@ void EnergyManager::setup()
     update_all_data();
     task_scheduler.scheduleOnce([this]() {
         cron.trigger_action(CronTriggerID::EMPhaseSwitch, nullptr, trigger_action);
+        cron.trigger_action(CronTriggerID::EMGridPowerDraw, nullptr, trigger_action);
     }, 0);
 
     // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
@@ -695,7 +696,7 @@ void EnergyManager::update_all_data()
     static bool drawing_power_last = false;
     bool drawing_power = power_at_meter_raw_w > 0;
     if (drawing_power != drawing_power_last) {
-        cron.trigger_action(CronTriggerID::EMGridPowerDraw, &drawing_power, trigger_action);
+        cron.trigger_action(CronTriggerID::EMGridPowerDraw, nullptr, trigger_action);
         drawing_power_last = drawing_power;
     }
 #endif
@@ -1147,15 +1148,26 @@ void EnergyManager::update_energy()
             // Check against overall minimum power, to avoid wanting to switch off when available power is below 3-phase minimum but switch to 1-phase is possible.
             bool wants_on = power_available_filtered_w >= overall_min_power_w;
 
+#if MODULE_CRON_AVAILABLE()
+            enum class CronWantsOn {
+                Unknown,
+                True,
+                False,
+            };
+
+            static CronWantsOn last_cron_wants_on = CronWantsOn::Unknown;
+            CronWantsOn cron_wants_on = wants_on ? CronWantsOn::True : CronWantsOn::False;
+            if (cron_wants_on != last_cron_wants_on) {
+                cron.trigger_action(CronTriggerID::EMPowerAvailable, &wants_on, trigger_action);
+                last_cron_wants_on = cron_wants_on;
+            }
+#endif
+
             // Remember last decision change to start hysteresis time.
             if (wants_on != wants_on_last) {
                 logger.printfln("energy_manager: wants_on decision changed to %i", wants_on);
                 on_state_change_blocked_until = time_now + switching_hysteresis_ms;
                 on_state_change_is_blocked = true; // Set manually because the usual update already ran before the phase switching code.
-
-#if MODULE_CRON_AVAILABLE()
-                cron.trigger_action(CronTriggerID::EMPowerAvailable, &wants_on, trigger_action);
-#endif
                 wants_on_last = wants_on;
             }
 
