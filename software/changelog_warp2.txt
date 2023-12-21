@@ -469,7 +469,7 @@
 - Fix reverse proxy support
 - Don't draw zero line outside plot area
 
-2023-12-21: 2.1.90 (221853e0)
+2023-12-21: 2.1.90 (96c641c6)
 - 2.2.0 Beta 1
 - Add automation
 - Add WPA Enterprise EAP-TLS, EAP-PEAP and EAP-TTLS support

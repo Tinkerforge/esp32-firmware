@@ -165,7 +165,7 @@
 - SunSpec Beta 5
 - Change inverter power value ID so that the power shows up in the table and plot.
 
-2023-12-21: 1.0.95 (221853e0)
+2023-12-21: 1.0.95 (96c641c6)
 - 2.0.0 Beta 1
 - Add automation
 - Add WPA Enterprise EAP-TLS, EAP-PEAP and EAP-TTLS support
