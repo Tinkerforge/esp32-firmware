@@ -191,18 +191,17 @@ void EVSEV2::pre_setup()
 static bool trigger_action(Config *cfg, void *data) {
     return evse_v2.action_triggered(cfg, data);
 }
+
+enum class InputState {
+    Unknown,
+    Open,
+    Closed
+};
 #endif
 
 void EVSEV2::post_setup() {
     if (!device_found)
         return;
-
-#if MODULE_CRON_AVAILABLE()
-    task_scheduler.scheduleOnce([this]() {
-        cron.trigger_action(CronTriggerID::EVSEGPInput, nullptr, trigger_action);
-        cron.trigger_action(CronTriggerID::EVSEShutdownInput, nullptr, trigger_action);
-    }, 0);
-#endif
 
     task_scheduler.scheduleOnce([this](){
         uint32_t press_time = 0;
@@ -905,16 +904,32 @@ void EVSEV2::update_all_data()
     for (int i = 0; i < sizeof(resistances) / sizeof(resistances[0]); ++i)
         evse_common.low_level_state.get("resistances")->get(i)->updateUint(resistances[i]);
 
-#if MODULE_CRON_AVAILABLE()
-    if (evse_common.low_level_state.get("gpio")->get(5)->asBool() != gpio[5])
-        cron.trigger_action(CronTriggerID::EVSEShutdownInput, nullptr, &trigger_action);
-
-    if (evse_common.low_level_state.get("gpio")->get(16)->asBool() != gpio[16])
-        cron.trigger_action(CronTriggerID::EVSEGPInput, nullptr, &trigger_action);
-#endif
-
     for (int i = 0; i < sizeof(gpio) / sizeof(gpio[0]); ++i)
         evse_common.low_level_state.get("gpio")->get(i)->updateBool(gpio[i]);
+
+#if MODULE_CRON_AVAILABLE()
+    static InputState last_shutdown_input_state = InputState::Unknown;
+
+    InputState shutdown_input_state = gpio[5] ? InputState::Closed : InputState::Open;
+    if (last_shutdown_input_state != shutdown_input_state) {
+        // We need to schedule this since the first call of update_all_data happens before cron is initialized.
+        task_scheduler.scheduleOnce([this, gpio]() {
+            cron.trigger_action(CronTriggerID::EVSEShutdownInput, (void *)&gpio[5], &trigger_action);
+        }, 0);
+        last_shutdown_input_state = shutdown_input_state;
+    }
+
+    static InputState last_input_state = InputState::Unknown;
+
+    InputState input_state = gpio[16] ? InputState::Closed : InputState::Open;
+    if (last_input_state != input_state) {
+        // We need to schedule this since the first call of update_all_data happens before cron is initialized.
+        task_scheduler.scheduleOnce([this, gpio]() {
+            cron.trigger_action(CronTriggerID::EVSEGPInput, (void *)&gpio[16], &trigger_action);
+        }, 0);
+        last_input_state = input_state;
+    }
+#endif
 
     evse_common.low_level_state.get("charging_time")->updateUint(charging_time);
     evse_common.low_level_state.get("time_since_state_change")->updateUint(time_since_state_change);
@@ -1030,12 +1045,12 @@ bool EVSEV2::action_triggered(Config *config, void *data) {
         break;
 
     case CronTriggerID::EVSEGPInput:
-        if (evse_common.low_level_state.get("gpio")->get(16)->asBool() != cfg->get("high")->asBool())
+        if (*static_cast<bool *>(data) == cfg->get("high")->asBool())
             return true;
         break;
 
     case CronTriggerID::EVSEShutdownInput:
-        if (evse_common.low_level_state.get("gpio")->get(5)->asBool() != cfg->get("high")->asBool())
+        if (*static_cast<bool *>(data) == cfg->get("high")->asBool())
             return true;
         break;
 
