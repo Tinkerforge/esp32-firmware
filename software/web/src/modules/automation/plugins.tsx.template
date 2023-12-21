@@ -1,0 +1,11 @@
+import { AutomationTriggerComponents, AutomationActionComponents } from "./types";
+
+{{{imports}}}
+
+export function plugins_init() {
+    let result = new Array<{trigger_components?: AutomationTriggerComponents, action_components?: AutomationActionComponents}>();
+
+    {{{inits}}}
+
+    return result;
+}

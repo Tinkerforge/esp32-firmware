@@ -134,7 +134,7 @@ let x = {
                 11: "OCPP",
                 12: "Energy/Time limit",
                 13: "Meter monitoring",
-                14: "Cron"
+                14: "Automation"
             }[i];}/*NF*/,
 
             // EVSE V1 only
@@ -218,7 +218,7 @@ let x = {
             "switch_to_one_phase": "Switch to one phase",
             "switch_to_three_phases": "Switch to three phases"
         },
-        "cron": {
+        "automation": {
             "external_current_wd": "External control watchdog",
             "external_current_wd_trigger": <>When the <b>external</b> control <b>watchdog</b> is triggered, </>,
             "api_must_be_enabled": "API must be enabled to use this feature.",
@@ -237,9 +237,9 @@ let x = {
             "to": "To",
             "any": "Any state",
             "allowed_charging_current": "Allowed charging current",
-            "cron_state_change_trigger": /*FFN*/(old_state: string, new_state: string) => <>When the vehicle state changes from "<b>{old_state}</b>" to "<b>{new_state}</b>",{" "}</>/*NF*/,
-            "cron_action_text": /*FFN*/(current: string) => <>set the allowed charging current to <b>{current} A</b>.</>/*NF*/,
-            "cron_led_action_text": /*FFN*/(state: string, duration: number) => state == "An" || state == "Aus" ? <>turn the status-LED <b>{state}</b> for <b>{duration} seconds</b>.</> : <>show <b>{state}</b> for <b>{duration / 1000} seconds</b> on the status-LED.</>/*NF*/
+            "automation_state_change_trigger": /*FFN*/(old_state: string, new_state: string) => <>When the vehicle state changes from "<b>{old_state}</b>" to "<b>{new_state}</b>",{" "}</>/*NF*/,
+            "automation_action_text": /*FFN*/(current: string) => <>set the allowed charging current to <b>{current} A</b>.</>/*NF*/,
+            "automation_led_action_text": /*FFN*/(state: string, duration: number) => state == "An" || state == "Aus" ? <>turn the status-LED <b>{state}</b> for <b>{duration} seconds</b>.</> : <>show <b>{state}</b> for <b>{duration / 1000} seconds</b> on the status-LED.</>/*NF*/
         },
         "script": {
             "set_charging_current_failed": "Failed to set charging current",
@@ -283,7 +283,7 @@ let x = {
                 11: "OCPP",
                 12: "energy/time limit",
                 13: "meter monitoring",
-                14: "cron"
+                14: "automation"
             }[i];}/*NF*/,
 
             "reboot_content_changed": "charge settings",

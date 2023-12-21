@@ -132,17 +132,17 @@ void NFC::pre_setup()
         return "";
     });
 
-#if MODULE_CRON_AVAILABLE()
-    cron.register_trigger(
-        CronTriggerID::NFC,
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_trigger(
+        AutomationTriggerID::NFC,
         Config::Object({
             {"tag_type", Config::Uint(0, 0, 4)},
             {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
         })
     );
 
-    cron.register_action(
-        CronActionID::NFCInjectTag,
+    automation.register_action(
+        AutomationActionID::NFCInjectTag,
         Config::Object({
             {"tag_type", Config::Uint(0, 0, 4)},
             {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
@@ -234,7 +234,7 @@ void NFC::remove_user(uint8_t user_id)
     API::writeConfig("nfc/config", &config);
 }
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
 static bool trigger_action(Config *cfg, void *data) {
     return nfc.action_triggered(cfg, data);
 }
@@ -268,8 +268,8 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
 #endif
     }
 
-#if MODULE_CRON_AVAILABLE()
-    cron.trigger_action(CronTriggerID::NFC, tag, &trigger_action);
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.trigger_action(AutomationTriggerID::NFC, tag, &trigger_action);
 #endif
 }
 
@@ -460,12 +460,12 @@ void NFC::loop()
     this->DeviceModule::loop();
 }
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
 bool NFC::action_triggered(Config *config, void *data) {
     auto cfg = config->get();
     tag_info_t *tag = (tag_info_t *)data;
-    switch (config->getTag<CronTriggerID>()) {
-        case CronTriggerID::NFC:
+    switch (config->getTag<AutomationTriggerID>()) {
+        case AutomationTriggerID::NFC:
         if (cfg->get("tag_type")->asUint() == tag->tag_type && cfg->get("tag_id")->asString() == tag->tag_id) {
             return true;
         }

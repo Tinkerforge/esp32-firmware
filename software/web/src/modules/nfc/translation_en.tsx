@@ -40,7 +40,7 @@ let x = {
             "type_4": "NFC Forum Type 4",
             "tag_id_invalid_feedback": "The BSSID must have three to ten groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB"
         },
-        "cron": {
+        "automation": {
             "nfc": "NFC-Tags",
             "add_tag_description": "Hold the new tag to the right side of the charger. Tag ID and type can also be typed in manually.",
             "trigger_charge_any": "Charge start/stop",
@@ -60,7 +60,7 @@ let x = {
             "last_seen_suffix": " ago",
             "last_seen_and_known_tags": "Last seen tags and known tags",
 
-            "cron_action_text": /*FFN*/(tag_id: string, tag_type: string, tag_action: number) => {
+            "automation_action_text": /*FFN*/(tag_id: string, tag_type: string, tag_action: number) => {
                 let action = <></>;
                 if (tag_action !== 0) {
                     action = <> to {tag_action == 1 ? "start a charge" : tag_action == 2 ? "stop a charge" : ""}</>
@@ -69,12 +69,12 @@ let x = {
                     fake the presence of the <b>NFC</b> tag "<b>{tag_id}</b>" ({tag_type}).
                 </>
             }/*NF*/,
-            "cron_trigger_text": /*FFN*/(tag_id: string, tag_type: string) => {
+            "automation_trigger_text": /*FFN*/(tag_id: string, tag_type: string) => {
                 return <>
                     If <b>NFC</b> tag "<b>{tag_id}</b>" ({tag_type}) is detected,{" "}
                 </>
             }/*NF*/,
-            "cron_trigger_nfc": "NFC tag seen"
+            "automation_trigger_nfc": "NFC tag seen"
         },
         "script": {
             "not_seen": "Unknown",

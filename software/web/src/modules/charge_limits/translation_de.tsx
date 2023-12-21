@@ -24,7 +24,7 @@ let x = {
             "h8": "8 Stunden",
             "h12": "12 Stunden"
         },
-        "cron": {
+        "automation": {
             "restart": "Ladelimit zurücksetzen",
             "charge_limits_expiration": "Ladelimit abgelaufen",
             "energy": "Energielimit",
@@ -42,8 +42,8 @@ let x = {
             "h6": "6 Stunden",
             "h8": "8 Stunden",
             "h12": "12 Stunden",
-            "cron_trigger_text": <>Wenn das <b>Ladelimit</b> erreicht ist, </>,
-            "cron_action_text": /*FFN*/(duration: string, energy: number, restart: boolean) => {
+            "automation_trigger_text": <>Wenn das <b>Ladelimit</b> erreicht ist, </>,
+            "automation_action_text": /*FFN*/(duration: string, energy: number, restart: boolean) => {
                 if (duration === undefined && energy === -1 && restart) {
                     return <>erlaube das aktuelle Ladelimit nochmal.</>;
                 } else if (duration === undefined && energy === -1) {

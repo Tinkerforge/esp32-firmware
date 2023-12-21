@@ -121,9 +121,9 @@ void EnergyManager::pre_setup()
         history_meter_power_value[slot] = NAN;
     }
 
-#if MODULE_CRON_AVAILABLE()
-    cron.register_action(
-        CronActionID::EMPhaseSwitch,
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_action(
+        AutomationActionID::EMPhaseSwitch,
         Config::Object({
             {"phases_wanted", Config::Uint(1)}
         }),
@@ -133,15 +133,15 @@ void EnergyManager::pre_setup()
             }});
         });
 
-    cron.register_action(
-        CronActionID::EMChargeModeSwitch,
+    automation.register_action(
+        AutomationActionID::EMChargeModeSwitch,
         Config::Object({
             {"mode", Config::Uint(0, 0, 4)}
         }),
         [this](const Config *cfg) {
             auto configured_mode = cfg->get("mode")->asUint();
 
-            // Cron rule configured to switch to default mode
+            // Automation rule configured to switch to default mode
             if (configured_mode == 4) {
                 configured_mode = this->default_mode;
             }
@@ -151,8 +151,8 @@ void EnergyManager::pre_setup()
             }});
         });
 
-    cron.register_action(
-        CronActionID::EMRelaySwitch,
+    automation.register_action(
+        AutomationActionID::EMRelaySwitch,
         Config::Object({
             {"state", Config::Bool(false)}
         }),
@@ -161,8 +161,8 @@ void EnergyManager::pre_setup()
         }
     );
 
-    cron.register_action(
-        CronActionID::EMLimitMaxCurrent,
+    automation.register_action(
+        AutomationActionID::EMLimitMaxCurrent,
         Config::Object({
             {"current", Config::Int(0, -1)}
         }),
@@ -175,8 +175,8 @@ void EnergyManager::pre_setup()
             }
         });
 
-    cron.register_action(
-        CronActionID::EMBlockCharge,
+    automation.register_action(
+        AutomationActionID::EMBlockCharge,
         Config::Object({
             {"slot", Config::Uint(0, 0, 3)},
             {"block", Config::Bool(false)}
@@ -185,77 +185,77 @@ void EnergyManager::pre_setup()
             this->charging_blocked.pin[cfg->get("slot")->asUint()] = static_cast<uint8_t>(cfg->get("block")->asBool());
         });
 
-    cron.register_trigger(
-        CronTriggerID::EMInputThree,
+    automation.register_trigger(
+        AutomationTriggerID::EMInputThree,
         Config::Object({
             {"state", Config::Bool(false)}
         }));
 
-    cron.register_trigger(
-        CronTriggerID::EMInputFour,
+    automation.register_trigger(
+        AutomationTriggerID::EMInputFour,
         Config::Object({
             {"state", Config::Bool(false)}
         }));
 
-    cron.register_trigger(
-        CronTriggerID::EMPhaseSwitch,
+    automation.register_trigger(
+        AutomationTriggerID::EMPhaseSwitch,
         Config::Object({
             {"phase", Config::Uint(1)}
         }));
 
-    cron.register_trigger(
-        CronTriggerID::EMContactorMonitoring,
+    automation.register_trigger(
+        AutomationTriggerID::EMContactorMonitoring,
         Config::Object({
             {"contactor_okay", Config::Bool(false)}
         }));
 
-    cron.register_trigger(
-        CronTriggerID::EMPowerAvailable,
+    automation.register_trigger(
+        AutomationTriggerID::EMPowerAvailable,
         Config::Object({
             {"power_available", Config::Bool(false)}
         }));
 
-    cron.register_trigger(
-        CronTriggerID::EMGridPowerDraw,
+    automation.register_trigger(
+        AutomationTriggerID::EMGridPowerDraw,
         Config::Object({
             {"drawing_power", Config::Bool(false)}
         }));
 #endif
 }
 
-#if MODULE_CRON_AVAILABLE()
-bool EnergyManager::action_triggered(Config *cron_config, void *data) {
-    Config *cfg = static_cast<Config *>(cron_config->get());
+#if MODULE_AUTOMATION_AVAILABLE()
+bool EnergyManager::action_triggered(Config *automation_config, void *data) {
+    Config *cfg = static_cast<Config *>(automation_config->get());
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
 
-    switch (cron_config->getTag<CronTriggerID>()) {
-        case CronTriggerID::EMInputThree:
+    switch (automation_config->getTag<AutomationTriggerID>()) {
+        case AutomationTriggerID::EMInputThree:
             if (cfg->get("state")->asBool() == state.get("input3_state")->asBool()) {
                 return true;
             }
             break;
 
-        case CronTriggerID::EMInputFour:
+        case AutomationTriggerID::EMInputFour:
             if (cfg->get("state")->asBool() == state.get("input4_state")->asBool()) {
                 return true;
             }
             break;
 
-        case CronTriggerID::EMPhaseSwitch:
+        case AutomationTriggerID::EMPhaseSwitch:
             if (cfg->get("phase")->asUint() == state.get("phases_switched")->asUint()) {
                 return true;
             }
             break;
 
-        case CronTriggerID::EMContactorMonitoring:
+        case AutomationTriggerID::EMContactorMonitoring:
             return (*static_cast<bool *>(data) == cfg->get("contactor_okay")->asBool());
 
-        case CronTriggerID::EMPowerAvailable:
+        case AutomationTriggerID::EMPowerAvailable:
             return (*static_cast<bool *>(data) == cfg->get("power_available")->asBool());
 
-        case CronTriggerID::EMGridPowerDraw:
+        case AutomationTriggerID::EMGridPowerDraw:
             return ((power_at_meter_raw_w > 0) == cfg->get("drawing_power")->asBool());
 
         default:
@@ -306,10 +306,10 @@ void EnergyManager::setup()
         return;
     }
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
     task_scheduler.scheduleOnce([this]() {
-        cron.trigger_action(CronTriggerID::EMInputThree, nullptr, trigger_action);
-        cron.trigger_action(CronTriggerID::EMInputFour, nullptr, trigger_action);
+        automation.trigger_action(AutomationTriggerID::EMInputThree, nullptr, trigger_action);
+        automation.trigger_action(AutomationTriggerID::EMInputFour, nullptr, trigger_action);
     }, 0);
 #endif
 
@@ -369,10 +369,10 @@ void EnergyManager::setup()
     // Bricklet and meter access, requires power filter to be set up
     update_all_data();
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
     task_scheduler.scheduleOnce([this]() {
-        cron.trigger_action(CronTriggerID::EMPhaseSwitch, nullptr, trigger_action);
-        cron.trigger_action(CronTriggerID::EMGridPowerDraw, nullptr, trigger_action);
+        automation.trigger_action(AutomationTriggerID::EMPhaseSwitch, nullptr, trigger_action);
+        automation.trigger_action(AutomationTriggerID::EMGridPowerDraw, nullptr, trigger_action);
     }, 0);
 #endif
 
@@ -580,14 +580,14 @@ void EnergyManager::update_all_data()
      * Bit 3: Contactor monitoring
      * Bits 4-7: unused
      */
-    uint32_t cron_trigger = 0;
+    uint32_t automation_trigger = 0;
 
     low_level_state.get("contactor")->updateBool(all_data.contactor_value);
     low_level_state.get("led_rgb")->get(0)->updateUint(all_data.rgb_value_r);
     low_level_state.get("led_rgb")->get(1)->updateUint(all_data.rgb_value_g);
     low_level_state.get("led_rgb")->get(2)->updateUint(all_data.rgb_value_b);
-    cron_trigger |= state.get("input3_state")->updateBool(all_data.input[0]) ? 1u : 0u;
-    cron_trigger |= state.get("input4_state")->updateBool(all_data.input[1]) ? 2u : 0u;
+    automation_trigger |= state.get("input3_state")->updateBool(all_data.input[0]) ? 1u : 0u;
+    automation_trigger |= state.get("input4_state")->updateBool(all_data.input[1]) ? 2u : 0u;
     state.get("relay_state")->updateBool(all_data.relay);
     low_level_state.get("input_voltage")->updateUint(all_data.voltage);
     low_level_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
@@ -605,7 +605,7 @@ void EnergyManager::update_all_data()
     is_3phase   = contactor_installed ? all_data.contactor_value : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
     have_phases = 1 + static_cast<uint32_t>(is_3phase) * 2;
     pm_low_level_state->get("is_3phase")->updateBool(is_3phase);
-    cron_trigger |= state.get("phases_switched")->updateUint(have_phases) ? 4u : 0u;
+    automation_trigger |= state.get("phases_switched")->updateUint(have_phases) ? 4u : 0u;
 
 #if MODULE_METERS_AVAILABLE()
     if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != MeterValueAvailability::Fresh)
@@ -664,42 +664,42 @@ void EnergyManager::update_all_data()
         if ((all_data.contactor_check_state & 1) == 0) {
             logger.printfln("Contactor check tripped. Check contactor.");
             if (contactor_check_tripped == false) {
-                cron_trigger |= 1 << 3;
+                automation_trigger |= 1 << 3;
             }
             contactor_check_tripped = true;
             set_error(ERROR_FLAGS_CONTACTOR_MASK);
         }
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
         static bool first_read = true;
         if (first_read) {
             task_scheduler.scheduleOnce([this]() {
                 bool contactor_okay = (all_data.contactor_check_state & 1) != 0;
-                cron.trigger_action(CronTriggerID::EMContactorMonitoring, &contactor_okay, trigger_action);
+                automation.trigger_action(AutomationTriggerID::EMContactorMonitoring, &contactor_okay, trigger_action);
             }, 0);
             first_read = false;
         }
 #endif
     }
 
-#if MODULE_CRON_AVAILABLE()
-    if (cron_trigger & 1) {
-        cron.trigger_action(CronTriggerID::EMInputThree, nullptr, trigger_action);
+#if MODULE_AUTOMATION_AVAILABLE()
+    if (automation_trigger & 1) {
+        automation.trigger_action(AutomationTriggerID::EMInputThree, nullptr, trigger_action);
     }
-    if (cron_trigger & 2) {
-        cron.trigger_action(CronTriggerID::EMInputFour, nullptr, trigger_action);
+    if (automation_trigger & 2) {
+        automation.trigger_action(AutomationTriggerID::EMInputFour, nullptr, trigger_action);
     }
-    if (cron_trigger & 4) {
-        cron.trigger_action(CronTriggerID::EMPhaseSwitch, nullptr, trigger_action);
+    if (automation_trigger & 4) {
+        automation.trigger_action(AutomationTriggerID::EMPhaseSwitch, nullptr, trigger_action);
     }
-    if (cron_trigger & 8) {
+    if (automation_trigger & 8) {
         bool contactor_okay = (all_data.contactor_check_state & 1) != 0;
-        cron.trigger_action(CronTriggerID::EMContactorMonitoring, &contactor_okay, trigger_action);
+        automation.trigger_action(AutomationTriggerID::EMContactorMonitoring, &contactor_okay, trigger_action);
     }
     static bool drawing_power_last = false;
     bool drawing_power = power_at_meter_raw_w > 0;
     if (drawing_power != drawing_power_last) {
-        cron.trigger_action(CronTriggerID::EMGridPowerDraw, nullptr, trigger_action);
+        automation.trigger_action(AutomationTriggerID::EMGridPowerDraw, nullptr, trigger_action);
         drawing_power_last = drawing_power;
     }
 #endif
@@ -1151,18 +1151,18 @@ void EnergyManager::update_energy()
             // Check against overall minimum power, to avoid wanting to switch off when available power is below 3-phase minimum but switch to 1-phase is possible.
             bool wants_on = power_available_filtered_w >= overall_min_power_w;
 
-#if MODULE_CRON_AVAILABLE()
-            enum class CronWantsOn {
+#if MODULE_AUTOMATION_AVAILABLE()
+            enum class AutomationWantsOn {
                 Unknown,
                 True,
                 False,
             };
 
-            static CronWantsOn last_cron_wants_on = CronWantsOn::Unknown;
-            CronWantsOn cron_wants_on = wants_on ? CronWantsOn::True : CronWantsOn::False;
-            if (cron_wants_on != last_cron_wants_on) {
-                cron.trigger_action(CronTriggerID::EMPowerAvailable, &wants_on, trigger_action);
-                last_cron_wants_on = cron_wants_on;
+            static AutomationWantsOn last_automation_wants_on = AutomationWantsOn::Unknown;
+            AutomationWantsOn automation_wants_on = wants_on ? AutomationWantsOn::True : AutomationWantsOn::False;
+            if (automation_wants_on != last_automation_wants_on) {
+                automation.trigger_action(AutomationTriggerID::EMPowerAvailable, &wants_on, trigger_action);
+                last_automation_wants_on = automation_wants_on;
             }
 #endif
 

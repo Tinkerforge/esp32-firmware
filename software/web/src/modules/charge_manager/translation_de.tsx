@@ -77,11 +77,11 @@ let x = {
 
             "host_exists": "Host existiert bereits"
         },
-        "cron": {
+        "automation": {
             "charge_manager_wd": "Lastmanagement-Watchdog",
-            "cron_trigger_text": <>Wenn der <b>Watchdog</b> des <b>Lastmanagements</b> auslöst, </>,
+            "automation_trigger_text": <>Wenn der <b>Watchdog</b> des <b>Lastmanagements</b> auslöst, </>,
             "set_charge_manager": "Lastmanagement",
-            "cron_action_text": /*FFN*/(current: string) => <>setze den für das <b>Lastmanagement</b> verfügbaren Strom auf <b>{current} A</b>.</> /*NF*/,
+            "automation_action_text": /*FFN*/(current: string) => <>setze den für das <b>Lastmanagement</b> verfügbaren Strom auf <b>{current} A</b>.</> /*NF*/,
             "max_current": "Maximaler Strom"
         },
         "script": {

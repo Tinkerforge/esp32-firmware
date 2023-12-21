@@ -20,7 +20,7 @@ export const EVSE_SLOT_MODBUS_TCP_ENABLE = 10;
 export const EVSE_SLOT_OCPP = 11;
 export const EVSE_SLOT_CHARGE_LIMITS = 12;
 export const EVSE_SLOT_REQUIRE_METER = 13;
-export const EVSE_SLOT_CRON = 14;
+export const EVSE_SLOT_AUTOMATION = 14;
 
 export type slots = Slot[];
 
@@ -91,7 +91,7 @@ export interface external_defaults {
     clear_on_disconnect: boolean
 }
 
-export interface cron_current {
+export interface automation_current {
     current: number;
 }
 

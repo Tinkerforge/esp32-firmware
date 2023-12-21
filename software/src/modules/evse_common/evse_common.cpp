@@ -144,32 +144,32 @@ void EvseCommon::pre_setup() {
         {"slot", Config::Uint8(0)}
     });
 
-#if MODULE_CRON_AVAILABLE()
-    cron_current = Config::Object({
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation_current = Config::Object({
         {"current", Config::Uint16(32000)}
     });
 
-    cron_current_update = cron_current;
+    automation_current_update = automation_current;
 
-    cron.register_trigger(
-        CronTriggerID::IECChange,
+    automation.register_trigger(
+        AutomationTriggerID::IECChange,
         Config::Object({
             {"old_charger_state", Config::Int(0, -1, 4)},
             {"new_charger_state", Config::Int(0, -1, 4)}
         }));
 
-    cron.register_trigger(
-        CronTriggerID::EVSEExternalCurrentWd,
+    automation.register_trigger(
+        AutomationTriggerID::EVSEExternalCurrentWd,
         *Config::Null()
     );
 
-    cron.register_action(
-        CronActionID::SetCurrent,
+    automation.register_action(
+        AutomationActionID::SetCurrent,
         Config::Object({
             {"current", Config::Uint(0, 0, 32000)}
         }),
         [this](const Config *config) {
-            backend->set_charging_slot(CHARGING_SLOT_CRON, config->get("current")->asUint(), true, false);
+            backend->set_charging_slot(CHARGING_SLOT_AUTOMATION, config->get("current")->asUint(), true, false);
         }
     );
 #endif
@@ -270,7 +270,7 @@ void EvseCommon::apply_defaults()
     }
 }
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
     bool trigger_action(Config *cfg, void *data) {
         return evse_common.action_triggered(cfg, data);
     }
@@ -297,9 +297,9 @@ void EvseCommon::setup() {
     backend->update_all_data();
     api.addFeature("evse");
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
     task_scheduler.scheduleOnce([this]() {
-        cron.trigger_action(CronTriggerID::IECChange, nullptr, trigger_action);
+        automation.trigger_action(AutomationTriggerID::IECChange, nullptr, trigger_action);
     }, 0);
 #endif
 
@@ -311,12 +311,12 @@ void EvseCommon::setup() {
     initialized = true;
 }
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
 bool EvseCommon::action_triggered(Config *config, void *data) {
     Config *cfg = (Config*)config->get();
     uint32_t *states = (uint32_t*)data;
-    switch (config->getTag<CronTriggerID>()) {
-        case CronTriggerID::IECChange:
+    switch (config->getTag<AutomationTriggerID>()) {
+        case AutomationTriggerID::IECChange:
         {
             uint32_t tmp_states[2] = {0};
             if (states == nullptr) {
@@ -330,7 +330,7 @@ bool EvseCommon::action_triggered(Config *config, void *data) {
         }
             break;
 
-        case CronTriggerID::EVSEExternalCurrentWd:
+        case AutomationTriggerID::EVSEExternalCurrentWd:
         return true;
 
         default:
@@ -599,8 +599,8 @@ void EvseCommon::register_urls() {
 
     backend->post_register_urls();
 
-#if MODULE_CRON_AVAILABLE()
-    if (cron.is_trigger_active(CronTriggerID::IECChange)) {
+#if MODULE_AUTOMATION_AVAILABLE()
+    if (automation.is_trigger_active(AutomationTriggerID::IECChange)) {
         event.registerEvent("evse/state", {}, [this](Config *cfg) {
 
             // we need this since not only iec state changes trigger this api event.
@@ -608,19 +608,19 @@ void EvseCommon::register_urls() {
             uint32_t state_now = cfg->get("charger_state")->asUint();
             uint32_t states[2] = {last_state, state_now};
             if (last_state != state_now) {
-                cron.trigger_action(CronTriggerID::IECChange, (void *)states, &trigger_action);
+                automation.trigger_action(AutomationTriggerID::IECChange, (void *)states, &trigger_action);
                 last_state = state_now;
             }
             return EventResult::OK;
         });
     }
 
-    if (cron.is_trigger_active(CronTriggerID::EVSEExternalCurrentWd)) {
+    if (automation.is_trigger_active(AutomationTriggerID::EVSEExternalCurrentWd)) {
         task_scheduler.scheduleWithFixedDelay([this](){
             static bool was_triggered = false;
             const bool elapsed = deadline_elapsed(last_external_update + 30000);
             if (external_enabled.get("enabled")->asBool() && elapsed && !was_triggered) {
-                cron.trigger_action(CronTriggerID::EVSEExternalCurrentWd, nullptr, &trigger_action);
+                automation.trigger_action(AutomationTriggerID::EVSEExternalCurrentWd, nullptr, &trigger_action);
                 was_triggered = true;
             } else if (!elapsed) {
                 was_triggered = false;
@@ -628,9 +628,9 @@ void EvseCommon::register_urls() {
         }, 1000, 1000);
     }
 
-    api.addState("evse/cron_current", &cron_current);
-    api.addCommand("evse/cron_current_update", &cron_current_update, {}, [this](){
-        backend->set_charging_slot_max_current(CHARGING_SLOT_CRON, cron_current_update.get("current")->asUint());
+    api.addState("evse/automation_current", &automation_current);
+    api.addCommand("evse/automation_current_update", &automation_current_update, {}, [this](){
+        backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOMATION, automation_current_update.get("current")->asUint());
     }, false); //TODO: should this be an action?
 #endif
 

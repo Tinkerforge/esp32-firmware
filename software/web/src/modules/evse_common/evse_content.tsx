@@ -33,7 +33,7 @@ import { InputText } from "../../ts/components/input_text";
 import { PageHeader } from "../../ts/components/page_header";
 import { SubPage } from "../../ts/components/sub_page";
 import { __, translate_unchecked } from "../../ts/translation";
-import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_CRON } from "./api";
+import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_AUTOMATION } from "./api";
 import { OutputFloat } from "../../ts/components/output_float";
 
 let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
@@ -233,11 +233,11 @@ export class EVSE extends Component<{}, {}> {
                                         resetText={__("evse.content.reset_slot")}
                                         resetHidden={!slot.active || slot.max_current == 32000}/>
                                 </FormRow>
-                            case EVSE_SLOT_CRON:
+                            case EVSE_SLOT_AUTOMATION:
                                 return <FormRow key={i} label={__("evse.content.slot")(i)}>
                                     <InputIndicator value={value} variant={variant as any}
                                         onReset={
-                                            () => API.save('evse/cron_current',
+                                            () => API.save('evse/automation_current',
                                                     {"current": 32000},
                                                     __("evse.script.reset_slot_failed"))
                                         }

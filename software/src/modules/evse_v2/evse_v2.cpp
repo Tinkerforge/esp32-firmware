@@ -153,30 +153,30 @@ void EVSEV2::pre_setup()
 
     gp_output_update = gp_output;
 
-#if MODULE_CRON_AVAILABLE()
-    cron.register_trigger(
-        CronTriggerID::EVSEButton,
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_trigger(
+        AutomationTriggerID::EVSEButton,
         Config::Object({
             {"button_pressed", Config::Bool(false)}
         })
     );
 
-    cron.register_trigger(
-        CronTriggerID::EVSEGPInput,
+    automation.register_trigger(
+        AutomationTriggerID::EVSEGPInput,
         Config::Object({
             {"high", Config::Bool(false)}
         })
     );
 
-    cron.register_trigger(
-        CronTriggerID::EVSEShutdownInput,
+    automation.register_trigger(
+        AutomationTriggerID::EVSEShutdownInput,
         Config::Object({
             {"high", Config::Bool(false)}
         })
     );
 
-    cron.register_action(
-        CronActionID::EVSEGPOutput,
+    automation.register_action(
+        AutomationActionID::EVSEGPOutput,
         Config::Object({
             {"state", Config::Uint(0, 0, 1)}
         }),
@@ -187,7 +187,7 @@ void EVSEV2::pre_setup()
 #endif
 }
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
 static bool trigger_action(Config *cfg, void *data) {
     return evse_v2.action_triggered(cfg, data);
 }
@@ -907,14 +907,14 @@ void EVSEV2::update_all_data()
     for (int i = 0; i < sizeof(gpio) / sizeof(gpio[0]); ++i)
         evse_common.low_level_state.get("gpio")->get(i)->updateBool(gpio[i]);
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
     static InputState last_shutdown_input_state = InputState::Unknown;
 
     InputState shutdown_input_state = gpio[5] ? InputState::Closed : InputState::Open;
     if (last_shutdown_input_state != shutdown_input_state) {
-        // We need to schedule this since the first call of update_all_data happens before cron is initialized.
+        // We need to schedule this since the first call of update_all_data happens before automation is initialized.
         task_scheduler.scheduleOnce([this, gpio]() {
-            cron.trigger_action(CronTriggerID::EVSEShutdownInput, (void *)&gpio[5], &trigger_action);
+            automation.trigger_action(AutomationTriggerID::EVSEShutdownInput, (void *)&gpio[5], &trigger_action);
         }, 0);
         last_shutdown_input_state = shutdown_input_state;
     }
@@ -923,9 +923,9 @@ void EVSEV2::update_all_data()
 
     InputState input_state = gpio[16] ? InputState::Closed : InputState::Open;
     if (last_input_state != input_state) {
-        // We need to schedule this since the first call of update_all_data happens before cron is initialized.
+        // We need to schedule this since the first call of update_all_data happens before automation is initialized.
         task_scheduler.scheduleOnce([this, gpio]() {
-            cron.trigger_action(CronTriggerID::EVSEGPInput, (void *)&gpio[16], &trigger_action);
+            automation.trigger_action(AutomationTriggerID::EVSEGPInput, (void *)&gpio[16], &trigger_action);
         }, 0);
         last_input_state = input_state;
     }
@@ -953,9 +953,9 @@ void EVSEV2::update_all_data()
     // get_button_configuration
     button_configuration.get("button")->updateUint(button_cfg);
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
     if (evse_common.button_state.get("button_pressed")->asBool() != button_pressed)
-        cron.trigger_action(CronTriggerID::EVSEButton, nullptr, &trigger_action);
+        automation.trigger_action(AutomationTriggerID::EVSEButton, nullptr, &trigger_action);
 #endif
 
     // get_button_state
@@ -1032,24 +1032,24 @@ uint8_t EVSEV2::get_energy_meter_type()
     return evse_common.hardware_configuration.get("energy_meter_type")->asUint();
 }
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
 bool EVSEV2::action_triggered(Config *config, void *data) {
     auto cfg = config->get();
-    switch (config->getTag<CronTriggerID>())
+    switch (config->getTag<AutomationTriggerID>())
     {
-    case CronTriggerID::EVSEButton:
+    case AutomationTriggerID::EVSEButton:
         // This check happens before the new state is written to the config.
         // Because of this we need to check if the current state in config is different than our desired state.
         if (evse_common.button_state.get("button_pressed")->asBool() != cfg->get("button_pressed")->asBool())
             return true;
         break;
 
-    case CronTriggerID::EVSEGPInput:
+    case AutomationTriggerID::EVSEGPInput:
         if (*static_cast<bool *>(data) == cfg->get("high")->asBool())
             return true;
         break;
 
-    case CronTriggerID::EVSEShutdownInput:
+    case AutomationTriggerID::EVSEShutdownInput:
         if (*static_cast<bool *>(data) == cfg->get("high")->asBool())
             return true;
         break;

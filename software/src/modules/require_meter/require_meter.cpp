@@ -38,9 +38,9 @@ void RequireMeter::pre_setup() {
         {"config", Config::Uint8(WARP_SMART)}
     });
 
-#if MODULE_CRON_AVAILABLE()
-    cron.register_trigger(
-        CronTriggerID::RequireMeter,
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_trigger(
+        AutomationTriggerID::RequireMeter,
         *Config::Null());
 #endif
 }
@@ -76,10 +76,10 @@ void RequireMeter::register_urls() {
     }
 }
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
 bool RequireMeter::action_triggered(Config *config, void *data) {
-    switch (config->getTag<CronTriggerID>()) {
-        case CronTriggerID::RequireMeter:
+    switch (config->getTag<AutomationTriggerID>()) {
+        case AutomationTriggerID::RequireMeter:
             return true;
 
         default:
@@ -154,11 +154,11 @@ void RequireMeter::start_task() {
 
         evse_common.set_require_meter_blocking(meter_timeout);
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
         static bool was_triggered = false;
         if (meter_timeout) {
             if (!was_triggered) {
-                cron.trigger_action(CronTriggerID::RequireMeter, nullptr, trigger_action);
+                automation.trigger_action(AutomationTriggerID::RequireMeter, nullptr, trigger_action);
                 was_triggered = true;
             }
         } else {

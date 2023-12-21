@@ -42,7 +42,7 @@
 #define CHARGING_SLOT_OCPP 11
 #define CHARGING_SLOT_CHARGE_LIMITS 12
 #define CHARGING_SLOT_REQUIRE_METER 13
-#define CHARGING_SLOT_CRON 14
+#define CHARGING_SLOT_AUTOMATION 14
 
 #define IEC_STATE_A 0
 #define IEC_STATE_B 1
@@ -207,8 +207,8 @@ private:
     ConfigRoot ocpp_enabled_update;
     ConfigRoot require_meter_enabled;
     ConfigRoot require_meter_enabled_update;
-    ConfigRoot cron_current;
-    ConfigRoot cron_current_update;
+    ConfigRoot automation_current;
+    ConfigRoot automation_current_update;
 
     // Stored on ESP
     ConfigRoot meter_config;

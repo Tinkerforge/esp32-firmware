@@ -211,8 +211,8 @@ render(<EnergyManagerStatus />, $("#status-energy_manager")[0]);
 export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
     old_input4_rule_then = -1;
 
-    // Need to use any here in case the cron module is not available.
-    cron_config: any;
+    // Need to use any here in case the automation module is not available.
+    automation_config: any;
 
     constructor() {
         super('energy_manager/config',
@@ -227,8 +227,8 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
             this.setState({...API.get('power_manager/debug_config')});
         });
 
-        util.addApiEventListener_unchecked('cron/config', () => {
-            this.cron_config = API.get_unchecked('cron/config');
+        util.addApiEventListener_unchecked('automation/config', () => {
+            this.automation_config = API.get_unchecked('automation/config');
         });
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
@@ -261,8 +261,8 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
                     hysteresis_time: this.state.hysteresis_time,
                 }, __("energy_manager.script.save_failed"));
         }
-        if (API.hasModule("cron")) {
-            await API.save_unchecked('cron/config', this.cron_config, __("energy_manager.script.save_failed"));
+        if (API.hasModule("automation")) {
+            await API.save_unchecked('automation/config', this.automation_config, __("energy_manager.script.save_failed"));
         }
         await super.sendSave(t, cfg);
     }
@@ -301,15 +301,15 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
     }
 
     disable_reset_switch() {
-        if (!API.hasModule("cron") || !this.cron_config)
+        if (!API.hasModule("automation") || !this.automation_config)
             return false;
 
             let disable = false
             let num_rules = 0;
 
-            // We cant use the cron enums here because the cron Module is optional.
+            // We cant use the automation enums here because the automation Module is optional.
             // 12 is the ID for switching the charge mode and 1 the ID for the time trigger.
-            this.cron_config.tasks.forEach((task: any) => {
+            this.automation_config.tasks.forEach((task: any) => {
                 if (task.action[0] == 12) {
                     num_rules++;
                     if (task.trigger[0] != 1) {
@@ -331,15 +331,15 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
             return disable;
     }
 
-    has_cron_reset_rule() {
-        if (!API.hasModule("cron") || !this.cron_config)
+    has_automation_reset_rule() {
+        if (!API.hasModule("automation") || !this.automation_config)
             return false;
 
         let has_rule = false
 
-        // We cant use the cron enums here because the cron Module is optional.
+        // We cant use the automation enums here because the automation Module is optional.
         // 12 is the ID for switching the charge mode.
-        this.cron_config.tasks.forEach((task: any, idx: any) => {
+        this.automation_config.tasks.forEach((task: any, idx: any) => {
             if (task.action[0] == 12) {
                 has_rule = true;
             }
@@ -371,23 +371,23 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
             }
         }
 
-        const has_rule = this.has_cron_reset_rule();
+        const has_rule = this.has_automation_reset_rule();
         const disabled = this.disable_reset_switch();
         let reset = <></>;
-        if (API.hasModule("cron")) {
+        if (API.hasModule("automation")) {
             reset = <FormRow label={__("energy_manager.content.auto_reset_charging_mode")}>
                 <Switch desc={disabled ? __("energy_manager.content.auto_reset_charging_mode_disabled") : __("energy_manager.content.auto_reset_charging_mode_desc")}
                     checked={has_rule && !disabled}
                     disabled={disabled}
                     onClick={() => {
                         if (!has_rule) {
-                            // Need to create config by hand in case cron module is not available.
+                            // Need to create config by hand in case automation module is not available.
                             const action = [12, {mode: 4}];
                             const trigger = [1, {hour: 0, minute: 0, mday: -1, wday: -1}];
                             const task = {trigger: trigger, action: action};
-                            this.cron_config.tasks.push(task as any);
+                            this.automation_config.tasks.push(task as any);
                         } else {
-                            this.cron_config.tasks = this.cron_config.tasks.filter((task: any) => task.action[0] != 12 && task.trigger[0] != 1);
+                            this.automation_config.tasks = this.automation_config.tasks.filter((task: any) => task.action[0] != 12 && task.trigger[0] != 1);
                         }
                     }}
                 />

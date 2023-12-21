@@ -45,7 +45,7 @@ public:
 
     const char *get_charger_name(uint8_t idx);
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
     bool action_triggered(Config *config, void *data);
 #endif
 

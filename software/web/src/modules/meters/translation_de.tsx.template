@@ -58,9 +58,9 @@ let x = {
 
             "meter_type": "Stromzählertyp"
         },
-        "cron": {
+        "automation": {
             "meter_reset": "Stromzähler zurücksetzen",
-            "cron_action_text": /*FFN*/(meter_name: string) => <><b>setze</b> den Zähler <b>{meter_name}</b> zurück.</> /*NF*/,
+            "automation_action_text": /*FFN*/(meter_name: string) => <><b>setze</b> den Zähler <b>{meter_name}</b> zurück.</> /*NF*/,
             "meter_slot": "Meter"
         },
         "script": {

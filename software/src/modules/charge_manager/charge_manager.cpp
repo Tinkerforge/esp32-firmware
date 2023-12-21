@@ -77,10 +77,10 @@ static void apply_energy_manager_config(Config &conf)
 }
 #endif
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
 bool ChargeManager::action_triggered(Config *config, void *data) {
-    switch(config->getTag<CronTriggerID>()) {
-        case CronTriggerID::ChargeManagerWd:
+    switch(config->getTag<AutomationTriggerID>()) {
+        case AutomationTriggerID::ChargeManagerWd:
             return true;
 
         default:
@@ -200,14 +200,14 @@ void ChargeManager::pre_setup()
         {"disconnect", Config::Bool(false)},
     });
 
-#if MODULE_CRON_AVAILABLE() && !MODULE_ENERGY_MANAGER_AVAILABLE()
-    cron.register_trigger(
-        CronTriggerID::ChargeManagerWd,
+#if MODULE_AUTOMATION_AVAILABLE() && !MODULE_ENERGY_MANAGER_AVAILABLE()
+    automation.register_trigger(
+        AutomationTriggerID::ChargeManagerWd,
         *Config::Null()
     );
 
-    cron.register_action(
-        CronActionID::SetManagerCurrent,
+    automation.register_action(
+        AutomationActionID::SetManagerCurrent,
         Config::Object({
             {"current", Config::Uint(0)}
         }),
@@ -461,8 +461,8 @@ void ChargeManager::check_watchdog()
 
     logger.printfln("Charge manager watchdog triggered! Received no available current update for %d ms. Setting available current to %u mA", WATCHDOG_TIMEOUT_MS, default_available_current);
 
-#if MODULE_CRON_AVAILABLE()
-    cron.trigger_action(CronTriggerID::ChargeManagerWd, nullptr, [this](Config *conf, void *data) -> bool {
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.trigger_action(AutomationTriggerID::ChargeManagerWd, nullptr, [this](Config *conf, void *data) -> bool {
         return charge_manager.action_triggered(conf, data);
     });
 #endif

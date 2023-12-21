@@ -1,0 +1,16 @@
+{{{imports}}}
+
+export interface config {
+    tasks: Task[]
+}
+
+interface Task {
+    trigger: AutomationTrigger,
+    action: AutomationAction
+}
+
+type AutomationTrigger =
+    [0, null]{{{triggers}}};
+
+type AutomationAction =
+    [0, null]{{{actions}}};

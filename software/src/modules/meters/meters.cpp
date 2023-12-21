@@ -71,9 +71,9 @@ void Meters::pre_setup()
     });
 
 
-#if MODULE_CRON_AVAILABLE()
-    cron.register_action(
-        CronActionID::MeterReset,
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_action(
+        AutomationActionID::MeterReset,
         Config::Object({
             {"meter_slot", Config::Uint(0, 0, METERS_SLOTS - 1)}
         }),

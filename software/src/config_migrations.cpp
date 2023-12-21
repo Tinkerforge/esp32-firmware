@@ -383,11 +383,11 @@ static const ConfigMigration migrations[] = {
     {
         2, 0, 0,
         // 2.0.0 changes
-        // - Migrate energy manager rules to cron.
+        // - Migrate energy manager rules to automation.
         // - Migrate some settings from Energy Manager config to Power Manager config.
         // - Migrate meter config to new meters framework.
         [] () {
-            // - Migrate energy manager rules to cron.
+            // - Migrate energy manager rules to automation.
             {
                 DynamicJsonDocument json{16384};
                 DynamicJsonDocument tasks{16384};
@@ -591,17 +591,17 @@ static const ConfigMigration migrations[] = {
                         tasks.add(task);
                     }
 
-                    DynamicJsonDocument cron_json{16384};
-                    if (LittleFS.exists("/migration/cron_config")) {
-                        read_config_file("cron/config", cron_json);
+                    DynamicJsonDocument automation_json{16384};
+                    if (LittleFS.exists("/migration/automation_config")) {
+                        read_config_file("automation/config", automation_json);
                     } else {
-                        cron_json.createNestedArray("tasks");
+                        automation_json.createNestedArray("tasks");
                     }
-                    auto cron_config = cron_json.as<JsonObject>();
+                    auto automation_config = automation_json.as<JsonObject>();
                     for (auto task : tasks.as<JsonArray>()) {
-                        cron_config["tasks"].add(task);
+                        automation_config["tasks"].add(task);
                     }
-                    write_config_file("cron/config", cron_json);
+                    write_config_file("automation/config", automation_json);
 
                     config.remove("auto_reset_mode");
                     config.remove("auto_reset_time");

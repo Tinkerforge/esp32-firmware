@@ -50,9 +50,9 @@
             "csv_flavor_excel": "Compatible to Excel (; as field separator, Windows-1252 encoded)",
             "csv_flavor_rfc4180": "According to RFC4180 (, as field separator, UTF-8 encoded)"
         },
-        "cron": {
+        "automation": {
             "charge_tracker_reset": "Remove tracked charges",
-            "cron_action_text": "remove all tracked charges and reboot."
+            "automation_action_text": "remove all tracked charges and reboot."
         },
         "script": {
             "csv_header_start": "Start time",

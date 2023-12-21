@@ -24,7 +24,7 @@ let x = {
             "h8": "8 hours",
             "h12": "12 hours"
         },
-        "cron": {
+        "automation": {
             "restart": "Reset charge limit",
             "charge_limits_expiration": "Charge limit expired",
             "energy": "Charging energy limit",
@@ -42,8 +42,8 @@ let x = {
             "h6": "6 hours",
             "h8": "8 hours",
             "h12": "12 hours",
-            "cron_trigger_text": <>When the <b>charge limit</b> is reached, </>,
-            "cron_action_text": /*FFN*/(duration: string, energy: number, restart: boolean) => {
+            "automation_trigger_text": <>When the <b>charge limit</b> is reached, </>,
+            "automation_action_text": /*FFN*/(duration: string, energy: number, restart: boolean) => {
                 if (duration === undefined && energy === -1 && restart) {
                     return <>allow the current charge limit again.</>;
                 } else if (duration === undefined && energy === -1) {

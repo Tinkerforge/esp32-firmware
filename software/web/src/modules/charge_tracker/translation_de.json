@@ -50,9 +50,9 @@
             "csv_flavor_excel": "Excel-kompatibel (; als Feldtrenner, Windows-1252-kodiert)",
             "csv_flavor_rfc4180": "Nach RFC4180 (, als Feldtrenner, UTF-8-kodiert)"
         },
-        "cron": {
+        "automation": {
             "charge_tracker_reset": "Aufgezeichnete Ladevorgänge löschen",
-            "cron_action_text": "lösche alle aufgezeichnete Ladevorgänge und starte neu."
+            "automation_action_text": "lösche alle aufgezeichnete Ladevorgänge und starte neu."
         },
         "script": {
             "csv_header_start": "Startzeit",

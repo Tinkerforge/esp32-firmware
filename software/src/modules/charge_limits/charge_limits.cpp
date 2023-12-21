@@ -85,11 +85,11 @@ void ChargeLimits::pre_setup()
         {"energy_wh", Config::Uint32(0)}
     });
 
-#if MODULE_CRON_AVAILABLE()
-    cron.register_trigger(CronTriggerID::ChargeLimits, *Config::Null());
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_trigger(AutomationTriggerID::ChargeLimits, *Config::Null());
 
-    cron.register_action(
-        CronActionID::ChargeLimits,
+    automation.register_action(
+        AutomationActionID::ChargeLimits,
         Config::Object({
             {"restart", Config::Bool(false)},
             {"duration", Config::Int32(0)},
@@ -125,7 +125,7 @@ void ChargeLimits::setup()
     initialized = true;
 }
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
 static bool trigger_action(Config *cfg, void *data) {
     return charge_limits.action_triggered(cfg, data);
 }
@@ -230,9 +230,9 @@ void ChargeLimits::register_urls()
             }
         }
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
         if (target_current == 0 && !was_triggered) {
-            cron.trigger_action(CronTriggerID::ChargeLimits, nullptr, &trigger_action);
+            automation.trigger_action(AutomationTriggerID::ChargeLimits, nullptr, &trigger_action);
             was_triggered = true;
         } else if (!charging) {
             was_triggered = false;
@@ -246,10 +246,10 @@ void ChargeLimits::register_urls()
     }, 0, 1000);
 }
 
-#if MODULE_CRON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
     bool ChargeLimits::action_triggered(Config *config, void *data) {
-        switch (config->getTag<CronTriggerID>()) {
-        case CronTriggerID::ChargeLimits:
+        switch (config->getTag<AutomationTriggerID>()) {
+        case AutomationTriggerID::ChargeLimits:
             return true;
 
         default:

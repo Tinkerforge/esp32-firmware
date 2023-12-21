@@ -37,7 +37,7 @@ let x = {
             "auto_discovery_prefix": "Discovery topic prefix",
             "auto_discovery_prefix_invalid": "The topic prefix can not start with $, contain a # or +, or be empty."
         },
-        "cron": {
+        "automation": {
             "mqtt": "MQTT",
             "match_all": "Accept all messages",
             "full_topic": "Full Topic",
@@ -50,7 +50,7 @@ let x = {
             "use_topic_prefix": "Use topic prefix",
             "use_topic_prefix_muted": "The topic prefix is ",
             "use_topic_prefix_invalid": "The topic prefix must not be a part of the topic",
-            "cron_action_text": /*FFN*/(topic: string, payload: string, retain: boolean) => {
+            "automation_action_text": /*FFN*/(topic: string, payload: string, retain: boolean) => {
                 if (retain && payload.length == 0) {
                     return <>
                         <b>delete</b> retained messages from topic "<b>{topic}</b>".
@@ -60,7 +60,7 @@ let x = {
                     send MQTT message "<b>{payload}</b>" to topic "<b>{topic}</b>"{retain ? " and retain it." : "."}
                 </>
             }/*NF*/,
-            "cron_trigger_text": /*FFN*/(topic: string, payload: string, retained: boolean) => {
+            "automation_trigger_text": /*FFN*/(topic: string, payload: string, retained: boolean) => {
                 let ret = <></>;
                 if (payload.length == 0) {
                     ret = <>If any MQTT message</>;
@@ -71,7 +71,7 @@ let x = {
                     {ret} is received on topic "<b>{topic}</b>"{retained ? " (Retained messages are accepted)" : ""}{", "}
                 </>
             }/*NF*/,
-            "cron_trigger_mqtt": "MQTT message received",
+            "automation_trigger_mqtt": "MQTT message received",
             "delete_reatianed_message": "Delete retained message"
         },
         "script": {

@@ -88,9 +88,9 @@ void ChargeTracker::pre_setup()
         {"electricity_price", Config::Uint16(0)}
     });
 
-// #if MODULE_CRON_AVAILABLE()
-//     cron.register_action(
-//         CronActionID::ChargeTrackerReset,
+// #if MODULE_AUTOMATION_AVAILABLE()
+//     automation.register_action(
+//         AutomationActionID::ChargeTrackerReset,
 //         *Config::Null(),
 //         [this](const Config *conf) {
 //             (void)conf;

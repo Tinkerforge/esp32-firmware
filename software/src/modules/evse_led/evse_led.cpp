@@ -33,9 +33,9 @@ void EvseLed::pre_setup()
         {"duration", Config::Uint16(0)}
     });
 
-#if MODULE_CRON_AVAILABLE()
-    cron.register_action(
-        CronActionID::LED,
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_action(
+        AutomationActionID::LED,
         Config::Object({
             {"state", Config::Int(-1)},
             {"duration", Config::Uint16(0)}
