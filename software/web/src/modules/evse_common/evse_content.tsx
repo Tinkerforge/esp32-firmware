@@ -254,6 +254,10 @@ export class EVSE extends Component<{}, {}> {
 
                     <FormSeparator heading={__("evse.content.configuration")}/>
 
+                    {/*Hide this by default to not confuse users.
+                       In the unexpected case that the EVSE reports that it has
+                       a lock switch (because of a firmware error?), show this.*/}
+                    {!hardware_cfg.has_lock_switch ? undefined :
                     <FormRow label={__("evse.content.has_lock_switch")}>
                         <IndicatorGroup
                             value={hardware_cfg.has_lock_switch ? 1 : 0}
@@ -262,6 +266,7 @@ export class EVSE extends Component<{}, {}> {
                                 ["primary", __("evse.content.lock_yes")]
                             ]}/>
                     </FormRow>
+                    }
 
                     <FormRow label={__("evse.content.jumper_config_max_current")} label_muted={__("evse.content.jumper_config")}>
                         <IndicatorGroup
