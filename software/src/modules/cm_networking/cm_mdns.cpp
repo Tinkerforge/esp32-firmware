@@ -53,10 +53,10 @@ void CMNetworking::register_urls()
     }, true);
 
     server.on_HTTPThread("/charge_manager/scan_result", HTTP_GET, [this](WebServerRequest request) {
-        String result = cm_networking.get_scan_results();
+        CoolString result;
 
-        if (result == "In progress or not started")
-            return request.send(200, "text/plain; charset=utf-8", result.c_str());
+        if (!cm_networking.get_scan_results(result))
+            return request.send(200, "text/plain; charset=utf-8", "In progress or not started");
 
         return request.send(200, "application/json; charset=utf-8", result.c_str());
     });
@@ -146,8 +146,9 @@ void CMNetworking::check_results()
     scanning = false;
 
 #if MODULE_WS_AVAILABLE()
-    String s = get_scan_results();
-    ws.pushRawStateUpdate(s, "charge_manager/scan_result");
+    CoolString result;
+    if (get_scan_results(result))
+        ws.pushRawStateUpdate(result, "charge_manager/scan_result");
 #else
     {
         std::lock_guard<std::mutex> lock{scan_results_mutex};
@@ -300,19 +301,18 @@ size_t CMNetworking::build_scan_result_json(mdns_result_t *list, char *buf, size
     return json.end();
 }
 
-String CMNetworking::get_scan_results()
+bool CMNetworking::get_scan_results(CoolString &result)
 {
     std::lock_guard<std::mutex> lock{scan_results_mutex};
     if (scan_results == nullptr)
-        return "In progress or not started";
+        return false;
 
     size_t payload_size = build_scan_result_json(scan_results, nullptr, 0) + 1; // null terminator
 
-    CoolString result;
     result.reserve(payload_size);
 
     build_scan_result_json(scan_results, result.begin(), payload_size);
     result.setLength(payload_size - 1);
 
-    return result;
+    return true;
 }

@@ -70,7 +70,7 @@ public:
                             bool managed,
                             bool cp_disconnected_state);
 
-    String get_scan_results();
+    bool get_scan_results(CoolString &result);
 
     void resolve_hostname(uint8_t charger_idx);
     bool is_resolved(uint8_t charger_idx);
