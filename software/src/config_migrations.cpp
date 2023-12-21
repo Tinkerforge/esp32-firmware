@@ -352,7 +352,7 @@ static const ConfigMigration migrations[] = {
         // - Move meter/last_reset to meters/0/last_reset
         [](){
             if (LittleFS.exists("/charge-records")) {
-                File f = LittleFS.open("/charge-records/use_imexsum");
+                File f = LittleFS.open("/charge-records/use_imexsum", "w");
                 f.write((uint8_t)'T');
             }
 
