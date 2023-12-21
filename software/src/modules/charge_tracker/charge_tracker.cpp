@@ -326,6 +326,10 @@ bool ChargeTracker::setupRecords()
             continue;
         }
 
+        if (name == "use_imexsum") {
+            continue;
+        }
+
         if (!name.startsWith("charge-record-") || !name.endsWith(".bin")) {
             logger.printfln("Unexpected file %s in charge record folder", name.c_str());
             continue;
