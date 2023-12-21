@@ -87,13 +87,6 @@ bool ChargeManager::action_triggered(Config *config, void *data) {
             return false;
     }
 }
-
-
- #if !MODULE_ENERGY_MANAGER_AVAILABLE()
-static bool trigger_action(Config *config, void *data) {
-    return charge_manager.action_triggered(config, data);
-}
- #endif
 #endif
 
 void ChargeManager::pre_setup()
@@ -468,6 +461,11 @@ void ChargeManager::check_watchdog()
 
     logger.printfln("Charge manager watchdog triggered! Received no available current update for %d ms. Setting available current to %u mA", WATCHDOG_TIMEOUT_MS, default_available_current);
 
+#if MODULE_CRON_AVAILABLE()
+    cron.trigger_action(CronTriggerID::ChargeManagerWd, nullptr, [this](Config *conf, void *data) -> bool {
+        return charge_manager.action_triggered(conf, data);
+    });
+#endif
     this->available_current.get("current")->updateUint(default_available_current);
 
     last_available_current_update = millis();
