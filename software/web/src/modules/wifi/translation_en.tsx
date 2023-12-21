@@ -58,16 +58,16 @@ let x = {
             "eap_identity": "Identity",
             "eap_username": "Username",
             "eap_password": "Password",
-            "eap_ca_cert": "CA-Certificate",
-            "eap_client_cert": "Client-Certificate",
-            "eap_client_key": "Client-Key",
+            "eap_ca_cert": "CA certificate",
+            "eap_client_cert": "Client certificate",
+            "eap_client_key": "Client key",
             "eap_cert_placeholder": "No certificate",
             "eap_key_placeholder": "No key",
             "optional_eap_cert_muted": /*FFN*/ () => {
-                return <>optional <a href="#certs">Certificate administration</a></>
+                return <><a href="#certs">Add certificate</a>; optional</>
             } /*NF*/,
             "eap_cert_muted": /*FFN*/ () => {
-                return <a href="#certs">Certificate administration</a>
+                return <a href="#certs">Add certificate</a>
             } /*NF*/,
             "optional": "optional"
         },

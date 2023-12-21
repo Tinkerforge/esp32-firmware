@@ -79,12 +79,12 @@ let x = {
         },
         "cron": {
           "charge_manager_wd": "Charge manager watchdog",
-          "cron_trigger_text": "When the charge managers watchdog gets triggered, ",
+          "cron_trigger_text": <>When the <b>charge manager watchdog</b> gets triggered, </>,
           "set_charge_manager": "Charge Manager",
           "cron_action_text": /*FFN*/(current: string) => {
             return (
               <>
-                set the maximum total current that can be distributed by the charge manager to <b>{current} A</b>.
+                set the current that is available for the <b>charge manager</b> to <b>{current} A</b>.
               </>
             );
           }/*NF*/,

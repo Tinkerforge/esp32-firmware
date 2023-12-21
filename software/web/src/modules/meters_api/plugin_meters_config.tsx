@@ -279,9 +279,9 @@ class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState>
             <InputSelect
                 items={[
                     ["0", __("meters_api.content.api_meter_no_preset")],
-                    ["1", __("meters_api.content.api_meter_preset_1")],
-                    ["2", __("meters_api.content.api_meter_preset_2")],
-                    ["3", __("meters_api.content.api_meter_preset_3")]
+                    ["1", __("meters.script.meter_type_1")],
+                    ["2", __("meters.script.meter_type_2")],
+                    ["3", __("meters.script.meter_type_3")]
                 ]}
                 value={this.state.preset}
                 onValue={async (v) => {

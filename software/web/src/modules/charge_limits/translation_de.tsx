@@ -42,7 +42,7 @@ let x = {
             "h6": "6 Stunden",
             "h8": "8 Stunden",
             "h12": "12 Stunden",
-            "cron_trigger_text": "Wenn das Ladelimit erreicht ist, ",
+            "cron_trigger_text": <>Wenn das <b>Ladelimit</b> erreicht ist, </>,
             "cron_action_text": /*FFN*/(duration: string, energy: number, restart: boolean) => {
                 if (duration === undefined && energy === -1 && restart) {
                     return <>erlaube das aktuelle Ladelimit nochmal.</>;

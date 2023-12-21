@@ -78,10 +78,10 @@ let x = {
             "host_exists": "Host existiert bereits"
         },
         "cron": {
-            "charge_manager_wd": "Lastmanagement Watchdog",
-            "cron_trigger_text": "Wenn der Watchdog des Lastmanagements auslöst, ",
+            "charge_manager_wd": "Lastmanagement-Watchdog",
+            "cron_trigger_text": <>Wenn der <b>Watchdog</b> des <b>Lastmanagements</b> auslöst, </>,
             "set_charge_manager": "Lastmanagement",
-            "cron_action_text": /*FFN*/(current: string) => <>setze den maximal durch den Lastmanager verteilbaren Gesamtstrom auf <b>{current} A</b>.</> /*NF*/,
+            "cron_action_text": /*FFN*/(current: string) => <>setze den für das <b>Lastmanagement</b> verfügbaren Strom auf <b>{current} A</b>.</> /*NF*/,
             "max_current": "Maximaler Strom"
         },
         "script": {

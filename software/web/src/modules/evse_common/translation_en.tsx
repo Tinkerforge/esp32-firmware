@@ -116,8 +116,8 @@ let x = {
             "meter_monitoring": "Meter monitoring",
             "meter_monitoring_desc": "Monitors the energy meter and blocks charging if a malfunction is detected.",
 
-            "enable_led_api": "Status-LED control",
-            "enable_led_api_desc": "Allows an external source to control the Status-LED.",
+            "enable_led_api": "Status LED control",
+            "enable_led_api_desc": "Allows an external source to control the status LED.",
 
             "slot": /*SFN*/(i: number) => { return {
                 0: "Supply cable",
@@ -175,9 +175,9 @@ let x = {
             "active_high_suffix": " if open",
 
             "todo": "Have a feature request? Write an e-mail to info@tinkerforge.com",
-            "gpio_in_muted": "Readable on GPIO 16",
+            "gpio_in_muted": "readable on GPIO 16",
             "gpio_out_muted": <><a href="https://en.wikipedia.org/wiki/Open_collector">open collector</a></>,
-            "button_configuration_muted": "Action to be executed when the button is pressed",
+            "button_configuration_muted": "Action to be executed when the button is pressed.",
             "button_configuration_deactivated": "No action",
             "button_configuration_start_charging": "Start charging",
             "button_configuration_stop_charging": "Stop charging",
@@ -206,7 +206,7 @@ let x = {
             "time_since_dc_fault_check": "Time since last DC fault protector test",
 
             // EVSE version specific value for common placeholder
-            "error_2": /*SFN*/(is_evse_v2: boolean) => is_evse_v2 ? "DC fault protector error" : "Calibration error"/*NF*/,
+            "error_2": /*SFN*/(is_evse_v2: boolean) => is_evse_v2 ? "DC fault protector" : "Calibration"/*NF*/,
             "adc_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail</> : <>CP/PE, PP/PE</>/*NF*/,
             "voltage_names": /*FFN*/(is_evse_v2: boolean) => is_evse_v2 ? <>CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail</> : <>CP/PE, PP/PE,<br/> CP/PE (high)</>/*NF*/,
             "dc_fault_sensor_type": "DC fault protector version",
@@ -219,8 +219,8 @@ let x = {
             "switch_to_three_phases": "Switch to three phases"
         },
         "cron": {
-            "external_current_wd": "External current watchdog",
-            "external_current_wd_trigger": "When the external control systems watchdog gets triggered, ",
+            "external_current_wd": "External control watchdog",
+            "external_current_wd_trigger": <>When the <b>external</b> control <b>watchdog</b> is triggered, </>,
             "api_must_be_enabled": "API must be enabled to use this feature.",
             "state_change": "State change",
             "led_duration": "Duration",
@@ -237,7 +237,7 @@ let x = {
             "to": "To",
             "any": "Any state",
             "allowed_charging_current": "Allowed charging current",
-            "cron_state_change_trigger": /*FFN*/(old_state: string, new_state: string) => <>If the charge status changes from "<b>{old_state}</b>" to "<b>{new_state}</b>",{" "}</>/*NF*/,
+            "cron_state_change_trigger": /*FFN*/(old_state: string, new_state: string) => <>When the vehicle state changes from "<b>{old_state}</b>" to "<b>{new_state}</b>",{" "}</>/*NF*/,
             "cron_action_text": /*FFN*/(current: string) => <>set the allowed charging current to <b>{current} A</b>.</>/*NF*/,
             "cron_led_action_text": /*FFN*/(state: string, duration: number) => state == "An" || state == "Aus" ? <>turn the status-LED <b>{state}</b> for <b>{duration} seconds</b>.</> : <>show <b>{state}</b> for <b>{duration / 1000} seconds</b> on the status-LED.</>/*NF*/
         },
@@ -265,7 +265,7 @@ let x = {
             "reset_slot_failed": "Releasing the current limit failed",
 
             "slot_disabled": "Not active",
-            "slot_blocks": "Blocks",
+            "slot_blocks": "Blocked",
             "slot_no_limit": "Released",
 
             "slot": /*SFN*/(i: number, is_evse_v2: boolean) => {return {
