@@ -202,18 +202,34 @@ struct to_json {
     const std::vector<String> &keys_to_censor;
 };
 
-// Tested to match the returned length of snprintf([...],"%u") for every 32 bit number.
-static size_t chars_per_uint(uint32_t u) {
-    if (u == 0)
-        return 1;
-    return (size_t)(floor(log10(u) + 1));
+static const uint8_t leading_zeros_to_char_count[33] = {10,10,10,9,9,9,8,8,8,7,7,7,7,6,6,6,5,5,5,4,4,4,4,3,3,3,2,2,2,1,1,1,1};
+
+// Never underestimates length. Overestimates by 0.12 chars on average.
+// Tested against the returned length of snprintf([...],"%u") for every 32 bit number.
+static size_t estimate_chars_per_uint(uint32_t v) {
+#if !defined(__XTENSA_EL__) || __XTENSA_EL__ != 1
+    // __builtin_clz(v) is undefined for v == 0. Set the lowest bit to work around that.
+    // The workaround is not neccessary on Xtensa, which uses the NSAU instruction that handles 0 correctly.
+	v |= 1;
+#endif
+
+	return leading_zeros_to_char_count[__builtin_clz(v)];
 }
 
-// Tested to match the returned length of snprintf([...],"%d") for every 32 bit number.
-static size_t chars_per_int(int32_t u) {
-    if (u == 0)
-        return 1;
-    return (size_t)(floor(log10(fabs((double)u)) + 1) + (u < 0 ? 1 : 0));
+// Never underestimates length. Overestimates by 0.23 chars on average.
+// Tested against the returned length of snprintf([...],"%d") for every 32 bit number.
+static size_t estimate_chars_per_int(int32_t v) {
+	uint32_t sign = (static_cast<uint32_t>(v)) >> 31;
+
+	v = v ^ (v >> 31); // Approximate abs(v). Negative values are off by 1, which doesn't matter for the estimation.
+
+#if !defined(__XTENSA_EL__) || __XTENSA_EL__ != 1
+    // __builtin_clz(v) is undefined for v == 0. Set the lowest bit to work around that.
+    // The workaround is not neccessary on Xtensa, which uses the NSAU instruction that handles 0 correctly.
+	v |= 1;
+#endif
+
+	return leading_zeros_to_char_count[__builtin_clz(static_cast<uint32_t>(v))] + sign;
 }
 
 struct max_string_length_visitor {
@@ -228,12 +244,12 @@ struct max_string_length_visitor {
     }
     size_t operator()(const Config::ConfInt &x)
     {
-        return max(chars_per_int(x.getSlot()->max),
-                   chars_per_int(x.getSlot()->min));
+        return max(estimate_chars_per_int(x.getSlot()->max),
+                   estimate_chars_per_int(x.getSlot()->min));
     }
     size_t operator()(const Config::ConfUint &x)
     {
-        return chars_per_uint(x.getSlot()->max);
+        return estimate_chars_per_uint(x.getSlot()->max);
     }
     size_t operator()(const Config::ConfBool &x)
     {
@@ -274,7 +290,7 @@ struct max_string_length_visitor {
             max_len = std::max(max_len, Config::apply_visitor(max_string_length_visitor{}, slot->prototypes[i].config.value));
             max_tag = std::max(max_tag, slot->prototypes[i].tag);
         }
-        max_len += chars_per_uint(max_tag); // tag
+        max_len += estimate_chars_per_uint(max_tag); // tag
         return max_len + 3; // [,]
     }
 };
@@ -294,11 +310,11 @@ struct string_length_visitor {
     }
     size_t operator()(const Config::ConfInt &x)
     {
-        return chars_per_int(*x.getVal());
+        return estimate_chars_per_int(*x.getVal());
     }
     size_t operator()(const Config::ConfUint &x)
     {
-        return chars_per_uint(*x.getVal());
+        return estimate_chars_per_uint(*x.getVal());
     }
     size_t operator()(const Config::ConfBool &x)
     {
@@ -335,7 +351,7 @@ struct string_length_visitor {
     }
 
     size_t operator()(const Config::ConfUnion &x) {
-        return Config::apply_visitor(string_length_visitor{}, x.getVal()->value) + chars_per_uint(x.getTag()) + 3; // [,]
+        return Config::apply_visitor(string_length_visitor{}, x.getVal()->value) + estimate_chars_per_uint(x.getTag()) + 3; // [,]
     }
 };
 
