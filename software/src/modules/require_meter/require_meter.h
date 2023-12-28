@@ -35,6 +35,4 @@ public:
     bool allow_charging(float meter_value);
 
     bool action_triggered(Config *config, void *data);
-
-    bool initialized = false;
 };

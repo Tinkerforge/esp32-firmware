@@ -35,8 +35,6 @@ public:
     void set_bricklet_color(String color);
     void poll_bricklet_color();
 
-    bool initialized = false;
-
     // ConfigRoot object to represent the color to be send to the frontend module
     ConfigRoot config;
 

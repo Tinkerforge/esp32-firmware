@@ -30,6 +30,4 @@ public:
     void setup() override;
     void register_urls() override;
     void loop() override;
-
-    bool initialized = false;
 };

@@ -34,8 +34,6 @@ public:
     void loop() override;
     void set_bricklet_color(String color);
 
-    bool initialized = false;
-
     // ConfigRoot object to represent the color to be send to the frontend module
     ConfigRoot config;
 

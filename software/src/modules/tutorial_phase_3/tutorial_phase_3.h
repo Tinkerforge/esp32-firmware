@@ -31,8 +31,6 @@ public:
     void register_urls() override;
     void loop() override;
 
-    bool initialized = false;
-
     // ConfigRoot object to represent the color to be send to the frontend module
     ConfigRoot config;
 
