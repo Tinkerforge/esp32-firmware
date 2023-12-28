@@ -57,10 +57,6 @@ static void button_state_changed_handler(TF_RGBLEDButton *rgb_led_button, uint8_
 
 void TutorialPhase5::pre_setup()
 {
-}
-
-void TutorialPhase5::setup()
-{
     // ConfigRoot object to represent the data to be send to the frontend
     // module. Containing one member "color" representing the color value
     // in HTML #RRGGBB notation. The string is limited to exactly 7 byte
@@ -80,7 +76,10 @@ void TutorialPhase5::setup()
     state = Config::Object({
         {"button", Config::Bool(false)}
     });
+}
 
+void TutorialPhase5::setup()
+{
     // Create RGB LED Button Bricklet object. Not specifying a UID or a port
     // name (second parameter is set to nullptr) makes the create function
     // automatically select the first available RGB LED Button Bricklet.

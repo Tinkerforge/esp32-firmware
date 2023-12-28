@@ -26,10 +26,6 @@
 
 void TutorialPhase2::pre_setup()
 {
-}
-
-void TutorialPhase2::setup()
-{
     // ConfigRoot object to represent the data to be send to the frontend
     // module. Containing one member "color" representing the color value
     // in HTML #RRGGBB notation. The string is limited to exactly 7 byte
@@ -37,7 +33,10 @@ void TutorialPhase2::setup()
     config = Config::Object({
         {"color", Config::Str("#FF0000", 7, 7)}
     });
+}
 
+void TutorialPhase2::setup()
+{
     logger.printfln("Tutorial (Phase 2) module initialized");
 
     initialized = true;

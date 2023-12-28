@@ -36,10 +36,6 @@ static uint8_t hex2num(String hex)
 
 void TutorialPhase4::pre_setup()
 {
-}
-
-void TutorialPhase4::setup()
-{
     // ConfigRoot object to represent the data to be send to the frontend
     // module. Containing one member "color" representing the color value
     // in HTML #RRGGBB notation. The string is limited to exactly 7 byte
@@ -52,7 +48,10 @@ void TutorialPhase4::setup()
     // frontend module. This has the same structure as the first ConfigRoot
     // object. Create it by copying the first one.
     config_update = config;
+}
 
+void TutorialPhase4::setup()
+{
     // Create RGB LED Button Bricklet object. Not specifying a UID or a port
     // name (second parameter is set to nullptr) makes the create function
     // automatically select the first available RGB LED Button Bricklet.

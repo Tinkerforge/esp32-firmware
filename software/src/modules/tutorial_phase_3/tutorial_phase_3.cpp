@@ -26,10 +26,6 @@
 
 void TutorialPhase3::pre_setup()
 {
-}
-
-void TutorialPhase3::setup()
-{
     // ConfigRoot object to represent the data to be send to the frontend
     // module. Containing one member "color" representing the color value
     // in HTML #RRGGBB notation. The string is limited to exactly 7 byte
@@ -42,7 +38,10 @@ void TutorialPhase3::setup()
     // frontend module. This has the same structure as the first ConfigRoot
     // object. Create it by copying the first one.
     config_update = config;
+}
 
+void TutorialPhase3::setup()
+{
     logger.printfln("Tutorial (Phase 3) module initialized");
 
     initialized = true;
