@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment, Component, RefObject } from "preact";
@@ -528,10 +527,12 @@ export class ChargeTrackerStatus extends Component {
     }
 }
 
-export function init() {}
+export function init() {
+}
 
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
-    $("#sidebar-charge_tracker").prop("hidden", !module_init.charge_tracker);
+    document.getElementById("sidebar-charge_tracker").hidden = !module_init.charge_tracker;
 }

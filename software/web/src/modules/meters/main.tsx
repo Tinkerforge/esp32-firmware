@@ -1484,5 +1484,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $("#sidebar-meters").prop("hidden", !module_init.meters);
+    document.getElementById("sidebar-meters").hidden = !module_init.meters;
 }

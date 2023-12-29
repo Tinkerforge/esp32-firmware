@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import { __ } from "../../ts/translation";
 import { h, ComponentChildren } from "preact";
@@ -32,13 +31,11 @@ export function InterfacesGroupNavbar(props: {children: ComponentChildren}) {
 }
 
 export function init() {
-    $('#interfaces-group').on('hide.bs.collapse', () => $('#interfaces-chevron').removeClass("rotated-chevron"));
-    $('#interfaces-group').on('show.bs.collapse', () => $('#interfaces-chevron').addClass("rotated-chevron"));
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $("#sidebar-interfaces-group").prop("hidden", false);
+    document.getElementById("sidebar-interfaces-group").hidden = false;
 }

@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { h,  Fragment } from "preact";
@@ -131,5 +130,5 @@ export function init() {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $("#sidebar-modbus_tcp").prop("hidden", !module_init.modbus_tcp);
+    document.getElementById("sidebar-modbus_tcp").hidden = !module_init.modbus_tcp;
 }

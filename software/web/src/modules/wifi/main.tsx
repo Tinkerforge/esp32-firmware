@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment, Component } from "preact";
@@ -112,6 +111,6 @@ export function add_event_listeners(source: API.APIEventTarget) {}
 export function init() {}
 
 export function update_sidebar_state(module_init: any) {
-    $("#sidebar-wifi-sta").prop("hidden", !module_init.wifi);
-    $("#sidebar-wifi-ap").prop("hidden", !module_init.wifi);
+    document.getElementById("sidebar-wifi-sta").hidden = !module_init.wifi;
+    document.getElementById("sidebar-wifi-ap").hidden = !module_init.wifi;
 }

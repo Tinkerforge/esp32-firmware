@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { h, Fragment } from "preact";
@@ -148,5 +147,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $("#sidebar-proxy").prop("hidden", !module_init.proxy);
+    document.getElementById("sidebar-proxy").hidden = !module_init.proxy;
 }

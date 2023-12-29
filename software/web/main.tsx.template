@@ -134,7 +134,7 @@ function login() {
 function setup_normal() {
     window.setTimeout(show_page, 1000);
 
-    $('#sidebar-status').prop('hidden', false);
+    document.getElementById("sidebar-status").hidden = false;
     $('#sidebar-status').addClass('active');
     $('#status').addClass(['show', 'active']);
 
@@ -144,7 +144,7 @@ function setup_normal() {
 function setup_login() {
     window.setTimeout(show_page, 1000);
 
-    $('#sidebar-login').prop('hidden', false);
+    document.getElementById("sidebar-login").hidden = false;
     $('#sidebar-login').addClass('active');
     $('#login').addClass(['show', 'active']);
 
@@ -172,7 +172,7 @@ function setup_login() {
     }, false);
 }
 
-$(window).on('pageshow', (ev) => {
+window.addEventListener("pageshow", () => {
     document.title = __("main.title");
 
     util.ifLoggedInElse(setup_normal, setup_login);
@@ -205,7 +205,7 @@ $(window).on('pageshow', (ev) => {
         setTimeout(() => window.scrollTo(0,0), 1);
     });
 
-    $("#reboot_button").on("click", () => {
+    document.getElementById("reboot_button").addEventListener("click", () => {
         $('#reboot').modal('hide');
         util.reboot();
     });

@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import YaMD5 from "../../ts/yamd5";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
@@ -120,5 +119,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $("#sidebar-authentication").prop("hidden", !module_init.authentication);
+    document.getElementById("sidebar-authentication").hidden = !module_init.authentication;
 }

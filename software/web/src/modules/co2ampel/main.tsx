@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { h, Fragment, Component } from "preact";
@@ -124,5 +123,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $("#sidebar-co2ampel").prop("hidden", !module_init.co2ampel);
+    document.getElementById("sidebar-co2ampel").hidden = !module_init.co2ampel;
 }

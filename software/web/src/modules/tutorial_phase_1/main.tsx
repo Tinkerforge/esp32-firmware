@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import { h, Component } from "preact";
 import { __ } from "../../ts/translation";
@@ -45,5 +44,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $("#sidebar-tutorial_phase_1").prop("hidden", !module_init.tutorial_phase_1);
+    document.getElementById("sidebar-tutorial_phase_1").hidden = !module_init.tutorial_phase_1;
 }

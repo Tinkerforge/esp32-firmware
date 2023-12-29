@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import { __ } from "../../ts/translation";
 import { h, ComponentChildren } from "preact";
@@ -32,13 +31,11 @@ export function NetworkGroupNavbar(props: {children: ComponentChildren}) {
 }
 
 export function init() {
-    $('#network-group').on('hide.bs.collapse', () => $('#network-chevron').removeClass("rotated-chevron"));
-    $('#network-group').on('show.bs.collapse', () => $('#network-chevron').addClass("rotated-chevron"));
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $("#sidebar-network-group").prop("hidden", false);
+    document.getElementById("sidebar-network-group").hidden = false;
 }

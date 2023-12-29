@@ -17,7 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, ComponentChildren } from "preact";
+import $ from "../jq";
+import { h, Component, ComponentChildren, createRef } from "preact";
 import { ChevronRight } from "react-feather";
 
 interface NavbarGroupProps {
@@ -28,19 +29,34 @@ interface NavbarGroupProps {
     hidden?: boolean;
 }
 
-export function NavbarGroup(props: NavbarGroupProps) {
-    props.symbol.props.class = "col-auto";
+export class NavbarGroup extends Component<NavbarGroupProps, {}> {
+    chevron_ref = createRef();
 
-    return (
-        <li class="nav-item">
-            <div id={`sidebar-${props.name}-group`} class="nav-link row no-gutters d-flex-ni align-items-center" data-toggle="collapse" href={`#${props.name}-group`} role="button" aria-expanded="false" aria-controls={`${props.name}-group`} hidden={props.hidden === undefined ? true : props.hidden}>
-                {props.symbol}<span class="col" style="margin-left: 8px;">{props.title}</span><ChevronRight {...{id: `${props.name}-chevron`, class: "unrotated-chevron col-auto", style: "margin-right: 0px;"} as any} />
-            </div>
-            <div class="collapse nav-nested" id={`${props.name}-group`}>
-                <ul class="flex-column nav" style="padding-left: 32px">
-                    {props.children}
-                </ul>
-            </div>
-        </li>
-    );
+    constructor(props: NavbarGroupProps) {
+        super(props);
+
+        props.symbol.props.class = "col-auto";
+    }
+
+
+    componentDidMount() {
+        // FIXME: we have to use jquery here or else the events don't fire?
+        $(`#${this.props.name}-group`).on('hide.bs.collapse', () => this.chevron_ref.current.classList.remove("rotated-chevron"));
+        $(`#${this.props.name}-group`).on('show.bs.collapse', () => this.chevron_ref.current.classList.add("rotated-chevron"));
+    }
+
+    render() {
+        return (
+            <li class="nav-item">
+                <div id={`sidebar-${this.props.name}-group`} class="nav-link row no-gutters d-flex-ni align-items-center" data-toggle="collapse" href={`#${this.props.name}-group`} role="button" aria-expanded="false" aria-controls={`${this.props.name}-group`} hidden={this.props.hidden === undefined ? true : this.props.hidden}>
+                    {this.props.symbol}<span class="col" style="margin-left: 8px;">{this.props.title}</span><ChevronRight ref={this.chevron_ref} {...{class: "unrotated-chevron col-auto", style: "margin-right: 0px;"} as any} />
+                </div>
+                <div class="collapse nav-nested" id={`${this.props.name}-group`}>
+                    <ul class="flex-column nav" style="padding-left: 32px">
+                        {this.props.children}
+                    </ul>
+                </div>
+            </li>
+        );
+    }
 }

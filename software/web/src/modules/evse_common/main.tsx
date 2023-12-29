@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
 export { EVSE, EVSENavbar } from "./evse_content";
 export { EVSESettings, EVSESettingsNavbar } from "./evse_settings";
 export { EVSEStatus } from "./evse_status";
@@ -29,7 +28,7 @@ export function add_event_listeners() {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-evse').prop('hidden', !module_init.evse_v2 && !module_init.evse);
-    $('#sidebar-evse-settings').prop('hidden', !module_init.evse_v2 && !module_init.evse);
-    $('#status-evse').prop('hidden', !module_init.evse_v2 && !module_init.evse);
+    document.getElementById("sidebar-evse").hidden = !module_init.evse_v2 && !module_init.evse;
+    document.getElementById("sidebar-evse-settings").hidden = !module_init.evse_v2 && !module_init.evse;
+    document.getElementById("status-evse").hidden = !module_init.evse_v2 && !module_init.evse;
 }
