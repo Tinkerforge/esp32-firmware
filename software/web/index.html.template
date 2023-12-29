@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="theme-color" content="{{{theme_color}}}"/>
-    <title data-i18n="main.title"></title>
+    <title></title>
 
     <link rel="manifest" href="manifest.json"/>
     <link href="css/main.css" rel="stylesheet">
@@ -14,110 +14,7 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0 pb-2 pt-2">
-        <a href="/"><img class="pt-2 pb-2 pl-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
-        <button class="navbar-toggler d-md-none collapsed pt-2 mr-3" type="button" data-toggle="collapse"
-            data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <!-- show inline status here? -->
-    </nav>
-
-    <div id="container" class="container-fluid">
-        <div class="row">
-            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse navbar-collapse">
-                <div class="sidebar-sticky pt-3">
-                    <ul class="nav flex-column" role="tablist" id="nav-list" style="visibility: hidden;">
-                        <li class="nav-item">
-                            <a id="sidebar-login" class="nav-link" data-toggle="tab" role="tab"
-                                aria-controls="login" aria-selected="true" href="#login">
-                                <span data-feather="key"></span><span data-i18n="main.navbar_login"></span>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a id="sidebar-status" class="nav-link" data-toggle="tab" role="tab"
-                                aria-controls="status" aria-selected="true" href="#status">
-                                <span data-feather="home"></span><span data-i18n="main.navbar_status"></span>
-                            </a>
-                        </li>
-
-                        {{{navbar}}}
-                    </ul>
-                </div>
-            </nav>
-
-            <main id="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style="visibility: hidden;">
-                <div class="tab-content" id="v-pills-tabContent">
-                    <div id="alert_placeholder" class="alert_placeholder"></div>
-
-                    <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-login" id="login">
-                        <div class="row sticky-under-top mb-3 pt-3">
-                            <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
-                                <h1 class="page-header" data-i18n="main.content_login"></h1>
-                            </div>
-                        </div>
-                        <form id="main_login_form">
-                            <div class="form-group row">
-                                <label for="main_login_username"
-                                    class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="main.login_username"></label>
-                                <div class="col-lg-9 col-xl-6">
-                                    <input id="main_login_username" class="form-control" type="text">
-                                </div>
-                            </div>
-
-                            <div class="form-group row">
-                                <label for="main_login_password" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="main.login_password"></label>
-                                <div class="col-lg-9 col-xl-6">
-                                    <div class="input-group">
-                                        <input type="password" id="main_login_password" class="form-control" value=""/>
-                                        <div class="input-group-append">
-                                            <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                                                <input id="main_login_show_password" type="checkbox" class="custom-control-input" aria-label="Show password">
-                                                <label class="custom-control-label" for="main_login_show_password" style="line-height: 20px;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group row">
-                                <div class="col-lg-12 col-xl-8 text-right">
-                                    <button id="main_login_button" type="submit" form="main_login_form" class="btn btn-primary" data-i18n="main.login_button"></button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-status" id="status">
-                        {{{status}}}
-                    </div>
-
-                    {{{content}}}
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <div id="async_modal"></div>
-
-    <div class="modal fade" id="reboot" tabindex="-1" role="dialog" aria-hidden="true">
-        <div id="reboot_content" class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <label class="form-label modal-title" data-i18n="main.reboot_title"></label>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body"><span data-i18n="main.reboot_content_prefix"></span><span id="reboot_content_changed"></span><span data-i18n="main.reboot_content_suffix"></span></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" data-i18n="main.abort"></button>
-                    <button id="reboot_button" type="button" class="btn btn-danger" data-i18n="main.reboot"></button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="app" />
     <script src="js/bundle.js"></script>
 </body>
 

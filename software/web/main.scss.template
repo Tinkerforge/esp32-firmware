@@ -82,10 +82,6 @@ body {
   line-height: 1.2;
 }
 
-.feather {
-  vertical-align: middle;
-}
-
 .form-label {
     font-size: 1.25rem;
     line-height: 1.2;
@@ -185,11 +181,6 @@ body {
   color: #333;
 }
 
-.sidebar .nav-link .feather {
-  margin-right: 8px;
-  color: #333;
-}
-
 .sidebar .nav-link.active {
   color: var(--primary);
 }
@@ -198,25 +189,11 @@ body {
     .sidebar .nav-link:hover {
         color: var(--primary);
     }
-
-
-    .sidebar .nav-link:hover .feather {
-    color: var(--primary);
-    }
-}
-
-.sidebar .nav-link.active .feather {
-  color: inherit;
 }
 
 .sidebar .nav-link.disabled {
     font-weight: 500;
     color: #AAA;
-  }
-
-.sidebar .nav-link.disabled .feather {
-  margin-right: 4px;
-  color: #AAA;
 }
 
 .sidebar-heading {
@@ -352,10 +329,6 @@ body {
     background-color: #5a6268
 }
 
-.feather-trash-2 {
-    vertical-align: top !important;
-}
-
 .custom-file-label {
     overflow: hidden;
     white-space: nowrap;
@@ -455,11 +428,6 @@ body {
 }
 .input-indicator-link {
     border-left-color: var(--link);
-}
-
-
-#status_wifi_sta_rssi .feather {
-    vertical-align: bottom;
 }
 
 @keyframes shake {

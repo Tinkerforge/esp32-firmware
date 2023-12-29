@@ -20,13 +20,19 @@
 import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, render, Fragment, Component } from "preact";
+import { h, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { InputText } from "../../ts/components/input_text";
 import { SubPage } from "../../ts/components/sub_page";
 import { PageHeader } from "../../ts/components/page_header";
 import { Table } from "../../ts/components/table";
 import { FormRow } from "../../ts/components/form_row";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Award } from "react-feather";
+
+export function CertsNavbar() {
+    return <NavbarItem name="certs" title={__("certs.navbar.certs")} symbol={<Award />} />;
+}
 
 interface State {
     editCert: API.getType['certs/add'] & {'file': File, file_too_large: boolean}
@@ -42,7 +48,7 @@ export class Certs extends Component<{}, State> {
             return <></>
 
         return (
-            <SubPage>
+            <SubPage name="certs">
                 <PageHeader title={__("certs.content.certs")}/>
                     <div class="mb-3">
                         <Table
@@ -138,8 +144,6 @@ export class Certs extends Component<{}, State> {
         )
     }
 }
-
-render(<Certs />, $("#certs")[0]);
 
 export function init() {
 }

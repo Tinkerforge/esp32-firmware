@@ -20,7 +20,7 @@
 import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, render, Fragment, Component } from "preact";
+import { h, Fragment, Component, RefObject } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -34,6 +34,13 @@ import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { StatusSection } from "../../ts/components/status_section";
+import { Server } from "react-feather";
+
+export function ChargeManagerNavbar() {
+    return <NavbarItem name="charge_manager" title={__("charge_manager.navbar.charge_manager")} symbol={<Server {...{style: "transform: rotate(180deg);"} as any} />} />;
+}
 
 type ChargeManagerConfig = API.getType["charge_manager/config"];
 type ChargerConfig = ChargeManagerConfig["chargers"][0];
@@ -47,7 +54,7 @@ interface ChargeManagerState {
     scanResult: Readonly<ScanCharger[]>
 }
 
-export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, ChargeManagerState> {
+export class ChargeManager extends ConfigComponent<'charge_manager/config', {status_ref?: RefObject<ChargeManagerStatus>}, ChargeManagerState> {
     intervalID: number = null;
 
     constructor() {
@@ -487,7 +494,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
             </FormRow>
 
         return (
-            <SubPage>
+            <SubPage name="charge_manager">
                 <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     {!energyManagerMode || warpUltimateMode ?
                         charge_manager_mode
@@ -534,8 +541,6 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         )
     }
 }
-
-render(<ChargeManager />, $("#charge_manager")[0]);
 
 interface ChargeManagerStatusState {
     state: API.getType['charge_manager/state']
@@ -618,7 +623,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                     </div>
         });
 
-        return <>
+        return <StatusSection name="charge_manager">
             <FormRow label={__("charge_manager.status.charge_manager")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                 <IndicatorGroup
                     style="width: 100%"
@@ -649,11 +654,9 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                     </div>)
                 }
             </FormRow>
-        </>
+        </StatusSection>;
     }
 }
-
-render(<ChargeManagerStatus />, $("#status-charge_manager")[0]);
 
 export function init() {
 }

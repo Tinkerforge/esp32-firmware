@@ -18,63 +18,88 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as API from "../../ts/api";
-
-import { h, render } from "preact";
+import * as util from "../../ts/util";
+import { h, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
+import { FormRow } from "../../ts/components/form_row";
+import { SubPage } from "../../ts/components/sub_page";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Box } from "react-feather";
 
-render(<PageHeader title={__("tutorial_phase_5.content.tutorial_phase_5")} />, $('#tutorial_phase_5_header')[0]);
-
-function update_config()
-{
-    // Get current config from state "tutorial_phase_5/config" after receiving
-    // a change from the backend
-    let config = API.get("tutorial_phase_5/config");
-
-    // Update HTML element with current color value
-    $("#tutorial_phase_5_color").val(config.color);
+export function TutorialPhase5Navbar() {
+    return <NavbarItem name="tutorial_phase_5" title={__("tutorial_phase_5.navbar.tutorial_phase_5")} symbol={<Box />} />;
 }
 
-function save_config()
-{
-    // Get current color value from the HTML element and create new config
-    let config = {"color": $("#tutorial_phase_5_color").val().toString()}
-
-    // Send new config to backend as state "tutorial_phase_5/config"
-    API.save("tutorial_phase_5/config", config, __("tutorial_phase_5.script.save_config_failed"));
+interface TutorialPhase5State {
+    color: string;
+    button: boolean;
 }
 
-function update_state()
-{
-    // Get current state from state "tutorial_phase_5/state" after receiving
-    // a change from the backend
-    let state = API.get("tutorial_phase_5/state");
+export class TutorialPhase5 extends Component<{}, TutorialPhase5State> {
+    constructor() {
+        super();
 
-    // Update HTML element with current button value
-    $("#tutorial_phase_5_button").val(state.button ? __("tutorial_phase_5.script.button_pressed") : __("tutorial_phase_5.script.button_released"));
+        this.state = {
+            color: '#00000',
+            button: null,
+        } as any;
+
+        // Create event listener for state "tutorial_phase_5/config" to
+        // receive changes to that state
+        util.addApiEventListener('tutorial_phase_5/config', () => {
+            // Get current config from state "tutorial_phase_5/config" after
+            // receiving a change from the backend
+            let config = API.get("tutorial_phase_5/config");
+
+            // Update HTML element with current color value
+            this.setState({color: config.color});
+        });
+
+        // Create event listener for state "tutorial_phase_5/state" to
+        // receive changes to that state
+        util.addApiEventListener('tutorial_phase_5/state', () => {
+            // Get current state from state "tutorial_phase_5/state" after
+            // receiving a change from the backend
+            let state = API.get("tutorial_phase_5/state");
+
+            // Update HTML element with current button value
+            this.setState({button: state.button});
+        });
+    }
+
+    render() {
+        return <SubPage name="tutorial_phase_5">
+                <PageHeader title={__("tutorial_phase_5.content.tutorial_phase_5")} />
+                <FormRow label={__("tutorial_phase_5.content.color")}>
+                    <input class="form-control" type="color" value={this.state.color} onChange={(event) => {
+                        // Get current color value from the HTML element and create new config
+                        let config = {color: (event.target as HTMLInputElement).value.toString()};
+
+                        // Send new config to backend as state "tutorial_phase_5/config"
+                        API.save("tutorial_phase_5/config", config, __("tutorial_phase_5.script.save_config_failed"));
+                    }} />
+                </FormRow>
+                <FormRow label={__("tutorial_phase_5.content.button")}>
+                    <input class="form-control" value={
+                        this.state.button === null
+                            ? __("tutorial_phase_5.script.button_unknown")
+                            : this.state.button
+                              ? __("tutorial_phase_5.script.button_pressed")
+                              : __("tutorial_phase_5.script.button_released")
+                    } readonly />
+                </FormRow>
+            </SubPage>;
+    }
 }
 
-export function init()
-{
-    // Attach the save_config function to the change event of the HTML
-    // element to be able to send color changes to the backend.
-    $("#tutorial_phase_5_color").on("change", save_config);
+export function init() {
 }
 
-export function add_event_listeners(source: API.APIEventTarget)
-{
-    // Create event listener for state "tutorial_phase_5/config" to call the
-    // update_config function if changes to that state are reported.
-    source.addEventListener("tutorial_phase_5/config", update_config);
-
-    // Create event listener for state "tutorial_phase_5/state" to call the
-    // update_state function if changes to that state are reported.
-    source.addEventListener("tutorial_phase_5/state", update_state);
+export function add_event_listeners(source: API.APIEventTarget) {
 }
 
-export function update_sidebar_state(module_init: any)
-{
-    $("#sidebar-tutorial-phase-5").prop("hidden", !module_init.tutorial_phase_5);
+export function update_sidebar_state(module_init: any) {
+    $("#sidebar-tutorial_phase_5").prop("hidden", !module_init.tutorial_phase_5);
 }

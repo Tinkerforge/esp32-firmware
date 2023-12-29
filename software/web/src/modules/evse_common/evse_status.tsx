@@ -27,6 +27,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputFloat } from "../../ts/components/input_float";
 import { InputText } from "../../ts/components/input_text";
+import { StatusSection } from "../../ts/components/status_section";
 
 interface EVSEStatusState {
     state: API.getType["evse/state"];
@@ -109,7 +110,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
 
         let theoretical_max = Math.min(state.slots[0].max_current, state.slots[1].max_current);
 
-        return <>
+        return <StatusSection name="evse">
                 <FormRow label={__("evse.status.evse")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <IndicatorGroup
                         style="width: 100%"
@@ -155,6 +156,6 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                 <FormRow label={__("evse.status.allowed_charging_current")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                         <InputText value={this.update_evse_slots()} />
                 </FormRow>
-            </>;
+            </StatusSection>;
     }
 }

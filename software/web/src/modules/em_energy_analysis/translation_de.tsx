@@ -3,6 +3,8 @@ import { h } from "preact";
 let x = {
     "em_energy_analysis": {
         "status": {
+            "power_history": "Leistungsverlauf",
+            "current_power": "Leistung"
         },
         "navbar": {
             "em_energy_analysis": "Energiebilanz"

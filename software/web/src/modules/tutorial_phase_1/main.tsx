@@ -18,24 +18,32 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as API from "../../ts/api";
-
-import { h, render } from "preact";
+import { h, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
+import { SubPage } from "../../ts/components/sub_page";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Box } from "react-feather";
 
-render(<PageHeader title={__("tutorial_phase_1.content.tutorial_phase_1")} />, $('#tutorial_phase_1_header')[0]);
-
-export function init()
-{
+export function TutorialPhase1Navbar() {
+    return <NavbarItem name="tutorial_phase_1" title={__("tutorial_phase_1.navbar.tutorial_phase_1")} symbol={<Box />} />;
 }
 
-export function add_event_listeners(source: API.APIEventTarget)
-{
+export class TutorialPhase1 extends Component {
+    render() {
+        return <SubPage name="tutorial_phase_1">
+                <PageHeader title={__("tutorial_phase_1.content.tutorial_phase_1")} />
+            </SubPage>;
+    }
 }
 
-export function update_sidebar_state(module_init: any)
-{
-    $("#sidebar-tutorial-phase-1").prop("hidden", !module_init.tutorial_phase_1);
+export function init() {
+}
+
+export function add_event_listeners(source: API.APIEventTarget) {
+}
+
+export function update_sidebar_state(module_init: any) {
+    $("#sidebar-tutorial_phase_1").prop("hidden", !module_init.tutorial_phase_1);
 }

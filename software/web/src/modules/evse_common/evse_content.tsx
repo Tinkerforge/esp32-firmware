@@ -20,7 +20,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Component, Fragment } from "preact";
+import { h, Component, Fragment, RefObject } from "preact";
 import { Button } from "react-bootstrap";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { DebugLogger } from "../../ts/components/debug_logger";
@@ -34,11 +34,18 @@ import { PageHeader } from "../../ts/components/page_header";
 import { SubPage } from "../../ts/components/sub_page";
 import { __, translate_unchecked } from "../../ts/translation";
 import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_AUTOMATION } from "./api";
+import { EVSEStatus } from "./evse_status";
 import { OutputFloat } from "../../ts/components/output_float";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { BatteryCharging } from "react-feather";
+
+export function EVSENavbar() {
+    return <NavbarItem name="evse" title={__("evse.navbar.evse")} symbol={<BatteryCharging />} />;
+}
 
 let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
 
-export class EVSE extends Component<{}, {}> {
+export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
     override render(props: {}, s: {}) {
         if (!util.render_allowed() || !API.hasFeature("evse"))
             return (<></>);
@@ -61,7 +68,7 @@ export class EVSE extends Component<{}, {}> {
         let contactor_error = state.error_state == 4 && ((!is_evse_v3 && state.contactor_error != 4)
                                                            || (is_evse_v3 && (state.contactor_error & 1) == 0));
 
-        return <SubPage>
+        return <SubPage name="evse">
             <PageHeader title={__("evse.content.status")} />
                     <FormRow label={__("evse.content.iec_state")}>
                         <IndicatorGroup

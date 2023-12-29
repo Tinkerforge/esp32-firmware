@@ -20,7 +20,7 @@
 import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, render, Fragment, Component } from "preact";
+import { h, Fragment, Component } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 import { FormRow } from "../../ts/components/form_row";
@@ -28,6 +28,12 @@ import { InputText } from "../../ts/components/input_text";
 import { InputFile } from "../../ts/components/input_file";
 import { Button } from "react-bootstrap";
 import { SubPage } from "../../ts/components/sub_page";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Clock } from "react-feather";
+
+export function FirmwareUpdateNavbar() {
+    return <NavbarItem name="flash" title={__("firmware_update.navbar.flash")} symbol={<Clock />} />;
+}
 
 type FirmwareUpdateConfig = API.getType["info/version"];
 
@@ -109,7 +115,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
         }
 
         return (
-            <SubPage>
+            <SubPage name="flash">
                 <PageHeader title={__("firmware_update.content.firmware_update")} />
 
                 <FormRow label={__("firmware_update.content.current_firmware")}>
@@ -203,8 +209,6 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
         );
     }
 }
-
-render(<FirmwareUpdate />, $("#flash")[0]);
 
 export function init() {
 }

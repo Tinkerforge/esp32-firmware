@@ -20,7 +20,7 @@
 import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { h, render, Fragment, Component } from "preact";
+import { h, Fragment, Component, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -33,6 +33,13 @@ import { Switch } from "../../ts/components/switch";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { SubPage } from "../../ts/components/sub_page";
 import { Collapse } from "react-bootstrap";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { StatusSection } from "../../ts/components/status_section";
+import { Rss } from "react-feather";
+
+export function MqttNavbar() {
+    return <NavbarItem name="mqtt" title={__("mqtt.navbar.mqtt")} symbol={<Rss />} />;
+}
 
 type MqttConfig = API.getType["mqtt/config"];
 
@@ -40,7 +47,7 @@ interface MqttState {
     auto_discovery_config: API.getType['mqtt/auto_discovery_config'];
 }
 
-export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
+export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject<MqttStatus>}, MqttState> {
     constructor() {
         super('mqtt/config',
               __("mqtt.script.save_failed"),
@@ -80,7 +87,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
         let certs = cert_state == null ? [] : cert_state.certs.map((c: any) => [c.id.toString(), c.name]) as [string, string][];
 
         return (
-            <SubPage>
+            <SubPage name="mqtt">
                 <ConfigForm id="mqtt_config_form" title={__("mqtt.content.mqtt")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("mqtt.content.enable_mqtt")}>
                         <Switch desc={__("mqtt.content.enable_mqtt_desc")}
@@ -243,9 +250,6 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
     }
 }
 
-render(<Mqtt/>, $('#mqtt')[0])
-
-
 interface MqttStatusState {
     state: API.getType["mqtt/state"];
     config: API.getType["mqtt/config"];
@@ -268,7 +272,7 @@ export class MqttStatus extends Component<{}, MqttStatusState> {
         if (!util.render_allowed() || !state.config.enable_mqtt)
             return <></>;
 
-        return <>
+        return <StatusSection name="mqtt">
                 <FormRow label={__("mqtt.status.connection")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <IndicatorGroup
                         style="width: 100%"
@@ -281,11 +285,9 @@ export class MqttStatus extends Component<{}, MqttStatusState> {
                             ["danger", __("mqtt.status.error") + (state.state.connection_state != 3 ? "" : state.state.last_error)]
                         ]}/>
                 </FormRow>
-            </>;
+            </StatusSection>;
     }
 }
-
-render(<MqttStatus />, $("#status-mqtt")[0]);
 
 export function init() {
 }

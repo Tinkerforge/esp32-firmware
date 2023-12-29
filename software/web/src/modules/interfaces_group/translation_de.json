@@ -1,0 +1,10 @@
+{
+    "interfaces_group": {
+        "status": {},
+        "navbar": {
+            "interfaces_group": "Schnittstellen"
+        },
+        "content": {},
+        "script": {}
+    }
+}

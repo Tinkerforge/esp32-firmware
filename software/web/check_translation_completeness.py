@@ -61,7 +61,7 @@ def check_mismatch(translation_values, key, p):
     return mismatches
 
 def main():
-    ts_files = [os.path.join("src", "main.tsx")]
+    ts_files = [os.path.join("src", "main.tsx"), os.path.join("src", "app.tsx")]
 
     ts_files += get_all_ts_files("./src/ts")
     ts_files += get_all_ts_files("./src/typings")
@@ -87,10 +87,6 @@ def main():
                 print("\t", *[s.replace('\\xad', '') for s in x])
                 reported_mismatches.append(x)
 
-    with open('./src/index.html', 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    used_placeholders += flatten([x.split(" ") for x in re.findall('data-i18n="([^"]*)"', content)])
     used_placeholders = set(used_placeholders)
     used_but_missing = []
 

@@ -21,11 +21,12 @@ import $ from "jquery";
 
 import "bootstrap";
 
-import * as feather from 'feather-icons';
+import { h, render } from "preact";
 import * as util from "./ts/util";
 import * as API from "./ts/api";
-import { translate_data_i18n/*, select_language*/ } from "./ts/translation";
+import { __ /*, select_language*/ } from "./ts/translation";
 import { init_async_modal } from "./ts/components/async_modal";
+import { App } from "./app";
 
 {{{module_imports}}}
 
@@ -77,8 +78,12 @@ function update_modules() {
 
     if (first_module_init) {
         first_module_init = false;
-        navigate();
-        show_page();
+        // FIXME: navigate doesn't work if called directly here. probably
+        //        has something to do with preact render/event order
+        window.setTimeout(() => {
+            navigate();
+            show_page();
+        }, 0);
     }
 }
 
@@ -129,7 +134,7 @@ function login() {
 function setup_normal() {
     window.setTimeout(show_page, 1000);
 
-    $('#sidebar-login').prop('hidden', true);
+    $('#sidebar-status').prop('hidden', false);
     $('#sidebar-status').addClass('active');
     $('#status').addClass(['show', 'active']);
 
@@ -139,7 +144,7 @@ function setup_normal() {
 function setup_login() {
     window.setTimeout(show_page, 1000);
 
-    $('#sidebar-status').prop('hidden', true);
+    $('#sidebar-login').prop('hidden', false);
     $('#sidebar-login').addClass('active');
     $('#login').addClass(['show', 'active']);
 
@@ -168,23 +173,20 @@ function setup_login() {
 }
 
 $(window).on('pageshow', (ev) => {
+    document.title = __("main.title");
+
     util.ifLoggedInElse(setup_normal, setup_login);
 
     init_async_modal();
-
-    feather.replace();
-
-    translate_data_i18n();
 
     // Disabled for now.
     // We somehow have to force preact to re-render all components for this to work.
     /*window.addEventListener('languagechange', () => {
         console.log("language change!");
         select_language();
-        translate_data_i18n();
     });*/
 
-    $('a[data-toggle="tab"]').on('show.bs.tab', () => {
+    $('a[data-toggle="tab"]').on('show.bs.tab', (event) => {
         $('a[data-toggle="tab"]').not(event.target as Element).removeClass("active");
         $('a[data-toggle="tab"]').not(event.target as Element).trigger("hidden.bs.tab");
     });
@@ -208,3 +210,5 @@ $(window).on('pageshow', (ev) => {
         util.reboot();
     });
 });
+
+render(<App />, document.getElementById("app"));

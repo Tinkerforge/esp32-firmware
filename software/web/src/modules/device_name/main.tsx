@@ -17,15 +17,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __ } from "../../ts/translation";
-import { h, render, Fragment } from "preact";
+import { h, Fragment } from "preact";
 import { InputText } from "../../ts/components/input_text";
 import { Button } from "react-bootstrap";
 import { Save } from "react-feather";
 import { ConfigComponent } from "../../ts/components/config_component";
+import { StatusSection } from "../../ts/components/status_section";
 
 export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
     constructor() {
@@ -38,7 +38,7 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
 
         document.title = API.get("info/display_name").display_name + " - " + __("main.title");
 
-        return (
+        return <StatusSection name="device_name" class="row sticky-under-top mb-3">
             <div class="col-12 col-xl-8">
                 <div class="row pt-3 border-bottom tab-header-shadow">
                     <h1 class="col-4 col-xl-6 page-header pb-2">{__("device_name.status.status")}</h1>
@@ -60,11 +60,9 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
                     </form>
                 </div>
             </div>
-        );
+        </StatusSection>;
     }
 }
-
-render(<DeviceNameStatus />, $("#status-device_name")[0]);
 
 export function init() {
 }

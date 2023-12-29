@@ -610,6 +610,54 @@ def main():
         frontend_modules.append(util.FlavoredName("Nightly").get())
         frontend_modules.append(util.FlavoredName("Debug").get())
 
+    frontend_components = []
+    for entry in env.GetProjectOption("custom_frontend_components").splitlines():
+        m = re.match(r'^\s*([^|\$]+)(?:\s*\|\s*([^|\$]+))?(?:\s*\$\s*(Open|Close))?\s*$', entry)
+
+        if m == None:
+            print('Error: Invalid custom_frontend_components entry:', entry)
+            sys.exit(1)
+
+        module = util.FlavoredName(m.group(1).strip()).get()
+
+        if module not in frontend_modules:
+            print('Error: Unknown module in custom_frontend_components entry:', module.space)
+            sys.exit(1)
+
+        if m.group(2) != None:
+            component = util.FlavoredName(m.group(2).strip()).get()
+        else:
+            component = module
+
+        mode = m.group(3)
+
+        frontend_components.append((module, component, mode))
+
+    if nightly:
+        module = util.FlavoredName("Debug").get()
+        component = module
+        frontend_components.append((module, component))
+
+    frontend_status_components = []
+    for entry in env.GetProjectOption("custom_frontend_status_components").splitlines():
+        parts = [x.strip() for x in entry.split('|')]
+
+        if len(parts) == 1:
+            module = util.FlavoredName(parts[0]).get()
+            component = util.FlavoredName(parts[0] + ' Status').get()
+        elif len(parts) == 2:
+            module = util.FlavoredName(parts[0]).get()
+            component = util.FlavoredName(parts[1]).get()
+        else:
+            print('Error: Invalid custom_frontend_status_components entry:', entry)
+            sys.exit(1)
+
+        if module not in frontend_modules:
+            print('Error: Unknown module in custom_frontend_status_components entry:', module.space)
+            sys.exit(1)
+
+        frontend_status_components.append((module, component))
+
     branding_module = find_branding_module(frontend_modules)
 
     metadata = json.dumps({
@@ -728,9 +776,6 @@ def main():
         generate_module_dependencies_header(info_path, header_path, backend_module, backend_modules, all_mods)
 
     # Handle frontend modules
-    navbar_entries = []
-    content_entries = []
-    status_entries = []
     main_ts_entries = []
     pre_scss_paths = []
     post_scss_paths = []
@@ -759,18 +804,6 @@ def main():
             abs_branding_module = os.path.abspath(branding_module)
             with ChangedDirectory(mod_path):
                 subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_module], env=environ)
-
-        if os.path.exists(os.path.join(mod_path, 'navbar.html')):
-            with open(os.path.join(mod_path, 'navbar.html'), 'r', encoding='utf-8') as f:
-                navbar_entries.append(f.read())
-
-        if os.path.exists(os.path.join(mod_path, 'content.html')):
-            with open(os.path.join(mod_path, 'content.html'), 'r', encoding='utf-8') as f:
-                content_entries.append(f.read())
-
-        if os.path.exists(os.path.join(mod_path, 'status.html')):
-            with open(os.path.join(mod_path, 'status.html'), 'r', encoding='utf-8') as f:
-                status_entries.append(f.read())
 
         if os.path.exists(os.path.join(mod_path, 'main.ts')) or os.path.exists(os.path.join(mod_path, 'main.tsx')):
             main_ts_entries.append(frontend_module.under)
@@ -861,11 +894,31 @@ def main():
 
     util.specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
-        '{{{logo_base64}}}': logo_base64,
-        '{{{navbar}}}': '\n                        '.join(navbar_entries),
-        '{{{content}}}': '\n                    '.join(content_entries),
-        '{{{status}}}': '\n                            '.join(status_entries),
         '{{{theme_color}}}': color
+    })
+
+    navbar = []
+    navbar_nesting = 0
+
+    for frontend_component in frontend_components:
+        if frontend_component[2] == 'Open':
+            navbar.append(f'<{frontend_component[1].camel}Navbar>')
+            navbar_nesting += 1
+        elif frontend_component[2] == 'Close':
+            navbar.append(f'</{frontend_component[1].camel}Navbar>')
+            navbar_nesting -= 1
+        else:
+            navbar.append(f'{"   " * navbar_nesting}<{frontend_component[1].camel}Navbar />')
+
+    util.specialize_template(os.path.join("web", "app.tsx.template"), os.path.join("web", "src", "app.tsx"), {
+        '{{{logo_base64}}}': logo_base64,
+        '{{{navbar_imports}}}': '\n'.join([f'import {{ {x[1].camel}Navbar }} from "./modules/{x[0].under}/main";' for x in frontend_components if x[2] != 'Close']),
+        '{{{navbar}}}': '\n                                '.join(navbar),
+        '{{{content_imports}}}': '\n'.join([f'import {{ {x[1].camel} }} from "./modules/{x[0].under}/main";' for x in frontend_components if x[2] == None]),
+        '{{{content}}}': '\n                            '.join([f'<{x[1].camel}{f" status_ref={{this.{x[1].under}_status_ref}}" if (x[1].space + " Status") in [y[1].space for y in frontend_status_components] else ""} />' for x in frontend_components if x[2] == None]),
+        '{{{status_imports}}}': '\n'.join([f'import {{ {x[1].camel} }} from "./modules/{x[0].under}/main";' for x in frontend_status_components]),
+        '{{{status}}}': '\n                                '.join([f'<{x[1].camel} ref={{this.{x[1].under}_ref}} />' for x in frontend_status_components]),
+        '{{{status_refs}}}': '\n    '.join([f'{x[1].under}_ref = createRef();' for x in frontend_status_components]),
     })
 
     util.specialize_template(os.path.join("web", "main.tsx.template"), os.path.join("web", "src", "main.tsx"), {
@@ -1114,10 +1167,6 @@ def main():
 
         util.embed_data(util.gzip_compress(html_bytes), 'src', 'index_html', 'char')
         util.store_digest(index_html_digest, 'src', 'index_html', env=env)
-
-    util.log("Checking HTML ID usage")
-    with ChangedDirectory('web'):
-        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_id_usage.py"] + [x.under for x in frontend_modules])
 
     if web_only:
         print('Stopping build after web')

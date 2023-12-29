@@ -18,49 +18,66 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as API from "../../ts/api";
-
-import { h, render } from "preact";
+import * as util from "../../ts/util";
+import { h, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
+import { FormRow } from "../../ts/components/form_row";
+import { SubPage } from "../../ts/components/sub_page";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Box } from "react-feather";
 
-render(<PageHeader title={__("tutorial_phase_4.content.tutorial_phase_4")} />, $('#tutorial_phase_4_header')[0]);
-
-function update_config()
-{
-    // Get current config from state "tutorial_phase_4/config" after receiving
-    // a change from the backend
-    let config = API.get("tutorial_phase_4/config");
-
-    // Update HTML element with current color value
-    $("#tutorial_phase_4_color").val(config.color);
+export function TutorialPhase4Navbar() {
+    return <NavbarItem name="tutorial_phase_4" title={__("tutorial_phase_4.navbar.tutorial_phase_4")} symbol={<Box />} />;
 }
 
-function save_config()
-{
-    // Get current color value from the HTML element and create new config
-    let config = {"color": $("#tutorial_phase_4_color").val().toString()}
-
-    // Send new config to backend as state "tutorial_phase_4/config"
-    API.save("tutorial_phase_4/config", config, __("tutorial_phase_4.script.save_config_failed"));
+interface TutorialPhase4State {
+    color: string;
 }
 
-export function init()
-{
-    // Attach the save_config function to the change event of the HTML
-    // element to be able to send color changes to the backend.
-    $("#tutorial_phase_4_color").on("change", save_config);
+export class TutorialPhase4 extends Component<{}, TutorialPhase4State> {
+    constructor() {
+        super();
+
+        this.state = {
+            color: '#00000',
+        } as any;
+
+        // Create event listener for state "tutorial_phase_4/config" to
+        // receive changes to that state
+        util.addApiEventListener('tutorial_phase_4/config', () => {
+            // Get current config from state "tutorial_phase_4/config" after
+            // receiving a change from the backend
+            let config = API.get("tutorial_phase_4/config");
+
+            // Update HTML element with current color value
+            this.setState({color: config.color});
+        });
+    }
+
+    render() {
+        return <SubPage name="tutorial_phase_4">
+                <PageHeader title={__("tutorial_phase_4.content.tutorial_phase_4")} />
+                <FormRow label={__("tutorial_phase_4.content.color")}>
+                    <input class="form-control" type="color" value={this.state.color} onChange={(event) => {
+                        // Get current color value from the HTML element and create new config
+                        let config = {color: (event.target as HTMLInputElement).value.toString()};
+
+                        // Send new config to backend as state "tutorial_phase_4/config"
+                        API.save("tutorial_phase_4/config", config, __("tutorial_phase_4.script.save_config_failed"));
+                    }} />
+                </FormRow>
+            </SubPage>;
+    }
 }
 
-export function add_event_listeners(source: API.APIEventTarget)
-{
-    // Create event listener for state "tutorial_phase_4/config" to call the
-    // update_config function if changes to that state are reported.
-    source.addEventListener("tutorial_phase_4/config", update_config);
+export function init() {
 }
 
-export function update_sidebar_state(module_init: any)
-{
-    $("#sidebar-tutorial-phase-4").prop("hidden", !module_init.tutorial_phase_4);
+export function add_event_listeners(source: API.APIEventTarget) {
+}
+
+export function update_sidebar_state(module_init: any) {
+    $("#sidebar-tutorial_phase_4").prop("hidden", !module_init.tutorial_phase_4);
 }

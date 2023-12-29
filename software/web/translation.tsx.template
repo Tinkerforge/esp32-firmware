@@ -87,28 +87,3 @@ export function translate_unchecked<S extends string>(key: string): string {
 
     return 'TRANSLATION-IS-MISSING';
 }
-
-export function translate_data_i18n() {
-    let elements = Array.from(document.querySelectorAll('[data-i18n]'));
-
-    elements.forEach(function (element) {
-        let _element$getAttribute, _element$getAttribute2;
-        let keys = (_element$getAttribute = element.getAttribute('data-i18n')) === null || _element$getAttribute === void 0 ? void 0 : _element$getAttribute.split(/\s/g);
-        let attributes = element === null || element === void 0 ? void 0 : (_element$getAttribute2 = element.getAttribute('data-i18n-attr')) === null || _element$getAttribute2 === void 0 ? void 0 : _element$getAttribute2.split(/\s/g);
-
-        if (attributes && keys.length != attributes.length) {
-            console.log('ERROR: Mismatching translation attributes:', keys, attributes, element);
-        }
-
-        keys.forEach(function (key, index) {
-            let text = translate_unchecked(key);
-            let attr = attributes ? attributes[index] : 'innerHTML';
-
-            if (attr == 'innerHTML') {
-                element[attr] = text;
-            } else {
-                element.setAttribute(attr, text);
-            }
-        });
-    });
-}

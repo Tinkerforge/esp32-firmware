@@ -1,0 +1,10 @@
+{
+    "network_group": {
+        "status": {},
+        "navbar": {
+            "network_group": "Network"
+        },
+        "content": {},
+        "script": {}
+    }
+}

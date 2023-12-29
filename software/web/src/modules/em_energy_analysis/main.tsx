@@ -21,7 +21,7 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { METERS_SLOTS } from "../../build";
-import { h, render, createRef, Fragment, Component, ComponentChild, RefObject, ComponentChildren } from "preact";
+import { h, createRef, Fragment, Component, ComponentChild, RefObject, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 import { InputDate } from "../../ts/components/input_date";
@@ -35,6 +35,13 @@ import uPlot from "uplot";
 import { uPlotTimelinePlugin } from "../../ts/uplot-plugins";
 import { MeterValueID } from "../meters/meter_value_id";
 import { MeterConfig } from "../meters/types";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { StatusSection } from "../../ts/components/status_section";
+import { PieChart } from "react-feather";
+
+export function EMEnergyAnalysisNavbar() {
+    return <NavbarItem name="em_energy_analysis" title={__("em_energy_analysis.navbar.em_energy_analysis")} symbol={<PieChart />} />;
+}
 
 const UPDATE_RETRY_DELAY = 500; // ms
 
@@ -1208,42 +1215,40 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
             }
         }
 
-        return (
-            <>
-                <FormRow label={__("em_energy_analysis_status.status.power_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
-                    <div class="card pl-1 pb-1">
-                        <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
-                            <UplotLoader ref={this.uplot_loader_ref}
-                                         show={true}
-                                         marker_class={'h4'} >
-                                <UplotWrapper ref={this.uplot_wrapper_ref}
-                                              id="em_energy_analysis_status_chart"
-                                              class="em-energy-analysis-status-chart"
-                                              sidebar_id="status"
-                                              color_cache_group="status"
-                                              show={true}
-                                              legend_time_label={__("em_energy_analysis.script.time_5min")}
-                                              legend_time_with_minutes={true}
-                                              legend_value_prefix={""}
-                                              aspect_ratio={2}
-                                              x_format={{hour: '2-digit', minute: '2-digit'}}
-                                              x_padding_factor={0}
-                                              y_min={0}
-                                              y_max={1500}
-                                              y_unit={"W"}
-                                              y_label={__("em_energy_analysis.script.power") + " [Watt]"}
-                                              y_digits={0}
-                                              default_fill={true}
-                                              padding={[null, 15, null, 5] as uPlot.Padding} />
-                            </UplotLoader>
-                        </div>
+        return <StatusSection name="em_energy_analysis">
+            <FormRow label={__("em_energy_analysis.status.power_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <div class="card pl-1 pb-1">
+                    <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                        <UplotLoader ref={this.uplot_loader_ref}
+                                        show={true}
+                                        marker_class={'h4'} >
+                            <UplotWrapper ref={this.uplot_wrapper_ref}
+                                            id="em_energy_analysis_status_chart"
+                                            class="em-energy-analysis-status-chart"
+                                            sidebar_id="status"
+                                            color_cache_group="status"
+                                            show={true}
+                                            legend_time_label={__("em_energy_analysis.script.time_5min")}
+                                            legend_time_with_minutes={true}
+                                            legend_value_prefix={""}
+                                            aspect_ratio={2}
+                                            x_format={{hour: '2-digit', minute: '2-digit'}}
+                                            x_padding_factor={0}
+                                            y_min={0}
+                                            y_max={1500}
+                                            y_unit={"W"}
+                                            y_label={__("em_energy_analysis.script.power") + " [Watt]"}
+                                            y_digits={0}
+                                            default_fill={true}
+                                            padding={[null, 15, null, 5] as uPlot.Padding} />
+                        </UplotLoader>
                     </div>
-                </FormRow>
-                <FormRow label={__("em_energy_analysis_status.status.current_power")} label_muted={get_meter_name(state.meter_configs, state.meter_slot)} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
-                    <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
-                </FormRow>
-            </>
-        )
+                </div>
+            </FormRow>
+            <FormRow label={__("em_energy_analysis.status.current_power")} label_muted={get_meter_name(state.meter_configs, state.meter_slot)} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+                <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
+            </FormRow>
+        </StatusSection>;
     }
 }
 
@@ -2895,7 +2900,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 ]}/>;
 
         return (
-            <SubPage colClasses="col-xl-10">
+            <SubPage name="em_energy_analysis" colClasses="col-xl-10">
                 <PageHeader title={__("em_energy_analysis.content.em_energy_analysis")}>
                     <div>
                         {state.data_type == '5min'
@@ -2989,12 +2994,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         )
     }
 }
-
-let status_ref = createRef();
-
-render(<EMEnergyAnalysisStatus ref={status_ref} />, $('#status-em_energy_analysis_status')[0]);
-
-render(<EMEnergyAnalysis status_ref={status_ref} />, $('#em_energy_analysis')[0]);
 
 export function init() {
 }

@@ -22,9 +22,8 @@ import { METERS_SLOTS } from "../../build";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __, translate_unchecked } from "../../ts/translation";
-import { h, render, createRef, Fragment, Component, RefObject, ComponentChild, toChildArray } from "preact";
+import { h, createRef, Fragment, Component, RefObject, ComponentChild, toChildArray } from "preact";
 import { Button, ButtonGroup } from "react-bootstrap";
-import { HelpCircle, Zap, ZapOff, ChevronRight } from "react-feather";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormSeparator } from "../../ts/components/form_separator";
@@ -42,6 +41,13 @@ import { plugins_init } from "./plugins";
 import { InputDate } from "../../ts/components/input_date";
 import { InputTime } from "../../ts/components/input_time";
 import { InputText } from "../../ts/components/input_text";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { StatusSection } from "../../ts/components/status_section";
+import { HelpCircle, Zap, ZapOff, ChevronRight, BarChart2 } from "react-feather";
+
+export function MetersNavbar() {
+    return <NavbarItem name="meters" title={__("meters.navbar.meters")} symbol={<BarChart2 />} />;
+}
 
 const PHASE_CONNECTED_VOLTAGE_THRESHOLD = 180.0; // V
 const PHASE_ACTIVE_CURRENT_THRESHOLD = 0.3; // A
@@ -500,7 +506,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 type NumberToNumber = {[id: number]: number};
 
 interface MetersProps {
-    status_ref: RefObject<MetersStatus>;
+    status_ref?: RefObject<MetersStatus>;
 }
 
 interface MetersState {
@@ -957,7 +963,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         let show_plot = API.hasFeature("meters");
 
         return (
-            <SubPage colClasses="col-xl-10">
+            <SubPage name="meters" colClasses="col-xl-10">
                 {show_plot ? <><PageHeader title={__("meters.content.meters")}/>
 
                 <FormSeparator heading={__("meters.status.power_history")} first={true} colClasses={"justify-content-between align-items-center col"} extraClasses={"pr-0 pr-lg-3"} >
@@ -1436,7 +1442,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         }
 
         return (
-            <>
+            <StatusSection name="meters">
                 <FormRow label={__("meters.status.power_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <div class="card pl-1 pb-1">
                         <UplotWrapper ref={this.uplot_wrapper_ref}
@@ -1455,16 +1461,10 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                 <FormRow label={__("meters.status.current_power")} label_muted={get_meter_name(state.meter_configs, state.meter_slot)} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
                     <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                 </FormRow>
-            </>
+            </StatusSection>
         );
     }
 }
-
-let status_ref = createRef();
-
-render(<MetersStatus ref={status_ref} />, $("#status-meters")[0]);
-
-render(<Meters status_ref={status_ref} />, $("#meters")[0]);
 
 export function init() {
     let result = plugins_init();

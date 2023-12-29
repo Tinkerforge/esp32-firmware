@@ -21,7 +21,7 @@ import $ from "../../ts/jq";
 import YaMD5 from "../../ts/yamd5";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, render, Fragment } from "preact";
+import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -31,6 +31,12 @@ import { InputPassword } from "../../ts/components/input_password";
 import { Button } from "react-bootstrap";
 import { Switch } from "../../ts/components/switch";
 import { SubPage } from "../../ts/components/sub_page";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Key } from "react-feather";
+
+export function AuthenticationNavbar() {
+    return <NavbarItem name="authentication" title={__("authentication.navbar.authentication")} symbol={<Key />} />;
+}
 
 type AuthenticationState = API.getType['authentication/config'] & {password: string};
 
@@ -56,7 +62,7 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
         let pass_required = (state.enable_auth && !API.get("authentication/config").enable_auth) || (state.username != API.get("authentication/config").username);
 
         return (
-            <SubPage>
+            <SubPage name="authentication">
                 <ConfigForm id="auth_config_form" title={__("authentication.content.authentication")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("authentication.content.enable_authentication")}>
                         <Switch desc={__("authentication.content.enable_authentication_desc")}
@@ -106,8 +112,6 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
         );
     }
 }
-
-render(<Authentication />, $("#authentication")[0]);
 
 export function init() {
 }

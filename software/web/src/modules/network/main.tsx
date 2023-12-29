@@ -20,7 +20,7 @@
 import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, render, Fragment } from "preact";
+import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -29,6 +29,12 @@ import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Sliders } from "react-feather";
+
+export function NetworkNavbar() {
+    return <NavbarItem name="network" title={__("network.navbar.network")} symbol={<Sliders />} />;
+}
 
 type NetworkConfig = API.getType["network/config"];
 
@@ -44,7 +50,7 @@ export class Network extends ConfigComponent<'network/config'> {
             return <></>
 
         return (
-            <SubPage>
+            <SubPage name="network">
                 <ConfigForm id="network_config_form"
                             title={__("network.content.network")}
                             isModified={this.isModified()}
@@ -80,8 +86,6 @@ export class Network extends ConfigComponent<'network/config'> {
         );
     }
 }
-
-render(<Network />, $("#network")[0]);
 
 export function init() {
 }

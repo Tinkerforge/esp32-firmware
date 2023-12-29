@@ -20,10 +20,11 @@
 import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, render, Fragment, Component } from "preact";
+import { h, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
+import { StatusSection } from "../../ts/components/status_section";
 
 export class ChargeLimitsStatus extends Component {
     render() {
@@ -156,7 +157,7 @@ export class ChargeLimitsStatus extends Component {
             </FormRow>
         }
 
-        return <>
+        return <StatusSection name="charge_limits">
                 <FormRow label={__("charge_limits.content.override_duration")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
                     <InputSelect items={duration_items}
                         placeholder={duration_placeholder}
@@ -167,11 +168,9 @@ export class ChargeLimitsStatus extends Component {
                     }}/>
                 </FormRow>
                 {energy_row}
-            </>;
+            </StatusSection>;
     }
 }
-
-render(<ChargeLimitsStatus />, $("#charge_limits_override")[0]);
 
 export function init() {
 }

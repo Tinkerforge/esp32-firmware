@@ -20,14 +20,19 @@
 import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, render, Fragment, Component } from "preact";
+import { h, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 import { FormRow } from "../../ts/components/form_row";
 import { Button, Spinner } from "react-bootstrap";
-import { Download } from 'react-feather';
 import { SubPage } from "../../ts/components/sub_page";
 import { OutputTextarea } from "../../ts/components/output_textarea";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Download, FileText } from "react-feather";
+
+export function EventLogNavbar() {
+    return <NavbarItem name="event_log" title={__("event_log.navbar.event_log")} symbol={<FileText />} />;
+}
 
 interface EventLogState {
     log: string;
@@ -218,7 +223,7 @@ export class EventLog extends Component<{}, EventLogState> {
             return (<></>);
 
         return (
-            <SubPage>
+            <SubPage name="event_log">
                 <PageHeader title={__("event_log.content.event_log")} />
 
                 <FormRow label={__("event_log.content.event_log_desc")} label_muted={__("event_log.content.event_log_desc_muted")}>
@@ -239,8 +244,6 @@ export class EventLog extends Component<{}, EventLogState> {
         );
     }
 }
-
-render(<EventLog />, $("#event_log")[0]);
 
 export function init() {
 }

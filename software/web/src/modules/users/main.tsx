@@ -21,7 +21,7 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import YaMD5 from "../../ts/yamd5";
-import { h, render, Fragment } from "preact";
+import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigComponent, ConfigComponentState } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -30,11 +30,15 @@ import { InputText } from "../../ts/components/input_text";
 import { InputFloat } from "../../ts/components/input_float";
 import { Switch } from "../../ts/components/switch";
 import { InputPassword } from "../../ts/components/input_password";
-import { Slash } from "react-feather";
 import { EVSE_SLOT_USER } from "../evse_common/api";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
-import { Check } from "react-feather";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Slash, Check, Users as UsersSymbol } from "react-feather";
+
+export function UsersNavbar() {
+    return <NavbarItem name="users" title={__("users.navbar.users")} symbol={<UsersSymbol />} />;
+}
 
 type User = (API.getType['users/config']['users'][0]) & {password: string, is_invalid: number};
 type UsersConfig = Omit<API.getType['users/config'], 'users'> & {users: User[]};
@@ -333,7 +337,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         let user_slot_allowed = state.users.length > 1;
 
         return (
-            <SubPage>
+            <SubPage name="users">
                 <ConfigForm id="users_config_form" title={__("users.content.users")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save}
                     onReset={this.reset}
                     onDirtyChange={this.setDirty}>
@@ -501,8 +505,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         );
     }
 }
-
-render(<Users />, $("#users")[0]);
 
 export function getAllUsernames() {
     return util.download('/users/all_usernames')

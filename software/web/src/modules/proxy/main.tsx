@@ -20,7 +20,7 @@
 import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { h, render, Fragment } from "preact";
+import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
@@ -31,7 +31,12 @@ import { InputPassword } from "../../ts/components/input_password";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputIP } from "../../ts/components/input_ip";
 import { SubPage } from "../../ts/components/sub_page";
-import { Slash } from "react-feather";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Cpu, Slash } from "react-feather";
+
+export function ProxyNavbar() {
+    return <NavbarItem name="proxy" title={__("proxy.navbar.proxy")} symbol={<Cpu />} />;
+}
 
 interface ProxyState {
     devices: Readonly<API.getType['proxy/devices']>;
@@ -59,7 +64,7 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
             return <></>
 
         return (
-            <SubPage>
+            <SubPage name="proxy">
                 <ConfigForm id="proxy_config_form" title={__("proxy.content.proxy")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("proxy.content.auth_secret")} label_muted={__("proxy.content.auth_secret_muted")}>
                         <InputPassword maxLength={64}
@@ -135,8 +140,6 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
         );
     }
 }
-
-render(<Proxy />, $("#proxy")[0]);
 
 export function init() {
 }

@@ -59,7 +59,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
             return <></>
 
         return (
-            <SubPage>
+            <SubPage name="wifi-ap">
                 <ConfigForm id="wifi_ap_config_form"
                             title={__("wifi.content.ap_settings")}
                             isModified={this.isModified()}

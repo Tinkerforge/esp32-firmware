@@ -18,22 +18,15 @@
  */
 
 import $ from "jquery";
+export { EVSE, EVSENavbar } from "./evse_content";
+export { EVSESettings, EVSESettingsNavbar } from "./evse_settings";
+export { EVSEStatus } from "./evse_status";
 
 export function init() {
 }
-import { h, render } from "preact";
-
-import { EVSE } from "./evse_content";
-import { EVSESettings } from "./evse_settings";
-import { EVSEStatus } from "./evse_status";
-
-render(<EVSE />, $('#evse')[0]);
-
-render(<EVSESettings />, $("#evse-settings")[0]);
 
 export function add_event_listeners() {
 }
-render(<EVSEStatus />, $("#status-evse")[0]);
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-evse').prop('hidden', !module_init.evse_v2 && !module_init.evse);

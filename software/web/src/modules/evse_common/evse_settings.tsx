@@ -29,6 +29,12 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { InputSelect } from "../../ts/components/input_select";
 import { ConfigForm } from "../../ts/components/config_form";
 import { Switch } from "../../ts/components/switch";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Settings } from "react-feather";
+
+export function EVSESettingsNavbar() {
+    return <NavbarItem name="evse-settings" title={__("evse.navbar.evse_settings")} symbol={<Settings />} />;
+}
 
 interface EVSESettingsState {
     button_cfg: API.getType['evse/button_configuration']
@@ -190,7 +196,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                             }}/>
                                     </FormRow>;
 
-        return <SubPage>
+        return <SubPage name="evse-settings">
                 <ConfigForm id="evse_settings" title={__("evse.content.settings")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
                         <Switch desc={__("evse.content.auto_start_enable")}

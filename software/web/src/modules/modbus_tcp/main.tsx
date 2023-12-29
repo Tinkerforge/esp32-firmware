@@ -20,7 +20,7 @@
 import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { h, render, Fragment } from "preact";
+import { h,  Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -30,6 +30,14 @@ import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { EVSE_SLOT_MODBUS_TCP } from "../evse_common/api";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
+import { NavbarItem } from "../../ts/components/navbar_item";
+
+export function ModbusTcpNavbar() {
+    return (
+        <NavbarItem name="modbus_tcp" title={__("modbus_tcp.navbar.modbus_tcp")} symbol={
+            <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><g><g stroke="currentColor"><path d="M19.587 12a7.442 7.442 0 1 1-7.442-7.441A7.441 7.441 0 0 1 19.587 12" fill="#fff" stroke-width="1.674"/><path d="M22.192 16.242a2.79 2.79 0 1 1-2.79-2.79 2.79 2.79 0 0 1 2.79 2.79" fill="#fff" stroke-width="1.674"/><path d="M7.68 16.242a2.79 2.79 0 1 1-2.791-2.79 2.79 2.79 0 0 1 2.79 2.79" fill="#fff" stroke-width="1.674"/><path d="M7.568 7.814a2.79 2.79 0 1 1-2.79-2.79 2.79 2.79 0 0 1 2.79 2.79" fill="#fff" stroke-width="1.674"/><path d="M22.192 7.814a2.79 2.79 0 1 1-2.79-2.79 2.79 2.79 0 0 1 2.79 2.79" fill="#fff" stroke-width="1.674"/><path d="M14.936 20.373a2.79 2.79 0 1 1-2.79-2.79 2.79 2.79 0 0 1 2.79 2.79" fill="#fff" stroke-width="1.674"/><path d="M14.936 3.628a2.79 2.79 0 1 1-2.79-2.79 2.79 2.79 0 0 1 2.79 2.79" fill="#fff" stroke-width="1.674"/><path class="cls-3" d="M5.533 8.44 11.698 12c0-.595.893-.595.894 0l6.165-3.56-.224-.388-6.165 3.56c-.024.032 0-7.119 0-7.119-.094-.006-.446 0-.446 0s.01 7.146 0 7.12L5.755 8.054c-.067.106-.222.386-.222.386z" stroke-width=".5" fill="#000"/><path class="cls-3" d="M18.758 15.56 12.591 12c0 .595-.893.595-.893 0l-6.165 3.56.226.388s6.174-3.578 6.163-3.562v7.121s.426.002.446 0c0 0-.019-7.138 0-7.12l6.168 3.56s.208-.36.222-.387z" stroke-width=".5"/></g></g></svg>
+        } />);
+}
 
 type ModbusTcpConfig = API.getType["modbus_tcp/config"];
 
@@ -76,7 +84,7 @@ export class ModbusTcp extends ConfigComponent<'modbus_tcp/config', {}, config> 
         </CollapsedSection>
 
         return (
-            <SubPage>
+            <SubPage name="modbus_tcp">
                 <ConfigForm id="modbus_tcp_config_form" title={__("modbus_tcp.content.modbus_tcp")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("modbus_tcp.content.enable")}>
                         <InputSelect items={[
@@ -115,8 +123,6 @@ export class ModbusTcp extends ConfigComponent<'modbus_tcp/config', {}, config> 
         );
     }
 }
-
-render(<ModbusTcp />, $("#modbus_tcp")[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {
 }

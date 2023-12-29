@@ -21,7 +21,7 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
-import { h, render, Fragment, Component } from "preact";
+import { h, Fragment, Component, RefObject } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm      } from "../../ts/components/config_form";
 import { FormRow         } from "../../ts/components/form_row";
@@ -29,10 +29,19 @@ import { IndicatorGroup  } from "../../ts/components/indicator_group";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
 import { Switch          } from "../../ts/components/switch";
 import { SubPage } from "../../ts/components/sub_page";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { StatusSection } from "../../ts/components/status_section";
+
+export function EthernetNavbar() {
+    return (
+        <NavbarItem name="ethernet" title={__("ethernet.navbar.ethernet")} symbol={
+            <svg width="24" height="24" fill="currentColor" version="1.1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g transform="matrix(-1 0 0 1 23 1.99)"><path d="m12 9.98 0.0144 4.83c1.65 0 2.2 0.548 2.2 2.2h6.8c1.33 0 1.33 2 3.64e-4 2h-6.8c0 1.65-0.548 2.2-2.2 2.2h-2c-1.65 0-2.2-0.548-2.2-2.2h-6.8c-1.33 0-1.33-2 0-2h6.8c0-1.65 0.548-2.2 2.2-2.2l-0.0082-4.82zm-2.49 7.28-5e-6 1.5c-1.8e-6 0.551 0.199 0.75 0.75 0.75h1.5c0.551 0 0.75-0.199 0.75-0.75l2e-6 -1.5c1e-6 -0.551-0.199-0.75-0.75-0.75h-1.5c-0.551 0-0.75 0.199-0.75 0.75z" stroke-width="1.99"/><g transform="translate(-.981 -.994)" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/></g></g></svg>
+        } />);
+}
 
 type EthernetConfig = API.getType['ethernet/config'];
 
-export class Ethernet extends ConfigComponent<'ethernet/config'> {
+export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: RefObject<EthernetStatus>}> {
     ipconfig_valid: boolean = true;
 
     constructor() {
@@ -54,7 +63,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
             return <></>
 
         return (
-            <SubPage>
+            <SubPage name="ethernet">
                 <ConfigForm id="ethernet_config_form"
                             title={__("ethernet.content.ethernet")}
                             isModified={this.isModified()}
@@ -97,8 +106,6 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
     }
 }
 
-render(<Ethernet />, $("#ethernet")[0]);
-
 export class EthernetStatus extends Component
 {
     render() {
@@ -107,7 +114,7 @@ export class EthernetStatus extends Component
 
         let state = API.get('ethernet/state');
 
-        return <>
+        return <StatusSection name="ethernet">
                 <FormRow label={__("ethernet.status.ethernet_connection")} label_muted={state.ip != "0.0.0.0" ? state.ip : ""} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                     <IndicatorGroup
                         style="width: 100%"
@@ -120,13 +127,12 @@ export class EthernetStatus extends Component
                             ["success", __("ethernet.status.connected")],
                         ]}/>
                 </FormRow>
-            </>
+            </StatusSection>;
     }
 }
 
 export function init() {
 }
-render(<EthernetStatus />, $("#status-ethernet")[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {
 }

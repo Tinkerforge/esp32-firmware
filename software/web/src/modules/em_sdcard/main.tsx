@@ -21,13 +21,19 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
-import { h, render, Fragment, Component } from "preact";
+import { h, Fragment, Component } from "preact";
 import { Button         } from "react-bootstrap";
 import { FormRow        } from "../../ts/components/form_row";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputText      } from "../../ts/components/input_text";
 import { PageHeader     } from "../../ts/components/page_header";
 import { SubPage } from "../../ts/components/sub_page";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Save } from "react-feather";
+
+export function EMSDcardNavbar() {
+    return <NavbarItem name="em_sdcard" title={__("em_sdcard.navbar.em_sdcard")} symbol={<Save />} />;
+}
 
 export class EMSDcard extends Component {
     render() {
@@ -38,7 +44,7 @@ export class EMSDcard extends Component {
 
         if (state.sd_status == 51) { // No card
             return (
-                <SubPage>
+                <SubPage name="em_sdcard">
                     <PageHeader title={__("em_sdcard.content.header")} />
 
                     <IndicatorGroup
@@ -109,7 +115,7 @@ export class EMSDcard extends Component {
         }
 
         return (
-            <SubPage>
+            <SubPage name="em_sdcard">
                 <PageHeader title={__("em_sdcard.content.header")} />
 
                 <FormRow label={__("em_sdcard.content.manufacturer_id")}>
@@ -167,7 +173,6 @@ export class EMSDcard extends Component {
 
 export function init() {
 }
-render(<EMSDcard />, $("#em_sdcard")[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {
 }

@@ -20,7 +20,7 @@
 import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { Fragment, render, h, ComponentChild, toChildArray } from "preact";
+import { h, Fragment, ComponentChild, toChildArray } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { Table, TableRow } from "../../ts/components/table";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -30,7 +30,13 @@ import { __ } from "../../ts/translation";
 import { AutomationTriggerID, AutomationActionID } from "./automation_defs";
 import { Task, AutomationTriggerComponents, AutomationActionComponents } from "./types";
 import { plugins_init } from "./plugins";
-import { SubPage } from "src/ts/components/sub_page";
+import { SubPage } from "../../ts/components/sub_page";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Tool } from "react-feather";
+
+export function AutomationNavbar() {
+    return <NavbarItem name="automation" title={__("automation.navbar.automation")} symbol={<Tool />} />;
+}
 
 const MAX_RULES = 14;
 
@@ -200,7 +206,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
         if (!util.render_allowed())
             return <></>;
 
-        return <SubPage>
+        return <SubPage name="automation">
              <ConfigForm
                 id="automation-config-form"
                 title={__("automation.content.automation")}
@@ -239,8 +245,6 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
         </SubPage>
     }
 }
-
-render(<Automation />, $("#automation")[0]);
 
 export function init() {
     let result = plugins_init();

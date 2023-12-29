@@ -22,9 +22,8 @@ import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 import { METERS_SLOTS } from "../../build";
-import { h, render, Fragment, Component } from "preact";
+import { h, Fragment, Component, RefObject } from "preact";
 import { Button, ButtonGroup, Collapse } from "react-bootstrap";
-import { CheckCircle, Circle } from "react-feather";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm      } from "../../ts/components/config_form";
 import { FormRow         } from "../../ts/components/form_row";
@@ -37,6 +36,13 @@ import { Switch          } from "../../ts/components/switch";
 import { SubPage         } from "../../ts/components/sub_page";
 import { MeterConfig     } from "../meters/types";
 import { MeterClassID    } from "../meters/meters_defs";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { StatusSection } from "../../ts/components/status_section";
+import { CheckCircle, Circle, List } from "react-feather";
+
+export function EnergyManagerNavbar() {
+    return <NavbarItem name="energy_manager" title={__("energy_manager.navbar.energy_manager")} symbol={<List />} />;
+}
 
 type StringStringTuple = [string, string];
 
@@ -104,7 +110,7 @@ export class EnergyManagerStatus extends Component {
         let error_flags_contactor = status.error_flags & 0x00010000;
         let error_flags_network   = status.error_flags & 0x00000002;
 
-        return <>
+        return <StatusSection name="energy_manager">
             <FormRow label={__("energy_manager.status.mode")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                 <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
                     <Button
@@ -217,15 +223,11 @@ export class EnergyManagerStatus extends Component {
             </FormRow>
 
             {this.generate_config_error_labels(pm_status.config_error_flags)}
-        </>
+        </StatusSection>
     }
 }
 
-render(<EnergyManagerStatus />, $("#status-energy_manager")[0]);
-
-export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
-    old_input4_rule_then = -1;
-
+export class EnergyManager extends ConfigComponent<'energy_manager/config', {status_ref?: RefObject<EnergyManagerStatus>}, API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
     // Need to use any here in case the automation module is not available.
     automation_config: any;
 
@@ -407,7 +409,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         let debug_mode = API.hasModule("debug");
 
         return (
-            <SubPage>
+            <SubPage name="energy_manager">
                 <ConfigForm id="energy_manager_config_form" title={__("energy_manager.content.page_header")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
 
                     <FormSeparator heading={__("energy_manager.content.header_phase_switching")} first={true} />
@@ -571,8 +573,6 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         );
     }
 }
-
-render(<EnergyManager />, $("#energy_manager")[0]);
 
 export function init() {
 }

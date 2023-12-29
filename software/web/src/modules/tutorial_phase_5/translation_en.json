@@ -8,11 +8,11 @@
         "content": {
             "tutorial_phase_5": "Tutorial (Phase 5)",
             "color": "Color",
-            "button": "Button",
-            "button_unknown": "Unknown"
+            "button": "Button"
         },
         "script": {
             "save_config_failed": "Could not save color",
+            "button_unknown": "Unknown",
             "button_pressed": "Pressed",
             "button_released": "Released"
         }

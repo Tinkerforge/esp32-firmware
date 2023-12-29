@@ -20,7 +20,7 @@
 import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, render, Fragment, Component } from "preact";
+import { h, Fragment, Component, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
@@ -28,13 +28,19 @@ import { InputText } from "../../ts/components/input_text";
 import { InputDate } from "../../ts/components/input_date";
 import { Button, Collapse, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
-import { BatteryCharging, Calendar, Clock, Download, User } from "react-feather";
 import { getAllUsernames } from "../users/main";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { InputFloat } from "../../ts/components/input_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { useMemo } from "preact/hooks";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { StatusSection } from "../../ts/components/status_section";
+import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
+
+export function ChargeTrackerNavbar() {
+    return <NavbarItem name="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
+}
 
 const MAX_TRACKED_CHARGES = 7680;
 
@@ -55,7 +61,7 @@ interface S {
 
 type ChargeTrackerState = S & API.getType['charge_tracker/state'];
 
-let wallet_icon = <svg class="feather feather-wallet mr-1" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>
+let wallet_icon = <svg width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>
 
 function TrackedCharge(props: {charge: Charge, users: API.getType['users/config']['users'], electricity_price: number}) {
     const display_name = useMemo(
@@ -75,7 +81,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
     );
 
     let have_charge_cost = props.electricity_price > 0 && props.charge.energy_charged != null;
-    let price_div = have_charge_cost ? <div>{wallet_icon}<span style="vertical-align: middle;">{util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span></div> : <></>
+    let price_div = have_charge_cost ? <div>{wallet_icon}<span class="ml-1" style="vertical-align: middle;">{util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span></div> : <></>
 
     return <ListGroupItem>
         <div class="row">
@@ -92,7 +98,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
     </ListGroupItem>
 }
 
-export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, ChargeTrackerState & ChargeTrackerConfig> {
+export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {status_ref?: RefObject<ChargeTrackerStatus>}, ChargeTrackerState & ChargeTrackerConfig> {
     constructor() {
         super('charge_tracker/config',
               __("charge_tracker.script.save_failed"),
@@ -281,7 +287,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
             return <></>
 
         return (
-            <SubPage>
+            <SubPage name="charge_tracker">
                 <ConfigForm id="charge_tracker_config_form" title={__("charge_tracker.content.charge_tracker")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("charge_tracker.content.price")}>
                         <InputFloat class={state.electricity_price == 0 || state.electricity_price >= 100 ? "" : "is-invalid"} value={state.electricity_price} onValue={this.set('electricity_price')} digits={2} unit={'ct/kWh'} max={65535} min={0}/>
@@ -465,8 +471,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
     }
 }
 
-render(<ChargeTracker/>, $('#charge_tracker')[0]);
-
 export class ChargeTrackerStatus extends Component {
     render() {
         if (!util.render_allowed())
@@ -517,14 +521,12 @@ export class ChargeTrackerStatus extends Component {
                 </ListGroup>
             </FormRow>;
 
-    return <>
+        return <StatusSection name="charge_tracker">
                 {current_charge}
                 {last_charges_list}
-        </>;
+            </StatusSection>;
     }
 }
-
-render(<ChargeTrackerStatus />, $("#status-charge_tracker")[0]);
 
 export function init() {}
 

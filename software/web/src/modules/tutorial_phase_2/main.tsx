@@ -18,37 +18,60 @@
  */
 
 import $ from "../../ts/jq";
-
 import * as API from "../../ts/api";
-
-import { h, render } from "preact";
+import * as util from "../../ts/util";
+import { h, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
+import { FormRow } from "../../ts/components/form_row";
+import { SubPage } from "../../ts/components/sub_page";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Box } from "react-feather";
 
-render(<PageHeader title={__("tutorial_phase_2.content.tutorial_phase_2")} />, $('#tutorial_phase_2_header')[0]);
-
-function update_config()
-{
-    // Get current config from state "tutorial_phase_2/config" after receiving
-    // a change from the backend
-    let config = API.get("tutorial_phase_2/config");
-
-    // Update HTML element with current color value
-    $("#tutorial_phase_2_color").val(config.color);
+export function TutorialPhase2Navbar() {
+    return <NavbarItem name="tutorial_phase_2" title={__("tutorial_phase_2.navbar.tutorial_phase_2")} symbol={<Box />} />;
 }
 
-export function init()
-{
+interface TutorialPhase2State {
+    color: string;
 }
 
-export function add_event_listeners(source: API.APIEventTarget)
-{
-    // Create event listener for state "tutorial_phase_2/config" to call the
-    // update_config function if changes to that state are reported.
-    source.addEventListener("tutorial_phase_2/config", update_config);
+export class TutorialPhase2 extends Component<{}, TutorialPhase2State> {
+    constructor() {
+        super();
+
+        this.state = {
+            color: '#00000',
+        } as any;
+
+        // Create event listener for state "tutorial_phase_2/config" to
+        // receive changes to that state
+        util.addApiEventListener('tutorial_phase_2/config', () => {
+            // Get current config from state "tutorial_phase_2/config" after
+            // receiving a change from the backend
+            let config = API.get("tutorial_phase_2/config");
+
+            // Update HTML element with current color value
+            this.setState({color: config.color});
+        });
+    }
+
+    render() {
+        return <SubPage name="tutorial_phase_2">
+                <PageHeader title={__("tutorial_phase_2.content.tutorial_phase_2")} />
+                <FormRow label={__("tutorial_phase_2.content.color")}>
+                    <input class="form-control" type="color" value={this.state.color} />
+                </FormRow>
+            </SubPage>;
+    }
 }
 
-export function update_sidebar_state(module_init: any)
-{
-    $("#sidebar-tutorial-phase-2").prop("hidden", !module_init.tutorial_phase_2);
+export function init() {
+}
+
+export function add_event_listeners(source: API.APIEventTarget) {
+}
+
+export function update_sidebar_state(module_init: any) {
+    $("#sidebar-tutorial_phase_2").prop("hidden", !module_init.tutorial_phase_2);
 }

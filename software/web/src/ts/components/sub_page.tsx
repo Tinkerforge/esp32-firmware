@@ -21,14 +21,17 @@ import { ComponentChildren, h, toChildArray } from "preact";
 
 interface SubPageProps {
     children: ComponentChildren;
+    name: string;
     colClasses?: string;
 }
 
 export function SubPage(props: SubPageProps) {
     return (
-        <div class="row">
-            <div class={props.colClasses === undefined ? "col-xl-8" : props.colClasses}>
-                {toChildArray(props.children)}
+        <div class="tab-pane fade" role="tabpanel" aria-labelledby={`sidebar-${props.name}`} id={props.name}>
+            <div class="row">
+                <div class={props.colClasses === undefined ? "col-xl-8" : props.colClasses}>
+                    {toChildArray(props.children)}
+                </div>
             </div>
         </div>
     )

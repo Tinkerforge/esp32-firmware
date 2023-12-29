@@ -21,7 +21,7 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __, translate_unchecked } from "../../ts/translation";
-import { h, render, Fragment, Component } from "preact";
+import { h, Fragment, Component } from "preact";
 import { Button         } from "react-bootstrap";
 import { FormRow        } from "../../ts/components/form_row";
 import { FormSeparator  } from "../../ts/components/form_separator";
@@ -30,6 +30,12 @@ import { InputText      } from "../../ts/components/input_text";
 import { OutputFloat    } from "../../ts/components/output_float";
 import { PageHeader     } from "../../ts/components/page_header";
 import { SubPage        } from "../../ts/components/sub_page";
+import { NavbarItem } from "../../ts/components/navbar_item";
+import { Terminal } from "react-feather";
+
+export function DebugNavbar() {
+    return <NavbarItem name="debug" title={__("debug.navbar.debug")} symbol={<Terminal />} />;
+}
 
 export class Debug extends Component {
     render() {
@@ -42,7 +48,7 @@ export class Debug extends Component {
         let state_hwm    = API.get('debug/state_hwm');
 
         return (
-            <SubPage>
+            <SubPage name="debug">
                 <PageHeader title={__("debug.content.debug")} />
 
                 <FormRow label={__("debug.content.uptime")}>
@@ -299,7 +305,6 @@ export class Debug extends Component {
 
 export function init() {
 }
-render(<Debug />, $("#debug")[0]);
 
 export function add_event_listeners(source: API.APIEventTarget) {
 }

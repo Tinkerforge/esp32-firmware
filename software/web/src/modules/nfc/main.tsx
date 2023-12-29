@@ -20,7 +20,7 @@
 import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, render, Fragment } from "preact";
+import { h, Fragment } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -30,6 +30,14 @@ import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 import { FormRow } from "../../ts/components/form_row";
+import { NavbarItem } from "../../ts/components/navbar_item";
+
+export function NFCNavbar() {
+    return (
+        <NavbarItem name="nfc" title={__("nfc.navbar.nfc")} symbol={
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor"><g transform="matrix(1.33 0 0 -1.33 -46.7 105)"><g transform="matrix(.0118 0 0 .0118 39.3 61.8)" fill="currentColor"><path d="m5.51 1345-2.79-149c-.457-23.2-5.91-570 .043-726 9.85-253 24.2-393 122-470h227c-10.9 2.55-21.6 5.48-32.4 9.28-150 52.7-176 187-194 474-2.98 49.9-4.48 145-4.48 250 0 108 1.14 225 2.33 315l456-456v179l-573 573"/><path d="m798 55.1 2.79 149c.461 23.2 5.91 570-.046 725-9.84 252-24.2 393-122 470h-227c10.9-2.55 21.7-5.48 32.4-9.27 150-52.7 176-187 194-474 2.98-49.9 4.49-145 4.49-250 0-108-1.15-225-2.34-315l-456 456v-179l573-573"/></g></g></svg>
+        } />);
+}
 
 type NFCConfig = API.getType['nfc/config'];
 
@@ -112,7 +120,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
             }
 
         return (
-            <SubPage>
+            <SubPage name="nfc">
                 <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <div class="mb-3">
                         <Table
@@ -230,8 +238,6 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
         );
     }
 }
-
-render(<NFC />, $("#nfc")[0]);
 
 export function init() {
 }
