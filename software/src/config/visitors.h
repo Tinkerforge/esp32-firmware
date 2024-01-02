@@ -210,26 +210,26 @@ static size_t estimate_chars_per_uint(uint32_t v) {
 #if !defined(__XTENSA_EL__) || __XTENSA_EL__ != 1
     // __builtin_clz(v) is undefined for v == 0. Set the lowest bit to work around that.
     // The workaround is not neccessary on Xtensa, which uses the NSAU instruction that handles 0 correctly.
-	v |= 1;
+    v |= 1;
 #endif
 
-	return leading_zeros_to_char_count[__builtin_clz(v)];
+    return leading_zeros_to_char_count[__builtin_clz(v)];
 }
 
 // Never underestimates length. Overestimates by 0.23 chars on average.
 // Tested against the returned length of snprintf([...],"%d") for every 32 bit number.
 static size_t estimate_chars_per_int(int32_t v) {
-	uint32_t sign = (static_cast<uint32_t>(v)) >> 31;
+    uint32_t sign = (static_cast<uint32_t>(v)) >> 31;
 
-	v = v ^ (v >> 31); // Approximate abs(v). Negative values are off by 1, which doesn't matter for the estimation.
+    v = v ^ (v >> 31); // Approximate abs(v). Negative values are off by 1, which doesn't matter for the estimation.
 
 #if !defined(__XTENSA_EL__) || __XTENSA_EL__ != 1
     // __builtin_clz(v) is undefined for v == 0. Set the lowest bit to work around that.
     // The workaround is not neccessary on Xtensa, which uses the NSAU instruction that handles 0 correctly.
-	v |= 1;
+    v |= 1;
 #endif
 
-	return leading_zeros_to_char_count[__builtin_clz(static_cast<uint32_t>(v))] + sign;
+    return leading_zeros_to_char_count[__builtin_clz(static_cast<uint32_t>(v))] + sign;
 }
 
 struct max_string_length_visitor {
