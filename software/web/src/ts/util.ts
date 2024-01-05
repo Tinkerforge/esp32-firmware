@@ -33,30 +33,6 @@ export function reboot() {
     API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
 }
 
-export function update_button_group(button_group_id: string, index_to_select: number, text_replacement?: string) {
-    let buttons = $(`#${button_group_id} :button`);
-    let color_suffixes = Array(buttons.length);
-    for (let i = 0; i < buttons.length; ++i) {
-        let classes = buttons[i].classList;
-        for (let j = 0; j < classes.length; ++j) {
-            if (classes[j].substring(0, 4) != "btn-")
-                continue
-            let splt = classes[j].split("-");
-            color_suffixes[i] = splt[splt.length - 1];
-        }
-    }
-
-    for (let i = 0; i < buttons.length; ++i) {
-        buttons[i].classList.remove("btn-" + color_suffixes[i]);
-        buttons[i].classList.add("btn-outline-" + color_suffixes[i]);
-    }
-
-    buttons[index_to_select].classList.remove("btn-outline-" + color_suffixes[index_to_select]);
-    buttons[index_to_select].classList.add("btn-" + color_suffixes[index_to_select]);
-    if (text_replacement != null)
-        buttons[index_to_select].innerHTML = text_replacement;
-}
-
 export function add_alert(id: string, cls: string, title: string, text: string) {
     let to_add = `<div id="alert_${id}" class="alert ${cls} alert-dismissible fade show custom-alert" role="alert" style="line-height: 1.5rem;">
     <strong>${title}</strong> ${text}
@@ -162,32 +138,6 @@ export function setNumericInput(id: string, i: number, fractionDigits: number) {
         (document.getElementById(id) as HTMLInputElement).value = toLocaleFixed(i, fractionDigits);
     } else {
         (document.getElementById(id) as HTMLInputElement).value = i.toFixed(fractionDigits);
-    }
-}
-
-export function toggle_password_fn(input_name: string) {
-    return (ev: Event) => {
-        let input = $(input_name)[0] as HTMLInputElement;
-        let x = ev.target as HTMLInputElement;
-
-        if (x.checked)
-            input.type = 'text';
-        else
-            input.type = 'password';
-    }
-}
-
-export function clear_password_fn(input_name: string, to_be_cleared: string = __("util.to_be_cleared"), unchanged: string = __("util.unchanged")) {
-    return (ev: Event) => {
-        let x = ev.target as HTMLInputElement;
-        if (x.checked) {
-            $(input_name).val('');
-            $(input_name).attr('placeholder', to_be_cleared);
-        } else {
-            $(input_name).attr('placeholder', unchanged);
-        }
-
-        $(input_name).prop("disabled", x.checked);
     }
 }
 
@@ -351,23 +301,6 @@ export function whenLoggedInElseReload(continuation: () => void) {
         RECONNECT_TIME);
 
     ifLoggedInElseReload(() => {clearTimeout(loginReconnectTimeout); continuation();});
-}
-
-// Password inputs use the empty string as the "unchanged" value.
-// However the API expects a null value if the value should not be changed.
-// If the input is disabled, the clear toggle was set.
-// Return an empty string to remove the stored password in this case.
-export function passwordUpdate(input_selector: string) {
-    let input = $(input_selector);
-    if (input.length == 0) {
-        console.error(`Input with selector ${input_selector} not found.`);
-    }
-    if (input.attr("disabled"))
-        return "";
-
-    let value = input.val().toString();
-
-    return value.length > 0 ? value : null;
 }
 
 function iso8601ButLocal(date: Date) {

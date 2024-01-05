@@ -84,8 +84,6 @@ let x = {
         "reboot_text": "The web interface will be reloaded automatically after the restart.",
         "event_connection_lost_title": null,
         "event_connection_lost": "Connection will be reestablished...",
-        "to_be_cleared": "Will be cleared on save.",
-        "unchanged": "Unchanged",
 
         "upload_abort": "Upload aborted",
         "upload_error": "Upload error",

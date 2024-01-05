@@ -84,8 +84,6 @@ let x = {
         "reboot_text": "Das Webinterface wird nach dem Neustart automatisch neu geladen.",
         "event_connection_lost_title": null,
         "event_connection_lost": "Verbindung wird wiederhergestellt...",
-        "to_be_cleared": "Wird beim Speichern geleert",
-        "unchanged": "Unverändert",
 
         "upload_abort": "Upload abgebrochen",
         "upload_error": "Fehler beim Hochladen",
