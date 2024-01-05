@@ -154,8 +154,9 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         //        and doesn't receive an initial shown event because of that
         this.visible = this.props.sidebar_id === "status";
 
-        // We have to use jquery here or else the events don't fire?
-        // This can be removed once the sidebar is ported to preact.
+        // FIXME: Bootstrap 4.x only provides jQuery events. We need to port
+        //        to Bootstrap 5.x before we can remove jQuery completly
+        //        https://getbootstrap.com/docs/5.0/getting-started/javascript/
         $(`#sidebar-${this.props.sidebar_id}`).on('shown.bs.tab', () => {
             this.visible = true;
 
@@ -164,6 +165,9 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             }
         });
 
+        // FIXME: Bootstrap 4.x only provides jQuery events. We need to port
+        //        to Bootstrap 5.x before we can remove jQuery completly
+        //        https://getbootstrap.com/docs/5.0/getting-started/javascript/
         $(`#sidebar-${this.props.sidebar_id}`).on('hidden.bs.tab', () => {
             this.visible = false;
         });

@@ -38,9 +38,10 @@ export class NavbarGroup extends Component<NavbarGroupProps, {}> {
         props.symbol.props.class = "col-auto";
     }
 
-
     componentDidMount() {
-        // FIXME: we have to use jquery here or else the events don't fire?
+        // FIXME: Bootstrap 4.x only provides jQuery events. We need to port
+        //        to Bootstrap 5.x before we can remove jQuery completly
+        //        https://getbootstrap.com/docs/5.0/getting-started/javascript/
         $(`#${this.props.name}-group`).on('hide.bs.collapse', () => this.chevron_ref.current.classList.remove("rotated-chevron"));
         $(`#${this.props.name}-group`).on('show.bs.collapse', () => this.chevron_ref.current.classList.add("rotated-chevron"));
     }
