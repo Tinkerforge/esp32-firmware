@@ -23,7 +23,7 @@ interface NavbarItemProps {
     name: string;
     title: string;
     symbol: h.JSX.Element;
-    hidden?: boolean;
+    hidden?: boolean; // default: true
 }
 
 export function NavbarItem(props: NavbarItemProps) {
