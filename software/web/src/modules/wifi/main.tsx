@@ -106,9 +106,11 @@ export class WifiStatus extends Component<{}, WifiStatusState> {
     }
 }
 
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function init() {
+}
 
-export function init() {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
 export function update_sidebar_state(module_init: any) {
     document.getElementById("sidebar-wifi-sta").hidden = !module_init.wifi;

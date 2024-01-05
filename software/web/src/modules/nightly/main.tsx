@@ -32,6 +32,8 @@ export function init() {
     parent.after(target);
 }
 
-export function add_event_listeners(source: API.APIEventTarget) {}
+export function add_event_listeners(source: API.APIEventTarget) {
+}
 
-export function update_sidebar_state(module_init: any) {}
+export function update_sidebar_state(module_init: any) {
+}
