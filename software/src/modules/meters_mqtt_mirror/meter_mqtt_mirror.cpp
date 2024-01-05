@@ -87,6 +87,11 @@ void MeterMqttMirror::handle_mqtt_value_ids(const JsonArrayConst &array)
         return;
     }
 
+    if (array_size == 0) {
+        logger.printfln("meter_mqtt_mirror: Ignoring zero-length value IDs update.");
+        return;
+    }
+
     MeterValueID value_ids[METERS_MAX_VALUES_PER_METER];
     size_t index = 0;
     // Use iterator because each getElement(index) call has a complexity of O(n).
