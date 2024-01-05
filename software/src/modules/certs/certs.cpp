@@ -24,8 +24,6 @@
 
 #include "LittleFS.h"
 
-#include "modules.h"
-
 #include <mbedtls/pem.h>
 #include <mbedtls/error.h>
 
@@ -117,7 +115,7 @@ void Certs::update_state() {
         if (!LittleFS.exists(path) || !LittleFS.exists(path + "_name"))
             continue;
 
-        auto new_cfg = certs.state.get("certs")->add();
+        auto new_cfg = state.get("certs")->add();
         new_cfg->get("id")->updateUint(i);
 
         File f = LittleFS.open(path + "_name", "r");
