@@ -19,7 +19,7 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { h, Fragment } from "preact";
+import { h, Fragment, Component } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { OutputDatetime } from "../../ts/components/output_datetime";
 import { FormRow } from "../../ts/components/form_row";
@@ -30,8 +30,22 @@ import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Watch } from "react-feather";
 
-export function RtcNavbar() {
-    return <NavbarItem name="rtc" title={__("rtc.navbar.rtc")} symbol={<Watch />} />;
+export class RtcNavbar extends Component<{}, {hidden: boolean}> {
+    constructor() {
+        super();
+
+        this.state = {
+            hidden: true
+        } as any;
+
+        util.addApiEventListener("info/features", () => {
+            this.setState({hidden: !API.hasFeature("rtc")});
+        });
+    }
+
+    render() {
+        return <NavbarItem name="rtc" title={__("rtc.navbar.rtc")} symbol={<Watch />} hidden={this.state.hidden} />;
+    }
 }
 
 type RTCTime = API.getType['rtc/time'];
@@ -129,7 +143,6 @@ export function init() {
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('info/features', () => document.getElementById("sidebar-rtc").hidden = !API.hasFeature('rtc'));
 }
 
 export function update_sidebar_state(module_init: any) {
