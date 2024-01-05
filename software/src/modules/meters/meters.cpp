@@ -486,6 +486,24 @@ bool Meters::meter_has_value_changed(uint32_t slot, micros_t max_age_us)
     return !deadline_elapsed(meter_slots[slot].values_last_changed_at + max_age_us);
 }
 
+MeterValueAvailability Meters::get_values(uint32_t slot, const Config **values, micros_t max_age)
+{
+    if (slot >= METERS_SLOTS) {
+        *values = nullptr;
+        return MeterValueAvailability::Unavailable;
+    }
+
+    const MeterSlot &meter_slot = meter_slots[slot];
+
+    *values = &meter_slot.values;
+
+    if (max_age != 0_usec && deadline_elapsed(meter_slot.values_last_updated_at + max_age)) {
+        return MeterValueAvailability::Stale;
+    } else {
+        return MeterValueAvailability::Fresh;
+    }
+}
+
 MeterValueAvailability Meters::get_value_by_index(uint32_t slot, uint32_t index, float *value_out, micros_t max_age)
 {
     if (slot >= METERS_SLOTS || index == UINT32_MAX) {
