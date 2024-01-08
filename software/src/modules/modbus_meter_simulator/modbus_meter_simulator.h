@@ -25,6 +25,9 @@
 
 #include "config.h"
 #include "module.h"
+#include "modules/event/event.h"
+
+#define MODBUS_METER_SIMULATOR_REGISTER_COUNT 196
 
 class ModbusMeterSimulator final : public IModule
 {
@@ -33,10 +36,14 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
 
 private:
     void setupRS485();
     void checkRS485State();
+
+    EventResult on_value_ids_change(const Config *value_ids);
+    uint32_t register_address2cached_index(uint32_t register_address);
 
     void modbus_slave_write_multiple_registers_request_handler(uint8_t request_id, uint32_t starting_address, uint16_t *registers, uint16_t registers_length);
     void modbus_slave_read_holding_registers_request_handler(uint8_t request_id, uint32_t starting_address, uint16_t count);
@@ -47,6 +54,9 @@ private:
     TF_RS485 bricklet;
 
     uint16_t write_registers_callback_buffer[123];
+
+    uint32_t source_meter_slot = UINT32_MAX;
+    uint32_t value_index_cache[MODBUS_METER_SIMULATOR_REGISTER_COUNT];
 
     uint16_t meter_id = 0;
     float system_type = 3.0f;

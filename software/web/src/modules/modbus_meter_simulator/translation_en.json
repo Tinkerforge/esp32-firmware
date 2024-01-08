@@ -9,7 +9,8 @@
             "page_header": "Modbus Meter Simulator",
             "meter_type": "Meter type",
             "meter_type_muted": "of simulated meter",
-            "meter_type_no_meter": "No meter"
+            "meter_type_no_meter": "No meter",
+            "source_meter_slot": "Source meter"
         },
         "script": {
             "save_failed": "Failed to save Modbus meter simulator settings.",

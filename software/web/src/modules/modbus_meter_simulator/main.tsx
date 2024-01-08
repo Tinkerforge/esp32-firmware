@@ -21,6 +21,7 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
+import { METERS_SLOTS } from "../../build";
 import { h, render, Fragment } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm      } from "../../ts/components/config_form";
@@ -37,7 +38,15 @@ export class ModbusMeterSimulator extends ConfigComponent<'modbus_meter_simulato
 
     render(props: {}, s: Readonly<API.getType['modbus_meter_simulator/config']>) {
         if (!util.render_allowed())
-            return <></>
+            return <></>;
+
+        let meter_names: [string, string][] = [];
+        for (let i = 0; i < METERS_SLOTS; i++) {
+            const meter = API.get_unchecked(`meters/${i}/config`);
+            if (meter[1]) {
+                meter_names.push([i.toString(), meter[1].display_name]);
+            }
+        }
 
         return <SubPage>
             <ConfigForm id="modbus_meter_simulator_config_form" title={__("modbus_meter_simulator.content.page_header")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
@@ -54,6 +63,14 @@ export class ModbusMeterSimulator extends ConfigComponent<'modbus_meter_simulato
                         ]}
                         value={s.meter_type}
                         onValue={(v) => this.setState({meter_type: parseInt(v)})}
+                    />
+                </FormRow>
+
+                <FormRow label={__("modbus_meter_simulator.content.source_meter_slot")}>
+                    <InputSelect
+                        items={meter_names}
+                        value={s.source_meter_slot}
+                        onValue={(v) => this.setState({source_meter_slot: parseInt(v)})}
                     />
                 </FormRow>
 

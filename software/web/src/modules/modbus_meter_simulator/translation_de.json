@@ -9,7 +9,8 @@
             "page_header": "Modbus Meter Simulator",
             "meter_type": "Zählertyp",
             "meter_type_muted": "des simulierten Zählers",
-            "meter_type_no_meter": "Kein Zähler"
+            "meter_type_no_meter": "Kein Zähler",
+            "source_meter_slot": "Zähler für Werte-Ursprung"
         },
         "script": {
             "save_failed": "Speichern der Modbus Meter Simulator-Einstellungen fehlgeschlagen.",

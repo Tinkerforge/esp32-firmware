@@ -25,24 +25,23 @@ extern TF_HAL hal;
 
 #include "api.h"
 #include "event_log.h"
+#include "modules/meters/sdm_helpers.h"
 #include "task_scheduler.h"
+#include "tools.h"
 
-#include "modules/modbus_meter/meter_defs.h"
-#include "modules/modbus_meter/sdm630_defs.h"
-#include "modules/modbus_meter/sdm72dmv2_defs.h"
-#include "modules/modbus_meter/sdm72dm_defs.h"
+#include "modules/meters_rs485_bricklet/meter_defs.h"
 
 #include "gcc_warnings.h"
 
-static uint8_t addr2values[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,255,22,23,255,24,255,25,255,26,27,255,28,255,29,30,31,32,33,34,35,36,37,255,255,255,255,255,255,38,39,40,41,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,42,43,44,45,255,255,255,255,255,255,255,255,46,255,255,255,255,47,48,49,50,51,52,255,53,54,255,255,255,55,56,57,58,59,60,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84};
+static const uint8_t addr2values[MODBUS_METER_SIMULATOR_REGISTER_COUNT] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,255,22,23,255,24,255,25,255,26,27,255,28,255,29,30,31,32,33,34,35,36,37,255,255,255,255,255,255,38,39,40,41,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,42,43,44,45,255,255,255,255,255,255,255,255,46,255,255,255,255,47,48,49,50,51,52,255,53,54,255,255,255,55,56,57,58,59,60,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,255,85,255,86,87};
 
-static MeterInfo *supported_meters[] = {
-    nullptr,
-    &sdm72dm,
-    &sdm630,
-    &sdm72dmv2,
-    nullptr,
-    nullptr,
+static const uint16_t supported_meter_ids[] = {
+    0,      // None
+    0x0200, // SDM72
+    0x0070, // SDM630
+    0x0089, // SDM72v2
+    0,      // SDM72CTM?
+    0x0079, // SDM630MCTv2
 };
 
 static void convert_float_to_regs(uint16_t *regs, float floatval)
@@ -58,22 +57,11 @@ static void convert_float_to_regs(uint16_t *regs, float floatval)
     regs[0] = value.regs[1];
 }
 
-static uint16_t register_address2all_values_position(uint32_t register_address)
-{
-    if (register_address == 0)
-        return 255;
-
-    uint32_t index = (register_address - 1) / 2;
-    if (index >= ARRAY_SIZE(addr2values))
-        return 255;
-
-    return addr2values[index];
-}
-
 void ModbusMeterSimulator::pre_setup()
 {
     config = Config::Object({
-        {"meter_type", Config::Uint8(METER_TYPE_NONE)}
+        {"meter_type",        Config::Uint8(METER_TYPE_NONE)},
+        {"source_meter_slot", Config::Uint(0, 0, METERS_SLOTS - 1)},
     });
 }
 
@@ -82,20 +70,20 @@ void ModbusMeterSimulator::setup()
     api.restorePersistentConfig("modbus_meter_simulator/config", &config);
 
     uint32_t meter_type = config.get("meter_type")->asUint();
-    MeterInfo *meter_info = nullptr;
-    if (meter_type < ARRAY_SIZE(supported_meters))
-        meter_info = supported_meters[meter_type];
-
-    if (meter_info) {
-        meter_id = meter_info->meter_id;
-    } else {
-        if (meter_type == METER_TYPE_SDM630MCTV2)
-            meter_id = 0x0079;
+    if (meter_type < ARRAY_SIZE(supported_meter_ids)) {
+        meter_id = supported_meter_ids[meter_type];
     }
 
     if (meter_id == 0) {
         logger.printfln("modbus_meter_simulator: Unsupported meter type %u. Disabling simulator.", meter_type);
+        initialized = true; // Mark as initialized so that the front-end shows up.
         return;
+    }
+
+    source_meter_slot = config.get("source_meter_slot")->asUint();
+
+    for (size_t i = 0; i < ARRAY_SIZE(value_index_cache); i++) {
+        value_index_cache[i] = UINT32_MAX;
     }
 
     setupRS485();
@@ -110,6 +98,23 @@ void ModbusMeterSimulator::setup()
 void ModbusMeterSimulator::register_urls()
 {
     api.addPersistentConfig("modbus_meter_simulator/config", &config, {}, 1000);
+}
+
+void ModbusMeterSimulator::register_events()
+{
+    if (source_meter_slot >= METERS_SLOTS)
+        return;
+
+    String value_ids_path = meters.get_path(source_meter_slot, Meters::PathType::ValueIDs);
+
+    const Config *old_value_ids = api.getState(value_ids_path);
+    if (old_value_ids->count() > 0) {
+        on_value_ids_change(old_value_ids);
+    } else {
+        event.registerEvent(value_ids_path, {}, [this](const Config *event_value_ids) {
+            return on_value_ids_change(event_value_ids);
+        });
+    }
 }
 
 void ModbusMeterSimulator::setupRS485()
@@ -194,6 +199,39 @@ void ModbusMeterSimulator::checkRS485State()
     }
 }
 
+EventResult ModbusMeterSimulator::on_value_ids_change(const Config *value_ids)
+{
+    if (value_ids->count() == 0) {
+        return EventResult::OK;
+    }
+
+    uint32_t index_cache_compact[ARRAY_SIZE(sdm_helper_all_ids)];
+    meters.fill_index_cache(source_meter_slot, ARRAY_SIZE(sdm_helper_all_ids), sdm_helper_all_ids, index_cache_compact);
+
+    for (size_t i = 0; i < MODBUS_METER_SIMULATOR_REGISTER_COUNT; i++) {
+        uint32_t compact_index = addr2values[i];
+        if (compact_index >= ARRAY_SIZE(index_cache_compact)) {
+            value_index_cache[i] = UINT32_MAX;
+        } else {
+            value_index_cache[i] = index_cache_compact[compact_index];
+        }
+    }
+
+    return EventResult::Deregister;
+}
+
+uint32_t ModbusMeterSimulator::register_address2cached_index(uint32_t register_address)
+{
+    if (register_address == 0)
+        return UINT32_MAX;
+
+    uint32_t index = (register_address - 1) / 2;
+    if (index >= ARRAY_SIZE(value_index_cache))
+        return UINT32_MAX;
+
+    return value_index_cache[index];
+}
+
 void ModbusMeterSimulator::modbus_slave_write_multiple_registers_request_handler(uint8_t request_id, uint32_t starting_address, uint16_t *registers, uint16_t registers_length)
 {
     if ((starting_address == 15 || starting_address == 25) || registers_length == 2) {
@@ -232,35 +270,21 @@ void ModbusMeterSimulator::modbus_slave_read_holding_registers_request_handler(u
 
 void ModbusMeterSimulator::modbus_slave_read_input_registers_request_handler(uint8_t request_id, uint32_t starting_address, uint16_t count)
 {
-    if (count != 2) {
+    uint16_t regs[125];
+
+    if (count > ARRAY_SIZE(regs)) {
         logger.printfln("modbus_meter_simulator: Received unexpected read_input_registers request to address %u with length %u", starting_address, count);
         return;
     }
 
-    float float_val;
-
-    if (starting_address == 53) {
-        float_val = meter.values.get("power")->asFloat();
-    } else {
-        uint16_t all_values_position = register_address2all_values_position(starting_address);
-
-        // Don't trust all_values or all_values position. get() returns nullptr when OOB.
-        Config *val = static_cast<Config *>(meter.all_values.get(all_values_position));
-        if (!val) {
-            if (meter.all_values.count() == 0) {
-                logger.printfln("modbus_meter_simulator: Don't have any values yet. Ignore the previous config index out of range message.");
-            } else {
-                logger.printfln("modbus_meter_simulator: Don't have a value for input register address %u at index %u", starting_address, all_values_position);
-            }
-            return;
-        }
-        float_val = val->asFloat();
+    for (uint32_t offset = 0; offset < count; offset += 2) {
+        uint32_t cached_index = register_address2cached_index(starting_address + offset);
+        float float_val;
+        meters.get_value_by_index(source_meter_slot, cached_index, &float_val);
+        convert_float_to_regs(regs + offset, float_val);
     }
 
-    uint16_t regs[2];
-    convert_float_to_regs(regs, float_val);
-
-    int rc = tf_rs485_modbus_slave_answer_read_input_registers_request(&bricklet, request_id, regs, 2);
+    int rc = tf_rs485_modbus_slave_answer_read_input_registers_request(&bricklet, request_id, regs, count);
     if (rc != TF_E_OK)
         logger.printfln("modbus_meter_simulator: Answering read input registers request failed with code %i", rc);
 }
