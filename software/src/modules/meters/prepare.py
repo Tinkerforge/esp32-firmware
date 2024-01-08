@@ -295,6 +295,8 @@ for i, name in enumerate(classes):
 
 # Unofficial meter classes
 class_values.append('    {0} = {1},\n'.format(util.FlavoredName('Mqtt Mirror').get().camel, 200))
+class_values.append('    {0} = {1},\n'.format(util.FlavoredName('Pv Faker'   ).get().camel, 201))
+class_values.append('    {0} = {1},\n'.format(util.FlavoredName('Meta'       ).get().camel, 202))
 
 with open('meters_defs.h', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
