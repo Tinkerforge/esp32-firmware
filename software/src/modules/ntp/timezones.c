@@ -1,5 +1,5 @@
 /*
-2023c;2023-04-17T11:04:15.530032
+2023d;2024-01-09T10:00:36.861407
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -496,7 +496,7 @@ static const TableValue America_vals[] = {
     {true, {"<-04>4<-03>,M9.1.6/24,M4.1.6/24"}},
     {true, {"AST4"}},
     {true, {"<-03>3"}},
-    {true, {"<-01>1<+00>,M3.5.0/0,M10.5.0/1"}},
+    {true, {"<-02>2<-01>,M3.5.0/-1,M10.5.0/0"}},
     {true, {"MST7MDT,M3.2.0,M11.1.0"}},
     {true, {"AKST9AKDT,M3.2.0,M11.1.0"}},
     {true, {"AST4"}},
@@ -538,7 +538,7 @@ static const char * const Antarctica_keys[] = {
 };
 
 static const TableValue Antarctica_vals[] = {
-    {true, {"<+11>-11"}},
+    {true, {"<+08>-8"}},
     {true, {"<+07>-7"}},
     {true, {"<+10>-10"}},
     {true, {"AEST-10AEDT,M10.1.0,M4.1.0/3"}},
@@ -549,7 +549,7 @@ static const TableValue Antarctica_vals[] = {
     {true, {"NZST-12NZDT,M9.5.0,M4.1.0/3"}},
     {true, {"<+03>-3"}},
     {true, {"<+00>0<+02>-2,M3.5.0/1,M10.5.0/3"}},
-    {true, {"<+06>-6"}},
+    {true, {"<+05>-5"}},
 };
 
 static const Table Antarctica = {Antarctica_keys, Antarctica_vals, 12};
