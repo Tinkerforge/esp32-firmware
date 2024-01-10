@@ -225,10 +225,10 @@ class UplotLoader extends Component<UplotLoaderProps, {}> {
         this.loading_ref.current.style.display = show ? 'flex' : 'none';
     }
 
-    set_data(data: UplotData) {
+    set_data(data: UplotData, visible?: boolean) {
         this.loading_ref.current.style.visibility = 'hidden';
 
-        if (!data || data.keys.length <= 1) {
+        if (visible === false || (visible === undefined && (!data || data.keys.length <= 1))) {
             this.no_data_ref.current.style.visibility = 'inherit';
         }
         else {
@@ -546,7 +546,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
         };
     }
 
-    set_data(data: UplotData) {
+    set_data(data: UplotData, visible?: boolean) {
         if (!this.uplot || !this.visible) {
             this.pending_data = data;
             return;
@@ -555,7 +555,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
         this.data = data;
         this.pending_data = undefined;
 
-        if (!this.data || this.data.keys.length <= 1) {
+        if (visible === false || (visible === undefined && (!this.data || this.data.keys.length <= 1))) {
             this.div_ref.current.style.visibility = 'hidden';
 
             if (this.props.legend_div_ref.current) {
@@ -1083,7 +1083,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         }
     }
 
-    set_data(data: UplotData) {
+    set_data(data: UplotData, visible?: boolean) {
         if (!this.uplot || !this.visible) {
             this.pending_data = data;
             return;
@@ -1092,7 +1092,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
         this.data = data;
         this.pending_data = undefined;
 
-        if (!this.data || this.data.keys.length <= 1) {
+        if (visible === false || (visible === undefined && (!this.data || this.data.keys.length <= 1))) {
             this.div_ref.current.style.visibility = 'hidden';
 
             if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
@@ -2685,9 +2685,41 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let data_power = this.uplot_5min_power_cache[key];
                 let data_flags = this.uplot_5min_flags_cache[key];
 
-                this.uplot_loader_5min_ref.current.set_data(data_flags);
-                this.uplot_wrapper_5min_power_ref.current.set_data(data_power);
-                this.uplot_wrapper_5min_flags_ref.current.set_data(data_flags);
+                let visible_flags = data_flags !== undefined && data_flags.keys.length > 1;
+                let visible_power = data_power !== undefined && data_power.keys.length > 1;
+                let visible = visible_flags || visible_power;
+
+                if (visible_flags && !visible_power) {
+                    data_power = {
+                        update_timestamp: null,
+                        use_timestamp: null,
+                        keys: [null],
+                        names: [null],
+                        values: [data_flags.values[0]],
+                        extras: [null],
+                        stacked: [false],
+                        bars: [false],
+                        extra_names: [null],
+                    };
+                }
+
+                if (!visible_flags && visible_power) {
+                    data_flags = {
+                        update_timestamp: null,
+                        use_timestamp: null,
+                        keys: [null],
+                        names: [null],
+                        values: [data_power.values[0]],
+                        extras: [null],
+                        stacked: [false],
+                        bars: [false],
+                        extra_names: [null],
+                    };
+                }
+
+                this.uplot_loader_5min_ref.current.set_data(data_flags, visible);
+                this.uplot_wrapper_5min_power_ref.current.set_data(data_power, visible);
+                this.uplot_wrapper_5min_flags_ref.current.set_data(data_flags, visible);
             }
         }
         else {
