@@ -477,7 +477,7 @@ def main():
         print('Error: Could not get changelog version: {0}'.format(e))
         sys.exit(1)
 
-    build_src_filter = ['+<*>']
+    build_src_filter = ['+<*>', '-<empty.cpp>']
 
     if not os.path.isdir("build"):
         os.makedirs("build")
