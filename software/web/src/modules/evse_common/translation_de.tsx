@@ -193,7 +193,7 @@ let x = {
             "dc_fault_current_6_ma": "DC-Fehler",
             "dc_fault_current_system": "Systemfehler",
             "dc_fault_current_unknown": "Unbekannter Fehler",
-            "dc_fault_current_calibration": /*SFN*/ (dc_fault_state: number, dc_fault_pins: number) => "Kalibrierungsfehler" + (dc_fault_state != 0 ? (": " + dc_fault_pins.toString()) : "")/*NF*/,
+            "dc_fault_current_calibration": /*SFN*/ (dc_fault_state: number, dc_fault_pins: number) => "Kalibrierungsfehler" + (dc_fault_state == 4 ? (": " + dc_fault_pins.toString()) : "")/*NF*/,
             "dc_fault_current_reset": "Zurücksetzen",
             "dc_fault_current_20_ma": "AC-Fehler",
             "dc_fault_current_6_ma_20_ma": "AC- und DC-Fehler",
