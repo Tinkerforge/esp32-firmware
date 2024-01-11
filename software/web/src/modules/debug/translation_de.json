@@ -41,7 +41,7 @@
             "spi_clock": "Taktrate",
             "dummy_cycles": "Füllzyklen",
             "spi_mode": "SPI-Modus",
-            "spi0": "SPI0 (Memory)",
+            "spi0": "SPI0 (Speicher)",
             "spi1": "SPI1",
             "spi2": "SPI2 (HSPI)",
             "spi3": "SPI3 (VSPI)",
