@@ -3,7 +3,7 @@ import { h } from "preact";
 let x = {
     "evse": {
         "status": {
-            "evse": "Vehicle state",
+            "evse": "Charge status",
             "not_connected": "Disconnected",
             "waiting_for_charge_release": "Waiting for release",
             "ready_to_charge": "Ready",
