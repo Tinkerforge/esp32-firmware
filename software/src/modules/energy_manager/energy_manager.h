@@ -90,9 +90,6 @@ public:
 
     [[gnu::const]] const Config * get_config();
 
-    // Called in energy_manager_meter setup
-    void update_all_data();
-
     void limit_max_current(uint32_t limit_ma);
     void reset_limit_max_current();
     void switch_mode(uint32_t new_mode);
@@ -123,6 +120,7 @@ private:
     bool is_error(uint32_t error_bit_pos);
     void set_config_error(uint32_t config_error_mask);
     void check_bricklet_reachable(int rc, const char *context);
+    void update_all_data();
     void update_all_data_struct();
     void update_energy();
 
