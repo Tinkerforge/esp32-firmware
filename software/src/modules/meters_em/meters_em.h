@@ -48,7 +48,7 @@ public:
     [[gnu::const]] virtual const Config *get_state_prototype()  override;
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
-    void update_from_em_all_data(EnergyManagerAllData &all_data);
+    void update_from_em_all_data(const EnergyManagerAllData &all_data);
 
 private:
     Config config_prototype;

@@ -33,7 +33,7 @@ MeterClassID MeterEM::get_class() const
     return MeterClassID::EnergyManager;
 }
 
-void MeterEM::update_from_em_all_data(EnergyManagerAllData &all_data)
+void MeterEM::update_from_em_all_data(const EnergyManagerAllData &all_data)
 {
     // Reject stale data older than five seconds.
     if (deadline_elapsed(all_data.last_update + 5 * 1000))

@@ -48,7 +48,7 @@ public:
     bool supports_reset()         override {return true;}
     bool reset()                  override;
 
-    void update_from_em_all_data(EnergyManagerAllData &all_data);
+    void update_from_em_all_data(const EnergyManagerAllData &all_data);
 private:
     void update_all_values(float *values);
 
