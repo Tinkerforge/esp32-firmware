@@ -189,7 +189,7 @@ void ESP32EthernetBrick::pre_init() {
 void ESP32EthernetBrick::setup()
 {
     read_efuses(&local_uid_num, local_uid_str, passphrase);
-    logger.printfln("ESP32 Ethernet Brick UID: %s", local_uid_str);
+    logger.printfln("%sESP32 Ethernet Brick UID: %s", this->is_warp_esp_ethernet_brick ? "WARP " : "", local_uid_str);
 
 #if defined(BUILD_NAME_ENERGY_MANAGER) && MODULE_FIRMWARE_UPDATE_AVAILABLE()
     check_for_factory_reset();
