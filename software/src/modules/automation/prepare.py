@@ -22,7 +22,7 @@ from software import util
 # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
 triggers = [
     ('None', 0),
-    ('Automation', 1),
+    ('Cron', 1),
     ('IEC Change', 2),
     ('MQTT', 3),
     ('EVSE Button', 4),

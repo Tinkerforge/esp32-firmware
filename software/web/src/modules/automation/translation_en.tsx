@@ -20,7 +20,7 @@ let x = {
             "weekdays": "Weekdays",
             "weekends": "Weekends",
             "month_end": "Month End",
-            "automation_translation_function": /*FFN*/(mday: number, wday: number, hour: number, minute: number) => {
+            "cron_translation_function": /*FFN*/(mday: number, wday: number, hour: number, minute: number) => {
                 const wdays = [
                     "Sundays",
                     "Mondays",

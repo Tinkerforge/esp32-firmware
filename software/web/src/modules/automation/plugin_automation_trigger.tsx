@@ -25,8 +25,8 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
 
-export type RtcAutomationTrigger = [
-    AutomationTriggerID.Automation,
+export type CronAutomationTrigger = [
+    AutomationTriggerID.Cron,
     {
         mday: number;
         wday: number;
@@ -35,9 +35,9 @@ export type RtcAutomationTrigger = [
     },
 ];
 
-function new_rtc_config(): RtcAutomationTrigger {
+function new_cron_config(): CronAutomationTrigger {
     return [
-        AutomationTriggerID.Automation,
+        AutomationTriggerID.Cron,
         {
             mday: -1,
             wday: -1,
@@ -47,11 +47,11 @@ function new_rtc_config(): RtcAutomationTrigger {
     ];
 }
 
-function get_rtc_table_children(trigger: RtcAutomationTrigger) {
-    return __("automation.automation.automation_translation_function")(trigger[1].mday, trigger[1].wday, trigger[1].hour, trigger[1].minute);
+function get_cron_table_children(trigger: CronAutomationTrigger) {
+    return __("automation.automation.cron_translation_function")(trigger[1].mday, trigger[1].wday, trigger[1].hour, trigger[1].minute);
 }
 
-function get_rtc_edit_children(trigger: RtcAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
+function get_cron_edit_children(trigger: CronAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     let hours: [string, string][] = [['-1','*']];
     let minutes: [string, string][] = [['-1','*']];
     let days: [string, string][] = [
@@ -126,12 +126,12 @@ function get_rtc_edit_children(trigger: RtcAutomationTrigger, on_trigger: (trigg
 export function init() {
     return {
         trigger_components: {
-            [AutomationTriggerID.Automation]: {
+            [AutomationTriggerID.Cron]: {
                 name: __("automation.automation.clock"),
-                new_config: new_rtc_config,
+                new_config: new_cron_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_edit_children: get_rtc_edit_children,
-                get_table_children: get_rtc_table_children,
+                get_edit_children: get_cron_edit_children,
+                get_table_children: get_cron_table_children,
             },
         },
     };
