@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import * as API from "../../ts/api";
 import { __ } from "../../ts/translation";
 import { h, ComponentChildren } from "preact";
 import { NavbarGroup } from "../../ts/components/navbar_group";
@@ -25,17 +24,10 @@ import { Settings } from "react-feather";
 
 export function SystemGroupNavbar(props: {children: ComponentChildren}) {
     return (
-        <NavbarGroup name="system" title={__("system_group.navbar.system_group")} symbol={<Settings />}>
+        <NavbarGroup name="system" title={__("system_group.navbar.system_group")} symbol={<Settings />} hidden={false}>
             {props.children}
         </NavbarGroup>);
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-system-group").hidden = false;
 }

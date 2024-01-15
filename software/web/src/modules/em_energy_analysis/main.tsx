@@ -40,7 +40,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { PieChart } from "react-feather";
 
 export function EMEnergyAnalysisNavbar() {
-    return <NavbarItem name="em_energy_analysis" title={__("em_energy_analysis.navbar.em_energy_analysis")} symbol={<PieChart />} />;
+    return <NavbarItem name="em_energy_analysis" module="energy_manager" title={__("em_energy_analysis.navbar.em_energy_analysis")} symbol={<PieChart />} />;
 }
 
 const UPDATE_RETRY_DELAY = 500; // ms
@@ -3004,11 +3004,4 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-em_energy_analysis").hidden = !module_init.energy_manager;
 }

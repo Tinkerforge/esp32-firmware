@@ -40,7 +40,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, List } from "react-feather";
 
 export function EnergyManagerNavbar() {
-    return <NavbarItem name="energy_manager" title={__("energy_manager.navbar.energy_manager")} symbol={<List />} />;
+    return <NavbarItem name="energy_manager" module="energy_manager" title={__("energy_manager.navbar.energy_manager")} symbol={<List />} />;
 }
 
 type StringStringTuple = [string, string];
@@ -574,11 +574,4 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {sta
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-energy_manager").hidden = !module_init.energy_manager;
 }

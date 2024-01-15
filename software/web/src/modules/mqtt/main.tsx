@@ -37,7 +37,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { Rss } from "react-feather";
 
 export function MqttNavbar() {
-    return <NavbarItem name="mqtt" title={__("mqtt.navbar.mqtt")} symbol={<Rss />} />;
+    return <NavbarItem name="mqtt" module="mqtt" title={__("mqtt.navbar.mqtt")} symbol={<Rss />} />;
 }
 
 type MqttConfig = API.getType["mqtt/config"];
@@ -289,11 +289,4 @@ export class MqttStatus extends Component<{}, MqttStatusState> {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-mqtt").hidden = !module_init.mqtt;
 }

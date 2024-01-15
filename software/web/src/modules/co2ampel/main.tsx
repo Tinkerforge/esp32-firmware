@@ -33,7 +33,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { Wind } from "react-feather";
 
 export function Co2AmpelNavbar() {
-    return <NavbarItem name="co2ampel" title={__("co2ampel.navbar.co2ampel")} symbol={<Wind />} />;
+    return <NavbarItem name="co2ampel" module="co2ampel" title={__("co2ampel.navbar.co2ampel")} symbol={<Wind />} />;
 }
 
 type Co2AmpelConfig = API.getType["co2ampel/config"];
@@ -117,11 +117,4 @@ export class Co2AmpelStatus extends Component<{}, Co2AmpelStatusState>
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-co2ampel").hidden = !module_init.co2ampel;
 }

@@ -31,7 +31,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { LogOut } from "react-feather";
 
 export function ModbusMeterSimulatorNavbar() {
-    return <NavbarItem name="modbus_meter_simulator" title={__("modbus_meter_simulator.navbar.entry")} symbol={<LogOut />} />;
+    return <NavbarItem name="modbus_meter_simulator" module="modbus_meter_simulator" title={__("modbus_meter_simulator.navbar.entry")} symbol={<LogOut />} />;
 }
 
 export class ModbusMeterSimulator extends ConfigComponent<'modbus_meter_simulator/config'> {
@@ -85,11 +85,4 @@ export class ModbusMeterSimulator extends ConfigComponent<'modbus_meter_simulato
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-modbus_meter_simulator").hidden = !module_init.modbus_meter_simulator;
 }

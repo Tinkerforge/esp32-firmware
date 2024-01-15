@@ -34,7 +34,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Tool } from "react-feather";
 
 export function AutomationNavbar() {
-    return <NavbarItem name="automation" title={__("automation.navbar.automation")} symbol={<Tool />} />;
+    return <NavbarItem name="automation" module="automation" title={__("automation.navbar.automation")} symbol={<Tool />} />;
 }
 
 const MAX_RULES = 14;
@@ -269,11 +269,4 @@ export function init() {
             }
         }
     }
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-automation").hidden = !module_init.automation;
 }

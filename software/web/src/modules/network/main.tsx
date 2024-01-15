@@ -32,7 +32,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Sliders } from "react-feather";
 
 export function NetworkNavbar() {
-    return <NavbarItem name="network" title={__("network.navbar.network")} symbol={<Sliders />} />;
+    return <NavbarItem name="network" module="network" title={__("network.navbar.network")} symbol={<Sliders />} />;
 }
 
 type NetworkConfig = API.getType["network/config"];
@@ -87,11 +87,4 @@ export class Network extends ConfigComponent<'network/config'> {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-network").hidden = !module_init.network;
 }

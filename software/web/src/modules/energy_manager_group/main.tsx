@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import * as API from "../../ts/api";
 import { __ } from "../../ts/translation";
 import { h, ComponentChildren } from "preact";
 import { NavbarGroup } from "../../ts/components/navbar_group";
@@ -25,17 +24,10 @@ import { Sliders } from "react-feather";
 
 export function EnergyManagerGroupNavbar(props: {children: ComponentChildren}) {
     return (
-        <NavbarGroup name="energy_manager" title={__("energy_manager_group.navbar.energy_manager_group")} symbol={<Sliders />}>
+        <NavbarGroup name="energy_manager" title={__("energy_manager_group.navbar.energy_manager_group")} symbol={<Sliders />} hidden={false}>
             {props.children}
         </NavbarGroup>);
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-energy_manager-group").hidden = false;
 }

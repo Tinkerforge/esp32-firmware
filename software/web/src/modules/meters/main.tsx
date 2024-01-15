@@ -46,7 +46,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { HelpCircle, Zap, ZapOff, ChevronRight, BarChart2 } from "react-feather";
 
 export function MetersNavbar() {
-    return <NavbarItem name="meters" title={__("meters.navbar.meters")} symbol={<BarChart2 />} />;
+    return <NavbarItem name="meters" module="meters" title={__("meters.navbar.meters")} symbol={<BarChart2 />} />;
 }
 
 const PHASE_CONNECTED_VOLTAGE_THRESHOLD = 180.0; // V
@@ -1482,11 +1482,4 @@ export function init() {
             config_plugins[i] = plugins[i];
         }
     }
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-meters").hidden = !module_init.meters;
 }

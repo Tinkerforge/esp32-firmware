@@ -31,7 +31,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Clock } from "react-feather";
 
 export function FirmwareUpdateNavbar() {
-    return <NavbarItem name="flash" title={__("firmware_update.navbar.flash")} symbol={<Clock />} />;
+    return <NavbarItem name="flash" module="firmware_update" title={__("firmware_update.navbar.flash")} symbol={<Clock />} />;
 }
 
 type FirmwareUpdateConfig = API.getType["info/version"];
@@ -210,11 +210,4 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-flash").hidden = !module_init.firmware_update;
 }

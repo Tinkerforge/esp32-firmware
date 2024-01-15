@@ -31,7 +31,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Download, FileText } from "react-feather";
 
 export function EventLogNavbar() {
-    return <NavbarItem name="event_log" title={__("event_log.navbar.event_log")} symbol={<FileText />} />;
+    return <NavbarItem name="event_log" module="event_log" title={__("event_log.navbar.event_log")} symbol={<FileText />} />;
 }
 
 interface EventLogState {
@@ -250,11 +250,4 @@ export class EventLog extends Component<{}, EventLogState> {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-event_log").hidden = !module_init.event_log;
 }

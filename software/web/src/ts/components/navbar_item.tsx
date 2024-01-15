@@ -17,22 +17,62 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, ComponentChildren } from "preact";
+import * as API from "../api";
+import * as util from "../util";
+import { h, Component } from "preact";
 
 interface NavbarItemProps {
     name: string;
+    module?: string;
     title: string;
     symbol: h.JSX.Element;
-    hidden?: boolean; // default: true
+    hidden?: boolean;
 }
 
-export function NavbarItem(props: NavbarItemProps) {
-    return (
-        <li class="nav-item">
-            <a id={`sidebar-${props.name}`} class="nav-link" data-toggle="tab" role="tab" aria-controls={props.name} aria-selected="true" href={`#${props.name}`} hidden={props.hidden === undefined ? true : props.hidden}>
-                {props.symbol}
-                <span style="margin-left: 8px;">{props.title}</span>
-            </a>
-        </li>
-    );
+interface NavbarItemState {
+    hidden?: boolean;
+}
+
+export class NavbarItem extends Component<NavbarItemProps, NavbarItemState> {
+    constructor(props: NavbarItemProps) {
+        super(props);
+
+        this.state = {
+            hidden: undefined
+        } as any;
+
+        if (props.module !== undefined) {
+            util.addApiEventListener("info/modules", () => {
+                this.setState({hidden: !API.hasModule(props.module)});
+            });
+        }
+    }
+
+    render() {
+        // look at module state first, if module was given
+        let hidden: boolean = this.state.hidden;
+
+        if (this.props.hidden === true) {
+            // forced hide overrides module state
+            hidden = true;
+        }
+        else if (this.props.hidden === false && hidden === undefined) {
+            // forced show does not override module state
+            hidden = false;
+        }
+
+        if (hidden === undefined) {
+            // hidden by default
+            hidden = true;
+        }
+
+        return (
+            <li class="nav-item">
+                <a id={`sidebar-${this.props.name}`} class="nav-link" data-toggle="tab" role="tab" aria-controls={this.props.name} aria-selected="true" href={`#${this.props.name}`} hidden={hidden}>
+                    {this.props.symbol}
+                    <span style="margin-left: 8px;">{this.props.title}</span>
+                </a>
+            </li>
+        );
+    }
 }

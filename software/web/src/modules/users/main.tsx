@@ -36,7 +36,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Slash, Check, Users as UsersSymbol } from "react-feather";
 
 export function UsersNavbar() {
-    return <NavbarItem name="users" title={__("users.navbar.users")} symbol={<UsersSymbol />} />;
+    return <NavbarItem name="users" module="users" title={__("users.navbar.users")} symbol={<UsersSymbol />} />;
 }
 
 type User = (API.getType['users/config']['users'][0]) & {password: string, is_invalid: number};
@@ -533,11 +533,4 @@ export function getAllUsernames() {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-users").hidden = !module_init.users;
 }

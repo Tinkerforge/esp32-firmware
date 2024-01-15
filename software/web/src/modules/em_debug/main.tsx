@@ -33,7 +33,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Tool } from "react-feather";
 
 export function EMDebugNavbar() {
-    return <NavbarItem name="em_debug" title={__("em_debug.navbar.em_debug")} symbol={<Tool />} />;
+    return <NavbarItem name="em_debug" module="energy_manager" title={__("em_debug.navbar.em_debug")} symbol={<Tool />} />;
 }
 
 export class EMDebug extends Component {
@@ -222,11 +222,4 @@ export class EMDebug extends Component {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-em_debug").hidden = !module_init.energy_manager;
 }

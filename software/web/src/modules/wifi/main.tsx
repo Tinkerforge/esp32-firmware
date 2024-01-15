@@ -31,12 +31,12 @@ import { StatusSection } from "../../ts/components/status_section";
 import { Wifi } from "react-feather";
 
 export function WifiSTANavbar() {
-    return <NavbarItem name="wifi-sta" title={__("wifi.navbar.wifi_sta")} symbol={<Wifi />} />;
+    return <NavbarItem name="wifi-sta" module="wifi" title={__("wifi.navbar.wifi_sta")} symbol={<Wifi />} />;
 }
 
 export function WifiAPNavbar() {
     return (
-        <NavbarItem name="wifi-ap" title={__("wifi.navbar.wifi_ap")} symbol={
+        <NavbarItem name="wifi-ap" module="wifi" title={__("wifi.navbar.wifi_ap")} symbol={
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g id="g22" transform="rotate(90,16.055,16.055)"><path d="m 5,12.55 a 11,11 0 0 1 14.08,0" id="path2"/><path d="m 8.53,16.11 a 6,6 0 0 1 6.95,0" id="path6"/></g><line x1="12" y1="12" x2="12.01" y2="12" id="line8"/><g id="g22-3" transform="rotate(-90,8.0373834,16.042617)"><path d="m 5,12.55 a 11,11 0 0 1 14.08,0" id="path2-6"/><path d="m 8.53,16.11 a 6,6 0 0 1 6.95,0" id="path6-7"/></g></svg>
         } />);
 }
@@ -107,12 +107,4 @@ export class WifiStatus extends Component<{}, WifiStatusState> {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-wifi-sta").hidden = !module_init.wifi;
-    document.getElementById("sidebar-wifi-ap").hidden = !module_init.wifi;
 }

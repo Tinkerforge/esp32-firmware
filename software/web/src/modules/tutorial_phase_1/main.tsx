@@ -26,7 +26,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Box } from "react-feather";
 
 export function TutorialPhase1Navbar() {
-    return <NavbarItem name="tutorial_phase_1" title={__("tutorial_phase_1.navbar.tutorial_phase_1")} symbol={<Box />} />;
+    return <NavbarItem name="tutorial_phase_1" module="tutorial_phase_1" title={__("tutorial_phase_1.navbar.tutorial_phase_1")} symbol={<Box />} />;
 }
 
 export class TutorialPhase1 extends Component {
@@ -38,11 +38,4 @@ export class TutorialPhase1 extends Component {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-tutorial_phase_1").hidden = !module_init.tutorial_phase_1;
 }

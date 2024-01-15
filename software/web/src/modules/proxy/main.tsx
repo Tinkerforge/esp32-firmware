@@ -34,7 +34,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Cpu, Slash } from "react-feather";
 
 export function ProxyNavbar() {
-    return <NavbarItem name="proxy" title={__("proxy.navbar.proxy")} symbol={<Cpu />} />;
+    return <NavbarItem name="proxy" module="proxy" title={__("proxy.navbar.proxy")} symbol={<Cpu />} />;
 }
 
 interface ProxyState {
@@ -141,11 +141,4 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-proxy").hidden = !module_init.proxy;
 }

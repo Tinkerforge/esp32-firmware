@@ -30,7 +30,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Award } from "react-feather";
 
 export function CertsNavbar() {
-    return <NavbarItem name="certs" title={__("certs.navbar.certs")} symbol={<Award />} />;
+    return <NavbarItem name="certs" module="certs" title={__("certs.navbar.certs")} symbol={<Award />} />;
 }
 
 interface State {
@@ -145,11 +145,4 @@ export class Certs extends Component<{}, State> {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-certs").hidden = !module_init.certs;
 }

@@ -39,8 +39,22 @@ import { OutputFloat } from "../../ts/components/output_float";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { BatteryCharging } from "react-feather";
 
-export function EVSENavbar() {
-    return <NavbarItem name="evse" title={__("evse.navbar.evse")} symbol={<BatteryCharging />} />;
+export class EVSENavbar extends Component<{}, {hidden: boolean}> {
+    constructor() {
+        super();
+
+        this.state = {
+            hidden: true
+        } as any;
+
+        util.addApiEventListener("info/modules", () => {
+            this.setState({hidden: !API.hasModule("evse_v2") && !API.hasModule("evse")});
+        });
+    }
+
+    render() {
+        return <NavbarItem name="evse" title={__("evse.navbar.evse")} symbol={<BatteryCharging />} hidden={this.state.hidden} />;
+    }
 }
 
 let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"

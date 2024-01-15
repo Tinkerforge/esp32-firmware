@@ -173,9 +173,3 @@ export class ChargeLimitsStatus extends Component {
 
 export function init() {
 }
-
-export function add_event_listeners() {
-}
-
-export function update_sidebar_state(module_init: any) {
-}

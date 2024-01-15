@@ -32,8 +32,6 @@ import { App } from "./app";
 
 interface Module {
     init(): void;
-    add_event_listeners(source: API.APIEventTarget): void;
-    update_sidebar_state(m: API.Modules): void;
 }
 
 let modules: Module[] = [{{{modules}}}];
@@ -71,11 +69,6 @@ function navigate() {
 }
 
 function update_modules() {
-    let module_init = API.get('info/modules');
-    for (let m of modules) {
-        m.update_sidebar_state(module_init);
-    }
-
     if (first_module_init) {
         first_module_init = false;
         // FIXME: navigate doesn't work if called directly here. probably
@@ -89,10 +82,6 @@ function update_modules() {
 
 export function registerEvents(eventSource: API.APIEventTarget) {
     eventSource.addEventListener('info/modules', update_modules);
-
-    for (let m of modules) {
-        m.add_event_listeners(eventSource);
-    }
 }
 
 // This is the part of the initialization to be done

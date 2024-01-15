@@ -66,9 +66,3 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
 
 export function init() {
 }
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-}

@@ -38,7 +38,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { Server } from "react-feather";
 
 export function ChargeManagerNavbar() {
-    return <NavbarItem name="charge_manager" title={__("charge_manager.navbar.charge_manager")} symbol={<Server {...{style: "transform: rotate(180deg);"} as any} />} />;
+    return <NavbarItem name="charge_manager" module="charge_manager" title={__("charge_manager.navbar.charge_manager")} symbol={<Server {...{style: "transform: rotate(180deg);"} as any} />} />;
 }
 
 type ChargeManagerConfig = API.getType["charge_manager/config"];
@@ -658,11 +658,4 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-charge_manager").hidden = !module_init.charge_manager;
 }

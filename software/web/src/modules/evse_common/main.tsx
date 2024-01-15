@@ -23,12 +23,3 @@ export { EVSEStatus } from "./evse_status";
 
 export function init() {
 }
-
-export function add_event_listeners() {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-evse").hidden = !module_init.evse_v2 && !module_init.evse;
-    document.getElementById("sidebar-evse-settings").hidden = !module_init.evse_v2 && !module_init.evse;
-    document.getElementById("status-evse").hidden = !module_init.evse_v2 && !module_init.evse;
-}

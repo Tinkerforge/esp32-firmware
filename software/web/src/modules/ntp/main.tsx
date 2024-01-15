@@ -36,7 +36,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { Clock } from "react-feather";
 
 export function NTPNavbar() {
-    return <NavbarItem name="ntp" title={__("ntp.navbar.ntp")} symbol={<Clock />} />;
+    return <NavbarItem name="ntp" module="ntp" title={__("ntp.navbar.ntp")} symbol={<Clock />} />;
 }
 
 type NTPConfig = API.getType["ntp/config"];
@@ -183,11 +183,4 @@ export class NTPStatus extends Component<{}, NTPStatusState> {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-ntp").hidden = !module_init.ntp;
 }

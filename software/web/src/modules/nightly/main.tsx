@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import * as API from "../../ts/api";
 import { underconstruction_gif } from "./underconstruction_gif.embedded";
 
 export function init() {
@@ -30,10 +29,4 @@ export function init() {
     target.src = underconstruction_gif;
 
     parent.after(target);
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
 }

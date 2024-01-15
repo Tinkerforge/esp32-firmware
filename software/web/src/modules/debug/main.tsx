@@ -33,7 +33,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Terminal } from "react-feather";
 
 export function DebugNavbar() {
-    return <NavbarItem name="debug" title={__("debug.navbar.debug")} symbol={<Terminal />} />;
+    return <NavbarItem name="debug" modules="debug" title={__("debug.navbar.debug")} symbol={<Terminal />} />;
 }
 
 export class Debug extends Component {
@@ -303,11 +303,4 @@ export class Debug extends Component {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-debug").hidden = !module_init.debug;
 }

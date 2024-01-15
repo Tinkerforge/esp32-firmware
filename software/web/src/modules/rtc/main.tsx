@@ -141,9 +141,3 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
 
 export function init() {
 }
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-}

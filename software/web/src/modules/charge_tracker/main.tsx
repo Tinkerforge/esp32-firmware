@@ -38,7 +38,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
 
 export function ChargeTrackerNavbar() {
-    return <NavbarItem name="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
+    return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
 }
 
 const MAX_TRACKED_CHARGES = 7680;
@@ -528,11 +528,4 @@ export class ChargeTrackerStatus extends Component {
 }
 
 export function init() {
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-}
-
-export function update_sidebar_state(module_init: any) {
-    document.getElementById("sidebar-charge_tracker").hidden = !module_init.charge_tracker;
 }

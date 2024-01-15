@@ -20,7 +20,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment } from "preact";
+import { h, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { SubPage } from "../../ts/components/sub_page";
@@ -32,8 +32,22 @@ import { Switch } from "../../ts/components/switch";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
 
-export function EVSESettingsNavbar() {
-    return <NavbarItem name="evse-settings" title={__("evse.navbar.evse_settings")} symbol={<Settings />} />;
+export class EVSESettingsNavbar extends Component<{}, {hidden: boolean}> {
+    constructor() {
+        super();
+
+        this.state = {
+            hidden: true
+        } as any;
+
+        util.addApiEventListener("info/modules", () => {
+            this.setState({hidden: !API.hasModule("evse_v2") && !API.hasModule("evse")});
+        });
+    }
+
+    render() {
+        return <NavbarItem name="evse-settings" title={__("evse.navbar.evse_settings")} symbol={<Settings />} hidden={this.state.hidden} />;
+    }
 }
 
 interface EVSESettingsState {
