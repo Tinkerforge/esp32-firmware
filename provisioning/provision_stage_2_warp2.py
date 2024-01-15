@@ -102,6 +102,9 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
     if is_pro and qr_variant != "P":
         fatal_error("Scanned QR code implies variant {}, but detected was Pro: An ESP32 Brick and an energy meter was found. Is the QR code correct?".format(d[qr_variant]))
 
+    result["evse_version"] = evse_version
+    print("EVSE version is {}".format(evse_version))
+
     result["evse_uid"] = evse_enum.uid
     print("EVSE UID is {}".format(evse_enum.uid))
 
@@ -367,7 +370,7 @@ def main(stage3):
     firmware_path = os.path.join(firmware_directory, firmware_path)
 
     # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:0;;;
-    pattern = r'^T:WARP2-C(B|S|P)-(11|22)KW-(50|75)(?:-PC)?;V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
+    pattern = r'^T:WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75)(?:-PC)?;V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
     qr_code = my_input("Scan the wallbox QR code")
     match = re.match(pattern, qr_code)
 
@@ -375,19 +378,20 @@ def main(stage3):
         qr_code = my_input("Scan the wallbox QR code", red)
         match = re.match(pattern, qr_code)
 
-    qr_variant = match.group(1)
-    qr_power = match.group(2)
-    qr_cable_len = match.group(3)
-    qr_hw_version = match.group(4)
-    qr_serial = match.group(5)
-    qr_built = match.group(6)
-    qr_accessories = match.group(7)
+    qr_gen = match.group(1)
+    qr_variant = match.group(2)
+    qr_power = match.group(3)
+    qr_cable_len = match.group(4)
+    qr_hw_version = match.group(5)
+    qr_serial = match.group(6)
+    qr_built = match.group(7)
+    qr_accessories = match.group(8)
 
     if qr_accessories == None:
         qr_accessories = '0'
 
     print("Wallbox QR code data:")
-    print("    WARP Charger {}".format({"B": "Basic", "S": "Smart", "P": "Pro"}[qr_variant]))
+    print("    WARP{} Charger {}".format(qr_gen, {"B": "Basic", "S": "Smart", "P": "Pro"}[qr_variant]))
     print("    {} kW".format(qr_power))
     print("    {:1.1f} m".format(int(qr_cable_len) / 10.0))
     print("    HW Version: {}".format(qr_hw_version))
@@ -427,7 +431,7 @@ def main(stage3):
         result["accessories_qr_code"] = match.group(0)
 
     if qr_variant != "B":
-        pattern = r"^WIFI:S:(esp32|warp|warp2)-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58)
+        pattern = r"^WIFI:S:(esp32|warp|warp2|warp3)-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58)
         qr_code = getpass.getpass(green("Scan the ESP Brick QR code"))
         match = re.match(pattern, qr_code)
 
@@ -453,11 +457,11 @@ def main(stage3):
 
         result["uid"] = esp_uid_qr
 
-        ssid = "warp2-" + esp_uid_qr
+        ssid = hardware_type + "-" + esp_uid_qr
 
         event_log = connect_to_ethernet(ssid, "event_log").decode('utf-8')
 
-        m = re.search(r"WARP2 (?:CHARGER|Charger) V(\d+).(\d+).(\d+)", event_log)
+        m = re.search(r"WARP(?:2|3) (?:CHARGER|Charger) V(\d+).(\d+).(\d+)", event_log)
         if not m:
             fatal_error("Failed to find version number in event log!" + event_log)
 
@@ -525,7 +529,6 @@ def main(stage3):
         if len(user_config["users"]) != 4:
             do_factory_reset = len(user_config["users"]) != 1
         else:
-            print("hier")
             for i, u in enumerate(user_config["users"][1:]):
                 print(u)
                 if u["roles"] != 2 ** 16 - 1 or \
@@ -635,7 +638,7 @@ def main(stage3):
     result["evse_test_report_found"] = True
 
     if qr_variant == "B":
-        ssid = "warp2-" + result["evse_uid"]
+        ssid = ("warp2-" if result["evse_version"] < 30 else "warp3-") + result["evse_uid"]
 
     browser = None
     try:
