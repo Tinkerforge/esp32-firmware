@@ -25,7 +25,7 @@ from provision_common.provision_common import *
 
 def main():
     if len(sys.argv) != 4:
-        fatal_error("Usage: {} firmware port firmware_type")
+        fatal_error("Usage: {} firmware port firmware_type".format(sys.argv[0]))
 
     if not os.path.exists(sys.argv[1]):
         fatal_error("Firmware {} not found.".format(sys.argv[1]))
