@@ -281,7 +281,7 @@ def factory_reset(ssid):
     for i in range(45):
         start = time.monotonic()
         try:
-            req = urllib.request.Request("http://{}/factory_reset".format(ssid),
+            req = urllib.request.Request("http://{}{}/factory_reset".format(ssid, "" if i % 2 == 0 else ".local"),
                                          data=json.dumps({"do_i_know_what_i_am_doing": True}).encode("utf-8"),
                                          method='PUT',
                                          headers={"Content-Type": "application/json"})
@@ -304,7 +304,7 @@ def connect_to_ethernet(ssid, url):
     for i in range(45):
         start = time.monotonic()
         try:
-            with urllib.request.urlopen("http://{}/{}".format(ssid, url), timeout=1) as f:
+            with urllib.request.urlopen("http://{}{}/{}".format(ssid, "" if i % 2 == 0 else ".local", url), timeout=1) as f:
                 result = f.read()
                 break
         except:
@@ -658,7 +658,7 @@ def main(stage3):
         for i in range(45):
             start = time.monotonic()
             try:
-                req = urllib.request.Request("http://{}/charge_tracker/remove_all_charges".format(ssid),
+                req = urllib.request.Request("http://{}{}/charge_tracker/remove_all_charges".format(ssid, "" if i % 2 == 0 else ".local"),
                                              data=json.dumps({"do_i_know_what_i_am_doing":True}).encode("utf-8"),
                                              method='PUT',
                                              headers={"Content-Type": "application/json"})
