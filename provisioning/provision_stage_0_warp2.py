@@ -31,7 +31,7 @@ def main():
         fatal_error("Firmware {} not found.".format(sys.argv[1]))
 
     firmware_type = sys.argv[3]
-    if firmware_type not in ["esp32", "esp32_ethernet", "warp2", "energy_manager"]:
+    if firmware_type not in ["esp32", "esp32_ethernet", "warp2", "energy_manager", "warp3"]:
         fatal_error("Unknown firmware type {}".format(firmware_type))
 
     PORT = sys.argv[2]
@@ -79,33 +79,35 @@ def main():
     flash_firmware(sys.argv[1])
     result["firmware"] = sys.argv[1]
 
-    print('Configuring CP2102N chip')
-    port_name = os.path.split(PORT)[-1]
-    device_dir = os.path.realpath(os.path.join('/sys/bus/usb-serial/devices', port_name, '..', '..'))
+    if firmware_type in ["esp32", "esp32_ethernet", "warp2", "energy_manager"]:
+        print('Configuring CP2102N chip')
+        port_name = os.path.split(PORT)[-1]
+        device_dir = os.path.realpath(os.path.join('/sys/bus/usb-serial/devices', port_name, '..', '..'))
 
-    with open(os.path.join(device_dir, 'busnum'), 'r') as f:
-        busnum = f.read().strip()
+        with open(os.path.join(device_dir, 'busnum'), 'r') as f:
+            busnum = f.read().strip()
 
-    with open(os.path.join(device_dir, 'devnum'), 'r') as f:
-        devnum = f.read().strip()
+        with open(os.path.join(device_dir, 'devnum'), 'r') as f:
+            devnum = f.read().strip()
 
-    uid_number = base58decode(uid)
+        uid_number = base58decode(uid)
 
-    # include UID as base58 and base10 because Windows reports serial numbers as all
-    # uppercase which mangles base58. only [A-Za-z0-9_] is allowed, other chars might stop
-    # pySerial from reporting the serial number. a dash (-) is tested to have that effect.
-    # brickv expects this format: tinkerforge_<product-name>_<uid:base58>_<uid:base10>
-    # the product name is allowed to include underscores. brickv will split by underscores
-    # then expects the first part to be "tinkerforge" and the last two parts as the UID in
-    # base58 (mangled on Windows) and base10. every other field in between is part of the
-    # product name and will be capitalized and joined by a space to form the display name.
-    # special care if given to "esp32" which is shown in uppercase
-    if firmware_type == "esp32":
-        run(['./cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Brick', '-S', 'Tinkerforge_ESP32_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
-    else:
-        run(['./cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Ethernet Brick', '-S', 'Tinkerforge_ESP32_Ethernet_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
+        # include UID as base58 and base10 because Windows reports serial numbers as all
+        # uppercase which mangles base58. only [A-Za-z0-9_] is allowed, other chars might stop
+        # pySerial from reporting the serial number. a dash (-) is tested to have that effect.
+        # brickv expects this format: tinkerforge_<product-name>_<uid:base58>_<uid:base10>
+        # the product name is allowed to include underscores. brickv will split by underscores
+        # then expects the first part to be "tinkerforge" and the last two parts as the UID in
+        # base58 (mangled on Windows) and base10. every other field in between is part of the
+        # product name and will be capitalized and joined by a space to form the display name.
+        # special care if given to "esp32" which is shown in uppercase
+        if firmware_type == "esp32":
+            run(['./cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Brick', '-S', 'Tinkerforge_ESP32_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
+        else:
+            run(['./cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Ethernet Brick', '-S', 'Tinkerforge_ESP32_Ethernet_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
 
-    result["cp2102n_configured"] = True
+        result["cp2102n_configured"] = True
+
     result["end"] = now()
 
     with open("{}-{}_{}_report_stage_0.json".format(firmware_type, uid, now().replace(":", "-")), "w") as f:
