@@ -152,7 +152,7 @@ void EvseCommon::pre_setup() {
     automation_current_update = automation_current;
 
     automation.register_trigger(
-        AutomationTriggerID::IECChange,
+        AutomationTriggerID::ChargerState,
         Config::Object({
             {"old_charger_state", Config::Int(0, -1, 4)},
             {"new_charger_state", Config::Int(0, -1, 4)}
@@ -299,7 +299,7 @@ void EvseCommon::setup() {
 
 #if MODULE_AUTOMATION_AVAILABLE()
     task_scheduler.scheduleOnce([this]() {
-        automation.trigger_action(AutomationTriggerID::IECChange, nullptr, trigger_action);
+        automation.trigger_action(AutomationTriggerID::ChargerState, nullptr, trigger_action);
     }, 0);
 #endif
 
@@ -316,7 +316,7 @@ bool EvseCommon::action_triggered(Config *config, void *data) {
     Config *cfg = (Config*)config->get();
     uint32_t *states = (uint32_t*)data;
     switch (config->getTag<AutomationTriggerID>()) {
-        case AutomationTriggerID::IECChange:
+        case AutomationTriggerID::ChargerState:
         {
             uint32_t tmp_states[2] = {0};
             if (states == nullptr) {
@@ -600,7 +600,7 @@ void EvseCommon::register_urls() {
     backend->post_register_urls();
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    if (automation.is_trigger_active(AutomationTriggerID::IECChange)) {
+    if (automation.is_trigger_active(AutomationTriggerID::ChargerState)) {
         event.registerEvent("evse/state", {}, [this](Config *cfg) {
 
             // we need this since not only iec state changes trigger this api event.
@@ -608,7 +608,7 @@ void EvseCommon::register_urls() {
             uint32_t state_now = cfg->get("charger_state")->asUint();
             uint32_t states[2] = {last_state, state_now};
             if (last_state != state_now) {
-                automation.trigger_action(AutomationTriggerID::IECChange, (void *)states, &trigger_action);
+                automation.trigger_action(AutomationTriggerID::ChargerState, (void *)states, &trigger_action);
                 last_state = state_now;
             }
             return EventResult::OK;

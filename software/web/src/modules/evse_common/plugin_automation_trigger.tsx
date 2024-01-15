@@ -25,8 +25,8 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
 
-export type IECChangeAutomationTrigger = [
-    AutomationTriggerID.IECChange,
+export type ChargerStateAutomationTrigger = [
+    AutomationTriggerID.ChargerState,
     {
         new_charger_state: number;
         old_charger_state: number;
@@ -40,7 +40,7 @@ export type EVSEEexternalCurrentWdAutomationTrigger = [
 
 function new_iec_change_config(): AutomationTrigger {
     return [
-        AutomationTriggerID.IECChange,
+        AutomationTriggerID.ChargerState,
         {
             new_charger_state: -1,
             old_charger_state: -1,
@@ -48,7 +48,7 @@ function new_iec_change_config(): AutomationTrigger {
     ];
 }
 
-function get_iec_change_table_children(trigger: IECChangeAutomationTrigger) {
+function get_iec_change_table_children(trigger: ChargerStateAutomationTrigger) {
     const names = [
         [__("evse.automation.any")],
         [__("evse.status.not_connected")],
@@ -61,7 +61,7 @@ function get_iec_change_table_children(trigger: IECChangeAutomationTrigger) {
     return __("evse.automation.automation_state_change_trigger")(names[trigger[1].old_charger_state + 1][0], names[trigger[1].new_charger_state + 1][0]);
 }
 
-function get_iec_change_edit_children(trigger: IECChangeAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
+function get_iec_change_edit_children(trigger: ChargerStateAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     return [
         <FormRow label={__("evse.automation.from")}>
             <InputSelect
@@ -116,7 +116,7 @@ function get_external_current_wd_edit_children(_: EVSEEexternalCurrentWdAutomati
 export function init() {
     return {
         trigger_components: {
-            [AutomationTriggerID.IECChange]: {
+            [AutomationTriggerID.ChargerState]: {
                 name: __("evse.automation.state_change"),
                 new_config: new_iec_change_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,

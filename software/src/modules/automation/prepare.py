@@ -23,7 +23,7 @@ from software import util
 triggers = [
     ('None', 0),
     ('Cron', 1),
-    ('IEC Change', 2),
+    ('Charger State', 2),
     ('MQTT', 3),
     ('EVSE Button', 4),
     ('NFC', 5),
