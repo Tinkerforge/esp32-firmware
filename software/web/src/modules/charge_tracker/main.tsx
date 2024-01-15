@@ -36,6 +36,8 @@ import { InputFloat } from "../../ts/components/input_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { useMemo } from "preact/hooks";
 
+const MAX_TRACKED_CHARGES = 7680;
+
 type Charge = API.getType["charge_tracker/last_charges"][0];
 type ChargeTrackerConfig = API.getType["charge_tracker/config"];
 
@@ -423,7 +425,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                 <FormSeparator heading={__("charge_tracker.content.tracked_charges")}/>
 
                 <FormRow label={__("charge_tracker.content.tracked_charges")} label_muted={__("charge_tracker.content.tracked_charges_muted")}>
-                    <InputText value={state.tracked_charges}/>
+                    <InputText value={__("charge_tracker.script.tracked_charge_count")(state.tracked_charges, MAX_TRACKED_CHARGES)}/>
                 </FormRow>
 
                 <FormRow label={__("charge_tracker.content.first_charge_timestamp")} label_muted={__("charge_tracker.content.first_charge_timestamp_muted")}>

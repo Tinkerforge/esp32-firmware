@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "charge_tracker": {
         "status": {
             "last_charges": "Last charges",
@@ -55,6 +57,7 @@
             "automation_action_text": "remove all tracked charges and reboot."
         },
         "script": {
+            "tracked_charge_count": /*SFN*/ (tracked: number, max_: number) => `${tracked} of maximum ${max_} (${Math.floor(tracked / max_)} %)` /*NF*/,
             "csv_header_start": "Start time",
             "csv_header_display_name": "Display name",
             "csv_header_username": "Username",
