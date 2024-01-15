@@ -35,8 +35,8 @@ from provision_common.bricklet_evse_v2 import BrickletEVSEV2
 from provision_stage_3_warp2 import Stage3
 
 evse = None
-
 power_off_on_error = True
+is_warp3 = None
 
 def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_wiring, ssid, stage3):
     global evse
@@ -180,7 +180,9 @@ def retry_wrapper(fn, s):
 
 def is_front_panel_button_pressed():
     global evse
-    return retry_wrapper(lambda: evse.get_low_level_state().gpio[6], "check if front panel button is pressed")
+    global is_warp3
+    assert is_warp3 != None
+    return retry_wrapper(lambda: evse.get_low_level_state().gpio[5 if is_warp3 else 6], "check if front panel button is pressed")
 
 def get_iec_state():
     global evse
@@ -347,6 +349,7 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify):
     return seen_tags
 
 def main(stage3):
+    global is_warp3
     result = {"start": now()}
 
     github_reachable = True
@@ -447,6 +450,7 @@ def main(stage3):
         hardware_type = match.group(1)
         esp_uid_qr = match.group(2)
         passphrase_qr = match.group(3)
+        is_warp3 = hardware_type == 'warp3'
 
         print("ESP Brick QR code data:")
         print("    Hardware type: {}".format(hardware_type))
@@ -638,7 +642,9 @@ def main(stage3):
     result["evse_test_report_found"] = True
 
     if qr_variant == "B":
-        ssid = ("warp2-" if result["evse_version"] < 30 else "warp3-") + result["evse_uid"]
+        hardware_type = "warp2" if result["evse_version"] < 30 else "warp3"
+        is_warp3 = hardware_type == 'warp3'
+        ssid = hardware_type + "-" + result["evse_uid"]
 
     browser = None
     try:
