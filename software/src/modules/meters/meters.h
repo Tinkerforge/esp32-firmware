@@ -133,6 +133,8 @@ private:
 
     MeterSlot meter_slots[METERS_SLOTS];
 
+    bool meters_feature_declared = false;
+
     Config config_bool_false_prototype = Config::Bool(false);
     Config config_float_nan_prototype;
     Config config_uint_max_prototype;
