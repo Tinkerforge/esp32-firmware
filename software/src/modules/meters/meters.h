@@ -85,7 +85,7 @@ public:
 
     void update_value(uint32_t slot, uint32_t index, float new_value);
     void update_all_values(uint32_t slot, const float new_values[]);
-    void update_all_values(uint32_t slot, Config *new_values);
+    void update_all_values(uint32_t slot, const Config *new_values);
     void declare_value_ids(uint32_t slot, const MeterValueID value_ids[], uint32_t value_id_count);
 
     bool get_cached_power_index(uint32_t slot, uint32_t *index);

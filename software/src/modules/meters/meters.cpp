@@ -659,13 +659,15 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 
     MeterSlot &meter_slot = meter_slots[slot];
 
-    Config::Wrap val_wrap = meter_slot.values.get(static_cast<uint16_t>(index));
-    // Think about ordering and short-circuting issues before changing this!
-    bool was_nan = isnan(val_wrap->asFloat());
-    if (val_wrap->updateFloat(new_value) && !was_nan)
-        meter_slot.values_last_changed_at = now_us();
+    Config *conf_val = static_cast<Config *>(meter_slot.values.get(static_cast<uint16_t>(index)));
+    micros_t t_now = now_us();
 
-    meter_slot.values_last_updated_at = now_us();
+    // Think about ordering and short-circuting issues before changing this!
+    float old_value = conf_val->asFloat();
+    if (conf_val->updateFloat(new_value) && !isnan(old_value))
+        meter_slot.values_last_changed_at = t_now;
+
+    meter_slot.values_last_updated_at = t_now;
 
     if (index == meter_slot.index_cache_single_values[INDEX_CACHE_POWER]) {
         meter_slot.power_history.add_sample(new_value);
@@ -687,24 +689,26 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
     bool changed_any_value = false;
 
     for (uint16_t i = 0; i < value_count; i++) {
-        if (!isnan(new_values[i])) {
-            //auto wrap = values.get(i);
-            //auto old_value = wrap->asFloat();
-            //bool changed = wrap->updateFloat(new_values[i]) && !isnan(old_value);
-            //(void)changed;
+        float new_value = new_values[i];
+        if (!isnan(new_value)) {
+            Config *conf_val = static_cast<Config *>(values.get(i));
 
             // Think about ordering and short-circuting issues before changing this!
-            bool was_nan = isnan(values.get(i)->asFloat());
-            changed_any_value |= values.get(i)->updateFloat(new_values[i]) && !was_nan;
+            float old_value = conf_val->asFloat();
+            if (conf_val->updateFloat(new_value) && !isnan(old_value))
+                changed_any_value = true;
+
             updated_any_value = true;
         }
     }
 
+    micros_t t_now = now_us();
+
     if (changed_any_value)
-        meter_slot.values_last_changed_at = now_us();
+        meter_slot.values_last_changed_at = t_now;
 
     if (updated_any_value) {
-        meter_slot.values_last_updated_at = now_us();
+        meter_slot.values_last_updated_at = t_now;
 
         float power;
         if (get_power(slot, &power) == MeterValueAvailability::Fresh) {
@@ -713,7 +717,7 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
     }
 }
 
-void Meters::update_all_values(uint32_t slot, Config *new_values)
+void Meters::update_all_values(uint32_t slot, const Config *new_values)
 {
     if (slot >= METERS_SLOTS) {
         logger.printfln("meters: Tried to update all values from Config for meter in non-existent slot %u.", slot);
@@ -722,7 +726,7 @@ void Meters::update_all_values(uint32_t slot, Config *new_values)
 
     MeterSlot &meter_slot = meter_slots[slot];
 
-    ConfigRoot &values = meter_slot.values;
+    Config &values = meter_slot.values;
     auto value_count = values.count();
     bool updated_any_value = false;
     bool changed_any_value = false;
@@ -733,20 +737,26 @@ void Meters::update_all_values(uint32_t slot, Config *new_values)
     }
 
     for (uint16_t i = 0; i < value_count; i++) {
-        float val = new_values->get(i)->asFloat();
-        if (!isnan(val)) {
+        float new_value = new_values->get(i)->asFloat();
+        if (!isnan(new_value)) {
+            Config *conf_val = static_cast<Config *>(values.get(i));
+
             // Think about ordering and short-circuting issues before changing this!
-            bool was_nan = isnan(values.get(i)->asFloat());
-            changed_any_value |= values.get(i)->updateFloat(val) && !was_nan;
+            float old_value = conf_val->asFloat();
+            if (conf_val->updateFloat(new_value) && !isnan(old_value))
+                changed_any_value = true;
+
             updated_any_value = true;
         }
     }
 
+    micros_t t_now = now_us();
+
     if (changed_any_value)
-        meter_slot.values_last_changed_at = now_us();
+        meter_slot.values_last_changed_at = t_now;
 
     if (updated_any_value) {
-        meter_slot.values_last_updated_at = now_us();
+        meter_slot.values_last_updated_at = t_now;
 
         float power;
         if (get_power(slot, &power) == MeterValueAvailability::Fresh) {
