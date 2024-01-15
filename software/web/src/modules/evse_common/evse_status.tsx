@@ -36,11 +36,10 @@ interface EVSEStatusState {
     is_evse_v2: boolean;
 }
 
-export class EVSEStatus extends Component<{}, EVSEStatusState>
-{
+export class EVSEStatus extends Component<{}, EVSEStatusState> {
     timeout?: number;
-    constructor()
-    {
+
+    constructor() {
         super();
 
         this.timeout = undefined;
@@ -94,8 +93,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
         return status_string;
     }
 
-    timeoutSave(current: number, theoretical_max: number)
-    {
+    timeoutSave(current: number, theoretical_max: number) {
         if (current === theoretical_max)
             current = 32000;
 
@@ -105,8 +103,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState>
         API.save('evse/global_current', {"current": current}, __("evse.script.set_charging_current_failed"));
     }
 
-    render(props: {}, state: EVSEStatusState)
-    {
+    render(props: {}, state: EVSEStatusState) {
         if (!util.render_allowed() || !API.hasFeature("evse"))
             return <></>;
 

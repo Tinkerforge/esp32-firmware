@@ -263,10 +263,8 @@ interface OcppStatusState {
     config: API.getType["ocpp/config"];
 }
 
-export class OcppStatus extends Component<{}, OcppStatusState>
-{
-    constructor()
-    {
+export class OcppStatus extends Component<{}, OcppStatusState> {
+    constructor() {
         super();
 
         util.addApiEventListener('ocpp/state', () => {
@@ -280,7 +278,7 @@ export class OcppStatus extends Component<{}, OcppStatusState>
 
     getConnectionState() {
         // TODO: we need some mechanism to get access to backend module magic numbers/defines/enums.
-        switch(this.state.state.charge_point_state) {
+        switch (this.state.state.charge_point_state) {
             case 0:
             case 1:
             case 3:
@@ -292,7 +290,6 @@ export class OcppStatus extends Component<{}, OcppStatusState>
             case 6:
             default:
                 return 2;
-
         }
     }
 
@@ -334,8 +331,7 @@ export class OcppStatus extends Component<{}, OcppStatusState>
         return result;
     }
 
-    render(props: {}, state: OcppStatusState)
-    {
+    render(props: {}, state: OcppStatusState) {
         if (!util.render_allowed() || !state.config.enable)
             return <></>;
 

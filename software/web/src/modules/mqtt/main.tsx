@@ -172,10 +172,8 @@ interface MqttStatusState {
     config: API.getType["mqtt/config"];
 }
 
-export class MqttStatus extends Component<{}, MqttStatusState>
-{
-    constructor()
-    {
+export class MqttStatus extends Component<{}, MqttStatusState> {
+    constructor() {
         super();
 
         util.addApiEventListener('mqtt/state', () => {
@@ -187,8 +185,7 @@ export class MqttStatus extends Component<{}, MqttStatusState>
         });
     }
 
-    render(props: {}, state: MqttStatusState)
-    {
+    render(props: {}, state: MqttStatusState) {
         if (!util.render_allowed() || !state.config.enable_mqtt)
             return <></>;
 

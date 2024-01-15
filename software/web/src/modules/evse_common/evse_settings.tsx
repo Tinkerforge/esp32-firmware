@@ -46,8 +46,7 @@ interface EVSESettingsState {
 type ChargeLimitsConfig = API.getType["charge_limits/default_limits"];
 
 export class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, EVSESettingsState> {
-    constructor()
-    {
+    constructor() {
         super("charge_limits/default_limits",
             __("evse.script.save_failed"),
             __("evse.script.reboot_content_changed"));
@@ -146,8 +145,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         return result;
     }
 
-    render(props: {}, s: EVSESettingsState & ChargeLimitsConfig)
-    {
+    render(props: {}, s: EVSESettingsState & ChargeLimitsConfig) {
         if (!util.render_allowed() || !API.hasFeature("evse"))
             return <></>;
 

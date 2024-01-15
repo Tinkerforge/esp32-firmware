@@ -145,10 +145,8 @@ interface NTPStatusState {
     config: API.getType["ntp/config"];
 }
 
-export class NTPStatus extends Component<{}, NTPStatusState>
-{
-    constructor()
-    {
+export class NTPStatus extends Component<{}, NTPStatusState> {
+    constructor() {
         super();
 
         util.addApiEventListener('ntp/state', () => {
@@ -160,8 +158,7 @@ export class NTPStatus extends Component<{}, NTPStatusState>
         });
     }
 
-    render(props: {}, state: NTPStatusState)
-    {
+    render(props: {}, state: NTPStatusState) {
         if (!util.render_allowed() || !state.config.enable)
             return <></>;
 

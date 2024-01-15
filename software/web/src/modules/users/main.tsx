@@ -121,48 +121,46 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
             if (user.username == changed_user.username && user.id == changed_user.id)
                 return false;
         }
+
         return true;
     }
 
     override async isSaveAllowed(cfg: UsersConfig): Promise<boolean> {
-            let all_usernames = await getAllUsernames();
-            let save_allowed = true;
-            let new_users = cfg.users.slice();
-            for (let i = 0; i < cfg.users.length; i++)
-            {
-                new_users[i].is_invalid = 0;
-                for (let a = 0; a < cfg.users.length; a++)
-                {
-                    if (this.isChangedUser(cfg.users[i]) &&  cfg.users[i].username == cfg.users[a].username && a != i)
-                    {
-                        new_users[i].is_invalid = 1;
-                        this.setState({users: new_users});
-                        save_allowed = false;
-                        break;
-                    }
-                    else if (this.isChangedUser(cfg.users[i]) && cfg.next_user_id == 0)
-                    {
-                        new_users[i].is_invalid = 3;
-                        this.setState({users: new_users});
-                        save_allowed = false;
-                        break;
-                    }
+        let all_usernames = await getAllUsernames();
+        let save_allowed = true;
+        let new_users = cfg.users.slice();
+
+        for (let i = 0; i < cfg.users.length; i++) {
+            new_users[i].is_invalid = 0;
+
+            for (let a = 0; a < cfg.users.length; a++) {
+                if (this.isChangedUser(cfg.users[i]) &&  cfg.users[i].username == cfg.users[a].username && a != i) {
+                    new_users[i].is_invalid = 1;
+                    this.setState({users: new_users});
+                    save_allowed = false;
+                    break;
                 }
-                for (let user of all_usernames[0])
-                {
-                    if (this.isChangedUser(cfg.users[i]) && cfg.users[i].username == user &&
-                            (cfg.users[i].is_invalid == undefined || cfg.users[i].is_invalid == 0))
-                    {
-                        new_users[i].is_invalid = 2;
-                        this.setState({users: new_users});
-                        save_allowed = false;
-                        break;
-                    }
+                else if (this.isChangedUser(cfg.users[i]) && cfg.next_user_id == 0) {
+                    new_users[i].is_invalid = 3;
+                    this.setState({users: new_users});
+                    save_allowed = false;
+                    break;
                 }
             }
-            return save_allowed;
+
+            for (let user of all_usernames[0]) {
+                if (this.isChangedUser(cfg.users[i]) && cfg.users[i].username == user &&
+                        (cfg.users[i].is_invalid == undefined || cfg.users[i].is_invalid == 0)) {
+                    new_users[i].is_invalid = 2;
+                    this.setState({users: new_users});
+                    save_allowed = false;
+                    break;
+                }
+            }
         }
 
+        return save_allowed;
+    }
 
     async save_authentication_config(enabled: boolean) {
         await API.call_unchecked('users/http_auth_update', {
@@ -219,11 +217,11 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         let users_to_modify = new_config.users.slice(1).filter(uNew => old_config.users.slice(1).some(uOld => uNew.id == uOld.id));
         let users_to_add = new_config.users.slice(1).filter(uNew => !old_config.users.slice(1).some(uOld => uNew.id == uOld.id));
 
-        for(let i of ids_to_remove) {
+        for (let i of ids_to_remove) {
             await remove_user(i);
         }
 
-        for(let u of users_to_modify) {
+        for (let u of users_to_modify) {
             u.digest_hash = (u.password != null && u.password != "") ? YaMD5.YaMD5.hashStr(u.username + ":esp32-lib:" + u.password) : u.password
             await modify_user(u);
         }
@@ -231,11 +229,11 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         let next_user_id = API.get('users/config').next_user_id;
 
         outer_loop:
-        for(let u of users_to_add) {
+        for (let u of users_to_add) {
             u.digest_hash = (u.password != null && u.password != "") ? YaMD5.YaMD5.hashStr(u.username + ":esp32-lib:" + u.password) : u.password
             u.id = next_user_id;
             await add_user(u);
-            for(let i = 0; i < 20; ++i) {
+            for (let i = 0; i < 20; ++i) {
                 if (API.get('users/config').next_user_id != next_user_id) {
                     next_user_id = API.get('users/config').next_user_id;
                     continue outer_loop;

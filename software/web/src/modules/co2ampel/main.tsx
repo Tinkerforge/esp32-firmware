@@ -70,8 +70,7 @@ interface Co2AmpelStatusState {
 
 export class Co2AmpelStatus extends Component<{}, Co2AmpelStatusState>
 {
-    constructor()
-    {
+    constructor() {
         super();
 
         util.addApiEventListener('co2ampel/state', () => {
@@ -79,8 +78,7 @@ export class Co2AmpelStatus extends Component<{}, Co2AmpelStatusState>
         });
     }
 
-    render(props: {}, state: Co2AmpelStatusState)
-    {
+    render(props: {}, state: Co2AmpelStatusState) {
         if (!util.render_allowed())
             return <></>;
 

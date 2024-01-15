@@ -449,7 +449,7 @@ export class EVSE extends Component<{}, {}> {
                                 <div class="input-group pb-2">
                                     <Button variant="primary" className="form-control rounded-right mr-2" href="evse/user_calibration" download="calibration.json">{__("evse.content.user_calibration_download")}</Button>
                                     <Button variant="primary" className="form-control rounded-left"
-                                        onClick={async () =>  API.save("evse/user_calibration",  {
+                                        onClick={async () =>  API.save("evse/user_calibration", {
                                                 "user_calibration_active": false,
                                                 "voltage_diff": 0,
                                                 "voltage_mul": 0,
