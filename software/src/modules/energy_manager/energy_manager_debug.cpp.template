@@ -29,13 +29,13 @@ String EnergyManager::prepare_fmtstr() {
 
     fmtstr = reinterpret_cast<char *>(malloc(MAX_FMT_LENGTH));
     if (!fmtstr)
-        return "Out of memory";
+        return "\"out of memory\"";
 
     size_t offset = 0;
 
     int ret = snprintf(fmtstr, MAX_FMT_LENGTH, "\"");
     if (ret < 0) {
-        return "snprintf error";
+        return "\"snprintf error\"";
     } else {
         offset += static_cast<size_t>(ret);
     }
@@ -43,7 +43,7 @@ String EnergyManager::prepare_fmtstr() {
     for (unsigned long i = 0; i < (2+{{{varcount}}}); i++) {
         ret = snprintf(fmtstr + offset, MAX_FMT_LENGTH - offset, "%s,", fmts[i]);
         if (ret < 0) {
-            return "snprintf error";
+            return "\"snprintf error\"";
         } else {
             offset += static_cast<size_t>(ret);
         }
@@ -51,7 +51,7 @@ String EnergyManager::prepare_fmtstr() {
 
     ret = snprintf(fmtstr + offset - 1, MAX_FMT_LENGTH - 1 - offset, "\""); // offset-1 to overwrite last comma
     if (ret < 0) {
-        return "snprintf error";
+        return "\"snprintf error\"";
     } else {
         offset += static_cast<size_t>(ret);
     }

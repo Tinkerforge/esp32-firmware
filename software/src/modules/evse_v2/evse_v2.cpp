@@ -529,7 +529,7 @@ String EVSEV2::get_evse_debug_line()
     if (rc != TF_E_OK) {
         logger.printfln("get_all_data_1 %d", rc);
         is_in_bootloader(rc);
-        return "get_all_data_1 failed";
+        return "\"get_all_data_1 failed\"";
     }
 
     rc = tf_evse_v2_get_low_level_state(&device,
@@ -545,9 +545,9 @@ String EVSEV2::get_evse_debug_line()
                                         &uptime);
 
     if (rc != TF_E_OK) {
-        logger.printfln("ll_state %d", rc);
+        logger.printfln("get_low_level_state %d", rc);
         is_in_bootloader(rc);
-        return "ll_state failed";
+        return "\"get_low_level_state failed\"";
     }
 
     rc = tf_evse_v2_get_all_charging_slots(&device, max_current, active_and_clear_on_disconnect);
@@ -555,7 +555,7 @@ String EVSEV2::get_evse_debug_line()
     if (rc != TF_E_OK) {
         logger.printfln("slots %d", rc);
         is_in_bootloader(rc);
-        return "get_all_charging_slots failed";
+        return "\"get_all_charging_slots failed\"";
     }
 
     // Currently max ~ 510
