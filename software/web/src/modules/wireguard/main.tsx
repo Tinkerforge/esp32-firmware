@@ -167,7 +167,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
 export class WireguardStatus extends Component {
     render() {
         if (!util.render_allowed() || !API.get("wireguard/config").enable)
-            return <></>;
+            return <StatusSection name="wireguard" />;
 
         return <StatusSection name="wireguard">
                 <FormRow label={__("wireguard.status.connection")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">

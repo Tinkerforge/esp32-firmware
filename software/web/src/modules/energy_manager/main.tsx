@@ -82,7 +82,7 @@ export class EnergyManagerStatus extends Component {
 
     render() {
         if (!util.render_allowed())
-            return <></>
+            return <StatusSection name="energy_manager" />
 
         if (!API.hasFeature("energy_manager")) {
             return <>

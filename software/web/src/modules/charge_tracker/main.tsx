@@ -473,7 +473,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 export class ChargeTrackerStatus extends Component {
     render() {
         if (!util.render_allowed())
-            return <></>;
+            return <StatusSection name="charge_tracker" />;
 
         let last_charges = API.get('charge_tracker/last_charges');
         let cc = API.get('charge_tracker/current_charge');

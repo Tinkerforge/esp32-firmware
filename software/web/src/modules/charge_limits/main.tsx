@@ -28,7 +28,7 @@ import { StatusSection } from "../../ts/components/status_section";
 export class ChargeLimitsStatus extends Component {
     render() {
         if (!util.render_allowed() || !API.hasFeature("evse"))
-            return <></>;
+            return <StatusSection name="charge_limits" />;
 
         let config_in_use = API.get("charge_limits/active_limits");
         let config = API.get("charge_limits/default_limits");

@@ -106,7 +106,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
 
     render(props: {}, state: EVSEStatusState) {
         if (!util.render_allowed() || !API.hasFeature("evse"))
-            return <></>;
+            return <StatusSection name="evse" />;
 
         let theoretical_max = Math.min(state.slots[0].max_current, state.slots[1].max_current);
 

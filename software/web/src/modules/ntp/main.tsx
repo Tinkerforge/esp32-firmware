@@ -164,7 +164,7 @@ export class NTPStatus extends Component<{}, NTPStatusState> {
 
     render(props: {}, state: NTPStatusState) {
         if (!util.render_allowed() || !state.config.enable)
-            return <></>;
+            return <StatusSection name="ntp" />;
 
         return <StatusSection name="ntp">
                 <FormRow label={__("ntp.status.ntp")} label_muted={util.timestamp_min_to_date(state.state.time, "")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">

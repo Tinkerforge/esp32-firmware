@@ -109,7 +109,7 @@ export class EthernetStatus extends Component
 {
     render() {
         if (!util.render_allowed() || !API.get('ethernet/config').enable_ethernet)
-            return <></>
+            return <StatusSection name="ethernet" />
 
         let state = API.get('ethernet/state');
 

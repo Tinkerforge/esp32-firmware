@@ -269,7 +269,7 @@ export class MqttStatus extends Component<{}, MqttStatusState> {
 
     render(props: {}, state: MqttStatusState) {
         if (!util.render_allowed() || !state.config.enable_mqtt)
-            return <></>;
+            return <StatusSection name="mqtt" />;
 
         return <StatusSection name="mqtt">
                 <FormRow label={__("mqtt.status.connection")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">

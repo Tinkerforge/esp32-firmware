@@ -66,7 +66,7 @@ export class WifiStatus extends Component<{}, WifiStatusState> {
 
     render(props: {}, state: WifiStatusState) {
         if (!util.render_allowed())
-            return <></>;
+            return <StatusSection name="wifi" />;
 
         let sta_row = !state.sta_config.enable_sta ? <></>
             : <FormRow label={__("wifi.status.wifi_connection")}

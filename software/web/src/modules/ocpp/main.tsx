@@ -344,7 +344,7 @@ export class OcppStatus extends Component<{}, OcppStatusState> {
 
     render(props: {}, state: OcppStatusState) {
         if (!util.render_allowed() || !state.config.enable)
-            return <></>;
+            return <StatusSection name="ocpp" />;
 
         return <StatusSection name="ocpp">
                 <FormRow label={__("ocpp.status.ocpp")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">

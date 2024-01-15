@@ -20,7 +20,7 @@
 import { h, ComponentChildren } from "preact";
 
 interface StatusSectionProps {
-    children: ComponentChildren;
+    children?: ComponentChildren;
     name: string;
     class?: string;
 }

@@ -84,7 +84,7 @@ export class Co2AmpelStatus extends Component<{}, Co2AmpelStatusState>
 
     render(props: {}, state: Co2AmpelStatusState) {
         if (!util.render_allowed())
-            return <></>;
+            return <StatusSection name="co2ampel" />;
 
         return <StatusSection name="co2ampel">
                 <FormRow label={__("co2ampel.status.led_state")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
