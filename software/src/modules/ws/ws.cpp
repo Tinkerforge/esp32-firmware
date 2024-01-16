@@ -57,7 +57,12 @@ void WS::register_urls()
 
 
             for (auto &reg : api.states) {
-                to_send += "{\"topic\":\"" + reg.path + "\",\"payload\":" + reg.config->to_string_except(reg.keys_to_censor) + "}\n";
+                // Directly append to preallocated string. a += b + c + d + e + f would create a temporary string with multiple reallocations.
+                to_send.concat("{\"topic\":\"");
+                to_send.concat(reg.path);
+                to_send.concat("\",\"payload\":");
+                to_send.concat(reg.config->to_string_except(reg.keys_to_censor));
+                to_send.concat("}\n");
             }
         });
 
