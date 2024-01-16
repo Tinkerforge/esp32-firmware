@@ -56,10 +56,8 @@ void ValueHistory::setup()
     ++chars_per_value;
 }
 
-void ValueHistory::register_urls(String base_url_)
+void ValueHistory::register_urls(String base_url)
 {
-    base_url = base_url_;
-
     server.on(("/" + base_url + "history").c_str(), HTTP_GET, [this](WebServerRequest request) {
         const size_t buf_size = HISTORY_RING_BUF_SIZE * chars_per_value + 100;
         std::unique_ptr<char[]> buf{new char[buf_size]};
@@ -77,10 +75,8 @@ void ValueHistory::register_urls(String base_url_)
     });
 }
 
-void ValueHistory::register_urls_empty(String base_url_)
+void ValueHistory::register_urls_empty(String base_url)
 {
-    base_url = base_url_;
-
     const char *empty_history = "{\"offset\":0,\"samples\":[]}";
     ssize_t empty_history_len = static_cast<ssize_t>(strlen(empty_history));
     server.on(("/" + base_url + "history").c_str(), HTTP_GET, [this, empty_history, empty_history_len](WebServerRequest request) {

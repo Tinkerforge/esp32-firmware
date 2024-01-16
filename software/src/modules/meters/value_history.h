@@ -119,6 +119,4 @@ public:
     uint32_t history_last_update = 0;
 
     size_t chars_per_value = -1;
-
-    String base_url = "default";
 };
