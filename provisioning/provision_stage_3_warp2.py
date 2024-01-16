@@ -38,6 +38,8 @@ RELAY_SETTLE_DURATION = 0.25 # seconds
 
 EVSE_SETTLE_DURATION = 2.0 # seconds
 
+DC_PROTECT_SETTLE_DURATION = 5.0 # seconds
+
 METER_SETTLE_DURATION = 5.0 # seconds
 
 VOLTAGE_SETTLE_DURATION = 1.0 # seconds
@@ -690,6 +692,35 @@ class Stage3:
         self.try_action('03B', lambda device: device.set_beep(2400, volume, beep_duration))
         time.sleep(beep_duration / 1000)
 
+    def reset_dc_fault(self):
+        print('Resetting DC fault')
+
+        self.reset_dc_fault_function()
+
+        time.sleep(EVSE_SETTLE_DURATION)
+
+        self.change_cp_pe_state('A')
+
+        time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+
+        if not self.check_iec_state('A'):
+            fatal_error('Wallbox not in IEC state A')
+
+        print('Waiting DC protect calibration')
+
+        time.sleep(DC_PROTECT_SETTLE_DURATION)
+
+        print('Waiting for 30 second state E/F deadtime')
+
+        time.sleep(30)
+
+        self.change_cp_pe_state('C')
+
+        time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+
+        if not self.check_iec_state('C'):
+            fatal_error('Wallbox not in IEC state C')
+
     # requires power_on
     def test_wallbox(self):
         assert self.has_evse_error_function != None
@@ -720,6 +751,7 @@ class Stage3:
             if not self.check_iec_state(state):
                 if state == 'D' and self.get_iec_state_function() == 'E':
                     fatal_error('Wallbox not in IEC state {0}. If the DC fault protector has triggered, please check whether the CP wire is (wronly) placed in the DC fault protector ring.'.format(state))
+
                 fatal_error('Wallbox not in IEC state {0}'.format(state))
 
             if self.has_evse_error_function():
@@ -749,6 +781,9 @@ class Stage3:
         self.change_cp_pe_state('A')
 
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+
+        if not self.check_iec_state('A'):
+            fatal_error('Wallbox not in IEC state A')
 
         print('Waiting for 30 second state D deadtime')
 
@@ -964,10 +999,7 @@ class Stage3:
         if self.read_meter_qr_code(timeout=30) != '09':
             fatal_error('Step 08 timeouted')
 
-        print('Resetting DC fault')
-
-        self.reset_dc_fault_function()
-        time.sleep(EVSE_SETTLE_DURATION)
+        self.reset_dc_fault()
 
         # step 09: test RCD negative
         print('Testing wallbox, step 09/15, test RCD negative')
@@ -985,15 +1017,13 @@ class Stage3:
         if self.read_meter_qr_code(timeout=30) != '10':
             fatal_error('Step 09 timeouted')
 
-        print('Resetting DC fault')
-
-        self.reset_dc_fault_function()
-        time.sleep(EVSE_SETTLE_DURATION)
+        self.reset_dc_fault()
 
         # step 10: test R iso L1
         print('Testing wallbox, step 10/15, test R iso L1')
 
         self.change_cp_pe_state('A')
+
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
         if not self.check_iec_state('A'):
