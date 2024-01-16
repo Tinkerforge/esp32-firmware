@@ -142,7 +142,6 @@ void NTP::setup()
 
             sntp_servermode_dhcp(opts->set_servers_from_dhcp);
 
-            esp_netif_init();
             if (sntp_enabled()) {
                 sntp_stop();
             }
