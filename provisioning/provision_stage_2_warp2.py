@@ -534,7 +534,6 @@ def main(stage3):
             do_factory_reset = len(user_config["users"]) != 1
         else:
             for i, u in enumerate(user_config["users"][1:]):
-                print(u)
                 if u["roles"] != 2 ** 16 - 1 or \
                    u["current"] != 32000 or \
                    u["display_name"] != "Benutzer {}".format(i + 1) or \
