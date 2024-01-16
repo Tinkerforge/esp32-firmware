@@ -400,6 +400,7 @@ void Meters::register_urls()
 #if MODULE_METERS_LEGACY_API_AVAILABLE()
     if (meters_legacy_api.get_linked_meter_slot() < METERS_SLOTS) {
         api.addState("meter/error_counters", &meter_slots[meters_legacy_api.get_linked_meter_slot()].errors, {}, 1000);
+        meter_slots[meters_legacy_api.get_linked_meter_slot()].power_history.register_urls("meter/");
     }
 #endif
 }
