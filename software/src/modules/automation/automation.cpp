@@ -160,12 +160,12 @@ bool Automation::trigger_action(AutomationTriggerID number, void *data, std::fun
     for (auto &conf: config_in_use.get("tasks")) {
         if (conf.get("trigger")->getTag<AutomationTriggerID>() == number && cb((Config *)conf.get("trigger"), data)) {
             triggered = true;
-            logger.printfln("Running rule #%d", current_rule);
+            logger.printfln("Running automation rule #%d", current_rule);
             auto action_ident = conf.get("action")->getTag<AutomationActionID>();
             if (action_map.find(action_ident) != action_map.end() && action_ident != AutomationActionID::None)
                 action_map[action_ident].first((Config *)conf.get("action")->get());
             else
-                logger.printfln("There is no action with ident-nr %u!", (uint8_t)action_ident);
+                logger.printfln("There is no action with ID %u!", (uint8_t)action_ident);
         }
         current_rule++;
     }
