@@ -46,14 +46,6 @@ extern char local_uid_str[32];
 
 #define MQTT_RECV_BUFFER_HEADROOM (MQTT_RECV_BUFFER_SIZE / 4)
 
-size_t find(const CoolString &str, size_t start, char c) {
-    for (size_t i = start; i < str.length(); ++i) {
-        if (str[i] == c)
-            return i;
-    }
-    return std::string::npos;
-}
-
 void Mqtt::pre_setup()
 {
     // The real UID will be patched in later
@@ -99,22 +91,18 @@ void Mqtt::pre_setup()
                 return String("Mqtt-topic must not contain the global prefix.");
             }
             bool valid = true;
-            size_t pos = find(topic, 0, '#');
-            while (pos != std::string::npos) {
-                if (pos != 0 && topic[pos - 1] != '/')
-                    valid = false;
-                if (pos != topic.length() - 1)
-                    valid = false;
-                pos = find(topic, pos + 1, '#');
+            int pos = topic.indexOf('#');
+            if ((pos != -1 && pos != topic.length() - 1) || (pos > 1 && topic[pos - 1] != '/')) {
+                valid = false;
             }
 
-            pos = find(topic, 0, '+');
-            while (pos != std::string::npos) {
+            pos = topic.indexOf('+');
+            while (pos != -1) {
                 if (pos != 0 && topic[pos - 1] != '/')
                     valid = false;
                 if (pos != topic.length() - 1 && topic[pos + 1] != '/')
                     valid = false;
-                pos = find(topic, pos + 1, '+');
+                pos = topic.indexOf('+', pos + 1);
             }
             if (!valid) {
                 return String("Invalid use of wildcards in topic.");
@@ -144,7 +132,7 @@ void Mqtt::pre_setup()
                 return String("Mqtt-topic must not contain the global prefix.");
             }
 
-            if (std::find(topic.begin(), topic.end(), '#') != topic.end() || std::find(topic.begin(), topic.end(), '+') != topic.end()) {
+            if (topic.indexOf('#') != -1 || topic.indexOf('+') != -1) {
                 return String("Mqtt-topic must not contain wildcards.");
             }
             return String("");
