@@ -41,13 +41,11 @@ export type EvseGpInputAutomationTrigger = [
 
 export type EvseButtonAutomationTrigger = [
     AutomationTriggerID.EVSEButton,
-    {
-        button_pressed: boolean;
-    },
+    null,
 ];
 
 function get_evse_button_table_children(trigger: EvseButtonAutomationTrigger) {
-    return __("evse.automation.automation_button_trigger_text")(trigger[1].button_pressed);
+    return __("evse.automation.automation_button_trigger_text");
 }
 
 function get_evse_button_edit_children(_: EvseButtonAutomationTrigger, __: (trigger: AutomationTrigger) => void): ComponentChildren {
@@ -57,9 +55,7 @@ function get_evse_button_edit_children(_: EvseButtonAutomationTrigger, __: (trig
 function new_evse_button_config(): AutomationTrigger {
     return [
         AutomationTriggerID.EVSEButton,
-        {
-            button_pressed: true,
-        },
+        null,
     ];
 }
 
@@ -129,7 +125,7 @@ export function init() {
             [AutomationTriggerID.EVSEButton]: {
                 name: __("evse.automation.automation_trigger_button"),
                 new_config: new_evse_button_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+                clone_config: (trigger: AutomationTrigger) => [trigger[0], null] as AutomationTrigger,
                 get_edit_children: get_evse_button_edit_children,
                 get_table_children: get_evse_button_table_children,
                 require_feature: "button_configuration",

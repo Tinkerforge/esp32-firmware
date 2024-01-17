@@ -13,7 +13,7 @@ let x = {
             "automation_trigger_active_high": "auf geöffnet",
             "automation_sd_trigger_text": /*FFN*/(state: boolean) => <>Wenn der <b>Abschalt</b>eingang <b>{state ? "geöffnet" : "geschlossen"}</b> wird,{" "}</>/*NF*/,
             "automation_gpin_trigger_text": /*FFN*/(state: boolean) => <>Wenn der <b>konfigurierbare</b> Eingang <b>{state ? "geöffnet" : "geschlossen"}</b> wird,{" "}</>/*NF*/,
-            "automation_button_trigger_text": /*FFN*/(state: boolean) => <>Wenn der <b>Fronttaster</b> {state ? "gedrückt" : "losgelassen"} wird,{" "}</>/*NF*/,
+            "automation_button_trigger_text": <>Wenn der <b>Fronttaster gedrückt</b> wird,{" "}</>,
             "automation_gpout_action_text": /*FFN*/(state: number) => state ? <><b>schalte</b> den konfigurierbaren Ausgang <b>hochohmig</b>.</> : <><b>verbinde</b> den Konfigurierbaren Ausgang <b>mit Masse</b>.</>/*NF*/
         }
     }
