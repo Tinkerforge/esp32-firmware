@@ -60,6 +60,7 @@ public:
     ConfigRoot control_pilot_disconnect;
 
     uint32_t last_available_current_update = 0;
+    bool watchdog_triggered = false;
 
     struct ChargerState {
         uint32_t last_update;

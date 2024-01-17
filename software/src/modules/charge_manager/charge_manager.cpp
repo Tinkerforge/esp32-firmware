@@ -454,8 +454,10 @@ void ChargeManager::setup()
 
 void ChargeManager::check_watchdog()
 {
-    if (!deadline_elapsed(last_available_current_update + WATCHDOG_TIMEOUT_MS))
+    if (this->watchdog_triggered || !deadline_elapsed(last_available_current_update + WATCHDOG_TIMEOUT_MS))
         return;
+
+    this->watchdog_triggered = true;
 
     uint32_t default_available_current = this->default_available_current;
 
@@ -953,6 +955,7 @@ void ChargeManager::register_urls()
         uint32_t current = this->available_current_update.get("current")->asUint();
         this->available_current.get("current")->updateUint(current);
         this->last_available_current_update = millis();
+        this->watchdog_triggered = false;
     }, false);
 
     api.addState("charge_manager/available_phases", &available_phases, {}, 1000);
