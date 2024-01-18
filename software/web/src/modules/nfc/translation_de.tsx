@@ -46,7 +46,7 @@ let x = {
             "trigger_charge_any": "Ladevorgang Start/Stopp",
             "trigger_charge_start": "Ladevorgang Start",
             "trigger_charge_stop": "Ladevorgang Stopp",
-            "tag_action": "Tag Aktion",
+            "action": "Tag Aktion",
             "tag_id_invalid_feedback": "Die Tag-ID muss aus vier bis zehn Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB",
             "table_tag_id": "Tag-ID",
             "table_user_id": "Zugeordneter Benutzer",

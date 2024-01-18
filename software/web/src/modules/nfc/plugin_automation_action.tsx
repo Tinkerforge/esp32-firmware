@@ -33,12 +33,12 @@ export type NfcAutomationAction = [
     {
         tag_type: number;
         tag_id: string;
-        tag_action: number;
+        action: number;
     },
 ];
 
 function get_nfc_inject_tag_table_children(action: NfcAutomationAction) {
-    return __("nfc.automation.automation_action_text")(action[1].tag_id, translate_unchecked("nfc.automation.type_" + action[1].tag_type), action[1].tag_action);
+    return __("nfc.automation.automation_action_text")(action[1].tag_id, translate_unchecked("nfc.automation.type_" + action[1].tag_type), action[1].action);
 }
 
 function get_nfc_inject_tag_edit_children(action: NfcAutomationAction, on_action: (action: AutomationAction) => void) {
@@ -102,16 +102,16 @@ function get_nfc_inject_tag_edit_children(action: NfcAutomationAction, on_action
                     on_action(util.get_updated_union(action, {tag_type: parseInt(v)}));
                 }} />
         </FormRow>
-        <FormRow label={__("nfc.automation.tag_action")}>
+        <FormRow label={__("nfc.automation.action")}>
             <InputSelect
                 items={[
                     ["0", __("nfc.automation.trigger_charge_any")],
                     ["1", __("nfc.automation.trigger_charge_start")],
                     ["2", __("nfc.automation.trigger_charge_stop")]
                 ]}
-                value={action[1].tag_action.toString()}
+                value={action[1].action.toString()}
                 onValue={(v) => {
-                    on_action(util.get_updated_union(action, {tag_action: parseInt(v)}));
+                    on_action(util.get_updated_union(action, {action: parseInt(v)}));
                 }} />
         </FormRow>
     </>]
@@ -123,7 +123,7 @@ function new_nfc_inject_tag_config(): AutomationAction {
         {
             tag_id: "",
             tag_type: 0,
-            tag_action: 0,
+            action: 0,
         },
     ];
 }

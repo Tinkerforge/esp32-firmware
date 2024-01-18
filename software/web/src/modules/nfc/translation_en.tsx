@@ -46,7 +46,7 @@ let x = {
             "trigger_charge_any": "Charge start/stop",
             "trigger_charge_start": "Charge start",
             "trigger_charge_stop": "Charge stop",
-            "tag_action": "Tag action",
+            "action": "Tag action",
             "tag_id_invalid_feedback": "The BSSID must have three to ten groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
             "table_tag_id": "Tag ID",
             "table_user_id": "Assigned user",
