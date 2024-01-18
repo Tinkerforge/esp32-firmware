@@ -131,7 +131,6 @@ function get_led_edit_children(action: EvseLedAutomationAction, on_action: (acti
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {duration: v * 1000}));
                 }} />
-            <span class="text-muted mt-1">{__("evse.automation.api_must_be_enabled")}</span>
         </FormRow>
     </>];
 }

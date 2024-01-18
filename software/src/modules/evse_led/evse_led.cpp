@@ -41,8 +41,7 @@ void EvseLed::pre_setup()
             {"duration", Config::Uint16(0)}
         }),
         [this](const Config *config) {
-            //FIXME: Should this call set_module instead?
-            set_api(config->get("state")->asEnum<Blink>(), config->get("duration")->asUint());
+            set_module(config->get("state")->asEnum<Blink>(), config->get("duration")->asUint());
         }
     );
 #endif
