@@ -80,13 +80,13 @@ void Mqtt::pre_setup()
     automation.register_trigger(
         AutomationTriggerID::MQTT,
         Config::Object({
-            {"topic", Config::Str("", 0, 32)},
+            {"topic_filter", Config::Str("", 0, 32)},
             {"payload", Config::Str("", 0, 32)},
             {"retain", Config::Bool(false)},
             {"use_prefix", Config::Bool(false)}
         }),
         [this](const Config *cfg) {
-            const CoolString &topic = cfg->get("topic")->asString();
+            const CoolString &topic = cfg->get("topic_filter")->asString();
             if (topic.startsWith(this->config.get("global_topic_prefix")->asString())) {
                 return String("Mqtt-topic must not contain the global prefix.");
             }
@@ -593,12 +593,12 @@ void Mqtt::register_urls()
         for (auto &conf: trigger_config) {
             bool already_subscribed = false;
             for (auto &new_topic: subscribed_topics) {
-                if (conf.second->get("topic")->asString() == new_topic)
+                if (conf.second->get("topic_filter")->asString() == new_topic)
                     already_subscribed = true;
             }
             const size_t idx = conf.first;
             if (!already_subscribed) {
-                String topic = conf.second->get("topic")->asString();
+                String topic = conf.second->get("topic_filter")->asString();
                 if (conf.second->get("use_prefix")->asBool()) {
                     topic = config.get("global_topic_prefix")->asString() + "/automation_trigger/" + topic;
                 }
@@ -651,7 +651,7 @@ bool Mqtt::action_triggered(Config *config, void *data) {
     MqttMessage *msg = (MqttMessage *)data;
     const CoolString &payload = cfg->get("payload")->asString();
 
-    CoolString topic = cfg->get("topic")->asString();
+    CoolString topic = cfg->get("topic_filter")->asString();
     if (cfg->get("use_prefix")->asBool()) {
         topic = this->config.get("global_topic_prefix")->asString();
         topic += "/automation_trigger/";

@@ -31,7 +31,7 @@ import * as util from "../../ts/util";
 export type MqttAutomationTrigger = [
     AutomationTriggerID.MQTT,
     {
-        topic: string;
+        topic_filter: string;
         payload: string;
         retain: boolean;
         use_prefix: boolean;
@@ -40,7 +40,7 @@ export type MqttAutomationTrigger = [
 
 function get_mqtt_table_children(trigger: MqttAutomationTrigger) {
     const mqtt_config = API.get("mqtt/config");
-    const topic = trigger[1].use_prefix ? mqtt_config.global_topic_prefix + "/automation_trigger/" + trigger[1].topic : trigger[1].topic;
+    const topic = trigger[1].use_prefix ? mqtt_config.global_topic_prefix + "/automation_trigger/" + trigger[1].topic_filter : trigger[1].topic_filter;
 
     return __("mqtt.automation.automation_trigger_text")(topic, trigger[1].payload, trigger[1].retain);
 }
@@ -61,7 +61,7 @@ function get_mqtt_edit_children(trigger: MqttAutomationTrigger, on_trigger: (tri
         <FormRow label={__("mqtt.automation.topic")}>
             <InputText
                 required
-                value={trigger[1].topic}
+                value={trigger[1].topic_filter}
                 class={isInvalid ? "is-invalid" : undefined}
                 maxLength={64}
                 onValue={(v) => {
@@ -71,14 +71,14 @@ function get_mqtt_edit_children(trigger: MqttAutomationTrigger, on_trigger: (tri
                         isInvalidSetter(false);
                     }
 
-                    on_trigger(util.get_updated_union(trigger, {topic: v}));
+                    on_trigger(util.get_updated_union(trigger, {topic_filter: v}));
                 }}
                 invalidFeedback={__("mqtt.automation.use_topic_prefix_invalid")} />
         </FormRow>
         <FormRow label={__("mqtt.automation.full_topic")} hidden={!trigger[1].use_prefix}>
             <InputText
                 class="mt-2"
-                value={mqtt_config.global_topic_prefix + "/automation_trigger/" + trigger[1].topic} />
+                value={mqtt_config.global_topic_prefix + "/automation_trigger/" + trigger[1].topic_filter} />
         </FormRow>
         <FormRow label={__("mqtt.automation.payload")}>
             <InputText
@@ -103,7 +103,7 @@ function new_mqtt_config(): AutomationTrigger {
     return [
         AutomationTriggerID.MQTT,
         {
-            topic: "",
+            topic_filter: "",
             payload: "",
             retain: false,
             use_prefix: false,
