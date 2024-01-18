@@ -42,7 +42,7 @@ export type EMInputFourAutomationTrigger = [
 export type EMPhaseSwitchAutomationTrigger = [
     AutomationTriggerID.EMPhaseSwitch,
     {
-        phase: number;
+        phases: number;
     },
 ];
 
@@ -127,20 +127,20 @@ function new_em_input_four_config(): AutomationTrigger {
 }
 
 function get_em_phase_switch_table_children(trigger: EMPhaseSwitchAutomationTrigger) {
-    return __("energy_manager.automation.automation_phase_switch_text")(trigger[1].phase);
+    return __("energy_manager.automation.automation_phase_switch_text")(trigger[1].phases);
 }
 
 function get_em_phase_switch_edit_children(trigger: EMPhaseSwitchAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     return [
         <FormRow label={__("energy_manager.automation.phase")}>
             <InputSelect
-                value={trigger[1].phase.toString()}
+                value={trigger[1].phases.toString()}
                 items = {[
                     ['1', __("energy_manager.automation.single_phase")],
                     ['3', __("energy_manager.automation.three_phase")],
                 ]}
                 onValue={(v) => {
-                    on_trigger(util.get_updated_union(trigger, {phase: parseInt(v)}));
+                    on_trigger(util.get_updated_union(trigger, {phases: parseInt(v)}));
                 }} />
         </FormRow>
     ];
@@ -150,7 +150,7 @@ function new_em_phase_switch_config(): AutomationTrigger {
     return [
         AutomationTriggerID.EMPhaseSwitch,
         {
-            phase: 1,
+            phases: 1,
         },
     ];
 }

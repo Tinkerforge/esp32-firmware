@@ -200,7 +200,7 @@ void EnergyManager::pre_setup()
     automation.register_trigger(
         AutomationTriggerID::EMPhaseSwitch,
         Config::Object({
-            {"phase", Config::Uint(1)}
+            {"phases", Config::Uint(1)}
         }));
 
     automation.register_trigger(
@@ -244,7 +244,7 @@ bool EnergyManager::action_triggered(Config *automation_config, void *data) {
             break;
 
         case AutomationTriggerID::EMPhaseSwitch:
-            if (cfg->get("phase")->asUint() == state.get("phases_switched")->asUint()) {
+            if (cfg->get("phases")->asUint() == state.get("phases_switched")->asUint()) {
                 return true;
             }
             break;
