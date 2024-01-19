@@ -52,6 +52,9 @@ void WS::register_urls()
             }
 
             if (!to_send.reserve(required)) {
+                multi_heap_info_t dram_info;
+                heap_caps_get_info(&dram_info,  MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+                logger.printfln("ws: Not enough memory to send initial state. %u > %u (%u)", required, dram_info.largest_free_block, dram_info.total_free_bytes);
                 return;
             }
 
