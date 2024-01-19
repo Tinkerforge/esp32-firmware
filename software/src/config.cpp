@@ -41,7 +41,7 @@ size_t float_buf_size = 0;
 Config::ConfString::Slot *string_buf = nullptr;
 size_t string_buf_size = 0;
 
-#define ARRAY_SLOTS 32
+#define ARRAY_SLOTS 64
 Config::ConfArray::Slot *array_buf = nullptr;
 size_t array_buf_size = 0;
 
@@ -618,13 +618,28 @@ static void shrinkToFit(typename T::Slot * &buf, size_t &buf_size) {
     ASSERT_MAIN_THREAD();
     size_t highest = 0;
     int empty = 0;
-    for (size_t i = 0; i < buf_size; i++)
-        if (!T::slotEmpty(i))
-            highest = i;
-        else
-            ++empty;
 
-    auto new_size = highest + 1 + std::max(0, SLOT_HEADROOM - empty);
+    size_t pos = buf_size;
+    while (pos > 0) {
+        pos--;
+        if (!T::slotEmpty(pos)) {
+            highest = pos;
+            break;
+        }
+    }
+    while (pos > 0) {
+        pos--;
+        if (T::slotEmpty(pos)) {
+            empty++;
+        }
+    }
+
+    size_t new_size = highest + 1 + (size_t)std::max(0, SLOT_HEADROOM - empty);
+
+    // Don't increase buffer size. It will be increased automatically when required.
+    if (new_size >= buf_size)
+        return;
+
     auto new_buf = T::allocSlotBuf(new_size);
 
     for(size_t i = 0; i <= highest; ++i)
