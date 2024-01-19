@@ -277,10 +277,24 @@ void Debug::register_urls()
     api.addState("debug/state_slow", &state_slow);
     api.addState("debug/state_hwm", &state_hwm);
 
-    server.on_HTTPThread("/debug/crash", HTTP_GET, [this](WebServerRequest req) {
+    server.on_HTTPThread("/debug/crash", HTTP_GET, [](WebServerRequest req) {
         esp_system_abort("Crash requested");
         return req.send(200);
     });
+
+    server.on_HTTPThread("/debug/state_sizes", HTTP_GET, [](WebServerRequest req) {
+        char str[3968]; // on httpd stack, which is large enough
+        ssize_t len = 0;
+        task_scheduler.await([&str, &len](){
+            size_t offset = 0;
+            for (const auto &reg : api.states) {
+                offset += snprintf_u(str + offset, sizeof(str) - offset, "%4u %s\n", reg.config->string_length(), reg.path.c_str());
+            }
+            len = static_cast<ssize_t>(offset);
+        });
+        return req.send(200, "text/plain", str, len);
+    });
+
 #ifdef DEBUG_FS_ENABLE
     server.on_HTTPThread("/debug/fs/*", HTTP_GET, [this](WebServerRequest request) {
         String path = request.uri().substring(ARRAY_SIZE("/debug/fs") - 1);
