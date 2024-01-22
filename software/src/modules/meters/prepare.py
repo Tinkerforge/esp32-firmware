@@ -285,7 +285,6 @@ classes = [
     'API',
     'Sun Spec',
     'Modbus TCP',
-    #'MQTT Subscription'
 ]
 
 class_values = []
