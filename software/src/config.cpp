@@ -619,6 +619,8 @@ static void shrinkToFit(typename T::Slot * &buf, size_t &buf_size) {
     size_t highest = 0;
     int empty = 0;
 
+    // Search for last used slot first.
+    // All empty slots behind the last used slot will be cut off.
     size_t pos = buf_size;
     while (pos > 0) {
         pos--;
@@ -634,6 +636,11 @@ static void shrinkToFit(typename T::Slot * &buf, size_t &buf_size) {
         }
     }
 
+    // Shrink the buffer so that the last used slot fits
+    // (we are not allowed to move used slots in the buffer!)
+    // and we have SLOT_HEADROOM free slots.
+    // If there are empty slots before the last used one, prefer those.
+    // If there are not enough, add some empty slots behind the last used one.
     size_t new_size = highest + 1 + (size_t)std::max(0, SLOT_HEADROOM - empty);
 
     // Don't increase buffer size. It will be increased automatically when required.
