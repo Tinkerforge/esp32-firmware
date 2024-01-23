@@ -708,8 +708,9 @@ public:
     ConfigRoot(Config cfg);
 
     ConfigRoot(Config cfg, std::function<String(Config &, ConfigSource)> validator);
-
+private:
     std::function<String(Config &, ConfigSource)> validator;
+public:
     bool permit_null_updates = true;
 
     void update_from_copy(Config *copy);
