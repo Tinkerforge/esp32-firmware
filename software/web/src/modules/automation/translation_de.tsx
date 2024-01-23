@@ -80,7 +80,12 @@ let x = {
                 }
 
                 return <>{day}{time}, </>;
-            }/*NF*/
+            }/*NF*/,
+
+            "print_action": "Ausgabe im Ereignislog",
+            "print_action_message": "Nachricht",
+            "print_action_text": /*FFN*/(message: string) => <>zeige "{message}" im <b>Ereignislog</b> an.</> /*NF*/
+
         },
         "content": {
             "automation": "Automatisierung",
