@@ -37,11 +37,11 @@ void EvseLed::pre_setup()
     automation.register_action(
         AutomationActionID::LED,
         Config::Object({
-            {"state", Config::Int(-1)},
+            {"indication", Config::Int(-1)},
             {"duration", Config::Uint16(0)}
         }),
         [this](const Config *config) {
-            set_module(config->get("state")->asEnum<Blink>(), config->get("duration")->asUint());
+            set_module(config->get("indication")->asEnum<Blink>(), config->get("duration")->asUint());
         }
     );
 #endif

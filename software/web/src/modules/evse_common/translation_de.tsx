@@ -224,13 +224,13 @@ let x = {
             "api_must_be_enabled": "Die API muss aktiviert sein, um die Status-LED steuern zu können.",
             "state_change": "Fahrzeugstatus gewechselt",
             "led_duration": "Dauer",
-            "led_state": "LED-Zustand",
-            "led_state_off": "Aus",
-            "led_state_on": "An",
-            "led_state_blinking": "Bestätigendes Blinken",
-            "led_state_flickering": "Ablehnendes Blinken",
-            "led_state_breathing": "Auffordendes Blinken",
-            "led_state_error": /*SFN*/(count: number) => {
+            "led_indication": "LED-Zustand",
+            "led_indication_off": "Aus",
+            "led_indication_on": "An",
+            "led_indication_blinking": "Bestätigendes Blinken",
+            "led_indication_flickering": "Ablehnendes Blinken",
+            "led_indication_breathing": "Auffordendes Blinken",
+            "led_indication_error": /*SFN*/(count: number) => {
                 return "Blinken (" + count + "x)";
             }/*NF*/,
             "from": "Von",

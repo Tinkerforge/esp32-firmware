@@ -224,13 +224,13 @@ let x = {
             "api_must_be_enabled": "API must be enabled to use this feature.",
             "state_change": "State change",
             "led_duration": "Duration",
-            "led_state": "LED state",
-            "led_state_off": "Off",
-            "led_state_on": "On",
-            "led_state_blinking": "Acknowledge blinking",
-            "led_state_flickering": "Rejecting blinking",
-            "led_state_breathing": "Demanding blinking",
-            "led_state_error": /*SFN*/(count: number) => {
+            "led_indication": "LED indication",
+            "led_indication_off": "Off",
+            "led_indication_on": "On",
+            "led_indication_blinking": "Acknowledge blinking",
+            "led_indication_flickering": "Rejecting blinking",
+            "led_indication_breathing": "Demanding blinking",
+            "led_indication_error": /*SFN*/(count: number) => {
                 return "Blinking (" + count + " x)";
             }/*NF*/,
             "from": "From",
