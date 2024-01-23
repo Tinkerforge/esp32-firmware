@@ -28,12 +28,12 @@ import * as util from "../../ts/util";
 export type EvseGpOutputAutomationAction = [
     AutomationActionID.EVSEGPOutput,
     {
-        state: number;
+        closed: boolean;
     },
 ];
 
 function get_evse_gp_output_table_children(action: EvseGpOutputAutomationAction) {
-    return __("evse.automation.automation_gpout_action_text")(action[1].state);
+    return __("evse.automation.automation_gpout_action_text")(action[1].closed);
 }
 
 function get_evse_gp_output_edit_children(action: EvseGpOutputAutomationAction, on_action: (action: AutomationAction) => void) {
@@ -44,9 +44,9 @@ function get_evse_gp_output_edit_children(action: EvseGpOutputAutomationAction, 
                     ["0", __("evse.automation.gpio_out_low")],
                     ["1", __("evse.automation.gpio_out_high")],
                 ]}
-                value={action[1].state}
+                value={action[1].closed ? "1" : "0"}
                 onValue={(v) => {
-                    on_action(util.get_updated_union(action, {state: parseInt(v)}));
+                    on_action(util.get_updated_union(action, {closed: v === "1"}));
                 }}
             />
         </FormRow>,
@@ -57,7 +57,7 @@ function new_evse_gp_output_config(): AutomationAction {
     return [
         AutomationActionID.EVSEGPOutput,
         {
-            state: 0,
+            closed: true,
         },
     ];
 }

@@ -28,14 +28,14 @@ import * as util from "../../ts/util";
 export type EMInputThreeAutomationTrigger = [
     AutomationTriggerID.EMInputThree,
     {
-        state: boolean;
+        closed: boolean;
     },
 ];
 
 export type EMInputFourAutomationTrigger = [
     AutomationTriggerID.EMInputFour,
     {
-        state: boolean;
+        closed: boolean;
     },
 ];
 
@@ -68,20 +68,20 @@ export type EMGridPowerDrawAutomationTrigger = [
 ];
 
 function get_em_input_three_table_children(trigger: EMInputThreeAutomationTrigger) {
-    return __("energy_manager.automation.automation_input_text")(3, trigger[1].state);
+    return __("energy_manager.automation.automation_input_text")(3, trigger[1].closed);
 }
 
 function get_em_input_three_edit_children(trigger: EMInputThreeAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     return [
         <FormRow label={__("energy_manager.automation.state")}>
             <InputSelect
-                value={trigger[1].state == true ? '1' : '0'}
+                value={trigger[1].closed ? '1' : '0'}
                 items = {[
                     ['0', __("energy_manager.automation.open")],
                     ['1', __("energy_manager.automation.closed")],
                 ]}
                 onValue={(v) => {
-                    on_trigger(util.get_updated_union(trigger, {state: v === '1'}));
+                    on_trigger(util.get_updated_union(trigger, {closed: v === '1'}));
                 }}
             />
         </FormRow>,
@@ -92,26 +92,26 @@ function new_em_input_three_config(): AutomationTrigger {
     return [
         AutomationTriggerID.EMInputThree,
         {
-            state: false,
+            closed: false,
         },
     ];
 }
 
 function get_em_input_four_table_children(trigger: EMInputFourAutomationTrigger) {
-    return __("energy_manager.automation.automation_input_text")(4, trigger[1].state);
+    return __("energy_manager.automation.automation_input_text")(4, trigger[1].closed);
 }
 
 function get_em_input_four_edit_children(trigger: EMInputFourAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     return [
         <FormRow label={__("energy_manager.automation.state")}>
             <InputSelect
-                value={trigger[1].state ? '1' : '0'}
+                value={trigger[1].closed ? '1' : '0'}
                 items = {[
                     ['0', __("energy_manager.automation.open")],
                     ['1', __("energy_manager.automation.closed")],
                 ]}
                 onValue={(v) => {
-                    on_trigger(util.get_updated_union(trigger, {state: v === '1'}));
+                    on_trigger(util.get_updated_union(trigger, {closed: v === '1'}));
                 }} />
         </FormRow>
     ];
@@ -121,7 +121,7 @@ function new_em_input_four_config(): AutomationTrigger {
     return [
         AutomationTriggerID.EMInputFour,
         {
-            state: false,
+            closed: false,
         },
     ];
 }

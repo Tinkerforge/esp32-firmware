@@ -143,10 +143,10 @@ void EnergyManager::pre_setup()
     automation.register_action(
         AutomationActionID::EMRelaySwitch,
         Config::Object({
-            {"state", Config::Bool(false)}
+            {"closed", Config::Bool(false)}
         }),
         [this](const Config *cfg) {
-            this->set_output(cfg->get("state")->asBool());
+            this->set_output(cfg->get("closed")->asBool());
         }
     );
 
@@ -177,13 +177,13 @@ void EnergyManager::pre_setup()
     automation.register_trigger(
         AutomationTriggerID::EMInputThree,
         Config::Object({
-            {"state", Config::Bool(false)}
+            {"closed", Config::Bool(false)}
         }));
 
     automation.register_trigger(
         AutomationTriggerID::EMInputFour,
         Config::Object({
-            {"state", Config::Bool(false)}
+            {"closed", Config::Bool(false)}
         }));
 
     automation.register_trigger(
@@ -221,13 +221,13 @@ bool EnergyManager::action_triggered(Config *automation_config, void *data) {
 
     switch (automation_config->getTag<AutomationTriggerID>()) {
         case AutomationTriggerID::EMInputThree:
-            if (cfg->get("state")->asBool() == state.get("input3_state")->asBool()) {
+            if (cfg->get("closed")->asBool() == state.get("input3_state")->asBool()) {
                 return true;
             }
             break;
 
         case AutomationTriggerID::EMInputFour:
-            if (cfg->get("state")->asBool() == state.get("input4_state")->asBool()) {
+            if (cfg->get("closed")->asBool() == state.get("input4_state")->asBool()) {
                 return true;
             }
             break;

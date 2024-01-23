@@ -28,14 +28,14 @@ import * as util from "../../ts/util";
 export type EvseShutdownAutomationTrigger = [
     AutomationTriggerID.EVSEShutdownInput,
     {
-        high: boolean;
+        closed: boolean;
     },
 ];
 
 export type EvseGpInputAutomationTrigger = [
     AutomationTriggerID.EVSEGPInput,
     {
-        high: boolean;
+        closed: boolean;
     },
 ];
 
@@ -60,7 +60,7 @@ function new_evse_button_config(): AutomationTrigger {
 }
 
 function get_evse_shutdown_table_children(trigger: EvseGpInputAutomationTrigger) {
-    return __("evse.automation.automation_sd_trigger_text")(trigger[1].high);
+    return __("evse.automation.automation_sd_trigger_text")(trigger[1].closed);
 }
 
 function get_evse_shutdown_edit_children(trigger: EvseGpInputAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
@@ -68,12 +68,12 @@ function get_evse_shutdown_edit_children(trigger: EvseGpInputAutomationTrigger, 
         <FormRow label="">
             <InputSelect
                 items={[
-                    ["0", __("evse.automation.automation_trigger_active_low")],
-                    ["1", __("evse.automation.automation_trigger_active_high")],
+                    ["0", __("evse.automation.automation_trigger_input_opened")],
+                    ["1", __("evse.automation.automation_trigger_input_closed")],
                 ]}
-                value={trigger[1].high ? "1" : "0"}
+                value={trigger[1].closed ? "1" : "0"}
                 onValue={(v) => {
-                    on_trigger(util.get_updated_union(trigger, {high: v === "1"}));
+                    on_trigger(util.get_updated_union(trigger, {closed: v === "1"}));
                 }}
             />
         </FormRow>,
@@ -84,13 +84,13 @@ function new_evse_shutdown_input_config(): AutomationTrigger {
     return [
         AutomationTriggerID.EVSEShutdownInput,
         {
-            high: true,
+            closed: true,
         },
     ];
 }
 
 function get_evse_gp_input_table_children(trigger: EvseGpInputAutomationTrigger) {
-    return __("evse.automation.automation_gpin_trigger_text")(trigger[1].high);
+    return __("evse.automation.automation_gpin_trigger_text")(trigger[1].closed);
 }
 
 function get_evse_gp_input_edit_children(trigger: EvseGpInputAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
@@ -98,12 +98,12 @@ function get_evse_gp_input_edit_children(trigger: EvseGpInputAutomationTrigger, 
         <FormRow label="">
             <InputSelect
                 items={[
-                    ["0", __("evse.automation.automation_trigger_active_low")],
-                    ["1", __("evse.automation.automation_trigger_active_high")],
+                    ["0", __("evse.automation.automation_trigger_input_opened")],
+                    ["1", __("evse.automation.automation_trigger_input_closed")],
                 ]}
-                value={trigger[1].high ? "1" : "0"}
+                value={trigger[1].closed ? "1" : "0"}
                 onValue={(v) => {
-                    on_trigger(util.get_updated_union(trigger, {high: v === "1"}));
+                    on_trigger(util.get_updated_union(trigger, {closed: v === "1"}));
                 }}
             />
         </FormRow>,
@@ -114,7 +114,7 @@ function new_evse_gp_input_config(): AutomationTrigger {
     return [
         AutomationTriggerID.EVSEGPInput,
         {
-            high: true,
+            closed: true,
         },
     ];
 }

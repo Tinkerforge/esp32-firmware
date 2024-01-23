@@ -162,24 +162,24 @@ void EVSEV2::pre_setup()
     automation.register_trigger(
         AutomationTriggerID::EVSEGPInput,
         Config::Object({
-            {"high", Config::Bool(false)}
+            {"closed", Config::Bool(true)}
         })
     );
 
     automation.register_trigger(
         AutomationTriggerID::EVSEShutdownInput,
         Config::Object({
-            {"high", Config::Bool(false)}
+            {"closed", Config::Bool(true)}
         })
     );
 
     automation.register_action(
         AutomationActionID::EVSEGPOutput,
         Config::Object({
-            {"state", Config::Uint(0, 0, 1)}
+            {"closed", Config::Bool(true)}
         }),
         [this](const Config *config) {
-            is_in_bootloader(tf_evse_v2_set_gp_output(&device, config->get("state")->asUint()));
+            is_in_bootloader(tf_evse_v2_set_gp_output(&device, config->get("closed")->asBool() ? 0 : 1));
         }
     );
 #endif
@@ -865,7 +865,7 @@ void EVSEV2::update_all_data()
 
     if (error_state_changed) {
         if (error_state != 0) {
-            logger.printfln("EVSE: Error state %d", error_state);
+            logger.printfln("%u EVSE: Error state %d", uptime, error_state);
         } else {
             logger.printfln("EVSE: Error state cleared");
         }
@@ -1039,15 +1039,8 @@ bool EVSEV2::action_triggered(Config *config, void *data) {
         return true;
 
     case AutomationTriggerID::EVSEGPInput:
-        if (*static_cast<bool *>(data) == cfg->get("high")->asBool())
-            return true;
-        break;
-
     case AutomationTriggerID::EVSEShutdownInput:
-        if (*static_cast<bool *>(data) == cfg->get("high")->asBool())
-            return true;
-        break;
-
+        return *static_cast<bool *>(data) != cfg->get("closed")->asBool();
     default:
         break;
     }

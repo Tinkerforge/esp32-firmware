@@ -44,7 +44,7 @@ export type EMChargeModeSwitchAutomationAction = [
 export type EMContactorAutomationAction = [
     AutomationActionID.EMRelaySwitch,
     {
-        state: boolean;
+        closed: boolean;
     },
 ];
 
@@ -129,22 +129,22 @@ function new_em_charge_mode_switch_config(): AutomationAction {
 }
 
 function get_em_contactor_table_children(action: EMContactorAutomationAction) {
-    return __("energy_manager.automation.relay_action_text")(action[1].state);
+    return __("energy_manager.automation.relay_action_text")(action[1].closed);
 }
 
 function get_em_contactor_edit_children(action: EMContactorAutomationAction, on_action: (action: AutomationAction) => void) {
     const states: [string, string][] = [
-        ['1', __("energy_manager.automation.relay_state_closed")],
         ['0', __("energy_manager.automation.relay_state_open")],
+        ['1', __("energy_manager.automation.relay_state_closed")],
     ]
 
     return [
         <FormRow label={__("energy_manager.automation.relay_state")}>
             <InputSelect
                 items={states}
-                value={action[1].state ? '1' : '0'}
+                value={action[1].closed ? '1' : '0'}
                 onValue={(v) => {
-                    on_action(util.get_updated_union(action, {state: v == '1'}));
+                    on_action(util.get_updated_union(action, {closed: v == '1'}));
                 }} />
         </FormRow>
     ]
@@ -154,7 +154,7 @@ function new_em_contactor_config(): AutomationAction {
     return [
         AutomationActionID.EMRelaySwitch,
         {
-            state: true,
+            closed: true,
         },
     ];
 }
