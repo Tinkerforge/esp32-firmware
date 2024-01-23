@@ -49,15 +49,6 @@
 #define ERROR_FLAGS_ALL_ERRORS_MASK         (0x7FFF0000)
 #define ERROR_FLAGS_ALL_WARNINGS_MASK       (0x0000FFFF)
 
-#define CONFIG_ERROR_FLAGS_EXCESS_NO_METER_BIT_POS  3
-#define CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK     (1 << CONFIG_ERROR_FLAGS_EXCESS_NO_METER_BIT_POS)
-#define CONFIG_ERROR_FLAGS_NO_CHARGERS_BIT_POS      2
-#define CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK         (1 << CONFIG_ERROR_FLAGS_NO_CHARGERS_BIT_POS)
-#define CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_BIT_POS   1
-#define CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK      (1 << CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_BIT_POS)
-#define CONFIG_ERROR_FLAGS_PHASE_SWITCHING_BIT_POS  0
-#define CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK     (1 << CONFIG_ERROR_FLAGS_PHASE_SWITCHING_BIT_POS)
-
 #define EXTERNAL_CONTROL_STATE_AVAILABLE    0
 #define EXTERNAL_CONTROL_STATE_DISABLED     1
 #define EXTERNAL_CONTROL_STATE_UNAVAILABLE  2
@@ -90,6 +81,8 @@ public:
 
     [[gnu::const]] const Config * get_config();
 
+    void set_error(uint32_t error_mask);
+
     void limit_max_current(uint32_t limit_ma);
     void reset_limit_max_current();
     void switch_mode(uint32_t new_mode);
@@ -116,7 +109,6 @@ public:
 private:
     void update_status_led();
     void clr_error(uint32_t error_mask);
-    void set_error(uint32_t error_mask);
     bool is_error(uint32_t error_bit_pos);
     void set_config_error(uint32_t config_error_mask);
     void check_bricklet_reachable(int rc, const char *context);
@@ -134,12 +126,12 @@ private:
     ConfigRoot state;
     ConfigRoot low_level_state;
     ConfigRoot config;
-    ConfigRoot external_control;
-    ConfigRoot external_control_update;
 
+    Config *pm_state;
     Config *pm_low_level_state;
     const Config *pm_config;
     Config *pm_charge_mode;
+    const Config *pm_external_control;
 
     EnergyManagerAllData all_data;
 

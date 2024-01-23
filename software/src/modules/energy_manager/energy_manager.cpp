@@ -48,7 +48,6 @@ void EnergyManager::pre_setup()
         {"relay_state", Config::Bool(false)},
         {"error_flags", Config::Uint32(0)},
         {"config_error_flags", Config::Uint32(0)},
-        {"external_control", Config::Uint32(EXTERNAL_CONTROL_STATE_DISABLED)},
     });
 
     low_level_state = Config::Object({
@@ -66,26 +65,16 @@ void EnergyManager::pre_setup()
     // Config
     config = ConfigRoot(Config::Object({
         {"contactor_installed", Config::Bool(false)},
-        {"phase_switching_mode", Config::Uint(PHASE_SWITCHING_AUTOMATIC, PHASE_SWITCHING_MIN, PHASE_SWITCHING_MAX)},
     }), [](const Config &cfg, ConfigSource source) -> String {
         const Config *pm_cfg = power_manager.get_config();
 
-        if (cfg.get("phase_switching_mode")->asUint() == 3) { // external control
+        if (pm_cfg->get("phase_switching_mode")->asUint() == 3) { // external control
             if (cfg.get("contactor_installed")->asBool() != true)
-                return "Can't enable external control with no contactor installed.";
-            if (pm_cfg->get("excess_charging_enable")->asBool() != false)
-                return "Can't enable external control unless excess charging is disabled.";
-            if (pm_cfg->get("default_mode")->asUint() != MODE_FAST)
-                return "Can't enable external control with any charging mode besides 'Fast'.";
+                return "Cannot remove contactor while external control is enabled.";
         }
 
         return "";
     });
-
-    external_control = Config::Object({
-        {"phases_wanted", Config::Uint32(0)},
-    });
-    external_control_update = external_control;
 
     // history
     history_wallbox_5min = Config::Object({
@@ -326,10 +315,12 @@ void EnergyManager::setup()
     });
 
     // Get configs from Power Manager
+    pm_state                      = power_manager.get_state();
     pm_low_level_state            = power_manager.get_config_low_level_state();
     pm_config                     = power_manager.get_config();
     const Config *pm_debug_config = power_manager.get_debug_config();
     pm_charge_mode                = power_manager.get_config_charge_mode();
+    pm_external_control           = power_manager.get_external_control();
 
     // Cache config for energy update
     default_mode                = pm_config->get("default_mode")->asUint();
@@ -338,7 +329,7 @@ void EnergyManager::setup()
     target_power_from_grid_w    = pm_config->get("target_power_from_grid")->asInt();          // watt
     guaranteed_power_w          = pm_config->get("guaranteed_power")->asUint();               // watt
     contactor_installed         = config.get("contactor_installed")->asBool();
-    phase_switching_mode        = config.get("phase_switching_mode")->asUint();
+    phase_switching_mode        = pm_config->get("phase_switching_mode")->asUint();
     switching_hysteresis_ms     = pm_debug_config->get("hysteresis_time")->asUint() * 60 * 1000;         // milliseconds (from minutes)
     max_current_unlimited_ma    = charge_manager.config.get("maximum_available_current")->asUint();      // milliampere
     min_current_1p_ma           = charge_manager.config.get("minimum_current_1p")->asUint();             // milliampere
@@ -348,7 +339,7 @@ void EnergyManager::setup()
     pm_charge_mode->get("mode")->updateUint(mode);
 
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
-        state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+        pm_state->get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
 
     // Set up meter power filter.
     uint32_t power_mavg_span_s;
@@ -428,9 +419,9 @@ void EnergyManager::setup()
 
     // Check for incomplete configuration after as much as possible has been set up.
     // The default configuration after a factory reset must be good enough for everything to run without crashing.
-    if ((config.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !config.get("contactor_installed")->asBool()) {
+    if ((pm_config->get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !config.get("contactor_installed")->asBool()) {
         logger.printfln("energy_manager: Invalid configuration: Automatic phase switching selected but no contactor installed.");
-        set_config_error(CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK);
+        power_manager.set_config_error(CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK);
         return;
     }
 
@@ -444,7 +435,7 @@ void EnergyManager::setup()
     }
 #endif
     if (excess_charging_enable && !power_meter_available) {
-        set_config_error(CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK);
+        power_manager.set_config_error(CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK);
         logger.printfln("energy_manager: Excess charging enabled but configured meter can't provide power values.");
     }
 
@@ -460,13 +451,13 @@ void EnergyManager::setup()
     task_scheduler.scheduleOnce([this](){
         if (!charge_manager.have_chargers()) {
             logger.printfln("energy_manager: No chargers configured. Won't try to distribute energy.");
-            set_config_error(CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK);
+            power_manager.set_config_error(CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK);
         }
     }, 0);
 
     if (max_current_unlimited_ma == 0) {
         logger.printfln("energy_manager: No maximum current configured for chargers. Disabling energy distribution.");
-        set_config_error(CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK);
+        power_manager.set_config_error(CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK);
         return;
     }
 
@@ -508,41 +499,6 @@ void EnergyManager::register_urls()
 
     api.addPersistentConfig("energy_manager/config", &config, {}, 1000);
     api.addState("energy_manager/low_level_state", &low_level_state, {}, 1000);
-
-    api.addState("energy_manager/external_control", &external_control, {}, 1000);
-    api.addCommand("energy_manager/external_control_update", &external_control_update, {}, [this](){
-        uint32_t external_control_state = state.get("external_control")->asUint();
-        switch (external_control_state) {
-            case EXTERNAL_CONTROL_STATE_DISABLED:
-                logger.printfln("energy_manager: Ignoring external control phase change request: External control is not enabled.");
-                return;
-            case EXTERNAL_CONTROL_STATE_UNAVAILABLE:
-                logger.printfln("energy_manager: Ignoring external control phase change request: Phase switching is currently unavailable.");
-                return;
-            case EXTERNAL_CONTROL_STATE_SWITCHING:
-                logger.printfln("energy_manager: Ignoring external control phase change request: Phase switching in progress.");
-                return;
-            default:
-                break; // All good, proceed.
-        }
-
-        auto phases_wanted = external_control.get("phases_wanted");
-        uint32_t old_phases = phases_wanted->asUint();
-        uint32_t new_phases = external_control_update.get("phases_wanted")->asUint();
-
-        if (new_phases == old_phases) {
-            logger.printfln("energy_manager: Ignoring external control phase change request: Value is already %u.", new_phases);
-            return;
-        }
-
-        if (new_phases == 2 || new_phases > 3) {
-            logger.printfln("energy_manager: Ignoring external control phase change request: Value %u is invalid.", new_phases);
-            return;
-        }
-
-        logger.printfln("energy_manager: External control phase change request: switching from %u to %u", old_phases, new_phases);
-        phases_wanted->updateUint(new_phases);
-    }, true);
 
     api.addResponse("energy_manager/history_wallbox_5min", &history_wallbox_5min, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_5min_response(response, ownership, owner_id);});
     api.addResponse("energy_manager/history_wallbox_daily", &history_wallbox_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_daily_response(response, ownership, owner_id);});
@@ -910,7 +866,7 @@ void EnergyManager::update_energy()
         set_available_current(0);
 
         if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
-            state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+            pm_state->get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
 
         return;
     }
@@ -929,7 +885,7 @@ void EnergyManager::update_energy()
             }
 
             if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
-                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+                pm_state->get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
 
             return;
         }
@@ -949,7 +905,7 @@ void EnergyManager::update_energy()
             just_switched_phases = false;
 
             if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
-                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+                pm_state->get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
 
             return;
         }
@@ -1035,7 +991,7 @@ void EnergyManager::update_energy()
                 break;
         }
 
-        if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && external_control.get("phases_wanted")->asUint() == 0) {
+        if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && pm_external_control->get("phases_wanted")->asUint() == 0) {
             power_available_w          = 0;
             power_available_filtered_w = 0;
         }
@@ -1051,7 +1007,7 @@ void EnergyManager::update_energy()
             }
 
             if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
-                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+                pm_state->get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
 
             return;
         } else if (!printed_seen_all_chargers) {
@@ -1065,7 +1021,7 @@ void EnergyManager::update_energy()
         } else if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE) {
             wants_3phase = true;
         } else if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
-            wants_3phase = external_control.get("phases_wanted")->asUint() == 3;
+            wants_3phase = pm_external_control->get("phases_wanted")->asUint() == 3;
         } else if (phase_switching_mode == PHASE_SWITCHING_PV1P_FAST3P) {
             wants_3phase = mode == MODE_FAST;
         } else { // automatic
@@ -1135,9 +1091,9 @@ void EnergyManager::update_energy()
 
         if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
             if (charge_manager.is_control_pilot_disconnect_supported(time_now - 5000)) {
-                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_AVAILABLE);
+                pm_state->get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_AVAILABLE);
             } else {
-                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+                pm_state->get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
             }
         }
 
@@ -1279,7 +1235,7 @@ void EnergyManager::update_energy()
     }
 
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && switching_state != SwitchingState::Monitoring)
-        state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_SWITCHING);
+        pm_state->get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_SWITCHING);
 }
 
 bool EnergyManager::get_sdcard_info(struct sdcard_info *data)

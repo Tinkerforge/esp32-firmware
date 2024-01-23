@@ -89,9 +89,9 @@ export class EnergyManagerStatus extends Component {
         }
 
         let status           = API.get('energy_manager/state');
-        let config           = API.get('energy_manager/config');
         let charge_mode      = API.get('power_manager/charge_mode');
-        let external_control = API.get('energy_manager/external_control');
+        let external_control = API.get('power_manager/external_control');
+        let pm_status        = API.get('power_manager/state');
         let pm_config        = API.get('power_manager/config');
 
         let error_flags_ok        = status.error_flags == 0;
@@ -147,11 +147,11 @@ export class EnergyManagerStatus extends Component {
                     ]} />
             </FormRow>
 
-            {config.phase_switching_mode == 3 ?
+            {pm_config.phase_switching_mode == 3 ?
                 <>
                     <FormRow label={__("energy_manager.status.external_control_state")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                         <IndicatorGroup
-                            value={status.external_control}
+                            value={pm_status.external_control}
                             items={[
                                 ["success", __("energy_manager.status.external_control_state_available")],
                                 ["danger",  __("energy_manager.status.external_control_state_disabled")],
@@ -201,7 +201,7 @@ export class EnergyManagerStatus extends Component {
                 </ButtonGroup>
             </FormRow>
 
-            {this.generate_config_error_labels(status.config_error_flags)}
+            {this.generate_config_error_labels(pm_status.config_error_flags)}
         </>
     }
 }
@@ -248,13 +248,14 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
     override async sendSave(t: "energy_manager/config", cfg: API.getType['energy_manager/config']) {
         if (API.hasModule("power_manager")) {
             await API.save('power_manager/config', {
-                    excess_charging_enable: this.state.excess_charging_enable,
-                    default_mode:           this.state.default_mode,
-                    meter_slot_grid_power:  this.state.meter_slot_grid_power,
-                    target_power_from_grid: this.state.target_power_from_grid,
-                    guaranteed_power:       this.state.guaranteed_power,
-                    cloud_filter_mode:      this.state.cloud_filter_mode,
-                }, __("energy_manager.script.save_failed"));
+                phase_switching_mode:   this.state.phase_switching_mode,
+                excess_charging_enable: this.state.excess_charging_enable,
+                default_mode:           this.state.default_mode,
+                meter_slot_grid_power:  this.state.meter_slot_grid_power,
+                target_power_from_grid: this.state.target_power_from_grid,
+                guaranteed_power:       this.state.guaranteed_power,
+                cloud_filter_mode:      this.state.cloud_filter_mode,
+            }, __("energy_manager.script.save_failed"));
         }
         if (API.hasModule("debug")) {
             await API.save('power_manager/debug_config', {

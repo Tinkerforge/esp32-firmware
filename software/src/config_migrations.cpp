@@ -632,6 +632,7 @@ static const ConfigMigration migrations[] = {
                     StaticJsonDocument<384> pm_cfg;
                     pm_cfg.to<JsonObject>();
 
+                    pm_cfg["phase_switching_mode"]   = em_cfg["phase_switching_mode"];
                     pm_cfg["excess_charging_enable"] = em_cfg["excess_charging_enable"];
                     pm_cfg["default_mode"]           = em_cfg["default_mode"];
                     pm_cfg["meter_slot_grid_power"]  = em_cfg["meter_slot_grid_power"];
@@ -639,6 +640,7 @@ static const ConfigMigration migrations[] = {
                     pm_cfg["guaranteed_power"]       = em_cfg["guaranteed_power"];
                     pm_cfg["cloud_filter_mode"]      = em_cfg["cloud_filter_mode"];
 
+                    em_cfg.remove("phase_switching_mode");
                     em_cfg.remove("excess_charging_enable");
                     em_cfg.remove("default_mode");
                     em_cfg.remove("meter_slot_grid_power");

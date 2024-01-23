@@ -45,6 +45,15 @@
 
 #define HYSTERESIS_MIN_TIME_MINUTES         5
 
+#define CONFIG_ERROR_FLAGS_EXCESS_NO_METER_BIT_POS  3
+#define CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK     (1 << CONFIG_ERROR_FLAGS_EXCESS_NO_METER_BIT_POS)
+#define CONFIG_ERROR_FLAGS_NO_CHARGERS_BIT_POS      2
+#define CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK         (1 << CONFIG_ERROR_FLAGS_NO_CHARGERS_BIT_POS)
+#define CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_BIT_POS   1
+#define CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK      (1 << CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_BIT_POS)
+#define CONFIG_ERROR_FLAGS_PHASE_SWITCHING_BIT_POS  0
+#define CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK     (1 << CONFIG_ERROR_FLAGS_PHASE_SWITCHING_BIT_POS)
+
 class PowerManager : public IModule
 {
 public:
@@ -55,15 +64,24 @@ public:
     //void register_events() override;
     //void loop() override;
 
+    [[gnu::const]] Config *       get_state();
     [[gnu::const]] Config *       get_config_low_level_state();
     [[gnu::const]] const Config * get_config();
     [[gnu::const]] const Config * get_debug_config();
     [[gnu::const]] Config *       get_config_charge_mode();
+    [[gnu::const]] const Config * get_external_control();
+
+    void set_config_error(uint32_t config_error_mask);
 
 private:
+    ConfigRoot state;
     ConfigRoot low_level_state;
     ConfigRoot config;
     ConfigRoot debug_config;
     ConfigRoot charge_mode;
     ConfigRoot charge_mode_update;
+    ConfigRoot external_control;
+    ConfigRoot external_control_update;
+
+    uint32_t config_error_flags = 0;
 };

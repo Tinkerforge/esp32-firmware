@@ -1,3 +1,8 @@
+export interface state {
+    config_error_flags: number;
+    external_control: number;
+}
+
 export interface low_level_state {
     power_at_meter: number;
     power_at_meter_filtered: number;
@@ -24,6 +29,7 @@ export interface low_level_state {
 }
 
 export interface config {
+    phase_switching_mode: number;
     default_mode: number;
     excess_charging_enable: boolean;
     meter_slot_grid_power: number;
@@ -38,4 +44,8 @@ export interface debug_config {
 
 export interface charge_mode {
     mode: number;
+}
+
+export interface external_control {
+    phases_wanted: number;
 }
