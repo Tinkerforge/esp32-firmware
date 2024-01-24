@@ -75,11 +75,6 @@ function get_mqtt_edit_children(action: MqttAutomationAction, on_action: (action
                 }}
                 invalidFeedback={__("mqtt.automation.use_topic_prefix_invalid")} />
         </FormRow>
-        <FormRow label={__("mqtt.automation.full_topic")} hidden={!action[1].use_prefix}>
-            <InputText
-                    class="mt-2"
-                    value={mqtt_config.global_topic_prefix + "/automation_action/" + action[1].topic}/>
-        </FormRow>
         <FormRow label={__("mqtt.automation.send_payload")}>
             <InputText
                 required={!action[1].retain}

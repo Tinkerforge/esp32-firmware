@@ -75,11 +75,6 @@ function get_mqtt_edit_children(trigger: MqttAutomationTrigger, on_trigger: (tri
                 }}
                 invalidFeedback={__("mqtt.automation.use_topic_prefix_invalid")} />
         </FormRow>
-        <FormRow label={__("mqtt.automation.full_topic")} hidden={!trigger[1].use_prefix}>
-            <InputText
-                class="mt-2"
-                value={mqtt_config.global_topic_prefix + "/automation_trigger/" + trigger[1].topic_filter} />
-        </FormRow>
         <FormRow label={__("mqtt.automation.payload")}>
             <InputText
                 placeholder={__("mqtt.automation.match_all")}
