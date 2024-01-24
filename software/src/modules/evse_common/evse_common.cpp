@@ -170,6 +170,13 @@ void EvseCommon::pre_setup() {
         }),
         [this](const Config *config) {
             backend->set_charging_slot(CHARGING_SLOT_AUTOMATION, config->get("current")->asUint(), true, false);
+        },
+        [this](const Config *config) -> String {
+            uint32_t current = config->get("current")->asUint();
+            if ((current != 0 && current < 6000) || current > 32000) {
+                return "Current must be 0 or between 6000 and 32000";
+            }
+            return "";
         }
     );
 #endif
