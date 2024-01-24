@@ -236,9 +236,19 @@ let x = {
             "from": "Von",
             "to": "Zu",
             "any": "Beliebiger Status",
+            "automation_action_block": "Laden blockieren",
+            "automation_action_allow": "Laden freigeben",
+            "automation_action_limit_current": "Ladestrom begrenzen",
             "allowed_charging_current": "Erlaubter Ladestrom",
             "automation_state_change_trigger": /*FFN*/(old_state: string, new_state: string) => <>Wenn der Fahrzeugstatus von "<b>{old_state}</b>" auf "<b>{new_state}</b>" wechselt,{" "}</>/*NF*/,
-            "automation_action_text": /*FFN*/(current: string) => <>setze den erlaubten Ladestrom auf <b>{current} A</b>.</>/*NF*/,
+            "automation_action_text": /*FFN*/(current: string) => {
+                if (current === "0") {
+                    return <><b>blockiere</b> das Laden.</>
+                } else if (current === "32") {
+                    return <><b>erlaube</b> das Laden.</>
+                }
+                return <>setze den erlaubten Ladestrom auf <b>{current} A</b>.</>
+            }/*NF*/,
             "automation_led_action_text": /*FFN*/(state: string, duration: number) => (state == "An" || state == "Aus") ? <>schalte die Status-LED für <b>{duration / 1000} Sekunden</b> <b>{state}</b>.</> : <>zeige <b>{state}</b> für <b>{duration / 1000} Sekunden</b> auf der Status-LED.</>/*NF*/
         },
         "script": {

@@ -26,6 +26,7 @@ import { InputFloat } from "../../ts/components/input_float";
 import { InputNumber } from "../../ts/components/input_number";
 import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
+import { Collapse } from "react-bootstrap";
 
 export type EvseAutomationAction = [
     AutomationActionID.SetCurrent,
@@ -47,19 +48,39 @@ function get_set_current_table_children(action: EvseAutomationAction) {
 }
 
 function get_set_current_edit_children(action: EvseAutomationAction, on_action: (action: AutomationAction) => void) {
+    const items: [string, string][] = [
+        ["0", __("evse.automation.automation_action_block")],
+        ["32000", __("evse.automation.automation_action_allow")],
+        ["6000", __("evse.automation.automation_action_limit_current")]
+    ];
+
     return [
-        <FormRow label={__("evse.automation.allowed_charging_current")}>
-            <InputFloat
-                digits={3}
-                min={0}
-                max={32000}
-                unit="A"
-                value={action[1].current}
-                onValue={(v) => {
-                    on_action(util.get_updated_union(action, {current: v}));
-                }}
-            />
-        </FormRow>,
+        <>
+            <FormRow label="">
+                <InputSelect
+                    items={items}
+                    value={action[1].current === 0 ? "0" : action[1].current === 32000 ? "32000" : "6000"}
+                    onValue={(v) => {
+                        on_action(util.get_updated_union(action, {current: parseInt(v)}));
+                    }} />
+            </FormRow>
+            <Collapse in={action[1].current !== 0 && action[1].current !== 32000}>
+                    <div>
+                    <FormRow label={__("evse.automation.allowed_charging_current")}>
+                        <InputFloat
+                            digits={3}
+                            min={6000}
+                            max={32000}
+                            unit="A"
+                            value={action[1].current}
+                            onValue={(v) => {
+                                on_action(util.get_updated_union(action, {current: v}));
+                            }}
+                        />
+                    </FormRow>
+                </div>
+            </Collapse>
+        </>,
     ];
 }
 

@@ -236,9 +236,20 @@ let x = {
             "from": "From",
             "to": "To",
             "any": "Any state",
+            "automation_action_block": "Block charging",
+            "automation_action_allow": "Allow Charging",
+            "automation_action_limit_current": "Limit charging current",
             "allowed_charging_current": "Allowed charging current",
             "automation_state_change_trigger": /*FFN*/(old_state: string, new_state: string) => <>When the vehicle state changes from "<b>{old_state}</b>" to "<b>{new_state}</b>",{" "}</>/*NF*/,
-            "automation_action_text": /*FFN*/(current: string) => <>set the allowed charging current to <b>{current} A</b>.</>/*NF*/,
+            "automation_action_text": /*FFN*/(current: string) => {
+                if (current == "0") {
+                    return <><b>block</b> charging.</>;
+                }
+                else if (current == "32") {
+                    return <><b>allow</b> charging.</>;
+                }
+                return <>set the allowed charging current to <b>{current} A</b>.</>
+            }/*NF*/,
             "automation_led_action_text": /*FFN*/(state: string, duration: number) => state == "An" || state == "Aus" ? <>turn the status-LED <b>{state}</b> for <b>{duration} seconds</b>.</> : <>show <b>{state}</b> for <b>{duration / 1000} seconds</b> on the status-LED.</>/*NF*/
         },
         "script": {
