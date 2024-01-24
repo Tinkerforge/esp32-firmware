@@ -49,16 +49,6 @@ let x = {
             "confirm_content": <>Are you sure you want to disable the WiFi Access Point? If no connection to a configured network can be established in the future, <b>it is not possible to access the energy manager anymore</b>.The energy manager then has to be reset to factory defaults. <a href="{{{manual_url}}}">See manual for details.</a></>
         }
     },
-    "charge_tracker": {
-        "content": {
-            "charge_tracker_remove_modal_text": <>All tracked charges and the username history will be removed. <b>This action cannot be undone!</b> The energy manager then will restart.</>
-        }
-    },
-    "meter": {
-        "status": {
-            "power_history": "Power history"
-        }
-    },
     "meters": {
         "status": {
             "power_history": "Power history"

@@ -55,16 +55,6 @@ let x = {
             "confirm_content": <>Soll der WLAN-Access-Point wirklich komplett deaktiviert werden? Falls zukünftig keine Verbindung zu einem konfigurierten Netzwerk möglich ist, <b>kann nicht mehr auf den Energy Manager zugegriffen werden</b>. Der Energy Manager muss dann auf den Werkszustand zurückgesetzt werden. <a href="{{{manual_url}}}">Siehe Betriebsanleitung für Details.</a></>
         }
     },
-    "charge_tracker": {
-        "content": {
-            "charge_tracker_remove_modal_text": <>Alle aufgezeichneten Ladevorgänge und der Benutzernamen-Verlauf werden gelöscht. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Danach wird der Energy Manager neugestartet.</>
-        }
-    },
-    "meter": {
-        "status": {
-            "power_history": "Leistungsverlauf"
-        }
-    },
     "meters": {
         "status": {
             "power_history": "Leistungsverlauf"
