@@ -59,13 +59,13 @@ let x = {
             "last_seen": "Vor ",
             "last_seen_suffix": "",
             "last_seen_and_known_tags": "Zuletzt erkannte und bekannte Tags",
-            "automation_action_text": /*FFN*/(tag_id: string, tag_type: string, tag_action: number) => {
-                let action = <></>;
-                if (tag_action !== 0) {
-                    action = <> um einen Ladevorgang zu {tag_action == 1 ? "starten" : tag_action == 2 ? "stoppen" : ""}</>;
+            "automation_action_text": /*FFN*/(tag_id: string, tag_type: string, action: number) => {
+                let start_stop = <></>;
+                if (action !== 0) {
+                    start_stop = <> um einen Ladevorgang zu {action == 1 ? "starten" : action == 2 ? "stoppen" : ""}</>;
                 }
                 return <>
-                    simuliere das <b>NFC</b>-Tag "<b>{tag_id}</b>" ({tag_type}){action}.
+                    simuliere das <b>NFC</b>-Tag "<b>{tag_id}</b>" ({tag_type}){start_stop}.
                 </>
             }/*NF*/,
             "automation_trigger_text": /*FFN*/(tag_id: string, tag_type: string) => {

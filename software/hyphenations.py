@@ -745,6 +745,5 @@ allowed_missing = set([
     "is_evse_v2",
     "toLocaleTimeString",
     "max_length",
-    "setMinutes",
-    "tag_action"
+    "setMinutes"
 ])
