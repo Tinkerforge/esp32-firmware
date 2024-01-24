@@ -147,6 +147,8 @@ function get_led_edit_children(action: EvseLedAutomationAction, on_action: (acti
         </FormRow>
         <FormRow label={ __("evse.automation.led_duration")}>
             <InputNumber
+                min={1}
+                max={60}
                 value={action[1].duration / 1000}
                 unit="s"
                 onValue={(v) => {
@@ -160,7 +162,7 @@ function new_led_config(): AutomationAction {
     return [
         AutomationActionID.LED,
         {
-            duration: 0,
+            duration: 1000,
             indication: 0,
         },
     ];
