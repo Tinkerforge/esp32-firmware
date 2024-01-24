@@ -29,7 +29,7 @@ let x = {
             "charge_limits_expiration": "Ladelimit abgelaufen",
             "energy": "Energielimit",
             "duration": "Zeitlimit",
-            "charge_limits": "Ladelimit",
+            "charge_limits": "Setze Ladelimit",
             "unlimited": "Unbegrenzt",
             "unchanged": "Unverändert",
             "min15": "15 Minuten",

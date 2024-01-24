@@ -52,10 +52,10 @@ function get_cron_table_children(trigger: CronAutomationTrigger) {
 }
 
 function get_cron_edit_children(trigger: CronAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
-    let hours: [string, string][] = [['-1','*']];
-    let minutes: [string, string][] = [['-1','*']];
+    let hours: [string, string][] = [['-1',__("automation.automation.every_hour")]];
+    let minutes: [string, string][] = [['-1',__("automation.automation.every_minute")]];
     let days: [string, string][] = [
-        ['-1', __("automation.automation.every")],
+        ['-1', __("automation.automation.every_day")],
         ['1', __("automation.automation.monday")],
         ['2', __("automation.automation.tuesday")],
         ['3', __("automation.automation.wednesday")],

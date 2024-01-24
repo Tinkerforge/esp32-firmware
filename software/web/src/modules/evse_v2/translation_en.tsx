@@ -3,9 +3,10 @@ import { h } from "preact";
 let x = {
     "evse": {
         "automation": {
-            "gpio_out_high": "High impedance",
-            "gpio_out_low": "Connected to ground",
+            "gpio_out_open": "High impedance",
+            "gpio_out_closed": "Connected to ground",
             "gpio_out": "General purpose output",
+            "action_gpio_out": "Switch general purpose output",
             "automation_trigger_button": "Front button pressed",
             "automation_trigger_shutdown_input": "Shutdown input switched",
             "automation_trigger_gp_input": "General purpose input switched",

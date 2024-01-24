@@ -59,7 +59,7 @@ let x = {
             "meter_type": "Energy meter type"
         },
         "automation": {
-            "meter_reset": "Energy Meter reset",
+            "meter_reset": "Reset energy meter",
             "automation_action_text": /*FFN*/(meter_name: string) => <><b>reset</b> energy meter <b>{meter_name}</b>.</>/*NF*/,
             "meter_slot": "Meter"
         },

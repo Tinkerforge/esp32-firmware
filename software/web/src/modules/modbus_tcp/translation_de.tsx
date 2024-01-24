@@ -102,7 +102,7 @@ let x = {
                     </tr>
                     <tr>
                         <td>1002</td>
-                        <td>Fahrzeugstatus</td>
+                        <td>Ladestatus</td>
                         <td>uint32</td>
                         <td>evse</td>
                         <td>

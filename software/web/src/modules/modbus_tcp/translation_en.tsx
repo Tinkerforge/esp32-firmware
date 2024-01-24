@@ -101,7 +101,7 @@ let x = {
                     </tr>
                     <tr>
                         <td>1002</td>
-                        <td>Vehicle state</td>
+                        <td>Charge state</td>
                         <td>uint32</td>
                         <td>evse</td>
                         <td>

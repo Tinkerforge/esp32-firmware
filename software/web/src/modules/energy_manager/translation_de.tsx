@@ -86,46 +86,14 @@ let x = {
             "cloud_filter_medium": "Mittel",
             "cloud_filter_strong": "Stark",
 
-            "relay": "Relais",
-            "single_phase": "Einphasig",
-            "three_phase": "Dreiphasig",
-            "low": "Offen",
-            "high": "Geschlossen",
-            "contactor_fail": "Ausgelöst, Schütz defekt",
-            "contactor_ok": "Nicht ausgelöst, Schütz OK",
-            "power_available": "Leistung verfügbar",
-            "power_sufficient": "Ausreichend für einen Ladevorgang",
-            "power_insufficient": "Nicht ausreichend für einen Ladevorgang",
-            "grid_draw": "Netzbezug",
-            "grid_gt0": "Bezieht Energie aus dem Netz",
-            "grid_le0": "Speist Energie ins Netz ein",
-
-            "input3": "Eingang 3",
-            "input4": "Eingang 4",
-            "input_unused": "Nicht verwendet",
-            "contactor_check": "Schützüberwachung",
-            "block_charging": "Laden blockieren",
-            "limit_max_current": "Ladestrom begrenzen",
-            "limit_to_current": "Begrenzen auf",
-            "input_when": "Wenn",
-            "input_low": "Eingang offen",
-            "input_high": "Eingang geschlossen",
-            "phase_switching": "Phasenumschaltung",
-            "input_switch_mode": "Lademodus wechseln",
-            "input_when_closing": "Beim Schließen des Eingangs",
-            "input_when_opening": "Beim Öffnen des Eingangs",
-            "input_switch_to_prefix": "Zu ",
-            "input_switch_to_suffix": "",
-            "input_mode_nothing": "Nicht wechseln",
-
             "header_expert_settings": "Experteneinstellungen",
             "hysteresis_time": "Hysterese-Zeit",
             "hysteresis_time_muted": "Minimale Wartezeit vor Phasenumschaltungen bzw. Anfang und Ende eines Ladevorganges, um die Ladeelektronik des Fahrzeuges nicht durch häufige Schaltvorgänge zu belasten."
         },
         "automation": {
             "slot": "Blockierungsslot",
-            "block_charge": "Laden blockieren",
-            "unblock_charge": "Laden freigeben",
+            "block_charge": "Ladevorgänge blockieren",
+            "unblock_charge": "Ladevorgänge freigeben",
             "block_mode": "Modus",
             "automation_block_charge_action_text": /*FFN*/(slot: number, block: boolean) => {
                 if (block) {
@@ -133,7 +101,7 @@ let x = {
                 }
                 return <><b>gebe</b> das Laden durch Slot <b>{slot} frei</b>.</>
             }/*NF*/,
-            "limit_max_current": "Maximalen Gesamtstrom begrenzen",
+            "limit_max_current": "Begrenze maximalen Gesamtstrom",
             "limit_mode": "Modus",
             "reset_limit_max_current": "Maximalen Gesamtstrom zurücksetzen",
             "max_current": "Maximaler Gesamtstrom",
@@ -164,7 +132,7 @@ let x = {
                 }
                 return <>Wenn {not}<b>genug</b> Leistung zum Laden verfügbar ist, </>
             }/*NF*/,
-            "contactor_monitoring": "Schützüberwachung",
+            "contactor_monitoring": "Schützüberwachung ausgelöst",
             "automation_contactor_monitoring_text": /*FFN*/(contactor: boolean) => {
                 if (contactor) {
                     return <>Wenn beim Start <b>kein Schützfehler</b> erkannt wird, </>
@@ -175,7 +143,7 @@ let x = {
             "contactor_monitoring_state": "Status",
             "contactor_error": "Schützfehler",
             "contactor_okay": "Kein Schützfehler bei Start",
-            "phase_switch": "Phasenumschaltung",
+            "phase_switch": "Phasen umgeschaltet",
             "phase": "Phase",
             "automation_phase_switch_text": /*FFN*/(phase: number) => {
                 let ret = <></>;
@@ -190,7 +158,7 @@ let x = {
                 }
                 return <>Wenn das Schütz auf {ret} geschaltet hat, </>
             }/*NF*/,
-            "input": /*SFN*/(input: number) => "Eingang " + input/*NF*/,
+            "input": /*SFN*/(input: number) => "Eingang " + input + " geschaltet"/*NF*/,
             "state": "Zustand",
             "closed": "Geschlossen",
             "open": "Offen",
@@ -198,16 +166,16 @@ let x = {
                 let ret = state ? <><b>geschlossen</b></> : <><b>offen</b></>
                 return <>Wenn <b>Eingang {input}</b> auf Zustand {ret} wechselt, </>
             }/*NF*/,
-            "switch_relay": "Relay schalten",
+            "switch_relay": "Schalte Relais",
             "relay_state": "Schalten auf",
             "relay_state_open": "Offen",
             "relay_state_closed": "Geschlossen",
             "relay_action_text": /*FFN*/(state: boolean) => {
                 let ret = state ? <><b>schließen</b></> : <><b>öffnen</b></>
-                return <>Relay {ret}.</>
+                return <>Relais {ret}.</>
             }/*NF*/,
             "charge_mode_default": "Standardmodus",
-            "charge_mode_switch": "Lademodus wechseln",
+            "charge_mode_switch": "Wechsle Lademodus",
             "charge_mode": "Lademodus",
             "fast": "Schnell",
             "disabled": "Deaktiviert",
@@ -240,7 +208,7 @@ let x = {
                 }
                 return <>wechsle Lademodus auf {ret}.</>
             }/*NF*/,
-            "set_phases": "Phasenumschaltung",
+            "set_phases": "Schalte Phasen um",
             "phases_wanted": "Umschaltung auf",
             "single_phase": "Einphasig",
             "three_phase": "Dreiphasig",

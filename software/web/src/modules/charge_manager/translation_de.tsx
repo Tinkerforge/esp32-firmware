@@ -78,11 +78,11 @@ let x = {
             "host_exists": "Host existiert bereits"
         },
         "automation": {
-            "charge_manager_wd": "Lastmanagement-Watchdog",
+            "charge_manager_wd": "Lastmanagement-Watchdog ausgelöst",
             "automation_trigger_text": <>Wenn der <b>Watchdog</b> des <b>Lastmanagements</b> auslöst, </>,
-            "set_charge_manager": "Lastmanagement",
+            "set_charge_manager": "Setze verfügbaren Strom für Lastmanagement",
             "automation_action_text": /*FFN*/(current: string) => <>setze den für das <b>Lastmanagement</b> verfügbaren Strom auf <b>{current} A</b>.</> /*NF*/,
-            "max_current": "Maximaler Strom"
+            "max_current": "Verfügbarer Strom"
         },
         "script": {
             "charge_state_0": "Kein Fahrzeug angeschlossen",

@@ -120,7 +120,7 @@ Entity(True, Component.SENSOR, Feature.METER, "energyrel", "meter/values", "Stro
      "state_class": "total"},
     {}),
 
-Entity(True, Component.SENSOR, Feature.EVSE, "chargerstate", "evse/state", "Fahrzeugstatus", "Vehicle state", "", "", "",
+Entity(True, Component.SENSOR, Feature.EVSE, "chargerstate", "evse/state", "Ladestatus", "Charge state", "", "", "",
     {"value_template":"{{value_json.charger_state}}",
      "icon": "mdi:ev-plug-type2"},
     {}),

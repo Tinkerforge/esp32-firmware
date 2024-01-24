@@ -41,12 +41,12 @@ let x = {
             "tag_id_invalid_feedback": "The BSSID must have three to ten groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB"
         },
         "automation": {
-            "nfc": "NFC-Tags",
+            "nfc": "Fake NFC tag",
             "add_tag_description": "Hold the new tag to the right side of the charger. Tag ID and type can also be typed in manually.",
             "trigger_charge_any": "Charge start/stop",
             "trigger_charge_start": "Charge start",
             "trigger_charge_stop": "Charge stop",
-            "action": "Tag action",
+            "action": "Action",
             "tag_id_invalid_feedback": "The BSSID must have three to ten groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
             "table_tag_id": "Tag ID",
             "table_user_id": "Assigned user",

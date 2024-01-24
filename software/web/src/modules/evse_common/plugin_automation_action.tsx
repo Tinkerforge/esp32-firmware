@@ -137,7 +137,7 @@ function get_led_edit_children(action: EvseLedAutomationAction, on_action: (acti
     }
 
     return [<>
-        <FormRow label={__("evse.automation.led_indication")}>
+        <FormRow label={__("evse.automation.indication")}>
             <InputSelect
                 items={items}
                 value={action[1].indication.toString()}
@@ -170,7 +170,7 @@ export function init() {
     return {
         action_components: {
             [AutomationActionID.SetCurrent]: {
-                name: __("evse.automation.allowed_charging_current"),
+                name: __("evse.automation.action_allowed_charging_current"),
                 new_config: new_set_current_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_set_current_edit_children,

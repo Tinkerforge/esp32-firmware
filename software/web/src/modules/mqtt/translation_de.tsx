@@ -38,14 +38,13 @@ let x = {
             "auto_discovery_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, ein # oder + enthalten oder leer sein."
         },
         "automation": {
-            "mqtt": "MQTT",
+            "mqtt": "Sende MQTT-Nachricht",
             "match_all": "Alle Nachrichten werden akzeptiert",
-            "full_topic": "Vollständiges Topic",
             "send_topic": "An Topic",
             "send_payload": "Nachricht",
             "topic": "Überwachtes Topic",
             "payload": "Erwartete Nachricht",
-            "retain": "Nachricht Speichern",
+            "retain": "Nachricht speichern (retained)",
             "accept_retain": "Erlaube gespeicherte (retained) Nachrichten",
             "use_topic_prefix": "Topic-Präfix benutzen",
             "use_topic_prefix_muted": "Konfigurierter Topic-Präfix: ",
@@ -63,7 +62,7 @@ let x = {
             "automation_trigger_text": /*FFN*/(topic: string, payload: string, retained: boolean) => {
                 let ret = <></>;
                 if (payload.length == 0) {
-                    ret = <>Wenn beliebige MQTT-Nachricht</>;
+                    ret = <>Wenn eine beliebige MQTT-Nachricht</>;
                 } else {
                     ret = <>Wenn MQTT-Nachricht "<b>{payload}</b>"</>;
                 }

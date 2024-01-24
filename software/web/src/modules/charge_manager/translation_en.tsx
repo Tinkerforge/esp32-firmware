@@ -78,9 +78,9 @@ let x = {
             "host_exists": "Host already exists"
         },
         "automation": {
-          "charge_manager_wd": "Charge manager watchdog",
+          "charge_manager_wd": "Charge manager watchdog triggered",
           "automation_trigger_text": <>When the <b>charge manager watchdog</b> gets triggered, </>,
-          "set_charge_manager": "Charge Manager",
+          "set_charge_manager": "Set available current for charge manager",
           "automation_action_text": /*FFN*/(current: string) => {
             return (
               <>

@@ -16,7 +16,9 @@ let x = {
             "friday": "Freitag",
             "saturday": "Samstag",
             "sunday": "Sonntag",
-            "every": "Täglich",
+            "every_day": "Täglich",
+            "every_hour": "Stündlich",
+            "every_minute": "Minütlich",
             "weekdays": "Wochentags",
             "weekends": "Am Wochenende",
             "month_end": "Monatsende",
@@ -71,9 +73,9 @@ let x = {
                     time = <>, minütlich von <b>{start}</b> bis <b>{end}</b></>
                 } else if (minute != -1) {
                     if (minute == 0) {
-                        time = <>, stündlich</>;
+                        time = <>, zur vollen Stunde</>;
                     } else {
-                        time = <>, stündlich zur <b>{minute}.</b> Minute</>;
+                        time = <>, <b>{minute}</b> {minute == 1 ? "Minute" : "Minuten"} nach jeder vollen Stunde</>;
                     }
                 } else {
                     time = <>, minütlich</>
@@ -82,7 +84,7 @@ let x = {
                 return <>{day}{time}, </>;
             }/*NF*/,
 
-            "print_action": "Ausgabe im Ereignislog",
+            "print_action": "Gebe im Ereignislog aus",
             "print_action_message": "Nachricht",
             "print_action_text": /*FFN*/(message: string) => <>zeige "{message}" im <b>Ereignislog</b> an.</> /*NF*/
 

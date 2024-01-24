@@ -41,8 +41,8 @@ function get_evse_gp_output_edit_children(action: EvseGpOutputAutomationAction, 
         <FormRow label={__("evse.automation.gpio_out")}>
             <InputSelect
                 items={[
-                    ["0", __("evse.automation.gpio_out_low")],
-                    ["1", __("evse.automation.gpio_out_high")],
+                    ["0", __("evse.automation.gpio_out_open")],
+                    ["1", __("evse.automation.gpio_out_closed")],
                 ]}
                 value={action[1].closed ? "1" : "0"}
                 onValue={(v) => {
@@ -66,7 +66,7 @@ export function init() {
     return {
         action_components: {
             [AutomationActionID.EVSEGPOutput]: {
-                name: __("evse.automation.gpio_out"),
+                name: __("evse.automation.action_gpio_out"),
                 new_config: new_evse_gp_output_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_evse_gp_output_edit_children,

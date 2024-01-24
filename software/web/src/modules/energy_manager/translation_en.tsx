@@ -86,38 +86,6 @@ let x = {
             "cloud_filter_medium": "Medium",
             "cloud_filter_strong": "Strong",
 
-            "relay": "Relay",
-            "single_phase": "Single-phase",
-            "three_phase": "Three-phase",
-            "low": "Open",
-            "high": "Closed",
-            "contactor_fail": "Tripped, contactor failed",
-            "contactor_ok": "Not tripped, contactor OK",
-            "power_available": "Power available",
-            "power_sufficient": "Sufficient for charging",
-            "power_insufficient": "Insufficient for charging",
-            "grid_draw": "Grid power draw",
-            "grid_gt0": "Drawing power from grid",
-            "grid_le0": "Feeding power to grid",
-
-            "input3": "Input 3",
-            "input4": "Input 4",
-            "input_unused": "Unused",
-            "contactor_check": "Contactor monitoring",
-            "block_charging": "Block charging",
-            "limit_max_current": "Limit charge current",
-            "limit_to_current": "Limit to",
-            "input_when": "When",
-            "input_low": "Input open",
-            "input_high": "Input closed",
-            "phase_switching": "Phase switching",
-            "input_switch_mode": "Switch charge mode",
-            "input_when_closing": "When closing input",
-            "input_when_opening": "When opening input",
-            "input_switch_to_prefix": "To ",
-            "input_switch_to_suffix": "",
-            "input_mode_nothing": "Don't switch",
-
             "header_expert_settings": "Expert settings",
             "hysteresis_time": "Hysteresis time",
             "hysteresis_time_muted": "Minimum delay before phase switches or starting or stopping a charge, to avoid excessive wear on the vehicle's charge electronics by switching too often."
@@ -164,7 +132,7 @@ let x = {
                 }
                 return <>When {not}<b>enough</b> power for charging is available, </>
             }/*NF*/,
-            "contactor_monitoring": "Contactor monitoring",
+            "contactor_monitoring": "Contactor monitoring triggered",
             "automation_contactor_monitoring_text": /*FFN*/(contactor: boolean) => {
                 if (contactor) {
                     return <>When <b>no contactor error</b> is detected on boot, </>
@@ -175,7 +143,7 @@ let x = {
             "contactor_monitoring_state": "State",
             "contactor_error": "Contactor error",
             "contactor_okay": "No contactor error on boot",
-            "phase_switch": "Phase switching",
+            "phase_switch": "Phases switched",
             "phase": "Phase",
             "automation_phase_switch_text": /*FFN*/(phase: number) => {
                 let ret = <></>;
@@ -190,7 +158,7 @@ let x = {
                 }
                 return <>When the contactor switched to {ret}, </>
             }/*NF*/,
-            "input": /*SFN*/(input: number) => "Input " + input/*NF*/,
+            "input": /*SFN*/(input: number) => "Input " + input + " switched"/*NF*/,
             "state": "State",
             "closed": "Closed",
             "open": "Open",
@@ -240,7 +208,7 @@ let x = {
                 }
                 return <>switch charge mode to {ret}.</>
             }/*NF*/,
-            "set_phases": "Phase switching",
+            "set_phases": "Switch phases",
             "phases_wanted": "Switch to",
             "single_phase": "Single-phase",
             "three_phase": "Three-phase",

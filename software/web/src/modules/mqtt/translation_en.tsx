@@ -38,9 +38,8 @@ let x = {
             "auto_discovery_prefix_invalid": "The topic prefix can not start with $, contain a # or +, or be empty."
         },
         "automation": {
-            "mqtt": "MQTT",
+            "mqtt": "Send MQTT message",
             "match_all": "Accept all messages",
-            "full_topic": "Full Topic",
             "send_topic": "To topic",
             "send_payload": "Message",
             "topic": "Topic",
