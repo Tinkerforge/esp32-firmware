@@ -359,12 +359,6 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
         mode_list.push([s.excess_charging_enable ? "3" : "3-disabled", __("energy_manager.status.mode_min_pv")]);
         mode_list.push(["0", __("energy_manager.status.mode_fast")]);
 
-        let mode_list_for_inputs: StringStringTuple[] = [];
-        for (let tuple of mode_list) {
-            mode_list_for_inputs.push([tuple[0], __("energy_manager.content.input_switch_to_prefix") + tuple[1] + __("energy_manager.content.input_switch_to_suffix")]);
-        }
-        mode_list_for_inputs.push(["255", __("energy_manager.content.input_mode_nothing")]);
-
         let meter_slots: StringStringTuple[] = [];
         for (let i = 0; i < METERS_SLOTS; i++) {
             if (s.meter_configs[i][0] != MeterClassID.None) {
