@@ -610,7 +610,7 @@ void Mqtt::register_urls()
                     if (automation.trigger_action(AutomationTriggerID::MQTT, &msg, &trigger_action))
                         return;
                 }, !conf.second->get("retain")->asBool());
-                 subscribed_topics.push_back(topic);
+                subscribed_topics.push_back(topic);
             }
         }
     }
