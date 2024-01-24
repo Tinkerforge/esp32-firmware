@@ -117,7 +117,7 @@ void EnergyManager::pre_setup()
             {"phases_wanted", Config::Uint(1)}
         }),
         [this](const Config *cfg) {
-            api.callCommand("energy_manager/external_control_update", Config::ConfUpdateObject{{
+            api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
                 {"phases_wanted", cfg->get("phases_wanted")->asUint()}
             }});
         });
