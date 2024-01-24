@@ -203,3 +203,9 @@
 - Fix browser's back button not working when accessing web interface main page
 - Fix date input keyboard entry
 - Fix reported range of external current in MQTT auto discovery
+
+2024-01-24: 2.0.0 (<unknown>)
+- Only hide analysis subplots if both have no data
+- Split energy_manager API into energy_manager and power_manager
+- Support Eltako DSZ15DZMOD and YTL DEM4A (through WARP Energy Manager Bricklet firmware 2.0.5)
+- Add resettable import/export energy values

@@ -476,7 +476,7 @@
 - Add SunSpec meter/inverter support
 - Rework meter handling. Support 2 energy meters. Add meters API.
 - Add configurable API meter
-- Support Eltako DSZ15DZMOD and YTL DEM4A
+- Support Eltako DSZ15DZMOD and YTL DEM4A (through EVSE 2.0 Bricklet firmware 2.2.0)
 - Add resettable import/export energy values
 - Use import energy for charge tracker etc. Switch over when factory resetting or removing all tracked charges
 - Support up to 32 managed chargers, NFC tags and users
@@ -490,8 +490,8 @@
 - Improve OCPP UI
 - Improve WiFi softAP performance while connecting to WiFi network
 - Improve error feedback in web interface forms
-- Improve DC fault sensor UI. Support X804. (through EVSE Bricklet firmware 2.2.0)
-- Improve diode detection (through EVSE Bricklet firmware 2.2.0)
+- Improve DC fault sensor UI. Support X804. (through EVSE 2.0 Bricklet firmware 2.2.0)
+- Improve diode detection (through EVSE 2.0 Bricklet firmware 2.2.0)
 - Separate Contactor/PE errors
 - Show hint if capslock is enabled when entering passwords
 - Remove support of TLS versions older than 1.2
@@ -509,3 +509,14 @@
 - Fix browser's back button not working when accessing web interface main page
 - Fix date input keyboard entry
 - Fix reported range of external current in MQTT auto discovery
+
+2024-01-24: 2.2.0 (<unknown>)
+- Update timezone database
+- Show maximum number of tracked charges
+- Report meters feature if at least one meter declared its value IDs
+- Fix meter/live and meter/history (legacy API)
+- Fix charge manager available current watchdog triggering continuously
+- Allow cron action to set status LED without external LED control enabled
+- Allow setting status LED via API while charging (through EVSE 2.0 Bricklet firmware 2.2.0)
+- Don't immediately block charging when external slot gets enabled (through EVSE 2.0 Bricklet firmware 2.2.0)
+- Make sure that the diode check is only run if at least one negative PWM value has been measured (through EVSE 2.0 Bricklet firmware 2.2.1)
