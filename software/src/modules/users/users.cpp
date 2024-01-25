@@ -414,21 +414,14 @@ bool Users::is_user_configured(uint8_t user_id) {
     return false;
 }
 
-static void check_waiting_for_start(Config *ignored) {
-    (void) ignored;
+static void check_waiting_for_start() {
+    const Config *user_slot = (const Config *) api.getState("evse/slots", false)->get(CHARGING_SLOT_USER);
 
-    static const Config *iec_state = (const Config *) api.getState("evse/state", false)->get("iec61851_state");
-    static const Config *user_slot_active = (const Config *) api.getState("evse/slots", false)->get(CHARGING_SLOT_USER)->get("active");
-    static const Config *user_slot_current = (const Config *) api.getState("evse/slots", false)->get(CHARGING_SLOT_USER)->get("max_current");
-
-    if (iec_state == nullptr || user_slot_active == nullptr || user_slot_current == nullptr)
+    if (!user_slot->get("active")->asBool())
         return;
 
-    if (!user_slot_active->asBool())
-        return;
-
-    bool waiting_for_start = (iec_state->asUint() == 1)
-                          && (user_slot_current->asUint() == 0);
+    bool waiting_for_start = (api.getState("evse/state", false)->get("iec61851_state")->asUint() == 1)
+                          && (user_slot->get("max_current")->asUint() == 0);
 
     if (waiting_for_start)
         evse_led.set_module(EvseLed::Blink::Nag, 2000);
@@ -676,7 +669,7 @@ void Users::register_urls()
     });
 
 #if MODULE_EVSE_LED_AVAILABLE()
-    task_scheduler.scheduleWithFixedDelay([](){check_waiting_for_start(nullptr);}, 1000, 1000);
+    task_scheduler.scheduleWithFixedDelay([](){check_waiting_for_start();}, 1000, 1000);
 #endif
 }
 
