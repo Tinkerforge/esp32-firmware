@@ -97,7 +97,7 @@ public:
 
     void callResponse(ResponseRegistration &reg, char *payload, size_t len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
 
-    Config *getState(const String &path, bool log_if_not_found = true);
+    const Config *getState(const String &path, bool log_if_not_found = true);
 
     void addFeature(const char *name);
     void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void()> callback, bool is_action);

@@ -507,7 +507,7 @@ String API::callCommand(const char *path, Config::ConfUpdate payload)
     return String("Unknown command ") + path;
 }
 
-Config *API::getState(const String &path, bool log_if_not_found)
+const Config *API::getState(const String &path, bool log_if_not_found)
 {
     for (auto &reg : states) {
         if (reg.path != path) {

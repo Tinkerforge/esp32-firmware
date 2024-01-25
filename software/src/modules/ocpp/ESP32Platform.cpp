@@ -260,7 +260,7 @@ EVSEState platform_get_evse_state(int32_t connectorId) {
 int32_t platform_get_energy(int32_t connectorId) {
     REQUIRE_FEATURE(meter_all_values, 0);
 
-    Config *meter_all_values = api.getState("meter/all_values");
+    const Config *meter_all_values = api.getState("meter/all_values");
     if (meter_all_values == nullptr)
         return 0;
 
@@ -484,7 +484,7 @@ const SupportedMeasurand *platform_get_supported_measurands(int32_t connector_id
     return supported_measurands + supported_measurand_offsets[(size_t)measurand];
 }
 
-float platform_get_raw_meter_value_common(Config *meter_all_values, int32_t connectorId, SampledValueMeasurand measurand, SampledValuePhase phase, SampledValueLocation location) {
+float platform_get_raw_meter_value_common(const Config *meter_all_values, int32_t connectorId, SampledValueMeasurand measurand, SampledValuePhase phase, SampledValueLocation location) {
     switch(measurand) {
         case SampledValueMeasurand::POWER_ACTIVE_EXPORT:
             // The power factor's sign indicates the direction of the current flow.
@@ -610,7 +610,7 @@ float platform_get_raw_meter_value_sdm630(int32_t connectorId, SampledValueMeasu
 
     REQUIRE_FEATURE(meter_all_values, 0);
 
-    Config *meter_all_values = api.getState("meter/all_values");
+    const Config *meter_all_values = api.getState("meter/all_values");
 
     switch(measurand) {
         case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_REGISTER:
@@ -654,7 +654,7 @@ float platform_get_raw_meter_value_sdm72v2(int32_t connectorId, SampledValueMeas
 
     REQUIRE_FEATURE(meter_all_values, 0);
 
-    Config *meter_all_values = api.getState("meter/all_values");
+    const Config *meter_all_values = api.getState("meter/all_values");
 
     switch(measurand) {
         case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_REGISTER:

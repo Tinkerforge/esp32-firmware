@@ -417,9 +417,9 @@ bool Users::is_user_configured(uint8_t user_id) {
 static void check_waiting_for_start(Config *ignored) {
     (void) ignored;
 
-    static Config *iec_state = (Config *) api.getState("evse/state", false)->get("iec61851_state");
-    static Config *user_slot_active = (Config *) api.getState("evse/slots", false)->get(CHARGING_SLOT_USER)->get("active");
-    static Config *user_slot_current = (Config *) api.getState("evse/slots", false)->get(CHARGING_SLOT_USER)->get("max_current");
+    static const Config *iec_state = (const Config *) api.getState("evse/state", false)->get("iec61851_state");
+    static const Config *user_slot_active = (const Config *) api.getState("evse/slots", false)->get(CHARGING_SLOT_USER)->get("active");
+    static const Config *user_slot_current = (const Config *) api.getState("evse/slots", false)->get(CHARGING_SLOT_USER)->get("max_current");
 
     if (iec_state == nullptr || user_slot_active == nullptr || user_slot_current == nullptr)
         return;
