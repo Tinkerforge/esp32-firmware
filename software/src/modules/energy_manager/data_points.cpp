@@ -54,7 +54,7 @@ void EnergyManager::register_events()
         }
 
         // Passing no values will register on the ConfigRoot.
-        event.registerEvent(meters.get_path(slot, Meters::PathType::ValueIDs), {}, [this, slot](Config *config){
+        event.registerEvent(meters.get_path(slot, Meters::PathType::ValueIDs), {}, [this, slot](const Config *config){
             size_t count = config->count();
 
             if (count == 0) {
@@ -68,7 +68,7 @@ void EnergyManager::register_events()
 
             uint32_t power_index;
             if (meters.get_cached_power_index(slot, &power_index)) {
-                event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {static_cast<uint16_t>(power_index)}, [this, slot](Config *config){
+                event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {static_cast<uint16_t>(power_index)}, [this, slot](const Config *config){
                     update_history_meter_power(slot, config->asFloat());
                     return EventResult::OK;
                 });

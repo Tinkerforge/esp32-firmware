@@ -586,7 +586,7 @@ void EvseCommon::register_urls() {
 
 #if MODULE_AUTOMATION_AVAILABLE()
     if (automation.is_trigger_active(AutomationTriggerID::ChargerState)) {
-        event.registerEvent("evse/state", {}, [this](Config *cfg) {
+        event.registerEvent("evse/state", {}, [this](const Config *cfg) {
 
             // we need this since not only iec state changes trigger this api event.
             static uint32_t last_state = 0;

@@ -29,7 +29,7 @@ void Event::setup()
     initialized = true;
 }
 
-int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(Config *)> callback)
+int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(const Config *)> callback)
 {
     auto api_states = api.states.size();
     for (size_t i = 0; i < api_states; i++) {

@@ -62,7 +62,7 @@ void RequireMeter::register_urls() {
     if (config.get("config")->asUint() == WARP_SMART) {
         // We've never seen an energy meter.
         // Listen to info/features in case a meter shows up.
-        event.registerEvent("info/features", {}, [this](Config *_ignored){
+        event.registerEvent("info/features", {}, [this](const Config */*config*/){
             if (!api.hasFeature("meter"))
                 return EventResult::OK;
 

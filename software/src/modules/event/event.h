@@ -34,7 +34,7 @@ struct StateUpdateRegistration {
     int64_t eventID;
     size_t stateIdx;
     Config *config;
-    std::function<EventResult(Config *)> callback;
+    std::function<EventResult(const Config *)> callback;
 };
 
 class Event final : public IAPIBackend
@@ -49,7 +49,7 @@ public:
         uint16_t
     > ConfPath;
 
-    int64_t registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(Config *)> callback);
+    int64_t registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(const Config *)> callback);
     void deregisterEvent(int64_t eventID);
 
     // IAPIBackend implementation
