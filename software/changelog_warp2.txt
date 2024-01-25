@@ -510,7 +510,7 @@
 - Fix date input keyboard entry
 - Fix reported range of external current in MQTT auto discovery
 
-2024-01-24: 2.2.0 (<unknown>)
+2024-01-24: 2.2.0 (32abaf21)
 - Update timezone database
 - Show maximum number of tracked charges
 - Report meters feature if at least one meter declared its value IDs

@@ -516,6 +516,6 @@
 - Fix date input keyboard entry
 - Fix reported range of external current in MQTT auto discovery
 
-2024-01-24: 2.2.0 (<unknown>)
+2024-01-24: 2.2.0 (32abaf21)
 - Allow setting status LED via API while charging (through EVSE Bricklet firmware 2.1.9)
 - Don't immediately block charging when external slot gets enabled (through EVSE Bricklet firmware 2.1.9)
