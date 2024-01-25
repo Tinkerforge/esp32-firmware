@@ -101,18 +101,12 @@ void Automation::pre_setup() {
         return "";
     });
     config_in_use = config;
-
-    enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
 }
 
 void Automation::setup() {
     api.restorePersistentConfig("automation/config", &config);
-    api.restorePersistentConfig("automation/enabled", &enabled);
 
     config_in_use = config;
-    enabled_in_use = enabled;
 
     if (is_trigger_active(AutomationTriggerID::Cron)) {
         task_scheduler.scheduleWithFixedDelay([this]() {
@@ -141,7 +135,6 @@ void Automation::setup() {
 
 void Automation::register_urls() {
     api.addPersistentConfig("automation/config", &config, {}, 1000);
-    api.addPersistentConfig("automation/timed_config", &enabled, {}, 1000);
 }
 
 void Automation::register_action(AutomationActionID id, Config cfg, ActionCb callback, ValidatorCb validator) {
