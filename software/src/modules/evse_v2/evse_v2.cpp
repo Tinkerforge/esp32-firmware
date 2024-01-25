@@ -131,10 +131,7 @@ void EVSEV2::pre_setup()
     button_configuration = Config::Object({
         {"button", Config::Uint8(2)}
     });
-
-    button_configuration_update = Config::Object({
-        {"button", Config::Uint8(2)}
-    });
+    button_configuration_update = button_configuration;
 
     ev_wakeup = Config::Object({
         {"enabled", Config::Bool(false)}
@@ -154,6 +151,10 @@ void EVSEV2::pre_setup()
     gp_output_update = gp_output;
 
 #if MODULE_AUTOMATION_AVAILABLE()
+    auto automation_cfg = Config::Object({
+        {"closed", Config::Bool(true)}
+    });
+
     automation.register_trigger(
         AutomationTriggerID::EVSEButton,
         *Config::Null()
@@ -161,23 +162,17 @@ void EVSEV2::pre_setup()
 
     automation.register_trigger(
         AutomationTriggerID::EVSEGPInput,
-        Config::Object({
-            {"closed", Config::Bool(true)}
-        })
+        automation_cfg
     );
 
     automation.register_trigger(
         AutomationTriggerID::EVSEShutdownInput,
-        Config::Object({
-            {"closed", Config::Bool(true)}
-        })
+        automation_cfg
     );
 
     automation.register_action(
         AutomationActionID::EVSEGPOutput,
-        Config::Object({
-            {"closed", Config::Bool(true)}
-        }),
+        automation_cfg,
         [this](const Config *config) {
             is_in_bootloader(tf_evse_v2_set_gp_output(&device, config->get("closed")->asBool() ? 0 : 1));
         }

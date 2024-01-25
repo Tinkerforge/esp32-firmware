@@ -70,29 +70,26 @@ void EvseCommon::pre_setup() {
         {"auto_start_charging", Config::Bool(true)}
     });
 
-    global_current = Config::Object({
+    auto current_cfg = Config::Object({
         {"current", Config::Uint16(32000)}
     });
 
+    global_current = current_cfg;
     global_current_update = global_current;
 
-    management_enabled = Config::Object({
+    auto enabled_cfg = Config::Object({
         {"enabled", Config::Bool(false)}
     });
+
+    management_enabled = enabled_cfg;
     management_enabled_update = management_enabled;
 
-    user_current = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
+    user_current = current_cfg;
 
-    user_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
+    user_enabled = enabled_cfg;
     user_enabled_update = user_enabled;
 
-    external_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
+    external_enabled = enabled_cfg;
     external_enabled_update = external_enabled;
 
     external_defaults = Config::Object({
@@ -101,16 +98,10 @@ void EvseCommon::pre_setup() {
     });
     external_defaults_update = external_defaults;
 
-    management_current = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
-
+    management_current = current_cfg;
     management_current_update = management_current;
 
-    external_current = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
-
+    external_current = current_cfg;
     external_current_update = external_current;
 
     external_clear_on_disconnect = Config::Object({
@@ -119,24 +110,16 @@ void EvseCommon::pre_setup() {
 
     external_clear_on_disconnect_update = external_clear_on_disconnect;
 
-    modbus_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
+    modbus_enabled = enabled_cfg;
     modbus_enabled_update = modbus_enabled;
 
-    ocpp_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
+    ocpp_enabled = enabled_cfg;
     ocpp_enabled_update = ocpp_enabled;
 
-    boost_mode = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
+    boost_mode = enabled_cfg;
     boost_mode_update = boost_mode;
 
-    require_meter_enabled = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
+    require_meter_enabled = enabled_cfg;
 
     require_meter_enabled_update = require_meter_enabled;
 
@@ -145,10 +128,7 @@ void EvseCommon::pre_setup() {
     });
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    automation_current = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
-
+    automation_current = current_cfg;
     automation_current_update = automation_current;
 
     automation.register_trigger(
@@ -165,9 +145,7 @@ void EvseCommon::pre_setup() {
 
     automation.register_action(
         AutomationActionID::SetCurrent,
-        Config::Object({
-            {"current", Config::Uint(0, 0, 32000)}
-        }),
+        current_cfg,
         [this](const Config *config) {
             backend->set_charging_slot(CHARGING_SLOT_AUTOMATION, config->get("current")->asUint(), true, false);
         },
