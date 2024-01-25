@@ -530,12 +530,13 @@ const Config *API::getState(const String &path, bool log_if_not_found)
 
 void API::addFeature(const char *name)
 {
-    for (int i = 0; i < features.count(); ++i)
+    size_t feature_count = features.count();
+    for (size_t i = 0; i < feature_count; ++i)
         if (features.get(i)->asString() == name)
             return;
 
-    features.add();
-    features.get(features.count() - 1)->updateString(name);
+    auto new_feature = features.add();
+    new_feature->updateString(name);
 }
 
 bool API::already_registered(const String &path, const char *api_type)
