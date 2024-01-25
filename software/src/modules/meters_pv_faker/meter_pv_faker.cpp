@@ -52,7 +52,7 @@ MeterClassID MeterPvFaker::get_class() const
     return MeterClassID::PvFaker;
 }
 
-void MeterPvFaker::setup(Config &ephemeral_config)
+void MeterPvFaker::setup(const Config &ephemeral_config)
 {
     // Cache config
     peak_power  = ephemeral_config.get("peak_power")->asUint() * (-1LL);

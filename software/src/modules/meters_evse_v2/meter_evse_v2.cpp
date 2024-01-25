@@ -32,7 +32,7 @@ MeterClassID MeterEVSEV2::get_class() const
     return MeterClassID::EVSEV2;
 }
 
-void MeterEVSEV2::setup(Config &ephemeral_config)
+void MeterEVSEV2::setup(const Config &/*ephemeral_config*/)
 {
     // Trigger meter value update, in case other modules expect meter values during setup.
     evse_v2.update_all_data();

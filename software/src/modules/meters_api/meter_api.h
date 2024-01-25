@@ -39,7 +39,7 @@ public:
     MeterAPI(uint32_t slot_) : slot(slot_) {}
 
     MeterClassID get_class() const override;
-    void setup(Config &ephemeral_config) override;
+    void setup(const Config &ephemeral_config) override;
     void register_urls(const String &base_url) override;
 
     bool supports_power()         override {return true;}

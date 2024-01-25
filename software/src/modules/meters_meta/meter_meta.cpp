@@ -35,7 +35,7 @@ MeterClassID MeterMeta::get_class() const
     return MeterClassID::Meta;
 }
 
-void MeterMeta::setup(Config &ephemeral_config)
+void MeterMeta::setup(const Config &ephemeral_config)
 {
     // Cache config
     mode           = static_cast<ConfigMode>(ephemeral_config.get("mode")->asUint());

@@ -208,7 +208,7 @@ void MeterRS485Bricklet::setupMeter() {
         this);
 }
 
-void MeterRS485Bricklet::setup(Config &ephemeral_config)
+void MeterRS485Bricklet::setup(const Config &ephemeral_config)
 {
     // TODO Trigger meter value update, in case other modules expect meter values during setup.
 

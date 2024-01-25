@@ -38,7 +38,7 @@ public:
     MeterModbusTCP(uint32_t slot_, Config *state_, Config *errors_, ModbusTCP *mb_) : GenericModbusTCPClient(mb_), slot(slot_), state(state_), errors(errors_) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
-    void setup(Config &ephemeral_config) override;
+    void setup(const Config &ephemeral_config) override;
 
     bool supports_power()         override {return true;}
     bool supports_energy_import() override {return true;}

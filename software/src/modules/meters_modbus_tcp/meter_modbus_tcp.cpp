@@ -33,7 +33,7 @@ MeterClassID MeterModbusTCP::get_class() const
     return MeterClassID::ModbusTCP;
 }
 
-void MeterModbusTCP::setup(Config &ephemeral_config)
+void MeterModbusTCP::setup(const Config &ephemeral_config)
 {
     host_name      = ephemeral_config.get("host")->asString();
     port           = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());

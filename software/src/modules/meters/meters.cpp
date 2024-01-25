@@ -140,7 +140,7 @@ void Meters::setup()
             meter_slot.power_history.setup();
         }
 
-        meter->setup(*static_cast<Config *>(meter_slot.config_union.get()));
+        meter->setup(*static_cast<const Config *>(meter_slot.config_union.get()));
         // Setup before calling supports_reset to allow a meter to decide in
         // setup whether to support reset. This could for example depend on the
         // meter's configuration.
