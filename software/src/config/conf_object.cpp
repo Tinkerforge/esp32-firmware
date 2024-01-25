@@ -117,6 +117,7 @@ Config::ConfObject::~ConfObject()
 {
     auto *slot = this->getSlot();
     slot->schema = nullptr;
+    slot->values = nullptr;
 }
 
 Config::ConfObject& Config::ConfObject::operator=(const ConfObject &cpy) {
