@@ -619,7 +619,7 @@ void EnergyManager::update_all_data()
     if (contactor_installed) {
         if ((all_data.contactor_check_state & 1) == 0) {
             logger.printfln("Contactor check tripped. Check contactor.");
-            if (contactor_check_tripped == false) {
+            if (!contactor_check_tripped) {
                 automation_trigger |= 1 << 3;
             }
             contactor_check_tripped = true;

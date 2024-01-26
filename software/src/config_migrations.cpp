@@ -594,7 +594,7 @@ static const ConfigMigration migrations[] = {
                         }
                     }
 
-                    if (config["auto_reset_mode"].as<bool>() == true) {
+                    if (config["auto_reset_mode"].as<bool>()) {
                         DynamicJsonDocument task{16384};
                         auto trigger = task.createNestedArray("trigger");
                         trigger.add(1);
