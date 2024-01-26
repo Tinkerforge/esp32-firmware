@@ -38,12 +38,8 @@ export function InputNumber(props: InputNumberProps) {
     const id = !props.idContext ? util.useId() : useContext(props.idContext);
 
     const input = useRef<HTMLInputElement>();
-    let value: number;
-    try {
-        value = parseInt(props.value.toString(), 10);
-    } catch {
-        value = NaN;
-    }
+    let value = parseInt(props.value?.toString(), 10);
+
     const invalid = isNaN(value) || (props.min !== undefined && value < parseInt(props.min.toString())) || (props.max !== undefined && value > parseInt(props.max.toString()));
 
 
@@ -51,7 +47,7 @@ export function InputNumber(props: InputNumberProps) {
     if ("invalidFeedback" in props && props.invalidFeedback) {
         invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
     } else if (invalid) {
-        if ("required" in props && props.value === null) {
+        if (props.required && isNaN(value)) {
             invalidFeedback = <div class="invalid-feedback">{__("component.input_number.required")}</div>;
         } else if ("min" in props && !("max" in props)) {
             invalidFeedback = <div class="invalid-feedback">{__("component.input_number.min_only")(props.min.toString(), props.unit ? props.unit : "")}</div>;

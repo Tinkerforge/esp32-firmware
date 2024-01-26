@@ -46,7 +46,7 @@ export function InputText<T extends (InputTextProps | InputTextWithValidationPro
     let invalidFeedback = undefined;
     if ("invalidFeedback" in props && props.invalidFeedback)
         invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
-    else if ("required" in props && !props.value)
+    else if (props.required && !props.value)
         invalidFeedback = <div class="invalid-feedback">{__("component.input_text.required")}</div>;
     else if ("minLength" in props && !("maxLength" in props) && props.minLength)
         invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_only")(props.minLength.toString())}</div>;
