@@ -52,7 +52,6 @@ static const char *values_names[] = {
 void MetersLegacyAPI::pre_setup()
 {
     state = Config::Object({
-        {"readable", Config::Bool(false)},
         {"writable", Config::Bool(false)},
     });
 
@@ -499,8 +498,6 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     if (has_phases) {
         api.addFeature("meter_phases");
     }
-
-    state.get("readable")->updateBool(true);
 
     if (linked_meter_class == MeterClassID::API) {
         state.get("writable")->updateBool(true);
