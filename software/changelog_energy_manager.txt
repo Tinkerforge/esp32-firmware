@@ -210,5 +210,5 @@
 - Support Eltako DSZ15DZMOD and YTL DEM4A (through WARP Energy Manager Bricklet firmware 2.0.5)
 - Add resettable import/export energy values
 
-2024-01-26: 2.0.1 (<unknown>)
+2024-01-26: 2.0.1 (b1249abc)
 - Fix legacy meter API
