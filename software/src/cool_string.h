@@ -11,5 +11,5 @@ public:
     void setLength(int len);
     unsigned int getCapacity();
     void shrinkToFit();
-    char *releaseOwnership(size_t *len);
+    //char *releaseOwnership(size_t *len);
 };
