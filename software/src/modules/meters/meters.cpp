@@ -269,6 +269,12 @@ void Meters::setup()
     initialized = true;
 }
 
+#if defined(METERS_LOW_LATENCY) && METERS_LOW_LATENCY != 0
+#define METERS_VALUES_LOW_LATENCY true
+#else
+#define METERS_VALUES_LOW_LATENCY false
+#endif
+
 void Meters::register_urls()
 {
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
@@ -278,7 +284,7 @@ void Meters::register_urls()
         api.addState(get_path(slot, Meters::PathType::State),    &meter_slot.state);
         api.addState(get_path(slot, Meters::PathType::Errors),   &meter_slot.errors);
         api.addState(get_path(slot, Meters::PathType::ValueIDs), &meter_slot.value_ids);
-        api.addState(get_path(slot, Meters::PathType::Values),   &meter_slot.values);
+        api.addState(get_path(slot, Meters::PathType::Values),   &meter_slot.values, {}, METERS_VALUES_LOW_LATENCY);
 
         const String base_path = get_path(slot, Meters::PathType::Base);
 
