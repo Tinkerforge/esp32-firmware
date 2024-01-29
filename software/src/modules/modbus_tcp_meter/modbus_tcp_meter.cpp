@@ -106,7 +106,7 @@ void ModbusTcpMeter::setup()
 
 void ModbusTcpMeter::register_urls()
 {
-    api.addPersistentConfig("modbus_tcp_meter/config", &config, {}, 1000);
+    api.addPersistentConfig("modbus_tcp_meter/config", &config);
 }
 
 bool ModbusTcpMeter::check_event_read(Modbus::ResultCode event)

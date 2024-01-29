@@ -26,7 +26,7 @@
 
 void TutorialPhase3::pre_setup()
 {
-    // ConfigRoot object to represent the data to be send to the frontend
+    // ConfigRoot object to represent the data to be send to the front-end
     // module. Containing one member "color" representing the color value
     // in HTML #RRGGBB notation. The string is limited to exactly 7 byte
     // in length.
@@ -35,7 +35,7 @@ void TutorialPhase3::pre_setup()
     });
 
     // Extra ConfigRoot object to represent data updates received from the
-    // frontend module. This has the same structure as the first ConfigRoot
+    // front-end module. This has the same structure as the first ConfigRoot
     // object. Create it by copying the first one.
     config_update = config;
 }
@@ -50,14 +50,14 @@ void TutorialPhase3::setup()
 void TutorialPhase3::register_urls()
 {
     // Add ConfigRoot object to the API manager as a state under the name
-    // "tutorial_phase_3/config" to be exposed to the frontend module.
-    // The API manager checks the ConfigRoot object for changes every 1000
-    // milliseconds. If a change is detected an update is send.
-    api.addState("tutorial_phase_3/config", &config, {}, 1000);
+    // "tutorial_phase_3/config" to be exposed to the front-end module.
+    // The API manager checks the ConfigRoot object for changes once every
+    // second by default. If a change is detected, an update is sent.
+    api.addState("tutorial_phase_3/config", &config);
 
     // Add extra ConfigRoot object to the API manager as a command target under
-    // the name "tutorial_phase_3/config" to receive updates from the frontend
-    // module. If an update is received the lambda function is called to handle it.
+    // the name "tutorial_phase_3/config" to receive updates from the front-end
+    // module. If an update is received, the lambda function is called to handle it.
     api.addCommand("tutorial_phase_3/config_update", &config_update, {}, [this]() {
         String color = config_update.get("color")->asString();
 

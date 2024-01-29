@@ -103,5 +103,5 @@ void UptimeTracker::setup()
 
 void UptimeTracker::register_urls()
 {
-    api.addState("info/last_boots", &uptimes, {}, 1000);
+    api.addState("info/last_boots", &uptimes);
 }

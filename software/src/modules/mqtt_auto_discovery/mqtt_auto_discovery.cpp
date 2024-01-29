@@ -77,7 +77,7 @@ void MqttAutoDiscovery::setup()
 
 void MqttAutoDiscovery::register_urls()
 {
-    api.addPersistentConfig("mqtt/auto_discovery_config", &config, {}, 1000);
+    api.addPersistentConfig("mqtt/auto_discovery_config", &config);
 }
 
 void MqttAutoDiscovery::prepare_topics()

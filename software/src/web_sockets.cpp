@@ -594,7 +594,7 @@ void WebSockets::start(const char *uri)
         checkActiveClients();
     }, 100, 100);
 
-    api.addState("info/ws", &state, {}, 1000);
+    api.addState("info/ws", &state);
 }
 
 void WebSockets::onConnect_HTTPThread(std::function<void(WebSocketsClient)> fn)

@@ -590,7 +590,7 @@ void Users::register_urls()
         return "";
     }, true);
 
-    api.addState("users/config", &config, {"digest_hash"}, 1000);
+    api.addState("users/config", &config, {"digest_hash"});
     api.addCommand("users/add", &add, {"digest_hash"}, [this](){
         config.get("users")->add();
         Config *user = (Config *)config.get("users")->get(config.get("users")->count() - 1);

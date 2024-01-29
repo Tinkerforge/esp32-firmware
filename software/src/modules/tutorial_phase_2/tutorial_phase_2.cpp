@@ -26,7 +26,7 @@
 
 void TutorialPhase2::pre_setup()
 {
-    // ConfigRoot object to represent the data to be send to the frontend
+    // ConfigRoot object to represent the data to be send to the front-end
     // module. Containing one member "color" representing the color value
     // in HTML #RRGGBB notation. The string is limited to exactly 7 byte
     // in length.
@@ -45,10 +45,10 @@ void TutorialPhase2::setup()
 void TutorialPhase2::register_urls()
 {
     // Add ConfigRoot object to the API manager as a state under the name
-    // "tutorial_phase_2/config" to be exposed to the frontend module.
-    // The API manager checks the ConfigRoot object for changes every 1000
-    // milliseconds. If a change is detected an update is send.
-    api.addState("tutorial_phase_2/config", &config, {}, 1000);
+    // "tutorial_phase_2/config" to be exposed to the front-end module.
+    // The API manager checks the ConfigRoot object for changes once every
+    // second by default. If a change is detected, an update is sent.
+    api.addState("tutorial_phase_2/config", &config);
 }
 
 void TutorialPhase2::loop()

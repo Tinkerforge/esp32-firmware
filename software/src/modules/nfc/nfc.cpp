@@ -423,8 +423,8 @@ void NFC::setup()
 
 void NFC::register_urls()
 {
-    api.addState("nfc/seen_tags", &seen_tags, {}, 1000);
-    api.addPersistentConfig("nfc/config", &config, {}, 1000);
+    api.addState("nfc/seen_tags", &seen_tags);
+    api.addPersistentConfig("nfc/config", &config);
     api.addCommand("nfc/inject_tag", &inject_tag, {}, [this](){
         last_tag_injection = millis();
         tag_injection_action = TRIGGER_CHARGE_ANY;

@@ -947,10 +947,10 @@ void ChargeManager::set_allocated_current_callback(std::function<void(uint32_t)>
 
 void ChargeManager::register_urls()
 {
-    api.addPersistentConfig("charge_manager/config", &config, {}, 1000);
-    api.addState("charge_manager/state", &state, {}, 1000);
+    api.addPersistentConfig("charge_manager/config", &config);
+    api.addState("charge_manager/state", &state);
 
-    api.addState("charge_manager/available_current", &available_current, {}, 1000);
+    api.addState("charge_manager/available_current", &available_current);
     api.addCommand("charge_manager/available_current_update", &available_current_update, {}, [this](){
         uint32_t current = this->available_current_update.get("current")->asUint();
         this->available_current.get("current")->updateUint(current);
@@ -958,13 +958,13 @@ void ChargeManager::register_urls()
         this->watchdog_triggered = false;
     }, false);
 
-    api.addState("charge_manager/available_phases", &available_phases, {}, 1000);
+    api.addState("charge_manager/available_phases", &available_phases);
     api.addCommand("charge_manager/available_phases_update", &available_phases_update, {}, [this](){
         uint32_t phases = this->available_phases_update.get("phases")->asUint();
         this->available_phases.get("phases")->updateUint(phases);
         logger.printfln("charge_manager: Available phases: %u", phases);
     }, false);
 
-    //api.addState("charge_manager/control_pilot_disconnect", &control_pilot_disconnect, {}, 1000);
+    //api.addState("charge_manager/control_pilot_disconnect", &control_pilot_disconnect);
     //api.addCommand("charge_manager/control_pilot_disconnect_update", &control_pilot_disconnect, {}, [](){}, false);
 }

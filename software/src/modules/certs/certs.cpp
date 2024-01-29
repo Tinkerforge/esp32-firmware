@@ -135,7 +135,7 @@ void Certs::setup() {
 
 void Certs::register_urls()
 {
-    api.addState("certs/state", &state, {}, 1000);
+    api.addState("certs/state", &state);
 
     api.addCommand("certs/add", &add, {}, [this](String &error) {
         error = "";

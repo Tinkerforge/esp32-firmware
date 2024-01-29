@@ -82,5 +82,5 @@ void Authentication::setup()
 
 void Authentication::register_urls()
 {
-    api.addPersistentConfig("authentication/config", &config, {"digest_hash"}, 1000);
+    api.addPersistentConfig("authentication/config", &config, {"digest_hash"});
 }

@@ -63,9 +63,9 @@ void Rtc::register_backend(IRtcBackend *_backend)
 
     backend = _backend;
 
-    api.addPersistentConfig("rtc/config", &config, {}, 1000);
+    api.addPersistentConfig("rtc/config", &config);
 
-    api.addState("rtc/time", &time, {}, 100);
+    api.addState("rtc/time", &time, {}, true);
     api.addCommand("rtc/time_update", &time_update, {}, [this]() {
         if (!backend)
             return;

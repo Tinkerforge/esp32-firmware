@@ -199,7 +199,7 @@ void Wireguard::register_urls()
         "private_key",
         "remote_public_key",
         "preshared_key"
-    }, 1000);
+    });
 
-    api.addState("wireguard/state", &state, {}, 1000);
+    api.addState("wireguard/state", &state);
 }

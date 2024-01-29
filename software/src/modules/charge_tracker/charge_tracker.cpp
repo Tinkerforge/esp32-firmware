@@ -690,7 +690,7 @@ void ChargeTracker::register_urls()
     // This happens in users::setup() i.e. _after_ charge_tracker::setup()
     removeOldRecords();
 
-    api.addPersistentConfig("charge_tracker/config", &config, {}, 1000);
+    api.addPersistentConfig("charge_tracker/config", &config);
 
     server.on_HTTPThread("/charge_tracker/charge_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{records_mutex};
@@ -718,9 +718,9 @@ void ChargeTracker::register_urls()
         return request.endChunkedResponse();
     });
 
-    api.addState("charge_tracker/last_charges", &last_charges, {}, 1000);
-    api.addState("charge_tracker/current_charge", &current_charge, {}, 1000);
-    api.addState("charge_tracker/state", &state, {}, 1000);
+    api.addState("charge_tracker/last_charges", &last_charges);
+    api.addState("charge_tracker/current_charge", &current_charge);
+    api.addState("charge_tracker/state", &state);
 
     api.addCommand("charge_tracker/remove_all_charges", Config::Confirm(), {Config::ConfirmKey()}, [this](String &result){
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {

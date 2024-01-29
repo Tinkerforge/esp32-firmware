@@ -477,7 +477,7 @@ void EnergyManager::setup()
 void EnergyManager::register_urls()
 {
     // Always export state so that the status page can show an error when no bricklet was found.
-    api.addState("energy_manager/state", &state, {}, 1000);
+    api.addState("energy_manager/state", &state);
 
     server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
         last_debug_keep_alive = millis();
@@ -497,8 +497,8 @@ void EnergyManager::register_urls()
         return request.send(200);
     });
 
-    api.addPersistentConfig("energy_manager/config", &config, {}, 1000);
-    api.addState("energy_manager/low_level_state", &low_level_state, {}, 1000);
+    api.addPersistentConfig("energy_manager/config", &config);
+    api.addState("energy_manager/low_level_state", &low_level_state);
 
     api.addResponse("energy_manager/history_wallbox_5min", &history_wallbox_5min, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_5min_response(response, ownership, owner_id);});
     api.addResponse("energy_manager/history_wallbox_daily", &history_wallbox_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_daily_response(response, ownership, owner_id);});

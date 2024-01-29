@@ -97,7 +97,7 @@ void ModbusMeterSimulator::setup()
 
 void ModbusMeterSimulator::register_urls()
 {
-    api.addPersistentConfig("modbus_meter_simulator/config", &config, {}, 1000);
+    api.addPersistentConfig("modbus_meter_simulator/config", &config);
 }
 
 void ModbusMeterSimulator::register_events()

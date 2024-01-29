@@ -140,17 +140,17 @@ void MetersLegacyAPI::setup()
 
 void MetersLegacyAPI::register_urls()
 {
-    api.addState("meters_legacy_api/state", &state, {}, 1000);
-    api.addPersistentConfig("meters_legacy_api/config", &config, {}, 1000);
+    api.addState("meters_legacy_api/state", &state);
+    api.addPersistentConfig("meters_legacy_api/config", &config);
 
     if (!legacy_api_enabled)
         return;
 
-    api.addState("meter/state", &legacy_state, {}, 1000);
-    api.addState("meter/values", &legacy_values, {}, 1000);
-    api.addState("meter/phases", &legacy_phases, {}, 1000);
-    api.addState("meter/all_values", &legacy_all_values, {}, 1000);
-    api.addState("meter/last_reset", &legacy_last_reset, {}, 1000);
+    api.addState("meter/state",      &legacy_state);
+    api.addState("meter/values",     &legacy_values);
+    api.addState("meter/phases",     &legacy_phases);
+    api.addState("meter/all_values", &legacy_all_values);
+    api.addState("meter/last_reset", &legacy_last_reset);
     // meter/error_counters registered in meters module
 
     api.addCommand("meter/reset", Config::Null(), {}, [this](){

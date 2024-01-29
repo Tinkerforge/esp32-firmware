@@ -263,24 +263,24 @@ void EVSEV2::post_register_urls() {
     // All _update APIs that write the EVSEs flash without checking first if this was a change
     // are marked as actions to make sure the flash is not written unnecessarily.
 
-    api.addState("evse/gpio_configuration", &gpio_configuration, {}, 1000);
+    api.addState("evse/gpio_configuration", &gpio_configuration);
     api.addCommand("evse/gpio_configuration_update", &gpio_configuration_update, {}, [this](){
         is_in_bootloader(tf_evse_v2_set_gpio_configuration(&device, gpio_configuration_update.get("shutdown_input")->asUint(),
                                                                     gpio_configuration_update.get("input")->asUint(),
                                                                     gpio_configuration_update.get("output")->asUint()));
     }, true);
 
-    api.addState("evse/button_configuration", &button_configuration, {}, 1000);
+    api.addState("evse/button_configuration", &button_configuration);
     api.addCommand("evse/button_configuration_update", &button_configuration_update, {}, [this](){
         is_in_bootloader(tf_evse_v2_set_button_configuration(&device, button_configuration_update.get("button")->asUint()));
     }, true);
 
-    api.addState("evse/ev_wakeup", &ev_wakeup, {}, 1000);
+    api.addState("evse/ev_wakeup", &ev_wakeup);
     api.addCommand("evse/ev_wakeup_update", &ev_wakeup_update, {}, [this](){
         is_in_bootloader(tf_evse_v2_set_ev_wakeup(&device, ev_wakeup_update.get("enabled")->asBool()));
     }, true);
 
-    api.addState("evse/control_pilot_disconnect", &control_pilot_disconnect, {}, 1000);
+    api.addState("evse/control_pilot_disconnect", &control_pilot_disconnect);
     api.addCommand("evse/control_pilot_disconnect_update", &control_pilot_disconnect_update, {}, [this](){
         if (evse_common.management_enabled.get("enabled")->asBool()) { // Disallow updating control pilot configuration if management is enabled because the charge manager will override the CP config every second.
             logger.printfln("evse: Control pilot cannot be (dis)connected by API while charge management is enabled.");
@@ -289,7 +289,7 @@ void EVSEV2::post_register_urls() {
         is_in_bootloader(tf_evse_v2_set_control_pilot_disconnect(&device, control_pilot_disconnect_update.get("disconnect")->asBool(), nullptr));
     }, true);
 
-    api.addState("evse/gp_output", &gp_output, {}, 1000);
+    api.addState("evse/gp_output", &gp_output);
     api.addCommand("evse/gp_output_update", &gp_output_update, {}, [this](){
         is_in_bootloader(tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()));
     }, true);

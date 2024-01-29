@@ -57,7 +57,7 @@ void RequireMeter::setup() {
 }
 
 void RequireMeter::register_urls() {
-    api.addPersistentConfig("require_meter/config", &config, {}, 1000);
+    api.addPersistentConfig("require_meter/config", &config);
 
     if (config.get("config")->asUint() == WARP_SMART) {
         // We've never seen an energy meter.

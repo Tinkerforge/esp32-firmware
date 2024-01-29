@@ -55,7 +55,7 @@ void EMSDcard::setup()
 
 void EMSDcard::register_urls()
 {
-    api.addState("energy_manager/sdcard_state", &state, {}, 1000);
+    api.addState("energy_manager/sdcard_state", &state);
 
     api.addCommand("energy_manager/sdcard_format", Config::Confirm(), {Config::ConfirmKey()}, [this](String &result) {
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {

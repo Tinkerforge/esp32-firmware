@@ -57,7 +57,7 @@ static void button_state_changed_handler(TF_RGBLEDButton *rgb_led_button, uint8_
 
 void TutorialPhase5::pre_setup()
 {
-    // ConfigRoot object to represent the data to be send to the frontend
+    // ConfigRoot object to represent the data to be send to the front-end
     // module. Containing one member "color" representing the color value
     // in HTML #RRGGBB notation. The string is limited to exactly 7 byte
     // in length.
@@ -66,11 +66,11 @@ void TutorialPhase5::pre_setup()
     });
 
     // Extra ConfigRoot object to represent data updates received from the
-    // frontend module. This has the same structure as the first ConfigRoot
+    // front-end module. This has the same structure as the first ConfigRoot
     // object. Create it by copying the first one.
     config_update = config;
 
-    // ConfigRoot object to represent the data to be send to the frontend
+    // ConfigRoot object to represent the data to be send to the front-end
     // module. Containing one member "button" representing the button state:
     // true == pressed, false == released.
     state = Config::Object({
@@ -89,7 +89,7 @@ void TutorialPhase5::setup()
         // Could not create RGB LED Button Bricklet object. Return from the
         // setup function without setting initialized to true to indicate
         // that module could not be initialized properly. This also hides
-        // the frontend module in the web interface.
+        // the front-end module in the web interface.
         return;
     }
 
@@ -126,14 +126,14 @@ void TutorialPhase5::setup()
 void TutorialPhase5::register_urls()
 {
     // Add ConfigRoot object to the API manager as a state under the name
-    // "tutorial_phase_5/config" to be exposed to the frontend module.
-    // The API manager checks the ConfigRoot object for changes every 1000
-    // milliseconds. If a change is detected an update is send.
-    api.addState("tutorial_phase_5/config", &config, {}, 1000);
+    // "tutorial_phase_5/config" to be exposed to the front-end module.
+    // The API manager checks the ConfigRoot object for changes once every
+    // second by default. If a change is detected, an update is sent.
+    api.addState("tutorial_phase_5/config", &config);
 
     // Add extra ConfigRoot object to the API manager as a command target under
-    // the name "tutorial_phase_5/config" to receive updates from the frontend
-    // module. If an update is received the lambda function is called to handle it.
+    // the name "tutorial_phase_5/config" to receive updates from the front-end
+    // module. If an update is received, the lambda function is called to handle it.
     api.addCommand("tutorial_phase_5/config_update", &config_update, {}, [this]() {
         String color = config_update.get("color")->asString();
 
@@ -143,10 +143,11 @@ void TutorialPhase5::register_urls()
     }, false);
 
     // Add ConfigRoot object to the API manager as a state under the name
-    // "tutorial_phase_5/state" to be exposed to the frontend module.
-    // The API manager checks the ConfigRoot object for changes every 100
-    // milliseconds. If a change is detected an update is send.
-    api.addState("tutorial_phase_5/state", &state, {}, 100);
+    // "tutorial_phase_5/state" to be exposed to the front-end module.
+    // The API manager checks the ConfigRoot object for changes every 250
+    // milliseconds when low latency is requested. If a change is detected,
+    // an update is sent.
+    api.addState("tutorial_phase_5/state", &state, {}, true);
 }
 
 void TutorialPhase5::loop()
@@ -180,6 +181,6 @@ void TutorialPhase5::poll_bricklet_color()
     String color = "#" + num2hex(red) + num2hex(green) + num2hex(blue);
 
     // Update ConfigRoot object to expose the potentially changed color
-    // to the frontend module.
+    // to the front-end module.
     config.get("color")->updateString(color);
 }

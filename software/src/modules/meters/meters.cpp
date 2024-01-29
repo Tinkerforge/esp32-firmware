@@ -274,11 +274,11 @@ void Meters::register_urls()
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
         MeterSlot &meter_slot = meter_slots[slot];
 
-        api.addPersistentConfig(get_path(slot, Meters::PathType::Config), &meter_slot.config_union, {}, 1000);
-        api.addState(get_path(slot, Meters::PathType::State),    &meter_slot.state,     {}, 1000);
-        api.addState(get_path(slot, Meters::PathType::Errors),   &meter_slot.errors,    {}, 1000);
-        api.addState(get_path(slot, Meters::PathType::ValueIDs), &meter_slot.value_ids, {}, 1000);
-        api.addState(get_path(slot, Meters::PathType::Values),   &meter_slot.values,    {}, 1000);
+        api.addPersistentConfig(get_path(slot, Meters::PathType::Config), &meter_slot.config_union);
+        api.addState(get_path(slot, Meters::PathType::State),    &meter_slot.state);
+        api.addState(get_path(slot, Meters::PathType::Errors),   &meter_slot.errors);
+        api.addState(get_path(slot, Meters::PathType::ValueIDs), &meter_slot.value_ids);
+        api.addState(get_path(slot, Meters::PathType::Values),   &meter_slot.values);
 
         const String base_path = get_path(slot, Meters::PathType::Base);
 
@@ -399,7 +399,7 @@ void Meters::register_urls()
 
 #if MODULE_METERS_LEGACY_API_AVAILABLE()
     if (meters_legacy_api.get_linked_meter_slot() < METERS_SLOTS) {
-        api.addState("meter/error_counters", &meter_slots[meters_legacy_api.get_linked_meter_slot()].errors, {}, 1000);
+        api.addState("meter/error_counters", &meter_slots[meters_legacy_api.get_linked_meter_slot()].errors);
         meter_slots[meters_legacy_api.get_linked_meter_slot()].power_history.register_urls("meter/");
     }
 #endif

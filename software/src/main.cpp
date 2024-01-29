@@ -111,7 +111,7 @@ static void register_default_urls(void) {
         trigger_reboot("API");
     }, true);
 
-    api.addState("info/modules", &modules, {}, 10000);
+    api.addState("info/modules", &modules);
 
     server.on_HTTPThread("/force_reboot", HTTP_GET, [](WebServerRequest request) {
         ESP.restart();

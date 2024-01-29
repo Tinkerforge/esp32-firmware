@@ -1011,7 +1011,7 @@ void ModbusTcp::update_keba_regs()
 
 void ModbusTcp::register_urls()
 {
-    api.addPersistentConfig("modbus_tcp/config", &config, {}, 1000);
+    api.addPersistentConfig("modbus_tcp/config", &config);
 
     if (!config.get("enable")->asBool()) {
         return;

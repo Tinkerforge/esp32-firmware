@@ -55,7 +55,7 @@ void EvseLed::setup()
 
 void EvseLed::register_urls()
 {
-    api.addPersistentConfig("evse/led_configuration", &config, {}, 1000);
+    api.addPersistentConfig("evse/led_configuration", &config);
 
     // Has to be named this way, because evse/indicator_led is the corresponding read API.
     api.addCommand("evse/indicator_led_update", &led, {}, [this](){

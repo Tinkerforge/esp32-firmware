@@ -134,7 +134,7 @@ void Automation::setup() {
 }
 
 void Automation::register_urls() {
-    api.addPersistentConfig("automation/config", &config, {}, 1000);
+    api.addPersistentConfig("automation/config", &config);
 }
 
 void Automation::register_action(AutomationActionID id, Config cfg, ActionCb callback, ValidatorCb validator) {

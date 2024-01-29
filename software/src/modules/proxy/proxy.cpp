@@ -139,9 +139,9 @@ void Proxy::setup()
 
 void Proxy::register_urls()
 {
-    api.addState("proxy/error_counters", &error_counters, {}, 1000);
-    api.addState("proxy/devices", &devices, {}, 1000);
-    api.addPersistentConfig("proxy/config", &config, {"authentication_secret"}, 1000);
+    api.addState("proxy/error_counters", &error_counters);
+    api.addState("proxy/devices", &devices);
+    api.addPersistentConfig("proxy/config", &config, {"authentication_secret"});
 
     task_scheduler.scheduleWithFixedDelay([this](){
         for(char c = 'A'; c <= 'F'; ++c) {

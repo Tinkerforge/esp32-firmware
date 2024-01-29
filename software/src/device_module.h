@@ -145,7 +145,7 @@ public:
             initialized = false;
         }, true);
 
-        api.addState(url_prefix + "/identity", &identity, {}, 1000);
+        api.addState(url_prefix + "/identity", &identity);
     }
 
     void loop() override
