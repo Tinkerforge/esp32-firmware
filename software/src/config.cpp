@@ -564,6 +564,7 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) const
     String result;
     serializeJson(doc, result);
 
+    // Check for overflow after serializing: Allows to print truncated doc.
     if (doc.overflowed()) {
         auto capacity = doc.capacity();
         if (capacity == 0) {
@@ -574,6 +575,22 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) const
         }
     }
     return result;
+}
+
+size_t Config::to_string_except(const std::vector<String> &keys_to_censor, char *buf, size_t buf_len) const
+{
+    auto doc = this->to_json(keys_to_censor);
+
+    size_t written = serializeJson(doc, buf, buf_len);
+
+    if (doc.overflowed()) {
+        auto capacity = doc.capacity();
+        if (capacity == 0) {
+            logger.printfln("JSON doc overflow while converting to string! Doc capacity is &u but needed %u.", capacity, json_size(false));
+        }
+    }
+
+    return written;
 }
 
 uint8_t Config::was_updated(uint8_t api_backend_flag)

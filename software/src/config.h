@@ -699,6 +699,7 @@ public:
 
     String to_string() const;
     String to_string_except(const std::vector<String> &keys_to_censor) const;
+    size_t to_string_except(const std::vector<String> &keys_to_censor, char *buf, size_t buf_size) const;
 };
 
 struct ConfigRoot : public Config {
