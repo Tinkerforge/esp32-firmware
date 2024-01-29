@@ -216,10 +216,12 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
         wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
 
         let topics: any[] = [];
+
+        let end_marker_found = (e.data as string).includes("\n\n");
+        let messages = (e.data as string).trim();
+
         batch(() => {
-            for (let item of e.data.split("\n")) {
-                if (item == "")
-                    continue;
+            for (let item of messages.split("\n")) {
                 let obj = JSON.parse(item);
                 if (!("topic" in obj) || !("payload" in obj)) {
                     console.log("Received malformed event", obj);
@@ -234,7 +236,9 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
                 API.trigger(topic, eventTarget);
             }
 
-            allow_render.value = true;
+            if (end_marker_found) {
+                allow_render.value = true;
+            }
         });
     };
 

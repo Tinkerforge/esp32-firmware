@@ -40,45 +40,63 @@ void WS::setup()
 void WS::register_urls()
 {
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient client) {
+        // Max payload size is 4k.
+        // The framing needs 10 + 12 + 3 bytes (with the second \n to mark the end of the API dump)
+        // API path lengths should probably fit in the 103 bytes left.
+        size_t buf_size = 4096 + 128;
+
         CoolString to_send;
-        auto result = task_scheduler.await([&to_send](){
-            size_t required = 1; // \0
-            for (auto &reg : api.states) {
-                required += 10;
-                required += reg.path.length();
-                required += 12;
-                required += reg.config->string_length();
-                required += 2;
+        if (!to_send.reserve(buf_size)) {
+            multi_heap_info_t dram_info;
+            heap_caps_get_info(&dram_info,  MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+            logger.printfln("ws: Not enough memory to send initial state. %u > %u (%u)", buf_size, dram_info.largest_free_block, dram_info.total_free_bytes);
+            client.close_HTTPThread();
+            return;
+        }
+
+        int i = 0;
+        bool done = false;
+        while (!done) {
+            auto result = task_scheduler.await([&to_send, &i, &done, buf_size](){
+                for(; i < api.states.size(); ++i) {
+                    auto &reg = api.states[i];
+                    int req = 10 + reg.path.length() + 12 + reg.config->string_length() + 2;
+                    if ((to_send.getCapacity() - to_send.length()) < req) {
+                        done = false;
+                        if (req > buf_size)
+                            logger.printfln("API %s exceeds max WS buffer size! Required %u buf_size %u", reg.path.c_str(), req, buf_size);
+                        return;
+                    }
+
+                    to_send.concat("{\"topic\":\"");
+                    to_send.concat(reg.path);
+                    to_send.concat("\",\"payload\":");
+
+                    size_t length_before = to_send.length();
+                    size_t written = reg.config->to_string_except(reg.keys_to_censor, to_send.begin() + to_send.length(), to_send.getCapacity() - to_send.length() - 3);
+                    // Truncation should not happen: We've checked above that the payload will fit.
+                    // setLength still writes a null terminator.
+                    to_send.setLength(length_before + written);
+
+                    to_send.concat("}\n");
+                }
+                done = true;
+            });
+
+            if (result == TaskScheduler::AwaitResult::Done) {
+                if (to_send.length() == 0) {
+                    client.close_HTTPThread();
+                    return;
+                }
+
+                if (done)
+                    to_send.concat("\n");
+
+                if (!client.sendOwnedNoFreeBlocking_HTTPThread(to_send.begin(), to_send.length()))
+                    return;
+
+                to_send.clear();
             }
-
-            if (!to_send.reserve(required)) {
-                multi_heap_info_t dram_info;
-                heap_caps_get_info(&dram_info,  MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-                logger.printfln("ws: Not enough memory to send initial state. %u > %u (%u)", required, dram_info.largest_free_block, dram_info.total_free_bytes);
-                return;
-            }
-
-
-            for (auto &reg : api.states) {
-                // Directly append to preallocated string. a += b + c + d + e + f would create a temporary string with multiple reallocations.
-                to_send.concat("{\"topic\":\"");
-                to_send.concat(reg.path);
-                to_send.concat("\",\"payload\":");
-                to_send.concat(reg.config->to_string_except(reg.keys_to_censor));
-                to_send.concat("}\n");
-            }
-        });
-
-        if (result == TaskScheduler::AwaitResult::Done) {
-            if (to_send.length() == 0) {
-                client.close_HTTPThread();
-                return;
-            }
-
-            size_t len;
-            char *p = to_send.releaseOwnership(&len);
-            if (!client.sendOwnedBlocking_HTTPThread(p, len))
-                return;
         }
     });
 

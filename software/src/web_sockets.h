@@ -39,7 +39,7 @@ struct WebSocketsClient {
     int fd;
     WebSockets *ws;
 
-    bool sendOwnedBlocking_HTTPThread(char *payload, size_t payload_len);
+    bool sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len);
     void close_HTTPThread();
 };
 
