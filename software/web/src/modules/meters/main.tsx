@@ -1450,7 +1450,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         let values = API.get_unchecked(`meters/${state.meter_slot}/values`);
         let power = 0;
 
-        if (value_ids && values.length > 0 && values && values.length > 0) {
+        if (value_ids && value_ids.length > 0 && values && values.length > 0) {
             let idx = value_ids.indexOf(MeterValueID.PowerActiveLSumImExDiff);
 
             if (idx >= 0) {
