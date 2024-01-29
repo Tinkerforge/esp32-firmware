@@ -80,10 +80,6 @@ void WS::register_urls()
             if (!client.sendOwnedBlocking_HTTPThread(p, len))
                 return;
         }
-
-        for (auto &callback : on_connect_callbacks) {
-            callback(client);
-        }
     });
 
     web_sockets.start("/ws");
@@ -94,11 +90,6 @@ void WS::register_urls()
         if (len > 0)
             web_sockets.sendToAllOwned(payload, len);
     }, 1000, 1000);
-}
-
-void WS::addOnConnectCallback_HTTPThread(std::function<void(WebSocketsClient)> callback)
-{
-    on_connect_callbacks.push_back(callback);
 }
 
 void WS::addCommand(size_t commandIdx, const CommandRegistration &reg)

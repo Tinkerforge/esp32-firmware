@@ -32,7 +32,6 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void addOnConnectCallback_HTTPThread(std::function<void(WebSocketsClient)> callback);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
@@ -44,5 +43,4 @@ public:
     WantsStateUpdate wantsStateUpdate(size_t stateIdx) override;
 
     WebSockets web_sockets;
-    std::vector<std::function<void(WebSocketsClient)>> on_connect_callbacks;
 };
