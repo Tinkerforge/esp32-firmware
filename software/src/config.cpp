@@ -696,7 +696,7 @@ static void shrinkToFit(typename T::Slot * &buf, size_t &buf_size) {
 
     auto new_buf = T::allocSlotBuf(new_size);
 
-    for(size_t i = 0; i <= last_used_slot; ++i)
+    for (size_t i = 0; i <= last_used_slot; ++i)
         new_buf[i] = std::move(buf[i]);
 
     T::freeSlotBuf(buf);

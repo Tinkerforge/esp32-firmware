@@ -715,7 +715,7 @@ bool is_valid_subnet_mask(IPAddress subnet)
 {
     bool zero_seen = false;
     // IPAddress is in network byte order!
-    uint32_t addr = ntohl((uint32_t) subnet);
+    uint32_t addr = ntohl((uint32_t)subnet);
     for (int i = 31; i >= 0; --i) {
         bool bit_is_one = (addr & (1 << i));
         if (zero_seen && bit_is_one) {
@@ -754,7 +754,7 @@ void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_ti
 
 uint16_t internet_checksum(const uint8_t *data, size_t length)
 {
-    uint32_t checksum=0xffff;
+    uint32_t checksum = 0xffff;
 
     for (size_t i = 0; i < length - 1; i += 2) {
         uint16_t buf;
@@ -861,26 +861,26 @@ void trigger_reboot(const char *initiator)
 void list_dir(fs::FS &fs, const char *dirname, uint8_t max_depth, uint8_t current_depth)
 {
     File root = fs.open(dirname);
-    if(!root) {
+    if (!root) {
         logger.printfln("%*c%s/ - failed to open directory", current_depth * 4, ' ', root.name());
         return;
     }
-    if(!root.isDirectory()) {
+    if (!root.isDirectory()) {
         logger.printfln("%*c%s/ - not a directory", current_depth * 4, ' ', root.name());
         return;
     }
     logger.printfln("%*c%s/", current_depth * 4, ' ', root.name());
 
     File file = root.openNextFile();
-    while(file) {
-        if(file.isDirectory()) {
-            if(max_depth) {
+    while (file) {
+        if (file.isDirectory()) {
+            if (max_depth) {
                 list_dir(fs, file.path(), max_depth - 1, current_depth + 1);
             }
         } else {
             size_t prefix_len = (current_depth + 1) * 4 + strlen(file.name());
             time_t t = file.getLastWrite();
-            struct tm * tmstruct = localtime(&t);
+            struct tm *tmstruct = localtime(&t);
 
             logger.printfln("%*c%s%*c%d-%02d-%02d %02d:%02d:%02d    %u",
                             (current_depth + 1) * 4,
@@ -888,8 +888,8 @@ void list_dir(fs::FS &fs, const char *dirname, uint8_t max_depth, uint8_t curren
                             file.name(),
                             prefix_len < 40 ? 40 - prefix_len : 4,
                             ' ',
-                            tmstruct->tm_year+1900,
-                            tmstruct->tm_mon+1,
+                            tmstruct->tm_year + 1900,
+                            tmstruct->tm_mon + 1,
                             tmstruct->tm_mday,
                             tmstruct->tm_hour,
                             tmstruct->tm_min,
@@ -982,7 +982,7 @@ uint32_t Ownership::next()
     return owner_id;
 }
 
-OwnershipGuard::OwnershipGuard(Ownership *ownership, uint32_t owner_id): ownership(ownership)
+OwnershipGuard::OwnershipGuard(Ownership *ownership, uint32_t owner_id) : ownership(ownership)
 {
     acquired = ownership->try_acquire(owner_id);
 }
@@ -1003,7 +1003,7 @@ void remove_separator(const char *const in, char *out)
 {
     int written = 0;
     size_t s = strlen(in);
-    for(int i = 0; i < s; ++i) {
+    for (int i = 0; i < s; ++i) {
         if (in[i] == ':')
             continue;
         out[written] = in[i];
@@ -1032,7 +1032,7 @@ i2c_cmd_handle_t i2c_master_prepare_write_read_device(uint8_t device_address,
     esp_err_t err = ESP_OK;
 
     i2c_cmd_handle_t handle = i2c_cmd_link_create_static(command_buffer, command_buffer_size);
-    assert (handle != NULL);
+    assert(handle != NULL);
 
     if (write) {
         err = i2c_master_start(handle);

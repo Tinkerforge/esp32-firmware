@@ -23,7 +23,7 @@ Config *Config::ConfObject::get(const String &needle)
 
     const auto needle_length = needle.length();
 
-    for(size_t i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i) {
         if (schema->key_lengths[i] != needle_length)
             continue;
 
@@ -43,7 +43,7 @@ const Config *Config::ConfObject::get(const String &needle) const
 
     const auto needle_length = needle.length();
 
-    for(size_t i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i) {
         if (schema->key_lengths[i] != needle_length)
             continue;
 
@@ -61,10 +61,10 @@ Config::ConfObject::Slot *Config::ConfObject::getSlot() { return &object_buf[idx
 Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> &&val)
 {
     auto len = val.size();
-    auto schema = new ConfObjectSchema{len, heap_alloc_array<uint8_t>(len), heap_alloc_array<char*>(len)};
+    auto schema = new ConfObjectSchema{len, heap_alloc_array<uint8_t>(len), heap_alloc_array<char *>(len)};
 
     size_t buf_len = 0;
-    for(int i = 0; i < len; ++i) {
+    for (int i = 0; i < len; ++i) {
         if (val[i].first.length() > 255)
             esp_system_abort("ConfObject key was longer than 255 chars!");
 
@@ -72,10 +72,10 @@ Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> &&val)
         buf_len += schema->key_lengths[i] + 1;
     }
 
-    char *key_buf = (char*)heap_caps_calloc_prefer(buf_len, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    char *key_buf = (char *)heap_caps_calloc_prefer(buf_len, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
     size_t written = 0;
-    for(int i = 0; i < len; ++i) {
+    for (int i = 0; i < len; ++i) {
         schema->keys[i] = key_buf + written;
         memcpy(key_buf + written, val[i].first.c_str(), schema->key_lengths[i]);
         written += schema->key_lengths[i];
@@ -88,7 +88,7 @@ Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> &&val)
     slot->schema = schema;
     slot->values = heap_alloc_array<Config>(len);
 
-    for(int i = 0; i < len; ++i) {
+    for (int i = 0; i < len; ++i) {
         this->getSlot()->values[i] = std::move(val[i].second); //TODO: move here?
     }
 }
@@ -108,7 +108,7 @@ Config::ConfObject::ConfObject(const ConfObject &cpy)
 
     const auto len = cpy.getSlot()->schema->length;
     auto values = heap_alloc_array<Config>(len);
-    for(int i = 0; i < len; ++i)
+    for (int i = 0; i < len; ++i)
         values[i] = cpy.getSlot()->values[i];
 
     // Must call getSlot() again because any reference would be invalidated
@@ -137,7 +137,7 @@ Config::ConfObject &Config::ConfObject::operator=(const ConfObject &cpy)
 
     const auto len = cpy.getSlot()->schema->length;
     auto values = heap_alloc_array<Config>(len);
-    for(int i = 0; i < len; ++i)
+    for (int i = 0; i < len; ++i)
         values[i] = cpy.getSlot()->values[i];
 
     // Must call getSlot() again because any reference would be invalidated

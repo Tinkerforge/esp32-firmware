@@ -42,7 +42,7 @@ struct ConfArraySlot {
 struct ConfObjectSchema {
     size_t length;
     std::unique_ptr<uint8_t[]> key_lengths;
-    std::unique_ptr<char*[]> keys;
+    std::unique_ptr<char *[]> keys;
 };
 
 struct ConfObjectSlot {
@@ -91,7 +91,7 @@ static size_t nextSlot(typename T::Slot *&buf, size_t &buf_size) {
 
     auto new_buf = T::allocSlotBuf(buf_size + SLOT_HEADROOM);
 
-    for(size_t i = 0; i < buf_size; ++i)
+    for (size_t i = 0; i < buf_size; ++i)
         new_buf[i] = std::move(buf[i]);
 
     T::freeSlotBuf(buf);

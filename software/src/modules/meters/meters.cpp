@@ -442,7 +442,7 @@ MeterGenerator *Meters::get_generator_for_class(MeterClassID meter_class)
     return get_generator_for_class(MeterClassID::None);
 }
 
-IMeter *Meters::new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state,  Config *errors)
+IMeter *Meters::new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *errors)
 {
     MeterGenerator *generator = get_generator_for_class(meter_class);
 
@@ -857,7 +857,7 @@ const Config * Meters::get_config_float_nan_prototype()
 const Config * Meters::get_config_uint_max_prototype()
 {
     if (config_uint_max_prototype.is_null()) {
-        config_uint_max_prototype  = Config::Uint32(UINT32_MAX);
+        config_uint_max_prototype = Config::Uint32(UINT32_MAX);
     }
     return &config_uint_max_prototype;
 }

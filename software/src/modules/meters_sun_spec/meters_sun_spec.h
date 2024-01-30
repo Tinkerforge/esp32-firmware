@@ -77,7 +77,7 @@ public:
     };
 
     void scan_flush_log();
-    [[gnu::format(__printf__, 2, 3)]]void scan_printfln(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 3)]] void scan_printfln(const char *fmt, ...);
 
     Config config_prototype;
 

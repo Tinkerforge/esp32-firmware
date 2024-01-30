@@ -40,22 +40,22 @@ MeterClassID MetersPvFaker::get_class() const
     return MeterClassID::PvFaker;
 }
 
-IMeter * MetersPvFaker::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
+IMeter *MetersPvFaker::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
 {
     return new MeterPvFaker(slot);
 }
 
-const Config * MetersPvFaker::get_config_prototype()
+const Config *MetersPvFaker::get_config_prototype()
 {
     return &config_prototype;
 }
 
-const Config * MetersPvFaker::get_state_prototype()
+const Config *MetersPvFaker::get_state_prototype()
 {
     return Config::Null();
 }
 
-const Config * MetersPvFaker::get_errors_prototype()
+const Config *MetersPvFaker::get_errors_prototype()
 {
     return Config::Null();
 }

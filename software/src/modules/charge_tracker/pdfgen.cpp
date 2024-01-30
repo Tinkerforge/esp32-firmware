@@ -491,7 +491,7 @@ static struct pdf_object *pdf_append_object(struct pdf_doc *pdf, struct pdf_obje
 
 static void pdf_object_destroy(struct pdf_object *object)
 {
-    switch(object->type) {
+    switch (object->type) {
         case OBJ_info:
             free(object->info);
             object->info = nullptr;
@@ -511,9 +511,9 @@ static struct pdf_object *pdf_add_object(struct pdf_doc *pdf, int type)
     obj.page_id = -1;
     obj.type = type;
 
-    switch(obj.type) {
+    switch (obj.type) {
         case OBJ_info:
-            obj.info = (struct pdf_info *) calloc(1, sizeof(*obj.info));
+            obj.info = (struct pdf_info *)calloc(1, sizeof(*obj.info));
             break;
     }
 
@@ -583,7 +583,7 @@ float pdf_height(const struct pdf_doc *pdf)
 void pdf_destroy(struct pdf_doc *pdf)
 {
     if (pdf) {
-        for(ssize_t i = 0; i < pdf->objects_in_use; ++i)
+        for (ssize_t i = 0; i < pdf->objects_in_use; ++i)
             pdf_object_destroy(&pdf->objects[i]);
 
         dstr_free(&pdf->scratch_str);
@@ -597,7 +597,7 @@ static struct pdf_object *pdf_find_first_object(struct pdf_doc *pdf,
     if (!pdf)
         return nullptr;
 
-    for(ssize_t i = 0; i < pdf->objects_in_use; ++i)
+    for (ssize_t i = 0; i < pdf->objects_in_use; ++i)
         if (pdf->objects[i].type == type)
             return &pdf->objects[i];
 
@@ -612,7 +612,7 @@ static struct pdf_object *pdf_find_next_object(struct pdf_doc *pdf, struct pdf_o
 
     ssize_t start_offset = last - pdf->objects.get() + 1;
 
-    for(ssize_t i = start_offset; i < pdf->objects_in_use; ++i)
+    for (ssize_t i = start_offset; i < pdf->objects_in_use; ++i)
         if (pdf->objects[i].type == type)
             return &pdf->objects[i];
 
@@ -675,17 +675,17 @@ struct pdf_object *pdf_append_page(struct pdf_doc *pdf, uint32_t stream_count, u
 }
 
 static void pdf_add_page(struct pdf_doc *pdf, struct pdf_object *page) {
-    for(size_t i = 0; i < page->page.stream_count; ++i) {
+    for (size_t i = 0; i < page->page.stream_count; ++i) {
         struct pdf_object *obj = pdf_add_object(pdf, OBJ_stream);
         obj->page_id = page->index;
     }
 
-    for(size_t i = 0; i < page->page.image_count; ++i) {
+    for (size_t i = 0; i < page->page.image_count; ++i) {
         struct pdf_object *obj = pdf_add_object(pdf, OBJ_image);
         obj->page_id = page->index;
     }
 
-    for(size_t i = 0; i < page->page.image_count; ++i) {
+    for (size_t i = 0; i < page->page.image_count; ++i) {
         struct pdf_object *obj = pdf_add_object(pdf, OBJ_imagestream);
         obj->page_id = page->index;
     }
@@ -966,7 +966,7 @@ int pdf_save_file(struct pdf_doc *pdf)
     }
 
     pdf->page_indices.reserve(pdf->page_count);
-    for(int p = 0; p < pdf->page_count; ++p) {
+    for (int p = 0; p < pdf->page_count; ++p) {
         if (pdf->write_error_occurred)
             return -1;
 
@@ -986,7 +986,7 @@ int pdf_save_file(struct pdf_doc *pdf)
 
             if (obj->type == OBJ_page) {
                 auto to_delete = obj->index - pdf->current_page_id;
-                for(int j = 0; j < to_delete; ++j) {
+                for (int j = 0; j < to_delete; ++j) {
                     pdf_object_destroy(pdf_get_object(pdf, j + pdf->current_page_id));
                 }
                 auto page_idx = obj->index;
@@ -1300,8 +1300,8 @@ int pdf_add_multiple_text_spacing(struct pdf_doc *pdf, struct pdf_object *page,
 
     const char *text_head = text;
 
-    for(size_t line = 0; line < text_lines; ++line) {
-        for(size_t col = 0; col < text_cols; ++col) {
+    for (size_t line = 0; line < text_lines; ++line) {
+        for (size_t col = 0; col < text_cols; ++col) {
             dstr_printf(&pdf->scratch_str, "%f %f Td ", (col == 0) ? (line == 0 ? 0 : -col_offsets[text_cols - 1]) : col_offsets[col] - col_offsets[col - 1], col == 0 ? -leading : 0.);
             dstr_append(&pdf->scratch_str, "(");
             size_t len = strlen(text_head);
@@ -1850,7 +1850,7 @@ int pdf_add_horizontal_lines(struct pdf_doc *pdf, struct pdf_object *page, float
         dstr_printf(&pdf->scratch_str, "%f %f l ", x2, y2 - width / 2);
     }
 
-    for(int i = 0; i < count; ++i) {
+    for (int i = 0; i < count; ++i) {
         dstr_printf(&pdf->scratch_str, "%f %f m ", x1, y1 - (spacing * i));
         dstr_printf(&pdf->scratch_str, "%f %f l ", x2, y2 - (spacing * i));
     }
@@ -2262,7 +2262,7 @@ static int pdf_add_png_data(struct pdf_doc *pdf, struct pdf_object *page,
     if (page == nullptr)
         page = pdf_get_page(pdf, obj);
 
-    struct pdf_object* image_stream = pdf_get_object(pdf, obj->index + page->page.image_count);
+    struct pdf_object *image_stream = pdf_get_object(pdf, obj->index + page->page.image_count);
     obj->image.x = x;
     obj->image.y = y;
     image_stream->image_stream.width = display_width;

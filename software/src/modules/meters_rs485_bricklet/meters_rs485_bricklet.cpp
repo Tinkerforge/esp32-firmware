@@ -144,7 +144,7 @@ MeterClassID MetersRS485Bricklet::get_class() const
     return MeterClassID::RS485Bricklet;
 }
 
-IMeter * MetersRS485Bricklet::new_meter(uint32_t slot, Config *state, Config * errors)
+IMeter *MetersRS485Bricklet::new_meter(uint32_t slot, Config *state, Config *errors)
 {
     if (meter_instance != nullptr) {
         logger.printfln("meters_rs485_bricklet: Cannot create more than one meter of class ModbusRTU.");

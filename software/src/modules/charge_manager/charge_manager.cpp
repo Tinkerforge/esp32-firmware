@@ -402,7 +402,7 @@ void ChargeManager::setup()
 
     max_avail_current = config.get("maximum_available_current")->asUint();
 
-    if(!config.get("enable_charge_manager")->asBool() || config.get("chargers")->count() == 0) {
+    if (!config.get("enable_charge_manager")->asBool() || config.get("chargers")->count() == 0) {
         initialized = true;
         return;
     }
@@ -489,7 +489,7 @@ bool ChargeManager::seen_all_chargers()
     if (charger_count == 0)
         return false;
 
-    for(size_t i = 0; i < charger_count; ++i)
+    for (size_t i = 0; i < charger_count; ++i)
         if (this->charger_state[i].last_update == 0)
             return false;
 
@@ -499,7 +499,7 @@ bool ChargeManager::seen_all_chargers()
 
 bool ChargeManager::is_charging_stopped(uint32_t last_update_cutoff)
 {
-    for(size_t i = 0; i < charger_count; ++i) {
+    for (size_t i = 0; i < charger_count; ++i) {
         const auto &charger = this->charger_state[i];
         if (!a_after_b(charger.last_update, last_update_cutoff)) {
             return false;
@@ -520,7 +520,7 @@ void ChargeManager::set_all_control_pilot_disconnect(bool disconnect)
 
 bool ChargeManager::are_all_control_pilot_disconnected(uint32_t last_update_cutoff)
 {
-    for(size_t i = 0; i < charger_count; ++i) {
+    for (size_t i = 0; i < charger_count; ++i) {
         const auto &charger = this->charger_state[i];
         if (!a_after_b(charger.last_update, last_update_cutoff)) {
             return false;
@@ -536,7 +536,7 @@ bool ChargeManager::are_all_control_pilot_disconnected(uint32_t last_update_cuto
 
 bool ChargeManager::is_control_pilot_disconnect_supported(uint32_t last_update_cutoff)
 {
-    for(size_t i = 0; i < charger_count; ++i) {
+    for (size_t i = 0; i < charger_count; ++i) {
         const auto &charger = this->charger_state[i];
         if (!a_after_b(charger.last_update, last_update_cutoff)) {
             return false;
@@ -583,7 +583,7 @@ void ChargeManager::distribute_current()
     // Update control pilot disconnect
     {
         bool disconnect_requested = control_pilot_disconnect.get("disconnect")->asBool();
-        for(size_t i = 0; i < charger_count; ++i) {
+        for (size_t i = 0; i < charger_count; ++i) {
             this->charger_state[i].cp_disconnect = disconnect_requested;
         }
     }
@@ -613,7 +613,7 @@ void ChargeManager::distribute_current()
             // Charger does not respond anymore
             if (deadline_elapsed(charger.last_update + TIMEOUT_MS)) {
                 unreachable_evse_found = true;
-                LOCAL_LOG("stage 0: Can't reach EVSE of %s (%s): last_update too old.",this->get_charger_name(i), this->hosts[i]);
+                LOCAL_LOG("stage 0: Can't reach EVSE of %s (%s): last_update too old.", this->get_charger_name(i), this->hosts[i]);
 
                 bool state_was_not_five = charger.state != 5;
                 charger.state = 5;
@@ -629,7 +629,7 @@ void ChargeManager::distribute_current()
             }
 
             // Charger did not update the charging current in time
-            if(charger.allocated_current < charger.allowed_current && deadline_elapsed(charger.last_sent_config + TIMEOUT_MS)) {
+            if (charger.allocated_current < charger.allowed_current && deadline_elapsed(charger.last_sent_config + TIMEOUT_MS)) {
                 unreachable_evse_found = true;
                 LOCAL_LOG("stage 0: EVSE of %s (%s) did not react in time.", this->get_charger_name(i), this->hosts[i]);
 

@@ -62,7 +62,7 @@ struct floatswapped_t {
     static inline float swapReg(float x) {
         uint32_t a = *(uint32_t *) &x;
         a = (a << 16) | (a >> 16);
-        x = *(float *) &a;
+        x = *(float *)&a;
         return x;
     }
     float val;
@@ -289,22 +289,22 @@ struct [[gnu::packed]] keba_write_s {
 struct discrete_inputs_t {
     static const mb_param_type_t TYPE = MB_PARAM_DISCRETE;
     static const uint16_t OFFSET = 0;
-    bool evse:1;
-    bool meter:1;
-    bool meter_phases:1;
-    bool meter_all_values:1;
-    bool nfc:1;
+    bool evse : 1;
+    bool meter : 1;
+    bool meter_phases : 1;
+    bool meter_all_values : 1;
+    bool nfc : 1;
 };
 
 struct meter_discrete_inputs_t {
     static const mb_param_type_t TYPE = MB_PARAM_DISCRETE;
     static const uint16_t OFFSET = 2100;
-    bool phase_one_connected:1;
-    bool phase_two_connected:1;
-    bool phase_three_connected:1;
-    bool phase_one_active:1;
-    bool phase_two_active:1;
-    bool phase_three_active:1;
+    bool phase_one_connected : 1;
+    bool phase_two_connected : 1;
+    bool phase_three_connected : 1;
+    bool phase_one_active : 1;
+    bool phase_two_active : 1;
+    bool phase_three_active : 1;
 };
 
 //-------------------
@@ -313,8 +313,8 @@ struct meter_discrete_inputs_t {
 struct evse_coils_t {
     static const mb_param_type_t TYPE = MB_PARAM_COIL;
     static const uint16_t OFFSET = 1000;
-    bool enable_charging:1;
-    bool autostart_button:1;
+    bool enable_charging : 1;
+    bool autostart_button : 1;
 };
 
 static input_regs_t *input_regs, *input_regs_copy;
@@ -436,7 +436,7 @@ void ModbusTcp::setup()
     // but the ip_netif_ptr is never used.
     // Fortunately this means that we can just pass anything to circumvent the assertion
     // and the modbus_tcp server will listen on any network interface.
-    comm_info.ip_netif_ptr = (void *) 0x00000004;
+    comm_info.ip_netif_ptr = (void *)0x00000004;
     ESP_ERROR_CHECK(mbc_slave_setup((void *)&comm_info));
 
     mb_register_area_descriptor_t reg_area;

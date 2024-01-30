@@ -50,7 +50,7 @@ public:
 
     int create_socket(uint16_t port, bool blocking);
 
-    void register_manager(const char * const * const hosts,
+    void register_manager(const char *const *const hosts,
                           int charger_count,
                           std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *)> manager_callback,
                           std::function<void(uint8_t, uint8_t)> manager_error_callback);
@@ -96,7 +96,7 @@ private:
 
     uint8_t resolve_state[MAX_CONTROLLED_CHARGERS] = {};
     struct sockaddr_in dest_addrs[MAX_CONTROLLED_CHARGERS] = {};
-    const char * const * hosts = nullptr;
+    const char *const *hosts = nullptr;
     int charger_count = 0;
     // one bit per charger
     uint32_t needs_mdns = 0;
@@ -107,7 +107,7 @@ private:
     struct sockaddr_storage manager_addr;
 
     void start_scan();
-    bool mdns_result_is_charger(mdns_result_t *entry, const char ** ret_version, const char **ret_enabled, const char **ret_display_name);
+    bool mdns_result_is_charger(mdns_result_t *entry, const char **ret_version, const char **ret_enabled, const char **ret_display_name);
     void resolve_via_mdns(mdns_result_t *entry);
 
     #define SCAN_RESULT_ERROR_OK 0

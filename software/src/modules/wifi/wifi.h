@@ -68,11 +68,11 @@ private:
     OwnedConfig sta_config_in_use;
 
     bool soft_ap_running = false;
-    std::unique_ptr<unsigned char []> ca_cert = nullptr;
+    std::unique_ptr<unsigned char[]> ca_cert = nullptr;
     size_t ca_cert_len = 0;
-    std::unique_ptr<unsigned char []> client_cert = nullptr;
+    std::unique_ptr<unsigned char[]> client_cert = nullptr;
     size_t client_cert_len = 0;
-    std::unique_ptr<unsigned char []> client_key = nullptr;
+    std::unique_ptr<unsigned char[]> client_key = nullptr;
     size_t client_key_len = 0;
 
     std::vector<ConfUnionPrototype<EapConfigID>> eap_config_prototypes;

@@ -65,24 +65,24 @@ MeterClassID MetersMeta::get_class() const
     return MeterClassID::Meta;
 }
 
-IMeter * MetersMeta::new_meter(uint32_t slot, Config *state, Config *errors)
+IMeter *MetersMeta::new_meter(uint32_t slot, Config *state, Config *errors)
 {
     MeterMeta *new_meter = new MeterMeta(slot);
     child_meters->push_back(new_meter);
     return new_meter;
 }
 
-const Config * MetersMeta::get_config_prototype()
+const Config *MetersMeta::get_config_prototype()
 {
     return &config_prototype;
 }
 
-const Config * MetersMeta::get_state_prototype()
+const Config *MetersMeta::get_state_prototype()
 {
     return Config::Null();
 }
 
-const Config * MetersMeta::get_errors_prototype()
+const Config *MetersMeta::get_errors_prototype()
 {
     return Config::Null();
 }

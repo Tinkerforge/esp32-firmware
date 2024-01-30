@@ -285,7 +285,7 @@ void Debug::register_urls()
     server.on_HTTPThread("/debug/state_sizes", HTTP_GET, [](WebServerRequest req) {
         char str[3968]; // on httpd stack, which is large enough
         ssize_t len = 0;
-        task_scheduler.await([&str, &len](){
+        task_scheduler.await([&str, &len]() {
             size_t offset = 0;
             for (const auto &reg : api.states) {
                 offset += snprintf_u(str + offset, sizeof(str) - offset, "%4u %s\n", reg.config->string_length(), reg.path.c_str());
@@ -308,7 +308,7 @@ void Debug::register_urls()
         if (!f.isDirectory()) {
             char buf[256];
             request.beginChunkedResponse(200);
-            while(f.available()) {
+            while (f.available()) {
                 size_t read = f.read(reinterpret_cast<uint8_t *>(buf), ARRAY_SIZE(buf));
                 request.sendChunk(buf, static_cast<ssize_t>(read));
             }

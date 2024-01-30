@@ -57,7 +57,7 @@ Config::ConfString::~ConfString()
     slot->maxChars = 0;
 }
 
-Config::ConfString& Config::ConfString::operator=(const ConfString &cpy)
+Config::ConfString &Config::ConfString::operator=(const ConfString &cpy)
 {
     if (this == &cpy) {
         return *this;

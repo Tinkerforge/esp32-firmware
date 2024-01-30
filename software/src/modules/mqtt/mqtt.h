@@ -64,7 +64,7 @@ public:
     void connect();
 
     // Retain messages by default because we only send on change.
-    bool publish_with_prefix(const String &path, const String &payload, bool retain=true);
+    bool publish_with_prefix(const String &path, const String &payload, bool retain = true);
     bool publish(const String &topic, const String &payload, bool retain);
 
     void subscribe_with_prefix(const String &path, SubscribeCallback callback, bool forbid_retained);

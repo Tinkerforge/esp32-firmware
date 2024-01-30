@@ -47,22 +47,22 @@ MeterClassID MetersMqttMirror::get_class() const
     return MeterClassID::MqttMirror;
 }
 
-IMeter * MetersMqttMirror::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
+IMeter *MetersMqttMirror::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
 {
     return new MeterMqttMirror(slot);
 }
 
-const Config * MetersMqttMirror::get_config_prototype()
+const Config *MetersMqttMirror::get_config_prototype()
 {
     return &config_prototype;
 }
 
-const Config * MetersMqttMirror::get_state_prototype()
+const Config *MetersMqttMirror::get_state_prototype()
 {
     return Config::Null();
 }
 
-const Config * MetersMqttMirror::get_errors_prototype()
+const Config *MetersMqttMirror::get_errors_prototype()
 {
     return Config::Null();
 }

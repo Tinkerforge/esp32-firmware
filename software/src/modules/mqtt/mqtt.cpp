@@ -345,10 +345,10 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
 
         if (c.callback_in_main_thread) {
             esp_mqtt_client_disable_receive(client, 100);
-            char *topic_cpy = (char *) malloc(topic_len);
+            char *topic_cpy = (char *)malloc(topic_len);
             memcpy(topic_cpy, topic, topic_len);
 
-            char *data_cpy = (char *) malloc(data_len);
+            char *data_cpy = (char *)malloc(data_len);
             memcpy(data_cpy, data, data_len);
 
             task_scheduler.scheduleOnce([this, c, topic_cpy, topic_len, data_cpy, data_len](){
@@ -382,13 +382,13 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             return;
         }
 
-        if (reg.is_action && data_len == 0)  {
+        if (reg.is_action && data_len == 0) {
             logger.printfln("MQTT: Topic %s is an action. Ignoring empty message.", reg.path.c_str());
             return;
         }
 
         esp_mqtt_client_disable_receive(client, 100);
-        api.callCommandNonBlocking(reg, data, data_len, [this, reg](String error){
+        api.callCommandNonBlocking(reg, data, data_len, [this, reg](String error) {
             if (error != "")
                 logger.printfln("MQTT: On %s: %s", reg.path.c_str(), error.c_str());
             esp_mqtt_client_enable_receive(this->client);
@@ -406,7 +406,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             return;
         }
 
-        char *data_cpy = (char *) malloc(data_len);
+        char *data_cpy = (char *)malloc(data_len);
         memcpy(data_cpy, data, data_len);
 
         esp_mqtt_client_disable_receive(client, 100);
@@ -594,9 +594,9 @@ void Mqtt::register_urls()
     if (automation.is_trigger_active(AutomationTriggerID::MQTT) && config.get("enable_mqtt")->asBool()) {
         ConfigVec trigger_config = automation.get_configured_triggers(AutomationTriggerID::MQTT);
         std::vector<String> subscribed_topics;
-        for (auto &conf: trigger_config) {
+        for (auto &conf : trigger_config) {
             bool already_subscribed = false;
-            for (auto &new_topic: subscribed_topics) {
+            for (auto &new_topic : subscribed_topics) {
                 if (conf.second->get("topic_filter")->asString() == new_topic)
                     already_subscribed = true;
             }
@@ -653,7 +653,7 @@ void Mqtt::register_events()
 #if MODULE_AUTOMATION_AVAILABLE()
 bool Mqtt::action_triggered(Config *config, void *data)
 {
-    Config *cfg = (Config*)config->get();
+    Config *cfg = (Config *)config->get();
     MqttMessage *msg = (MqttMessage *)data;
     const CoolString &payload = cfg->get("payload")->asString();
 

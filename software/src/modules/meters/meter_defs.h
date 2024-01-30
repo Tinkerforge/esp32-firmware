@@ -138,4 +138,4 @@
 #define METER_ALL_VALUES_TOTAL_KVARH_L2 83
 #define METER_ALL_VALUES_TOTAL_KVARH_L3 84
 
-extern const char * const meter_all_values_names[METER_ALL_VALUES_LEGACY_COUNT];
+extern const char *const meter_all_values_names[METER_ALL_VALUES_LEGACY_COUNT];

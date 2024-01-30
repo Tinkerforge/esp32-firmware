@@ -38,7 +38,7 @@ class MetersSunSpecParser
 {
 public:
     typedef float (*get_value_fn)(const void *register_data, uint32_t quirks, bool detection);
-    typedef bool (*model_validator_fn)(const uint16_t * const register_data[2]);
+    typedef bool (*model_validator_fn)(const uint16_t *const register_data[2]);
 
     struct ValueData {
         get_value_fn get_value;
@@ -61,7 +61,7 @@ public:
 
     struct AllModelData {
         size_t model_count;
-        const ModelData * model_data[]; // ISO C++ forbids flexible array members
+        const ModelData *model_data[]; // ISO C++ forbids flexible array members
     };
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
@@ -69,8 +69,8 @@ public:
 
     static MetersSunSpecParser *new_parser(uint32_t meter_slot, uint16_t model_id);
 
-    bool detect_values(const uint16_t * const register_data[2], uint32_t quirks, size_t *registers_to_read);
-    bool parse_values(const uint16_t * const register_data[2], uint32_t quirks);
+    bool detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read);
+    bool parse_values(const uint16_t *const register_data[2], uint32_t quirks);
 
     bool must_read_twice();
 
@@ -79,7 +79,7 @@ private:
     MetersSunSpecParser(uint32_t meter_slot_, const ModelData *model_) : meter_slot(meter_slot_), model(model_) {}
 
     const uint32_t meter_slot;
-    const ModelData * const model;
+    const ModelData *const model;
     std::vector<const ValueData *> detected_values;
     float *meter_values;
 };

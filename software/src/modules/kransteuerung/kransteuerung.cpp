@@ -48,19 +48,19 @@ void Kransteuerung::button_pressed_handler(bool left, uint8_t button_l, uint8_t 
 void Kransteuerung::setup()
 {
     int result = tf_dual_button_v2_create(&left, "D", &hal);
-    if(result != TF_E_OK) {
+    if (result != TF_E_OK) {
         logger.printfln("Failed to initialize left Dual Button 2.0 Bricklet.");
         return;
     }
 
     result = tf_dual_button_v2_create(&right, "C", &hal);
-    if(result != TF_E_OK) {
+    if (result != TF_E_OK) {
         logger.printfln("Failed to initialize right Dual Button 2.0 Bricklet.");
         return;
     }
 
     result = tf_industrial_quad_relay_v2_create(&relay, "E", &hal);
-    if(result != TF_E_OK) {
+    if (result != TF_E_OK) {
         logger.printfln("Failed to initialize Industrial Quad Relay 2.0 Bricklet.");
         return;
     }

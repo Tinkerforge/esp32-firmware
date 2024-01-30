@@ -487,7 +487,7 @@ void ChargeTracker::setup()
 
 bool user_configured(const uint8_t configured_users[MAX_ACTIVE_USERS], uint8_t user_id)
 {
-    for(int i = 0; i < MAX_ACTIVE_USERS; ++i) {
+    for (int i = 0; i < MAX_ACTIVE_USERS; ++i) {
         if (configured_users[i] == user_id) {
             return true;
         }
@@ -536,7 +536,7 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
         if (charged <= 999.999f) {
             int written = sprintf(buf, "%.3f", charged);
             if (!english)
-                for(int i = 0; i < written; ++i)
+                for (int i = 0; i < written; ++i)
                     if (buf[i] == '.')
                         buf[i] = ',';
             buf += 1 + written;
@@ -564,7 +564,7 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
     } else {
         int written = sprintf(buf, "%.3f", cs.meter_start);
         if (!english)
-            for(int i = 0; i < written; ++i)
+            for (int i = 0; i < written; ++i)
                 if (buf[i] == '.')
                     buf[i] = ',';
         buf += 1 + written;
@@ -779,10 +779,10 @@ void ChargeTracker::register_urls()
             english = doc["english"] | false;
             if (current_timestamp_min == 0)
                 current_timestamp_min = doc["current_timestamp_min"] | 0l;
-            if (doc.containsKey("letterhead")){
+            if (doc.containsKey("letterhead")) {
                 const char *lh = doc["letterhead"];
                 letterhead_lines = 1;
-                for(size_t i = 0; i < LETTERHEAD_SIZE; ++i) {
+                for (size_t i = 0; i < LETTERHEAD_SIZE; ++i) {
                     if (lh[i] == '\0')
                         break;
                     if (lh[i] == '\n') {
@@ -823,7 +823,7 @@ void ChargeTracker::register_urls()
         String dev_name;
         auto await_result = task_scheduler.await([this, configured_users, &electricity_price, &dev_name]() mutable {
             electricity_price = this->config.get("electricity_price")->asUint();
-            for(int i = 0; i < users.config.get("users")->count(); ++i) {
+            for (int i = 0; i < users.config.get("users")->count(); ++i) {
                 configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
             }
             dev_name = device_name.display_name.get("display_name")->asString();
@@ -926,7 +926,7 @@ search_done:
 
         int written = sprintf(stats_head, "%s: %9.3f kWh", english ? "Total energy of exported charges" : "Gesamtenergie exportierter Ladevorgänge", charged_sum);
         if (!english)
-            for(int i = 0; i < written; ++i)
+            for (int i = 0; i < written; ++i)
                 if (stats_head[i] == '.')
                     stats_head[i] = ',';
         stats_head += 1 + written;
@@ -938,7 +938,7 @@ search_done:
                             electricity_price / 100.0f,
                             seen_charges_without_meter ? (english ? " Incomplete!" : " Unvollständig!") : "");
             if (!english)
-                for(int i = 0; i < written; ++i)
+                for (int i = 0; i < written; ++i)
                     if (stats_head[i] == '.')
                         stats_head[i] = ',';
             stats_head += 1 + written;

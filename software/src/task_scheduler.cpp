@@ -119,11 +119,11 @@ void TaskScheduler::loop()
 
     {
         std::lock_guard<std::mutex> l{this->task_mutex};
-        if(tasks.empty()) {
+        if (tasks.empty()) {
             return;
         }
 
-        if(!deadline_elapsed(tasks.top()->next_deadline_ms)) {
+        if (!deadline_elapsed(tasks.top()->next_deadline_ms)) {
             return;
         }
 
@@ -261,13 +261,13 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t milli
     }
 
     if (ulTaskNotifyTake(true, pdMS_TO_TICKS(millis_to_wait)) == 0) {
-        switch(this->cancel(task_id)) {
+        switch (this->cancel(task_id)) {
             case TaskScheduler::CancelResult::WillBeCancelled:
                 esp_system_abort("Awaited task timed out and can't be cancelled. Giving up.");
                 return TaskScheduler::AwaitResult::Timeout;
             case TaskScheduler::CancelResult::Cancelled:
                 return TaskScheduler::AwaitResult::Timeout;
-            case  TaskScheduler::CancelResult::NotFound:
+            case TaskScheduler::CancelResult::NotFound:
                 return TaskScheduler::AwaitResult::Done;
         }
     }

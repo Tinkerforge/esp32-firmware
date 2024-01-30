@@ -161,32 +161,32 @@ void PowerManager::register_urls()
     }, true);
 }
 
-Config * PowerManager::get_state()
+Config *PowerManager::get_state()
 {
     return &state;
 }
 
-Config * PowerManager::get_config_low_level_state()
+Config *PowerManager::get_config_low_level_state()
 {
     return &low_level_state;
 }
 
-const Config * PowerManager::get_config()
+const Config *PowerManager::get_config()
 {
     return &config;
 }
 
-const Config * PowerManager::get_debug_config()
+const Config *PowerManager::get_debug_config()
 {
     return &debug_config;
 }
 
-Config * PowerManager::get_config_charge_mode()
+Config *PowerManager::get_config_charge_mode()
 {
     return &charge_mode;
 }
 
-const Config * PowerManager::get_external_control()
+const Config *PowerManager::get_external_control()
 {
     return &external_control;
 }

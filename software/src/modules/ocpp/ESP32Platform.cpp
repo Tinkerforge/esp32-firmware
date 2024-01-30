@@ -32,7 +32,7 @@ static bool feature_meter_phases = false;
 void(*recv_cb)(char *, size_t, void *) = nullptr;
 void *recv_cb_userdata = nullptr;
 
-void(*pong_cb)(void *) = nullptr;
+void (*pong_cb)(void *) = nullptr;
 void *pong_cb_userdata = nullptr;
 
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
@@ -62,7 +62,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 tf_websocket_client_handle_t client;
-void* platform_init(const char *websocket_url, const char *basic_auth_user, const uint8_t *basic_auth_pass, size_t basic_auth_pass_length)
+void *platform_init(const char *websocket_url, const char *basic_auth_user, const uint8_t *basic_auth_pass, size_t basic_auth_pass_length)
 {
     tf_websocket_client_config_t websocket_cfg = {};
     websocket_cfg.uri = websocket_url;
@@ -116,7 +116,7 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
         mbedtls_base64_encode(nullptr, 0, &written, (const unsigned char *)buf.get(), buf_len);
 
         std::unique_ptr<char[]> base64_buf{new char[written + 1]()}; // +1 for '\0'
-        mbedtls_base64_encode((unsigned char *) base64_buf.get(), written + 1, &written, (const unsigned char *)buf.get(), buf_len);
+        mbedtls_base64_encode((unsigned char *)base64_buf.get(), written + 1, &written, (const unsigned char *)buf.get(), buf_len);
         base64_buf[written] = '\0';
 
         header += base64_buf.get();
@@ -245,7 +245,7 @@ EVSEState platform_get_evse_state(int32_t connectorId)
     REQUIRE_FEATURE(evse, EVSEState::Faulted);
 
     auto state = api.getState("evse/state")->get("charger_state")->asUint();
-    switch(state) {
+    switch (state) {
         case CHARGER_STATE_NOT_PLUGGED_IN:
             return EVSEState::NotConnected;
 
@@ -497,7 +497,7 @@ const SupportedMeasurand *platform_get_supported_measurands(int32_t connector_id
 }
 
 float platform_get_raw_meter_value_common(const Config *meter_all_values, int32_t connectorId, SampledValueMeasurand measurand, SampledValuePhase phase, SampledValueLocation location) {
-    switch(measurand) {
+    switch (measurand) {
         case SampledValueMeasurand::POWER_ACTIVE_EXPORT:
             // The power factor's sign indicates the direction of the current flow.
             // Positive = energy flow from grid to vehicle = import
@@ -624,15 +624,15 @@ float platform_get_raw_meter_value_sdm630(int32_t connectorId, SampledValueMeasu
 
     const Config *meter_all_values = api.getState("meter/all_values");
 
-    switch(measurand) {
+    switch (measurand) {
         case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_REGISTER:
-            return meter_all_values->get(METER_ALL_VALUES_EXPORT_KWH_L1 + (size_t) phase)->asFloat();
+            return meter_all_values->get(METER_ALL_VALUES_EXPORT_KWH_L1 + (size_t)phase)->asFloat();
         case SampledValueMeasurand::ENERGY_ACTIVE_IMPORT_REGISTER:
-            return meter_all_values->get(METER_ALL_VALUES_IMPORT_KWH_L1 + (size_t) phase)->asFloat();
+            return meter_all_values->get(METER_ALL_VALUES_IMPORT_KWH_L1 + (size_t)phase)->asFloat();
         case SampledValueMeasurand::ENERGY_REACTIVE_EXPORT_REGISTER:
-            return meter_all_values->get(METER_ALL_VALUES_EXPORT_KVARH_L1 + (size_t) phase)->asFloat();
+            return meter_all_values->get(METER_ALL_VALUES_EXPORT_KVARH_L1 + (size_t)phase)->asFloat();
         case SampledValueMeasurand::ENERGY_REACTIVE_IMPORT_REGISTER:
-            return meter_all_values->get(METER_ALL_VALUES_IMPORT_KVARH_L1 + (size_t) phase)->asFloat();
+            return meter_all_values->get(METER_ALL_VALUES_IMPORT_KVARH_L1 + (size_t)phase)->asFloat();
 
         case SampledValueMeasurand::POWER_ACTIVE_EXPORT:
         case SampledValueMeasurand::POWER_ACTIVE_IMPORT:
@@ -668,7 +668,7 @@ float platform_get_raw_meter_value_sdm72v2(int32_t connectorId, SampledValueMeas
 
     const Config *meter_all_values = api.getState("meter/all_values");
 
-    switch(measurand) {
+    switch (measurand) {
         case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_REGISTER:
             return meter_all_values->get(METER_ALL_VALUES_TOTAL_EXPORT_KWH)->asFloat();
         case SampledValueMeasurand::ENERGY_ACTIVE_IMPORT_REGISTER:

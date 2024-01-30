@@ -29,17 +29,17 @@ IMeter * MeterGeneratorNone::new_meter(uint32_t slot, Config * /*state*/, Config
     return this;
 }
 
-const Config * MeterGeneratorNone::get_config_prototype()
+const Config *MeterGeneratorNone::get_config_prototype()
 {
     return Config::Null();
 }
 
-const Config * MeterGeneratorNone::get_state_prototype()
+const Config *MeterGeneratorNone::get_state_prototype()
 {
     return Config::Null();
 }
 
-const Config * MeterGeneratorNone::get_errors_prototype()
+const Config *MeterGeneratorNone::get_errors_prototype()
 {
     return Config::Null();
 }

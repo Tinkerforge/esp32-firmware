@@ -38,7 +38,7 @@ void evse_v2_button_recovery_handler()
 
     uint32_t button_press_time = BUTTON_IS_PRESSED;
     bool first = true;
-    while(button_press_time == BUTTON_IS_PRESSED && !deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
+    while (button_press_time == BUTTON_IS_PRESSED && !deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
         // Handle first boot with new firmware (i.e. the firmware supporting get_button_press_boot_time is not flashed yet)
         if (tf_evse_v2_get_button_press_boot_time(&evse, false, &button_press_time) == TF_E_NOT_SUPPORTED) {
             button_press_time = 0;

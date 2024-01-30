@@ -94,9 +94,9 @@ public:
 
     String get_path(uint32_t slot, PathType path_type);
 
-    [[gnu::const]] const Config * get_config_bool_false_prototype() const;
-    [[gnu::const]] const Config * get_config_float_nan_prototype();
-    [[gnu::const]] const Config * get_config_uint_max_prototype();
+    [[gnu::const]] const Config *get_config_bool_false_prototype() const;
+    [[gnu::const]] const Config *get_config_float_nan_prototype();
+    [[gnu::const]] const Config *get_config_uint_max_prototype();
 
 private:
     class MeterSlot final

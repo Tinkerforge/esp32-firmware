@@ -61,8 +61,8 @@ void WS::register_urls()
         bool done = false;
         char *buf = buffer.get();
         while (!done) {
-            auto result = task_scheduler.await([&i, &done, &buf, &buf_used, buf_size](){
-                for(; i < api.states.size(); ++i) {
+            auto result = task_scheduler.await([&i, &done, &buf, &buf_used, buf_size]() {
+                for (; i < api.states.size(); ++i) {
                     auto &reg = api.states[i];
 
                     auto prefix = "{\"topic\":\"";

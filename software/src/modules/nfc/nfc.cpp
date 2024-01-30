@@ -225,10 +225,10 @@ uint8_t NFC::get_user_id(tag_info_t *tag, uint8_t *tag_idx)
 
 void NFC::remove_user(uint8_t user_id)
 {
-    Config *tags = (Config *) config.get("authorized_tags");
+    Config *tags = (Config *)config.get("authorized_tags");
 
-    for(int i = 0; i < tags->count(); ++i) {
-        if(tags->get(i)->get("user_id")->asUint() == user_id)
+    for (int i = 0; i < tags->count(); ++i) {
+        if (tags->get(i)->get("user_id")->asUint() == user_id)
             tags->get(i)->get("user_id")->updateUint(0);
     }
     API::writeConfig("nfc/config", &config);
@@ -380,7 +380,7 @@ void NFC::update_seen_tags()
 
 void NFC::setup_auth_tags()
 {
-    const auto *auth_tags_cfg = (Config *) config.get("authorized_tags");
+    const auto *auth_tags_cfg = (Config *)config.get("authorized_tags");
     auth_tag_count = auth_tags_cfg->count();
     if (auth_tag_count == 0)
         return;
@@ -388,7 +388,7 @@ void NFC::setup_auth_tags()
     auth_tags = heap_alloc_array<auth_tag_t>(auth_tag_count);
     memset(auth_tags.get(), 0, sizeof(auth_tag_t) * auth_tag_count);
 
-    for(int i = 0; i < auth_tag_count; ++i) {
+    for (int i = 0; i < auth_tag_count; ++i) {
         const auto tag = auth_tags_cfg->get(i);
 
         auth_tags[i].tag_type = tag->get("tag_type")->asUint();

@@ -311,7 +311,7 @@ void EnergyManager::setup()
     // Forgets all settings when new setting is introduced: "Failed to restore persistent config config: JSON object is missing key 'input3_rule_then_limit'\nJSON object is missing key 'input4_rule_then_limit'"
     api.restorePersistentConfig("energy_manager/config", &config);
 
-    charge_manager.set_allocated_current_callback([this](uint32_t current_ma){
+    charge_manager.set_allocated_current_callback([this](uint32_t current_ma) {
         //logger.printfln("energy_manager: allocated current callback: %u", current_ma);
         charge_manager_allocated_current_ma = current_ma;
     });
@@ -494,7 +494,7 @@ void EnergyManager::register_urls()
         return request.send(200);
     });
 
-    server.on("/energy_manager/stop_debug", HTTP_GET, [this](WebServerRequest request){
+    server.on("/energy_manager/stop_debug", HTTP_GET, [this](WebServerRequest request) {
         debug = false;
         return request.send(200);
     });
@@ -521,7 +521,7 @@ void EnergyManager::loop()
     }
 }
 
-const Config * EnergyManager::get_config()
+const Config *EnergyManager::get_config()
 {
     return &config;
 }

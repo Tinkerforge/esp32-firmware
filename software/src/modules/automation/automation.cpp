@@ -157,7 +157,7 @@ bool Automation::trigger_action(AutomationTriggerID number, void *data, std::fun
 {
     bool triggered = false;
     int current_rule = 1;
-    for (auto &conf: config_in_use.get("tasks")) {
+    for (auto &conf : config_in_use.get("tasks")) {
         if (conf.get("trigger")->getTag<AutomationTriggerID>() == number && cb((Config *)conf.get("trigger"), data)) {
             triggered = true;
             logger.printfln("Running automation rule #%d", current_rule);
@@ -174,7 +174,7 @@ bool Automation::trigger_action(AutomationTriggerID number, void *data, std::fun
 
 bool Automation::is_trigger_active(AutomationTriggerID number)
 {
-    for (auto &conf: config_in_use.get("tasks")) {
+    for (auto &conf : config_in_use.get("tasks")) {
         if (conf.get("trigger")->getTag<AutomationTriggerID>() == number) {
             return true;
         }
@@ -203,7 +203,7 @@ static bool is_last_day(struct tm time)
 
 bool Automation::action_triggered(Config *conf, void *data)
 {
-    Config *cfg = (Config*)conf->get();
+    Config *cfg = (Config *)conf->get();
     tm *time_struct = (tm *)data;
     bool triggered = false;
 

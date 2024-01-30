@@ -25,7 +25,7 @@
 #include "api.h"
 #include "task_scheduler.h"
 
-const char* get_modbus_result_code_name(Modbus::ResultCode event)
+const char *get_modbus_result_code_name(Modbus::ResultCode event)
 {
     switch(event) {
         case 0x00: return "SUCCESS";
@@ -112,7 +112,7 @@ void ModbusTcpMeter::register_urls()
 bool ModbusTcpMeter::check_event_read(Modbus::ResultCode event)
 {
     in_progress = false;
-    if(event != Modbus::ResultCode::EX_SUCCESS) {
+    if (event != Modbus::ResultCode::EX_SUCCESS) {
         logger.printfln("Modbus TCP Meter Error %d: %s", event, get_modbus_result_code_name(event));
         return false;
     }
@@ -123,7 +123,7 @@ bool ModbusTcpMeter::check_event_read(Modbus::ResultCode event)
 void ModbusTcpMeter::next_register()
 {
     current_register++;
-    if(current_register >= config_in_use.get(current_meter)->get("register_set")->count()) {
+    if (current_register >= config_in_use.get(current_meter)->get("register_set")->count()) {
         next_meter();
     }
 }
@@ -132,7 +132,7 @@ void ModbusTcpMeter::next_meter()
 {
     current_register = 0;
     current_meter++;
-    if(current_meter >= MODBUS_TCP_METER_COUNT_MAX) {
+    if (current_meter >= MODBUS_TCP_METER_COUNT_MAX) {
         current_meter = 0;
 
         // Start new read deadline after we read all registers from all meters once
@@ -143,9 +143,9 @@ void ModbusTcpMeter::next_meter()
 
 uint8_t ModbusTcpMeter::get_length_from_type(const uint8_t value_type)
 {
-    if(value_type > 32 && value_type < 64) {
+    if (value_type > 32 && value_type < 64) {
         return 2;
-    } else if(value_type > 64) {
+    } else if (value_type > 64) {
         return 4;
     }
 
@@ -155,7 +155,7 @@ uint8_t ModbusTcpMeter::get_length_from_type(const uint8_t value_type)
 
 void ModbusTcpMeter::zero_results()
 {
-    for(int i = 0; i < MODBUS_TCP_METER_REGISTER_LENGTH_MAX; i++) {
+    for (int i = 0; i < MODBUS_TCP_METER_REGISTER_LENGTH_MAX; i++) {
         result_in_progress_uint[i] = 0;
         result_in_progress_bool[i] = false;
     }
@@ -174,7 +174,7 @@ void ModbusTcpMeter::read_register(const char *host, const Config *register_conf
     //logger.printfln("Read register host %s, type %u, address %u, length %u", host, register_type, register_address, register_length);
 
     zero_results();
-    switch(register_type) {
+    switch (register_type) {
         case MODBUS_TCP_REGISTER_TYPE_INPUT: {
             memset(result_in_progress_uint, 0, sizeof(uint16_t) * MODBUS_TCP_METER_REGISTER_LENGTH_MAX);
             mb.readIreg(host, register_address, result_in_progress_uint, register_length, [this, result](Modbus::ResultCode event, uint16_t tid, void* data)->bool {
@@ -238,7 +238,7 @@ void ModbusTcpMeter::read_register(const char *host, const Config *register_conf
 
 void ModbusTcpMeter::loop()
 {
-    if(!in_progress && deadline_elapsed(read_deadline + 1000)) {
+    if (!in_progress && deadline_elapsed(read_deadline + 1000)) {
         if (config_in_use.count() == 0)
             return;
 
@@ -246,13 +246,13 @@ void ModbusTcpMeter::loop()
         const char *host = meter->get("host")->asEphemeralCStr();
 
         // Ignore meter with empty host
-        if((host == nullptr) || (strlen(host) == 0)) {
+        if ((host == nullptr) || (strlen(host) == 0)) {
             next_meter();
             return;
         }
 
-        if(mb.isConnected(host)) { // Check if connection to Modbus slave is established
-            const Config *register_config = (const Config*)meter->get("register_set")->get(current_register);
+        if (mb.isConnected(host)) { // Check if connection to Modbus slave is established
+            const Config *register_config = (const Config *)meter->get("register_set")->get(current_register);
             read_register(host, register_config, results[current_meter][current_register]);
             next_register();
         } else {
@@ -265,13 +265,13 @@ void ModbusTcpMeter::loop()
 }
 
 // We assume that after scale and offset is applied, every value fits in a float
-#define AS_UINT16_ARR(x) ((uint16_t*)&(x))
+#define AS_UINT16_ARR(x) ((uint16_t *)&(x))
 float ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t register_num)
 {
-    if(meter_num >= MODBUS_TCP_METER_COUNT_MAX) {
+    if (meter_num >= MODBUS_TCP_METER_COUNT_MAX) {
         return 0;
     }
-    if(register_num >= MODBUS_TCP_METER_REGISTER_COUNT_MAX) {
+    if (register_num >= MODBUS_TCP_METER_REGISTER_COUNT_MAX) {
         return 0;
     }
 
@@ -283,7 +283,7 @@ float ModbusTcpMeter::get_value(const uint8_t meter_num, const uint8_t register_
     float result = 0;
 
     // TODO: I am not sure of endianess between the 16 bit values, we may have to shift the indices around
-    switch(value_type) {
+    switch (value_type) {
         case MODBUS_TCP_VALUE_TYPE_UINT16: {
             uint16_t tmp = 0;
             AS_UINT16_ARR(tmp)[0] = results[meter_num][register_num][0];

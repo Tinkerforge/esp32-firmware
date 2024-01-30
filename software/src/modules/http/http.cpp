@@ -179,7 +179,7 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
             continue;
 
         String response;
-        auto result = task_scheduler.await([&response, i](){
+        auto result = task_scheduler.await([&response, i]() {
             response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
         });
         if (result == TaskScheduler::AwaitResult::Timeout)
@@ -252,7 +252,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
         BufferedChunkedResponse buffered_response(&queued_response);
 
         task_scheduler.scheduleOnce(
-            [this, i, bytes_written, &buffered_response, response_owner_id]{
+            [this, i, bytes_written, &buffered_response, response_owner_id] {
                 api.callResponse(api.responses[i], recv_buf, bytes_written, &buffered_response, &response_ownership, response_owner_id);
             },
             0);

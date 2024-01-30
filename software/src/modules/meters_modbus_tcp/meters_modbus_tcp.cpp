@@ -87,17 +87,17 @@ IMeter * MetersModbusTCP::new_meter(uint32_t slot, Config *state, Config *errors
     return new MeterModbusTCP(slot, state, errors, &mb);
 }
 
-const Config * MetersModbusTCP::get_config_prototype()
+const Config *MetersModbusTCP::get_config_prototype()
 {
     return &config_prototype;
 }
 
-const Config * MetersModbusTCP::get_state_prototype()
+const Config *MetersModbusTCP::get_state_prototype()
 {
     return &state_prototype;
 }
 
-const Config * MetersModbusTCP::get_errors_prototype()
+const Config *MetersModbusTCP::get_errors_prototype()
 {
     return &errors_prototype;
 }

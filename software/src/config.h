@@ -88,7 +88,7 @@ struct Config {
         ConfString(const ConfString &cpy);
         ~ConfString();
 
-        ConfString& operator=(const ConfString &cpy);
+        ConfString &operator=(const ConfString &cpy);
     };
 
     struct ConfFloat {
@@ -111,7 +111,7 @@ struct Config {
         ConfFloat(const ConfFloat &cpy);
         ~ConfFloat();
 
-        ConfFloat& operator=(const ConfFloat &cpy);
+        ConfFloat &operator=(const ConfFloat &cpy);
     };
 
     struct ConfInt {
@@ -134,7 +134,7 @@ struct Config {
         ConfInt(const ConfInt &cpy);
         ~ConfInt();
 
-        ConfInt& operator=(const ConfInt &cpy);
+        ConfInt &operator=(const ConfInt &cpy);
     };
 
     struct ConfUint {
@@ -157,7 +157,7 @@ struct Config {
         ConfUint(const ConfUint &cpy);
         ~ConfUint();
 
-        ConfUint& operator=(const ConfUint &cpy);
+        ConfUint &operator=(const ConfUint &cpy);
     };
 
     struct ConfBool {
@@ -190,7 +190,7 @@ struct Config {
         ConfArray(const ConfArray &cpy);
         ~ConfArray();
 
-        ConfArray& operator=(const ConfArray &cpy);
+        ConfArray &operator=(const ConfArray &cpy);
     };
 
     struct ConfObject {
@@ -214,7 +214,7 @@ struct Config {
         ConfObject(const ConfObject &cpy);
         ~ConfObject();
 
-        ConfObject& operator=(const ConfObject &cpy);
+        ConfObject &operator=(const ConfObject &cpy);
     };
 
     struct ConfUnion {
@@ -240,7 +240,7 @@ struct Config {
         ConfUnion(const ConfUnion &cpy);
         ~ConfUnion();
 
-        ConfUnion& operator=(const ConfUnion &cpy);
+        ConfUnion &operator=(const ConfUnion &cpy);
     };
 
 

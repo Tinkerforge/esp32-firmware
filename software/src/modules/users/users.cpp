@@ -258,7 +258,7 @@ void Users::setup()
     if (config.get("next_user_id")->asUint() == 0)
         search_next_free_user();
 
-    Config* user_slot = get_user_slot();
+    Config *user_slot = get_user_slot();
     bool charge_start_tracked = charge_tracker.currentlyCharging();
     bool charging = get_charger_state() == 2 || get_charger_state() == 3
                     || (user_slot->get("active")->asBool() && user_slot->get("max_current")->asUint() == 32000);
@@ -375,7 +375,7 @@ void Users::search_next_free_user()
     user_id++;
     {
         File f = LittleFS.open(USERNAME_FILE, "r+");
-        while(start_uid != user_id) {
+        while (start_uid != user_id) {
             if (user_id == 0)
                 user_id++;
             f.seek(user_id * USERNAME_ENTRY_LENGTH, SeekMode::SeekSet);
@@ -403,7 +403,7 @@ int Users::get_display_name(uint8_t user_id, char *ret_buf)
     }
     File f = LittleFS.open(USERNAME_FILE, "r");
     f.seek(user_id * USERNAME_ENTRY_LENGTH + USERNAME_LENGTH, SeekMode::SeekSet);
-    f.read((uint8_t *) ret_buf, DISPLAY_NAME_LENGTH);
+    f.read((uint8_t *)ret_buf, DISPLAY_NAME_LENGTH);
     return strnlen(ret_buf, 32);
 }
 
@@ -418,7 +418,7 @@ bool Users::is_user_configured(uint8_t user_id)
 
 static void check_waiting_for_start()
 {
-    const Config *user_slot = (const Config *) api.getState("evse/slots", false)->get(CHARGING_SLOT_USER);
+    const Config *user_slot = (const Config *)api.getState("evse/slots", false)->get(CHARGING_SLOT_USER);
 
     if (!user_slot->get("active")->asBool())
         return;

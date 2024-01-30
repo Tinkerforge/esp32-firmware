@@ -69,7 +69,7 @@ static void touch_position_handler(TF_LCD128x64 *device, uint16_t pressure, uint
 
 void Co2Ampel::set_color(uint32_t c)
 {
-    switch(c) {
+    switch (c) {
         case RED:
             check(tf_rgb_led_v2_set_rgb_value(&rgb, 255, 0, 0), "call set_rgb_value");
             break;
@@ -91,20 +91,19 @@ void Co2Ampel::set_color(uint32_t c)
 void Co2Ampel::setup()
 {
     int result = tf_co2_v2_create(&co2, nullptr, &hal);
-    if(result != TF_E_OK) {
+    if (result != TF_E_OK) {
         logger.printfln("Failed to initialize CO2 Bricklet.");
         return;
     }
 
-
     result = tf_lcd_128x64_create(&lcd, nullptr, &hal);
-    if(result != TF_E_OK) {
+    if (result != TF_E_OK) {
         logger.printfln("Failed to initialize LCD Bricklet.");
         return;
     }
 
     result = tf_rgb_led_v2_create(&rgb, nullptr, &hal);
-    if(result != TF_E_OK) {
+    if (result != TF_E_OK) {
         logger.printfln("Failed to initialize RGB LED Bricklet.");
         return;
     }

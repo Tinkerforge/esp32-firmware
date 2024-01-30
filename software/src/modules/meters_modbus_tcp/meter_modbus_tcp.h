@@ -53,8 +53,8 @@ private:
     void handle_data();
 
     const uint32_t slot;
-    Config * const state;
-    Config * const errors;
+    Config *const state;
+    Config *const errors;
 
     enum PollState {
         Single,

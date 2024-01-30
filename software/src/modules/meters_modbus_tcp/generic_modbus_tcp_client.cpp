@@ -162,7 +162,7 @@ void GenericModbusTCPClient::read_next()
     };
 
     uint16_t *target_buffer = generic_read_request.data[read_buffer_num] + registers_done_count;
-    uint16_t read_start_address  = static_cast<uint16_t>(generic_read_request.start_address  + registers_done_count);
+    uint16_t read_start_address = static_cast<uint16_t>(generic_read_request.start_address + registers_done_count);
     uint16_t registers_remaining = static_cast<uint16_t>(generic_read_request.register_count - registers_done_count);
     uint16_t read_count = registers_remaining < read_block_size ? registers_remaining : read_block_size;
 

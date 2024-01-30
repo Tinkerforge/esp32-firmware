@@ -460,7 +460,7 @@ void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t
         return;
     }
 
-    char *cpy = (char *) malloc(len);
+    char *cpy = (char *)malloc(len);
     memcpy(cpy, payload, len);
 
     task_scheduler.scheduleOnce(

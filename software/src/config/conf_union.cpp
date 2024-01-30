@@ -18,7 +18,7 @@ void Config::ConfUnion::freeSlotBuf(Config::ConfUnion::Slot *buf)
 bool Config::ConfUnion::changeUnionVariant(uint8_t tag)
 {
     auto &slot = union_buf[idx];
-    for(int i = 0; i < slot.prototypes_len; ++i) {
+    for (int i = 0; i < slot.prototypes_len; ++i) {
         if (slot.prototypes[i].tag == tag) {
             union_buf[idx].tag = tag;
             slot.val = slot.prototypes[i].config;

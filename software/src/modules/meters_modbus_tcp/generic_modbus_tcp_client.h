@@ -62,7 +62,7 @@ protected:
     void start_connection();
     void start_generic_read();
 
-    ModbusTCP * const mb;
+    ModbusTCP *const mb;
 
     String host_name;
     IPAddress host_ip = IPAddress(0u);

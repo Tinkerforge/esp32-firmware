@@ -111,7 +111,7 @@ void Certs::update_state()
 {
     state.get("certs")->removeAll();
 
-    for(uint8_t i = 0; i < MAX_CERTS; ++i) {
+    for (uint8_t i = 0; i < MAX_CERTS; ++i) {
         String path = String("/certs/") + i;
 
         if (!LittleFS.exists(path) || !LittleFS.exists(path + "_name"))

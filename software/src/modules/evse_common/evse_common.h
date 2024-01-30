@@ -81,17 +81,17 @@ protected:
     virtual void factory_reset() = 0;
     virtual void reset() = 0;
 
-    virtual void set_data_storage(uint8_t, const uint8_t*) = 0;
-    virtual void get_data_storage(uint8_t, uint8_t*) = 0;
+    virtual void set_data_storage(uint8_t, const uint8_t *) = 0;
+    virtual void get_data_storage(uint8_t, uint8_t *) = 0;
 
-    virtual void set_indicator_led(int16_t, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t*) = 0;
+    virtual void set_indicator_led(int16_t, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *) = 0;
 
-    virtual void set_control_pilot_disconnect(bool, bool*) = 0;
+    virtual void set_control_pilot_disconnect(bool, bool *) = 0;
     virtual bool get_control_pilot_disconnect() = 0;
 
     virtual void set_boost_mode(bool enabled) = 0;
 
-    virtual int get_charging_slot(uint8_t, uint16_t*, bool*, bool*) = 0;
+    virtual int get_charging_slot(uint8_t, uint16_t *, bool *, bool *) = 0;
     virtual int set_charging_slot(uint8_t, uint16_t, bool, bool) = 0;
     virtual void set_charging_slot_max_current(uint8_t slot, uint16_t current) = 0;
     virtual void set_charging_slot_clear_on_disconnect(uint8_t slot, bool clear_on_disconnect) = 0;
@@ -151,16 +151,16 @@ public:
     void factory_reset();
     void reset();
 
-    void set_data_storage(uint8_t, const uint8_t*);
-    void get_data_storage(uint8_t, uint8_t*);
-    void set_indicator_led(int16_t, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t*);
+    void set_data_storage(uint8_t, const uint8_t *);
+    void get_data_storage(uint8_t, uint8_t *);
+    void set_indicator_led(int16_t, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *);
 
     bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     void apply_defaults();
 
-    ConfigRoot& get_state();
-    ConfigRoot& get_slots();
-    ConfigRoot& get_low_level_state();
+    ConfigRoot &get_state();
+    ConfigRoot &get_slots();
+    ConfigRoot &get_low_level_state();
     bool get_management_enabled();
 
     bool action_triggered(Config *config, void *data);

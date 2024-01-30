@@ -79,7 +79,7 @@ private:
 
     uint32_t slot;
     MetersRS485Bricklet *generator;
-    TF_RS485* rs485;
+    TF_RS485 *rs485;
     Config *state;
     uint8_t type_override;
 public:

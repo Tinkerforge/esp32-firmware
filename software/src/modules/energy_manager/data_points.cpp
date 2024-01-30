@@ -55,7 +55,7 @@ void EnergyManager::register_events()
         }
 
         // Passing no values will register on the ConfigRoot.
-        event.registerEvent(meters.get_path(slot, Meters::PathType::ValueIDs), {}, [this, slot](const Config *config){
+        event.registerEvent(meters.get_path(slot, Meters::PathType::ValueIDs), {}, [this, slot](const Config *config) {
             size_t count = config->count();
 
             if (count == 0) {
@@ -148,7 +148,7 @@ void EnergyManager::collect_data_points()
 
     if (current_5min_slot != last_history_5min_slot) {
         // 5min data
-        for(size_t i = 0; i < charge_manager.charger_count; ++i) {
+        for (size_t i = 0; i < charge_manager.charger_count; ++i) {
             auto &charger = charge_manager.charger_state[i];
             uint32_t last_update = charger.last_update;
 
@@ -226,7 +226,7 @@ void EnergyManager::collect_data_points()
         }
 
         // daily data
-        for(size_t i = 0; i < charge_manager.charger_count; ++i) {
+        for (size_t i = 0; i < charge_manager.charger_count; ++i) {
             const auto &charger = charge_manager.charger_state[i];
             uint32_t last_update = charger.last_update;
 

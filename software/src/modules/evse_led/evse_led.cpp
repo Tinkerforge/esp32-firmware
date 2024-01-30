@@ -109,7 +109,7 @@ bool EvseLed::accepts_new_state(Blink new_state)
         return false;
 
     // Old and new state are both NFC animations. Prioritize Ack over Nack over Nag.
-    switch(new_state) {
+    switch (new_state) {
         case Blink::Ack:
             return true;
         case Blink::Nack:

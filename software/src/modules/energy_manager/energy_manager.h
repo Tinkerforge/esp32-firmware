@@ -79,7 +79,7 @@ public:
     void register_events() override;
     void loop() override;
 
-    [[gnu::const]] const Config * get_config();
+    [[gnu::const]] const Config *get_config();
 
     void set_error(uint32_t error_mask);
 

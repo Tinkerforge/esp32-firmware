@@ -31,7 +31,7 @@
 #define WATCHDOG_STACK_SIZE 768
 
 static StaticTask_t xTaskBuffer;
-static StackType_t xStack[ WATCHDOG_STACK_SIZE ];
+static StackType_t xStack[WATCHDOG_STACK_SIZE];
 static TaskHandle_t xTask;
 
 struct watchdog_reg {
@@ -54,7 +54,7 @@ void watchdog_task(void *arg)
     for (;;) {
         {
             std::lock_guard<std::mutex> l{regs_mutex};
-            for(int i = 0; i < regs_used; ++i) {
+            for (int i = 0; i < regs_used; ++i) {
                 // Timeout 0 means that this registration is not initialized or disabled.
                 if (regs[i].timeout == 0)
                     continue;

@@ -62,14 +62,13 @@ static bool matchEndWildcardsSpecialCases( const char * pTopicFilter,
     return matchFound;
 }
 
-
-static bool matchWildcards( const char * pTopicName,
-                            uint16_t topicNameLength,
-                            const char * pTopicFilter,
-                            uint16_t topicFilterLength,
-                            uint16_t * pNameIndex,
-                            uint16_t * pFilterIndex,
-                            bool * pMatch )
+static bool matchWildcards(const char *pTopicName,
+                           uint16_t topicNameLength,
+                           const char *pTopicFilter,
+                           uint16_t topicFilterLength,
+                           uint16_t *pNameIndex,
+                           uint16_t *pFilterIndex,
+                           bool *pMatch)
 {
     bool shouldStopMatching = false;
     bool locationIsValidForWildcard;
@@ -96,7 +95,7 @@ static bool matchWildcards( const char * pTopicName,
                 break;
             }
 
-            ( *pNameIndex )++;
+            (*pNameIndex)++;
         }
 
         /* Determine if the topic filter contains a child level after the current level

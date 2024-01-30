@@ -66,7 +66,7 @@ private:
     int32_t  constant;
 
     size_t value_count = 0;
-    uint8_t (* value_indices)[][2];
+    uint8_t (*value_indices)[][2];
     bool update_pending = false;
 };
 
