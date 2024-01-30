@@ -96,9 +96,9 @@ void WS::register_urls()
                     memcpy(buf + buf_used, infix, infix_len);
                     buf_used += infix_len;
 
-                    // Leave 2 bytes free: } overwrites the written \0, but we need to write \n\n if this is the last state, \n if not.
+                    // Leave suffix_len - 1 bytes free: the first byte overwrites the written \0.
                     // We don't have to null-terminate the buffer because we know buf_used and the buffer will be handled as bytes.
-                    buf_used += reg.config->to_string_except(reg.keys_to_censor, buf + buf_used, buf_size - buf_used - 2);
+                    buf_used += reg.config->to_string_except(reg.keys_to_censor, buf + buf_used, buf_size - buf_used - (suffix_len - 1));
 
                     memcpy(buf + buf_used, suffix, suffix_len);
                     buf_used += suffix_len;
