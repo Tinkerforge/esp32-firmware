@@ -586,7 +586,7 @@ size_t Config::to_string_except(const std::vector<String> &keys_to_censor, char 
     if (doc.overflowed()) {
         auto capacity = doc.capacity();
         if (capacity == 0) {
-            logger.printfln("JSON doc overflow while converting to string! Doc capacity is &u but needed %u.", capacity, json_size(false));
+            logger.printfln("JSON doc overflow while converting to string! Doc capacity is %u but needed %u.", capacity, json_size(false));
         }
     }
 
