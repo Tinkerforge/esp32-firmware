@@ -45,8 +45,11 @@ void WS::register_urls()
         // API path lengths should probably fit in the 103 bytes left.
         size_t buf_size = 4096 + 128;
 
-        CoolString to_send;
-        if (!to_send.reserve(buf_size)) {
+        auto buffer = heap_alloc_array<char>(buf_size);
+        size_t buf_used = 0;
+        if (!buffer) {
+            // TODO: Technically we'd have to log the heap size of the heap that was used for heap_alloc_array.
+            // However if the allocation fails we probably used the DRAM.
             multi_heap_info_t dram_info;
             heap_caps_get_info(&dram_info,  MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
             logger.printfln("ws: Not enough memory to send initial state. %u > %u (%u)", buf_size, dram_info.largest_free_block, dram_info.total_free_bytes);
@@ -56,46 +59,68 @@ void WS::register_urls()
 
         int i = 0;
         bool done = false;
+        char *buf = buffer.get();
         while (!done) {
-            auto result = task_scheduler.await([&to_send, &i, &done, buf_size](){
+            auto result = task_scheduler.await([&i, &done, &buf, &buf_used, buf_size](){
                 for(; i < api.states.size(); ++i) {
                     auto &reg = api.states[i];
-                    int req = 10 + reg.path.length() + 12 + reg.config->string_length() + 2;
-                    if ((to_send.getCapacity() - to_send.length()) < req) {
+
+                    auto prefix = "{\"topic\":\"";
+                    auto prefix_len = strlen(prefix);
+
+                    auto path = reg.path.c_str();
+                    auto path_len = reg.path.length();
+
+                    auto infix = "\",\"payload\":";
+                    auto infix_len = strlen(infix);
+
+                    auto config_len = reg.config->string_length();
+
+                    auto suffix = "}\n";
+                    auto suffix_len = strlen(suffix);
+
+                    int req = prefix_len + path_len + infix_len + config_len + suffix_len + 1; // +1 for the second \n
+                    if ((buf_size - buf_used) < req) {
                         done = false;
                         if (req > buf_size)
-                            logger.printfln("API %s exceeds max WS buffer size! Required %u buf_size %u", reg.path.c_str(), req, buf_size);
+                            logger.printfln("API %s exceeds max WS buffer size! Required %u buf_size %u", path, req, buf_size);
                         return;
                     }
 
-                    to_send.concat("{\"topic\":\"");
-                    to_send.concat(reg.path);
-                    to_send.concat("\",\"payload\":");
+                    memcpy(buf + buf_used, prefix, prefix_len);
+                    buf_used += prefix_len;
 
-                    size_t length_before = to_send.length();
-                    size_t written = reg.config->to_string_except(reg.keys_to_censor, to_send.begin() + to_send.length(), to_send.getCapacity() - to_send.length() - 3);
-                    // Truncation should not happen: We've checked above that the payload will fit.
-                    // setLength still writes a null terminator.
-                    to_send.setLength(length_before + written);
+                    memcpy(buf + buf_used, path, path_len);
+                    buf_used += path_len;
 
-                    to_send.concat("}\n");
+                    memcpy(buf + buf_used, infix, infix_len);
+                    buf_used += infix_len;
+
+                    // Leave 2 bytes free: } overwrites the written \0, but we need to write \n\n if this is the last state, \n if not.
+                    // We don't have to null-terminate the buffer because we know buf_used and the buffer will be handled as bytes.
+                    buf_used += reg.config->to_string_except(reg.keys_to_censor, buf + buf_used, buf_size - buf_used - 2);
+
+                    memcpy(buf + buf_used, suffix, suffix_len);
+                    buf_used += suffix_len;
                 }
                 done = true;
             });
 
             if (result == TaskScheduler::AwaitResult::Done) {
-                if (to_send.length() == 0) {
+                if (buf_used == 0) {
                     client.close_HTTPThread();
                     return;
                 }
 
-                if (done)
-                    to_send.concat("\n");
+                if (done) {
+                    buf[buf_used] = '\n';
+                    buf_used += 1;
+                }
 
-                if (!client.sendOwnedNoFreeBlocking_HTTPThread(to_send.begin(), to_send.length()))
+                if (!client.sendOwnedNoFreeBlocking_HTTPThread(buf, buf_used))
                     return;
 
-                to_send.clear();
+                buf_used = 0;
             }
         }
     });
