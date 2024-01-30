@@ -36,7 +36,8 @@ public:
     {
     }
 
-    void setup() {
+    void setup()
+    {
         auto buf_size = sizeof(T) * SIZE;
         if (buf_size % sizeof(AlignedT) != 0) {
             // Allocate up to one AlignedT more, as we need to store at least one T in it.

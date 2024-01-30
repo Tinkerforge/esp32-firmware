@@ -52,7 +52,8 @@ void Rtc::pre_setup()
     });
 }
 
-void Rtc::setup() {
+void Rtc::setup()
+{
     api.restorePersistentConfig("rtc/config", &config);
 }
 

@@ -74,7 +74,8 @@ static TF_Local local;
 #endif
 
 #if defined(BUILD_NAME_ENERGY_MANAGER) && MODULE_FIRMWARE_UPDATE_AVAILABLE()
-static void check_for_factory_reset() {
+static void check_for_factory_reset()
+{
     logger.printfln("Checking for factory reset for %d seconds", WEM_FACTORY_RESET_WAIT_TIME);
 
     // A factory reset will leave the green LED on, even across a restart. Switch it off here.
@@ -134,7 +135,8 @@ static void check_for_factory_reset() {
 }
 #endif
 
-void ESP32EthernetBrick::initI2C() {
+void ESP32EthernetBrick::initI2C()
+{
     i2c_config_t conf;
     memset(&conf, 0, sizeof(i2c_config_t));
     conf.mode = I2C_MODE_MASTER;
@@ -148,8 +150,8 @@ void ESP32EthernetBrick::initI2C() {
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
 }
 
-
-bool ESP32EthernetBrick::initHAL() {
+bool ESP32EthernetBrick::initHAL()
+{
     int result = tf_hal_create(&hal, this->is_warp_esp_ethernet_brick ? 4 : 6);
     if (result != TF_E_OK)
         return false;
@@ -160,7 +162,8 @@ bool ESP32EthernetBrick::initHAL() {
 static uint8_t tmp_cmd_buf[I2C_LINK_RECOMMENDED_SIZE(2)] = {};
 static uint8_t tmp_read_buf[2] = {};
 
-void ESP32EthernetBrick::pre_init() {
+void ESP32EthernetBrick::pre_init()
+{
     initI2C();
 
     auto tmp_cmd_handle = i2c_master_prepare_write_read_device(I2C_TMP1075N_ADDR,

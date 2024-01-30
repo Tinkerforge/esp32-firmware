@@ -67,7 +67,8 @@ static void touch_position_handler(TF_LCD128x64 *device, uint16_t pressure, uint
     blink_allowed = false;
 }
 
-void Co2Ampel::set_color(uint32_t c) {
+void Co2Ampel::set_color(uint32_t c)
+{
     switch(c) {
         case RED:
             check(tf_rgb_led_v2_set_rgb_value(&rgb, 255, 0, 0), "call set_rgb_value");

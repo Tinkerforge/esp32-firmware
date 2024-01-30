@@ -56,11 +56,13 @@ size_t union_buf_size = 0;
 static ConfigRoot nullconf = Config{Config::ConfVariant{}};
 static ConfigRoot *confirmconf;
 
-bool Config::containsNull(const ConfUpdate *update) {
+bool Config::containsNull(const ConfUpdate *update)
+{
     return update->which() == 0;
 }
 
-bool Config::is_null() const {
+bool Config::is_null() const
+{
     return value.tag == ConfVariant::Tag::EMPTY;
 }
 
@@ -139,7 +141,8 @@ ConfigRoot *Config::Null()
     return &nullconf;
 }
 
-ConfigRoot *Config::Confirm() {
+ConfigRoot *Config::Confirm()
+{
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
@@ -152,7 +155,8 @@ ConfigRoot *Config::Confirm() {
     return confirmconf;
 }
 
-String Config::ConfirmKey() {
+String Config::ConfirmKey()
+{
     return "do_i_know_what_i_am_doing";
 }
 
@@ -186,7 +190,8 @@ Config Config::Int32(int32_t i)
     return Config::Int(i, std::numeric_limits<int32_t>::lowest(), std::numeric_limits<int32_t>::max());
 }
 
-Config::Wrap Config::get() {
+Config::Wrap Config::get()
+{
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfUnion>()) {
         logger.printfln("Config is not a union!");
@@ -197,7 +202,8 @@ Config::Wrap Config::get() {
     return wrap;
 }
 
-const Config::ConstWrap Config::get() const {
+const Config::ConstWrap Config::get() const
+{
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfUnion>()) {
         logger.printfln("Config is not a union!");
@@ -256,7 +262,8 @@ const Config::ConstWrap Config::get(uint16_t i) const
     return wrap;
 }
 
-Config::Wrap Config::add() {
+Config::Wrap Config::add()
+{
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Tried to add to a node that is not an array!");
@@ -430,7 +437,8 @@ const std::vector<Config> &Config::asArray() const
     return *this->get<ConfArray>()->getVal();
 }
 
-bool Config::clearString() {
+bool Config::clearString()
+{
     if (!this->is<ConfString>()) {
         logger.printfln("Config is not a string!");
         esp_system_abort("");
@@ -516,7 +524,8 @@ size_t Config::string_length() const
     return Config::apply_visitor(string_length_visitor{}, value);
 }
 
-DynamicJsonDocument Config::to_json(const std::vector<String> &keys_to_censor) const {
+DynamicJsonDocument Config::to_json(const std::vector<String> &keys_to_censor) const
+{
     DynamicJsonDocument doc(json_size(true));
 
     JsonVariant var;
@@ -626,7 +635,8 @@ void Config::clear_updated(uint8_t api_backend_flag)
     Config::apply_visitor(set_updated_false{api_backend_flag}, value);
 }
 
-void Config::set_updated(uint8_t api_backend_flag) {
+void Config::set_updated(uint8_t api_backend_flag)
+{
     ASSERT_MAIN_THREAD();
     value.updated |= api_backend_flag;
 }
@@ -694,7 +704,8 @@ static void shrinkToFit(typename T::Slot * &buf, size_t &buf_size) {
     buf_size = new_size;
 }
 
-void config_post_setup() {
+void config_post_setup()
+{
     shrinkToFit<Config::ConfUint>(uint_buf, uint_buf_size);
     shrinkToFit<Config::ConfInt>(int_buf, int_buf_size);
     shrinkToFit<Config::ConfFloat>(float_buf, float_buf_size);

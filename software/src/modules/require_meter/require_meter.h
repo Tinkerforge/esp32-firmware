@@ -22,7 +22,8 @@
 #include "module.h"
 #include "config.h"
 
-class RequireMeter final : public IModule {
+class RequireMeter final : public IModule
+{
 private:
     ConfigRoot config;
 

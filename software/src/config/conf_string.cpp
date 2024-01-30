@@ -1,14 +1,17 @@
 #include "config/private.h"
 
-bool Config::ConfString::slotEmpty(size_t i) {
+bool Config::ConfString::slotEmpty(size_t i)
+{
     return !string_buf[i].inUse;
 }
 
-Config::ConfString::Slot *Config::ConfString::allocSlotBuf(size_t elements) {
+Config::ConfString::Slot *Config::ConfString::allocSlotBuf(size_t elements)
+{
     return new Config::ConfString::Slot[elements];
 }
 
-void Config::ConfString::freeSlotBuf(Config::ConfString::Slot *buf) {
+void Config::ConfString::freeSlotBuf(Config::ConfString::Slot *buf)
+{
     delete[] buf;
 }
 

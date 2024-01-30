@@ -63,19 +63,23 @@ void EvseLed::register_urls()
     }, true);
 }
 
-static bool is_error(EvseLed::Blink state) {
+static bool is_error(EvseLed::Blink state)
+{
     return state >= EvseLed::Blink::ErrorStart && state <= EvseLed::Blink::ErrorEnd;
 }
 
-static bool is_pwm_or_evse(EvseLed::Blink state) {
+static bool is_pwm_or_evse(EvseLed::Blink state)
+{
     return state >= EvseLed::Blink::None && state <= EvseLed::Blink::On;
 }
 
-static bool is_nfc(EvseLed::Blink state) {
+static bool is_nfc(EvseLed::Blink state)
+{
     return state >= EvseLed::Blink::Ack && state <= EvseLed::Blink::Nag;
 }
 
-bool EvseLed::accepts_new_state(Blink new_state) {
+bool EvseLed::accepts_new_state(Blink new_state)
+{
     // Always accept new state if old state duration is elapsed
     if (deadline_elapsed(this->current_duration_end_us))
         return true;

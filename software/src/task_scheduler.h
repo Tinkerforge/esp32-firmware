@@ -52,7 +52,8 @@ public:
     bool removeByTaskID(uint64_t task_id);
     Task *findByTaskID(uint64_t task_id);
 
-    std::unique_ptr<Task> top_and_pop() {
+    std::unique_ptr<Task> top_and_pop()
+    {
         std::pop_heap(c.begin(), c.end(), comp);
         std::unique_ptr<Task> value = std::move(c.back());
         c.pop_back();

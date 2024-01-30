@@ -5,11 +5,13 @@ bool Config::ConfFloat::slotEmpty(size_t i) {
         && float_buf[i].min == 0
         && float_buf[i].max == 0;
 }
-Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements) {
+Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements)
+{
     return new Config::ConfFloat::Slot[elements];
 }
 
-void Config::ConfFloat::freeSlotBuf(Config::ConfFloat::Slot *buf) {
+void Config::ConfFloat::freeSlotBuf(Config::ConfFloat::Slot *buf)
+{
     delete[] buf;
 }
 
@@ -43,7 +45,8 @@ Config::ConfFloat::~ConfFloat()
     slot->max = 0;
 }
 
-Config::ConfFloat& Config::ConfFloat::operator=(const ConfFloat &cpy) {
+Config::ConfFloat &Config::ConfFloat::operator=(const ConfFloat &cpy)
+{
     if (this == &cpy)
         return *this;
 

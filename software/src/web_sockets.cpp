@@ -85,7 +85,8 @@ bool WebSockets::queueFull()
     return false;
 }
 
-static bool send_ws_work_item(WebSockets *ws, ws_work_item wi) {
+static bool send_ws_work_item(WebSockets *ws, ws_work_item wi)
+{
     httpd_ws_frame_t ws_pkt;
     memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
 
@@ -363,8 +364,8 @@ bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t 
     return result;
 }
 
-
-void WebSocketsClient::close_HTTPThread() {
+void WebSocketsClient::close_HTTPThread()
+{
     ws->keepAliveCloseDead(fd);
 }
 
@@ -544,7 +545,8 @@ void WebSockets::pre_setup() {
     }
 }
 
-void WebSockets::updateDebugState() {
+void WebSockets::updateDebugState()
+{
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     std::lock_guard<std::recursive_mutex> lock2{keep_alive_mutex};
     for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {

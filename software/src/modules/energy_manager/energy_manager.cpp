@@ -213,7 +213,8 @@ void EnergyManager::pre_setup()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool EnergyManager::action_triggered(Config *automation_config, void *data) {
+bool EnergyManager::action_triggered(Config *automation_config, void *data)
+{
     Config *cfg = static_cast<Config *>(automation_config->get());
 
 #pragma GCC diagnostic push
@@ -255,7 +256,8 @@ bool EnergyManager::action_triggered(Config *automation_config, void *data) {
     return false;
 }
 
-static bool trigger_action(Config *config, void *data) {
+static bool trigger_action(Config *config, void *data)
+{
     return energy_manager.action_triggered(config, data);
 }
 #endif
@@ -729,7 +731,8 @@ void EnergyManager::set_config_error(uint32_t config_error_mask)
     set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
 }
 
-void EnergyManager::check_bricklet_reachable(int rc, const char *context) {
+void EnergyManager::check_bricklet_reachable(int rc, const char *context)
+{
     if (rc == TF_E_OK) {
         consecutive_bricklet_errors = 0;
         if (!bricklet_reachable) {
@@ -799,7 +802,8 @@ void EnergyManager::limit_max_current(uint32_t limit_ma)
         max_current_limited_ma = limit_ma;
 }
 
-void EnergyManager::reset_limit_max_current() {
+void EnergyManager::reset_limit_max_current()
+{
     max_current_limited_ma = max_current_unlimited_ma;
 }
 

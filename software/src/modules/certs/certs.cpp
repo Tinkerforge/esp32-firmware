@@ -27,7 +27,8 @@
 #include <mbedtls/pem.h>
 #include <mbedtls/error.h>
 
-void Certs::pre_setup() {
+void Certs::pre_setup()
+{
     state = Config::Object({
         {"certs", Config::Array({},
             new Config(Config::Object({
@@ -106,7 +107,8 @@ void Certs::pre_setup() {
     }};
 }
 
-void Certs::update_state() {
+void Certs::update_state()
+{
     state.get("certs")->removeAll();
 
     for(uint8_t i = 0; i < MAX_CERTS; ++i) {
@@ -126,7 +128,8 @@ void Certs::update_state() {
     }
 }
 
-void Certs::setup() {
+void Certs::setup()
+{
     LittleFS.mkdir("/certs");
     update_state();
 
@@ -226,7 +229,8 @@ void Certs::register_urls()
     }, true);
 }
 
-std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t id, size_t *out_cert_len) {
+std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t id, size_t *out_cert_len)
+{
     String path = String("/certs/") + id;
 
     if (!LittleFS.exists(path))

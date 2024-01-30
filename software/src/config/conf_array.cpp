@@ -1,14 +1,17 @@
 #include "config/private.h"
 
-bool Config::ConfArray::slotEmpty(size_t i) {
+bool Config::ConfArray::slotEmpty(size_t i)
+{
     return !array_buf[i].inUse;
 }
 
-Config::ConfArray::Slot *Config::ConfArray::allocSlotBuf(size_t elements) {
+Config::ConfArray::Slot *Config::ConfArray::allocSlotBuf(size_t elements)
+{
     return new Config::ConfArray::Slot[elements];
 }
 
-void Config::ConfArray::freeSlotBuf(Config::ConfArray::Slot *buf) {
+void Config::ConfArray::freeSlotBuf(Config::ConfArray::Slot *buf)
+{
     delete[] buf;
 }
 
@@ -84,7 +87,8 @@ Config::ConfArray::~ConfArray()
     slot->variantType = 0;
 }
 
-Config::ConfArray& Config::ConfArray::operator=(const ConfArray &cpy) {
+Config::ConfArray &Config::ConfArray::operator=(const ConfArray &cpy)
+{
     if (this == &cpy)
         return *this;
 

@@ -14,7 +14,8 @@ Config::ConfVariant::ConfVariant(ConfUnion un) : tag(Tag::UNION),  updated(0xFF)
 
 Config::ConfVariant::ConfVariant() : tag(Tag::EMPTY), updated(0xFF), val() {}
 
-Config::ConfVariant::ConfVariant(const ConfVariant &cpy) {
+Config::ConfVariant::ConfVariant(const ConfVariant &cpy)
+{
     if (tag != Tag::EMPTY)
         destroyUnionMember();
 
@@ -51,7 +52,8 @@ Config::ConfVariant::ConfVariant(const ConfVariant &cpy) {
     this->updated = cpy.updated;
 }
 
-Config::ConfVariant &Config::ConfVariant::operator=(const ConfVariant &cpy)  {
+Config::ConfVariant &Config::ConfVariant::operator=(const ConfVariant &cpy)
+{
     if (this == &cpy) {
         return *this;
     }
@@ -94,7 +96,8 @@ Config::ConfVariant &Config::ConfVariant::operator=(const ConfVariant &cpy)  {
     return *this;
 }
 
-void Config::ConfVariant::destroyUnionMember() {
+void Config::ConfVariant::destroyUnionMember()
+{
     switch (tag) {
         case ConfVariant::Tag::EMPTY:
             val.e.~Empty();
@@ -126,11 +129,13 @@ void Config::ConfVariant::destroyUnionMember() {
     }
 }
 
-Config::ConfVariant::~ConfVariant()  {
+Config::ConfVariant::~ConfVariant()
+{
     destroyUnionMember();
 }
 
-const char * Config::ConfVariant::getVariantName() const {
+const char *Config::ConfVariant::getVariantName() const
+{
     switch (tag) {
         case ConfVariant::Tag::EMPTY:
             return "Empty";

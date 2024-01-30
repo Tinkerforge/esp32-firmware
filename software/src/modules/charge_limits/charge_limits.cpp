@@ -126,7 +126,8 @@ void ChargeLimits::setup()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-static bool trigger_action(Config *cfg, void *data) {
+static bool trigger_action(Config *cfg, void *data)
+{
     return charge_limits.action_triggered(cfg, data);
 }
 #endif

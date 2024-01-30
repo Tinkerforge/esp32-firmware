@@ -1,6 +1,7 @@
 #include "config/private.h"
 
-bool Config::ConfInt::slotEmpty(size_t i) {
+bool Config::ConfInt::slotEmpty(size_t i)
+{
     return int_buf[i].val == 0
         && int_buf[i].min == 0
         && int_buf[i].max == 0;
@@ -10,7 +11,8 @@ Config::ConfInt::Slot *Config::ConfInt::allocSlotBuf(size_t elements) {
     return (Config::ConfInt::Slot *) heap_caps_calloc(elements, sizeof(Config::ConfInt::Slot), MALLOC_CAP_32BIT);
 }
 
-void Config::ConfInt::freeSlotBuf(Config::ConfInt::Slot *buf) {
+void Config::ConfInt::freeSlotBuf(Config::ConfInt::Slot *buf)
+{
     heap_caps_free(buf);
 }
 
@@ -44,7 +46,8 @@ Config::ConfInt::~ConfInt()
     slot->max = 0;
 }
 
-Config::ConfInt& Config::ConfInt::operator=(const ConfInt &cpy) {
+Config::ConfInt &Config::ConfInt::operator=(const ConfInt &cpy)
+{
     if (this == &cpy)
         return *this;
 

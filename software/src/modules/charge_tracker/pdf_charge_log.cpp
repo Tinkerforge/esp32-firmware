@@ -79,7 +79,8 @@ float table_column_offsets[] {
 
 #define TABLE_LINES_PER_OBJECT 8
 
-int get_streams_per_page(bool first_page, int *table_lines_to_place) {
+int get_streams_per_page(bool first_page, int *table_lines_to_place)
+{
     int result = 0;
     if (first_page) {
         result += 1  // letter head

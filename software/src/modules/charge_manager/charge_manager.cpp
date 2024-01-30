@@ -473,13 +473,15 @@ void ChargeManager::check_watchdog()
     last_available_current_update = millis();
 }
 
-bool ChargeManager::have_chargers() {
+bool ChargeManager::have_chargers()
+{
     return charger_count > 0;
 }
 
 // Check is not 100% reliable after an uptime of 49 days because last_update might legitimately 0.
 // Work around that by caching the value once all chargers were seen once.
-bool ChargeManager::seen_all_chargers() {
+bool ChargeManager::seen_all_chargers()
+{
     if (all_chargers_seen)
         return true;
 
@@ -548,8 +550,8 @@ bool ChargeManager::is_control_pilot_disconnect_supported(uint32_t last_update_c
     return true;
 }
 
-
-const char* ChargeManager::get_charger_name(uint8_t idx) {
+const char *ChargeManager::get_charger_name(uint8_t idx)
+{
     return this->state.get("chargers")->get(idx)->get("name")->asEphemeralCStr();
 }
 
@@ -941,7 +943,8 @@ void ChargeManager::distribute_current()
     }
 }
 
-void ChargeManager::set_allocated_current_callback(std::function<void(uint32_t)> callback) {
+void ChargeManager::set_allocated_current_callback(std::function<void(uint32_t)> callback)
+{
     allocated_current_callback = callback;
 }
 

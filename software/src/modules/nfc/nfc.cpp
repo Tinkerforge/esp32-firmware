@@ -235,7 +235,8 @@ void NFC::remove_user(uint8_t user_id)
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-static bool trigger_action(Config *cfg, void *data) {
+static bool trigger_action(Config *cfg, void *data)
+{
     return nfc.action_triggered(cfg, data);
 }
 #endif
@@ -377,7 +378,8 @@ void NFC::update_seen_tags()
     new_tags = tmp;
 }
 
-void NFC::setup_auth_tags() {
+void NFC::setup_auth_tags()
+{
     const auto *auth_tags_cfg = (Config *) config.get("authorized_tags");
     auth_tag_count = auth_tags_cfg->count();
     if (auth_tag_count == 0)
@@ -461,7 +463,8 @@ void NFC::loop()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool NFC::action_triggered(Config *config, void *data) {
+bool NFC::action_triggered(Config *config, void *data)
+{
     auto cfg = config->get();
     tag_info_t *tag = (tag_info_t *)data;
     switch (config->getTag<AutomationTriggerID>()) {

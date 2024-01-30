@@ -24,7 +24,8 @@ extern TF_HAL hal;
 extern int8_t blue_led_pin;
 extern int8_t green_led_pin;
 
-void evse_v2_button_recovery_handler() {
+void evse_v2_button_recovery_handler()
+{
     if (!esp32_ethernet_brick.initHAL())
         return;
 

@@ -40,7 +40,8 @@ typedef unsigned int word_t;
 
 
 // Recalculate 32-bit CRC for bytes within a word
-static inline uint32_t _crc32_ieee_802_3_recalculate_bytes_helper(word_t data, uint32_t crc, uint_fast8_t bytes) {
+static inline uint32_t _crc32_ieee_802_3_recalculate_bytes_helper(word_t data, uint32_t crc, uint_fast8_t bytes)
+{
 	uint_fast8_t bit;
 
 	crc ^= data;
@@ -108,7 +109,8 @@ void crc32_ieee_802_3_recalculate(const void *data, size_t length, uint32_t *crc
 	*crc = COMPLEMENT_CRC(temp_crc);
 }
 
-uint32_t crc32_ieee_802_3(const void *data, size_t length) {
+uint32_t crc32_ieee_802_3(const void *data, size_t length)
+{
 	uint32_t crc = 0;
 	crc32_ieee_802_3_recalculate(data, length, &crc);
 	return crc;

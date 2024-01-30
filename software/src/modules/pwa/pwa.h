@@ -21,7 +21,8 @@
 
 #include "module.h"
 
-class Pwa final : public IModule {
+class Pwa final : public IModule
+{
 public:
     void register_urls() override;
 };

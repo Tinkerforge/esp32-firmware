@@ -181,7 +181,8 @@ void EVSEV2::pre_setup()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-static bool trigger_action(Config *cfg, void *data) {
+static bool trigger_action(Config *cfg, void *data)
+{
     return evse_v2.action_triggered(cfg, data);
 }
 
@@ -192,7 +193,8 @@ enum class InputState {
 };
 #endif
 
-void EVSEV2::post_setup() {
+void EVSEV2::post_setup()
+{
     if (!device_found)
         return;
 
@@ -231,7 +233,8 @@ void EVSEV2::post_setup() {
     }, 60 * 1000 /* wait for ntp sync */, 60 * 60 * 1000);
 }
 
-void EVSEV2::post_register_urls() {
+void EVSEV2::post_register_urls()
+{
     api.addCommand("evse/reset_dc_fault_current_state", &reset_dc_fault_current_state, {}, [this](){
         is_in_bootloader(tf_evse_v2_reset_dc_fault_current_state(&device, reset_dc_fault_current_state.get("password")->asUint()));
     }, true);
@@ -315,43 +318,53 @@ void EVSEV2::set_indicator_led(int16_t indication, uint16_t duration, uint16_t c
     tf_evse_v2_set_indicator_led(&device, indication, duration, color_h, color_s, color_v, ret_status);
 }
 
-void EVSEV2::set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected) {
+void EVSEV2::set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected)
+{
     is_in_bootloader(tf_evse_v2_set_control_pilot_disconnect(&device, cp_disconnect, cp_disconnected));
 }
 
-bool EVSEV2::get_control_pilot_disconnect() {
+bool EVSEV2::get_control_pilot_disconnect()
+{
     return control_pilot_disconnect.get("disconnect")->asBool();
 }
 
-void EVSEV2::set_boost_mode(bool enabled) {
+void EVSEV2::set_boost_mode(bool enabled)
+{
     is_in_bootloader(tf_evse_v2_set_boost_mode(&device, enabled));
 }
 
-int EVSEV2::get_charging_slot(uint8_t slot, uint16_t *ret_current, bool *ret_enabled, bool *ret_reset_on_dc) {
+int EVSEV2::get_charging_slot(uint8_t slot, uint16_t *ret_current, bool *ret_enabled, bool *ret_reset_on_dc)
+{
     return tf_evse_v2_get_charging_slot(&device, slot, ret_current, ret_enabled, ret_reset_on_dc);
 }
 
-int EVSEV2::set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool reset_on_dc) {
+int EVSEV2::set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool reset_on_dc)
+{
     return tf_evse_v2_set_charging_slot(&device, slot, current, enabled, reset_on_dc);
 }
 
-void EVSEV2::set_charging_slot_max_current(uint8_t slot, uint16_t current) {
+void EVSEV2::set_charging_slot_max_current(uint8_t slot, uint16_t current)
+{
     is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, slot, current));
 }
 
-void EVSEV2::set_charging_slot_clear_on_disconnect(uint8_t slot, bool clear_on_disconnect) {
+void EVSEV2::set_charging_slot_clear_on_disconnect(uint8_t slot, bool clear_on_disconnect)
+{
     is_in_bootloader(tf_evse_v2_set_charging_slot_clear_on_disconnect(&device, slot, clear_on_disconnect));
 }
 
-void EVSEV2::set_charging_slot_active(uint8_t slot, bool enabled) {
+void EVSEV2::set_charging_slot_active(uint8_t slot, bool enabled)
+{
     tf_evse_v2_set_charging_slot_active(&device, slot, enabled);
 }
 
-int EVSEV2::get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect) {
+int EVSEV2::get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect)
+{
     return tf_evse_v2_get_charging_slot_default(&device, slot, ret_max_current, ret_enabled, ret_clear_on_disconnect);
 }
 
-int EVSEV2::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect) {
+int EVSEV2::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect)
+{
     return tf_evse_v2_set_charging_slot_default(&device, slot, current, enabled, clear_on_disconnect);
 }
 
@@ -1026,7 +1039,8 @@ uint8_t EVSEV2::get_energy_meter_type()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool EVSEV2::action_triggered(Config *config, void *data) {
+bool EVSEV2::action_triggered(Config *config, void *data)
+{
     auto cfg = config->get();
     switch (config->getTag<AutomationTriggerID>())
     {

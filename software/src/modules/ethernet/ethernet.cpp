@@ -85,7 +85,8 @@ void Ethernet::pre_setup()
     });
 }
 
-void Ethernet::print_con_duration() {
+void Ethernet::print_con_duration()
+{
     if (was_connected) {
         was_connected = false;
         uint32_t now = millis();

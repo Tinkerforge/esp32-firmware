@@ -1,15 +1,17 @@
 #include "cool_string.h"
 
-void CoolString::setLength(int len) {
+void CoolString::setLength(int len)
+{
     setLen(len);
 }
 
-unsigned int CoolString::getCapacity() {
+unsigned int CoolString::getCapacity()
+{
     return capacity();
 }
 
-
-void CoolString::shrinkToFit() {
+void CoolString::shrinkToFit()
+{
     changeBuffer(len());
 }
 /* Currently broken for SSO strings

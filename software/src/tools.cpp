@@ -94,15 +94,18 @@ bool deadline_elapsed(uint32_t deadline_ms)
     return a_after_b(millis(), deadline_ms);
 }
 
-micros_t operator""_usec(unsigned long long int i) {
+micros_t operator""_usec(unsigned long long int i)
+{
     return micros_t{(int64_t)i};
 }
 
-micros_t now_us() {
+micros_t now_us()
+{
     return micros_t{esp_timer_get_time()};
 }
 
-bool deadline_elapsed(micros_t deadline_us) {
+bool deadline_elapsed(micros_t deadline_us)
+{
     return deadline_us == 0_usec || deadline_us < now_us();
 }
 
@@ -183,7 +186,8 @@ int check(int rc, const char *msg)
     return rc;
 }
 
-int vprintf_dev_null(const char *format, va_list ap) {
+int vprintf_dev_null(const char *format, va_list ap)
+{
     return 0;
 }
 
@@ -702,12 +706,13 @@ void remove_directory(const char *path)
     ::rmdir(("/spiffs" + path_string).c_str());
 }
 
-
-bool is_in_subnet(IPAddress ip, IPAddress subnet, IPAddress to_check) {
+bool is_in_subnet(IPAddress ip, IPAddress subnet, IPAddress to_check)
+{
     return (((uint32_t)ip) & ((uint32_t)subnet)) == (((uint32_t)to_check) & ((uint32_t)subnet));
 }
 
-bool is_valid_subnet_mask(IPAddress subnet) {
+bool is_valid_subnet_mask(IPAddress subnet)
+{
     bool zero_seen = false;
     // IPAddress is in network byte order!
     uint32_t addr = ntohl((uint32_t) subnet);
@@ -723,11 +728,13 @@ bool is_valid_subnet_mask(IPAddress subnet) {
 }
 
 TaskHandle_t mainTaskHandle;
-void set_main_task_handle() {
+void set_main_task_handle()
+{
     mainTaskHandle = xTaskGetCurrentTaskHandle();
 }
 
-void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms) {
+void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms)
+{
     if (led_pin < 0)
         return;
 
@@ -745,7 +752,8 @@ void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_ti
     digitalWrite(led_pin, led);
 }
 
-uint16_t internet_checksum(const uint8_t* data, size_t length) {
+uint16_t internet_checksum(const uint8_t *data, size_t length)
+{
     uint32_t checksum=0xffff;
 
     for (size_t i = 0; i < length - 1; i += 2) {
@@ -760,8 +768,7 @@ uint16_t internet_checksum(const uint8_t* data, size_t length) {
     return checksum;
 }
 
-struct gethostbyname_parameters
-{
+struct gethostbyname_parameters {
     const char *hostname;
     ip_addr_t *addr;
     dns_found_callback found_callback;
@@ -851,7 +858,8 @@ void trigger_reboot(const char *initiator)
     }, 0);
 }
 
-void list_dir(fs::FS &fs, const char * dirname, uint8_t max_depth, uint8_t current_depth) {
+void list_dir(fs::FS &fs, const char *dirname, uint8_t max_depth, uint8_t current_depth)
+{
     File root = fs.open(dirname);
     if(!root) {
         logger.printfln("%*c%s/ - failed to open directory", current_depth * 4, ' ', root.name());
@@ -892,7 +900,8 @@ void list_dir(fs::FS &fs, const char * dirname, uint8_t max_depth, uint8_t curre
     }
 }
 
-time_t ms_until_datetime(int *year, int *month, int *day, int *hour, int *minutes, int *seconds) {
+time_t ms_until_datetime(int *year, int *month, int *day, int *hour, int *minutes, int *seconds)
+{
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 
@@ -911,7 +920,8 @@ time_t ms_until_datetime(int *year, int *month, int *day, int *hour, int *minute
 	return (ts - tv.tv_sec) * 1000 - tv.tv_usec / 1000;
 }
 
-time_t ms_until_time(int h, int m) {
+time_t ms_until_time(int h, int m)
+{
 	int s = 0;
 	time_t delay = ms_until_datetime(NULL, NULL, NULL, &h, &m, &s);
 	if (delay <= 0) {
@@ -989,7 +999,8 @@ bool OwnershipGuard::have_ownership()
     return acquired;
 }
 
-void remove_separator(const char * const in, char *out) {
+void remove_separator(const char *const in, char *out)
+{
     int written = 0;
     size_t s = strlen(in);
     for(int i = 0; i < s; ++i) {
@@ -1001,7 +1012,8 @@ void remove_separator(const char * const in, char *out) {
     out[written] = '\0';
 }
 
-int strncmp_with_same_len(const char *left, const char *right, size_t right_len) {
+int strncmp_with_same_len(const char *left, const char *right, size_t right_len)
+{
     size_t left_len = strlen(left);
     if (left_len != right_len)
         return -1;

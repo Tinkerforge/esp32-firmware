@@ -147,7 +147,8 @@ static bool seq_num_invalid(uint16_t received_sn, uint16_t last_seen_sn)
     return received_sn <= last_seen_sn && last_seen_sn - received_sn < 5;
 }
 
-static bool endswith(const char *haystack, const char *needle) {
+static bool endswith(const char *haystack, const char *needle)
+{
     size_t haystack_len = strlen(haystack);
     size_t needle_len = strlen(needle);
 
@@ -168,7 +169,8 @@ struct ManagerQueueItem {
     struct sockaddr_in source_addr;
 };
 
-static void manager_task(void *arg) {
+static void manager_task(void *arg)
+{
     ManagerQueueItem item;
     memset(&item, 0, sizeof(ManagerQueueItem));
 

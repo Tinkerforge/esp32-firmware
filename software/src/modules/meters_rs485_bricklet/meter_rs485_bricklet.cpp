@@ -46,7 +46,8 @@ MeterClassID MeterRS485Bricklet::get_class() const
     return MeterClassID::RS485Bricklet;
 }
 
-void MeterRS485Bricklet::changeMeterType(size_t supported_meter_idx) {
+void MeterRS485Bricklet::changeMeterType(size_t supported_meter_idx)
+{
     this->meter_in_use = supported_meters[supported_meter_idx];
 
     this->meter_type = this->meter_in_use->meter_type;
@@ -135,7 +136,8 @@ void MeterRS485Bricklet::cb_read_values(TF_RS485 *device, uint8_t request_id, in
     callback_data.done = MeterRS485Bricklet::UserDataDone::DONE;
 }
 
-void MeterRS485Bricklet::cb_write_reset(TF_RS485 *device, uint8_t request_id, int8_t exception_code) {
+void MeterRS485Bricklet::cb_write_reset(TF_RS485 *device, uint8_t request_id, int8_t exception_code)
+{
     if (request_id != callback_data.expected_request_id || callback_data.expected_request_id == 0) {
         logger.printfln("Unexpected request id %u, expected %u", request_id, callback_data.expected_request_id);
         callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
@@ -160,7 +162,8 @@ void MeterRS485Bricklet::cb_write_reset(TF_RS485 *device, uint8_t request_id, in
     callback_data.done = MeterRS485Bricklet::UserDataDone::DONE;
 }
 
-void MeterRS485Bricklet::setupMeter() {
+void MeterRS485Bricklet::setupMeter()
+{
     callback_data.expected_request_id = 0;
     callback_data.value_to_write = nullptr;
     callback_data.done = MeterRS485Bricklet::UserDataDone::DONE;
@@ -224,13 +227,14 @@ void MeterRS485Bricklet::setup(const Config &ephemeral_config)
     }, 0, 10);
 }
 
-bool MeterRS485Bricklet::reset() {
+bool MeterRS485Bricklet::reset()
+{
     this->reset_requested = true;
     return true;
 }
 
-void MeterRS485Bricklet::register_urls(const String &base_url) {
-
+void MeterRS485Bricklet::register_urls(const String &base_url)
+{
 }
 
 
@@ -272,7 +276,8 @@ const RegRead *MeterRS485Bricklet::getNextRead(bool *trigger_fast_read_done, boo
     return result;
 }
 
-void MeterRS485Bricklet::tick() {
+void MeterRS485Bricklet::tick()
+{
     if (this->meter_in_use == nullptr)
         return;
 

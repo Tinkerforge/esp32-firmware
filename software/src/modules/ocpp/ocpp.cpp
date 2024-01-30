@@ -127,7 +127,8 @@ void Ocpp::pre_setup()
 
 static const char *lookup = "0123456789ABCDEFabcdef";
 
-static uint8_t hex_digit_to_byte(char digit) {
+static uint8_t hex_digit_to_byte(char digit)
+{
     for(size_t i = 0; i < strlen(lookup); ++i) {
         if (lookup[i] == digit)
             return i > 15 ? (i - 6) : i;
@@ -135,7 +136,8 @@ static uint8_t hex_digit_to_byte(char digit) {
     return 0xFF;
 }
 
-bool Ocpp::start_client() {
+bool Ocpp::start_client()
+{
     if (!config_in_use.get("enable_auth")->asBool()) {
         return cp->start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), nullptr, 0);
     }
@@ -210,7 +212,8 @@ void Ocpp::register_urls()
 }
 
 #if MODULE_NFC_AVAILABLE()
-void Ocpp::on_tag_seen(const char *tag_id) {
+void Ocpp::on_tag_seen(const char *tag_id)
+{
     if (tag_seen_cb == nullptr)
         return;
 

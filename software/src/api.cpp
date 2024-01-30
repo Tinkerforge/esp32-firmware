@@ -33,8 +33,8 @@ extern TF_HAL hal;
 // Global definition here to match the declaration in api.h.
 API api;
 
-API::API() {
-
+API::API()
+{
 }
 
 void API::pre_setup()
@@ -292,7 +292,8 @@ void API::writeConfig(const String &path, Config *config)
     LittleFS.rename(tmp_path, cfg_path);
 }
 
-void API::removeConfig(const String &path) {
+void API::removeConfig(const String &path)
+{
     String path_copy = path;
     path_copy.replace('/', '_');
     String cfg_path = String("/config/") + path_copy;
@@ -307,7 +308,8 @@ void API::removeConfig(const String &path) {
     }
 }
 
-void API::removeAllConfig() {
+void API::removeAllConfig()
+{
     remove_directory("/config");
 }
 
@@ -420,7 +422,8 @@ size_t API::registerBackend(IAPIBackend *backend)
     return backendIdx;
 }
 
-String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
+String API::callCommand(CommandRegistration &reg, char *payload, size_t len)
+{
     if (running_in_main_task()) {
         return "Use ConfUpdate overload of callCommand in main thread!";
     }
@@ -450,7 +453,8 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len) {
     return result;
 }
 
-void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(String)> done_cb) {
+void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(String)> done_cb)
+{
     if (running_in_main_task()) {
         done_cb("callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!");
         return;

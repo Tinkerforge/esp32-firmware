@@ -80,11 +80,15 @@ public:
         return String(req->uri);
     }
 
-    const char *uriCStr() {
+    const char *uriCStr()
+    {
         return req->uri;
     }
 
-    WebServerRequestReturnProtect unsafe_ResponseAlreadySent() {return WebServerRequestReturnProtect{};}
+    WebServerRequestReturnProtect unsafe_ResponseAlreadySent()
+    {
+        return WebServerRequestReturnProtect{};
+    }
 
 private:
     httpd_req_t *req;

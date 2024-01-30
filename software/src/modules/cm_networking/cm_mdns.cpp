@@ -123,11 +123,13 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
     resolve_state[charger_idx] = RESOLVE_STATE_RESOLVED;
 }
 
-bool CMNetworking::is_resolved(uint8_t charger_idx) {
+bool CMNetworking::is_resolved(uint8_t charger_idx)
+{
     return resolve_state[charger_idx] == RESOLVE_STATE_RESOLVED;
 }
 
-void CMNetworking::clear_cached_hostname(uint8_t charger_idx) {
+void CMNetworking::clear_cached_hostname(uint8_t charger_idx)
+{
     auto err = dns_removehost(this->hosts[charger_idx], nullptr);
     if (err != ESP_OK)
         logger.printfln("cm_networking: Couldn't remove hostname from cache: error %i", err);
@@ -223,7 +225,8 @@ bool CMNetworking::mdns_result_is_charger(mdns_result_t *entry, const char ** re
     return true;
 }
 
-void CMNetworking::resolve_via_mdns(mdns_result_t *entry) {
+void CMNetworking::resolve_via_mdns(mdns_result_t *entry)
+{
     if (entry->addr && entry->addr->addr.type == IPADDR_TYPE_V4) {
         for(size_t i = 0; i < charger_count; ++i ){
             if ((this->needs_mdns & (1 << i)) == 0)
@@ -288,7 +291,8 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
     json.endObject();
 }
 
-size_t CMNetworking::build_scan_result_json(mdns_result_t *list, char *buf, size_t len) {
+size_t CMNetworking::build_scan_result_json(mdns_result_t *list, char *buf, size_t len)
+{
     TFJsonSerializer json{buf, len};
     json.addArray();
 

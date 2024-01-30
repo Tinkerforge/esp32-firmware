@@ -1,14 +1,17 @@
 #include "config/private.h"
 
-bool Config::ConfObject::slotEmpty(size_t i) {
+bool Config::ConfObject::slotEmpty(size_t i)
+{
     return object_buf[i].schema == nullptr;
 }
 
-Config::ConfObject::Slot *Config::ConfObject::allocSlotBuf(size_t elements) {
+Config::ConfObject::Slot *Config::ConfObject::allocSlotBuf(size_t elements)
+{
     return new Config::ConfObject::Slot[elements];
 }
 
-void Config::ConfObject::freeSlotBuf(Config::ConfObject::Slot *buf) {
+void Config::ConfObject::freeSlotBuf(Config::ConfObject::Slot *buf)
+{
     delete[] buf;
 }
 
@@ -120,7 +123,8 @@ Config::ConfObject::~ConfObject()
     slot->values = nullptr;
 }
 
-Config::ConfObject& Config::ConfObject::operator=(const ConfObject &cpy) {
+Config::ConfObject &Config::ConfObject::operator=(const ConfObject &cpy)
+{
     if (this == &cpy)
         return *this;
 

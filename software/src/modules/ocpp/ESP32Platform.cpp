@@ -133,20 +133,24 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
     return client;
 }
 
-bool platform_has_fixed_cable(int connectorId) {
+bool platform_has_fixed_cable(int connectorId)
+{
     return true;
 }
 
-void platform_disconnect(void *ctx) {
+void platform_disconnect(void *ctx)
+{
     tf_websocket_client_close(client, pdMS_TO_TICKS(1000));
 }
 
-void platform_reconnect(void *ctx) {
+void platform_reconnect(void *ctx)
+{
     tf_websocket_client_stop(client);
     tf_websocket_client_start(client);
 }
 
-void platform_destroy(void *ctx) {
+void platform_destroy(void *ctx)
+{
     tf_websocket_client_destroy(client);
 }
 
@@ -160,23 +164,25 @@ void platform_ws_send(void *ctx, const char *buf, size_t buf_len)
     tf_websocket_client_send_text(client, buf, buf_len, pdMS_TO_TICKS(1000));
 }
 
-void platform_ws_send_ping(void *ctx) {
+void platform_ws_send_ping(void *ctx)
+{
     tf_websocket_client_send_ping(client, pdMS_TO_TICKS(1000));
 }
 
-void platform_ws_register_receive_callback(void *ctx, void(*cb)(char *, size_t, void *), void *user_data)
+void platform_ws_register_receive_callback(void *ctx, void (*cb)(char *, size_t, void *), void *user_data)
 {
     recv_cb = cb;
     recv_cb_userdata = user_data;
 }
 
-void platform_ws_register_pong_callback(void *ctx, void(*cb)(void *), void *user_data)
+void platform_ws_register_pong_callback(void *ctx, void (*cb)(void *), void *user_data)
 {
     pong_cb = cb;
     pong_cb_userdata = user_data;
 }
 
-uint32_t platform_now_ms() {
+uint32_t platform_now_ms()
+{
     return millis();
 }
 
@@ -189,7 +195,8 @@ void platform_set_system_time(void *ctx, time_t t)
    settimeofday(&tv, nullptr);
 }
 
-time_t platform_get_system_time(void *ctx) {
+time_t platform_get_system_time(void *ctx)
+{
     struct timeval tv_now;
     gettimeofday(&tv_now, NULL);
     return tv_now.tv_sec;
@@ -205,7 +212,8 @@ void platform_printfln(int level, const char *fmt, ...)
 
 extern Ocpp ocpp;
 
-void platform_register_tag_seen_callback(void *ctx, void(*cb)(int32_t, const char *, void *), void *user_data) {
+void platform_register_tag_seen_callback(void *ctx, void (*cb)(int32_t, const char *, void *), void *user_data)
+{
     ocpp.tag_seen_cb = cb;
     ocpp.tag_seen_cb_user_data = user_data;
 }
@@ -217,7 +225,8 @@ const char *trt_string[] = {
 "ConcurrentTx",
 };
 
-void platform_tag_rejected(const char *tag, TagRejectionType trt) {
+void platform_tag_rejected(const char *tag, TagRejectionType trt)
+{
     logger.printfln("Tag %s rejected: %s", tag, trt_string[(size_t)trt]);
 }
 
@@ -231,7 +240,8 @@ void platform_cable_timed_out(int32_t connectorId)
     logger.printfln("Cable timeout!");
 }
 
-EVSEState platform_get_evse_state(int32_t connectorId) {
+EVSEState platform_get_evse_state(int32_t connectorId)
+{
     REQUIRE_FEATURE(evse, EVSEState::Faulted);
 
     auto state = api.getState("evse/state")->get("charger_state")->asUint();
@@ -257,7 +267,8 @@ EVSEState platform_get_evse_state(int32_t connectorId) {
 
 
 // This is the Energy.Active.Import.Register measurand in Wh
-int32_t platform_get_energy(int32_t connectorId) {
+int32_t platform_get_energy(int32_t connectorId)
+{
     REQUIRE_FEATURE(meter_all_values, 0);
 
     const Config *meter_all_values = api.getState("meter/all_values");
@@ -435,7 +446,8 @@ static const SupportedMeasurand *supported_measurands = nullptr;
 static size_t supported_measurands_len = 0;
 static const size_t *supported_measurand_offsets = nullptr;
 
-void update_meter_type() {
+void update_meter_type()
+{
     if (meter_type != 0)
         return;
 
@@ -725,21 +737,23 @@ void platform_set_charging_current(int32_t connectorId, uint32_t milliAmps)
 
 #define PATH_PREFIX String("/ocpp/")
 
-size_t platform_read_file(const char *name, char *buf, size_t len) {
+size_t platform_read_file(const char *name, char *buf, size_t len)
+{
     File f = LittleFS.open(PATH_PREFIX + name);
     // File::read can return 2^32-1 because it returns -1 if the file is not open but the return type is size_t.
     if (f.read((uint8_t *)buf, len) > len)
         return 0;
     return len;
 }
-bool platform_write_file(const char *name, char *buf, size_t len) {
+bool platform_write_file(const char *name, char *buf, size_t len)
+{
     File f = LittleFS.open(PATH_PREFIX + name, "w", true);
     return f.write((const uint8_t *)buf, len) == len;
 }
 
-
 // return nullptr if name does not exist or is not a directory
-void *platform_open_dir(const char *name) {
+void *platform_open_dir(const char *name)
+{
     File *f = new File(LittleFS.open(PATH_PREFIX + name));
     if (!f->isDirectory()) {
         delete f;
@@ -751,7 +765,8 @@ void *platform_open_dir(const char *name) {
 OcppDirEnt dir_ent;
 
 // return nullptr if no more files
-OcppDirEnt *platform_read_dir(void *dir_fd) {
+OcppDirEnt *platform_read_dir(void *dir_fd)
+{
     File *dir = (File *)dir_fd;
     File f;
     while (f = dir->openNextFile()) {
@@ -761,16 +776,19 @@ OcppDirEnt *platform_read_dir(void *dir_fd) {
     }
     return nullptr;
 }
-void platform_close_dir(void *dir_fd) {
+void platform_close_dir(void *dir_fd)
+{
     File *f = (File *)dir_fd;
     delete f;
 }
 
-void platform_remove_file(const char *name) {
+void platform_remove_file(const char *name)
+{
     LittleFS.remove(PATH_PREFIX + name);
 }
 
-void platform_reset(bool hard) {
+void platform_reset(bool hard)
+{
     if (hard) {
         /*
         At receipt of a hard reset the Charge Point SHALL restart (all) the hardware, it is not required to gracefully stop
@@ -796,40 +814,49 @@ void platform_reset(bool hard) {
     ESP.restart();
 }
 
-void platform_register_stop_callback(void *ctx, void (*cb)(int32_t, StopReason, void *), void *user_data) {
-
+void platform_register_stop_callback(void *ctx, void (*cb)(int32_t, StopReason, void *), void *user_data)
+{
 }
 
-const char *platform_get_charge_point_vendor() {
+const char *platform_get_charge_point_vendor()
+{
     return "Tinkerforge GmbH";
 }
 
 char model[20] = {0}; // FIXME: Check if this needs to be one byte longer. See https://github.com/Tinkerforge/tfocpp/blob/5f07d2a7821167bf09eb4422d80657bb77ef886e/src/ocpp/Messages.cpp#L377
-const char *platform_get_charge_point_model() {
+const char *platform_get_charge_point_model()
+{
     device_name.name.get("display_type")->asString().toCharArray(model, ARRAY_SIZE(model));
     return model;
 }
 
-const char *platform_get_charge_point_serial_number() {
+const char *platform_get_charge_point_serial_number()
+{
     return device_name.name.get("name")->asUnsafeCStr(); // FIXME: Check if this use of the returned C string is safe or if a local copy like in platform_get_charge_point_model() is required. Might need to be truncated to a length of 25+\0.
 }
-const char *platform_get_firmware_version() {
+const char *platform_get_firmware_version()
+{
     return build_version_full_str();
 }
-const char *platform_get_iccid() {
+const char *platform_get_iccid()
+{
     return nullptr;
 }
-const char *platform_get_imsi() {
+const char *platform_get_imsi()
+{
     return nullptr;
 }
-const char *platform_get_meter_type() {
+const char *platform_get_meter_type()
+{
     return nullptr;
 }
-const char *platform_get_meter_serial_number() {
+const char *platform_get_meter_serial_number()
+{
     return nullptr;
 }
 
-uint32_t platform_get_maximum_charging_current(int32_t connectorId) {
+uint32_t platform_get_maximum_charging_current(int32_t connectorId)
+{
     return 32000;
 }
 
@@ -854,7 +881,8 @@ void platform_update_connector_state(int32_t connector_id,
                                      time_t transaction_start_time,
                                      uint32_t current_allowed,
                                      bool txn_with_invalid_id,
-                                     bool unavailable_requested) {
+                                     bool unavailable_requested)
+{
     if (connector_id != 1)
         return;
 
@@ -884,7 +912,8 @@ void platform_update_connection_state(CallAction message_in_flight_type,
                                       bool connected,
                                       time_t connected_change_time,
                                       uint32_t last_ping_sent,
-                                      uint32_t pong_deadline) {
+                                      uint32_t pong_deadline)
+{
     ocpp.state.get("message_in_flight_type")->updateUint((uint8_t)message_in_flight_type);
     ocpp.state.get("message_in_flight_id_high")->updateUint(message_in_flight_id >> 32);
     ocpp.state.get("message_in_flight_id_low")->updateUint(message_in_flight_id & (0xFFFFFFFF));

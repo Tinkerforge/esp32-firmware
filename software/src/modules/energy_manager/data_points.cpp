@@ -35,7 +35,8 @@
 
 static_assert(METERS_SLOTS <= 7, "Too many meters slots");
 
-static const char *get_data_status_string(uint8_t status) {
+static const char *get_data_status_string(uint8_t status)
+{
     switch (status) {
         case TF_WARP_ENERGY_MANAGER_DATA_STATUS_OK:         return "OK";
         case TF_WARP_ENERGY_MANAGER_DATA_STATUS_SD_ERROR:   return "SD error";

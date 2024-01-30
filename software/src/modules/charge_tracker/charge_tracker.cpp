@@ -108,7 +108,8 @@ String ChargeTracker::chargeRecordFilename(uint32_t i)
     return String(CHARGE_RECORD_FOLDER) + "/charge-record-" + i + ".bin";
 }
 
-bool ChargeTracker::repair_last(float meter_start) {
+bool ChargeTracker::repair_last(float meter_start)
+{
     Charge charges[3];
     charges[0].ce.meter_end = NAN;
     charges[2].cs.meter_start = meter_start;
@@ -404,7 +405,8 @@ bool ChargeTracker::currentlyCharging()
     return (file.size() % CHARGE_RECORD_SIZE) == sizeof(ChargeStart);
 }
 
-bool charged_invalid(ChargeStart cs, ChargeEnd ce) {
+bool charged_invalid(ChargeStart cs, ChargeEnd ce)
+{
     return isnan(cs.meter_start) || isnan(ce.meter_end) || ce.meter_end < cs.meter_start;
 }
 
@@ -483,7 +485,8 @@ void ChargeTracker::setup()
     updateState();
 }
 
-bool user_configured(const uint8_t configured_users[MAX_ACTIVE_USERS], uint8_t user_id) {
+bool user_configured(const uint8_t configured_users[MAX_ACTIVE_USERS], uint8_t user_id)
+{
     for(int i = 0; i < MAX_ACTIVE_USERS; ++i) {
         if (configured_users[i] == user_id) {
             return true;
@@ -492,7 +495,8 @@ bool user_configured(const uint8_t configured_users[MAX_ACTIVE_USERS], uint8_t u
     return false;
 }
 
-static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp_min, bool english) {
+static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp_min, bool english)
+{
     const char * const unknown = english ? "unknown" : "unbekannt";
     size_t unknown_len =  english ? ARRAY_SIZE("unknown") : ARRAY_SIZE("unbekannt");
 
@@ -510,13 +514,15 @@ static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp
     return sprintf(buf, "%2.2i.%2.2i.%4.4i %2.2i:%2.2i", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min);
 }
 
-static int get_display_name(uint8_t user_id, char *ret_buf) {
+static int get_display_name(uint8_t user_id, char *ret_buf)
+{
     int result = 0;
     task_scheduler.await([&result, user_id, ret_buf](){result = users.get_display_name(user_id, ret_buf);});
     return result;
 }
 
-static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, bool english, uint32_t electricity_price) {
+static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, bool english, uint32_t electricity_price)
+{
     buf += 1 + timestamp_min_to_date_time_string(buf, cs.timestamp_minutes, english);
 
     get_display_name(cs.user_id, buf);
@@ -583,7 +589,8 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
     return buf;
 }
 
-static bool repair_logic(Charge *buf) {
+static bool repair_logic(Charge *buf)
+{
     bool repaired = false;
     uint8_t state = 0;
 
@@ -640,7 +647,8 @@ static bool repair_logic(Charge *buf) {
     return repaired;
 }
 
-void ChargeTracker::repair_charges() {
+void ChargeTracker::repair_charges()
+{
     auto buf = heap_alloc_array<Charge>(258);
     uint32_t num_repaired = 0;
     Charge transfer;

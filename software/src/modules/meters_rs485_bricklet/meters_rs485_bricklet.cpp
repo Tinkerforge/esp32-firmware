@@ -52,7 +52,8 @@ void MetersRS485Bricklet::pre_setup()
 #define MODBUS_SLAVE_ADDRESS 1
 #define MODBUS_MASTER_REQUEST_TIMEOUT 1000
 
-void MetersRS485Bricklet::setupRS485() {
+void MetersRS485Bricklet::setupRS485()
+{
     if (!this->DeviceModule::setup_device()) {
         return;
     }
@@ -116,7 +117,8 @@ void MetersRS485Bricklet::checkRS485State()
     }
 }
 
-void MetersRS485Bricklet::setup() {
+void MetersRS485Bricklet::setup()
+{
     setupRS485();
     if (!device_found)
         return;
@@ -126,11 +128,13 @@ void MetersRS485Bricklet::setup() {
     }, 10 * 1000, 10 * 1000);
 }
 
-void MetersRS485Bricklet::register_urls() {
+void MetersRS485Bricklet::register_urls()
+{
     this->DeviceModule::register_urls();
 }
 
-void MetersRS485Bricklet::loop() {
+void MetersRS485Bricklet::loop()
+{
     this->DeviceModule::loop();
 }
 

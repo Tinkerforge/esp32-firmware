@@ -128,7 +128,8 @@ void EventLog::write(const char *buf, size_t len)
 #endif
 }
 
-void EventLog::printfln(const char *fmt, va_list args) {
+void EventLog::printfln(const char *fmt, va_list args)
+{
     char buf[256];
     auto buf_size = sizeof(buf) / sizeof(buf[0]);
     memset(buf, 0, buf_size);

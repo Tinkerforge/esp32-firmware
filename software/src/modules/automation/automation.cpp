@@ -21,12 +21,14 @@
 #include "api.h"
 #include "task_scheduler.h"
 
-Automation::Automation() {
+Automation::Automation()
+{
     trigger_vec.push_back({AutomationTriggerID::None, *Config::Null()});
     action_vec.push_back({AutomationActionID::None, *Config::Null()});
 }
 
-void Automation::pre_setup() {
+void Automation::pre_setup()
+{
     register_action(
         AutomationActionID::Print,
         Config::Object({
@@ -103,7 +105,8 @@ void Automation::pre_setup() {
     config_in_use = config;
 }
 
-void Automation::setup() {
+void Automation::setup()
+{
     api.restorePersistentConfig("automation/config", &config);
 
     config_in_use = config;
@@ -133,21 +136,25 @@ void Automation::setup() {
     initialized = true;
 }
 
-void Automation::register_urls() {
+void Automation::register_urls()
+{
     api.addPersistentConfig("automation/config", &config);
 }
 
-void Automation::register_action(AutomationActionID id, Config cfg, ActionCb callback, ValidatorCb validator) {
+void Automation::register_action(AutomationActionID id, Config cfg, ActionCb callback, ValidatorCb validator)
+{
     action_vec.push_back({id, cfg});
     action_map[id] = std::pair<ActionCb, ValidatorCb>(callback, validator);
 }
 
-void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb validator) {
+void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb validator)
+{
     trigger_vec.push_back({id, cfg});
     trigger_map[id] = validator;
 }
 
-bool Automation::trigger_action(AutomationTriggerID number, void *data, std::function<bool(Config *, void *)> cb) {
+bool Automation::trigger_action(AutomationTriggerID number, void *data, std::function<bool(Config *, void *)> cb)
+{
     bool triggered = false;
     int current_rule = 1;
     for (auto &conf: config_in_use.get("tasks")) {
@@ -165,7 +172,8 @@ bool Automation::trigger_action(AutomationTriggerID number, void *data, std::fun
     return triggered;
 }
 
-bool Automation::is_trigger_active(AutomationTriggerID number) {
+bool Automation::is_trigger_active(AutomationTriggerID number)
+{
     for (auto &conf: config_in_use.get("tasks")) {
         if (conf.get("trigger")->getTag<AutomationTriggerID>() == number) {
             return true;
@@ -174,7 +182,8 @@ bool Automation::is_trigger_active(AutomationTriggerID number) {
     return false;
 }
 
-ConfigVec Automation::get_configured_triggers(AutomationTriggerID number) {
+ConfigVec Automation::get_configured_triggers(AutomationTriggerID number)
+{
     ConfigVec vec;
     for (size_t idx = 0; idx < config_in_use.get("tasks")->count(); idx++) {
         auto trigger = config.get("tasks")->get(idx)->get("trigger");
@@ -184,14 +193,16 @@ ConfigVec Automation::get_configured_triggers(AutomationTriggerID number) {
     }
     return vec;
 }
-static bool is_last_day (struct tm time) {
+static bool is_last_day(struct tm time)
+{
     const int mon = time.tm_mon;
     time_t next_day = mktime(&time) + 86400;
     time = *localtime(&next_day);
     return time.tm_mon != mon;
 }
 
-bool Automation::action_triggered(Config *conf, void *data) {
+bool Automation::action_triggered(Config *conf, void *data)
+{
     Config *cfg = (Config*)conf->get();
     tm *time_struct = (tm *)data;
     bool triggered = false;

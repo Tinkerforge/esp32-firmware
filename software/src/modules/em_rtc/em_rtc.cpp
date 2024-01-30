@@ -28,7 +28,8 @@ void EmRtc::setup()
     initialized = true;
 }
 
-void EmRtc::register_urls() {
+void EmRtc::register_urls()
+{
     if (!initialized)
         return;
 

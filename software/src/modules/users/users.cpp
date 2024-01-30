@@ -368,7 +368,8 @@ void Users::setup()
     }
 }
 
-void Users::search_next_free_user() {
+void Users::search_next_free_user()
+{
     uint8_t user_id = config.get("next_user_id")->asUint();
     uint8_t start_uid = user_id;
     user_id++;
@@ -406,7 +407,8 @@ int Users::get_display_name(uint8_t user_id, char *ret_buf)
     return strnlen(ret_buf, 32);
 }
 
-bool Users::is_user_configured(uint8_t user_id) {
+bool Users::is_user_configured(uint8_t user_id)
+{
     for (auto &cfg : config.get("users"))
         if (cfg.get("id")->asUint() == user_id)
             return true;
@@ -414,7 +416,8 @@ bool Users::is_user_configured(uint8_t user_id) {
     return false;
 }
 
-static void check_waiting_for_start() {
+static void check_waiting_for_start()
+{
     const Config *user_slot = (const Config *) api.getState("evse/slots", false)->get(CHARGING_SLOT_USER);
 
     if (!user_slot->get("active")->asBool())

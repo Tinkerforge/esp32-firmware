@@ -64,7 +64,8 @@ bool compare(const std::unique_ptr<Task> &a, const std::unique_ptr<Task> &b)
 }
 
 // https://stackoverflow.com/a/36711682
-bool TaskQueue::removeByTaskID(uint64_t task_id)  {
+bool TaskQueue::removeByTaskID(uint64_t task_id)
+{
     // The queue is locked if this function is called.
 
     auto it = std::find_if(this->c.begin(), this->c.end(), [task_id](const std::unique_ptr<Task> &t){return t->task_id == task_id;});
@@ -85,7 +86,8 @@ bool TaskQueue::removeByTaskID(uint64_t task_id)  {
     return true;
 }
 
-Task *TaskQueue::findByTaskID(uint64_t task_id) {
+Task *TaskQueue::findByTaskID(uint64_t task_id)
+{
     auto it = std::find_if(this->c.begin(), this->c.end(), [task_id](const std::unique_ptr<Task> &t){return t->task_id == task_id;});
 
     if (it == this->c.end()) {
@@ -187,7 +189,8 @@ uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, u
     return task_id;
 }
 
-TaskScheduler::CancelResult TaskScheduler::cancel(uint64_t task_id) {
+TaskScheduler::CancelResult TaskScheduler::cancel(uint64_t task_id)
+{
     std::lock_guard<std::mutex> l{this->task_mutex};
     if (this->currentTask && this->currentTask->task_id == task_id) {
         this->currentTask->cancelled = true;
@@ -197,7 +200,8 @@ TaskScheduler::CancelResult TaskScheduler::cancel(uint64_t task_id) {
         return tasks.removeByTaskID(task_id) ? TaskScheduler::CancelResult::Cancelled : TaskScheduler::CancelResult::NotFound;
 }
 
-uint64_t TaskScheduler::currentTaskId() {
+uint64_t TaskScheduler::currentTaskId()
+{
     // currentTaskId is intended to write a self-canceling task.
     // Don't allow other threads to cancel tasks without knowing their ID.
     if (!running_in_main_task()) {
@@ -211,7 +215,8 @@ uint64_t TaskScheduler::currentTaskId() {
     return 0;
 }
 
-TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t millis_to_wait) {
+TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t millis_to_wait)
+{
     if (millis_to_wait == 0) {
         logger.printfln("Calling TaskScheduler::await with millis_to_wait == 0 is not allowed. This is not scheduleOnce!");
         return TaskScheduler::AwaitResult::Error;
@@ -270,6 +275,7 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t milli
     return TaskScheduler::AwaitResult::Done;
 }
 
-TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, uint32_t millis_to_wait) {
+TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, uint32_t millis_to_wait)
+{
     return task_scheduler.await(task_scheduler.scheduleOnce(std::move(fn), 0), millis_to_wait);
 }

@@ -204,7 +204,8 @@ protected:
     ConfigRoot identity;
 
 private:
-    void update_identity(TF_TFP *tfp) {
+    void update_identity(TF_TFP *tfp)
+    {
         char uid[8];
         char connected_uid[8];
         char position;

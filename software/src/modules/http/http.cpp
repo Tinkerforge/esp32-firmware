@@ -197,7 +197,8 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
     return req.send(405, "text/plain", "Request method for this URI is not handled by server");
 }
 
-WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req) {
+WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
+{
     for (size_t i = 0; i < api.commands.size(); i++)
         if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0)
             return run_command(req, i);
@@ -319,6 +320,7 @@ bool Http::pushRawStateUpdate(const String &payload, const String &path)
     return true;
 }
 
-IAPIBackend::WantsStateUpdate Http::wantsStateUpdate(size_t stateIdx) {
+IAPIBackend::WantsStateUpdate Http::wantsStateUpdate(size_t stateIdx)
+{
     return IAPIBackend::WantsStateUpdate::No;
 }

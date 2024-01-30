@@ -164,7 +164,8 @@ void Mqtt::subscribe_mqtt_thread(const String &topic, SubscribeCallback callback
     subscribe_internal(topic, false, callback, forbid_retained);
 }
 
-void Mqtt::subscribe_internal(const String &topic, bool callback_in_main_thread, SubscribeCallback callback, bool forbid_retained) {
+void Mqtt::subscribe_internal(const String &topic, bool callback_in_main_thread, SubscribeCallback callback, bool forbid_retained)
+{
     bool subscribed = esp_mqtt_client_subscribe(client, topic.c_str(), 0) >= 0;
 
     this->commands.push_back({topic, callback, forbid_retained, topic.startsWith(prefix), subscribed, callback_in_main_thread});
@@ -241,7 +242,8 @@ IAPIBackend::WantsStateUpdate Mqtt::wantsStateUpdate(size_t stateIdx) {
            IAPIBackend::WantsStateUpdate::No;
 }
 
-void Mqtt::resubscribe() {
+void Mqtt::resubscribe()
+{
     if (this->state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
         return;
 
@@ -314,12 +316,14 @@ void Mqtt::onMqttDisconnect()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-static bool trigger_action(Config *cfg, void *data) {
+static bool trigger_action(Config *cfg, void *data)
+{
     return mqtt.action_triggered(cfg, data);
 }
 #endif
 
-static bool filter_mqtt_log(const char *topic, size_t topic_len) {
+static bool filter_mqtt_log(const char *topic, size_t topic_len)
+{
 #if MODULE_AUTOMATION_AVAILABLE()
     if (topic_len >= 12 && strncmp(topic, "automation_action/", 12) == 0)
         return false;
@@ -617,7 +621,8 @@ void Mqtt::register_urls()
 #endif
 }
 
-void Mqtt::register_events() {
+void Mqtt::register_events()
+{
     if (!config.get("enable_mqtt")->asBool()) {
         return;
     }
@@ -646,7 +651,8 @@ void Mqtt::register_events() {
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool Mqtt::action_triggered(Config *config, void *data) {
+bool Mqtt::action_triggered(Config *config, void *data)
+{
     Config *cfg = (Config*)config->get();
     MqttMessage *msg = (MqttMessage *)data;
     const CoolString &payload = cfg->get("payload")->asString();

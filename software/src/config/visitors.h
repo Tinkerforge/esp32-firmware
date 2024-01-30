@@ -101,7 +101,8 @@ struct default_validator {
         return "";
     }
 
-    String operator()(const Config::ConfUnion &x) const {
+    String operator()(const Config::ConfUnion &x) const
+    {
         // Tag match is already checked in from_json.
 
         return Config::apply_visitor(default_validator{}, x.getVal()->value);
@@ -182,7 +183,8 @@ struct to_json {
         }
     }
 
-    void operator()(const Config::ConfUnion &x) {
+    void operator()(const Config::ConfUnion &x)
+    {
         const auto *val = x.getVal();
 
         JsonArray arr = insertHere.as<JsonArray>();
@@ -218,7 +220,8 @@ static size_t estimate_chars_per_uint(uint32_t v) {
 
 // Never underestimates length. Overestimates by 0.23 chars on average.
 // Tested against the returned length of snprintf([...],"%d") for every 32 bit number.
-static size_t estimate_chars_per_int(int32_t v) {
+static size_t estimate_chars_per_int(int32_t v)
+{
     uint32_t sign = (static_cast<uint32_t>(v)) >> 31;
 
     v = v ^ (v >> 31); // Approximate abs(v). Negative values are off by 1, which doesn't matter for the estimation.
@@ -281,7 +284,8 @@ struct max_string_length_visitor {
         return sum;
     }
 
-    size_t operator()(const Config::ConfUnion &x) {
+    size_t operator()(const Config::ConfUnion &x)
+    {
         const auto *slot = x.getSlot();
 
         size_t max_len = Config::apply_visitor(max_string_length_visitor{}, x.getVal()->value);
@@ -350,7 +354,8 @@ struct string_length_visitor {
         return sum;
     }
 
-    size_t operator()(const Config::ConfUnion &x) {
+    size_t operator()(const Config::ConfUnion &x)
+    {
         return Config::apply_visitor(string_length_visitor{}, x.getVal()->value) + estimate_chars_per_uint(x.getTag()) + 3; // [,]
     }
 };
@@ -402,7 +407,8 @@ struct json_length_visitor {
         return sum + JSON_OBJECT_SIZE(size);
     }
 
-    size_t operator()(const Config::ConfUnion &x) {
+    size_t operator()(const Config::ConfUnion &x)
+    {
         const auto *slot = x.getSlot();
 
         size_t max_len = Config::apply_visitor(json_length_visitor{zero_copy}, x.getVal()->value);
@@ -792,7 +798,8 @@ struct from_update {
 
         return "";
     }
-    String operator()(Config::ConfUnion &x) {
+    String operator()(Config::ConfUnion &x)
+    {
         if (Config::containsNull(update))
             return "";
 

@@ -1,18 +1,22 @@
 #include "config/private.h"
 
-bool Config::ConfUnion::slotEmpty(size_t i) {
+bool Config::ConfUnion::slotEmpty(size_t i)
+{
     return union_buf[i].prototypes == nullptr;
 }
 
-Config::ConfUnion::Slot *Config::ConfUnion::allocSlotBuf(size_t elements) {
+Config::ConfUnion::Slot *Config::ConfUnion::allocSlotBuf(size_t elements)
+{
     return new Config::ConfUnion::Slot[elements];
 }
 
-void Config::ConfUnion::freeSlotBuf(Config::ConfUnion::Slot *buf) {
+void Config::ConfUnion::freeSlotBuf(Config::ConfUnion::Slot *buf)
+{
     delete[] buf;
 }
 
-bool Config::ConfUnion::changeUnionVariant(uint8_t tag) {
+bool Config::ConfUnion::changeUnionVariant(uint8_t tag)
+{
     auto &slot = union_buf[idx];
     for(int i = 0; i < slot.prototypes_len; ++i) {
         if (slot.prototypes[i].tag == tag) {
@@ -66,7 +70,7 @@ Config::ConfUnion::~ConfUnion()
     slot->prototypes = nullptr;
 }
 
-Config::ConfUnion& Config::ConfUnion::operator=(const ConfUnion &cpy)
+Config::ConfUnion &Config::ConfUnion::operator=(const ConfUnion &cpy)
 {
     if (this == &cpy) {
         return *this;

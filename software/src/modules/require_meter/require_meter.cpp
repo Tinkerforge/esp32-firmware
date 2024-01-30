@@ -33,7 +33,8 @@ extern RequireMeter require_meter;
 #define WARP_PRO_DISABLED 1
 #define WARP_PRO_ENABLED 2
 
-void RequireMeter::pre_setup() {
+void RequireMeter::pre_setup()
+{
     config = Config::Object({
         {"config", Config::Uint8(WARP_SMART)}
     });
@@ -45,7 +46,8 @@ void RequireMeter::pre_setup() {
 #endif
 }
 
-void RequireMeter::setup() {
+void RequireMeter::setup()
+{
     api.restorePersistentConfig("require_meter/config", &config);
 
     if (config.get("config")->asUint() == WARP_PRO_ENABLED) {
@@ -56,7 +58,8 @@ void RequireMeter::setup() {
     initialized = true;
 }
 
-void RequireMeter::register_urls() {
+void RequireMeter::register_urls()
+{
     api.addPersistentConfig("require_meter/config", &config);
 
     if (config.get("config")->asUint() == WARP_SMART) {
@@ -77,7 +80,8 @@ void RequireMeter::register_urls() {
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool RequireMeter::action_triggered(Config *config, void *data) {
+bool RequireMeter::action_triggered(Config *config, void *data)
+{
     switch (config->getTag<AutomationTriggerID>()) {
         case AutomationTriggerID::RequireMeter:
             return true;
@@ -87,12 +91,14 @@ bool RequireMeter::action_triggered(Config *config, void *data) {
     }
 }
 
-static bool trigger_action(Config *config, void *data) {
+static bool trigger_action(Config *config, void *data)
+{
     return require_meter.action_triggered(config, data);
 }
 #endif
 
-void RequireMeter::start_task() {
+void RequireMeter::start_task()
+{
     static bool is_running = false;
     if (is_running)
         return;
@@ -184,7 +190,8 @@ void RequireMeter::start_task() {
     is_running = true;
 }
 
-bool RequireMeter::allow_charging(float meter_value) {
+bool RequireMeter::allow_charging(float meter_value)
+{
     if (evse_common.get_require_meter_enabled() && (isnan(meter_value) || evse_common.get_require_meter_blocking())) {
         evse_common.set_require_meter_blocking(true);
         return false;

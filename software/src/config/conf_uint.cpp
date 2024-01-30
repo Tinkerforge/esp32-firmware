@@ -10,7 +10,8 @@ Config::ConfUint::Slot *Config::ConfUint::allocSlotBuf(size_t elements) {
     return (Config::ConfUint::Slot *) heap_caps_calloc(elements, sizeof(Config::ConfUint::Slot), MALLOC_CAP_32BIT);
 }
 
-void Config::ConfUint::freeSlotBuf(Config::ConfUint::Slot *buf) {
+void Config::ConfUint::freeSlotBuf(Config::ConfUint::Slot *buf)
+{
     heap_caps_free(buf);
 }
 
@@ -44,7 +45,8 @@ Config::ConfUint::~ConfUint()
     slot->max = 0;
 }
 
-Config::ConfUint& Config::ConfUint::operator=(const ConfUint &cpy) {
+Config::ConfUint &Config::ConfUint::operator=(const ConfUint &cpy)
+{
     if (this == &cpy)
         return *this;
 
