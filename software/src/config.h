@@ -520,6 +520,9 @@ public:
 
             explicit operator const Config*() const;
 
+            std::vector<Config>::const_iterator begin() const;
+            std::vector<Config>::const_iterator end() const;
+
         private:
             const Config *conf;
     };
@@ -548,6 +551,8 @@ public:
     size_t count() const;
     std::vector<Config>::iterator begin();
     std::vector<Config>::iterator end();
+    std::vector<Config>::const_iterator begin() const;
+    std::vector<Config>::const_iterator end() const;
 
     template<typename T>
     T getTag() const {

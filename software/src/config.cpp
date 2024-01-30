@@ -365,6 +365,26 @@ std::vector<Config>::iterator Config::end()
     return this->asArray().end();
 }
 
+std::vector<Config>::const_iterator Config::begin() const
+{
+    ASSERT_MAIN_THREAD();
+    if (!this->is<Config::ConfArray>()) {
+        logger.printfln("Tried to get begin iterator of a node that is not an array!");
+        esp_system_abort("");
+    }
+    return this->asArray().cbegin();
+}
+
+std::vector<Config>::const_iterator Config::end() const
+{
+    ASSERT_MAIN_THREAD();
+    if (!this->is<Config::ConfArray>()) {
+        logger.printfln("Tried to get end iterator of a node that is not an array!");
+        esp_system_abort("");
+    }
+    return this->asArray().cend();
+}
+
 const CoolString &Config::asString() const
 {
     return *this->get<ConfString>()->getVal();

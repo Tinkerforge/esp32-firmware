@@ -24,3 +24,6 @@ const Config * Config::ConstWrap::operator->() const {
 }
 
 Config::ConstWrap::operator const Config*() const {return conf;}
+
+std::vector<Config>::const_iterator Config::ConstWrap::begin() const {return conf->begin();}
+std::vector<Config>::const_iterator Config::ConstWrap::end() const {return conf->end();}
