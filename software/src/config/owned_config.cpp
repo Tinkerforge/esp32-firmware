@@ -2,7 +2,6 @@
 
 OwnedConfig::OwnedConfigWrap::OwnedConfigWrap(const OwnedConfig *_conf) : conf(_conf)
 {
-
 }
 
 const OwnedConfig *OwnedConfig::OwnedConfigWrap::operator->() const

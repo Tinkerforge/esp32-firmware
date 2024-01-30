@@ -66,7 +66,6 @@ static void apply_energy_manager_config(Config &conf)
     conf.get("enable_watchdog")->updateBool(false);
     conf.get("default_available_current")->updateUint(0);
 
-
     if (conf.get("chargers")->count() == 1 && conf.get("requested_current_margin")->asUint() == REQUESTED_CURRENT_MARGIN_DEFAULT) {
         conf.get("requested_current_margin")->updateUint(REQUESTED_CURRENT_MARGIN_ENERGY_MANAGER_1_CHARGER_DEFAULT);
     }

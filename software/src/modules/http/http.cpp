@@ -41,7 +41,6 @@ public:
 
     void alive()
     {
-
     }
 
     void end(String error)

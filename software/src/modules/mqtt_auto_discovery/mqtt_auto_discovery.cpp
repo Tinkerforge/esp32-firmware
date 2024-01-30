@@ -124,7 +124,6 @@ void MqttAutoDiscovery::prepare_topics()
 
 void MqttAutoDiscovery::subscribe_to_own()
 {
-
 }
 
 void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_len, size_t data_len)

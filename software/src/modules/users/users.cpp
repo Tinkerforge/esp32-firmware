@@ -53,7 +53,6 @@ void zero_user_slot_info()
     set_data_storage(buf);
 }
 
-
 uint8_t get_charger_state()
 {
     return evse_common.get_state().get("charger_state")->asUint();
@@ -262,7 +261,6 @@ void Users::setup()
     bool charge_start_tracked = charge_tracker.currentlyCharging();
     bool charging = get_charger_state() == 2 || get_charger_state() == 3
                     || (user_slot->get("active")->asBool() && user_slot->get("max_current")->asUint() == 32000);
-
 
     if (charge_start_tracked && !charging) {
         float override_value = get_energy();

@@ -128,7 +128,6 @@ int init_pdf_generator(WebServerRequest *request,
     int table_content_placed = 0;
     int table_lines_to_place = 0;
 
-
     table_lines_to_place = tracked_charges;
 
     while (table_lines_to_place > 0) {

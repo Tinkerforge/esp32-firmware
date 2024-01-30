@@ -153,7 +153,6 @@ void Mqtt::subscribe_with_prefix_mqtt_thread(const String &path, SubscribeCallba
     subscribe_internal(topic, false, callback, forbid_retained);
 }
 
-
 void Mqtt::subscribe(const String &topic, SubscribeCallback callback, bool forbid_retained)
 {
     subscribe_internal(topic, true, callback, forbid_retained);
@@ -191,7 +190,6 @@ void Mqtt::addState(size_t stateIdx, const StateRegistration &reg)
 
 void Mqtt::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg)
 {
-
 }
 
 void Mqtt::addResponse(size_t responseIdx, const ResponseRegistration &reg)

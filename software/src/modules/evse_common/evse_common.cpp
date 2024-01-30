@@ -591,7 +591,6 @@ void EvseCommon::register_urls()
 #if MODULE_AUTOMATION_AVAILABLE()
     if (automation.is_trigger_active(AutomationTriggerID::ChargerState)) {
         event.registerEvent("evse/state", {}, [this](const Config *cfg) {
-
             // we need this since not only iec state changes trigger this api event.
             static uint32_t last_state = 0;
             uint32_t state_now = cfg->get("charger_state")->asUint();
@@ -622,7 +621,6 @@ void EvseCommon::register_urls()
         backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOMATION, automation_current_update.get("current")->asUint());
     }, false); //TODO: should this be an action?
 #endif
-
 }
 
 void EvseCommon::loop()

@@ -230,7 +230,6 @@ struct [[gnu::packed]] bender_write_uid_s {
     uint32swapped_t user_id[5];
 };
 
-
 struct [[gnu::packed]] keba_read_general_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 1000;
@@ -339,16 +338,16 @@ static bender_charge_s *bender_charge, *bender_charge_cpy;
 static bender_hems_s *bender_hems, *bender_hems_cpy;
 static bender_write_uid_s *bender_write_uid, *bender_write_uid_cpy;
 
-
 static keba_read_general_s *keba_read_general, *keba_read_general_cpy;
 static keba_read_charge_s *keba_read_charge, *keba_read_charge_cpy;
 static keba_read_max_s *keba_read_max, *keba_read_max_cpy;
 static keba_write_s *keba_write, *keba_write_cpy;
 
-
 static portMUX_TYPE mtx;
 
-ModbusTcp::ModbusTcp() {}
+ModbusTcp::ModbusTcp()
+{
+}
 
 void ModbusTcp::pre_setup()
 {
@@ -620,7 +619,6 @@ void ModbusTcp::update_bender_regs()
             bender_charge_cpy->charged_energy = fromUint((meter_absolute - meter_start) * 1000);
         }
 #endif
-
     }
 #endif
 

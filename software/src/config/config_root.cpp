@@ -74,7 +74,6 @@ String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Conf
     return result;
 }
 
-
 template<typename T>
 String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource source) {
     ASSERT_MAIN_THREAD();

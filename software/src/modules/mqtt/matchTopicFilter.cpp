@@ -156,7 +156,6 @@ static bool matchWildcards(const char *pTopicName,
     return shouldStopMatching;
 }
 
-
 bool matchTopicFilter( const char * pTopicName,
                        uint16_t topicNameLength,
                        const char * pTopicFilter,

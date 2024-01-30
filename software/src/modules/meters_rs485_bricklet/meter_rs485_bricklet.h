@@ -61,7 +61,6 @@ public:
 
     void changeMeterType(size_t supported_meter_idx);
 
-
     enum class UserDataDone {
         NOT_DONE,
         DONE,
@@ -82,10 +81,12 @@ private:
     TF_RS485 *rs485;
     Config *state;
     uint8_t type_override;
+
 public:
     Config *errors;
     ConfigRoot *sdm630_reset;
     MeterInfo *meter_in_use = nullptr;
+
 private:
     void cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length);
     void cb_read_values(TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t *regs, uint16_t regs_len);

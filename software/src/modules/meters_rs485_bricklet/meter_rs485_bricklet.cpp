@@ -237,7 +237,6 @@ void MeterRS485Bricklet::register_urls(const String &base_url)
 {
 }
 
-
 const RegRead *MeterRS485Bricklet::getNextRead(bool *trigger_fast_read_done, bool *trigger_slow_read_done)
 {
     *trigger_fast_read_done = false;

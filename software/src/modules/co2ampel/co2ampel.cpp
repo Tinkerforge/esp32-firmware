@@ -61,7 +61,6 @@ static bool last_blink = false;
 
 static bool blink_allowed = true;
 
-
 static void touch_position_handler(TF_LCD128x64 *device, uint16_t pressure, uint16_t x,
                                    uint16_t y, uint32_t age, void *user_data) {
     blink_allowed = false;

@@ -140,7 +140,6 @@ void Coredump::register_urls()
             request.sendChunk((char *)buffer + (i == 0 ? 20 : 0), to_send - (i == 0 ? 20 : 0));
         }
 
-
         return request.endChunkedResponse();
     });
 }

@@ -261,10 +261,8 @@ EVSEState platform_get_evse_state(int32_t connectorId)
         case CHARGER_STATE_ERROR:
         default:
             return EVSEState::Faulted;
-
     }
 }
-
 
 // This is the Energy.Active.Import.Register measurand in Wh
 int32_t platform_get_energy(int32_t connectorId)
@@ -703,7 +701,6 @@ float platform_get_raw_meter_value_sdm72v2(int32_t connectorId, SampledValueMeas
     }
     return 0.0f;
 }
-
 
 float platform_get_raw_meter_value(int32_t connectorId, SampledValueMeasurand measurand, SampledValuePhase phase, SampledValueLocation location) {
     update_meter_type();

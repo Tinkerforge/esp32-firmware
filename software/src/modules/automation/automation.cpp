@@ -132,7 +132,6 @@ void Automation::setup()
         }, 0, 1000);
     }
 
-
     initialized = true;
 }
 

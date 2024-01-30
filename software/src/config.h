@@ -70,6 +70,7 @@ enum class ConfigSource {
 struct Config {
     struct ConfString {
         using Slot = ConfStringSlot;
+
     private:
         uint16_t idx;
         Slot *getSlot();
@@ -93,6 +94,7 @@ struct Config {
 
     struct ConfFloat {
         using Slot = ConfFloatSlot;
+
     private:
         uint16_t idx;
         Slot *getSlot();
@@ -116,6 +118,7 @@ struct Config {
 
     struct ConfInt {
         using Slot = ConfIntSlot;
+
     private:
         uint16_t idx;
         Slot *getSlot();
@@ -139,6 +142,7 @@ struct Config {
 
     struct ConfUint {
         using Slot = ConfUintSlot;
+
     private:
         uint16_t idx;
         Slot *getSlot();
@@ -170,6 +174,7 @@ struct Config {
 
     struct ConfArray {
         using Slot = ConfArraySlot;
+
     private:
         uint16_t idx;
         Slot *getSlot();
@@ -195,9 +200,9 @@ struct Config {
 
     struct ConfObject {
         using Slot = ConfObjectSlot;
+
     private:
         uint16_t idx;
-
 
     public:
         static bool slotEmpty(size_t i);
@@ -219,6 +224,7 @@ struct Config {
 
     struct ConfUnion {
         using Slot = ConfUnionSlot;
+
     private:
         uint16_t idx;
         Slot *getSlot();
@@ -242,7 +248,6 @@ struct Config {
 
         ConfUnion &operator=(const ConfUnion &cpy);
     };
-
 
     struct ConfUpdateArray;
     struct ConfUpdateObject;
@@ -277,7 +282,6 @@ struct Config {
         uint8_t tag;
         ConfUpdate &value;
     };
-
 
     struct ConfVariant {
         struct Empty{uint8_t x;};
@@ -470,10 +474,11 @@ struct Config {
         Config::check_enum_template_type<T>();
         return Union(value, (uint8_t) tag, (ConfUnionPrototypeInternal*) prototypes, prototypes_len);
     }
+
 private:
     static Config Union(Config value, uint8_t tag, const ConfUnionPrototypeInternal prototypes[], uint8_t prototypes_len);
-public:
 
+public:
     static ConfigRoot *Null();
 
     static ConfigRoot *Confirm();
@@ -682,6 +687,7 @@ private:
     }
 
     DynamicJsonDocument to_json(const std::vector<String> &keys_to_censor) const;
+
 public:
     size_t fillFloatArray(float *arr, size_t elements);
 
@@ -714,8 +720,10 @@ public:
     ConfigRoot(Config cfg);
 
     ConfigRoot(Config cfg, std::function<String(Config &, ConfigSource)> validator);
+
 private:
     std::function<String(Config &, ConfigSource)> validator;
+
 public:
     bool permit_null_updates = true;
 

@@ -35,6 +35,7 @@ public:
 
     ConfigRoot config;
     ConfigRoot config_in_use;
+
 private:
     // Necessary to not access config_in_use in MQTT thread.
     MqttAutoDiscoveryMode mode;

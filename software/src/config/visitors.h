@@ -299,7 +299,6 @@ struct max_string_length_visitor {
     }
 };
 
-
 struct string_length_visitor {
     size_t operator()(const Config::ConfString &x)
     {
@@ -815,7 +814,6 @@ struct from_update {
 
         return Config::apply_visitor(from_update{&un->value}, x.getVal()->value);
     }
-
 
     const Config::ConfUpdate *update;
 };

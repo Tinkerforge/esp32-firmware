@@ -61,6 +61,7 @@ public:
 
     std::mutex records_mutex;
     std::mutex pdf_mutex;
+
 private:
     bool repair_last(float);
     void repair_charges();

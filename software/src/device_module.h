@@ -96,7 +96,6 @@ public:
         if (tfp == nullptr)
             return false;
 
-
         device_found = true;
 
         int result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, &logger, false);
@@ -122,7 +121,6 @@ public:
             logger.printfln("Failed to initialize %s Bricklet (%d). Disabling %s support.", device_name, result, module_name);
             return false;
         }
-
 
         update_identity(tfp);
         return true;

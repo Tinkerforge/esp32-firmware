@@ -158,7 +158,6 @@ typedef SSIZE_T ssize_t;
 
 #include <arpa/inet.h>
 
-
 #define min(a,b) \
    ({ __typeof__ (a) _a = (a); \
        __typeof__ (b) _b = (b); \
@@ -196,7 +195,6 @@ enum {
 
     OBJ_count,
 };
-
 
 /**
  * Simple dynamic string object. Tries to store a reasonable amount on the
@@ -604,7 +602,6 @@ static struct pdf_object *pdf_find_first_object(struct pdf_doc *pdf,
     return nullptr;
 }
 
-
 static struct pdf_object *pdf_find_next_object(struct pdf_doc *pdf, struct pdf_object *last, int type)
 {
     if (!pdf)
@@ -940,7 +937,6 @@ static uint64_t hash(uint64_t hash, const void *data, size_t len)
     return hash;
 }
 
-
 int pdf_save_file(struct pdf_doc *pdf)
 {
     struct pdf_object *obj;
@@ -994,7 +990,6 @@ int pdf_save_file(struct pdf_doc *pdf)
                 pdf->current_page_id = page_idx;
                 pdf->first_object_index = page_idx;
                 pdf->objects_in_use -= to_delete;
-
             }
         }
     }
@@ -1036,7 +1031,6 @@ int pdf_save_file(struct pdf_doc *pdf)
     }
     if (pdf_save_object(pdf, catalog->index) >= 0)
         xref_count++;
-
 
     /* xref */
     xref_offset = pdf->write_buf_written;
@@ -1090,7 +1084,6 @@ static int pdf_add_stream(struct pdf_doc *pdf, const char *buffer)
 
     return 0;
 }
-
 
 static int utf8_to_utf32(const char *utf8, int len, uint32_t *utf32)
 {
@@ -1857,7 +1850,6 @@ int pdf_add_horizontal_lines(struct pdf_doc *pdf, struct pdf_object *page, float
     dstr_printf(&pdf->scratch_str, "S");
 
     ret = pdf_add_stream(pdf, dstr_data(&pdf->scratch_str));
-
 
     return ret;
 }

@@ -833,7 +833,6 @@ void ChargeTracker::register_urls()
         if (await_result == TaskScheduler::AwaitResult::Timeout)
             return request.send(500, "text/plain", "Failed to generate PDF: Task timed out");
 
-
         {
             char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];
             ChargeStart cs;

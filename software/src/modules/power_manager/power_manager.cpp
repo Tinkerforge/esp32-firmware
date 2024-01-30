@@ -95,7 +95,6 @@ void PowerManager::pre_setup()
         {"phases_wanted", Config::Uint32(0)},
     });
     external_control_update = external_control;
-
 }
 
 void PowerManager::setup()
