@@ -305,7 +305,7 @@ struct string_length_visitor {
     {
         // ArduinoJson will switch to scientific notation >= 1e9.
         // The max length then is -1.123456789e-12 (max. 9 decimal places,
-        // exponents max 12 chars because of FLT_MAX)
+        // exponents max 2 chars because of FLT_MAX)
         return 16;
     }
     size_t operator()(const Config::ConfInt &x)
