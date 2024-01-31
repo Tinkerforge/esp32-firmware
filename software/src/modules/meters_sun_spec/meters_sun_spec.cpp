@@ -480,12 +480,21 @@ void MetersSunSpec::loop()
                 scan_state = ScanState::NextDeviceAddress;
             }
             else {
-                const char *model_name = "Unknown";
+                const char *model_name = nullptr;
 
                 for (size_t i = 0; i < sun_spec_model_specs_length; ++i) {
                     if (model_id == static_cast<uint16_t>(sun_spec_model_specs[i].model_id)) {
                         model_name = sun_spec_model_specs[i].model_name;
                         break;
+                    }
+                }
+
+                if (model_name == nullptr) {
+                    if (model_id >= 64000) {
+                        model_name = "Vendor Specific";
+                    }
+                    else {
+                        model_name = "Unknown";
                     }
                 }
 
