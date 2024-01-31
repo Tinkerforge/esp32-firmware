@@ -504,7 +504,6 @@ interface MetersProps {
 }
 
 interface MetersState {
-    show_plot: boolean;
     states: {[meter_slot: number]: Readonly<API.getType['meters/0/state']>};
     configs_plot: {[meter_slot: number]: MeterConfig};
     configs_table: {[meter_slot: number]: MeterConfig};
@@ -624,7 +623,6 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         super('meters/0/config',
               __("meters.script.save_failed"),
               __("meters.script.reboot_content_changed"), {
-                  show_plot: false,
                   states: {},
                   configs_plot: {},
                   configs_table: {},
@@ -745,7 +743,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 this.pending_live_data.samples[meter_slot].push(...live_extra.samples[meter_slot]);
             }
 
-            if (!this.state.show_plot || this.pending_live_data.timestamps.length >= 5) {
+            if (this.pending_live_data.timestamps.length >= 5) {
                 this.live_data.timestamps = array_append(this.live_data.timestamps, this.pending_live_data.timestamps, 720);
 
                 for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
@@ -757,10 +755,6 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
                 for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
                     this.pending_live_data.samples.push([]);
-
-                    if (this.live_data.samples[meter_slot].length > 0) {
-                        this.set_show_plot(true);
-                    }
                 }
 
                 if (this.state.chart_selected == "live") {
@@ -787,25 +781,12 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
             this.history_data = calculate_history_data(0, history_samples);
 
-            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-                if (this.history_data.samples[meter_slot].length > 0) {
-                    this.set_show_plot(true);
-                    break;
-                }
-            }
-
             if (this.state.chart_selected == "history") {
                 this.update_uplot();
             }
 
             this.update_status_uplot();
         });
-    }
-
-    set_show_plot(show_plot: boolean) {
-        if (this.state.show_plot != show_plot) {
-            this.setState({show_plot: show_plot});
-        }
     }
 
     update_live_cache() {
@@ -841,10 +822,6 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             this.pending_live_data.samples.push([]);
-
-            if (this.live_data.samples[meter_slot].length > 0) {
-                this.set_show_plot(true);
-            }
         }
 
         return true;
@@ -879,13 +856,6 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
         this.history_initialized = true;
         this.history_data = calculate_history_data(payload.offset, payload.samples);
-
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            if (this.history_data.samples[meter_slot].length > 0) {
-                this.set_show_plot(true);
-                break;
-            }
-        }
 
         return true;
     }
@@ -947,8 +917,6 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 status_data.keys.push('meter_' + meter_slot);
                 status_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
                 status_data.values.push(this.history_data.samples[meter_slot]);
-
-                this.props.status_ref.current.set_show(true);
             }
 
             this.props.status_ref.current.uplot_wrapper_ref.current.set_data(status_data);
@@ -986,10 +954,11 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         }
 
         let active_meter_slots = Object.keys(state.configs_table).filter((meter_slot_str) => state.configs_table[parseInt(meter_slot_str)][0] != MeterClassID.None);
+        let show_plot = API.hasFeature("meters");
 
         return (
             <SubPage colClasses="col-xl-10">
-                {state.show_plot ? <><PageHeader title={__("meters.content.meters")}/>
+                {show_plot ? <><PageHeader title={__("meters.content.meters")}/>
 
                 <FormSeparator heading={__("meters.status.power_history")} first={true} colClasses={"justify-content-between align-items-center col"} extraClasses={"pr-0 pr-lg-3"} >
                     <div class="mb-2">
@@ -1017,7 +986,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 </FormSeparator></>
                 : undefined}
 
-                <div hidden={!state.show_plot}>
+                <div hidden={!show_plot}>
                     <UplotWrapper ref={this.uplot_wrapper_live_ref}
                                     id="meters_chart_live"
                                     class="meters-chart pb-3"
@@ -1041,7 +1010,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                     y_max={1500} />
                 </div>
 
-                <ConfigForm id="meters_config_form" title={state.show_plot ? __("meters.content.settings") : __("meters.content.meters")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty} small={state.show_plot}>
+                <ConfigForm id="meters_config_form" title={show_plot ? __("meters.content.settings") : __("meters.content.meters")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty} small={show_plot}>
                     <div class="mb-3">
                         <Table
                             tableTill="lg"
@@ -1396,7 +1365,6 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 }
 
 interface MetersStatusState {
-    show: boolean;
     meter_slot: number,
     meter_configs: {[meter_slot: number]: MeterConfig},
 }
@@ -1418,7 +1386,6 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         super();
 
         this.state = {
-            show: false,
             meter_slot: 0,
         } as any;
 
@@ -1442,7 +1409,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         // want to push them into the uplot graph immediately.
         // This only works if the wrapper component is already created.
         // Hide the form rows to fix any visual bugs instead.
-        let show = util.render_allowed() && state.show && !API.hasFeature("energy_manager");
+        let show = util.render_allowed() && API.hasFeature("meters") && !API.hasFeature("energy_manager");
 
         // As we don't check util.render_allowed(),
         // we have to handle rendering before the web socket connection is established.
@@ -1480,12 +1447,6 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                 </FormRow>
             </>
         );
-    }
-
-    set_show(show: boolean) {
-        if (this.state.show != show) {
-            this.setState({show: show});
-        }
     }
 }
 
