@@ -88,7 +88,7 @@ void MeterPvFaker::setup(const Config &ephemeral_config)
 
         uint32_t illuminance = doc["illuminance"].as<uint32_t>();
         this->update_illuminance(illuminance);
-    }, false);
+    }, Mqtt::Retained::Accept);
 
     meters.declare_value_ids(slot, pv_faker_value_ids, ARRAY_SIZE(pv_faker_value_ids));
 

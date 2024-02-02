@@ -31,31 +31,27 @@ enum class MqttConnectionState {
     ERROR
 };
 
-using SubscribeCallback = std::function<void(const char *, size_t, char *, size_t)>;
-
-struct MqttCommand {
-    String topic;
-    SubscribeCallback callback;
-    bool forbid_retained;
-    bool starts_with_global_topic_prefix;
-    bool subscribed;
-    bool callback_in_main_thread;
-};
-
-struct MqttState {
-    String topic;
-    uint32_t last_send_ms;
-};
-
-struct MqttMessage {
-    String topic;
-    String payload;
-    bool retained;
-};
-
 class Mqtt final : public IAPIBackend
 {
 public:
+    using SubscribeCallback = std::function<void(const char *, size_t, char *, size_t)>;
+
+    enum class Retained : uint8_t {
+        Accept       = 0,
+        IgnoreWarn   = 1,
+        IgnoreSilent = 2,
+    };
+
+    enum class CallbackInThread : uint8_t {
+        Main = 0,
+        Mqtt = 1,
+    };
+
+    enum class AddPrefix {
+        No  = 0,
+        Yes = 1,
+    };
+
     Mqtt(){}
     void pre_setup() override;
     void setup() override;
@@ -67,11 +63,7 @@ public:
     bool publish_with_prefix(const String &path, const String &payload, bool retain = true);
     bool publish(const String &topic, const String &payload, bool retain);
 
-    void subscribe_with_prefix(const String &path, SubscribeCallback callback, bool forbid_retained);
-    void subscribe_with_prefix_mqtt_thread(const String &path, SubscribeCallback callback, bool forbid_retained);
-
-    void subscribe(const String &topic, SubscribeCallback callback, bool forbid_retained);
-    void subscribe_mqtt_thread(const String &topic, SubscribeCallback callback, bool forbid_retained);
+    void subscribe(const String &path, SubscribeCallback &&callback, Retained retained, CallbackInThread callback_in_thread = CallbackInThread::Main, AddPrefix add_prefix = AddPrefix::No);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
@@ -95,13 +87,31 @@ public:
 
     ConfigRoot config_in_use;
 
+private:
+    struct MqttCommand {
+        String topic;
+        SubscribeCallback callback;
+        Retained retained;
+        CallbackInThread callback_in_thread;
+        bool starts_with_global_topic_prefix;
+        bool subscribed;
+    };
+
+    struct MqttState {
+        String topic;
+        uint32_t last_send_ms;
+    };
+
+    struct MqttMessage {
+        String topic;
+        String payload;
+        bool retained;
+    };
+
     std::vector<MqttCommand> commands;
     std::vector<MqttState> states;
 
     size_t backend_idx;
-
-private:
-    void subscribe_internal(const String &path, bool callback_in_main_thread, SubscribeCallback callback, bool forbid_retained);
 
     esp_mqtt_client_handle_t client;
     // Copy prefix to not access config in MQTT thread.

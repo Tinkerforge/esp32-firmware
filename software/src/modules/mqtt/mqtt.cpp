@@ -141,33 +141,28 @@ void Mqtt::pre_setup()
 #endif
 }
 
-void Mqtt::subscribe_with_prefix(const String &path, SubscribeCallback callback, bool forbid_retained)
+void Mqtt::subscribe(const String &path, SubscribeCallback &&callback, Retained retained, CallbackInThread callback_in_thread, AddPrefix add_prefix)
 {
-    String topic = prefix + "/" + path;
-    subscribe_internal(topic, true, callback, forbid_retained);
-}
+    const String *topic;
+    bool starts_with_global_topic_prefix;
+    String local_topic(static_cast<const char *>(nullptr));
 
-void Mqtt::subscribe_with_prefix_mqtt_thread(const String &path, SubscribeCallback callback, bool forbid_retained)
-{
-    String topic = prefix + "/" + path;
-    subscribe_internal(topic, false, callback, forbid_retained);
-}
+    if (add_prefix == AddPrefix::No) {
+        topic = &path;
+        starts_with_global_topic_prefix = path.startsWith(prefix);
+    } else {
+        local_topic.reserve(128);
+        local_topic.concat(prefix);
+        local_topic.concat('/');
+        local_topic.concat(path);
 
-void Mqtt::subscribe(const String &topic, SubscribeCallback callback, bool forbid_retained)
-{
-    subscribe_internal(topic, true, callback, forbid_retained);
-}
+        topic = &local_topic;
+        starts_with_global_topic_prefix = true;
+    }
 
-void Mqtt::subscribe_mqtt_thread(const String &topic, SubscribeCallback callback, bool forbid_retained)
-{
-    subscribe_internal(topic, false, callback, forbid_retained);
-}
+    bool subscribed = esp_mqtt_client_subscribe(client, topic->c_str(), 0) >= 0;
 
-void Mqtt::subscribe_internal(const String &topic, bool callback_in_main_thread, SubscribeCallback callback, bool forbid_retained)
-{
-    bool subscribed = esp_mqtt_client_subscribe(client, topic.c_str(), 0) >= 0;
-
-    this->commands.push_back({topic, callback, forbid_retained, topic.startsWith(prefix), subscribed, callback_in_main_thread});
+    this->commands.push_back({*topic, std::forward<SubscribeCallback>(callback), retained, callback_in_thread, starts_with_global_topic_prefix, subscribed});
 }
 
 void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
@@ -336,12 +331,14 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         if (!matchTopicFilter(topic, topic_len, c.topic.c_str(), c.topic.length()))
             continue;
 
-        if (retain && c.forbid_retained) {
-            logger.printfln("MQTT: Retained messages on topic %s are forbidden. Ignoring retained message (data_len=%u).", c.topic.c_str(), data_len);
+        if (retain && c.retained != Retained::Accept) {
+            if (c.retained == Retained::IgnoreWarn) {
+                logger.printfln("MQTT: Retained messages on topic %s are forbidden. Ignoring retained message (data_len=%u).", c.topic.c_str(), data_len);
+            }
             return;
         }
 
-        if (c.callback_in_main_thread) {
+        if (c.callback_in_thread == CallbackInThread::Main) {
             esp_mqtt_client_disable_receive(client, 100);
             char *topic_cpy = (char *)malloc(topic_len);
             memcpy(topic_cpy, topic, topic_len);
@@ -611,7 +608,7 @@ void Mqtt::register_urls()
                     msg.retained = false;
                     if (automation.trigger_action(AutomationTriggerID::MQTT, &msg, &trigger_action))
                         return;
-                }, !conf.second->get("retain")->asBool());
+                }, conf.second->get("retain")->asBool() ? Retained::Accept : Retained::IgnoreWarn);
                 subscribed_topics.push_back(topic);
             }
         }

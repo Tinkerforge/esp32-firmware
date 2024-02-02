@@ -51,19 +51,17 @@ void MeterMqttMirror::setup(const Config &ephemeral_config)
         mqtt.subscribe(meter_path + "/value_ids",
             [this](const char *topic, size_t topic_len, char *data, size_t data_len) {
                 this->onMessage(topic, topic_len, data, data_len, &MeterMqttMirror::handle_mqtt_value_ids);
-        }, false);
+        }, Mqtt::Retained::Accept);
     } else {
         logger.printfln("meter_mqtt_mirror: Manual mode not yet implemented.");
         return;
     }
 
-    logger.printfln("meter_mqtt_mirror: Please ignore any log messages about ignored retained messages on values.");
-
     // Ignoring retained message. Need fresh data for the meter.
     mqtt.subscribe(values_topic,
         [this](const char *topic, size_t topic_len, char *data, size_t data_len) {
             this->onMessage(topic, topic_len, data, data_len, &MeterMqttMirror::handle_mqtt_values);
-    }, true);
+    }, Mqtt::Retained::IgnoreSilent);
 }
 
 void MeterMqttMirror::onMessage(const char *topic, size_t topic_len, char *data, size_t data_len, void (MeterMqttMirror::*message_handler)(const JsonArrayConst &json_array)) {
