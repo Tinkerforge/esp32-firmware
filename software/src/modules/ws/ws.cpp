@@ -96,9 +96,11 @@ void WS::register_urls()
                     memcpy(buf + buf_used, infix, infix_len);
                     buf_used += infix_len;
 
-                    // Leave suffix_len - 1 bytes free: the first byte overwrites the written \0.
                     // We don't have to null-terminate the buffer because we know buf_used and the buffer will be handled as bytes.
-                    buf_used += reg.config->to_string_except(reg.keys_to_censor, buf + buf_used, buf_size - buf_used - (suffix_len - 1));
+                    // So we only need suffix_len - 1 bytes here:
+                    // ArduinoJSON writes a \0 but we will immediately overwrite it with the first byte of the suffix.
+                    // However this could be the last API state, in this case we need one byte more for the second \n.
+                    buf_used += reg.config->to_string_except(reg.keys_to_censor, buf + buf_used, buf_size - buf_used - suffix_len);
 
                     memcpy(buf + buf_used, suffix, suffix_len);
                     buf_used += suffix_len;
