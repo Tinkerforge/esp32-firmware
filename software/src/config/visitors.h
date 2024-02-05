@@ -350,6 +350,7 @@ struct string_length_visitor {
             sum += schema->key_lengths[i] + 3; // "":
             sum += Config::apply_visitor(string_length_visitor{}, slot->values[i].value);
         }
+        sum += size - 1; // ,
         return sum;
     }
 
