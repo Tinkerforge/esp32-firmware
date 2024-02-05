@@ -26,8 +26,8 @@ TaskScheduler task_scheduler;
 
 static uint64_t last_task_id = 0;
 
-Task::Task(std::function<void(void)> fn, uint64_t task_id, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once) :
-          fn(std::move(fn)),
+Task::Task(std::function<void(void)> &&fn, uint64_t task_id, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once) :
+          fn(std::forward<std::function<void(void)>>(fn)),
           task_id(task_id),
           next_deadline_ms(millis() + first_run_delay_ms),
           delay_ms(delay_ms),
@@ -177,7 +177,7 @@ uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, uint32_t de
 {
     std::lock_guard<std::mutex> l{this->task_mutex};
     uint64_t task_id = ++last_task_id;
-    tasks.emplace(new Task(fn, task_id, delay_ms, 0, true));
+    tasks.emplace(new Task(std::forward<std::function<void(void)>>(fn), task_id, delay_ms, 0, true));
     return task_id;
 }
 
@@ -185,7 +185,7 @@ uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, u
 {
     std::lock_guard<std::mutex> l{this->task_mutex};
     uint64_t task_id = ++last_task_id;
-    tasks.emplace(new Task(fn, task_id, first_delay_ms, delay_ms, false));
+    tasks.emplace(new Task(std::forward<std::function<void(void)>>(fn), task_id, first_delay_ms, delay_ms, false));
     return task_id;
 }
 

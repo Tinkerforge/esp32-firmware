@@ -40,7 +40,7 @@ struct Task {
     bool once;
     bool cancelled;
 
-    Task(std::function<void(void)> fn, uint64_t task_id, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once);
+    Task(std::function<void(void)> &&fn, uint64_t task_id, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once);
 };
 
 bool compare(const std::unique_ptr<Task> &a, const std::unique_ptr<Task> &b);
