@@ -14,7 +14,7 @@ let x = {
             "edit_cert_title": "Edit TLS certificate",
             "cert_name": "Display name",
             "cert_file": "Certificate file",
-            "cert_file_muted": "(PEM format)",
+            "cert_file_muted": "PEM format",
 
             "add_cert_message": /*SFN*/(have: number, max: number) => `${have} of ${max} certificates configured.`/*NF*/,
 

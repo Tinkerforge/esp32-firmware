@@ -252,7 +252,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     />
             </FormRow>
 
-            <FormRow label={__("wifi.content.eap_ca_cert")} label_muted={__("wifi.content.optional_eap_cert_muted")()}>
+            <FormRow label={__("wifi.content.eap_ca_cert")} label_muted={__("wifi.content.optional_eap_cert_muted")(false)}>
                 <InputSelect
                     items={cert_items}
                     value={this.last_peap_ttls_state.ca_cert_id.toString()}
@@ -262,7 +262,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     }}/>
             </FormRow>
 
-            <FormRow label={__("wifi.content.eap_client_cert")} label_muted={__("wifi.content.optional_eap_cert_muted")()}>
+            <FormRow label={__("wifi.content.eap_client_cert")} label_muted={__("wifi.content.optional_eap_cert_muted")(false)}>
                 <InputSelect
                     items={cert_items}
                     value={this.last_peap_ttls_state.client_cert_id.toString()}
@@ -272,7 +272,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     }}/>
             </FormRow>
 
-            <FormRow label={__("wifi.content.eap_client_key")} label_muted={__("wifi.content.optional_eap_cert_muted")()}>
+            <FormRow label={__("wifi.content.eap_client_key")} label_muted={__("wifi.content.optional_eap_cert_muted")(true)}>
                 <InputSelect
                     items={key_items}
                     value={this.last_peap_ttls_state.client_key_id.toString()}
@@ -305,7 +305,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         }
 
         return <>
-            <FormRow label={__("wifi.content.eap_client_cert")} label_muted={__("wifi.content.eap_cert_muted")()}>
+            <FormRow label={__("wifi.content.eap_client_cert")} label_muted={__("wifi.content.eap_cert_muted")(false)}>
                 <InputSelect
                     required={state.wpa_eap_config[0] == EapConfigID.TLS}
                     items={cert_items.filter((v) => v[0] != "-1")}
@@ -317,7 +317,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     }}/>
             </FormRow>
 
-            <FormRow label={__("wifi.content.eap_client_key")} label_muted={__("wifi.content.eap_cert_muted")()}>
+            <FormRow label={__("wifi.content.eap_client_key")} label_muted={__("wifi.content.eap_cert_muted")(true)}>
                 <InputSelect
                     required={state.wpa_eap_config[0] == EapConfigID.TLS}
                     items={cert_items.filter((v) => v[0] != "-1")}
@@ -339,7 +339,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     />
             </FormRow>
 
-            <FormRow label={__("wifi.content.eap_ca_cert")} label_muted={__("wifi.content.optional_eap_cert_muted")()}>
+            <FormRow label={__("wifi.content.eap_ca_cert")} label_muted={__("wifi.content.optional_eap_cert_muted")(false)}>
                 <InputSelect
                     items={cert_items}
                     value={this.last_state.ca_cert_id.toString()}

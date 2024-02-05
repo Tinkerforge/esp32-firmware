@@ -63,11 +63,11 @@ let x = {
             "eap_client_key": "Client key",
             "eap_cert_placeholder": "No certificate",
             "eap_key_placeholder": "No key",
-            "optional_eap_cert_muted": /*FFN*/ () => {
-                return <><a href="#certs">Add certificate</a>; optional</>
+            "optional_eap_cert_muted": /*FFN*/ (is_key: boolean) => {
+                return <><a href="#certs">Add {is_key ? "key" : "certificate"}</a>; optional</>
             } /*NF*/,
-            "eap_cert_muted": /*FFN*/ () => {
-                return <a href="#certs">Add certificate</a>
+            "eap_cert_muted": /*FFN*/ (is_key: boolean) => {
+                return <a href="#certs">Add {is_key ? "key" : "certificate"}</a>
             } /*NF*/,
             "optional": "optional"
         },

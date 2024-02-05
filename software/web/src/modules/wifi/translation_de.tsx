@@ -63,11 +63,11 @@ let x = {
             "eap_client_key": "Client-Schlüssel",
             "eap_cert_placeholder": "Kein Zertifikat",
             "eap_key_placeholder": "Kein Schlüssel",
-            "optional_eap_cert_muted": /*FFN*/ () => {
-                return <><a href="#certs">Zertifikat hinzufügen</a>; optional</>
+            "optional_eap_cert_muted": /*FFN*/ (is_key: boolean) => {
+                return <><a href="#certs">{is_key ? "Schlüssel" : "Zertifikat"} hinzufügen</a>; optional</>
             } /*NF*/,
-            "eap_cert_muted": /*FFN*/ () => {
-                return <a href="#certs">Zertifikat hinzufügen</a>
+            "eap_cert_muted": /*FFN*/ (is_key: boolean) => {
+                return <a href="#certs">{is_key ? "Schlüssel" : "Zertifikat"} hinzufügen</a>
             } /*NF*/,
             "optional": "optional"
         },
