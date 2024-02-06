@@ -1,0 +1,53 @@
+From 4123f20682276f8d9ab4db2907160df2e6fdf835 Mon Sep 17 00:00:00 2001
+From: Erik Fleckstein <erik@tinkerforge.com>
+Date: Tue, 6 Feb 2024 16:29:49 +0100
+Subject: [PATCH] WifiClientSecure: Don't break if PSK cyphersuites are
+ disabled.
+
+---
+ libraries/WiFiClientSecure/src/ssl_client.cpp | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/libraries/WiFiClientSecure/src/ssl_client.cpp b/libraries/WiFiClientSecure/src/ssl_client.cpp
+index a8b570a8..41ac4428 100644
+--- a/libraries/WiFiClientSecure/src/ssl_client.cpp
++++ b/libraries/WiFiClientSecure/src/ssl_client.cpp
+@@ -20,10 +20,6 @@
+ #include "esp_crt_bundle.h"
+ #include "WiFi.h"
+ 
+-#if !defined(MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED) && !defined(MBEDTLS_KEY_EXCHANGE_SOME_PSK_ENABLED)
+-#  warning "Please call `idf.py menuconfig` then go to Component config -> mbedTLS -> TLS Key Exchange Methods -> Enable pre-shared-key ciphersuites and then check `Enable PSK based cyphersuite modes`. Save and Quit."
+-#else
+-
+ const char *pers = "esp32-tls";
+ 
+ static int _handle_error(int err, const char * function, int line)
+@@ -194,6 +190,10 @@ int start_ssl_client(sslclient_context *ssl_client, const IPAddress& ip, uint32_
+             return handle_error(ret);
+         }
+     } else if (pskIdent != NULL && psKey != NULL) {
++#if !defined(MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED) && !defined(MBEDTLS_KEY_EXCHANGE_SOME_PSK_ENABLED)
++        log_e("PSK based cyphersuite modes not supported");
++        return -1;
++#else
+         log_v("Setting up PSK");
+         // convert PSK from hex to binary
+         if ((strlen(psKey) & 1) != 0 || strlen(psKey) > 2*MBEDTLS_PSK_MAX_LEN) {
+@@ -223,6 +223,7 @@ int start_ssl_client(sslclient_context *ssl_client, const IPAddress& ip, uint32_
+             log_e("mbedtls_ssl_conf_psk returned %d", ret);
+             return handle_error(ret);
+         }
++#endif
+     } else {
+         return -1;
+     }
+@@ -551,5 +552,3 @@ bool verify_ssl_dn(sslclient_context *ssl_client, const char* domain_name)
+ 
+     return false;
+ }
+-#endif
+-
+-- 
+2.43.0
+
