@@ -432,7 +432,18 @@ int WebServerRequest::receive(char *buf, size_t buf_len)
 {
     if (buf_len < contentLength())
         return -1;
-    return httpd_req_recv(req, buf, contentLength());
+
+    size_t bytes_left = contentLength();
+    while (bytes_left != 0) {
+        int read = httpd_req_recv(req, buf, bytes_left);
+        if (read <= 0) {
+            return read;
+        }
+        bytes_left -= read;
+        buf += read;
+    }
+
+    return contentLength();
 }
 
 WebServerRequest::WebServerRequest(httpd_req_t *req, bool keep_alive) : req(req)
