@@ -127,7 +127,7 @@ def generate_module_dependencies_header(info_path, header_path, backend_module, 
             known_keys = set(['requires', 'optional', 'conflicts', 'after', 'before', 'modulelist'])
             unknown_keys = set(config['Dependencies'].keys()).difference(known_keys)
             if len(unknown_keys) > 0:
-                print(f"Error: '{backend_module.under}/module.ini contains unknown keys {unknown_keys}  ", file=sys.stderr)
+                print(f"Dependency error: '{backend_module.under}/module.ini contains unknown keys {unknown_keys}  ", file=sys.stderr)
                 sys.exit(1)
 
             requires = config['Dependencies'].get('Requires', "")
@@ -140,9 +140,9 @@ def generate_module_dependencies_header(info_path, header_path, backend_module, 
                 req_module, _ = find_backend_module_space(backend_modules, req_name)
                 if not req_module:
                     if '_'.join(req_name.split(' ')).upper() in all_mods_upper:
-                        print(f"Error: Module '{module_name}' requires module '{req_name}', which is available but not enabled for this environment.", file=sys.stderr)
+                        print(f"Dependency error: Module '{module_name}' requires module '{req_name}', which is available but not enabled for this environment.", file=sys.stderr)
                     else:
-                        print(f"Error: Module '{module_name}' requires module '{req_name}', which does not exist.", file=sys.stderr)
+                        print(f"Dependency error: Module '{module_name}' requires module '{req_name}', which does not exist.", file=sys.stderr)
                     sys.exit(1)
                 required_mods.append(req_module)
 
@@ -154,15 +154,18 @@ def generate_module_dependencies_header(info_path, header_path, backend_module, 
                 if len(optional) != old_len:
                     print(f"List of optional modules for module '{module_name}' contains duplicates.", file=sys.stderr)
                 for opt_name in optional:
+                    if opt_name == module_name:
+                        print(f"Dependency error: Module '{module_name}' cannot list itself as optional.", file=sys.stderr)
+                        sys.exit(1)
                     opt_name_upper = '_'.join(opt_name.split(' ')).upper()
                     opt_module, _ = find_backend_module_space(backend_modules, opt_name)
                     if not opt_module:
                         if not allow_nonexist and opt_name_upper not in all_mods_upper:
-                            print(f"Error: Optional module '{opt_name}' wanted by module '{module_name}' does not exist.", file=sys.stderr)
+                            print(f"Dependency error: Optional module '{opt_name}' wanted by module '{module_name}' does not exist.", file=sys.stderr)
                             sys.exit(1)
                     else:
                         if opt_module in required_mods:
-                            print(f"Error: Optional module '{opt_name}' wanted by module '{module_name}' is already listed as required.", file=sys.stderr)
+                            print(f"Dependency error: Optional module '{opt_name}' wanted by module '{module_name}' is already listed as required.", file=sys.stderr)
                             sys.exit(1)
                         available_optional_mods.append(opt_module)
                     all_optional_mods_upper.append(opt_name_upper)
@@ -175,9 +178,12 @@ def generate_module_dependencies_header(info_path, header_path, backend_module, 
                 if len(conflicts) != old_len:
                     print(f"List of conflicting modules for module '{module_name}' contains duplicates.", file=sys.stderr)
                 for conflict_name in conflicts:
+                    if conflict_name == module_name:
+                        print(f"Dependency error: Module '{module_name}' cannot list itself as conflicting.", file=sys.stderr)
+                        sys.exit(1)
                     conflict_module, _ = find_backend_module_space(backend_modules, conflict_name)
                     if conflict_module:
-                        print(f"Error: Module '{module_name}' conflicts with module '{conflict_name}'.", file=sys.stderr)
+                        print(f"Dependency error: Module '{module_name}' conflicts with module '{conflict_name}'.", file=sys.stderr)
                         sys.exit(1)
 
             if backend_module:
@@ -191,13 +197,16 @@ def generate_module_dependencies_header(info_path, header_path, backend_module, 
                 if len(after) != old_len:
                     print(f"List of 'After' modules for module '{module_name}' contains duplicates.", file=sys.stderr)
                 for after_name in after:
+                    if after_name == module_name:
+                        print(f"Dependency error: Module '{module_name}' cannot require to be loaded after itself.", file=sys.stderr)
+                        sys.exit(1)
                     _, index = find_backend_module_space(backend_modules, after_name)
                     if index < 0:
                         if not allow_nonexist and '_'.join(after_name.split(' ')).upper() not in all_mods_upper:
-                            print(f"Error: Module '{after_name}' in 'After' list of module '{module_name}' does not exist.", file=sys.stderr)
+                            print(f"Dependency error: Module '{after_name}' in 'After' list of module '{module_name}' does not exist.", file=sys.stderr)
                             sys.exit(1)
                     elif index > cur_module_index:
-                        print(f"Error: Module '{module_name}' must be loaded after module '{after_name}'.", file=sys.stderr)
+                        print(f"Dependency error: Module '{module_name}' must be loaded after module '{after_name}'.", file=sys.stderr)
                         sys.exit(1)
 
             before = config['Dependencies'].get('Before')
@@ -208,13 +217,16 @@ def generate_module_dependencies_header(info_path, header_path, backend_module, 
                 if len(before) != old_len:
                     print(f"List of 'Before' modules for module '{module_name}' contains duplicates.", file=sys.stderr)
                 for before_name in before:
+                    if before_name == module_name:
+                        print(f"Dependency error: Module '{module_name}' cannot require to be loaded before itself.", file=sys.stderr)
+                        sys.exit(1)
                     _, index = find_backend_module_space(backend_modules, before_name)
                     if index < 0:
                         if not allow_nonexist and '_'.join(before_name.split(' ')).upper() not in all_mods_upper:
-                            print(f"Error: Module '{before_name}' in 'Before' list of module '{module_name}' does not exist.", file=sys.stderr)
+                            print(f"Dependency error: Module '{before_name}' in 'Before' list of module '{module_name}' does not exist.", file=sys.stderr)
                             sys.exit(1)
                     elif index < cur_module_index:
-                        print(f"Error: Module '{module_name}' must be loaded before module '{before_name}'.", file=sys.stderr)
+                        print(f"Dependency error: Module '{module_name}' must be loaded before module '{before_name}'.", file=sys.stderr)
                         sys.exit(1)
 
             dep_mods = required_mods + available_optional_mods
@@ -401,7 +413,7 @@ def find_backend_module_space(backend_modules, name_space):
     name_upper = '_'.join(name_space.split(' ')).upper()
     for backend_module in backend_modules:
         if backend_module.upper == name_upper:
-            print(f"Error: Encountered incorrectly capitalized backend module '{name_space}'", file=sys.stderr)
+            print(f"Dependency error: Encountered incorrectly capitalized backend module '{name_space}'", file=sys.stderr)
             sys.exit(1)
 
     return None, -1
