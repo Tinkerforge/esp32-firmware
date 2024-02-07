@@ -269,7 +269,7 @@ void MetersSunSpec::loop()
 
             scan_state = ScanState::Reading;
 
-            modbus.readHreg(scan_host_address, static_cast<uint16_t>(scan_read_address), &scan_read_buffer[scan_read_index], static_cast<uint16_t>(read_chunk_size),
+            uint16_t rc = modbus.readHreg(scan_host_address, static_cast<uint16_t>(scan_read_address), &scan_read_buffer[scan_read_index], static_cast<uint16_t>(read_chunk_size),
             [this, cookie, read_chunk_size](Modbus::ResultCode result, uint16_t transactionId, void *data) -> bool {
                 if (scan_state != ScanState::Reading || cookie != scan_read_cookie) {
                     return true;
@@ -319,6 +319,18 @@ void MetersSunSpec::loop()
 
                 return true;
             }, scan_device_address);
+
+            if (rc == 0) {
+                if (scan_read_retries > 0) {
+                    scan_printfln("Read error, retrying");
+
+                    --scan_read_retries;
+                    scan_state = ScanState::ReadNext;
+                } else {
+                    scan_read_result = Modbus::ResultCode::EX_CONNECTION_LOST; // abuse this unused error code to report this error
+                    scan_state = scan_read_state;
+                }
+            }
         }
 
         break;
@@ -358,13 +370,7 @@ void MetersSunSpec::loop()
         else {
             scan_printfln("Could not read SunSpec ID (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
 
-            if (scan_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND ||
-                (scan_read_result == Modbus::ResultCode::EX_TIMEOUT && scan_read_retries <= 0)) {
-                scan_state = ScanState::NextDeviceAddress;
-            }
-            else {
-                scan_state = ScanState::NextBaseAddress;
-            }
+            scan_state = scan_get_next_state_after_read_error();
         }
 
         break;
@@ -403,12 +409,8 @@ void MetersSunSpec::loop()
                 scan_read_state = ScanState::ReadCommonModelHeaderDone;
                 scan_state = ScanState::Read;
             }
-            else if (scan_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND ||
-                     (scan_read_result == Modbus::ResultCode::EX_TIMEOUT && scan_read_retries <= 0)) {
-                scan_state = ScanState::NextDeviceAddress;
-            }
             else {
-                scan_state = ScanState::NextBaseAddress;
+                scan_state = scan_get_next_state_after_read_error();
             }
         }
 
@@ -449,13 +451,7 @@ void MetersSunSpec::loop()
         else {
             scan_printfln("Could not read Common Model block (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
 
-            if (scan_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND ||
-                (scan_read_result == Modbus::ResultCode::EX_TIMEOUT && scan_read_retries <= 0)) {
-                scan_state = ScanState::NextDeviceAddress;
-            }
-            else {
-                scan_state = ScanState::NextBaseAddress;
-            }
+            scan_state = scan_get_next_state_after_read_error();
         }
 
         break;
@@ -508,13 +504,7 @@ void MetersSunSpec::loop()
         else {
             scan_printfln("Could not read Standard Model header (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
 
-            if (scan_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND ||
-                (scan_read_result == Modbus::ResultCode::EX_TIMEOUT && scan_read_retries <= 0)) {
-                scan_state = ScanState::NextDeviceAddress;
-            }
-            else {
-                scan_state = ScanState::NextBaseAddress;
-            }
+            scan_state = scan_get_next_state_after_read_error();
         }
 
         break;
@@ -580,6 +570,16 @@ const Config * MetersSunSpec::get_state_prototype()
 const Config * MetersSunSpec::get_errors_prototype()
 {
     return Config::Null();
+}
+
+MetersSunSpec::ScanState MetersSunSpec::scan_get_next_state_after_read_error() {
+    if (scan_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND ||
+        (scan_read_result == Modbus::ResultCode::EX_TIMEOUT && scan_read_retries <= 0) ||
+        (scan_read_result == Modbus::ResultCode::EX_CONNECTION_LOST && scan_read_retries <= 0)) {
+        return ScanState::NextDeviceAddress;
+    }
+
+    return ScanState::NextBaseAddress;
 }
 
 void MetersSunSpec::scan_flush_log()

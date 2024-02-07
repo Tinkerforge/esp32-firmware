@@ -76,6 +76,7 @@ public:
         ReportStandardModelResult,
     };
 
+    ScanState scan_get_next_state_after_read_error();
     void scan_flush_log();
     [[gnu::format(__printf__, 2, 3)]] void scan_printfln(const char *fmt, ...);
 
