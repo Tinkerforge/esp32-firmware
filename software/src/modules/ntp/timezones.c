@@ -1,5 +1,5 @@
 /*
-2023d;2024-01-09T10:00:36.861407
+2024a;2024-02-07T12:45:14.672637
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -668,7 +668,7 @@ static const char * const Asia_keys[] = {
 
 static const TableValue Asia_vals[] = {
     {true, {"<+03>-3"}},
-    {true, {"<+06>-6"}},
+    {true, {"<+05>-5"}},
     {true, {"<+03>-3"}},
     {true, {"<+12>-12"}},
     {true, {"<+05>-5"}},
@@ -735,7 +735,7 @@ static const TableValue Asia_vals[] = {
     {true, {"WIB-7"}},
     {true, {"KST-9"}},
     {true, {"<+03>-3"}},
-    {true, {"<+06>-6"}},
+    {true, {"<+05>-5"}},
     {true, {"<+05>-5"}},
     {true, {"<+0630>-6:30"}},
     {true, {"<+03>-3"}},
