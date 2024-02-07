@@ -159,14 +159,14 @@ bool platform_ws_connected(void *ctx)
     return tf_websocket_client_is_connected(client);
 }
 
-void platform_ws_send(void *ctx, const char *buf, size_t buf_len)
+bool platform_ws_send(void *ctx, const char *buf, size_t buf_len)
 {
-    tf_websocket_client_send_text(client, buf, buf_len, pdMS_TO_TICKS(1000));
+    return tf_websocket_client_send_text(client, buf, buf_len, pdMS_TO_TICKS(10), pdMS_TO_TICKS(1000)) == buf_len;
 }
 
-void platform_ws_send_ping(void *ctx)
+bool platform_ws_send_ping(void *ctx)
 {
-    tf_websocket_client_send_ping(client, pdMS_TO_TICKS(1000));
+    return tf_websocket_client_send_ping(client, pdMS_TO_TICKS(1000)) >= 0;
 }
 
 void platform_ws_register_receive_callback(void *ctx, void (*cb)(char *, size_t, void *), void *user_data)

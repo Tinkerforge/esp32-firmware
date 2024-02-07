@@ -581,7 +581,7 @@ static esp_err_t tf_websocket_client_recv(tf_websocket_client_handle_t client)
     return ESP_OK;
 }
 
-static int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t timeout);
+static int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
 
 static int tf_websocket_client_send_close(tf_websocket_client_handle_t client, int code, const char *additional_data, int total_len, TickType_t timeout);
 
@@ -779,7 +779,7 @@ static int tf_websocket_client_send_close(tf_websocket_client_handle_t client, i
         *code_network_order = htons(code);
         memcpy(close_status_data + 2, additional_data, total_len - 2);
     }
-    int ret = tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_CLOSE, close_status_data, total_len, timeout);
+    int ret = tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_CLOSE, close_status_data, total_len, timeout, timeout);
     free(close_status_data);
     return ret;
 }
@@ -832,26 +832,26 @@ esp_err_t tf_websocket_client_close(tf_websocket_client_handle_t client, TickTyp
     return tf_websocket_client_close_with_optional_body(client, false, 0, NULL, 0, timeout);
 }
 
-int tf_websocket_client_send_text(tf_websocket_client_handle_t client, const char *data, int len, TickType_t timeout)
+int tf_websocket_client_send_text(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout)
 {
-    return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_TEXT, (const uint8_t *)data, len, timeout);
+    return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_TEXT, (const uint8_t *)data, len, lock_timeout, write_timeout);
 }
 
-int tf_websocket_client_send(tf_websocket_client_handle_t client, const char *data, int len, TickType_t timeout)
+int tf_websocket_client_send(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout)
 {
-    return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_BINARY, (const uint8_t *)data, len, timeout);
+    return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_BINARY, (const uint8_t *)data, len, lock_timeout, write_timeout);
 }
 
-int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char *data, int len, TickType_t timeout)
+int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout)
 {
-    return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_BINARY, (const uint8_t *)data, len, timeout);
+    return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_BINARY, (const uint8_t *)data, len, lock_timeout, write_timeout);
 }
 
 int tf_websocket_client_send_ping(tf_websocket_client_handle_t client, TickType_t timeout) {
-    return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_PING | WS_TRANSPORT_OPCODES_FIN, NULL, 0, timeout);
+    return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_PING | WS_TRANSPORT_OPCODES_FIN, NULL, 0, timeout, timeout);
 }
 
-static int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t timeout)
+static int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t lock_timeout, TickType_t write_timeout)
 {
     int need_write = len;
     int wlen = 0, widx = 0;
@@ -863,8 +863,8 @@ static int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t cli
         return ESP_FAIL;
     }
 
-    if (xSemaphoreTakeRecursive(client->lock, timeout) != pdPASS) {
-        ESP_LOGE(TAG, "Could not lock ws-client within %d timeout", timeout);
+    if (xSemaphoreTakeRecursive(client->lock, lock_timeout) != pdPASS) {
+        ESP_LOGE(TAG, "Could not lock ws-client within %d timeout", lock_timeout);
         return ESP_FAIL;
     }
 
@@ -887,7 +887,7 @@ static int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t cli
         memcpy(client->tx_buffer, data + widx, need_write);
         // send with ws specific way and specific opcode
         wlen = esp_transport_ws_send_raw(client->transport, current_opcode, (char *)client->tx_buffer, need_write,
-                                        (timeout==portMAX_DELAY)? -1 : timeout * portTICK_PERIOD_MS);
+                                        (write_timeout==portMAX_DELAY)? -1 : write_timeout * portTICK_PERIOD_MS);
         if (wlen < 0 || (wlen == 0 && need_write != 0)) {
             ret = wlen;
             ESP_LOGE(TAG, "Network error: esp_transport_write() returned %d, errno=%d", ret, errno);

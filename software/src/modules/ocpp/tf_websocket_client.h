@@ -183,7 +183,7 @@ esp_err_t tf_websocket_client_destroy(tf_websocket_client_handle_t client);
  *     - Number of data was sent
  *     - (-1) if any errors
  */
-int tf_websocket_client_send(tf_websocket_client_handle_t client, const char *data, int len, TickType_t timeout);
+int tf_websocket_client_send(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
 
 /**
  * @brief      Write binary data to the WebSocket connection (data send with WS OPCODE=02, i.e. binary)
@@ -197,7 +197,7 @@ int tf_websocket_client_send(tf_websocket_client_handle_t client, const char *da
  *     - Number of data was sent
  *     - (-1) if any errors
  */
-int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char *data, int len, TickType_t timeout);
+int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
 
 /**
  * @brief      Write textual data to the WebSocket connection (data send with WS OPCODE=01, i.e. text)
@@ -211,7 +211,7 @@ int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char
  *     - Number of data was sent
  *     - (-1) if any errors
  */
-int tf_websocket_client_send_text(tf_websocket_client_handle_t client, const char *data, int len, TickType_t timeout);
+int tf_websocket_client_send_text(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
 
 /**
  * @brief      Close the WebSocket connection in a clean way
