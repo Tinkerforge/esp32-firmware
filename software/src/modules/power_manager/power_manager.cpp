@@ -197,3 +197,8 @@ void PowerManager::set_config_error(uint32_t config_error_mask)
 
     energy_manager.set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
 }
+
+void PowerManager::set_external_control_phases_wanted(uint32_t phases_wanted)
+{
+    external_control.get("phases_wanted")->updateUint(phases_wanted);
+}

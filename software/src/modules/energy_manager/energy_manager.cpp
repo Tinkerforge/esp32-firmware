@@ -463,6 +463,15 @@ void EnergyManager::setup()
         return;
     }
 
+    // If external control is enabled, assume that the last requested amount of phases
+    // is whatever the contactor is switched to at the moment, in order to preserve
+    // that across a reboot. This will still fail on a power cycle or bricklet update,
+    // which set the contactor back to single phase.
+    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+        uint32_t phases_wanted = is_3phase ? 3 : 1;
+        power_manager.set_external_control_phases_wanted(phases_wanted);
+    }
+
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_energy();
     }, EM_TASK_DELAY_MS, EM_TASK_DELAY_MS);

@@ -73,6 +73,8 @@ public:
 
     void set_config_error(uint32_t config_error_mask);
 
+    void set_external_control_phases_wanted(uint32_t phases_wanted);
+
 private:
     ConfigRoot state;
     ConfigRoot low_level_state;
