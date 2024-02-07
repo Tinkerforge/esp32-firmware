@@ -875,7 +875,7 @@ void platform_update_connector_state(int32_t connector_id,
                                      uint32_t tag_deadline,
                                      uint32_t cable_deadline,
                                      int32_t txn_id,
-                                     time_t transaction_confirmed_timestamp,
+                                     uint64_t transaction_confirmed_id,
                                      time_t transaction_start_time,
                                      uint32_t current_allowed,
                                      bool txn_with_invalid_id,
@@ -892,7 +892,7 @@ void platform_update_connector_state(int32_t connector_id,
     ocpp.state.get("tag_timeout")->updateUint(tag_deadline == 0 ? 0xFFFFFFFF : (tag_deadline - millis()));
     ocpp.state.get("cable_timeout")->updateUint(cable_deadline == 0 ? 0xFFFFFFFF : (cable_deadline - millis()));
     ocpp.state.get("txn_id")->updateInt(txn_id);
-    ocpp.state.get("txn_confirmed_time")->updateInt((int32_t)transaction_confirmed_timestamp);
+    ocpp.state.get("txn_confirmed_time")->updateInt((uint32_t)transaction_confirmed_id);
     ocpp.state.get("txn_start_time")->updateInt((int32_t)transaction_start_time);
     ocpp.state.get("current")->updateUint(current_allowed);
     ocpp.state.get("txn_with_invalid_id")->updateBool(txn_with_invalid_id);
