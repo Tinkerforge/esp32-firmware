@@ -59,8 +59,8 @@ class Entity:
     availability_path: str
     availability_yes: str
     availability_no: str
-    static_info_generic: str
-    static_info_homeassistant: str
+    static_info_generic: dict
+    static_info_homeassistant: dict
 
     def get_json_len(self):
         return max(len(self.name_de), len(self.name_en)) + len(self.object_id) + len(self.path) + max(len(self.get_static_info_generic_str()), len(self.get_static_info_homeassistant_str()))
@@ -73,7 +73,7 @@ class Entity:
         return "\"" + json.dumps(self.static_info_generic).strip().lstrip("{").rstrip("}").replace('"', '\\"') + "\""
 
     def get_static_info_homeassistant_str(self):
-        return "\"" + json.dumps(self.static_info_generic | self.static_info_homeassistant).strip().lstrip("{").rstrip("}").replace('"', '\\"') + "\""
+        return "\"" + json.dumps({**self.static_info_generic, **self.static_info_homeassistant}).strip().lstrip("{").rstrip("}").replace('"', '\\"') + "\""
 
 topic_template = """    {{
         .feature = "{feature}",
