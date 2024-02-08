@@ -180,9 +180,6 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                         <FormRow label={__("ocpp.content.txn_id")}>
                             <InputText value={state.state.txn_id == 0x7FFFFFFF ?  __("ocpp.content.no_transaction_running") : state.state.txn_id} />
                         </FormRow>
-                        <FormRow label={__("ocpp.content.txn_confirmed_time")}>
-                            <InputText value={util.timestamp_sec_to_date(state.state.txn_confirmed_time, __("ocpp.content.no_transaction_running"))} />
-                        </FormRow>
                         <FormRow label={__("ocpp.content.txn_start_time")}>
                             <InputText value={util.timestamp_sec_to_date(state.state.txn_start_time, __("ocpp.content.no_transaction_running"))} />
                         </FormRow>

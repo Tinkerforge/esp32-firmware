@@ -61,7 +61,6 @@ void Ocpp::pre_setup()
         {"tag_timeout", Config::Uint32(0)},
         {"cable_timeout", Config::Uint32(0)},
         {"txn_id", Config::Int32(0)},
-        {"txn_confirmed_time", Config::Int32(0)},
         {"txn_start_time", Config::Int32(0)},
         {"current", Config::Uint32(0)},
         {"txn_with_invalid_id", Config::Bool(false)},

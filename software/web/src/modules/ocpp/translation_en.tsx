@@ -48,7 +48,6 @@ let x = {
             "tag_timeout": "Tag timeout",
             "cable_timeout": "Cable timeout",
             "txn_id": "Transaction ID",
-            "txn_confirmed_time": "Transaction confirmed since",
             "txn_start_time": "Transaction start time",
             "current": "Charge current in transaction",
             "txn_with_invalid_id": "Transaction with invalid ID",

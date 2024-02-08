@@ -48,7 +48,6 @@ let x = {
             "tag_timeout": "Tag-Timeout",
             "cable_timeout": "Kabel-Timeout",
             "txn_id": "Transaktions-ID",
-            "txn_confirmed_time": "Transaktion bestätigt seit",
             "txn_start_time": "Transaktions-Startzeit",
             "current": "Ladestrom während Transaktion",
             "txn_with_invalid_id": "Transaktion mit ungültiger ID",

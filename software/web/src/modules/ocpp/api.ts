@@ -21,7 +21,6 @@ export interface state {
     tag_timeout: number;
     cable_timeout: number;
     txn_id: number;
-    txn_confirmed_time: number;
     txn_start_time: number;
     current: number;
     txn_with_invalid_id: boolean;
