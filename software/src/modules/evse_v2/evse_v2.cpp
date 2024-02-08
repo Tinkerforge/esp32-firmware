@@ -873,7 +873,7 @@ void EVSEV2::update_all_data()
 
     if (error_state_changed) {
         if (error_state != 0) {
-            logger.printfln("%u EVSE: Error state %d", uptime, error_state);
+            logger.printfln("EVSE: Error state %d", error_state);
         } else {
             logger.printfln("EVSE: Error state cleared");
         }
