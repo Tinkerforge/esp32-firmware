@@ -41,6 +41,22 @@ interface InputFloatProps extends InputFloatReadonlyProps {
     showMinMax?: boolean;
 }
 
+function fractional_number_localization_check() {
+    if (navigator.userAgent.indexOf("Gecko/") < 0) {
+        return false;
+    }
+
+    // Brute-force test if numbers with commas are accepted in input fields.
+    // Write a comma to the value and if it is empty afterwards, commas are not accepted.
+    let input_elem = document.createElement("input");
+    input_elem.type = "number";
+    input_elem.value = "1,2";
+
+    return input_elem.value != "";
+}
+
+let fractional_numbers_require_localization = fractional_number_localization_check();
+
 export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
     const id = !props.idContext ? util.useId() : useContext(props.idContext);
 
@@ -61,7 +77,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
     // Unfortunately, setting the value to a localized number (i.e. with , instead of . for German)
     // does not raise an exception, instead only a warning on the console is shown.
     // So to make everyone happy, we use user agent detection.
-    let propValue = navigator.userAgent.indexOf("Gecko/") >= 0
+    let propValue = fractional_numbers_require_localization
         ? util.toLocaleFixed(props.value / pow10, props.digits)
         : (props.value / pow10).toFixed(props.digits);
 
