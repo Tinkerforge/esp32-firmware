@@ -132,16 +132,17 @@ void API::setup()
     }, 250, 250);
 }
 
-void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action) {
+void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> &&callback, bool is_action) {
+    // The lambda's by-copy capture creates a safe copy of the callback.
     this->addCommand(path, config, keys_to_censor_in_debug_report, [callback](String &){callback();}, is_action);
 }
 
-void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> callback, bool is_action)
+void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
 {
     if (already_registered(path, "command"))
         return;
 
-    commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action, 0, nullptr});
+    commands.push_back({path, config, std::forward<std::function<void(String &)>>(callback), keys_to_censor_in_debug_report, is_action, 0, nullptr});
     auto commandIdx = commands.size() - 1;
 
     for (auto *backend : this->backends) {
@@ -215,12 +216,12 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initi
     return true;
 }
 
-void API::addRawCommand(const String &path, std::function<String(char *, size_t)> callback, bool is_action)
+void API::addRawCommand(const String &path, std::function<String(char *, size_t)> &&callback, bool is_action)
 {
     if (already_registered(path, "raw command"))
         return;
 
-    raw_commands.push_back({path, callback, is_action});
+    raw_commands.push_back({path, std::forward<std::function<String(char *, size_t)>>(callback), is_action});
     auto rawCommandIdx = raw_commands.size() - 1;
 
     for (auto *backend : this->backends) {
@@ -248,12 +249,12 @@ void API::callResponse(ResponseRegistration &reg, char *payload, size_t len, ICh
     reg.callback(response, response_ownership, response_owner_id);
 }
 
-void API::addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback)
+void API::addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback)
 {
     if (already_registered(path, "response"))
         return;
 
-    responses.push_back({path, config, callback, keys_to_censor_in_debug_report});
+    responses.push_back({path, config, std::forward<std::function<void(IChunkedResponse *, Ownership *, uint32_t)>>(callback), keys_to_censor_in_debug_report});
     auto responseIdx = responses.size() - 1;
 
     for (auto *backend : this->backends) {
@@ -314,10 +315,10 @@ void API::removeAllConfig()
 }
 
 /*
-void API::addTemporaryConfig(String path, Config *config, std::initializer_list<String> keys_to_censor, std::function<void(void)> callback)
+void API::addTemporaryConfig(String path, Config *config, std::initializer_list<String> keys_to_censor, std::function<void(void)> &&callback)
 {
     addState(path, config, keys_to_censor);
-    addCommand(path + "_update", config, callback);
+    addCommand(path + "_update", config, std::forward<std::function<void(void)>>(callback));
 }
 */
 

@@ -100,14 +100,14 @@ public:
     const Config *getState(const String &path, bool log_if_not_found = true);
 
     void addFeature(const char *name);
-    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void()> callback, bool is_action);
-    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> callback, bool is_action);
+    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
+    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action);
 
     void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {}, bool low_latency = false);
     bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {});
-    //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<String> keys_to_censor, std::function<void(void)> callback);
-    void addRawCommand(const String &path, std::function<String(char *, size_t)> callback, bool is_action);
-    void addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback);
+    //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<String> keys_to_censor, std::function<void(void)> &&callback);
+    void addRawCommand(const String &path, std::function<String(char *, size_t)> &&callback, bool is_action);
+    void addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback);
 
     // TODO Remove deprecated functions. Marked as deprecated on 2024-01-29.
     template<typename T>
