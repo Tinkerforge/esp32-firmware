@@ -826,4 +826,6 @@ allowed_missing = set([
     "default_current",
     "default_mode",
     "drawing_power",
+    "ConcurrentTx",
+    "last_tag_reason"
 ])
