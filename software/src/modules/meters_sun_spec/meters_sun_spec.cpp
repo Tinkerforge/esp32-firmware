@@ -62,11 +62,17 @@ void MetersSunSpec::pre_setup()
 
     meters.register_meter_generator(get_class(), this);
 
-    scan = ConfigRoot{Config::Object({
+    scan_config = ConfigRoot{Config::Object({
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(0)},
         {"cookie", Config::Uint32(0)},
     })};
+
+    scan_continue_config = ConfigRoot{Config::Object({
+        {"cookie", Config::Uint32(0)},
+    })};
+
+    scan_abort_config = scan_continue_config;
 }
 
 void MetersSunSpec::setup()
@@ -78,16 +84,47 @@ void MetersSunSpec::setup()
 
 void MetersSunSpec::register_urls()
 {
-    api.addCommand("meters_sun_spec/scan", &scan, {}, [this](String &error){
+    api.addCommand("meters_sun_spec/scan", &scan_config, {}, [this](String &error) {
         if (scan_state != ScanState::Idle) {
             error = "Another scan is already in progress, please try again later!";
             return;
         }
 
-        scan_new_host = scan.get("host")->asString();
-        scan_new_port = static_cast<uint16_t>(scan.get("port")->asUint());
-        scan_new_cookie = scan.get("cookie")->asUint();
+        scan_new_host = scan_config.get("host")->asString();
+        scan_new_port = static_cast<uint16_t>(scan_config.get("port")->asUint());
+        scan_new_cookie = scan_config.get("cookie")->asUint();
         scan_new = true;
+        scan_last_keep_alive = now_us();
+    }, true);
+
+    api.addCommand("meters_sun_spec/scan_continue", &scan_continue_config, {}, [this](String &error) {
+        if (scan_state == ScanState::Idle) {
+            return;
+        }
+
+        uint32_t cookie = scan_continue_config.get("cookie")->asUint();
+
+        if (cookie != scan_cookie) {
+            error = "Cannot continue another scan";
+            return;
+        }
+
+        scan_last_keep_alive = now_us();
+    }, true);
+
+    api.addCommand("meters_sun_spec/scan_abort", &scan_abort_config, {}, [this](String &error) {
+        if (scan_state == ScanState::Idle) {
+            return;
+        }
+
+        uint32_t cookie = scan_abort_config.get("cookie")->asUint();
+
+        if (cookie != scan_cookie) {
+            error = "Cannot abort another scan";
+            return;
+        }
+
+        scan_abort = true;
     }, true);
 }
 
@@ -95,6 +132,15 @@ void MetersSunSpec::loop()
 {
     if (scan_printfln_buffer_used > 0 && deadline_elapsed(scan_printfln_last_flush + 2000000_usec)) {
         scan_flush_log();
+    }
+
+    if (scan_state != ScanState::Idle && !scan_abort && deadline_elapsed(scan_last_keep_alive + 10000000_usec)) {
+        const char *message = "Aborting scan because no continue call was received for more than 10 seconds";
+
+        logger.printfln("%s", message);
+        scan_printfln("%s", message);
+
+        scan_abort = true;
     }
 
     switch (scan_state) {
@@ -112,11 +158,17 @@ void MetersSunSpec::loop()
             ++scan_read_cookie;
 
             scan_new = false;
+            scan_abort = false;
         }
 
         break;
 
     case ScanState::Resolve:
+        if (scan_abort) {
+            scan_state = ScanState::Done;
+            break;
+        }
+
         scan_printfln("Resolving %s", scan_host.c_str());
 
         scan_host_data.user = this;
@@ -158,6 +210,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::Connect:
+        if (scan_abort) {
+            scan_state = ScanState::Done;
+            break;
+        }
+
         scan_printfln("Connecting to %s:%u", scan_host.c_str(), scan_port);
 
         if (!modbus.connect(scan_host_address, scan_port)) {
@@ -205,7 +262,7 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::NextDeviceAddress:
-        if (scan_device_address >= DEVICE_ADDRESS_LAST) {
+        if (scan_abort || scan_device_address >= DEVICE_ADDRESS_LAST) {
             scan_state = ScanState::Disconnect;
         }
         else {
@@ -230,6 +287,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::NextBaseAddress:
+        if (scan_abort) {
+            scan_state = ScanState::Disconnect;
+            break;
+        }
+
         ++scan_base_address_index;
 
         if (scan_base_address_index >= ARRAY_SIZE(base_addresses)) {
@@ -242,6 +304,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::Read:
+        if (scan_abort) {
+            scan_state = ScanState::Disconnect;
+            break;
+        }
+
         ++scan_read_cookie;
         scan_read_index = 0;
 
@@ -257,6 +324,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReadDelay:
+        if (scan_abort) {
+            scan_state = ScanState::Disconnect;
+            break;
+        }
+
         if (deadline_elapsed(scan_read_delay_deadline)) {
             scan_state = ScanState::ReadNext;
         }
@@ -264,6 +336,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReadNext: {
+            if (scan_abort) {
+                scan_state = ScanState::Disconnect;
+                break;
+            }
+
             uint32_t cookie = scan_read_cookie;
             size_t read_chunk_size = MIN(scan_read_size - scan_read_index, MAX_READ_CHUNK_SIZE);
 
@@ -339,6 +416,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReadSunSpecID:
+        if (scan_abort) {
+            scan_state = ScanState::Disconnect;
+            break;
+        }
+
         scan_printfln("Using device address %u\n"
                       "Using base address %u\n"
                       "Reading SunSpec ID",
@@ -353,6 +435,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReadSunSpecIDDone:
+        if (scan_abort) {
+            scan_state = ScanState::Disconnect;
+            break;
+        }
+
         if (scan_read_result == Modbus::ResultCode::EX_SUCCESS) {
             uint32_t sun_spec_id = scan_deserializer.read_uint32();
 
@@ -376,6 +463,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReadCommonModelHeader:
+        if (scan_abort) {
+            scan_state = ScanState::Disconnect;
+            break;
+        }
+
         scan_printfln("Reading Common Model");
 
         scan_read_size = 2;
@@ -385,6 +477,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReadCommonModelHeaderDone:
+        if (scan_abort) {
+            scan_state = ScanState::Disconnect;
+            break;
+        }
+
         if (scan_read_result == Modbus::ResultCode::EX_SUCCESS) {
             uint16_t model_id = scan_deserializer.read_uint16();
             size_t block_length = scan_deserializer.read_uint16();
@@ -417,6 +514,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReadCommonModelBlock:
+        if (scan_abort) {
+            scan_state = ScanState::Disconnect;
+            break;
+        }
+
         scan_read_size = scan_common_block_length;
         scan_read_state = ScanState::ReadCommonModelBlockDone;
         scan_state = ScanState::Read;
@@ -424,6 +526,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReadCommonModelBlockDone:
+        if (scan_abort) {
+            scan_state = ScanState::Disconnect;
+            break;
+        }
+
         if (scan_read_result == Modbus::ResultCode::EX_SUCCESS) {
             scan_deserializer.read_string(scan_common_manufacturer_name, sizeof(scan_common_manufacturer_name));
             scan_deserializer.read_string(scan_common_model_name, sizeof(scan_common_model_name));
@@ -457,6 +564,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReadStandardModelHeader:
+        if (scan_abort) {
+            scan_state = ScanState::Disconnect;
+            break;
+        }
+
         scan_printfln("Reading Standard Model");
 
         scan_read_size = 2;
@@ -466,6 +578,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReadStandardModelHeaderDone:
+        if (scan_abort) {
+            scan_state = ScanState::Disconnect;
+            break;
+        }
+
         if (scan_read_result == Modbus::ResultCode::EX_SUCCESS) {
             uint16_t model_id = scan_deserializer.read_uint16();
             size_t block_length = scan_deserializer.read_uint16();
@@ -510,6 +627,11 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::ReportStandardModelResult: {
+            if (scan_abort) {
+                scan_state = ScanState::Disconnect;
+                break;
+            }
+
             char buf[512];
             TFJsonSerializer json{buf, sizeof(buf)};
 

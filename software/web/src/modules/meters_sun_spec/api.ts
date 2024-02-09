@@ -4,6 +4,14 @@ export interface scan {
     cookie: number;
 }
 
+export interface scan_continue {
+    cookie: number;
+}
+
+export interface scan_abort {
+    cookie: number;
+}
+
 export interface scan_progress {
     cookie: number;
     progress: number;

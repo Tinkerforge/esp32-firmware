@@ -83,13 +83,17 @@ public:
     Config config_prototype;
 
     ModbusTCP modbus;
-    ConfigRoot scan;
+    ConfigRoot scan_config;
+    ConfigRoot scan_continue_config;
+    ConfigRoot scan_abort_config;
 
     bool scan_new = false;
     String scan_new_host;
     uint16_t scan_new_port;
     uint32_t scan_new_cookie;
 
+    micros_t scan_last_keep_alive = 0_usec;
+    bool scan_abort = false;
     ScanState scan_state = ScanState::Idle;
     String scan_host;
     dns_gethostbyname_addrtype_lwip_ctx_async_data scan_host_data;

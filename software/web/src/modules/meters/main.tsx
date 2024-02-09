@@ -1284,6 +1284,11 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                         this.setState({configs_table: {...state.configs_table, [meter_slot]: [MeterClassID.None, null], [state.editMeterSlot]: state.editMeter}});
                                         this.setDirty(true);
                                     },
+                                    onEditHide: async () => {
+                                        if (state.editMeter[0] != MeterClassID.None && config_plugins[state.editMeter[0]].hide) {
+                                            config_plugins[state.editMeter[0]].hide();
+                                        }
+                                    },
                                     onRemoveClick: async () => {
                                         this.setState({configs_table: {...state.configs_table, [meter_slot]: [MeterClassID.None, null]}});
                                         this.setDirty(true);
@@ -1355,6 +1360,11 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                             onAddSubmit={async () => {
                                 this.setState({configs_table: {...state.configs_table, [state.addMeterSlot]: state.addMeter}});
                                 this.setDirty(true);
+                            }}
+                            onAddHide={async () => {
+                                if (state.addMeter[0] != MeterClassID.None && config_plugins[state.addMeter[0]].hide) {
+                                    await config_plugins[state.addMeter[0]].hide();
+                                }
                             }}
                             />
                     </div>
