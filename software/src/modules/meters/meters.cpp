@@ -782,6 +782,11 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         return;
     }
 
+    if (value_id_count <= 0) {
+        logger.printfln("meters: Cannot declare zero value IDs for meter in slot %u.", value_id_count);
+        return;
+    }
+
     for (uint16_t i = 0; i < static_cast<uint16_t>(value_id_count); i++) {
         auto val = value_ids.add();
         val->updateUint(static_cast<uint32_t>(new_value_ids[i]));
