@@ -213,7 +213,7 @@
 2024-01-26: 2.0.1 (b1249abc)
 - Fix legacy meter API
 
-2024-02-09: 2.0.2 (<unknown>)
+2024-02-09: 2.0.2 (27ba409b)
 - Make generation of first web socket frame more memory efficient
 - Don't report vendor specific SunSpec models as unknown
 - Fix hanging SunSpec discovery under specific conditions
