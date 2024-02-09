@@ -32,7 +32,7 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void on_tag_seen(const char *tag_id);
+    bool on_tag_seen(const char *tag_id);
 
     std::unique_ptr<OcppChargePoint> cp;
 

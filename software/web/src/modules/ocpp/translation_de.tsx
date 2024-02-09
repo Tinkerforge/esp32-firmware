@@ -167,7 +167,28 @@ let x = {
             "message_in_flight_type_54": "TriggerMessageResponse",
             "message_in_flight_type_55": "TriggerMessage",
 
-            "configuration": "Konfiguration"
+            "configuration": "Konfiguration",
+
+            "last_rejected_tag_reason": "Grund der letzten Tag-Ablehnung",
+
+            "last_rejected_tag": /*SFN*/(last_tag: string, last_tag_reason: number) => {
+                let result = `Letztes Tag ${last_tag}`;
+                switch(last_tag_reason) {
+                    case 0: //Blocked
+                        result += " vom Server gesperrt";
+                        break;
+                    case 1: //Expired
+                        result += " nicht mehr gültig";
+                        break;
+                    case 2: //Invalid
+                        result += " nicht bekannt";
+                        break;
+                    case 3: //ConcurrentTx
+                        result += " wird für andere Transaktion verwendet";
+                        break;
+                }
+                return result;
+            }/*NF*/
         },
         "script": {
             "save_failed": "Speichern der OCPP-Einstellungen fehlgeschlagen.",

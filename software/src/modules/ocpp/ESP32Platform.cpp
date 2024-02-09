@@ -225,9 +225,40 @@ const char *trt_string[] = {
 "ConcurrentTx",
 };
 
-void platform_tag_rejected(const char *tag, TagRejectionType trt)
+void platform_tag_expected(int32_t connectorId)
 {
+    //logger.printfln("Waiting for tag");
+#if MODULE_EVSE_LED_AVAILABLE()
+    evse_led.set_module(EvseLed::Blink::Nag, 60000); //TODO: Check configuration for correct interval here!
+#endif
+}
+
+void platform_clear_tag_expected(int32_t connectorId)
+{
+    //logger.printfln("Not waiting for tag");
+#if MODULE_EVSE_LED_AVAILABLE()
+    evse_led.set_module(EvseLed::Blink::None, 1000); //Duration is not relevant here.
+#endif
+}
+
+void platform_tag_rejected(int32_t connectorId, const char *tag, TagRejectionType trt)
+{
+#if MODULE_EVSE_LED_AVAILABLE()
+    evse_led.set_module(EvseLed::Blink::Nack, 2000);
+#endif
+    ocpp.state.get("last_rejected_tag")->updateString(tag);
+    ocpp.state.get("last_rejected_tag_reason")->updateUint((uint8_t) trt);
     logger.printfln("Tag %s rejected: %s", tag, trt_string[(size_t)trt]);
+}
+
+void platform_tag_accepted(int32_t connectorId, const char *tag)
+{
+#if MODULE_EVSE_LED_AVAILABLE()
+    evse_led.set_module(EvseLed::Blink::Ack, 2000);
+#endif
+    ocpp.state.get("last_rejected_tag")->updateString("");
+    ocpp.state.get("last_rejected_tag_reason")->updateUint(0);
+    logger.printfln("Tag %s accepted", tag);
 }
 
 void platform_tag_timed_out(int32_t connectorId)

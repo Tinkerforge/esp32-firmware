@@ -167,7 +167,28 @@ let x = {
             "message_in_flight_type_54": "TriggerMessageResponse",
             "message_in_flight_type_55": "TriggerMessage",
 
-            "configuration": "Configuration"
+            "configuration": "Configuration",
+
+            "last_rejected_tag_reason": "Reason of last tag rejection",
+
+            "last_rejected_tag": /*SFN*/(last_tag: string, last_tag_reason: number) => {
+                let result = `Last tag ${last_tag}`;
+                switch(last_tag_reason) {
+                    case 0: //Blocked
+                        result += " blocked by server";
+                        break;
+                    case 1: //Expired
+                        result += " expired";
+                        break;
+                    case 2: //Invalid
+                        result += " not known";
+                        break;
+                    case 3: //ConcurrentTx
+                        result += " being used for another transaction";
+                        break;
+                }
+                return result;
+            }/*NF*/
         },
         "script": {
             "save_failed": "Failed to save the OCPP settings.",

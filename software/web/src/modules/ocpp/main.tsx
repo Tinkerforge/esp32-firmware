@@ -177,6 +177,9 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                         <FormRow label={__("ocpp.content.cable_timeout")}>
                             <InputText value={util.format_timespan_ms(state.state.cable_timeout, {replace_u32max_with: __("ocpp.content.not_waiting_for_cable")})} />
                         </FormRow>
+                        <FormRow label={__("ocpp.content.last_rejected_tag_reason")}>
+                            <InputText value={__("ocpp.content.last_rejected_tag")(state.state.last_rejected_tag, state.state.last_rejected_tag_reason)} />
+                        </FormRow>
                         <FormRow label={__("ocpp.content.txn_id")}>
                             <InputText value={state.state.txn_id == 0x7FFFFFFF ?  __("ocpp.content.no_transaction_running") : state.state.txn_id} />
                         </FormRow>
@@ -318,12 +321,17 @@ export class OcppStatus extends Component<{}, OcppStatusState> {
     }
 
     getStatusLine() {
-        let result = this.getStatusPrefix();
+        let result = ""
+
+        if (this.state.state.last_rejected_tag != "")
+            result += __("ocpp.content.last_rejected_tag")(this.state.state.last_rejected_tag, this.state.state.last_rejected_tag_reason) + ". "
 
         if (this.state.state.tag_timeout != 0xFFFFFFFF)
-            result = __("ocpp.status.waiting_for_tag") + util.format_timespan_ms(this.state.state.tag_timeout)
+            result += __("ocpp.status.waiting_for_tag") + util.format_timespan_ms(this.state.state.tag_timeout) + ". "
         if (this.state.state.cable_timeout != 0xFFFFFFFF)
-            result = __("ocpp.status.waiting_for_cable") + util.format_timespan_ms(this.state.state.cable_timeout)
+            result += __("ocpp.status.waiting_for_cable") + util.format_timespan_ms(this.state.state.cable_timeout) + ". "
+
+        result += this.getStatusPrefix();
 
         return result;
     }
