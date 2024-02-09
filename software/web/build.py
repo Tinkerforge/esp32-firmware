@@ -37,6 +37,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--js-source-map', action='store_true')
     parser.add_argument('--css-source-map', action='store_true')
+    parser.add_argument('--no-minify', action='store_true')
     build_args = parser.parse_args()
 
     try:
@@ -61,7 +62,6 @@ def main():
         'src/main.tsx',
         '--metafile={}'.format(os.path.join(BUILD_DIR, 'meta.json')),
         '--bundle',
-        '--minify',
         '--target=es6',
         '--alias:jquery=./node_modules/jquery/dist/jquery.slim.min',
         '--outfile={0}'.format(os.path.join(BUILD_DIR, 'bundle.min.js'))
@@ -72,6 +72,9 @@ def main():
 
     if build_args.js_source_map:
         args += ['--sourcemap=inline']
+
+    if not build_args.no_minify:
+        args += ['--minify']
 
     subprocess.check_call(args, shell=sys.platform == 'win32')
 

@@ -1090,7 +1090,7 @@ def main():
 
         with ChangedDirectory('web'):
             try:
-                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "build.py"] + ([] if not frontend_debug else ['--js-source-map', '--css-source-map']))
+                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "build.py"] + ([] if not frontend_debug else ['--js-source-map', '--css-source-map', '--no-minify']))
             except subprocess.CalledProcessError as e:
                 if e.returncode != 42:
                     print(e, file=sys.stderr)
