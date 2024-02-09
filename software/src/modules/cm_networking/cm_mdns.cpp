@@ -116,7 +116,11 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
 
     std::lock_guard<std::mutex> lock{dns_resolve_mutex};
     if (resolve_state[charger_idx] != RESOLVE_STATE_RESOLVED || dest_addrs[charger_idx].sin_addr.s_addr != in) {
-        logger.printfln("Resolved %s to %s", this->hosts[charger_idx], ipaddr_ntoa(&ip));
+        const char *ip_str = ipaddr_ntoa(&ip);
+        // Show resolved hostname only if it wasn't already an IP
+        if (strcmp(this->hosts[charger_idx], ip_str) != 0) {
+            logger.printfln("Resolved %s to %s", this->hosts[charger_idx], ip_str);
+        }
     }
 
     dest_addrs[charger_idx].sin_addr.s_addr = in;
