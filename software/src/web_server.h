@@ -98,9 +98,9 @@ using wshCallback = std::function<WebServerRequestReturnProtect(WebServerRequest
 using wshUploadCallback = std::function<bool(WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final)>;
 
 struct WebServerHandler {
-    WebServerHandler(String uri, httpd_method_t method, bool callbackInMainThread, wshCallback callback, wshUploadCallback uploadCallback) : uri(uri), method(method), callbackInMainThread(callbackInMainThread), callback(callback), uploadCallback(uploadCallback) {}
+    WebServerHandler(const char *uri, httpd_method_t method, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback) : uri(uri), method(method), callbackInMainThread(callbackInMainThread), callback(std::forward<wshCallback>(callback)), uploadCallback(std::forward<wshUploadCallback>(uploadCallback)) {}
 
-    String uri;
+    const String uri;
     httpd_method_t method;
     bool callbackInMainThread;
     wshCallback callback;
@@ -117,9 +117,9 @@ public:
 
     void runInHTTPThread(void (*fn)(void *arg), void *arg);
 
-    WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback = wshUploadCallback());
-    WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback = wshUploadCallback());
-    void onNotAuthorized_HTTPThread(wshCallback callback);
+    WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback = wshUploadCallback());
+    WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback = wshUploadCallback());
+    void onNotAuthorized_HTTPThread(wshCallback &&callback);
 
     void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> auth_fn)
     {
@@ -135,7 +135,7 @@ public:
 
     std::function<bool(WebServerRequest)> auth_fn;
 private:
-    WebServerHandler *addHandler(const char *uri, httpd_method_t method, bool callbackInMainThread, wshCallback callback, wshUploadCallback uploadCallback);
+    WebServerHandler *addHandler(const char *uri, httpd_method_t method, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback);
 };
 
 // Make global variable available everywhere because it is not declared in modules.h.

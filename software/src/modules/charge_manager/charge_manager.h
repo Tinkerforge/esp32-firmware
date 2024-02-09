@@ -41,7 +41,7 @@ public:
     void set_all_control_pilot_disconnect(bool disconnect);
     bool are_all_control_pilot_disconnected(uint32_t last_update_cutoff);
     bool is_control_pilot_disconnect_supported(uint32_t last_update_cutoff);
-    void set_allocated_current_callback(std::function<void(uint32_t)> callback);
+    void set_allocated_current_callback(std::function<void(uint32_t)> &&callback);
 
     const char *get_charger_name(uint8_t idx);
 

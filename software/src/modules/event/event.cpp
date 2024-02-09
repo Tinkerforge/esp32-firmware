@@ -29,7 +29,7 @@ void Event::setup()
     initialized = true;
 }
 
-int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(const Config *)> callback)
+int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(const Config *)> &&callback)
 {
     auto api_states = api.states.size();
     for (size_t i = 0; i < api_states; i++) {
@@ -48,16 +48,16 @@ int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> val
 
             if (config == nullptr) {
                 if (is_obj)
-                    logger.printfln("Value %s in state %s not found", *strict_variant::get<const char *>(&value), path.c_str());
+                    logger.printfln("event: Value %s in state %s not found", *strict_variant::get<const char *>(&value), path.c_str());
                 else
-                    logger.printfln("Index %u in state %s not found", *strict_variant::get<uint16_t>(&value), path.c_str());
+                    logger.printfln("event: Index %u in state %s not found", *strict_variant::get<uint16_t>(&value), path.c_str());
                 return -1;
             }
         }
 
         int64_t eventID = ++lastEventID;
 
-        state_updates.push_back({eventID, i, config, callback});
+        bool store_callback = true;
 
         // If the config updated flag is currently set
         // pushStateUpdate will call the callback soon.
@@ -65,14 +65,20 @@ int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> val
         // it is always called at least once.
         if (!config->was_updated(1 << backendIdx)) {
             if (callback(config) == EventResult::Deregister) {
-                state_updates.pop_back();
+                store_callback = false;
             }
+        }
+
+        // Store callback after possibly calling it,
+        // because the function object is forwarded to the vector and cannot be used locally afterwards.
+        if (store_callback) {
+            state_updates.push_back({eventID, i, config, std::forward<std::function<EventResult(const Config *)>>(callback)});
         }
 
         return eventID;
     }
 
-    logger.printfln("State %s not found", path.c_str());
+    logger.printfln("event: State %s not found", path.c_str());
     return -1;
 }
 

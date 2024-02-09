@@ -942,9 +942,9 @@ void ChargeManager::distribute_current()
     }
 }
 
-void ChargeManager::set_allocated_current_callback(std::function<void(uint32_t)> callback)
+void ChargeManager::set_allocated_current_callback(std::function<void(uint32_t)> &&callback)
 {
-    allocated_current_callback = callback;
+    allocated_current_callback = std::forward<std::function<void(uint32_t)>>(callback);
 }
 
 void ChargeManager::register_urls()
