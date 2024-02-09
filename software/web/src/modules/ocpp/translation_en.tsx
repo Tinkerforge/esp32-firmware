@@ -172,6 +172,9 @@ let x = {
             "last_rejected_tag_reason": "Reason of last tag rejection",
 
             "last_rejected_tag": /*SFN*/(last_tag: string, last_tag_reason: number) => {
+                if (last_tag == "")
+                    return "";
+
                 let result = `Last tag ${last_tag}`;
                 switch(last_tag_reason) {
                     case 0: //Blocked
