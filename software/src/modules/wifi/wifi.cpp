@@ -90,19 +90,19 @@ void Wifi::pre_setup()
 
     // Max len of identity is currently limited by arduino.
     eap_config_prototypes.push_back({EapConfigID::TLS, Config::Object({
-        {"ca_cert_id", Config::Int(-1, -1, MAX_CERTS)},
+        {"ca_cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"identity", Config::Str("", 0, 64)},
-        {"client_cert_id", Config::Int(0, 0, MAX_CERTS)},
-        {"client_key_id", Config::Int(0, 0, MAX_CERTS)}
+        {"client_cert_id", Config::Int(0, 0, MAX_CERT_ID)},
+        {"client_key_id", Config::Int(0, 0, MAX_CERT_ID)}
     })});
 
     eap_config_prototypes.push_back({EapConfigID::PEAP_TTLS, Config::Object({
-        {"ca_cert_id", Config::Int(-1, -1, MAX_CERTS)},
+        {"ca_cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"identity", Config::Str("", 0, 64)},
         {"username", Config::Str("", 0, 64)},
         {"password", Config::Str("", 0, 64)},
-        {"client_cert_id", Config::Int(-1, -1, MAX_CERTS)},
-        {"client_key_id", Config::Int(-1, -1, MAX_CERTS)}
+        {"client_cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
+        {"client_key_id", Config::Int(-1, -1, MAX_CERT_ID)}
     })});
 
     Config eap_proto = Config::Union<EapConfigID>(

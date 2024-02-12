@@ -39,7 +39,7 @@ void Ocpp::pre_setup()
         {"identity", Config::Str("", 0, 64)},
         {"enable_auth",Config::Bool(false)},
         {"pass", Config::Str("", 0, 64)},
-        {"cert_id", Config::Int(-1, -1, MAX_CERTS - 1)}
+        {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)}
     });
 
     change_configuration = Config::Object({

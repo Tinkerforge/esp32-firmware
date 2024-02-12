@@ -25,6 +25,7 @@
 #include <memory>
 
 #define MAX_CERTS 8
+#define MAX_CERT_ID (MAX_CERTS - 1)
 #define MAX_CERT_SIZE 4027
 #define MAX_CERT_NAME 32
 
