@@ -168,6 +168,15 @@ void Wifi::pre_setup()
         if (!unused.fromString(cfg.get("dns2")->asEphemeralCStr()))
             return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
+        if (cfg.get("wpa_eap_config")->getTag<EapConfigID>() == EapConfigID::PEAP_TTLS) {
+            int client_cert_id = cfg.get("wpa_eap_config")->get()->get("client_cert_id")->asInt();
+            int client_key_id = cfg.get("wpa_eap_config")->get()->get("client_key_id")->asInt();
+
+            if ((client_cert_id != -1 && client_key_id == -1) || (client_cert_id == -1 && client_key_id != -1)) {
+                return "Must provide both, a client certificate and a client key";
+            }
+        }
+
         return "";
     });
 }
