@@ -526,7 +526,7 @@
 - Allow setting status LED via API while charging (through EVSE Bricklet firmware 2.1.9)
 - Don't immediately block charging when external slot gets enabled (through EVSE Bricklet firmware 2.1.9)
 
-2024-02-12: 2.2.1 (<unknown>)
+2024-02-12: 2.2.1 (a0f9964c)
 - Make generation of first web socket frame more memory efficient
 - Don't report vendor specific SunSpec models as unknown
 - Fix hanging SunSpec discovery under specific error conditions
