@@ -7,6 +7,11 @@ export interface config {
     global_topic_prefix: string;
     client_name: string;
     interval: number;
+    protocol: number;
+    cert_id: number;
+    client_cert_id: number;
+    client_key_id: number;
+    //path: string;
 }
 
 export interface auto_discovery_config {

@@ -32,6 +32,7 @@ import { InputPassword } from "../../ts/components/input_password";
 import { Switch } from "../../ts/components/switch";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { SubPage } from "../../ts/components/sub_page";
+import { Collapse } from "react-bootstrap";
 
 type MqttConfig = API.getType["mqtt/config"];
 
@@ -73,6 +74,10 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
         if (!util.render_allowed())
             return <></>
 
+        let default_ports = [1883, 8883, 80, 443];
+
+        let certs = API.get('certs/state').certs.map(c => [c.id.toString(), c.name]) as [string, string][];
+
         return (
             <SubPage>
                 <ConfigForm id="mqtt_config_form" title={__("mqtt.content.mqtt")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
@@ -82,6 +87,78 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                                 onClick={this.toggle('enable_mqtt')}/>
                     </FormRow>
 
+                    <FormRow label={__("mqtt.content.protocol")}>
+                        <InputSelect
+                            items={[
+                                ["0", __("mqtt.content.protocol_mqtt")],
+                                ["1", __("mqtt.content.protocol_mqtts")],
+                                /*["2", __("mqtt.content.protocol_ws")],
+                                ["3", __("mqtt.content.protocol_wss")],*/
+                            ]}
+                            value={state.protocol}
+                            onValue={(v) => {
+                                let new_proto = parseInt(v);
+                                let new_port = this.state.broker_port;
+                                if (this.state.broker_port == default_ports[this.state.protocol])
+                                    new_port = default_ports[new_proto];
+
+                                this.setState({protocol: new_proto, broker_port: new_port})
+                            }}/>
+                    </FormRow>
+
+                    <Collapse in={state.protocol == 1 || state.protocol == 3}>
+                        <div>
+                            <FormRow label={__("mqtt.content.cert")}>
+                                <InputSelect items={[
+                                        ["-1", __("mqtt.content.use_cert_bundle")],
+                                    ].concat(certs) as [string, string][]
+                                    }
+                                    value={state.cert_id}
+                                    onValue={(v) => this.setState({cert_id: parseInt(v)})}
+                                    disabled={state.protocol == 0 || state.protocol == 2}
+                                    required={state.protocol == 1 || state.protocol == 3}
+                                />
+                            </FormRow>
+
+                            <FormRow label={__("mqtt.content.client_cert")}>
+                                <InputSelect items={[
+                                        ["-1", __("mqtt.content.no_cert")],
+                                    ].concat(certs) as [string, string][]
+                                    }
+                                    value={state.client_cert_id}
+                                    onValue={(v) => this.setState({client_cert_id: parseInt(v)})}
+                                    disabled={state.protocol == 0 || state.protocol == 2}
+                                    required={state.client_key_id != -1}
+                                />
+                            </FormRow>
+
+                            <FormRow label={__("mqtt.content.client_key")}>
+                                <InputSelect items={[
+                                        ["-1", __("mqtt.content.no_cert")],
+                                    ].concat(certs) as [string, string][]
+                                    }
+                                    value={state.client_key_id}
+                                    onValue={(v) => this.setState({client_key_id: parseInt(v)})}
+                                    disabled={state.protocol == 0 || state.protocol == 2}
+                                    required={state.client_cert_id != -1}
+                                />
+                            </FormRow>
+                        </div>
+                    </Collapse>
+                    {/*
+                        <Collapse in={state.protocol == 2 || state.protocol == 3}>
+                            <div>
+                                <FormRow label={__("mqtt.content.path")}>
+                                    <InputText
+                                        maxLength={64}
+                                        value={state.path}
+                                        onValue={this.set("path")}
+                                    />
+                                </FormRow>
+                            </div>
+                        </Collapse>
+                        */}
+
                     <FormRow label={__("mqtt.content.broker_host")}>
                         <InputText required={state.enable_mqtt}
                                    maxLength={128}
@@ -89,7 +166,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                                    onValue={this.set("broker_host")}/>
                     </FormRow>
 
-                    <FormRow label={__("mqtt.content.port")} label_muted={__("mqtt.content.port_muted")}>
+                    <FormRow label={__("mqtt.content.port")} label_muted={__("mqtt.content.port_muted")(default_ports[state.protocol])}>
                         <InputNumber required
                                      min={1}
                                      max={65535}

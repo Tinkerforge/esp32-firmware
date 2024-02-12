@@ -22,6 +22,8 @@
 
 #include <Arduino.h>
 
+#include "esp_crt_bundle.h"
+
 #include "task_scheduler.h"
 #include "tools.h"
 #include "api.h"
@@ -46,6 +48,8 @@ extern char local_uid_str[32];
 
 #define MQTT_RECV_BUFFER_HEADROOM (MQTT_RECV_BUFFER_SIZE / 4)
 
+extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
+
 void Mqtt::pre_setup()
 {
     // The real UID will be patched in later
@@ -57,7 +61,14 @@ void Mqtt::pre_setup()
         {"broker_password", Config::Str("", 0, 64)},
         {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + "/" + "ABC", 0, 64)},
         {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + "-" + "ABC", 1, 64)},
-        {"interval", Config::Uint32(1)}
+        {"interval", Config::Uint32(1)},
+        // esp_mqtt_transport_t. -1 because we don't allow MQTT_TRANSPORT_UNKNOWN.
+        // MQTT over WS and WSS is currently broken: esp_transport_ws sends a broken WebSocket handshake.
+        {"protocol", Config::Uint(MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_SSL - 1)},
+        {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
+        {"client_cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
+        {"client_key_id", Config::Int(-1, -1, MAX_CERT_ID)},
+        //{"path", Config::Str("", 0, 64)}
     }), [](Config &cfg, ConfigSource source) -> String {
 #if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
         const String &global_topic_prefix = cfg.get("global_topic_prefix")->asString();
@@ -569,6 +580,50 @@ void Mqtt::setup()
     mqtt_cfg.out_buffer_size = MQTT_SEND_BUFFER_SIZE;
     mqtt_cfg.network_timeout_ms = 1000;
     mqtt_cfg.message_retransmit_timeout = 400;
+    // + 1 to undo the -1 in the config's definition.
+    mqtt_cfg.transport = (esp_mqtt_transport_t) (config_in_use.get("protocol")->asUint() + 1);
+    bool encrypted = mqtt_cfg.transport == MQTT_TRANSPORT_OVER_SSL || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS;
+
+    if (encrypted && config_in_use.get("cert_id")->asInt() != -1) {
+        size_t cert_len = 0;
+        auto cert = certs.get_cert((uint8_t) config_in_use.get("cert_id")->asInt(), &cert_len);
+        if (cert == nullptr) {
+            logger.printfln("MQTT: Failed to get certificate with ID %d", config_in_use.get("cert_id")->asInt());
+            return;
+        }
+        // Leak cert here: MQTT requires the buffer to live forever.
+        mqtt_cfg.cert_pem = (const char *)cert.release();
+    }
+    else if (encrypted) {
+        mqtt_cfg.crt_bundle_attach = esp_crt_bundle_attach;
+    }
+
+    if (encrypted && config_in_use.get("client_cert_id")->asInt() != -1) {
+        size_t cert_len = 0;
+        auto cert = certs.get_cert((uint8_t) config_in_use.get("client_cert_id")->asInt(), &cert_len);
+        if (cert == nullptr) {
+            logger.printfln("MQTT: Failed to get client certificate with ID %d", config_in_use.get("client_cert_id")->asInt());
+            return;
+        }
+        // Leak cert here: MQTT requires the buffer to live forever.
+        mqtt_cfg.client_cert_pem = (const char *)cert.release();
+    }
+
+    if (encrypted && config_in_use.get("client_key_id")->asInt() != -1) {
+        size_t cert_len = 0;
+        auto cert = certs.get_cert((uint8_t) config_in_use.get("client_key_id")->asInt(), &cert_len);
+        if (cert == nullptr) {
+            logger.printfln("MQTT: Failed to get client certificate with ID %d", config_in_use.get("client_key_id")->asInt());
+            return;
+        }
+        // Leak cert here: MQTT requires the buffer to live forever.
+        mqtt_cfg.client_key_pem = (const char *)cert.release();
+    }
+
+    /*if ((mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WS || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS) && config_in_use.get("path")->asString().length() > 0) {
+        mqtt_cfg.path = config_in_use.get("path")->asEphemeralCStr();
+        logger.printfln("Using path %s", mqtt_cfg.path);
+    }*/
 
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
