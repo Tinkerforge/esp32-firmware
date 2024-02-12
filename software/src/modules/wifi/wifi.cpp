@@ -692,7 +692,7 @@ void Wifi::setup()
             case EapConfigID::TLS:
             {
                 client_cert = certs.get_cert(client_cert_id, &client_cert_len);
-                client_key = certs.get_cert(client_cert_id, &client_key_len);
+                client_key = certs.get_cert(client_key_id, &client_key_len);
 
                 const CoolString &tmp_identity = eap_config->get("identity")->asString();
                 if (tmp_identity.length() > 0) {
