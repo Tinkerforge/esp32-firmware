@@ -682,6 +682,8 @@ void Wifi::setup()
     if (eap_config_id != EapConfigID::None) {
         const OwnedConfig::OwnedConfigWrap &eap_config = sta_config_in_use.get("wpa_eap_config")->get();
         int ca_id = eap_config->get("ca_cert_id")->asInt();
+        int client_cert_id = eap_config->get("client_cert_id")->asInt();
+        int client_key_id = eap_config->get("client_key_id")->asInt();
         eap_identity = eap_config->get("identity")->asString();
         if (ca_id != -1) {
             ca_cert = certs.get_cert(ca_id, &ca_cert_len);
@@ -689,8 +691,8 @@ void Wifi::setup()
         switch (eap_config_id) {
             case EapConfigID::TLS:
             {
-                client_cert = certs.get_cert(eap_config->get("client_cert_id")->asInt(), &client_cert_len);
-                client_key = certs.get_cert(eap_config->get("client_key_id")->asInt(), &client_key_len);
+                client_cert = certs.get_cert(client_cert_id, &client_cert_len);
+                client_key = certs.get_cert(client_cert_id, &client_key_len);
 
                 const CoolString &tmp_identity = eap_config->get("identity")->asString();
                 if (tmp_identity.length() > 0) {
@@ -705,8 +707,12 @@ void Wifi::setup()
                 eap_username = eap_config->get("username")->asString();
                 eap_password = eap_config->get("password")->asString();
 
-                client_cert = certs.get_cert(eap_config->get("client_cert_id")->asInt(), &client_cert_len);
-                client_key = certs.get_cert(eap_config->get("client_key_id")->asInt(), &client_key_len);
+                if (client_cert_id != -1) {
+                    client_cert = certs.get_cert(eap_config->get("client_cert_id")->asInt(), &client_cert_len);
+                }
+                if (client_key_id != -1) {
+                    client_key = certs.get_cert(eap_config->get("client_key_id")->asInt(), &client_key_len);
+                }
 
                 break;
 
