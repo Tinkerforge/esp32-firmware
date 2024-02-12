@@ -1,0 +1,36 @@
+From 8705890ab99010fa4c921d3ae8d9638218bc998a Mon Sep 17 00:00:00 2001
+From: Erik Fleckstein <erik@tinkerforge.com>
+Date: Mon, 12 Feb 2024 16:28:00 +0100
+Subject: [PATCH] mqtt: Set ws path if not set via passed uri.
+
+---
+ mqtt_client.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/mqtt_client.c b/mqtt_client.c
+index 0369aa3..aca5f94 100644
+--- a/mqtt_client.c
++++ b/mqtt_client.c
+@@ -561,6 +561,19 @@ esp_err_t esp_mqtt_set_config(esp_mqtt_client_handle_t client, const esp_mqtt_cl
+             err = ESP_FAIL;
+             goto _mqtt_set_config_failed;
+         }
++    } else if (client->config->path) {
++#if MQTT_ENABLE_WS
++        esp_transport_handle_t ws_trans = esp_transport_list_get_transport(client->transport_list, "ws");
++        if (ws_trans) {
++            esp_transport_ws_set_path(ws_trans, client->config->path);
++        }
++#endif
++#if MQTT_ENABLE_WSS
++        esp_transport_handle_t wss_trans = esp_transport_list_get_transport(client->transport_list, "wss");
++        if (wss_trans) {
++            esp_transport_ws_set_path(wss_trans, client->config->path);
++        }
++#endif
+     }
+     esp_err_t config_has_conflict = esp_mqtt_check_cfg_conflict(client->config, config);
+ 
+-- 
+2.43.1
+
