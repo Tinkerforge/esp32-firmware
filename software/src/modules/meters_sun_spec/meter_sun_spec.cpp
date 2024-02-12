@@ -232,15 +232,10 @@ void MeterSunSpec::scan_next()
                     read_start(generic_read_request.start_address, 2 + block_length);
                 }
                 else if (scan_model_id == 1) { // Common model
-                    if (generic_read_request.register_count == 2) {
-                        // Place data pointer after already read header.
-                        generic_read_request.data[0] += 2;
-                        generic_read_request.start_address += 2;
-                        generic_read_request.register_count = 65;
-                        scan_state_next = ScanState::ReadModel;
+                    generic_read_request.register_count = 67;
+                    scan_state_next = ScanState::ReadModel;
 
-                        start_generic_read();
-                    }
+                    start_generic_read();
                 }
                 else {
                     generic_read_request.start_address += generic_read_request.register_count + block_length;
@@ -253,9 +248,6 @@ void MeterSunSpec::scan_next()
             break;
 
         case ScanState::ReadModel: {
-                // Set data pointer back to model header.
-                generic_read_request.data[0] -= 2;
-
                 uint16_t scan_model_id = scan_deserializer.read_uint16();
                 size_t block_length = scan_deserializer.read_uint16();
 
@@ -282,7 +274,7 @@ void MeterSunSpec::scan_next()
                     logger.printfln("meter_sun_spec: Read full model %u for no reason.", scan_model_id);
                 }
 
-                generic_read_request.start_address += block_length;
+                generic_read_request.start_address += 2 + block_length;
                 generic_read_request.register_count = 2;
                 scan_state_next = ScanState::ReadModelHeader;
 
