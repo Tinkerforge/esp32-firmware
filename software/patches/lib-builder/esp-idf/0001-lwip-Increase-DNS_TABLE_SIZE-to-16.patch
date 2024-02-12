@@ -1,6 +1,6 @@
-From 016323c0e70901d846a549b399b625329b83df5a Mon Sep 17 00:00:00 2001
+From 6451a1df9f18c3ece6edd702d5e3605f0ed15f14 Mon Sep 17 00:00:00 2001
 From: Erik Fleckstein <erik@tinkerforge.com>
-Date: Mon, 17 Apr 2023 12:52:41 +0200
+Date: Mon, 12 Feb 2024 16:19:51 +0100
 Subject: [PATCH] lwip: Increase DNS_TABLE_SIZE to 16.
 
 ---
@@ -8,18 +8,18 @@ Subject: [PATCH] lwip: Increase DNS_TABLE_SIZE to 16.
  1 file changed, 2 insertions(+)
 
 diff --git a/components/lwip/port/esp32/include/lwipopts.h b/components/lwip/port/esp32/include/lwipopts.h
-index 565341c98c..c702f2ac7f 100644
+index ef838b65a7..26685ee289 100644
 --- a/components/lwip/port/esp32/include/lwipopts.h
 +++ b/components/lwip/port/esp32/include/lwipopts.h
-@@ -369,6 +369,8 @@ static inline uint32_t timeout_from_offered(uint32_t lease, uint32_t min)
- #define DNS_MAX_SERVERS                 3
- #define DNS_FALLBACK_SERVER_INDEX        (DNS_MAX_SERVERS - 1)
-
+@@ -378,6 +378,8 @@ static inline uint32_t timeout_from_offered(uint32_t lease, uint32_t min)
+ #define DNS_MAX_SERVERS                 CONFIG_LWIP_DNS_MAX_SERVERS
+ #define DNS_FALLBACK_SERVER_INDEX       (DNS_MAX_SERVERS - 1)
+ 
 +#define DNS_TABLE_SIZE 16
 +
- /*
-    ---------------------------------
-    ---------- UDP options ----------
---
-2.40.0
+ #ifdef CONFIG_LWIP_FALLBACK_DNS_SERVER_SUPPORT
+ #define FALLBACK_DNS_SERVER_ADDRESS(address)                           \
+         do {    ip_addr_t *server_dns = address;                            \
+-- 
+2.43.1
 
