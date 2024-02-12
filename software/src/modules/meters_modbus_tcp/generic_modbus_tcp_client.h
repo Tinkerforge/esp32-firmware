@@ -78,11 +78,11 @@ private:
     void read_next();
 
     dns_gethostbyname_addrtype_lwip_ctx_async_data host_data;
-    uint32_t connect_backoff_ms = 1000;
-    bool resolve_error_printed = false;
-    bool connect_error_printed = false;
     micros_t last_successful_read = 0_usec;
     micros_t successful_read_timeout = 60000000_usec;
+    uint32_t connect_backoff_ms = 1000;
+    int last_connect_errno = 0;
+    bool resolve_error_printed = false;
 
     uint8_t read_buffer_num;
     uint16_t read_block_size;

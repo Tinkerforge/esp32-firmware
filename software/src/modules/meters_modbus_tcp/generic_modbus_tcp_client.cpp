@@ -59,7 +59,7 @@ void GenericModbusTCPClient::check_ip(const ip_addr_t *ip, int err)
             resolve_error_printed = true;
         }
 
-        task_scheduler.scheduleOnce([this](){
+        task_scheduler.scheduleOnce([this]() {
             this->start_connection();
         }, 10 * 1000);
 
@@ -71,16 +71,16 @@ void GenericModbusTCPClient::check_ip(const ip_addr_t *ip, int err)
 
     errno = ENOTRECOVERABLE; // Set to something known because connect() might leave errno unchanged on some errors.
     if (!mb->connect(host_ip, port)) {
-        if (!connect_error_printed) {
-            if (errno == EINPROGRESS) { // WiFiClient::connect() doesn't set errno and incorrectly returns EINPROGRESS despite being blocking.
-                logger.printfln("generic_modbus_tcp_client: Connection to '%s' failed.", host_name.c_str());
+        if (errno != last_connect_errno) {
+            if (errno == EINPROGRESS) { // WiFiClient::connect() doesn't set errno when its select() call times out and incorrectly leaves it at EINPROGRESS despite being blocking.
+                logger.printfln("generic_modbus_tcp_client: Connection attempt to '%s' timed out", host_name.c_str());
             } else {
                 logger.printfln("generic_modbus_tcp_client: Connection to '%s' failed: %s (%i)", host_name.c_str(), strerror(errno), errno);
             }
-            connect_error_printed = true;
+            last_connect_errno = errno;
         }
 
-        task_scheduler.scheduleOnce([this](){
+        task_scheduler.scheduleOnce([this]() {
             this->start_connection();
         }, connect_backoff_ms);
 
@@ -90,7 +90,7 @@ void GenericModbusTCPClient::check_ip(const ip_addr_t *ip, int err)
         }
     } else {
         connect_backoff_ms = 1000;
-        connect_error_printed = false;
+        last_connect_errno = 0;
         logger.printfln("generic_modbus_tcp_client: Connected to '%s'", host_name.c_str());
         connect_callback();
     }
