@@ -521,11 +521,12 @@
 - Don't immediately block charging when external slot gets enabled (through EVSE 2.0 Bricklet firmware 2.2.0)
 - Make sure that the diode check is only run if at least one negative PWM value has been measured (through EVSE 2.0 Bricklet firmware 2.2.1)
 
-2024-02-09: 2.2.1 (27ba409b)
+2024-02-12: 2.2.1 (<unknown>)
 - Make generation of first web socket frame more memory efficient
 - Don't report vendor specific SunSpec models as unknown
 - Fix hanging SunSpec discovery under specific error conditions
 - Abort SunSpec discovery when web interface is closed
+- Make SunSpec discovery process more robust against connection loss
 - Fix HTTP API causing errors if receiving payload is slow
 - Update timezone database
 - Fix OCPP responses not being sent
