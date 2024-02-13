@@ -50,6 +50,14 @@ void API::pre_setup()
         {"config", Config::Str("", 0, 12)},
         {"config_type", Config::Str("", 0, 32)},
     });
+
+    modified_prototype = Config::Object({
+        // 0 - Config not modified since boot, config has default values (i.e. does not exist in flash)
+        // 1 - Config modified since boot,     config has default values (i.e. does not exist in flash)
+        // 2 - Config not modified since boot, config is changed from defaults (i.e. exists in flash)
+        // 3 - Config modified since boot,     config is changed from defaults (i.e. exists in flash)
+        {"modified", Config::Uint8(0)}
+    });
 }
 
 void API::setup()
@@ -177,13 +185,7 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initi
 
     // It is okay to leak this: Configs cannot be deregistered.
     // The [path]_modified config has to live forever
-    ConfigRoot *conf_modified = new ConfigRoot(Config::Object({
-        // 0 - Config not modified since boot, config has default values (i.e. does not exist in flash)
-        // 1 - Config modified since boot,     config has default values (i.e. does not exist in flash)
-        // 2 - Config not modified since boot, config is changed from defaults (i.e. exists in flash)
-        // 3 - Config modified since boot,     config is changed from defaults (i.e. exists in flash)
-        {"modified", Config::Uint8(0)}
-    }));
+    ConfigRoot *conf_modified = new ConfigRoot(modified_prototype);
 
     {
         // If the config is written to flash, we assume that it is not the default configuration.

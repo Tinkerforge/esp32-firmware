@@ -143,6 +143,7 @@ public:
 
     ConfigRoot features;
     ConfigRoot version;
+    ConfigRoot modified_prototype;
 
     uint8_t state_update_counter = 0;
 
