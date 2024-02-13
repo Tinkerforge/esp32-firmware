@@ -4,7 +4,7 @@
 
 ConfigRoot::ConfigRoot(Config cfg) : Config(cfg), validator(nullptr) {}
 
-ConfigRoot::ConfigRoot(Config cfg, std::function<String(Config &, ConfigSource)> validator) : Config(cfg), validator(new std::function<String(Config &, ConfigSource)>(validator)) {}
+ConfigRoot::ConfigRoot(Config cfg, Validator validator) : Config(cfg), validator(new Validator(validator)) {}
 
 String ConfigRoot::update_from_file(File &&file)
 {
