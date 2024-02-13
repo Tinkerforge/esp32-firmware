@@ -64,11 +64,11 @@ void Mqtt::pre_setup()
         {"interval", Config::Uint32(1)},
         // esp_mqtt_transport_t. -1 because we don't allow MQTT_TRANSPORT_UNKNOWN.
         // MQTT over WS and WSS is currently broken: esp_transport_ws sends a broken WebSocket handshake.
-        {"protocol", Config::Uint(MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_SSL - 1)},
+        {"protocol", Config::Uint(MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_WSS - 1)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"client_cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"client_key_id", Config::Int(-1, -1, MAX_CERT_ID)},
-        //{"path", Config::Str("", 0, 64)}
+        {"path", Config::Str("", 0, 64)}
     }), [](Config &cfg, ConfigSource source) -> String {
 #if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
         const String &global_topic_prefix = cfg.get("global_topic_prefix")->asString();
@@ -620,10 +620,10 @@ void Mqtt::setup()
         mqtt_cfg.client_key_pem = (const char *)cert.release();
     }
 
-    /*if ((mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WS || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS) && config_in_use.get("path")->asString().length() > 0) {
+    if ((mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WS || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS) && config_in_use.get("path")->asString().length() > 0) {
         mqtt_cfg.path = config_in_use.get("path")->asEphemeralCStr();
         logger.printfln("Using path %s", mqtt_cfg.path);
-    }*/
+    }
 
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);

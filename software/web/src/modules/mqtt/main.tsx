@@ -92,8 +92,8 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                             items={[
                                 ["0", __("mqtt.content.protocol_mqtt")],
                                 ["1", __("mqtt.content.protocol_mqtts")],
-                                /*["2", __("mqtt.content.protocol_ws")],
-                                ["3", __("mqtt.content.protocol_wss")],*/
+                                ["2", __("mqtt.content.protocol_ws")],
+                                ["3", __("mqtt.content.protocol_wss")],
                             ]}
                             value={state.protocol}
                             onValue={(v) => {
@@ -145,19 +145,18 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                             </FormRow>
                         </div>
                     </Collapse>
-                    {/*
-                        <Collapse in={state.protocol == 2 || state.protocol == 3}>
-                            <div>
-                                <FormRow label={__("mqtt.content.path")}>
-                                    <InputText
-                                        maxLength={64}
-                                        value={state.path}
-                                        onValue={this.set("path")}
-                                    />
-                                </FormRow>
-                            </div>
-                        </Collapse>
-                        */}
+
+                    <Collapse in={state.protocol == 2 || state.protocol == 3}>
+                        <div>
+                            <FormRow label={__("mqtt.content.path")}>
+                                <InputText
+                                    maxLength={64}
+                                    value={state.path}
+                                    onValue={this.set("path")}
+                                />
+                            </FormRow>
+                        </div>
+                    </Collapse>
 
                     <FormRow label={__("mqtt.content.broker_host")}>
                         <InputText required={state.enable_mqtt}

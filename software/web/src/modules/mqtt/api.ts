@@ -11,7 +11,7 @@ export interface config {
     cert_id: number;
     client_cert_id: number;
     client_key_id: number;
-    //path: string;
+    path: string;
 }
 
 export interface auto_discovery_config {
