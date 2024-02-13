@@ -49,7 +49,7 @@ extern char local_uid_str[32];
 void Mqtt::pre_setup()
 {
     // The real UID will be patched in later
-    config = ConfigRoot(Config::Object({
+    config = ConfigRoot{Config::Object({
         {"enable_mqtt", Config::Bool(false)},
         {"broker_host", Config::Str("", 0, 128)},
         {"broker_port", Config::Uint16(1883)},
@@ -67,7 +67,7 @@ void Mqtt::pre_setup()
             return "Global topic prefix cannot be the same as the MQTT auto discovery topic prefix.";
 #endif
         return "";
-    });
+    }};
 
     state = Config::Object({
         {"connection_state", Config::Int(0)},

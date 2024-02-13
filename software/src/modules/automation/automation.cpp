@@ -59,7 +59,7 @@ void Automation::pre_setup()
                     action_vec.data(),
                     action_vec.size());
 
-    config = ConfigRoot(Config::Object({
+    config = ConfigRoot{Config::Object({
             {"tasks", Config::Array(
                 {},
                 new Config{
@@ -101,7 +101,7 @@ void Automation::pre_setup()
 
             return "";
         }
-    );
+    };
     config_in_use = config;
 }
 

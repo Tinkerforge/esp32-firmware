@@ -147,9 +147,9 @@ ConfigRoot *Config::Confirm()
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
     if (confirmconf == nullptr) {
-        confirmconf = new ConfigRoot(Config::Object({
+        confirmconf = new ConfigRoot{Config::Object({
             {Config::ConfirmKey(), Config::Bool(false)}
-        }));
+        })};
     }
 
     return confirmconf;

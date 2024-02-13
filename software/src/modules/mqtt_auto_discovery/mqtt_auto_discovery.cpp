@@ -29,7 +29,7 @@
 
 void MqttAutoDiscovery::pre_setup()
 {
-    config = ConfigRoot(Config::Object({
+    config = ConfigRoot{Config::Object({
         {"auto_discovery_mode", Config::Uint(MQTT_AUTO_DISCOVERY_MODE_MIN, MQTT_AUTO_DISCOVERY_MODE_MIN, MQTT_AUTO_DISCOVERY_MODE_MAX)},
         {"auto_discovery_prefix", Config::Str("homeassistant", 1, 64)}
     }),  [](Config &cfg, ConfigSource source) -> String {
@@ -40,7 +40,7 @@ void MqttAutoDiscovery::pre_setup()
             return "Auto discovery topic prefix cannot be the same as the MQTT API topic prefix.";
 
         return "";
-    });
+    }};
 }
 
 void MqttAutoDiscovery::setup()

@@ -37,7 +37,7 @@ extern char local_uid_str[32];
 
 void Ethernet::pre_setup()
 {
-    config = ConfigRoot(Config::Object({
+    config = ConfigRoot{Config::Object({
         {"enable_ethernet", Config::Bool(true)},
         {"ip", Config::Str("0.0.0.0", 7, 15)},
         {"gateway", Config::Str("0.0.0.0", 7, 15)},
@@ -72,7 +72,7 @@ void Ethernet::pre_setup()
             return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
         return "";
-    });
+    }};
 
     state = Config::Object({
         {"connection_state", Config::Uint((uint)EthernetState::NOT_CONFIGURED)},

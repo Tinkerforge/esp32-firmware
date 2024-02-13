@@ -185,7 +185,7 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initi
 
     // It is okay to leak this: Configs cannot be deregistered.
     // The [path]_modified config has to live forever
-    ConfigRoot *conf_modified = new ConfigRoot(modified_prototype);
+    ConfigRoot *conf_modified = new ConfigRoot{modified_prototype};
 
     {
         // If the config is written to flash, we assume that it is not the default configuration.

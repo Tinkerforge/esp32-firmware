@@ -63,7 +63,7 @@ void EnergyManager::pre_setup()
     });
 
     // Config
-    config = ConfigRoot(Config::Object({
+    config = ConfigRoot{Config::Object({
         {"contactor_installed", Config::Bool(false)},
     }), [](const Config &cfg, ConfigSource source) -> String {
         const Config *pm_cfg = power_manager.get_config();
@@ -74,7 +74,7 @@ void EnergyManager::pre_setup()
         }
 
         return "";
-    });
+    }};
 
     // history
     history_wallbox_5min = Config::Object({

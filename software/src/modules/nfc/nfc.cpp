@@ -52,7 +52,7 @@ void NFC::pre_setup()
         Config::type_id<Config::ConfObject>()
     );
 
-    config = ConfigRoot(Config::Object({
+    config = ConfigRoot{Config::Object({
         {"authorized_tags", Config::Array(
             {},
             new Config{Config::Object({
@@ -110,9 +110,9 @@ void NFC::pre_setup()
         }
 
         return "";
-    });
+    }};
 
-    inject_tag = ConfigRoot(Config::Object({
+    inject_tag = ConfigRoot{Config::Object({
         {"tag_type", Config::Uint(0, 0, 4)},
         {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
     }), [this](Config &cfg, ConfigSource source) -> String {
@@ -130,7 +130,7 @@ void NFC::pre_setup()
         }
 
         return "";
-    });
+    }};
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_trigger(

@@ -58,7 +58,7 @@ void PowerManager::pre_setup()
         {"switching_state", Config::Uint32(0)},
     });
 
-    config = ConfigRoot(Config::Object({
+    config = ConfigRoot{Config::Object({
         {"phase_switching_mode", Config::Uint(PHASE_SWITCHING_AUTOMATIC, PHASE_SWITCHING_MIN, PHASE_SWITCHING_MAX)},
         {"excess_charging_enable", Config::Bool(false)},
         {"default_mode", Config::Uint(0, 0, 3)},
@@ -79,7 +79,7 @@ void PowerManager::pre_setup()
         }
 
         return "";
-    });
+    }};
 
     debug_config = Config::Object({
         {"hysteresis_time", Config::Uint(HYSTERESIS_MIN_TIME_MINUTES, 0, 60)}, // in minutes

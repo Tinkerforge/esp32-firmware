@@ -163,7 +163,7 @@ void Users::pre_setup()
         {"http_auth_enabled", Config::Bool(false)}
     });
 
-    add = ConfigRoot(Config::Object({
+    add = ConfigRoot{Config::Object({
         {"id", Config::Uint8(0)},
         {"roles", Config::Uint32(0)},
         {"current", Config::Uint(32000, 0, 32000)},
@@ -196,10 +196,10 @@ void Users::pre_setup()
         }
 
         return "";
-    });
+    }};
     add.permit_null_updates = false;
 
-    remove = ConfigRoot(Config::Object({
+    remove = ConfigRoot{Config::Object({
         {"id", Config::Uint8(0)}
     }), [this](Config &remove, ConfigSource source) -> String {
         if (remove.get("id")->asUint() == 0)
@@ -212,9 +212,9 @@ void Users::pre_setup()
         }
 
         return "Can't remove user. User with this ID not found.";
-    });
+    }};
 
-    http_auth_update = ConfigRoot(Config::Object({
+    http_auth_update = ConfigRoot{Config::Object({
         {"enabled", Config::Bool(false)}
     }), [this](Config &update, ConfigSource source) -> String {
         if (!update.get("enabled")->asBool())
@@ -226,7 +226,7 @@ void Users::pre_setup()
         }
 
         return "Can't enable HTTP authentication if not at least one user with a password is configured!";
-    });
+    }};
 }
 
 void create_username_file()

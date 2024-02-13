@@ -24,7 +24,7 @@
 
 void MetersMqttMirror::pre_setup()
 {
-    config_prototype = ConfigRoot(Config::Object({
+    config_prototype = ConfigRoot{Config::Object({
         {"display_name", Config::Str("Lokal", 0, 32)},
         {"auto",         Config::Bool(true)},
         {"meter_path",   Config::Str("", 3, 64)},
@@ -37,7 +37,7 @@ void MetersMqttMirror::pre_setup()
             return "Cannot listen to itself: Source meter path cannot start with the topic prefix from the MQTT config.";
 
         return "";
-    });
+    }};
 
     meters.register_meter_generator(get_class(), this);
 }

@@ -38,7 +38,7 @@ extern char passphrase[20];
 
 void Wifi::pre_setup()
 {
-    ap_config = ConfigRoot(Config::Object({
+    ap_config = ConfigRoot{Config::Object({
         {"enable_ap", Config::Bool(true)},
         {"ap_fallback_only", Config::Bool(false)},
         {"ssid", Config::Str("", 0, 32)},
@@ -73,7 +73,7 @@ void Wifi::pre_setup()
             return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
 
         return "";
-    });
+    }};
     state = Config::Object({
         {"connection_state", Config::Int((int32_t)WifiState::NOT_CONFIGURED)},
         {"connection_start", Config::Uint32(0)},
@@ -111,7 +111,7 @@ void Wifi::pre_setup()
         eap_config_prototypes.data(),
         eap_config_prototypes.size());
 
-    sta_config = ConfigRoot(Config::Object({
+    sta_config = ConfigRoot{Config::Object({
         {"enable_sta", Config::Bool(false)},
         {"ssid", Config::Str("", 0, 32)},
         {"bssid", Config::Array({
@@ -178,7 +178,7 @@ void Wifi::pre_setup()
         }
 
         return "";
-    });
+    }};
 }
 
 float rssi_to_weight(int rssi)
