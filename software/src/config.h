@@ -721,7 +721,7 @@ public:
 
     ConfigRoot(Config cfg);
 
-    ConfigRoot(Config cfg, Validator validator);
+    ConfigRoot(Config cfg, Validator &&validator);
 
 private:
     Validator *validator;
