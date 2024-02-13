@@ -68,8 +68,8 @@ void WS::register_urls()
                     auto prefix = "{\"topic\":\"";
                     auto prefix_len = strlen(prefix);
 
-                    auto path = reg.path.c_str();
-                    auto path_len = reg.path.length();
+                    auto path = reg.path;
+                    auto path_len = reg.path_len;
 
                     auto infix = "\",\"payload\":";
                     auto infix_len = strlen(infix);
@@ -100,7 +100,7 @@ void WS::register_urls()
                     // So we only need suffix_len - 1 bytes here:
                     // ArduinoJSON writes a \0 but we will immediately overwrite it with the first byte of the suffix.
                     // However this could be the last API state, in this case we need one byte more for the second \n.
-                    buf_used += reg.config->to_string_except(reg.keys_to_censor, buf + buf_used, buf_size - buf_used - suffix_len);
+                    buf_used += reg.config->to_string_except(reg.keys_to_censor, reg.keys_to_censor_len, buf + buf_used, buf_size - buf_used - suffix_len);
 
                     memcpy(buf + buf_used, suffix, suffix_len);
                     buf_used += suffix_len;

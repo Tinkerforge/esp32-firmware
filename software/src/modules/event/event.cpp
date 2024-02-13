@@ -33,7 +33,7 @@ int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> val
 {
     auto api_states = api.states.size();
     for (size_t i = 0; i < api_states; i++) {
-        if (api.states[i].path != path) {
+        if (path.length() != api.states[i].path_len || path != api.states[i].path) {
             continue;
         }
 

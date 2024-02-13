@@ -686,7 +686,7 @@ private:
         return toWrite;
     }
 
-    DynamicJsonDocument to_json(const std::vector<String> &keys_to_censor) const;
+    DynamicJsonDocument to_json(const String *keys_to_censor, size_t keys_to_censor_len) const;
 
 public:
     size_t fillFloatArray(float *arr, size_t elements);
@@ -706,11 +706,12 @@ public:
     void save_to_file(File &file);
 
     void write_to_stream(Print &output);
-    void write_to_stream_except(Print &output, const std::vector<String> &keys_to_censor);
+    void write_to_stream_except(Print &output, const String *keys_to_censor, size_t keys_to_censor_len);
 
     String to_string() const;
-    String to_string_except(const std::vector<String> &keys_to_censor) const;
-    size_t to_string_except(const std::vector<String> &keys_to_censor, char *buf, size_t buf_size) const;
+
+    String to_string_except(const String *keys_to_censor, size_t keys_to_censor_len) const;
+    size_t to_string_except(const String *keys_to_censor, size_t keys_to_censor_len, char *buf, size_t buf_size) const;
 };
 
 struct ConfigRoot : public Config {

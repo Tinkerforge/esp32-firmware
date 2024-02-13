@@ -151,7 +151,7 @@ struct to_json {
                 arr.add(0);
             }
 
-            Config::apply_visitor(to_json{arr[i], keys_to_censor}, child->value);
+            Config::apply_visitor(to_json{arr[i], keys_to_censor, keys_to_censor_len}, child->value);
         }
     }
     void operator()(const Config::ConfObject &x)
@@ -173,11 +173,11 @@ struct to_json {
                 obj[key] = nullptr;
             }
 
-            Config::apply_visitor(to_json{obj[key], keys_to_censor}, child.value);
+            Config::apply_visitor(to_json{obj[key], keys_to_censor, keys_to_censor_len}, child.value);
         }
 
-        for (const String &key_string : keys_to_censor) {
-            const char *key = key_string.c_str();
+        for (size_t i = 0; i < keys_to_censor_len; ++i) {
+            const String &key = keys_to_censor[i];
             if (obj.containsKey(key) && !(obj[key].is<String>() && obj[key].as<String>().length() == 0))
                 obj[key] = nullptr;
         }
@@ -197,11 +197,12 @@ struct to_json {
             arr.add();
         }
 
-        Config::apply_visitor(to_json{insertHere[1], keys_to_censor}, val->value);
+        Config::apply_visitor(to_json{insertHere[1], keys_to_censor, keys_to_censor_len}, val->value);
     }
 
     JsonVariant insertHere;
-    const std::vector<String> &keys_to_censor;
+    const String *keys_to_censor;
+    size_t keys_to_censor_len;
 };
 
 static const uint8_t leading_zeros_to_char_count[33] = {10,10,10,9,9,9,8,8,8,7,7,7,7,6,6,6,5,5,5,4,4,4,4,3,3,3,2,2,2,1,1,1,1};

@@ -524,7 +524,7 @@ size_t Config::string_length() const
     return Config::apply_visitor(string_length_visitor{}, value);
 }
 
-DynamicJsonDocument Config::to_json(const std::vector<String> &keys_to_censor) const
+DynamicJsonDocument Config::to_json(const String *keys_to_censor, size_t keys_to_censor_len) const
 {
     DynamicJsonDocument doc(json_size(true));
 
@@ -536,13 +536,13 @@ DynamicJsonDocument Config::to_json(const std::vector<String> &keys_to_censor) c
     } else {
         var = doc.as<JsonVariant>();
     }
-    Config::apply_visitor(::to_json{var, keys_to_censor}, value);
+    Config::apply_visitor(::to_json{var, keys_to_censor, keys_to_censor_len}, value);
     return doc;
 }
 
 void Config::save_to_file(File &file)
 {
-    auto doc = this->to_json({});
+    auto doc = this->to_json(nullptr, 0);
 
     if (doc.overflowed()) {
         auto capacity = doc.capacity();
@@ -560,12 +560,12 @@ void Config::save_to_file(File &file)
 
 void Config::write_to_stream(Print &output)
 {
-    write_to_stream_except(output, {});
+    write_to_stream_except(output, nullptr, 0);
 }
 
-void Config::write_to_stream_except(Print &output, const std::vector<String> &keys_to_censor)
+void Config::write_to_stream_except(Print &output, const String *keys_to_censor, size_t keys_to_censor_len)
 {
-    auto doc = this->to_json(keys_to_censor);
+    auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
 
     if (doc.overflowed()) {
         auto capacity = doc.capacity();
@@ -583,12 +583,12 @@ void Config::write_to_stream_except(Print &output, const std::vector<String> &ke
 
 String Config::to_string() const
 {
-    return this->to_string_except({});
+    return this->to_string_except(nullptr, 0);
 }
 
-String Config::to_string_except(const std::vector<String> &keys_to_censor) const
+String Config::to_string_except(const String *keys_to_censor, size_t keys_to_censor_len) const
 {
-    auto doc = this->to_json(keys_to_censor);
+    auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
 
     String result;
     serializeJson(doc, result);
@@ -605,12 +605,11 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) const
     }
     return result;
 }
-
-size_t Config::to_string_except(const std::vector<String> &keys_to_censor, char *buf, size_t buf_len) const
+size_t Config::to_string_except(const String *keys_to_censor, size_t keys_to_censor_len, char *buf, size_t buf_size) const
 {
-    auto doc = this->to_json(keys_to_censor);
+    auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
 
-    size_t written = serializeJson(doc, buf, buf_len);
+    size_t written = serializeJson(doc, buf, buf_size);
 
     if (doc.overflowed()) {
         auto capacity = doc.capacity();

@@ -169,12 +169,12 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
 {
     auto req_size = reg.config->max_string_length();
     if (req_size > MQTT_RECV_BUFFER_SIZE) {
-        logger.printfln("MQTT: Recv buf is %u bytes. %s requires %u. Bump MQTT_RECV_BUFFER_SIZE! Updates on this topic might break the MQTT connection!", MQTT_RECV_BUFFER_SIZE, reg.path.c_str(), req_size);
+        logger.printfln("MQTT: Recv buf is %u bytes. %s requires %u. Bump MQTT_RECV_BUFFER_SIZE! Updates on this topic might break the MQTT connection!", MQTT_RECV_BUFFER_SIZE, reg.path, req_size);
         return;
     }
 #if MODULE_DEBUG_AVAILABLE()
     if (req_size > (MQTT_RECV_BUFFER_SIZE - MQTT_RECV_BUFFER_HEADROOM))
-        logger.printfln("MQTT: Recv buf is %u bytes. %s requires %u. Maybe bump MQTT_RECV_BUFFER_SIZE?", MQTT_RECV_BUFFER_SIZE, reg.path.c_str(), req_size);
+        logger.printfln("MQTT: Recv buf is %u bytes. %s requires %u. Maybe bump MQTT_RECV_BUFFER_SIZE?", MQTT_RECV_BUFFER_SIZE, reg.path, req_size);
 #endif
 }
 
@@ -369,23 +369,23 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     topic_len -= prefix.length() + 1;
 
     for (auto &reg : api.commands) {
-        if (topic_len != reg.path.length() || memcmp(topic, reg.path.c_str(), topic_len) != 0)
+        if (topic_len != reg.path_len || memcmp(topic, reg.path, topic_len) != 0)
             continue;
 
         if (retain && reg.is_action) {
-            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path.c_str(), data_len);
+            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path, data_len);
             return;
         }
 
         if (reg.is_action && data_len == 0) {
-            logger.printfln("MQTT: Topic %s is an action. Ignoring empty message.", reg.path.c_str());
+            logger.printfln("MQTT: Topic %s is an action. Ignoring empty message.", reg.path);
             return;
         }
 
         esp_mqtt_client_disable_receive(client, 100);
         api.callCommandNonBlocking(reg, data, data_len, [this, reg](String error) {
             if (error != "")
-                logger.printfln("MQTT: On %s: %s", reg.path.c_str(), error.c_str());
+                logger.printfln("MQTT: On %s: %s", reg.path, error.c_str());
             esp_mqtt_client_enable_receive(this->client);
         });
 
@@ -393,11 +393,11 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     }
 
     for (auto &reg : api.raw_commands) {
-        if (topic_len != reg.path.length() || memcmp(topic, reg.path.c_str(), topic_len) != 0)
+        if (topic_len != reg.path_len || memcmp(topic, reg.path, topic_len) != 0)
             continue;
 
         if (retain && reg.is_action) {
-            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path.c_str(), data_len);
+            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path, data_len);
             return;
         }
 
@@ -408,7 +408,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         task_scheduler.scheduleOnce([this, reg, data_cpy, data_len](){
             String error = reg.callback(data_cpy, data_len);
             if (error != "")
-                logger.printfln("MQTT: On %s: %s", reg.path.c_str(), error.c_str());
+                logger.printfln("MQTT: On %s: %s", reg.path, error.c_str());
 
             free(data_cpy);
             esp_mqtt_client_enable_receive(this->client);
@@ -419,7 +419,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
 
     // Don't print error message on state topics, this could be one of our own messages.
     for (auto &reg : api.states) {
-        if (topic_len != reg.path.length() || memcmp(topic, reg.path.c_str(), topic_len) != 0)
+        if (topic_len != reg.path_len || memcmp(topic, reg.path, topic_len) != 0)
             continue;
         return;
     }

@@ -100,7 +100,7 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
     }
 
     // Match directly registered URLs.
-    if (!strncmp_with_same_len(ref_uri, in_uri, len))
+    if (strncmp_with_same_len(ref_uri, in_uri, len) == 0)
         return true;
 
     // Only match in_uri with APIs if ref_uri is the registered API handler.
@@ -109,19 +109,19 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
 
     // Use + 1 to compare: in_uri starts with /; the api paths don't.
     for (size_t i = 0; i < api.commands.size(); i++)
-        if (strncmp_with_same_len(api.commands[i].path.c_str(), in_uri + 1, len - 1) == 0)
+        if (api.commands[i].path_len == len - 1 && memcmp(api.commands[i].path, in_uri + 1, len - 1) == 0)
             return true;
 
     for (size_t i = 0; i < api.states.size(); i++)
-        if (strncmp_with_same_len(api.states[i].path.c_str(), in_uri + 1, len - 1) == 0)
+        if (api.states[i].path_len == len - 1 && memcmp(api.states[i].path, in_uri + 1, len - 1) == 0)
             return true;
 
     for (size_t i = 0; i < api.raw_commands.size(); i++)
-        if (strncmp_with_same_len(api.raw_commands[i].path.c_str(), in_uri + 1, len - 1) == 0)
+        if (api.raw_commands[i].path_len == len - 1 && memcmp(api.raw_commands[i].path, in_uri + 1, len - 1) == 0)
             return true;
 
     for (size_t i = 0; i < api.responses.size(); i++)
-        if (strncmp_with_same_len(api.responses[i].path.c_str(), in_uri + 1, len - 1) == 0)
+        if (api.responses[i].path_len == len - 1 && memcmp(api.responses[i].path, in_uri + 1, len - 1) == 0)
             return true;
 
     return false;
@@ -172,14 +172,16 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
 // Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
 WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
 {
+    size_t req_uri_len = strlen(req.uriCStr() + 1);
+
     for (size_t i = 0; i < api.states.size(); i++)
     {
-        if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) != 0)
+        if (api.states[i].path_len != req_uri_len || memcmp(api.states[i].path, req.uriCStr() + 1, req_uri_len) != 0)
             continue;
 
         String response;
         auto result = task_scheduler.await([&response, i]() {
-            response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
+            response = api.states[i].config->to_string_except(api.states[i].keys_to_censor, api.states[i].keys_to_censor_len);
         });
         if (result == TaskScheduler::AwaitResult::Timeout)
             return req.send(500, "text/plain", "Failed to get config. Task timed out.");
@@ -188,7 +190,7 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
     }
 
     for (size_t i = 0; i < api.commands.size(); i++)
-        if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0 && api.commands[i].config->is_null())
+        if (api.commands[i].path_len == req_uri_len && memcmp(api.commands[i].path, req.uriCStr() + 1, req_uri_len) == 0 && api.commands[i].config->is_null())
             return run_command(req, i);
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
@@ -198,13 +200,15 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
 
 WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
 {
+    size_t req_uri_len = strlen(req.uriCStr() + 1);
+
     for (size_t i = 0; i < api.commands.size(); i++)
-        if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0)
+        if (api.commands[i].path_len == req_uri_len && memcmp(api.commands[i].path, req.uriCStr() + 1, req_uri_len) == 0)
             return run_command(req, i);
 
     for (size_t i = 0; i < api.raw_commands.size(); i++)
     {
-        if (strcmp(api.raw_commands[i].path.c_str(), req.uriCStr() + 1) != 0)
+        if (api.raw_commands[i].path_len != req_uri_len || memcmp(api.raw_commands[i].path, req.uriCStr() + 1, req_uri_len) != 0)
             continue;
 
         // TODO: Use streamed parsing
@@ -232,7 +236,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
 
     for (size_t i = 0; i < api.responses.size(); i++)
     {
-        if (strcmp(api.responses[i].path.c_str(), req.uriCStr() + 1) != 0)
+        if (api.responses[i].path_len != req_uri_len || memcmp(api.responses[i].path, req.uriCStr() + 1, req_uri_len) != 0)
             continue;
 
         // TODO: Use streamed parsing
@@ -272,13 +276,17 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
 
     for (size_t i = 0; i < api.states.size(); i++)
     {
-        if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) != 0)
+        if (api.states[i].path_len != req_uri_len || memcmp(api.states[i].path, req.uriCStr() + 1, req_uri_len) != 0)
             continue;
 
         String uri_update = req.uri() + "_update";
         for (size_t a = 0; a < api.commands.size(); a++)
-            if (!strcmp(api.commands[a].path.c_str(), uri_update.c_str() + 1))
+            if (api.commands[a].path_len == uri_update.length() - 1 && memcmp(api.commands[a].path, uri_update.c_str() + 1, uri_update.length() - 1) == 0)
                 return run_command(req, a);
+
+        // If we've found the api state that matches req.uriCStr() but did not find a corresponding command with _update,
+        // break here because there can't be two states with the same path. We don't have to check the rest.
+        break;
     }
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.

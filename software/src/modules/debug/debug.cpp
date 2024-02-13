@@ -288,7 +288,7 @@ void Debug::register_urls()
         task_scheduler.await([&str, &len]() {
             size_t offset = 0;
             for (const auto &reg : api.states) {
-                offset += snprintf_u(str + offset, sizeof(str) - offset, "%4u %s\n", reg.config->string_length(), reg.path.c_str());
+                offset += snprintf_u(str + offset, sizeof(str) - offset, "%4u %s\n", reg.config->string_length(), reg.path);
             }
             len = static_cast<ssize_t>(offset);
         });

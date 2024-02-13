@@ -33,33 +33,42 @@
 #include "tools.h"
 
 struct StateRegistration {
-    String path;
-    ConfigRoot *config;
-    std::vector<String> keys_to_censor;
-    bool low_latency;
+    const char * const path;
+    const String * const keys_to_censor;
+    ConfigRoot * const config;
+
+    const uint8_t path_len;
+    const uint8_t keys_to_censor_len;
+    const bool low_latency;
 };
 
 struct CommandRegistration {
-    String path;
-    ConfigRoot *config;
-    std::function<void(String &)> callback;
-    std::vector<String> keys_to_censor_in_debug_report;
-    bool is_action;
-    uint64_t task_id;
-    Config *config_in_flight;
+    const char * const path;
+    const String * const keys_to_censor_in_debug_report;
+    ConfigRoot * const config;
+    const std::function<void(String &)> callback;
+
+    const uint8_t path_len;
+    const uint8_t keys_to_censor_in_debug_report_len;
+    const bool is_action;
 };
 
 struct RawCommandRegistration {
-    String path;
+    const char * const path;
     std::function<String(char *, size_t)> callback;
+
+    const uint8_t path_len;
     bool is_action;
 };
 
 struct ResponseRegistration {
-    String path;
+    const char * const path;
+    const String * const keys_to_censor_in_debug_report;
     ConfigRoot *config;
     std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback;
-    std::vector<String> keys_to_censor_in_debug_report;
+
+    const uint8_t path_len;
+    const uint8_t keys_to_censor_in_debug_report_len;
 };
 
 class IAPIBackend : public IModule
@@ -100,14 +109,19 @@ public:
     const Config *getState(const String &path, bool log_if_not_found = true);
 
     void addFeature(const char *name);
+
+    // Prefer this version of addCommand over those below.
+    void addCommand(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action);
+    void addCommand(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
     void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
     void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action);
 
+    void addState(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {}, bool low_latency = false);
     void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {}, bool low_latency = false);
     bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {});
     //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<String> keys_to_censor, std::function<void(void)> &&callback);
-    void addRawCommand(const String &path, std::function<String(char *, size_t)> &&callback, bool is_action);
-    void addResponse(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback);
+    void addRawCommand(const char * const path, std::function<String(char *, size_t)> &&callback, bool is_action);
+    void addResponse(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback);
 
     // TODO Remove deprecated functions. Marked as deprecated on 2024-01-29.
     template<typename T>
@@ -148,7 +162,7 @@ public:
     uint8_t state_update_counter = 0;
 
 private:
-    bool already_registered(const String &path, const char *api_type);
+    bool already_registered(const char *path, size_t path_len, const char *api_type);
 
     void executeCommand(const CommandRegistration &reg, Config::ConfUpdate payload);
 };
