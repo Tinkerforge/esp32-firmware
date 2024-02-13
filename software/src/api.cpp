@@ -201,9 +201,9 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initi
 
         String conf_modified_path = path + "_modified";
         addState(conf_modified_path, conf_modified);
-
-        addState(path, config, keys_to_censor);
     }
+
+    addState(path, config, keys_to_censor);
 
     addCommand(path + "_update", config, keys_to_censor, [path, config, conf_modified]() {
         API::writeConfig(path, config);
