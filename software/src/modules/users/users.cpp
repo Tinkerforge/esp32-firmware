@@ -197,7 +197,7 @@ void Users::pre_setup()
 
         return "";
     }};
-    add.permit_null_updates = false;
+    add.set_permit_null_updates(false);
 
     remove = ConfigRoot{Config::Object({
         {"id", Config::Uint8(0)}

@@ -4,7 +4,7 @@
 
 ConfigRoot::ConfigRoot(Config cfg) : Config(cfg), validator(nullptr) {}
 
-ConfigRoot::ConfigRoot(Config cfg, std::function<String(Config &, ConfigSource)> validator) : Config(cfg), validator(validator) {}
+ConfigRoot::ConfigRoot(Config cfg, std::function<String(Config &, ConfigSource)> validator) : Config(cfg), validator(new std::function<String(Config &, ConfigSource)>(validator)) {}
 
 String ConfigRoot::update_from_file(File &&file)
 {
@@ -68,7 +68,7 @@ String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys, Conf
 
 String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source)
 {
-    String result = this->get_updated_copy(from_json{root, force_same_keys, this->permit_null_updates, true}, out_config, source);
+    String result = this->get_updated_copy(from_json{root, force_same_keys, this->get_permit_null_updates(), true}, out_config, source);
     // The from_json visitor can report multiple errors with newlines at the end of each line. Remove the last newline.
     result.trim();
     return result;
@@ -88,8 +88,10 @@ String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource 
     if (err != "")
         return err;
 
-    if (this->validator != nullptr) {
-        err = this->validator(*out_config, source);
+    auto *validator = (ConfigRoot::Validator *)(((std::uintptr_t)this->validator) & (~0x01));
+
+    if (validator != nullptr) {
+        err = (*validator)(*out_config, source);
         if (err != "")
             return err;
     }
@@ -118,8 +120,10 @@ String ConfigRoot::update(const Config::ConfUpdate *val)
 String ConfigRoot::validate(ConfigSource source)
 {
     ASSERT_MAIN_THREAD();
-    if (this->validator != nullptr) {
-        return this->validator(*this, source);
+    auto *validator = (ConfigRoot::Validator *)(((std::uintptr_t)this->validator) & (~0x01));
+
+    if (validator != nullptr) {
+        return (*validator)(*this, source);
     }
     return "";
 }
@@ -134,4 +138,18 @@ void ConfigRoot::update_from_copy(Config *copy)
 OwnedConfig ConfigRoot::get_owned_copy()
 {
     return Config::apply_visitor(to_owned{}, this->value);
+}
+
+void ConfigRoot::set_permit_null_updates(bool permit_null_updates) {
+    // Store permit_null_updates == true as 0 and == false as 1
+    // so that the default value is permitted.
+    if (permit_null_updates)
+        this->validator = (ConfigRoot::Validator *)(((std::uintptr_t)this->validator) & (~0x01));
+    else
+        this->validator = (ConfigRoot::Validator *)(((std::uintptr_t)this->validator) | 0x01);
+}
+
+bool ConfigRoot::get_permit_null_updates() {
+    // Inverted; see set_permit_null_updates.
+    return (((std::uintptr_t)this->validator) & 0x01) == 0;
 }
