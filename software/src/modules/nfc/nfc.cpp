@@ -162,7 +162,7 @@ void NFC::pre_setup()
 
     auth_info = Config::Object({
         {"tag_type", Config::Uint8(0)},
-        {"tag_id", Config::Str("", 0, 30)}
+        {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
     });
 }
 
