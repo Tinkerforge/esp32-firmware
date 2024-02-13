@@ -59,49 +59,49 @@ void Automation::pre_setup()
                     action_vec.data(),
                     action_vec.size());
 
-    config = Config::Array(
-        {},
-        new Config{
-            Config::Object({
-                {"trigger", trigger_prototype},
-                {"action", action_prototype}
-            })
-        }, 0, 14, Config::type_id<Config::ConfObject>());
-
     config = ConfigRoot(Config::Object({
-        {"tasks", config}
-    }),
-    [this](Config &cfg, ConfigSource source) -> String {
-        for (auto &task : cfg.get("tasks")) {
-            AutomationActionID action_id = task.get("action")->getTag<AutomationActionID>();
-            if (action_id == AutomationActionID::None) {
-                return "ActionID must not be 0!";
+            {"tasks", Config::Array(
+                {},
+                new Config{
+                    Config::Object({
+                        {"trigger", trigger_prototype},
+                        {"action", action_prototype}
+                    })
+                }, 0, 14, Config::type_id<Config::ConfObject>())
             }
+        }),
+        [this](Config &cfg, ConfigSource source) -> String {
+            for (auto &task : cfg.get("tasks")) {
+                AutomationActionID action_id = task.get("action")->getTag<AutomationActionID>();
+                if (action_id == AutomationActionID::None) {
+                    return "ActionID must not be 0!";
+                }
 
-            auto &action_validator = this->action_map[action_id].second;
-            if (action_validator) {
-                auto ret = action_validator((Config *)task.get("action")->get());
-                if (ret != "") {
-                    return ret;
+                auto &action_validator = this->action_map[action_id].second;
+                if (action_validator) {
+                    auto ret = action_validator((Config *)task.get("action")->get());
+                    if (ret != "") {
+                        return ret;
+                    }
+                }
+
+                AutomationTriggerID trigger_id = task.get("trigger")->getTag<AutomationTriggerID>();
+                if (trigger_id == AutomationTriggerID::None) {
+                    return "TriggerID must not be 0!";
+                }
+
+                auto &trigger_validator = this->trigger_map[trigger_id];
+                if (trigger_validator) {
+                    auto ret = trigger_validator((Config *)task.get("trigger")->get());
+                    if (ret != "") {
+                        return ret;
+                    }
                 }
             }
 
-            AutomationTriggerID trigger_id = task.get("trigger")->getTag<AutomationTriggerID>();
-            if (trigger_id == AutomationTriggerID::None) {
-                return "TriggerID must not be 0!";
-            }
-
-            auto &trigger_validator = this->trigger_map[trigger_id];
-            if (trigger_validator) {
-                auto ret = trigger_validator((Config *)task.get("trigger")->get());
-                if (ret != "") {
-                    return ret;
-                }
-            }
+            return "";
         }
-
-        return "";
-    });
+    );
     config_in_use = config;
 }
 
