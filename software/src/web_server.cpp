@@ -189,7 +189,7 @@ WebServerHandler *WebServer::addHandler(const char *uri, httpd_method_t method, 
         return nullptr;
     }
 
-    handlers.emplace_front(uri, method, callbackInMainThread, std::forward<wshCallback>(callback), std::forward<wshUploadCallback>(uploadCallback));
+    handlers.emplace_front(callbackInMainThread, std::forward<wshCallback>(callback), std::forward<wshUploadCallback>(uploadCallback));
     ++handler_count;
     WebServerHandler *result = &handlers.front();
 
