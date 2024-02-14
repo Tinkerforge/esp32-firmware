@@ -99,7 +99,7 @@ void Mqtt::pre_setup()
         [this](const Config *cfg) {
             const CoolString &topic = cfg->get("topic_filter")->asString();
             if (topic.startsWith(this->config.get("global_topic_prefix")->asString())) {
-                return String("Mqtt-topic must not contain the global prefix.");
+                return String("MQTT topic must not contain the global prefix.");
             }
             bool valid = true;
             int pos = topic.indexOf('#');
@@ -140,11 +140,11 @@ void Mqtt::pre_setup()
         [this](const Config *cfg) {
             const CoolString &topic = cfg->get("topic")->asString();
             if (topic.startsWith(this->config.get("global_topic_prefix")->asString())) {
-                return String("Mqtt-topic must not contain the global prefix.");
+                return String("MQTT topic must not contain the global prefix.");
             }
 
             if (topic.indexOf('#') != -1 || topic.indexOf('+') != -1) {
-                return String("Mqtt-topic must not contain wildcards.");
+                return String("MQTT topic must not contain wildcards.");
             }
             return String("");
         }
