@@ -63,7 +63,6 @@ void Mqtt::pre_setup()
         {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + "-" + "ABC", 1, 64)},
         {"interval", Config::Uint32(1)},
         // esp_mqtt_transport_t. -1 because we don't allow MQTT_TRANSPORT_UNKNOWN.
-        // MQTT over WS and WSS is currently broken: esp_transport_ws sends a broken WebSocket handshake.
         {"protocol", Config::Uint(MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_WSS - 1)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"client_cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
