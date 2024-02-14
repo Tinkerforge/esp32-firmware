@@ -74,7 +74,15 @@ typedef struct TF_Net {
     const char* auth_secret;
     uint32_t next_auth_nonce;
 
-    struct sockaddr_in listen_addr;
+    // We only support IPv4 for now. However some functions like
+    // ipaddr_aton expect to be able to write ip_addr_t's "type" member
+    // that is behind a union of an IPv4 and IPv6 address.
+    // Pad TF_Net to the size of sockaddr_storage to
+    // make sure ipaddr_aton does not write behind TF_Net.
+    union {
+        struct sockaddr_storage listen_addr_storage;
+        struct sockaddr_in listen_addr;
+    };
 } TF_Net;
 
 #define TF_E_INVALID_ADDRESS -200
