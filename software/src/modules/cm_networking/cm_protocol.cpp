@@ -127,7 +127,7 @@ static String validate_protocol_version(const struct cm_packet_header *header, u
 static String validate_command_packet_header(const struct cm_command_packet *pkt, ssize_t recv_length)
 {
     String result = validate_packet_header_common(&(pkt->header), recv_length, cm_command_packet_length_versions, "command");
-    if (result != "")
+    if (!result.isEmpty())
         return result;
 
     return validate_protocol_version(&(pkt->header), CM_COMMAND_VERSION_MIN, CM_COMMAND_VERSION, cm_command_packet_length_versions, "command", recv_length);
@@ -136,7 +136,7 @@ static String validate_command_packet_header(const struct cm_command_packet *pkt
 static String validate_state_packet_header(const struct cm_state_packet *pkt, ssize_t recv_length)
 {
     String result = validate_packet_header_common(&(pkt->header), recv_length, cm_state_packet_length_versions, "state");
-    if (result != "")
+    if (!result.isEmpty())
         return result;
 
     return validate_protocol_version(&(pkt->header), CM_STATE_VERSION_MIN, CM_STATE_VERSION, cm_state_packet_length_versions, "state", recv_length);
@@ -283,7 +283,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
             }
 
             String validation_error = validate_state_packet_header(&state_pkt, len);
-            if (validation_error != "") {
+            if (!validation_error.isEmpty()) {
                 logger.printfln("Received state packet from %s (%s) (%i bytes) failed validation: %s",
                                 charge_manager.get_charger_name(charger_idx),
                                 inet_ntoa(source_addr.sin_addr),
@@ -391,7 +391,7 @@ void CMNetworking::register_client(std::function<void(uint16_t, bool)> client_ca
         }
 
         String validation_error = validate_command_packet_header(&command_pkt, len);
-        if (validation_error != "") {
+        if (!validation_error.isEmpty()) {
             logger.printfln("Received command packet from %s (%i bytes) failed validation: %s",
                 inet_ntoa(((struct sockaddr_in*)&temp_addr)->sin_addr),
                 len,

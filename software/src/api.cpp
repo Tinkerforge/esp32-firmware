@@ -310,7 +310,7 @@ void API::callResponse(ResponseRegistration &reg, char *payload, size_t len, ICh
 
     if (!(len == 0 && reg.config->is_null())) {
         String message = reg.config->update_from_cstr(payload, len);
-        if (message != "") {
+        if (!message.isEmpty()) {
             response->begin(false);
             response->write(message.c_str(), message.length());
             response->flush();
@@ -429,11 +429,11 @@ bool API::restorePersistentConfig(const String &path, ConfigRoot *config)
 
     String error = config->update_from_file(LittleFS.open(filename));
 
-    if (error != "") {
+    if (!error.isEmpty()) {
         logger.printfln("Failed to restore persistent config %s: %s", path_copy.c_str(), error.c_str());
     }
 
-    return error == "";
+    return error.isEmpty();
 }
 
 void API::registerDebugUrl()
@@ -535,7 +535,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len)
 
             if (payload != nullptr) {
                 result = reg.config->update_from_cstr(payload, len);
-                if (result != "")
+                if (!result.isEmpty())
                     return;
             }
 
@@ -575,7 +575,7 @@ void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t
 
             if (cpy != nullptr) {
                 result = reg.config->update_from_cstr(cpy, len);
-                if (result != "") {
+                if (!result.isEmpty()) {
                     return;
                 }
             }
@@ -597,7 +597,7 @@ String API::callCommand(const char *path, Config::ConfUpdate payload)
 
         String error = reg.config->update(&payload);
 
-        if (error != "") {
+        if (!error.isEmpty()) {
             return error;
         }
         reg.callback(error);

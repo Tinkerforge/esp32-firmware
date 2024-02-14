@@ -214,7 +214,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
 
     if (chunk_index + chunk_length >= FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
         String error = this->check_firmware_info(firmware_info_found, false, true);
-        if (error != "") {
+        if (!error.isEmpty()) {
             request.send(400, "application/json", error.c_str());
             Update.abort();
             update_aborted = true;
@@ -293,7 +293,7 @@ void FirmwareUpdate::register_urls()
 
         if (index + len >= FIRMWARE_INFO_LENGTH) {
             String error = this->check_firmware_info(firmware_info_found, true, false);
-            if (error != "") {
+            if (!error.isEmpty()) {
                 request.send(400, "application/json", error.c_str());
             }
         }

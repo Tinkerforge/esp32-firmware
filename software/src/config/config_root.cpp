@@ -25,7 +25,7 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
     ASSERT_MAIN_THREAD();
     Config copy;
     String err = this->get_updated_copy(c, len, &copy, ConfigSource::API);
-    if (err != "")
+    if (!err.isEmpty())
         return err;
 
     this->update_from_copy(&copy);
@@ -59,7 +59,7 @@ String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys, Conf
 {
     Config copy;
     String err = this->get_updated_copy(root, force_same_keys, &copy, source);
-    if (err != "")
+    if (!err.isEmpty())
         return err;
 
     this->update_from_copy(&copy);
@@ -80,19 +80,19 @@ String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource 
     *out_config = *this;
     String err = Config::apply_visitor(visitor, out_config->value);
 
-    if (err != "")
+    if (!err.isEmpty())
         return err;
 
     err = Config::apply_visitor(default_validator{}, out_config->value);
 
-    if (err != "")
+    if (!err.isEmpty())
         return err;
 
     auto *validator = (ConfigRoot::Validator *)(((std::uintptr_t)this->validator) & (~0x01));
 
     if (validator != nullptr) {
         err = (*validator)(*out_config, source);
-        if (err != "")
+        if (!err.isEmpty())
             return err;
     }
     return "";
@@ -104,7 +104,7 @@ String ConfigRoot::update_from_visitor(T visitor, ConfigSource source) {
     Config copy;
 
     String err = this->get_updated_copy(visitor, &copy, source);
-    if (err != "")
+    if (!err.isEmpty())
         return err;
 
     this->update_from_copy(&copy);

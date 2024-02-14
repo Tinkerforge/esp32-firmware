@@ -84,19 +84,19 @@ void Wireguard::pre_setup()
         bool enable = cfg.get("enable")->asBool();
         const String &private_key = cfg.get("private_key")->asString();
         String result = check_key(private_key, enable);
-        if (result != "")
+        if (!result.isEmpty())
             return "\"private_key\"" + result;
 
         const String &remote_public_key = cfg.get("remote_public_key")->asString();
         result = check_key(remote_public_key, enable);
-        if (result != "")
+        if (!result.isEmpty())
             return "\"remote_public_key\"" + result;
 
         const String &preshared_key = cfg.get("preshared_key")->asString();
 
         // pass false because an empty preshared_key is always allowed.
         result = check_key(preshared_key, false);
-        if (result != "")
+        if (!result.isEmpty())
             return "\"preshared_key\"" + result;
 
         return "";

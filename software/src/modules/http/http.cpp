@@ -45,7 +45,7 @@ public:
 
     void end(String error)
     {
-        if (error == "") {
+        if (error.isEmpty()) {
             request->endChunkedResponse();
         }
     }
@@ -160,7 +160,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
         message = api.callCommand(reg, recv_buf, bytes_written);
     }
 
-    if (message == "") {
+    if (message.isEmpty()) {
         return req.send(200);
     }
     return req.send(400, "text/plain; charset=utf-8", message.c_str());
@@ -228,7 +228,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
         if (result == TaskScheduler::AwaitResult::Timeout)
             return req.send(500, "text/plain", "Failed to call raw command. Task timed out.");
 
-        if (message == "") {
+        if (message.isEmpty()) {
             return req.send(200);
         }
         return req.send(400, "text/plain; charset=utf-8", message.c_str());
@@ -262,7 +262,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
 
         String error = queued_response.wait();
 
-        if (error != "") {
+        if (!error.isEmpty()) {
             logger.printfln("Response processing failed after update: %s (%s %s)", error.c_str(), req.methodString(), req.uriCStr());
         }
 

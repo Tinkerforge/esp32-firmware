@@ -221,7 +221,7 @@ void Users::pre_setup()
             return "";
 
         for (int i = 0; i < config.get("users")->count(); ++i) {
-            if (config.get("users")->get(i)->get("digest_hash")->asString() != "")
+            if (!config.get("users")->get(i)->get("digest_hash")->asString().isEmpty())
                 return "";
         }
 
@@ -323,7 +323,7 @@ void Users::setup()
     if (config.get("http_auth_enabled")->asBool()) {
         bool user_with_password_found = false;
         for (int i = 0; i < config.get("users")->count(); ++i) {
-            if (config.get("users")->get(i)->get("digest_hash")->asString() != "") {
+            if (!config.get("users")->get(i)->get("digest_hash")->asString().isEmpty()) {
                 user_with_password_found = true;
                 break;
             }
@@ -336,7 +336,7 @@ void Users::setup()
 
         server.onAuthenticate_HTTPThread([this](WebServerRequest req) -> bool {
             String auth = req.header("Authorization");
-            if (auth == "") {
+            if (auth.isEmpty()) {
                 return false;
             }
 
@@ -537,7 +537,7 @@ void Users::register_urls()
         if (doc["username"] != nullptr
          && doc["digest_hash"] == nullptr
          && user->get("username")->asString() != doc["username"]
-         && user->get("digest_hash")->asString() != "") {
+         && !user->get("digest_hash")->asString().isEmpty()) {
             return "Changing the username without updating the digest hash is not allowed!";
         }
 
@@ -580,7 +580,7 @@ void Users::register_urls()
             user->get("digest_hash")->updateString(doc["digest_hash"]);
 
         String err = this->config.validate(ConfigSource::API);
-        if (err != "")
+        if (!err.isEmpty())
             return err;
 
         API::writeConfig("users/config", &config);

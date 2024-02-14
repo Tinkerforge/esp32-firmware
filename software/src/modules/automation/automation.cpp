@@ -80,7 +80,7 @@ void Automation::pre_setup()
                 auto &action_validator = this->action_map[action_id].second;
                 if (action_validator) {
                     auto ret = action_validator((Config *)task.get("action")->get());
-                    if (ret != "") {
+                    if (!ret.isEmpty()) {
                         return ret;
                     }
                 }
@@ -93,7 +93,7 @@ void Automation::pre_setup()
                 auto &trigger_validator = this->trigger_map[trigger_id];
                 if (trigger_validator) {
                     auto ret = trigger_validator((Config *)task.get("trigger")->get());
-                    if (ret != "") {
+                    if (!ret.isEmpty()) {
                         return ret;
                     }
                 }
