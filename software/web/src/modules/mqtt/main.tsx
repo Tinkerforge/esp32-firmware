@@ -146,10 +146,19 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                         </div>
                     </Collapse>
 
+                    <FormRow label={__("mqtt.content.broker_host")}>
+                        <InputText required={state.enable_mqtt}
+                                   maxLength={128}
+                                   value={state.broker_host}
+                                   onValue={this.set("broker_host")}/>
+                    </FormRow>
+
                     <Collapse in={state.protocol == 2 || state.protocol == 3}>
                         <div>
-                            <FormRow label={__("mqtt.content.path")}>
+                            <FormRow label={__("mqtt.content.path")} label_muted={__("mqtt.content.path_muted")}>
                                 <InputText
+                                    pattern="/.*"
+                                    invalidFeedback={__("mqtt.content.path_invalid")}
                                     maxLength={64}
                                     value={state.path}
                                     onValue={this.set("path")}
@@ -157,13 +166,6 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                             </FormRow>
                         </div>
                     </Collapse>
-
-                    <FormRow label={__("mqtt.content.broker_host")}>
-                        <InputText required={state.enable_mqtt}
-                                   maxLength={128}
-                                   value={state.broker_host}
-                                   onValue={this.set("broker_host")}/>
-                    </FormRow>
 
                     <FormRow label={__("mqtt.content.port")} label_muted={__("mqtt.content.port_muted")(default_ports[state.protocol])}>
                         <InputNumber required
