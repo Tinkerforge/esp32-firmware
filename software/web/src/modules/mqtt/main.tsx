@@ -76,7 +76,8 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
 
         let default_ports = [1883, 8883, 80, 443];
 
-        let certs = API.get('certs/state').certs.map(c => [c.id.toString(), c.name]) as [string, string][];
+        let cert_state = API.get_unchecked('certs/state');
+        let certs = cert_state == null ? [] : cert_state.certs.map((c: any) => [c.id.toString(), c.name]) as [string, string][];
 
         return (
             <SubPage>
@@ -115,7 +116,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                                     }
                                     value={state.cert_id}
                                     onValue={(v) => this.setState({cert_id: parseInt(v)})}
-                                    disabled={state.protocol == 0 || state.protocol == 2}
+                                    disabled={cert_state == null}
                                     required={state.protocol == 1 || state.protocol == 3}
                                 />
                             </FormRow>
@@ -127,7 +128,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                                     }
                                     value={state.client_cert_id}
                                     onValue={(v) => this.setState({client_cert_id: parseInt(v)})}
-                                    disabled={state.protocol == 0 || state.protocol == 2}
+                                    disabled={cert_state == null}
                                     required={state.client_key_id != -1}
                                 />
                             </FormRow>
@@ -139,7 +140,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                                     }
                                     value={state.client_key_id}
                                     onValue={(v) => this.setState({client_key_id: parseInt(v)})}
-                                    disabled={state.protocol == 0 || state.protocol == 2}
+                                    disabled={cert_state == null}
                                     required={state.client_cert_id != -1}
                                 />
                             </FormRow>

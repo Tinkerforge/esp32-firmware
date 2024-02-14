@@ -50,6 +50,10 @@ extern char local_uid_str[32];
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
+#if not MODULE_CERTS_AVAILABLE()
+#define MAX_CERT_ID -1
+#endif
+
 void Mqtt::pre_setup()
 {
     // The real UID will be patched in later
@@ -531,6 +535,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
 void Mqtt::setup()
 {
+    initialized = true;
+
     if (!api.restorePersistentConfig("mqtt/config", &config)) {
         config.get("global_topic_prefix")->updateString(String(BUILD_HOST_PREFIX) + String("/") + String(local_uid_str));
         config.get("client_name")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str));
@@ -556,7 +562,6 @@ void Mqtt::setup()
     prefix = this->config_in_use.get("global_topic_prefix")->asString();
 
     if (!config.get("enable_mqtt")->asBool()) {
-        initialized = true;
         return;
     }
 
@@ -584,6 +589,7 @@ void Mqtt::setup()
     bool encrypted = mqtt_cfg.transport == MQTT_TRANSPORT_OVER_SSL || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS;
 
     if (encrypted && config_in_use.get("cert_id")->asInt() != -1) {
+#if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
         auto cert = certs.get_cert((uint8_t) config_in_use.get("cert_id")->asInt(), &cert_len);
         if (cert == nullptr) {
@@ -592,12 +598,17 @@ void Mqtt::setup()
         }
         // Leak cert here: MQTT requires the buffer to live forever.
         mqtt_cfg.cert_pem = (const char *)cert.release();
+#else
+        logger.printfln("MQTT: Can't use custom certitifate: certs module is not built into this firmware!");
+        return;
+#endif
     }
     else if (encrypted) {
         mqtt_cfg.crt_bundle_attach = esp_crt_bundle_attach;
     }
 
     if (encrypted && config_in_use.get("client_cert_id")->asInt() != -1) {
+#if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
         auto cert = certs.get_cert((uint8_t) config_in_use.get("client_cert_id")->asInt(), &cert_len);
         if (cert == nullptr) {
@@ -606,9 +617,14 @@ void Mqtt::setup()
         }
         // Leak cert here: MQTT requires the buffer to live forever.
         mqtt_cfg.client_cert_pem = (const char *)cert.release();
+#else
+        logger.printfln("MQTT: Can't use custom client certitifate: certs module is not built into this firmware!");
+        return;
+#endif
     }
 
     if (encrypted && config_in_use.get("client_key_id")->asInt() != -1) {
+#if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
         auto cert = certs.get_cert((uint8_t) config_in_use.get("client_key_id")->asInt(), &cert_len);
         if (cert == nullptr) {
@@ -617,6 +633,10 @@ void Mqtt::setup()
         }
         // Leak cert here: MQTT requires the buffer to live forever.
         mqtt_cfg.client_key_pem = (const char *)cert.release();
+#else
+        logger.printfln("MQTT: Can't use custom client key: certs module is not built into this firmware!");
+        return;
+#endif
     }
 
     if ((mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WS || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS) && config_in_use.get("path")->asString().length() > 0) {
@@ -630,8 +650,6 @@ void Mqtt::setup()
     task_scheduler.scheduleWithFixedDelay([this](){
         this->resubscribe();
     }, 1000, 1000);
-
-    initialized = true;
 }
 
 void Mqtt::register_urls()
