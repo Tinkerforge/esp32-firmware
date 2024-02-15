@@ -106,6 +106,142 @@ void PowerManager::setup()
 #if MODULE_DEBUG_AVAILABLE()
     api.restorePersistentConfig("power_manager/debug_config", &debug_config);
 #endif
+
+    charge_manager.set_allocated_current_callback([this](uint32_t current_ma) {
+        //logger.printfln("energy_manager: allocated current callback: %u", current_ma);
+        charge_manager_allocated_current_ma = current_ma;
+    });
+
+    // Get configs from Energy Manager
+    em_state = energy_manager.get_state();
+    em_config = energy_manager.get_config();
+
+    // Cache config for energy update
+    default_mode                = config.get("default_mode")->asUint();
+    excess_charging_enable      = config.get("excess_charging_enable")->asBool();
+    meter_slot_power            = config.get("meter_slot_grid_power")->asUint();
+    target_power_from_grid_w    = config.get("target_power_from_grid")->asInt();    // watt
+    guaranteed_power_w          = config.get("guaranteed_power")->asUint();         // watt
+    phase_switching_mode        = config.get("phase_switching_mode")->asUint();
+    switching_hysteresis_ms     = debug_config.get("hysteresis_time")->asUint() * 60 * 1000;        // milliseconds (from minutes)
+    max_current_unlimited_ma    = charge_manager.config.get("maximum_available_current")->asUint(); // milliampere
+    min_current_1p_ma           = charge_manager.config.get("minimum_current_1p")->asUint();        // milliampere
+    min_current_3p_ma           = charge_manager.config.get("minimum_current")->asUint();           // milliampere
+
+    mode = default_mode;
+    charge_mode.get("mode")->updateUint(mode);
+
+    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+        state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+
+    // Set up meter power filter.
+    uint32_t power_mavg_span_s;
+    switch (config.get("cloud_filter_mode")->asUint()) {
+        default:
+        case CLOUD_FILTER_OFF:    power_mavg_span_s =   0; break;
+        case CLOUD_FILTER_LIGHT:  power_mavg_span_s = 120; break;
+        case CLOUD_FILTER_MEDIUM: power_mavg_span_s = 240; break;
+        case CLOUD_FILTER_STRONG: power_mavg_span_s = 480; break;
+    }
+    if (power_mavg_span_s <= 0) {
+        power_at_meter_mavg_values_count = 1;
+    } else {
+        power_at_meter_mavg_values_count = static_cast<int32_t>(power_mavg_span_s * 1000 / PM_TASK_DELAY_MS);
+    }
+    power_at_meter_mavg_values_w = static_cast<int32_t*>(malloc_psram(static_cast<size_t>(power_at_meter_mavg_values_count) * sizeof(power_at_meter_mavg_values_w[0])));
+
+    // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
+    uint32_t hysteresis_min_ms = 10 * 1000;  // milliseconds
+    if (switching_hysteresis_ms < hysteresis_min_ms)
+        switching_hysteresis_ms = hysteresis_min_ms;
+
+    // Pre-calculate various limits
+    int32_t min_phases;
+    if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_1PHASE) {
+        min_phases = 1;
+        max_phases = 1;
+    } else if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE) {
+        min_phases = 3;
+        max_phases = 3;
+    } else { // automatic, external or PV1P/FAST3P
+        min_phases = 1;
+        max_phases = 3;
+    }
+    if (min_phases < 3) {
+        overall_min_power_w = static_cast<int32_t>(230 * 1 * min_current_1p_ma / 1000);
+    } else {
+        overall_min_power_w = static_cast<int32_t>(230 * 3 * min_current_3p_ma / 1000);
+    }
+
+    const int32_t max_1phase_w = static_cast<int32_t>(230 * 1 * max_current_unlimited_ma / 1000);
+    const int32_t min_3phase_w = static_cast<int32_t>(230 * 3 * min_current_3p_ma / 1000);
+
+    if (min_3phase_w > max_1phase_w) { // have dead current range
+        int32_t range_width = min_3phase_w - max_1phase_w;
+        threshold_3to1_w = max_1phase_w + static_cast<int32_t>(0.25 * range_width);
+        threshold_1to3_w = max_1phase_w + static_cast<int32_t>(0.75 * range_width);
+    } else { // no dead current range, use simple limits
+        threshold_3to1_w = min_3phase_w;
+        threshold_1to3_w = max_1phase_w;
+    }
+
+    low_level_state.get("overall_min_power")->updateInt(overall_min_power_w);
+    low_level_state.get("threshold_3to1")->updateInt(threshold_3to1_w);
+    low_level_state.get("threshold_1to3")->updateInt(threshold_1to3_w);
+
+    // Check for incomplete configuration after as much as possible has been set up.
+
+    bool power_meter_available = false;
+#if MODULE_METERS_AVAILABLE()
+    float unused_power;
+    if (meters.get_power(meter_slot_power, &unused_power) == MeterValueAvailability::Unavailable) {
+        meter_slot_power = UINT32_MAX;
+    } else {
+        power_meter_available = true;
+    }
+#endif
+    if (excess_charging_enable && !power_meter_available) {
+        set_config_error(CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK);
+        logger.printfln("energy_manager: Excess charging enabled but configured meter can't provide power values.");
+    }
+
+    task_scheduler.scheduleOnce([this]() {
+        // Tell CM how many phases are available. is_3phase is updated in the previous call to update_all_data().
+        // set_available_phases() uses callCommand(), which is not available during setup phase, so schedule a task for it.
+        set_available_phases(is_3phase ? 3 : 1);
+
+        // Can't check for chargers in setup() because CM's setup() hasn't run yet to load the charger configuration.
+        if (!charge_manager.have_chargers()) {
+            logger.printfln("energy_manager: No chargers configured. Won't try to distribute energy.");
+            set_config_error(CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK);
+        }
+    }, 0);
+
+    if (max_current_unlimited_ma == 0) {
+        logger.printfln("energy_manager: No maximum current configured for chargers. Disabling energy distribution.");
+        set_config_error(CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK);
+        return;
+    }
+
+    // If external control is enabled, assume that the last requested amount of phases
+    // is whatever the contactor is switched to at the moment, in order to preserve
+    // that across a reboot. This will still fail on a power cycle or bricklet update,
+    // which set the contactor back to single phase.
+    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+        uint32_t phases_wanted = is_3phase ? 3 : 1;
+        external_control.get("phases_wanted")->updateUint(phases_wanted);
+    }
+
+    reset_limit_max_current();
+
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        this->update_energy();
+    }, PM_TASK_DELAY_MS, PM_TASK_DELAY_MS);
+
+    task_scheduler.scheduleOnce([this]() {
+        uptime_past_hysteresis = true;
+        low_level_state.get("uptime_past_hysteresis")->updateBool(uptime_past_hysteresis);
+    }, switching_hysteresis_ms);
 }
 
 void PowerManager::register_urls()
@@ -120,12 +256,25 @@ void PowerManager::register_urls()
     api.addState("power_manager/low_level_state", &low_level_state);
 
     api.addState("power_manager/charge_mode", &charge_mode);
-    api.addCommand("power_manager/charge_mode_update", &charge_mode_update, {}, [this](){
-        energy_manager.update_charge_mode(charge_mode_update);
+    api.addCommand("power_manager/charge_mode_update", &charge_mode_update, {}, [this]() {
+        uint32_t new_mode = this->charge_mode_update.get("mode")->asUint();
+
+        if (new_mode == MODE_DO_NOTHING)
+            return;
+
+        auto runtime_mode = this->charge_mode.get("mode");
+        uint32_t old_mode = runtime_mode->asUint();
+        runtime_mode->updateUint(new_mode);
+        mode = new_mode;
+
+        if (new_mode != old_mode)
+            just_switched_mode = true;
+
+        logger.printfln("energy_manager: Switched mode %u->%u", old_mode, mode);
     }, false);
 
     api.addState("power_manager/external_control", &external_control);
-    api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this](){
+    api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this]() {
         uint32_t external_control_state = state.get("external_control")->asUint();
         switch (external_control_state) {
             case EXTERNAL_CONTROL_STATE_DISABLED:
@@ -160,34 +309,507 @@ void PowerManager::register_urls()
     }, true);
 }
 
-Config *PowerManager::get_state()
-{
-    return &state;
-}
-
-Config *PowerManager::get_config_low_level_state()
-{
-    return &low_level_state;
-}
-
 const Config *PowerManager::get_config()
 {
     return &config;
 }
 
-const Config *PowerManager::get_debug_config()
+void PowerManager::set_available_current(uint32_t current)
 {
-    return &debug_config;
+    is_on_last = current > 0;
+
+    String err = api.callCommand("charge_manager/available_current_update", Config::ConfUpdateObject{{
+        {"current", current},
+    }});
+
+    if (!err.isEmpty())
+        logger.printfln("energy_manager: set_available_current failed: %s", err.c_str());
+
+    charge_manager_available_current_ma = current;
+    low_level_state.get("charge_manager_available_current")->updateUint(current);
 }
 
-Config *PowerManager::get_config_charge_mode()
+void PowerManager::set_available_phases(uint32_t phases)
 {
-    return &charge_mode;
+    String err = api.callCommand("charge_manager/available_phases_update", Config::ConfUpdateObject{{
+        {"phases", phases},
+    }});
+
+    if (!err.isEmpty())
+        logger.printfln("energy_manager: set_available_phases failed: %s", err.c_str());
 }
 
-const Config *PowerManager::get_external_control()
+void PowerManager::update_energy()
 {
-    return &external_control;
+    static SwitchingState prev_state = switching_state;
+    if (switching_state != prev_state) {
+        logger.printfln("energy_manager: now in state %i", static_cast<int>(switching_state));
+        prev_state = switching_state;
+        low_level_state.get("switching_state")->updateUint(static_cast<uint32_t>(switching_state));
+    }
+
+    // Update states derived from all_data
+    //is_3phase   = contactor_installed ? all_data.contactor_value : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE; // TODO FIXME
+    have_phases = 1 + static_cast<uint32_t>(is_3phase) * 2;
+    low_level_state.get("is_3phase")->updateBool(is_3phase);
+    //automation_trigger |= state.get("phases_switched")->updateUint(have_phases) ? 4u : 0u; // TODO FIXME
+
+#if MODULE_METERS_AVAILABLE()
+    if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != MeterValueAvailability::Fresh)
+        power_at_meter_raw_w = NAN;
+#else
+    power_at_meter_raw_w = NAN;
+#endif
+
+    if (!isnan(power_at_meter_raw_w)) {
+        low_level_state.get("power_at_meter")->updateFloat(power_at_meter_raw_w);
+        int32_t raw_power_w = static_cast<int32_t>(power_at_meter_raw_w);
+
+        // Filtered/smoothed values must not be modified anywhere else.
+
+        // Check if smooth values need to be initialized.
+        if (power_at_meter_smooth_w == INT32_MAX) {
+            for (int32_t i = 0; i < CURRENT_POWER_SMOOTHING_SAMPLES; i++) {
+                power_at_meter_smooth_values_w[i] = raw_power_w;
+            }
+            power_at_meter_smooth_total = raw_power_w * CURRENT_POWER_SMOOTHING_SAMPLES;
+        } else {
+            power_at_meter_smooth_total = power_at_meter_smooth_total - power_at_meter_smooth_values_w[power_at_meter_smooth_position] + raw_power_w;
+            power_at_meter_smooth_values_w[power_at_meter_smooth_position] = raw_power_w;
+            power_at_meter_smooth_position++;
+            if (power_at_meter_smooth_position >= CURRENT_POWER_SMOOTHING_SAMPLES)
+                power_at_meter_smooth_position = 0;
+        }
+
+        // Signed division requires both numbers to be signed.
+        static_assert(std::is_same<int32_t, decltype(power_at_meter_smooth_total)>::value, "power_at_meter_smooth_total must be signed");
+        power_at_meter_smooth_w = power_at_meter_smooth_total / CURRENT_POWER_SMOOTHING_SAMPLES;
+
+        // Check if filter values need to be initialized.
+        if (power_at_meter_filtered_w == INT32_MAX) {
+            for (int32_t i = 0; i < power_at_meter_mavg_values_count; i++) {
+                power_at_meter_mavg_values_w[i] = raw_power_w;
+            }
+            power_at_meter_mavg_total = raw_power_w * power_at_meter_mavg_values_count;
+        } else {
+            power_at_meter_mavg_total = power_at_meter_mavg_total - power_at_meter_mavg_values_w[power_at_meter_mavg_position] + raw_power_w;
+            power_at_meter_mavg_values_w[power_at_meter_mavg_position] = raw_power_w;
+            power_at_meter_mavg_position++;
+            if (power_at_meter_mavg_position >= power_at_meter_mavg_values_count)
+                power_at_meter_mavg_position = 0;
+        }
+
+        // Signed division requires both numbers to be signed.
+        static_assert(std::is_same<int32_t, decltype(power_at_meter_mavg_total       )>::value, "power_at_meter_mavg_total must be signed");
+        static_assert(std::is_same<int32_t, decltype(power_at_meter_mavg_values_count)>::value, "power_at_meter_mavg_values_count must be signed");
+        power_at_meter_filtered_w = power_at_meter_mavg_total / power_at_meter_mavg_values_count;
+
+        low_level_state.get("power_at_meter_filtered")->updateFloat(static_cast<float>(power_at_meter_filtered_w));
+    }
+
+    // TODO FIXME
+    //if (!bricklet_reachable) {
+    //    set_available_current(0);
+    //
+    //    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+    //        state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+    //
+    //    return;
+    //}
+
+    if (switching_state == SwitchingState::Monitoring) {
+        /* TODO FIXME
+        if (contactor_check_tripped) {
+            set_available_current(0);
+
+            // The contactor check only detects a contactor defect when the contactor should be on.
+            // Switch contactor off when a defect is detected, to make sure that it's not energized.
+            if (all_data.contactor_value) {
+                logger.printfln("energy_manager: Switching off possibly defective contactor.");
+                wants_3phase = false;
+                switching_state = SwitchingState::Stopping;
+                switching_start = millis();
+            }
+
+            if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+
+            return;
+        }
+        */
+
+        const bool     is_on = is_on_last;
+        const uint32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt
+
+        low_level_state.get("charge_manager_allocated_current")->updateUint(charge_manager_allocated_current_ma);
+        low_level_state.get("max_current_limited")->updateUint(max_current_limited_ma);
+        low_level_state.get("charging_blocked")->updateUint(charging_blocked.combined);
+
+        if (charging_blocked.combined) {
+            if (is_on) {
+                phase_state_change_blocked_until = on_state_change_blocked_until = millis() + switching_hysteresis_ms;
+            }
+            set_available_current(0);
+            just_switched_phases = false;
+
+            if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+
+            return;
+        }
+
+        int32_t p_error_w, p_error_filtered_w;
+        if (!excess_charging_enable) {
+            p_error_w          = 0;
+            p_error_filtered_w = 0;
+        } else {
+            if (power_at_meter_smooth_w == INT32_MAX) {
+                if (!printed_skipping_energy_update) {
+                    logger.printfln("energy_manager: Pausing energy updates because power value is not available yet.");
+                    printed_skipping_energy_update = true;
+                }
+                return;
+            } else {
+                if (printed_skipping_energy_update) {
+                    logger.printfln("energy_manager: Resuming energy updates because power value is now available.");
+                    printed_skipping_energy_update = false;
+                }
+            }
+            p_error_w          = target_power_from_grid_w - power_at_meter_smooth_w;
+            p_error_filtered_w = target_power_from_grid_w - power_at_meter_filtered_w;
+
+            // TODO FIXME
+            //if (p_error_w > 200)
+            //    rgb_led.update_grid_balance(EmRgbLed::GridBalance::Export);
+            //else if (p_error_w < -200)
+            //    rgb_led.update_grid_balance(EmRgbLed::GridBalance::Import);
+            //else
+            //    rgb_led.update_grid_balance(EmRgbLed::GridBalance::Balanced);
+        }
+
+        switch (mode) {
+            case MODE_FAST:
+                power_available_w          = static_cast<int32_t>(230 * max_phases * max_current_limited_ma / 1000);
+                power_available_filtered_w = power_available_w;
+                break;
+            case MODE_OFF:
+            default:
+                power_available_w          = 0;
+                power_available_filtered_w = 0;
+                break;
+            case MODE_PV:
+            case MODE_MIN_PV:
+                // Excess charging enabled; use a simple P controller to adjust available power.
+                int32_t p_adjust_w;
+                int32_t p_adjust_filtered_w;
+                if (!is_on) {
+                    // When the power is not on, use p=1 so that the switch-on threshold can be reached properly.
+                    p_adjust_w          = p_error_w;
+                    p_adjust_filtered_w = p_error_filtered_w;
+                } else {
+                    // Some EVs may only be able to adjust their charge power in steps of 1500W,
+                    // so smaller factors are required for smaller errors.
+                    int32_t p_error_abs_w = abs(p_error_w);
+                    if (p_error_abs_w < 1000) {
+                        // Use p=0.5 for small differences so that the controller can converge without oscillating too much.
+                        p_adjust_w          = p_error_w          / 2;
+                        p_adjust_filtered_w = p_error_filtered_w / 2;
+                    } else if (p_error_abs_w < 1500) {
+                        // Use p=0.75 for medium differences so that the controller can converge reasonably fast while still avoiding too many oscillations.
+                        p_adjust_w          = p_error_w          * 3 / 4;
+                        p_adjust_filtered_w = p_error_filtered_w * 3 / 4;
+                    } else {
+                        // Use p=0.875 for large differences so that the controller can converge faster.
+                        p_adjust_w          = p_error_w          * 7 / 8;
+                        p_adjust_filtered_w = p_error_filtered_w * 7 / 8;
+                    }
+                }
+
+                power_available_w          = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_w;
+                power_available_filtered_w = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_filtered_w;
+
+                if (mode != MODE_MIN_PV)
+                    break;
+
+                // Check against guaranteed power only in MIN_PV mode.
+                if (power_available_w          < static_cast<int32_t>(guaranteed_power_w))
+                    power_available_w          = static_cast<int32_t>(guaranteed_power_w);
+                if (power_available_filtered_w < static_cast<int32_t>(guaranteed_power_w))
+                    power_available_filtered_w = static_cast<int32_t>(guaranteed_power_w);
+
+                break;
+        }
+
+        if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && external_control.get("phases_wanted")->asUint() == 0) {
+            power_available_w          = 0;
+            power_available_filtered_w = 0;
+        }
+
+        // CP disconnect support unknown if some chargers haven't replied yet.
+        if (!charge_manager.seen_all_chargers()) {
+            // Don't constantly complain if we don't have any chargers configured.
+            if (charge_manager.have_chargers()) {
+                if (!printed_not_seen_all_chargers) {
+                    logger.printfln("energy_manager: Not seen all chargers yet.");
+                    printed_not_seen_all_chargers = true;
+                }
+            }
+
+            if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+
+            return;
+        } else if (!printed_seen_all_chargers) {
+            logger.printfln("energy_manager: Seen all chargers.");
+            printed_seen_all_chargers = true;
+        }
+
+        // Check how many phases are wanted.
+        if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_1PHASE) {
+            wants_3phase = false;
+        } else if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE) {
+            wants_3phase = true;
+        } else if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+            wants_3phase = external_control.get("phases_wanted")->asUint() == 3;
+        } else if (phase_switching_mode == PHASE_SWITCHING_PV1P_FAST3P) {
+            wants_3phase = mode == MODE_FAST;
+        } else { // automatic
+            if (is_3phase) {
+                wants_3phase = power_available_filtered_w >= threshold_3to1_w;
+            } else { // is 1phase
+                wants_3phase = power_available_filtered_w > threshold_1to3_w;
+            }
+        }
+
+        // Need to get the time here instead of using deadline_elapsed(), to avoid stopping the charge when the phase switch deadline check fails but the start/stop deadline check succeeds.
+        uint32_t time_now = millis();
+
+        low_level_state.get("power_available")->updateInt(power_available_w);
+        low_level_state.get("power_available_filtered")->updateInt(power_available_filtered_w);
+        low_level_state.get("wants_3phase")->updateBool(wants_3phase);
+        low_level_state.get("wants_3phase_last")->updateBool(wants_3phase_last);
+        low_level_state.get("is_on_last")->updateBool(is_on_last);
+        low_level_state.get("wants_on_last")->updateBool(wants_on_last);
+
+        // Remember last decision change to start hysteresis time.
+        if (wants_3phase != wants_3phase_last) {
+            logger.printfln("energy_manager: wants_3phase decision changed to %i", wants_3phase);
+            phase_state_change_blocked_until = time_now + switching_hysteresis_ms;
+            wants_3phase_last = wants_3phase;
+        }
+
+        bool phase_state_change_is_blocked = a_after_b(phase_state_change_blocked_until, time_now);
+        bool on_state_change_is_blocked = a_after_b(on_state_change_blocked_until, time_now);
+        low_level_state.get("phase_state_change_blocked")->updateBool(phase_state_change_is_blocked);
+        low_level_state.get("phase_state_change_delay")->updateUint(phase_state_change_is_blocked ? phase_state_change_blocked_until - time_now : 0);
+        low_level_state.get("on_state_change_blocked")->updateBool(on_state_change_is_blocked);
+        low_level_state.get("on_state_change_delay")->updateUint(on_state_change_is_blocked ? on_state_change_blocked_until - time_now : 0);
+
+        // Check if phase switching is allowed right now.
+        bool switch_phases = false;
+        if (wants_3phase != is_3phase) {
+            if (false /*!contactor_installed*/) { // TODO FIXME
+                logger.printfln("energy_manager: Phase switch wanted but no contactor installed. Check configuration.");
+            } else if (!charge_manager.is_control_pilot_disconnect_supported(time_now - 5000)) {
+                logger.printfln("energy_manager: Phase switch wanted but not supported by all chargers.");
+            } else if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+                // Switching phases is always allowed when under external control.
+                switch_phases = true;
+            } else if (!uptime_past_hysteresis) {
+                // (Re)booted recently. Allow immediate switching.
+                logger.printfln("energy_manager: Immediate phase switch to %s during start-up period. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
+                switch_phases = true;
+                // Only one immediate switch on/off allowed; mark as used.
+                uptime_past_hysteresis = true;
+                low_level_state.get("uptime_past_hysteresis")->updateBool(uptime_past_hysteresis);
+            } else if (just_switched_mode) {
+                // Just switched modes. Allow immediate switching.
+                logger.printfln("energy_manager: Immediate phase switch to %s after changing modes. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
+                switch_phases = true;
+            } else if (!is_on && !on_state_change_is_blocked && a_after_b(time_now, phase_state_change_blocked_until - switching_hysteresis_ms/2)) {
+                // On/off deadline passed and at least half of the phase switching deadline passed.
+                logger.printfln("energy_manager: Immediate phase switch to %s while power is off. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
+                switch_phases = true;
+            } else if (phase_state_change_is_blocked) {
+                //logger.printfln("energy_manager: Phase switch wanted but decision changed too recently. Have to wait another %ums.", phase_state_change_blocked_until - time_now);
+            } else {
+                logger.printfln("energy_manager wants phase change to %s: available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
+                switch_phases = true;
+            }
+        }
+
+        if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+            if (charge_manager.is_control_pilot_disconnect_supported(time_now - 5000)) {
+                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_AVAILABLE);
+            } else {
+                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+            }
+        }
+
+        // Switch phases or deal with what's available.
+        if (switch_phases) {
+            set_available_current(0);
+            set_available_phases(wants_3phase ? 3 : 1);
+            switching_state = SwitchingState::Stopping;
+            switching_start = time_now;
+        } else {
+            // Check against overall minimum power, to avoid wanting to switch off when available power is below 3-phase minimum but switch to 1-phase is possible.
+            bool wants_on = power_available_filtered_w >= overall_min_power_w;
+
+// TODO FIXME
+#if 0 //MODULE_AUTOMATION_AVAILABLE()
+            enum class AutomationWantsOn {
+                Unknown,
+                True,
+                False,
+            };
+
+            static AutomationWantsOn last_automation_wants_on = AutomationWantsOn::Unknown;
+            AutomationWantsOn automation_wants_on = wants_on ? AutomationWantsOn::True : AutomationWantsOn::False;
+            if (automation_wants_on != last_automation_wants_on) {
+                automation.trigger_action(AutomationTriggerID::EMPowerAvailable, &wants_on, trigger_action);
+                last_automation_wants_on = automation_wants_on;
+            }
+#endif
+
+            // Remember last decision change to start hysteresis time.
+            if (wants_on != wants_on_last) {
+                logger.printfln("energy_manager: wants_on decision changed to %i", wants_on);
+                on_state_change_blocked_until = time_now + switching_hysteresis_ms;
+                on_state_change_is_blocked = true; // Set manually because the usual update already ran before the phase switching code.
+                wants_on_last = wants_on;
+            }
+
+            // Filtered power can be above the threshold while current power is below it.
+            // In that case, don't switch yet but also don't change wants_on_last state.
+            // Instead, wait for the current power to raise above threshold while wants_on(_last) is still true.
+            // The inverse applies to the switch-off period.
+            if (is_on) {
+                // Power is on. Stay on if currently available power is above threshold, even if filtered power might be below it.
+                // Requires both filtered and current available power to be below the minimum limit to switch off.
+                if (power_available_w >= overall_min_power_w)
+                    wants_on = true;
+            } else {
+                // Power is off. Stay off if currently available power is below threshold, even if filtered power might be below it.
+                // Requires both filtered and current available power to be above the minimum limit to switch on.
+                if (power_available_w < overall_min_power_w)
+                    wants_on = false;
+            }
+
+            uint32_t min_current_now_ma = is_3phase ? min_current_3p_ma : min_current_1p_ma;
+
+            uint32_t current_available_ma;
+            if (!wants_on) {
+                current_available_ma = 0;
+            } else if (power_available_w <= 0) {
+                current_available_ma = 0;
+            } else {
+                current_available_ma = (static_cast<uint32_t>(power_available_w) * 1000) / (230 * have_phases);
+            }
+
+            // Check if switching on/off is allowed right now.
+            if (wants_on != is_on) {
+                if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+                    // Switching on/off is always allowed when under external control.
+                } else if (!on_state_change_is_blocked) {
+                    // Start/stop allowed
+                    logger.printfln("energy_manager: Switch %s, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
+                } else if (!uptime_past_hysteresis) {
+                    // (Re)booted recently. Allow immediate switching.
+                    logger.printfln("energy_manager: Immediate switch-%s during start-up period, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
+                    // Only one immediate switch on/off allowed; mark as used.
+                    uptime_past_hysteresis = true;
+                    low_level_state.get("uptime_past_hysteresis")->updateBool(uptime_past_hysteresis);
+                } else if (just_switched_mode) {
+                    // Just switched modes. Allow immediate switching.
+                    logger.printfln("energy_manager: Immediate switch-%s after changing modes, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
+                } else if (just_switched_phases && a_after_b(time_now, on_state_change_blocked_until - switching_hysteresis_ms/2)) {
+                    logger.printfln("energy_manager: Opportunistic switch-%s, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
+                } else { // Switched too recently
+                    //logger.printfln("energy_manager: Start/stop wanted but decision changed too recently. Have to wait another %ums.", off_state_change_blocked_until - time_now);
+                    if (is_on) { // Is on, needs to stay on at minimum current.
+                        current_available_ma = min_current_now_ma;
+                    } else { // Is off, needs to stay off.
+                        current_available_ma = 0;
+                    }
+                }
+            } else { // Don't want to change.
+                if (is_on) {
+                    // Power is on and wants on too, need to ensure minimum current because unfiltered power available can be negative.
+                    if (current_available_ma < min_current_now_ma) {
+                        current_available_ma = min_current_now_ma;
+                    }
+                }
+            }
+
+            // Apply minimum/maximum current limits.
+            if (current_available_ma < min_current_now_ma) {
+                if (current_available_ma != 0)
+                    current_available_ma = min_current_now_ma;
+            } else if (current_available_ma > max_current_limited_ma) {
+                current_available_ma = max_current_limited_ma;
+            }
+
+            set_available_current(current_available_ma);
+            just_switched_phases = false;
+            just_switched_mode = false;
+        }
+    } else if (switching_state == SwitchingState::Stopping) {
+        set_available_current(0);
+
+        if (charge_manager.is_charging_stopped(switching_start)) {
+            switching_state = SwitchingState::DisconnectingCP;
+            switching_start = millis();
+        }
+    } else if (switching_state == SwitchingState::DisconnectingCP) {
+        charge_manager.set_all_control_pilot_disconnect(true);
+
+        if (charge_manager.are_all_control_pilot_disconnected(switching_start)) {
+            switching_state = SwitchingState::TogglingContactor;
+            switching_start = millis();
+        }
+    } else if (switching_state == SwitchingState::TogglingContactor) {
+        // TODO FIXME
+        //tf_warp_energy_manager_set_contactor(&device, wants_3phase);
+
+        //if (all_data.contactor_value == wants_3phase) {
+            switching_state = SwitchingState::ConnectingCP;
+            switching_start = millis();
+        //}
+    } else if (switching_state == SwitchingState::ConnectingCP) {
+        charge_manager.set_all_control_pilot_disconnect(false);
+
+        switching_state = SwitchingState::Monitoring;
+        switching_start = 0;
+
+        just_switched_phases = true;
+    }
+
+    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && switching_state != SwitchingState::Monitoring)
+        state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_SWITCHING);
+}
+
+void PowerManager::limit_max_current(uint32_t limit_ma)
+{
+    if (max_current_limited_ma > limit_ma)
+        max_current_limited_ma = limit_ma;
+}
+
+void PowerManager::reset_limit_max_current()
+{
+    max_current_limited_ma = max_current_unlimited_ma;
+}
+
+//void PowerManager::switch_mode(uint32_t new_mode)
+//{
+//    api.callCommand("power_manager/charge_mode_update", Config::ConfUpdateObject{{
+//        {"mode", new_mode}
+//    }});
+//}
+
+bool PowerManager::get_is_3phase() const
+{
+    return is_3phase;
 }
 
 void PowerManager::set_config_error(uint32_t config_error_mask)
@@ -195,10 +817,6 @@ void PowerManager::set_config_error(uint32_t config_error_mask)
     config_error_flags |= config_error_mask;
     state.get("config_error_flags")->updateUint(config_error_flags);
 
+    // TODO FIXME
     energy_manager.set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
-}
-
-void PowerManager::set_external_control_phases_wanted(uint32_t phases_wanted)
-{
-    external_control.get("phases_wanted")->updateUint(phases_wanted);
 }

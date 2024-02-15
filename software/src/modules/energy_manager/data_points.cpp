@@ -194,10 +194,10 @@ void EnergyManager::collect_data_points()
             uint8_t flags = 0; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data (read only)
             int32_t power[7] = {INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX}; // W
 
-            flags |= is_3phase         ? 0b0001 : 0;
-            flags |= all_data.input[0] ? 0b0010 : 0;
-            flags |= all_data.input[1] ? 0b0100 : 0;
-            flags |= all_data.relay    ? 0b1000 : 0;
+            flags |= power_manager.get_is_3phase() ? 0b0001 : 0;
+            flags |= all_data.input[0]             ? 0b0010 : 0;
+            flags |= all_data.input[1]             ? 0b0100 : 0;
+            flags |= all_data.relay                ? 0b1000 : 0;
 
             for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
                 // FIXME: how to tell if meter data is stale?
