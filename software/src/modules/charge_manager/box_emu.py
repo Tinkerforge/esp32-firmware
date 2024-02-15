@@ -84,7 +84,6 @@ state_len = struct.calcsize(state_format)
 
 @dataclass
 class Charger:
-    # Numeric UID to report
     uid: int
     listen_addr: str
     auto_mode: bool
