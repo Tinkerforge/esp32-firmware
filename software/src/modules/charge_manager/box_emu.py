@@ -9,7 +9,7 @@ import math
 from dataclasses import dataclass, field
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, Qt
 
 structs = """
     struct cm_packet_header {
@@ -88,13 +88,16 @@ state_len = struct.calcsize(state_format)
 @dataclass
 class ChargerState:
     uid: int
+    listen_addr: str
+    auto_mode: bool
+
     charging_time_start: float = 0
     charging_time: int = 0
     next_seq_num: int = 0
     start: float = time.time()
     time_since_state_change = time.time()
-    command_version = 1
-    state_version = 2
+    command_version = COMMAND_VERSION
+    state_version = STATE_VERSION
     uptime: int = 0
     uptime_blocked: bool = False
     iec61851_state: int = 0
@@ -110,7 +113,20 @@ class ChargerState:
     line_power_factors: list[float] = field(default_factory=lambda: [1, 0, 0])
     energy_rel: float = 0
     energy_abs: float = 0
-    auto_mode: bool = False
+    manager_addr = None
+
+    req_seq_num: int = 0
+    req_version: int = 0
+    req_allocated_current: int = 0
+    req_should_disconnect_cp: bool = False
+
+    seq_num_blocked: bool = False
+
+    def __post_init__(self):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind((self.listen_addr, 34128))
+        self.sock.setblocking(False)
+
 
     def tick(self):
         if not self.uptime_blocked:
@@ -134,28 +150,85 @@ class ChargerState:
             self.time_since_state_change = time.time()
             self.last_iec61851_state = self.iec61851_state
 
+    def send(self):
+        if self.manager_addr is None:
+            return
+
+        flags = 0
+        flags |= 0x80 if self.managed else 0
+        flags |= 0x40 if self.cp_disconnect else 0
+
+        b = struct.pack(state_format,
+                        34127, # magic
+                        state_len,
+                        self.next_seq_num,
+                        self.state_version,
+                        0x7F,  # features
+                        self.uid,
+                        self.uptime,
+                        self.charging_time,
+                        self.allowed_charging_current,
+                        self.supported_current,
+                        self.iec61851_state,
+                        self.charger_state,
+                        self.error_state,
+                        flags,
+                        *self.line_voltages,
+                        *self.line_currents,
+                        *self.line_power_factors,
+                        sum(u * i for u, i in zip(self.line_voltages, self.line_currents)), # power total
+                        self.energy_rel,  # energy_rel
+                        self.energy_abs,  # energy_abs
+                        int(1000 * (time.time() - self.time_since_state_change))
+        )
+
+        if not self.seq_num_blocked:
+            self.next_seq_num += 1
+            self.next_seq_num %= 65536
+
+        self.sock.sendto(b, self.manager_addr)
+
+    def recv(self):
+        try:
+            data, self.manager_addr = self.sock.recvfrom(command_len)
+        except BlockingIOError:
+            return
+        if len(data) != command_len:
+            return
+
+        magic, length, seq_num, version, allocated_current, command_flags = struct.unpack(command_format, data)
+
+        self.req_seq_num = seq_num
+        self.req_version = version
+        self.req_allocated_current = allocated_current
+        self.req_should_disconnect_cp = (command_flags & 0x40) >> 6
+
+        # TODO: Move to tick
+        if self.auto_mode:
+            self.allowed_charging_current = self.req_allocated_current
+            self.cp_disconnect = self.req_should_disconnect_cp
+
+            if self.req_allocated_current == 0 and self.iec61851_state == 2:
+                self.charging_time_start = 0
+                self.iec61851_state = 1
+                self.charger_state = 1
+            elif self.req_allocated_current > 0 and self.charger_state == 1:
+                self.charger_state = 2
+
 class Charger:
     def __init__(self, layout, row, col, listen_addr):
-        self.auto_mode = True
         self.hide_on_auto = True
 
-        self.state = ChargerState(uid=struct.unpack('>I', ipaddress.ip_address(listen_addr).packed)[0])
-        self.state.auto_mode = self.auto_mode
+        self.state = ChargerState(uid=struct.unpack('>I', ipaddress.ip_address(listen_addr).packed)[0], listen_addr=listen_addr, auto_mode=True)
 
         self.layout = layout
         self.row = row
         self.col = col
         self.row_counter = 0
         self.add_labels = col == 1
-        self.listen_addr = listen_addr
-
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind((listen_addr, 34128))
-        self.sock.setblocking(False)
-        self.addr = None
 
         self.build_ui()
-
+        self.register_signals()
 
         self.recv_timer = QTimer()
         self.recv_timer.timeout.connect(lambda: self.receive())
@@ -184,14 +257,14 @@ class Charger:
 
     def build_ui(self):
         def handle_auto(title, widget):
-            if self.auto_mode:
+            if self.state.auto_mode:
                 widget.setEnabled(False)
-            if self.auto_mode and self.hide_on_auto:
+            if self.state.auto_mode and self.hide_on_auto:
                 widget.setHidden(True)
             else:
                 self.addRow(title, widget)
 
-        self.title = QLabel(str(self.listen_addr))
+        self.title = QLabel(str(self.state.listen_addr))
         self.title.setStyleSheet("font-weight: bold;")
         self.addRow(self.title)
 
@@ -274,37 +347,21 @@ class Charger:
         self.resp_cp_disconnect = QCheckBox("CP disconnected")
         handle_auto("CP disconnect state", self.resp_cp_disconnect)
 
-    def receive(self):
-        try:
-            data, self.addr = self.sock.recvfrom(command_len)
-        except BlockingIOError:
-            return
-        if len(data) != command_len:
-            return
+    def register_signals(self):
+        # Python lambdas don't allow assignments
+        self.resp_block_uptime.stateChanged.connect(lambda x: setattr(self.state, "uptime_blocked", x == Qt.CheckState.Checked))
+        self.resp_block_seq_num.stateChanged.connect(lambda x: setattr(self.state, "seq_num_blocked", x == Qt.CheckState.Checked))
+        self.resp_charger_state.currentIndexChanged.connect(lambda x: setattr(self.state, "charger_state", x))
+        self.resp_managed.stateChanged.connect(lambda x: setattr(self.state, "managed", x == Qt.CheckState.Checked))
+        self.resp_wrong_proto_version.stateChanged.connect(lambda x: setattr(self.state, "state_version", 0 if x == Qt.CheckState.Checked else STATE_VERSION))
 
-        magic, length, seq_num, version, allocated_current, command_flags = struct.unpack(command_format, data)
+        self.resp_supported_current.valueChanged.connect(lambda x: setattr(self.state, "supported_current", x * 1000))
+        self.resp_error_state.valueChanged.connect(lambda x: setattr(self.state, "error_state", x))
+        self.resp_max_line_current.valueChanged.connect(lambda x: setattr(self.state, "current_l1", x))
 
-        self.req_seq_num.setText(str(seq_num))
-        self.req_version.setText(str(version))
-        self.req_allocated_current.setText("{:2.3f} A".format(allocated_current / 1000.0))
-        if self.auto_mode:
-            self.state.allowed_charging_current = allocated_current
-
-        should_disconnect_cp = (command_flags & 0x40) >> 6
-        self.req_cp_disconnect.setText(str(should_disconnect_cp))
-        if self.auto_mode:
-            self.state.cp_disconnect = should_disconnect_cp
-
-        if self.auto_mode and allocated_current == 0 and self.state.iec61851_state == 2:
-            self.state.charging_time_start = 0
-            self.state.iec61851_state = 1
-            self.state.charger_state = 1
-            self.resp_iec61851_state.setCurrentIndex(self.state.iec61851_state)
-            self.resp_charger_state.setCurrentIndex(self.state.charger_state)
-
-        if self.auto_mode and allocated_current > 0 and self.state.charger_state == 1:
-            self.state.charger_state = 2
-            self.resp_charger_state.setCurrentIndex(self.state.charger_state)
+        self.resp_cp_disconnect.stateChanged.connect(lambda x: setattr(self.state, "cp_disconnect", x == Qt.CheckState.Checked))
+        self.resp_allowed_charging_current.valueChanged.connect(lambda x: setattr(self.state, "allowed_charging_current", x * 1000))
+        self.resp_iec61851_state.currentIndexChanged.connect(lambda x: setattr(self.state, "iec61851_state", x))
 
     def update_ui_from_state(self):
         self.resp_seq_num.setText(str(self.state.next_seq_num))
@@ -312,69 +369,26 @@ class Charger:
         self.resp_uptime.setText("{} ms".format(self.state.uptime))
         self.resp_charging_time.setText("{} ms".format(self.state.charging_time))
 
-        if not self.auto_mode:
-            return
+        self.req_seq_num.setText(str(self.state.req_seq_num))
+        self.req_version.setText(str(self.state.req_version))
+        self.req_allocated_current.setText("{:2.3f} A".format(self.state.req_allocated_current / 1000.0))
+
+        self.req_cp_disconnect.setText(str(self.state.req_should_disconnect_cp))
+        self.resp_iec61851_state.setCurrentIndex(self.state.iec61851_state)
+        self.resp_charger_state.setCurrentIndex(self.state.charger_state)
 
         self.resp_allowed_charging_current.setValue(int(self.state.allowed_charging_current / 1000))
         self.resp_cp_disconnect.setChecked(self.state.cp_disconnect)
         self.resp_iec61851_state.setCurrentIndex(self.state.iec61851_state)
 
-    def update_state_from_ui(self):
-        self.state.uptime_blocked = self.resp_block_uptime.isChecked()
-        self.state.charger_state = self.resp_charger_state.currentIndex()
-        self.state.managed = self.resp_managed.isChecked()
-        self.state.state_version = STATE_VERSION if not self.resp_wrong_proto_version.isChecked() else 0
-        self.state.supported_current = self.resp_supported_current.value() * 1000
-        self.state.error_state = self.resp_error_state.value()
-        self.state.current_l1 = self.resp_max_line_current.value()
-
-        if self.auto_mode:
-            return
-
-        self.state.cp_disconnect = self.resp_cp_disconnect.isChecked()
-        self.state.allowed_charging_current = self.resp_allowed_charging_current.value() * 1000
-        self.state.iec61851_state = self.resp_iec61851_state.currentIndex()
+    def receive(self):
+        self.state.recv()
 
     def send(self):
         self.state.tick()
         self.update_ui_from_state()
-        self.update_state_from_ui()
+        self.state.send()
 
-        if self.addr is None:
-            return
-
-        flags = 0
-        flags |= 0x80 if self.state.managed else 0
-        flags |= 0x40 if self.state.cp_disconnect else 0
-
-        b = struct.pack(state_format,
-                        34127, # magic
-                        state_len,
-                        self.state.next_seq_num,
-                        self.state.state_version,
-                        0x7F,  # features
-                        self.state.uid,
-                        self.state.uptime,
-                        self.state.charging_time,
-                        self.state.allowed_charging_current,
-                        self.state.supported_current,
-                        self.state.iec61851_state,
-                        self.state.charger_state,
-                        self.state.error_state,
-                        flags,
-                        *self.state.line_voltages,
-                        *self.state.line_currents,
-                        *self.state.line_power_factors,
-                        sum(u * i for u, i in zip(self.state.line_voltages, self.state.line_currents)), # power total
-                        self.state.energy_rel,  # energy_rel
-                        self.state.energy_abs,  # energy_abs
-                        int(1000 * (time.time() - self.state.time_since_state_change))
-        )
-        if not self.resp_block_seq_num.isChecked():
-            self.state.next_seq_num += 1
-            self.state.next_seq_num %= 65536
-
-        self.sock.sendto(b, self.addr)
 
 app = QApplication([])
 window = QWidget()
