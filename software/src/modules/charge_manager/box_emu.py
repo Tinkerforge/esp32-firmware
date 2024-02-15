@@ -84,40 +84,54 @@ state_len = struct.calcsize(state_format)
 
 @dataclass
 class ChargerState:
+    # Numeric UID to report
     uid: int
     listen_addr: str
     auto_mode: bool
 
-    charging_time_start: float = 0
-    charging_time: int = 0
-    next_seq_num: int = 0
-    start: float = time.time()
-    time_since_state_change = time.time()
-    command_version = COMMAND_VERSION
-    state_version = STATE_VERSION
-    uptime: int = 0
+    # API
     uptime_blocked: bool = False
-    iec61851_state: int = 0
-    last_iec61851_state: int = 0
+    seq_num_blocked: bool = False
+    expected_command_version = COMMAND_VERSION
+    state_version = STATE_VERSION
+
     managed: bool = True
-    cp_disconnect: bool = False
-    allowed_charging_current: int = 0
     supported_current: int = 0
-    charger_state: int = 0
+
     error_state: int = 0
     line_voltages: list[float] = field(default_factory=lambda: [230, 0, 0])
     line_currents: list[float] = field(default_factory=lambda: [0, 0, 0])
     line_power_factors: list[float] = field(default_factory=lambda: [1, 0, 0])
     energy_rel: float = 0
     energy_abs: float = 0
-    manager_addr = None
 
+    # API if uptime_blocked, automatic otherwise
+    uptime: int = 0
+
+    # API if seq_num_blocked, automatic otherwise
+    next_seq_num: int = 0
+
+    # API if not auto_mode, automatic otherwise
+    iec61851_state: int = 0
+    allowed_charging_current: int = 0
+    cp_disconnect: bool = False
+    charger_state: int = 0
+
+    # Always automatic
+    charging_time_start: float = 0
+    charging_time: int = 0
+    time_since_state_change = time.time()
+
+    # Last received request data. Updated in recv()
+    manager_addr = None
     req_seq_num: int = 0
     req_version: int = 0
     req_allocated_current: int = 0
     req_should_disconnect_cp: bool = False
 
-    seq_num_blocked: bool = False
+    # Internal
+    _start: float = time.time()
+    _last_iec61851_state: int = 0
 
     def __post_init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -126,26 +140,42 @@ class ChargerState:
 
 
     def tick(self):
-        if not self.uptime_blocked:
-            self.uptime = int((time.time() - self.start) * 1000) % (1 << 32)
+        if self.auto_mode:
+            # Apply last seen request info
+            self.allowed_charging_current = self.req_allocated_current
+            self.cp_disconnect = self.req_should_disconnect_cp
 
+            if self.req_allocated_current == 0 and self.iec61851_state == 2:
+                self.charger_state = 1
+                # Stop charging timer to differentiate between "full car" and "blocked by charge manager".
+                # This is used to lower the priority of probably full cars
+                self.charging_time_start = 0
+            elif self.req_allocated_current > 0 and self.charger_state == 1:
+                self.charger_state = 2
+
+            # Apply charger state
+            self.iec61851_state = {0: 0, 1: 1, 2: 1, 3: 2, 4: 4}[self.charger_state]
+
+        if not self.uptime_blocked:
+            self.uptime = int((time.time() - self._start) * 1000) % (1 << 32)
+
+        # Start/stop charging timer
         if self.charging_time_start == 0 and self.iec61851_state == 2:
             self.charging_time_start = time.time()
 
         if self.charging_time_start != 0 and self.iec61851_state == 0:
             self.charging_time_start = 0
 
+        # Update charging time from timer
         if self.charging_time_start == 0:
             self.charging_time = 0
         else:
             self.charging_time = int((time.time() - self.charging_time_start) * 1000)
 
-        if self.auto_mode:
-            self.iec61851_state = {0: 0, 1: 1, 2: 1, 3: 2, 4: 4}[self.charger_state]
-
-        if self.last_iec61851_state != self.iec61851_state:
+        # Update time_since_state_change
+        if self._last_iec61851_state != self.iec61851_state:
             self.time_since_state_change = time.time()
-            self.last_iec61851_state = self.iec61851_state
+            self._last_iec61851_state = self.iec61851_state
 
     def send(self):
         if self.manager_addr is None:
@@ -195,22 +225,13 @@ class ChargerState:
 
         magic, length, seq_num, version, allocated_current, command_flags = struct.unpack(command_format, data)
 
+        if version != self.expected_command_version:
+            return
+
         self.req_seq_num = seq_num
         self.req_version = version
         self.req_allocated_current = allocated_current
         self.req_should_disconnect_cp = (command_flags & 0x40) >> 6
-
-        # TODO: Move to tick
-        if self.auto_mode:
-            self.allowed_charging_current = self.req_allocated_current
-            self.cp_disconnect = self.req_should_disconnect_cp
-
-            if self.req_allocated_current == 0 and self.iec61851_state == 2:
-                self.charging_time_start = 0
-                self.iec61851_state = 1
-                self.charger_state = 1
-            elif self.req_allocated_current > 0 and self.charger_state == 1:
-                self.charger_state = 2
 
 if __name__ == "__main__":
     from PyQt5.QtWidgets import *
