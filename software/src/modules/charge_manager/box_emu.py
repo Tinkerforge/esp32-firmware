@@ -83,7 +83,7 @@ command_len = struct.calcsize(command_format)
 state_len = struct.calcsize(state_format)
 
 @dataclass
-class ChargerState:
+class Charger:
     # Numeric UID to report
     uid: int
     listen_addr: str
@@ -241,7 +241,7 @@ if __name__ == "__main__":
         def __init__(self, layout, row, col, listen_addr):
             self.hide_on_auto = True
 
-            self.state = ChargerState(uid=struct.unpack('>I', ipaddress.ip_address(listen_addr).packed)[0], listen_addr=listen_addr, auto_mode=True)
+            self.state = Charger(uid=struct.unpack('>I', ipaddress.ip_address(listen_addr).packed)[0], listen_addr=listen_addr, auto_mode=True)
 
             self.layout = layout
             self.row = row
