@@ -8,10 +8,7 @@ import ipaddress
 import math
 from dataclasses import dataclass, field
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QTimer, Qt
-
-structs = """
+"""
     struct cm_packet_header {
         uint16_t magic;
         uint16_t length;
@@ -215,206 +212,213 @@ class ChargerState:
             elif self.req_allocated_current > 0 and self.charger_state == 1:
                 self.charger_state = 2
 
-class Charger:
-    def __init__(self, layout, row, col, listen_addr):
-        self.hide_on_auto = True
+if __name__ == "__main__":
+    from PyQt5.QtWidgets import *
+    from PyQt5.QtCore import QTimer, Qt
 
-        self.state = ChargerState(uid=struct.unpack('>I', ipaddress.ip_address(listen_addr).packed)[0], listen_addr=listen_addr, auto_mode=True)
+    class ChargerUI:
+        def __init__(self, layout, row, col, listen_addr):
+            self.hide_on_auto = True
 
-        self.layout = layout
-        self.row = row
-        self.col = col
-        self.row_counter = 0
-        self.add_labels = col == 1
+            self.state = ChargerState(uid=struct.unpack('>I', ipaddress.ip_address(listen_addr).packed)[0], listen_addr=listen_addr, auto_mode=True)
 
-        self.build_ui()
-        self.register_signals()
+            self.layout = layout
+            self.row = row
+            self.col = col
+            self.row_counter = 0
+            self.add_labels = col == 1
 
-        self.recv_timer = QTimer()
-        self.recv_timer.timeout.connect(lambda: self.receive())
-        self.recv_timer.start(100)
+            self.build_ui()
+            self.register_signals()
 
-        self.send_timer = QTimer()
-        self.send_timer.timeout.connect(lambda: self.send())
-        self.send_timer.start(1000)
+            self.recv_timer = QTimer()
+            self.recv_timer.timeout.connect(lambda: self.receive())
+            self.recv_timer.start(100)
 
-    def addRow(self, title_or_widget, widget=None):
-        if widget is None:
-            widget = title_or_widget
-            title_or_widget = None
-        self.layout.addWidget(widget, self.row + self.row_counter, self.col)
-        if self.add_labels:
-            if title_or_widget is not None:
-                l = QLabel(title_or_widget)
-                l.setStyleSheet("font-weight: bold;")
-                self.layout.addWidget(l, self.row + self.row_counter, 0)
-            else:
-                self.layout.addWidget(widget, self.row + self.row_counter, 0)
+            self.send_timer = QTimer()
+            self.send_timer.timeout.connect(lambda: self.send())
+            self.send_timer.start(1000)
 
-
-        self.row_counter += 1
-
-
-    def build_ui(self):
-        def handle_auto(title, widget):
-            if self.state.auto_mode:
-                widget.setEnabled(False)
-            if self.state.auto_mode and self.hide_on_auto:
-                widget.setHidden(True)
-            else:
-                self.addRow(title, widget)
-
-        self.title = QLabel(str(self.state.listen_addr))
-        self.title.setStyleSheet("font-weight: bold;")
-        self.addRow(self.title)
-
-        self.req_seq_num = QLabel("no packet received yet")
-        self.addRow("Req Sequence number", self.req_seq_num)
-
-        self.req_version = QLabel("no packet received yet")
-        handle_auto("Req Protocol version", self.req_version)
-
-        self.req_allocated_current = QLabel("no packet received yet")
-        self.addRow("Req Allocated current", self.req_allocated_current)
-
-        self.req_cp_disconnect = QLabel("no packet received yet")
-        self.addRow("Req CP disconnect", self.req_cp_disconnect)
-
-        self.resp_seq_num = QLabel("no packet sent yet")
-        self.addRow("Sequence number", self.resp_seq_num)
-
-        self.resp_block_seq_num = QCheckBox("Block sequence number")
-        self.addRow("", self.resp_block_seq_num)
-
-        self.resp_version = QLabel("no packet sent yet")
-        self.addRow("Protocol version", self.resp_version)
-
-        self.resp_wrong_proto_version = QCheckBox("Wrong protocol version")
-        self.addRow("", self.resp_wrong_proto_version)
-
-        self.resp_iec61851_state = QComboBox()
-        self.resp_iec61851_state.addItem("0: A - Not connected")
-        self.resp_iec61851_state.addItem("1: B - Connected")
-        self.resp_iec61851_state.addItem("2: C - Charging")
-        self.resp_iec61851_state.addItem("3: D - Not supported")
-        self.resp_iec61851_state.addItem("4: E/F - Error")
-        handle_auto("IEC state", self.resp_iec61851_state)
-
-        self.resp_charger_state = QComboBox()
-        self.resp_charger_state.addItem("0: Not connected")
-        self.resp_charger_state.addItem("1: Waiting for release")
-        self.resp_charger_state.addItem("2: Ready")
-        self.resp_charger_state.addItem("3: Charging")
-        self.resp_charger_state.addItem("4: Error")
-        self.addRow("Vehicle state", self.resp_charger_state)
-
-        self.resp_error_state = QSpinBox()
-        self.resp_error_state.setMinimum(0)
-        self.resp_error_state.setMaximum(5)
-        self.addRow("Error state", self.resp_error_state)
-
-        self.resp_uptime = QLabel("no packet sent yet")
-        self.addRow("Uptime", self.resp_uptime)
-
-        self.resp_block_uptime = QCheckBox("Block uptime")
-        self.addRow("", self.resp_block_uptime)
-
-        self.resp_charging_time = QLabel("no packet sent yet")
-        self.addRow("Charging time", self.resp_charging_time)
-
-        self.resp_allowed_charging_current = QSpinBox()
-        self.resp_allowed_charging_current.setMinimum(0)
-        self.resp_allowed_charging_current.setMaximum(32)
-        self.resp_allowed_charging_current.setSuffix(" A")
-        handle_auto("Allowed charging current", self.resp_allowed_charging_current)
-
-        self.resp_supported_current = QSpinBox()
-        self.resp_supported_current.setMinimum(0)
-        self.resp_supported_current.setMaximum(32)
-        self.resp_supported_current.setSuffix(" A")
-        self.addRow("Supported current", self.resp_supported_current)
-
-        self.resp_max_line_current = QSpinBox()
-        self.resp_max_line_current.setMinimum(0)
-        self.resp_max_line_current.setMaximum(32)
-        self.resp_max_line_current.setSuffix(" A")
-        self.addRow("Max line current", self.resp_max_line_current)
-
-        self.resp_managed = QCheckBox("")
-        self.resp_managed.setChecked(True)
-        self.addRow("Managed", self.resp_managed)
-
-        self.resp_cp_disconnect = QCheckBox("CP disconnected")
-        handle_auto("CP disconnect state", self.resp_cp_disconnect)
-
-    def register_signals(self):
-        # Python lambdas don't allow assignments
-        self.resp_block_uptime.stateChanged.connect(lambda x: setattr(self.state, "uptime_blocked", x == Qt.CheckState.Checked))
-        self.resp_block_seq_num.stateChanged.connect(lambda x: setattr(self.state, "seq_num_blocked", x == Qt.CheckState.Checked))
-        self.resp_charger_state.currentIndexChanged.connect(lambda x: setattr(self.state, "charger_state", x))
-        self.resp_managed.stateChanged.connect(lambda x: setattr(self.state, "managed", x == Qt.CheckState.Checked))
-        self.resp_wrong_proto_version.stateChanged.connect(lambda x: setattr(self.state, "state_version", 0 if x == Qt.CheckState.Checked else STATE_VERSION))
-
-        self.resp_supported_current.valueChanged.connect(lambda x: setattr(self.state, "supported_current", x * 1000))
-        self.resp_error_state.valueChanged.connect(lambda x: setattr(self.state, "error_state", x))
-        self.resp_max_line_current.valueChanged.connect(lambda x: setattr(self.state, "current_l1", x))
-
-        self.resp_cp_disconnect.stateChanged.connect(lambda x: setattr(self.state, "cp_disconnect", x == Qt.CheckState.Checked))
-        self.resp_allowed_charging_current.valueChanged.connect(lambda x: setattr(self.state, "allowed_charging_current", x * 1000))
-        self.resp_iec61851_state.currentIndexChanged.connect(lambda x: setattr(self.state, "iec61851_state", x))
-
-    def update_ui_from_state(self):
-        self.resp_seq_num.setText(str(self.state.next_seq_num))
-        self.resp_version.setText(str(self.state.state_version))
-        self.resp_uptime.setText("{} ms".format(self.state.uptime))
-        self.resp_charging_time.setText("{} ms".format(self.state.charging_time))
-
-        self.req_seq_num.setText(str(self.state.req_seq_num))
-        self.req_version.setText(str(self.state.req_version))
-        self.req_allocated_current.setText("{:2.3f} A".format(self.state.req_allocated_current / 1000.0))
-
-        self.req_cp_disconnect.setText(str(self.state.req_should_disconnect_cp))
-        self.resp_iec61851_state.setCurrentIndex(self.state.iec61851_state)
-        self.resp_charger_state.setCurrentIndex(self.state.charger_state)
-
-        self.resp_allowed_charging_current.setValue(int(self.state.allowed_charging_current / 1000))
-        self.resp_cp_disconnect.setChecked(self.state.cp_disconnect)
-        self.resp_iec61851_state.setCurrentIndex(self.state.iec61851_state)
-
-    def receive(self):
-        self.state.recv()
-
-    def send(self):
-        self.state.tick()
-        self.update_ui_from_state()
-        self.state.send()
+        def addRow(self, title_or_widget, widget=None):
+            if widget is None:
+                widget = title_or_widget
+                title_or_widget = None
+            self.layout.addWidget(widget, self.row + self.row_counter, self.col)
+            if self.add_labels:
+                if title_or_widget is not None:
+                    l = QLabel(title_or_widget)
+                    l.setStyleSheet("font-weight: bold;")
+                    self.layout.addWidget(l, self.row + self.row_counter, 0)
+                else:
+                    self.layout.addWidget(widget, self.row + self.row_counter, 0)
 
 
-app = QApplication([])
-window = QWidget()
+            self.row_counter += 1
 
-window.setWindowTitle(",".join(sys.argv[1:]))
 
-chargers = len(sys.argv) - 1
-cols = math.ceil(chargers / 13)
-rows = math.ceil(chargers / cols)
+        def build_ui(self):
+            def handle_auto(title, widget):
+                if self.state.auto_mode:
+                    widget.setEnabled(False)
+                if self.state.auto_mode and self.hide_on_auto:
+                    widget.setHidden(True)
+                else:
+                    self.addRow(title, widget)
 
-top_level_layout = QGridLayout()
+            self.title = QLabel(str(self.state.listen_addr))
+            self.title.setStyleSheet("font-weight: bold;")
+            self.addRow(self.title)
 
-last_row_counter = 0
+            self.req_seq_num = QLabel("no packet received yet")
+            self.addRow("Req Sequence number", self.req_seq_num)
 
-chargers = []
+            self.req_version = QLabel("no packet received yet")
+            handle_auto("Req Protocol version", self.req_version)
 
-for i, listen_addr in enumerate(sys.argv[1:]):
-    col = int(i % rows)
-    row = int(i / rows) + last_row_counter
-    print(col, row, cols, rows)
+            self.req_allocated_current = QLabel("no packet received yet")
+            self.addRow("Req Allocated current", self.req_allocated_current)
 
-    chargers.append(Charger(top_level_layout, row, col + 1, listen_addr))
-    if col == rows - 1:
-        print("Updating last row counter")
-        last_row_counter += chargers[-1].row_counter
+            self.req_cp_disconnect = QLabel("no packet received yet")
+            self.addRow("Req CP disconnect", self.req_cp_disconnect)
 
-window.setLayout(top_level_layout)
-window.show()
-app.exec_()
+            self.resp_seq_num = QLabel("no packet sent yet")
+            self.addRow("Sequence number", self.resp_seq_num)
+
+            self.resp_block_seq_num = QCheckBox("Block sequence number")
+            self.addRow("", self.resp_block_seq_num)
+
+            self.resp_version = QLabel("no packet sent yet")
+            self.addRow("Protocol version", self.resp_version)
+
+            self.resp_wrong_proto_version = QCheckBox("Wrong protocol version")
+            self.addRow("", self.resp_wrong_proto_version)
+
+            self.resp_iec61851_state = QComboBox()
+            self.resp_iec61851_state.addItem("0: A - Not connected")
+            self.resp_iec61851_state.addItem("1: B - Connected")
+            self.resp_iec61851_state.addItem("2: C - Charging")
+            self.resp_iec61851_state.addItem("3: D - Not supported")
+            self.resp_iec61851_state.addItem("4: E/F - Error")
+            handle_auto("IEC state", self.resp_iec61851_state)
+
+            self.resp_charger_state = QComboBox()
+            self.resp_charger_state.addItem("0: Not connected")
+            self.resp_charger_state.addItem("1: Waiting for release")
+            self.resp_charger_state.addItem("2: Ready")
+            self.resp_charger_state.addItem("3: Charging")
+            self.resp_charger_state.addItem("4: Error")
+            self.addRow("Vehicle state", self.resp_charger_state)
+
+            self.resp_error_state = QSpinBox()
+            self.resp_error_state.setMinimum(0)
+            self.resp_error_state.setMaximum(5)
+            self.addRow("Error state", self.resp_error_state)
+
+            self.resp_uptime = QLabel("no packet sent yet")
+            self.addRow("Uptime", self.resp_uptime)
+
+            self.resp_block_uptime = QCheckBox("Block uptime")
+            self.addRow("", self.resp_block_uptime)
+
+            self.resp_charging_time = QLabel("no packet sent yet")
+            self.addRow("Charging time", self.resp_charging_time)
+
+            self.resp_allowed_charging_current = QSpinBox()
+            self.resp_allowed_charging_current.setMinimum(0)
+            self.resp_allowed_charging_current.setMaximum(32)
+            self.resp_allowed_charging_current.setSuffix(" A")
+            handle_auto("Allowed charging current", self.resp_allowed_charging_current)
+
+            self.resp_supported_current = QSpinBox()
+            self.resp_supported_current.setMinimum(0)
+            self.resp_supported_current.setMaximum(32)
+            self.resp_supported_current.setSuffix(" A")
+            self.addRow("Supported current", self.resp_supported_current)
+
+            self.resp_max_line_current = QSpinBox()
+            self.resp_max_line_current.setMinimum(0)
+            self.resp_max_line_current.setMaximum(32)
+            self.resp_max_line_current.setSuffix(" A")
+            self.addRow("Max line current", self.resp_max_line_current)
+
+            self.resp_managed = QCheckBox("")
+            self.resp_managed.setChecked(True)
+            self.addRow("Managed", self.resp_managed)
+
+            self.resp_cp_disconnect = QCheckBox("CP disconnected")
+            handle_auto("CP disconnect state", self.resp_cp_disconnect)
+
+        def register_signals(self):
+            # Python lambdas don't allow assignments
+            self.resp_block_uptime.stateChanged.connect(lambda x: setattr(self.state, "uptime_blocked", x == Qt.CheckState.Checked))
+            self.resp_block_seq_num.stateChanged.connect(lambda x: setattr(self.state, "seq_num_blocked", x == Qt.CheckState.Checked))
+            self.resp_charger_state.currentIndexChanged.connect(lambda x: setattr(self.state, "charger_state", x))
+            self.resp_managed.stateChanged.connect(lambda x: setattr(self.state, "managed", x == Qt.CheckState.Checked))
+            self.resp_wrong_proto_version.stateChanged.connect(lambda x: setattr(self.state, "state_version", 0 if x == Qt.CheckState.Checked else STATE_VERSION))
+
+            self.resp_supported_current.valueChanged.connect(lambda x: setattr(self.state, "supported_current", x * 1000))
+            self.resp_error_state.valueChanged.connect(lambda x: setattr(self.state, "error_state", x))
+            self.resp_max_line_current.valueChanged.connect(lambda x: setattr(self.state, "current_l1", x))
+
+            self.resp_cp_disconnect.stateChanged.connect(lambda x: setattr(self.state, "cp_disconnect", x == Qt.CheckState.Checked))
+            self.resp_allowed_charging_current.valueChanged.connect(lambda x: setattr(self.state, "allowed_charging_current", x * 1000))
+            self.resp_iec61851_state.currentIndexChanged.connect(lambda x: setattr(self.state, "iec61851_state", x))
+
+        def update_ui_from_state(self):
+            self.resp_seq_num.setText(str(self.state.next_seq_num))
+            self.resp_version.setText(str(self.state.state_version))
+            self.resp_uptime.setText("{} ms".format(self.state.uptime))
+            self.resp_charging_time.setText("{} ms".format(self.state.charging_time))
+
+            self.req_seq_num.setText(str(self.state.req_seq_num))
+            self.req_version.setText(str(self.state.req_version))
+            self.req_allocated_current.setText("{:2.3f} A".format(self.state.req_allocated_current / 1000.0))
+
+            self.req_cp_disconnect.setText(str(self.state.req_should_disconnect_cp))
+            self.resp_iec61851_state.setCurrentIndex(self.state.iec61851_state)
+            self.resp_charger_state.setCurrentIndex(self.state.charger_state)
+
+            self.resp_allowed_charging_current.setValue(int(self.state.allowed_charging_current / 1000))
+            self.resp_cp_disconnect.setChecked(self.state.cp_disconnect)
+            self.resp_iec61851_state.setCurrentIndex(self.state.iec61851_state)
+
+        def receive(self):
+            self.state.recv()
+
+        def send(self):
+            self.state.tick()
+            self.update_ui_from_state()
+            self.state.send()
+
+    def main():
+        app = QApplication([])
+        window = QWidget()
+
+        window.setWindowTitle(",".join(sys.argv[1:]))
+
+        chargers = len(sys.argv) - 1
+        cols = math.ceil(chargers / 13)
+        rows = math.ceil(chargers / cols)
+
+        top_level_layout = QGridLayout()
+
+        last_row_counter = 0
+
+        chargers = []
+
+        for i, listen_addr in enumerate(sys.argv[1:]):
+            col = int(i % rows)
+            row = int(i / rows) + last_row_counter
+            print(col, row, cols, rows)
+
+            chargers.append(ChargerUI(top_level_layout, row, col + 1, listen_addr))
+            if col == rows - 1:
+                print("Updating last row counter")
+                last_row_counter += chargers[-1].row_counter
+
+        window.setLayout(top_level_layout)
+        window.show()
+        app.exec_()
+
+    main()
+
