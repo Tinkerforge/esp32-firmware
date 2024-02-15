@@ -119,7 +119,7 @@ class Charger:
     # Always automatic
     charging_time_start: float = 0
     charging_time: int = 0
-    time_since_state_change = time.time()
+    time_since_state_change: float = field(default_factory=lambda: time.time())
 
     # Last received request data. Updated in recv()
     manager_addr = None
@@ -129,14 +129,17 @@ class Charger:
     req_should_disconnect_cp: bool = False
 
     # Internal
-    _start: float = time.time()
+    _start: float = field(default_factory=lambda: time.time())
     _last_iec61851_state: int = 0
+    _sock: socket.socket = field(default_factory=lambda: socket.socket(socket.AF_INET, socket.SOCK_DGRAM))
 
     def __post_init__(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind((self.listen_addr, 34128))
-        self.sock.setblocking(False)
+        self._sock.bind((self.listen_addr, 34128))
+        self._sock.setblocking(False)
 
+    def reset(self):
+        self._sock.close()
+        self.__init__(self.uid, self.listen_addr, self.auto_mode)
 
     def tick(self):
         if self.auto_mode:
@@ -212,11 +215,11 @@ class Charger:
             self.next_seq_num += 1
             self.next_seq_num %= 65536
 
-        self.sock.sendto(b, self.manager_addr)
+        self._sock.sendto(b, self.manager_addr)
 
     def recv(self):
         try:
-            data, self.manager_addr = self.sock.recvfrom(command_len)
+            data, self.manager_addr = self._sock.recvfrom(command_len)
         except BlockingIOError:
             return
         if len(data) != command_len:
@@ -368,6 +371,9 @@ if __name__ == "__main__":
             self.resp_cp_disconnect = QCheckBox("CP disconnected")
             handle_auto("CP disconnect state", self.resp_cp_disconnect)
 
+            self.reset = QPushButton("Reset")
+            self.addRow("", self.reset)
+
         def register_signals(self):
             # Python lambdas don't allow assignments
             self.resp_block_uptime.stateChanged.connect(lambda x: setattr(self.state, "uptime_blocked", x == Qt.CheckState.Checked))
@@ -383,6 +389,7 @@ if __name__ == "__main__":
             self.resp_cp_disconnect.stateChanged.connect(lambda x: setattr(self.state, "cp_disconnect", x == Qt.CheckState.Checked))
             self.resp_allowed_charging_current.valueChanged.connect(lambda x: setattr(self.state, "allowed_charging_current", x * 1000))
             self.resp_iec61851_state.currentIndexChanged.connect(lambda x: setattr(self.state, "iec61851_state", x))
+            self.reset.clicked.connect(lambda: self.state.reset())
 
         def update_ui_from_state(self):
             self.resp_seq_num.setText(str(self.state.next_seq_num))
