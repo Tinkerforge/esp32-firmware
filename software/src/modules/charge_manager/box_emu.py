@@ -430,11 +430,9 @@ if __name__ == "__main__":
         for i, listen_addr in enumerate(sys.argv[1:]):
             col = int(i % rows)
             row = int(i / rows) + last_row_counter
-            print(col, row, cols, rows)
 
             chargers.append(ChargerUI(top_level_layout, row, col + 1, listen_addr))
             if col == rows - 1:
-                print("Updating last row counter")
                 last_row_counter += chargers[-1].row_counter
 
         window.setLayout(top_level_layout)
