@@ -233,7 +233,7 @@ class Charger:
         self.req_seq_num = seq_num
         self.req_version = version
         self.req_allocated_current = allocated_current
-        self.req_should_disconnect_cp = (command_flags & 0x40) >> 6
+        self.req_should_disconnect_cp = ((command_flags & 0x40) >> 6) == 1
 
 if __name__ == "__main__":
     from PyQt5.QtWidgets import *
