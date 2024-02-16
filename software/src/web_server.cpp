@@ -189,6 +189,12 @@ WebServerHandler *WebServer::addHandler(const char *uri, httpd_method_t method, 
         return nullptr;
     }
 
+    httpd_uri_t ll_handler = {};
+    ll_handler.uri       = uri;
+    ll_handler.method    = method;
+    // This check has to happen before uploadCallback is forwarded!
+    ll_handler.handler   = uploadCallback == nullptr ? low_level_handler : low_level_upload_handler;
+
     handlers.emplace_front(callbackInMainThread, std::forward<wshCallback>(callback), std::forward<wshUploadCallback>(uploadCallback));
     ++handler_count;
     WebServerHandler *result = &handlers.front();
@@ -197,10 +203,6 @@ WebServerHandler *WebServer::addHandler(const char *uri, httpd_method_t method, 
     user_ctx->server = this;
     user_ctx->handler = result;
 
-    httpd_uri_t ll_handler = {};
-    ll_handler.uri       = uri;
-    ll_handler.method    = method;
-    ll_handler.handler   = uploadCallback == nullptr ? low_level_handler : low_level_upload_handler;
     ll_handler.user_ctx  = (void*)user_ctx;
 
     httpd_register_uri_handler(httpd, &ll_handler);
