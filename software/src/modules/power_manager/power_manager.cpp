@@ -70,6 +70,7 @@ void PowerManager::pre_setup()
         //const Config *em_cfg = energy_manager.get_config();
 
         if (cfg.get("phase_switching_mode")->asUint() == 3) { // external control
+            // TODO FIXME
             //if (em_cfg->get("contactor_installed")->asBool() != true)
             //    return "Can't enable external control with no contactor installed.";
             if (cfg.get("excess_charging_enable")->asBool() != false)
@@ -108,13 +109,9 @@ void PowerManager::setup()
 #endif
 
     charge_manager.set_allocated_current_callback([this](uint32_t current_ma) {
-        //logger.printfln("energy_manager: allocated current callback: %u", current_ma);
+        //logger.printfln("power_manager: allocated current callback: %u", current_ma);
         charge_manager_allocated_current_ma = current_ma;
     });
-
-    // Get configs from Energy Manager
-    em_state = energy_manager.get_state();
-    em_config = energy_manager.get_config();
 
     // Cache config for energy update
     default_mode                = config.get("default_mode")->asUint();
@@ -189,6 +186,9 @@ void PowerManager::setup()
     low_level_state.get("threshold_3to1")->updateInt(threshold_3to1_w);
     low_level_state.get("threshold_1to3")->updateInt(threshold_1to3_w);
 
+    // Update data from meter and phase switcher back-end, requires power filter to be set up.
+    update_data();
+
     // Check for incomplete configuration after as much as possible has been set up.
 
     bool power_meter_available = false;
@@ -202,7 +202,7 @@ void PowerManager::setup()
 #endif
     if (excess_charging_enable && !power_meter_available) {
         set_config_error(CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK);
-        logger.printfln("energy_manager: Excess charging enabled but configured meter can't provide power values.");
+        logger.printfln("power_manager: Excess charging enabled but configured meter can't provide power values.");
     }
 
     task_scheduler.scheduleOnce([this]() {
@@ -212,13 +212,13 @@ void PowerManager::setup()
 
         // Can't check for chargers in setup() because CM's setup() hasn't run yet to load the charger configuration.
         if (!charge_manager.have_chargers()) {
-            logger.printfln("energy_manager: No chargers configured. Won't try to distribute energy.");
+            logger.printfln("power_manager: No chargers configured. Won't try to distribute energy.");
             set_config_error(CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK);
         }
     }, 0);
 
     if (max_current_unlimited_ma == 0) {
-        logger.printfln("energy_manager: No maximum current configured for chargers. Disabling energy distribution.");
+        logger.printfln("power_manager: No maximum current configured for chargers. Disabling energy distribution.");
         set_config_error(CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK);
         return;
     }
@@ -235,6 +235,7 @@ void PowerManager::setup()
     reset_limit_max_current();
 
     task_scheduler.scheduleWithFixedDelay([this]() {
+        this->update_data();
         this->update_energy();
     }, PM_TASK_DELAY_MS, PM_TASK_DELAY_MS);
 
@@ -270,7 +271,7 @@ void PowerManager::register_urls()
         if (new_mode != old_mode)
             just_switched_mode = true;
 
-        logger.printfln("energy_manager: Switched mode %u->%u", old_mode, mode);
+        logger.printfln("power_manager: Switched mode %u->%u", old_mode, mode);
     }, false);
 
     api.addState("power_manager/external_control", &external_control);
@@ -314,6 +315,11 @@ const Config *PowerManager::get_config()
     return &config;
 }
 
+void PowerManager::register_phase_switcher_backend(PhaseSwitcherBackend *backend)
+{
+    phase_switcher_backend = backend;
+}
+
 void PowerManager::set_available_current(uint32_t current)
 {
     is_on_last = current > 0;
@@ -323,7 +329,7 @@ void PowerManager::set_available_current(uint32_t current)
     }});
 
     if (!err.isEmpty())
-        logger.printfln("energy_manager: set_available_current failed: %s", err.c_str());
+        logger.printfln("power_manager: set_available_current failed: %s", err.c_str());
 
     charge_manager_available_current_ma = current;
     low_level_state.get("charge_manager_available_current")->updateUint(current);
@@ -336,20 +342,13 @@ void PowerManager::set_available_phases(uint32_t phases)
     }});
 
     if (!err.isEmpty())
-        logger.printfln("energy_manager: set_available_phases failed: %s", err.c_str());
+        logger.printfln("power_manager: set_available_phases failed: %s", err.c_str());
 }
 
-void PowerManager::update_energy()
+void PowerManager::update_data()
 {
-    static SwitchingState prev_state = switching_state;
-    if (switching_state != prev_state) {
-        logger.printfln("energy_manager: now in state %i", static_cast<int>(switching_state));
-        prev_state = switching_state;
-        low_level_state.get("switching_state")->updateUint(static_cast<uint32_t>(switching_state));
-    }
-
-    // Update states derived from all_data
-    //is_3phase   = contactor_installed ? all_data.contactor_value : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE; // TODO FIXME
+    // Update states from back-end
+    is_3phase = phase_switcher_backend->can_switch_phases() ? phase_switcher_backend->get_is_3phase() : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
     have_phases = 1 + static_cast<uint32_t>(is_3phase) * 2;
     low_level_state.get("is_3phase")->updateBool(is_3phase);
     //automation_trigger |= state.get("phases_switched")->updateUint(have_phases) ? 4u : 0u; // TODO FIXME
@@ -405,6 +404,16 @@ void PowerManager::update_energy()
         power_at_meter_filtered_w = power_at_meter_mavg_total / power_at_meter_mavg_values_count;
 
         low_level_state.get("power_at_meter_filtered")->updateFloat(static_cast<float>(power_at_meter_filtered_w));
+    }
+}
+
+void PowerManager::update_energy()
+{
+    static SwitchingState prev_state = switching_state;
+    if (switching_state != prev_state) {
+        logger.printfln("power_manager: now in state %i", static_cast<int>(switching_state));
+        prev_state = switching_state;
+        low_level_state.get("switching_state")->updateUint(static_cast<uint32_t>(switching_state));
     }
 
     // TODO FIXME
@@ -465,26 +474,28 @@ void PowerManager::update_energy()
         } else {
             if (power_at_meter_smooth_w == INT32_MAX) {
                 if (!printed_skipping_energy_update) {
-                    logger.printfln("energy_manager: Pausing energy updates because power value is not available yet.");
+                    logger.printfln("power_manager: Pausing energy updates because power value is not available yet.");
                     printed_skipping_energy_update = true;
                 }
                 return;
             } else {
                 if (printed_skipping_energy_update) {
-                    logger.printfln("energy_manager: Resuming energy updates because power value is now available.");
+                    logger.printfln("power_manager: Resuming energy updates because power value is now available.");
                     printed_skipping_energy_update = false;
                 }
             }
             p_error_w          = target_power_from_grid_w - power_at_meter_smooth_w;
             p_error_filtered_w = target_power_from_grid_w - power_at_meter_filtered_w;
 
-            // TODO FIXME
-            //if (p_error_w > 200)
-            //    rgb_led.update_grid_balance(EmRgbLed::GridBalance::Export);
-            //else if (p_error_w < -200)
-            //    rgb_led.update_grid_balance(EmRgbLed::GridBalance::Import);
-            //else
-            //    rgb_led.update_grid_balance(EmRgbLed::GridBalance::Balanced);
+#if MODULE_ENERGY_MANAGER_AVAILABLE()
+            if (p_error_w > 200) {
+                energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Export);
+            } else if (p_error_w < -200) {
+                energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Import);
+            } else {
+                energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Balanced);
+            }
+#endif
         }
 
         switch (mode) {
@@ -550,7 +561,7 @@ void PowerManager::update_energy()
             // Don't constantly complain if we don't have any chargers configured.
             if (charge_manager.have_chargers()) {
                 if (!printed_not_seen_all_chargers) {
-                    logger.printfln("energy_manager: Not seen all chargers yet.");
+                    logger.printfln("power_manager: Not seen all chargers yet.");
                     printed_not_seen_all_chargers = true;
                 }
             }
@@ -560,7 +571,7 @@ void PowerManager::update_energy()
 
             return;
         } else if (!printed_seen_all_chargers) {
-            logger.printfln("energy_manager: Seen all chargers.");
+            logger.printfln("power_manager: Seen all chargers.");
             printed_seen_all_chargers = true;
         }
 
@@ -593,7 +604,7 @@ void PowerManager::update_energy()
 
         // Remember last decision change to start hysteresis time.
         if (wants_3phase != wants_3phase_last) {
-            logger.printfln("energy_manager: wants_3phase decision changed to %i", wants_3phase);
+            logger.printfln("power_manager: wants_3phase decision changed to %i", wants_3phase);
             phase_state_change_blocked_until = time_now + switching_hysteresis_ms;
             wants_3phase_last = wants_3phase;
         }
@@ -608,32 +619,32 @@ void PowerManager::update_energy()
         // Check if phase switching is allowed right now.
         bool switch_phases = false;
         if (wants_3phase != is_3phase) {
-            if (false /*!contactor_installed*/) { // TODO FIXME
-                logger.printfln("energy_manager: Phase switch wanted but no contactor installed. Check configuration.");
+            if (phase_switcher_backend->can_switch_phases()) {
+                logger.printfln("power_manager: Phase switch wanted but not available. Check configuration.");
             } else if (!charge_manager.is_control_pilot_disconnect_supported(time_now - 5000)) {
-                logger.printfln("energy_manager: Phase switch wanted but not supported by all chargers.");
+                logger.printfln("power_manager: Phase switch wanted but not supported by all chargers.");
             } else if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
                 // Switching phases is always allowed when under external control.
                 switch_phases = true;
             } else if (!uptime_past_hysteresis) {
                 // (Re)booted recently. Allow immediate switching.
-                logger.printfln("energy_manager: Immediate phase switch to %s during start-up period. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
+                logger.printfln("power_manager: Immediate phase switch to %s during start-up period. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
                 switch_phases = true;
                 // Only one immediate switch on/off allowed; mark as used.
                 uptime_past_hysteresis = true;
                 low_level_state.get("uptime_past_hysteresis")->updateBool(uptime_past_hysteresis);
             } else if (just_switched_mode) {
                 // Just switched modes. Allow immediate switching.
-                logger.printfln("energy_manager: Immediate phase switch to %s after changing modes. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
+                logger.printfln("power_manager: Immediate phase switch to %s after changing modes. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
                 switch_phases = true;
             } else if (!is_on && !on_state_change_is_blocked && a_after_b(time_now, phase_state_change_blocked_until - switching_hysteresis_ms/2)) {
                 // On/off deadline passed and at least half of the phase switching deadline passed.
-                logger.printfln("energy_manager: Immediate phase switch to %s while power is off. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
+                logger.printfln("power_manager: Immediate phase switch to %s while power is off. available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
                 switch_phases = true;
             } else if (phase_state_change_is_blocked) {
-                //logger.printfln("energy_manager: Phase switch wanted but decision changed too recently. Have to wait another %ums.", phase_state_change_blocked_until - time_now);
+                //logger.printfln("power_manager: Phase switch wanted but decision changed too recently. Have to wait another %ums.", phase_state_change_blocked_until - time_now);
             } else {
-                logger.printfln("energy_manager wants phase change to %s: available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
+                logger.printfln("power_manager wants phase change to %s: available (filtered)=%i", wants_3phase ? "3 phases" : "1 phase", power_available_filtered_w);
                 switch_phases = true;
             }
         }
@@ -674,7 +685,7 @@ void PowerManager::update_energy()
 
             // Remember last decision change to start hysteresis time.
             if (wants_on != wants_on_last) {
-                logger.printfln("energy_manager: wants_on decision changed to %i", wants_on);
+                logger.printfln("power_manager: wants_on decision changed to %i", wants_on);
                 on_state_change_blocked_until = time_now + switching_hysteresis_ms;
                 on_state_change_is_blocked = true; // Set manually because the usual update already ran before the phase switching code.
                 wants_on_last = wants_on;
@@ -713,20 +724,20 @@ void PowerManager::update_energy()
                     // Switching on/off is always allowed when under external control.
                 } else if (!on_state_change_is_blocked) {
                     // Start/stop allowed
-                    logger.printfln("energy_manager: Switch %s, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
+                    logger.printfln("power_manager: Switch %s, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
                 } else if (!uptime_past_hysteresis) {
                     // (Re)booted recently. Allow immediate switching.
-                    logger.printfln("energy_manager: Immediate switch-%s during start-up period, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
+                    logger.printfln("power_manager: Immediate switch-%s during start-up period, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
                     // Only one immediate switch on/off allowed; mark as used.
                     uptime_past_hysteresis = true;
                     low_level_state.get("uptime_past_hysteresis")->updateBool(uptime_past_hysteresis);
                 } else if (just_switched_mode) {
                     // Just switched modes. Allow immediate switching.
-                    logger.printfln("energy_manager: Immediate switch-%s after changing modes, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
+                    logger.printfln("power_manager: Immediate switch-%s after changing modes, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
                 } else if (just_switched_phases && a_after_b(time_now, on_state_change_blocked_until - switching_hysteresis_ms/2)) {
-                    logger.printfln("energy_manager: Opportunistic switch-%s, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
+                    logger.printfln("power_manager: Opportunistic switch-%s, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
                 } else { // Switched too recently
-                    //logger.printfln("energy_manager: Start/stop wanted but decision changed too recently. Have to wait another %ums.", off_state_change_blocked_until - time_now);
+                    //logger.printfln("power_manager: Start/stop wanted but decision changed too recently. Have to wait another %ums.", off_state_change_blocked_until - time_now);
                     if (is_on) { // Is on, needs to stay on at minimum current.
                         current_available_ma = min_current_now_ma;
                     } else { // Is off, needs to stay off.

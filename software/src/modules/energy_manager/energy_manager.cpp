@@ -326,6 +326,8 @@ void EnergyManager::setup()
         this->update_all_data();
     }, 0, EM_TASK_DELAY_MS);
 
+    power_manager.register_phase_switcher_backend(this);
+
 // TODO FIXME
 #if 0 //MODULE_AUTOMATION_AVAILABLE()
     task_scheduler.scheduleOnce([this]() {
@@ -391,6 +393,28 @@ void EnergyManager::loop()
         last_debug = millis();
         ws.pushRawStateUpdate(this->get_energy_manager_debug_line(), "energy_manager/debug");
     }
+}
+
+bool EnergyManager::can_switch_phases()
+{
+    return contactor_installed;
+}
+
+bool EnergyManager::get_is_3phase()
+{
+    return all_data.contactor_value;
+}
+
+PhaseSwitcherBackend::SwitchingState EnergyManager::get_phase_switching_state()
+{
+    // TODO FIXME
+    return contactor_installed ? PhaseSwitcherBackend::SwitchingState::Busy : PhaseSwitcherBackend::SwitchingState::Error;
+}
+
+bool EnergyManager::switch_phases_3phase(bool wants_3phase)
+{
+    // TODO FIXME
+    return !contactor_installed;
 }
 
 Config *EnergyManager::get_state()
@@ -764,6 +788,11 @@ struct timeval EnergyManager::get_time()
     logger.printfln("energy_manager: Failed to get datetime: error %i", rc);
     time.tv_sec = 0;
     return time;
+}
+
+void EnergyManager::update_grid_balance_led(EmRgbLed::GridBalance balance)
+{
+    rgb_led.update_grid_balance(balance);
 }
 
 bool EnergyManager::disallow_fw_update_with_vehicle_connected()

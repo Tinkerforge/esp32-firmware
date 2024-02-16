@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "phase_switcher_back-end.h"
+
 #include "config.h"
 #include "module.h"
 
@@ -64,7 +66,7 @@ enum class SwitchingState
     ConnectingCP
 };
 
-class PowerManager : public IModule
+class PowerManager final : public IModule
 {
     friend class EnergyManager;
 
@@ -76,6 +78,8 @@ public:
 
     [[gnu::const]] const Config * get_config();
 
+    void register_phase_switcher_backend(PhaseSwitcherBackend *backend);
+
     void limit_max_current(uint32_t limit_ma);
     void reset_limit_max_current();
     //void switch_mode(uint32_t new_mode);
@@ -83,8 +87,17 @@ public:
     bool get_is_3phase() const;
 
 private:
+    class PhaseSwitcherBackendDummy final : public PhaseSwitcherBackend
+    {
+        bool can_switch_phases()                     override {return false;}
+        bool get_is_3phase()                         override {return false;}
+        SwitchingState get_phase_switching_state()   override {return SwitchingState::Error;}
+        bool switch_phases_3phase(bool wants_3phase) override {return false;}
+    };
+
     void set_available_current(uint32_t current);
     void set_available_phases(uint32_t phases);
+    void update_data();
     void update_energy();
     void set_config_error(uint32_t config_error_mask);
 
@@ -97,10 +110,10 @@ private:
     ConfigRoot external_control;
     ConfigRoot external_control_update;
 
-    Config *em_state;
-    const Config *em_config;
-
     uint32_t config_error_flags = 0;
+
+    PhaseSwitcherBackendDummy phase_switcher_dummy = PhaseSwitcherBackendDummy();
+    PhaseSwitcherBackend *phase_switcher_backend = &phase_switcher_dummy;
 
     bool     printed_not_seen_all_chargers       = false;
     bool     printed_seen_all_chargers           = false;

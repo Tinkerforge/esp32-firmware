@@ -25,6 +25,7 @@
 #include "config.h"
 
 #include "bindings/bricklet_warp_energy_manager.h"
+#include "modules/power_manager/phase_switcher_back-end.h"
 
 #include "device_module.h"
 #include "em_rgb_led.h"
@@ -53,7 +54,7 @@
 #define EXTERNAL_CONTROL_STATE_UNAVAILABLE  2
 #define EXTERNAL_CONTROL_STATE_SWITCHING    3
 
-class EnergyManager : public DeviceModule<TF_WARPEnergyManager,
+class EnergyManager final : public PhaseSwitcherBackend, public DeviceModule<TF_WARPEnergyManager,
                                           warp_energy_manager_bricklet_firmware_bin_data,
                                           warp_energy_manager_bricklet_firmware_bin_length,
                                           tf_warp_energy_manager_create,
@@ -63,11 +64,19 @@ class EnergyManager : public DeviceModule<TF_WARPEnergyManager,
 {
 public:
     EnergyManager() : DeviceModule("energy_manager", "WARP Energy Manager", "Energy Manager", [this](){this->setup_energy_manager();}) {}
+
+    // for IModule
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
     void register_events() override;
     void loop() override;
+
+    // for PhaseSwitcherBackend
+    bool can_switch_phases() override;
+    bool get_is_3phase() override;
+    PhaseSwitcherBackend::SwitchingState get_phase_switching_state() override;
+    bool switch_phases_3phase(bool wants_3phase) override;
 
     [[gnu::const]] Config *get_state();
     [[gnu::const]] const Config *get_config();
@@ -87,6 +96,8 @@ public:
 
     void set_time(const tm &tm);
     struct timeval get_time();
+
+    void update_grid_balance_led(EmRgbLed::GridBalance balance);
 
     bool disallow_fw_update_with_vehicle_connected();
 
