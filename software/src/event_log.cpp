@@ -40,8 +40,14 @@ void EventLog::pre_init()
 
 void EventLog::pre_setup() {
     boot_id = Config::Object({
-        {"boot_id", Config::Uint32(esp_random())}
+        {"boot_id", Config::Uint32(0)}
     });
+}
+
+void EventLog::post_setup() {
+    // Entropy is created by the wifi modem.
+    auto id = esp_random();
+    boot_id.get("boot_id")->updateUint(id);
 }
 
 void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])

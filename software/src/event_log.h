@@ -47,6 +47,7 @@ public:
 
     void pre_init();
     void pre_setup();
+    void post_setup();
 
     void write(const char *buf, size_t len);
 

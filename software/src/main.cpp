@@ -199,6 +199,8 @@ void setup(void) {
 
     modules = modules_get_init_config();
 
+    logger.post_setup();
+
     config_post_setup();
 
     server.start();
