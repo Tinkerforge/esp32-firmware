@@ -123,9 +123,29 @@ void evse_v2_button_recovery_handler()
 
             mount_or_format_spiffs();
 #if MODULE_USERS_AVAILABLE()
-            if (api.restorePersistentConfig("users/config", &users.config)) {
-                users.config.get("http_auth_enabled")->updateBool(false);
-                api.writeConfig("users/config", &users.config);
+            {
+                // We can't use api.restorePersistent config here,
+                // as we are before users module's pre_setup.
+                // users.config is not yet initialized so we can't
+                // use it to guesstimate the required memory to give
+                // ArduinoJson to parse the config.
+                String path = API::getLittleFSConfigPath("users/config");
+                if (LittleFS.exists(path)) {
+                    DynamicJsonDocument doc(4096);
+                    DeserializationError error = DeserializationError::Ok;
+                    {
+                        auto file = LittleFS.open(path, "r");
+                        error = deserializeJson(doc, file);
+                    }
+
+                    if (error != DeserializationError::Ok) {
+                        logger.printfln("Failed to reset HTTP authentication! %s", error.c_str());
+                    } else {
+                        doc["http_auth_enabled"] = false;
+                        auto file = LittleFS.open(path, "w");
+                        serializeJson(doc, file);
+                    }
+                }
             }
 #endif
 
