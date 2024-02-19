@@ -144,6 +144,8 @@ public:
 
     static bool restorePersistentConfig(const String &path, ConfigRoot *config);
 
+    static String getLittleFSConfigPath(const String &path, bool tmp = false);
+
     void registerDebugUrl();
 
     size_t registerBackend(IAPIBackend *backend);

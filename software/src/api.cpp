@@ -140,6 +140,12 @@ void API::setup()
     }, 250, 250);
 }
 
+String API::getLittleFSConfigPath(const String &path, bool tmp) {
+    String path_copy = path;
+    path_copy.replace('/', '_');
+    return (tmp ? String("/config/.") : String("/config/")) + path_copy;
+}
+
 void API::addCommand(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action)
 {
     // The lambda's by-copy capture creates a safe copy of the callback.
@@ -254,9 +260,7 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initi
         // If the config is written to flash, we assume that it is not the default configuration.
         // This does not have to be the case, however then we allow resetting the config once
         // before reporting that it how has the default values. This is good enough (tm).
-        auto path_copy = path;
-        path_copy.replace('/', '_');
-        String filename = String("/config/") + path_copy;
+        String filename = API::getLittleFSConfigPath(path);
 
         if (LittleFS.exists(filename)) {
             conf_modified->get("modified")->updateUint(2);
@@ -367,10 +371,8 @@ bool API::hasFeature(const char *name)
 
 void API::writeConfig(const String &path, Config *config)
 {
-    String path_copy = path;
-    path_copy.replace('/', '_');
-    String cfg_path = String("/config/") + path_copy;
-    String tmp_path = String("/config/.") + path_copy;
+    String cfg_path = API::getLittleFSConfigPath(path);
+    String tmp_path = API::getLittleFSConfigPath(path, true);
 
     if (LittleFS.exists(tmp_path)) {
         LittleFS.remove(tmp_path);
@@ -390,10 +392,8 @@ void API::writeConfig(const String &path, Config *config)
 
 void API::removeConfig(const String &path)
 {
-    String path_copy = path;
-    path_copy.replace('/', '_');
-    String cfg_path = String("/config/") + path_copy;
-    String tmp_path = String("/config/.") + path_copy;
+    String cfg_path = API::getLittleFSConfigPath(path);
+    String tmp_path = API::getLittleFSConfigPath(path, true);
 
     if (LittleFS.exists(tmp_path)) {
         LittleFS.remove(tmp_path);
@@ -419,9 +419,7 @@ void API::addTemporaryConfig(String path, Config *config, std::initializer_list<
 
 bool API::restorePersistentConfig(const String &path, ConfigRoot *config)
 {
-    String path_copy = path;
-    path_copy.replace('/', '_');
-    String filename = String("/config/") + path_copy;
+    String filename = API::getLittleFSConfigPath(path);
 
     if (!LittleFS.exists(filename)) {
         return false;
@@ -430,7 +428,7 @@ bool API::restorePersistentConfig(const String &path, ConfigRoot *config)
     String error = config->update_from_file(LittleFS.open(filename));
 
     if (!error.isEmpty()) {
-        logger.printfln("Failed to restore persistent config %s: %s", path_copy.c_str(), error.c_str());
+        logger.printfln("Failed to restore persistent config %s: %s", path.c_str(), error.c_str());
     }
 
     return error.isEmpty();
