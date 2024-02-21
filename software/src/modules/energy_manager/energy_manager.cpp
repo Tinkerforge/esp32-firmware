@@ -63,18 +63,9 @@ void EnergyManager::pre_setup()
     });
 
     // Config
-    config = ConfigRoot{Config::Object({
+    config = Config::Object({
         {"contactor_installed", Config::Bool(false)},
-    }), [](const Config &cfg, ConfigSource source) -> String {
-        const Config *pm_cfg = power_manager.get_config();
-
-        if (pm_cfg->get("phase_switching_mode")->asUint() == 3) { // external control
-            if (cfg.get("contactor_installed")->asBool() != true)
-                return "Cannot remove contactor while external control is enabled.";
-        }
-
-        return "";
-    }};
+    });
 
     // history
     history_wallbox_5min = Config::Object({
@@ -341,13 +332,6 @@ void EnergyManager::setup()
 
     start_network_check_task();
 
-    // The default configuration after a factory reset must be good enough for everything to run without crashing.
-    if ((power_manager.get_config()->get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !contactor_installed) {
-        logger.printfln("energy_manager: Invalid configuration: Automatic phase switching selected but no contactor installed.");
-        //power_manager.set_config_error(CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK); // TODO FIXME
-        return;
-    }
-
     task_scheduler.scheduleOnce([this](){this->show_blank_value_id_update_warnings = true;}, 250);
 }
 
@@ -407,24 +391,39 @@ bool EnergyManager::get_is_3phase()
 
 PhaseSwitcherBackend::SwitchingState EnergyManager::get_phase_switching_state()
 {
-    // TODO FIXME
-    return contactor_installed ? PhaseSwitcherBackend::SwitchingState::Busy : PhaseSwitcherBackend::SwitchingState::Error;
+    if (!contactor_installed || contactor_check_tripped || !bricklet_reachable) {
+        return PhaseSwitcherBackend::SwitchingState::Error;
+    }
+
+    if (phase_switch_deadtime_us == 0_usec) {
+        return PhaseSwitcherBackend::SwitchingState::Ready;
+    }
+
+    if (!deadline_elapsed(phase_switch_deadtime_us)) {
+        return PhaseSwitcherBackend::SwitchingState::Busy;
+    }
+
+    phase_switch_deadtime_us = 0_usec;
+
+    return PhaseSwitcherBackend::SwitchingState::Ready;
 }
 
 bool EnergyManager::switch_phases_3phase(bool wants_3phase)
 {
-    // TODO FIXME
-    return !contactor_installed;
-}
+    if (!contactor_installed) {
+        logger.printfln("energy_manager: Requested phase switch without contactor installed.");
+        return false;
+    }
 
-Config *EnergyManager::get_state()
-{
-    return &state;
-}
+    if (get_phase_switching_state() != PhaseSwitcherBackend::SwitchingState::Ready) {
+        logger.printfln("energy_manager: Requested phase switch while not ready.");
+        return false;
+    }
 
-const Config *EnergyManager::get_config()
-{
-    return &config;
+    tf_warp_energy_manager_set_contactor(&device, wants_3phase);
+    phase_switch_deadtime_us = now_us() + micros_t{2000000}; // 2s
+
+    return true;
 }
 
 void EnergyManager::update_all_data()

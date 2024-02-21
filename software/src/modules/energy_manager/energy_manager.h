@@ -74,12 +74,10 @@ public:
 
     // for PhaseSwitcherBackend
     bool can_switch_phases() override;
+    bool requires_cp_disconnect() override {return true;}
     bool get_is_3phase() override;
     PhaseSwitcherBackend::SwitchingState get_phase_switching_state() override;
     bool switch_phases_3phase(bool wants_3phase) override;
-
-    [[gnu::const]] Config *get_state();
-    [[gnu::const]] const Config *get_config();
 
     void set_error(uint32_t error_mask);
 
@@ -131,6 +129,7 @@ private:
     uint32_t last_debug_keep_alive               = 0;
     bool     debug                               = false;
     bool     contactor_check_tripped             = false;
+    micros_t phase_switch_deadtime_us            = 0_usec;
     bool     bricklet_reachable                  = true;
     uint32_t consecutive_bricklet_errors         = 0;
 

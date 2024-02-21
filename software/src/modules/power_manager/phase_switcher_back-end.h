@@ -39,6 +39,7 @@ public:
     virtual ~PhaseSwitcherBackend() = default;
 
     virtual bool can_switch_phases() = 0;
+    virtual bool requires_cp_disconnect() = 0;
     virtual bool get_is_3phase() = 0;
     virtual SwitchingState get_phase_switching_state() = 0;
     virtual bool switch_phases_3phase(bool wants_3phase) = 0;

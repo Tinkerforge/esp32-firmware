@@ -48,22 +48,23 @@
 
 #define HYSTERESIS_MIN_TIME_MINUTES         5
 
-#define CONFIG_ERROR_FLAGS_EXCESS_NO_METER_BIT_POS  3
-#define CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK     (1 << CONFIG_ERROR_FLAGS_EXCESS_NO_METER_BIT_POS)
-#define CONFIG_ERROR_FLAGS_NO_CHARGERS_BIT_POS      2
-#define CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK         (1 << CONFIG_ERROR_FLAGS_NO_CHARGERS_BIT_POS)
-#define CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_BIT_POS   1
-#define CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK      (1 << CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_BIT_POS)
-#define CONFIG_ERROR_FLAGS_PHASE_SWITCHING_BIT_POS  0
-#define CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK     (1 << CONFIG_ERROR_FLAGS_PHASE_SWITCHING_BIT_POS)
+#define PM_CONFIG_ERROR_FLAGS_EXCESS_NO_METER_BIT_POS   3
+#define PM_CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK      (1 << PM_CONFIG_ERROR_FLAGS_EXCESS_NO_METER_BIT_POS)
+#define PM_CONFIG_ERROR_FLAGS_NO_CHARGERS_BIT_POS       2
+#define PM_CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK          (1 << PM_CONFIG_ERROR_FLAGS_NO_CHARGERS_BIT_POS)
+#define PM_CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_BIT_POS    1
+#define PM_CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK       (1 << PM_CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_BIT_POS)
+#define PM_CONFIG_ERROR_FLAGS_PHASE_SWITCHING_BIT_POS   0
+#define PM_CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK      (1 << PM_CONFIG_ERROR_FLAGS_PHASE_SWITCHING_BIT_POS)
 
 enum class SwitchingState
 {
     Monitoring = 0,
+    StartSwitching,
     Stopping,
     DisconnectingCP,
     TogglingContactor,
-    ConnectingCP
+    WaitUntilSwitched,
 };
 
 class PowerManager final : public IModule
@@ -75,8 +76,6 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-
-    [[gnu::const]] const Config * get_config();
 
     void register_phase_switcher_backend(PhaseSwitcherBackend *backend);
 
@@ -90,6 +89,7 @@ private:
     class PhaseSwitcherBackendDummy final : public PhaseSwitcherBackend
     {
         bool can_switch_phases()                     override {return false;}
+        bool requires_cp_disconnect()                override {return true;}
         bool get_is_3phase()                         override {return false;}
         SwitchingState get_phase_switching_state()   override {return SwitchingState::Error;}
         bool switch_phases_3phase(bool wants_3phase) override {return false;}

@@ -67,16 +67,13 @@ void PowerManager::pre_setup()
         {"guaranteed_power", Config::Uint(1380, 0, 22080)}, // in watt
         {"cloud_filter_mode", Config::Uint(CLOUD_FILTER_MEDIUM, CLOUD_FILTER_OFF, CLOUD_FILTER_STRONG)},
     }), [](const Config &cfg, ConfigSource source) -> String {
-        //const Config *em_cfg = energy_manager.get_config();
-
         if (cfg.get("phase_switching_mode")->asUint() == 3) { // external control
-            // TODO FIXME
-            //if (em_cfg->get("contactor_installed")->asBool() != true)
-            //    return "Can't enable external control with no contactor installed.";
-            if (cfg.get("excess_charging_enable")->asBool() != false)
-                return "Can't enable excess charging when external control is enabled for the Energy Manager's phase switching.";
-            if (cfg.get("default_mode")->asUint() != MODE_FAST)
-                return "Can't select any charging mode besides 'Fast' when extrenal control is enabled for the Energy Manager's phase switching.";
+            if (cfg.get("excess_charging_enable")->asBool() != false) {
+                return "Can't enable excess charging when external control is enabled for phase switching.";
+            }
+            if (cfg.get("default_mode")->asUint() != MODE_FAST) {
+                return "Can't select any charging mode besides 'Fast' when extrenal control is enabled for phase switching.";
+            }
         }
 
         return "";
@@ -201,7 +198,7 @@ void PowerManager::setup()
     }
 #endif
     if (excess_charging_enable && !power_meter_available) {
-        set_config_error(CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK);
+        set_config_error(PM_CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK);
         logger.printfln("power_manager: Excess charging enabled but configured meter can't provide power values.");
     }
 
@@ -213,13 +210,35 @@ void PowerManager::setup()
         // Can't check for chargers in setup() because CM's setup() hasn't run yet to load the charger configuration.
         if (!charge_manager.have_chargers()) {
             logger.printfln("power_manager: No chargers configured. Won't try to distribute energy.");
-            set_config_error(CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK);
+            set_config_error(PM_CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK);
         }
     }, 0);
 
+    // The default configuration after a factory reset must be good enough for everything to run without crashing.
+    if (!phase_switcher_backend->can_switch_phases()) {
+        switch (phase_switching_mode) {
+            case PHASE_SWITCHING_ALWAYS_1PHASE:
+            case PHASE_SWITCHING_ALWAYS_3PHASE:
+                break;
+            default: {
+                    const char *err_reason;
+#if MODULE_ENERGY_MANAGER_AVAILABLE()
+                    err_reason = "no contactor installed";
+#elif 0 // charger back-end
+                    err_reason = "charger doesn't support it";
+#else
+                    err_reason = "not supported by back-end";
+#endif
+                    logger.printfln("power_manager: Invalid configuration: Phase switching enabled but %s.", err_reason);
+                    set_config_error(PM_CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK);
+                    return;
+                }
+        }
+    }
+
     if (max_current_unlimited_ma == 0) {
         logger.printfln("power_manager: No maximum current configured for chargers. Disabling energy distribution.");
-        set_config_error(CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK);
+        set_config_error(PM_CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK);
         return;
     }
 
@@ -308,11 +327,6 @@ void PowerManager::register_urls()
         logger.printfln("power_manager: External control phase change request: switching from %u to %u", old_phases, new_phases);
         phases_wanted->updateUint(new_phases);
     }, true);
-}
-
-const Config *PowerManager::get_config()
-{
-    return &config;
 }
 
 void PowerManager::register_phase_switcher_backend(PhaseSwitcherBackend *backend)
@@ -416,37 +430,16 @@ void PowerManager::update_energy()
         low_level_state.get("switching_state")->updateUint(static_cast<uint32_t>(switching_state));
     }
 
-    // TODO FIXME
-    //if (!bricklet_reachable) {
-    //    set_available_current(0);
-    //
-    //    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
-    //        state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
-    //
-    //    return;
-    //}
+    if (phase_switcher_backend->get_phase_switching_state() == PhaseSwitcherBackend::SwitchingState::Error) {
+        set_available_current(0);
+
+        if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+            state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+
+        return;
+    }
 
     if (switching_state == SwitchingState::Monitoring) {
-        /* TODO FIXME
-        if (contactor_check_tripped) {
-            set_available_current(0);
-
-            // The contactor check only detects a contactor defect when the contactor should be on.
-            // Switch contactor off when a defect is detected, to make sure that it's not energized.
-            if (all_data.contactor_value) {
-                logger.printfln("energy_manager: Switching off possibly defective contactor.");
-                wants_3phase = false;
-                switching_state = SwitchingState::Stopping;
-                switching_start = millis();
-            }
-
-            if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
-                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
-
-            return;
-        }
-        */
-
         const bool     is_on = is_on_last;
         const uint32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt
 
@@ -619,7 +612,7 @@ void PowerManager::update_energy()
         // Check if phase switching is allowed right now.
         bool switch_phases = false;
         if (wants_3phase != is_3phase) {
-            if (phase_switcher_backend->can_switch_phases()) {
+            if (!phase_switcher_backend->can_switch_phases()) {
                 logger.printfln("power_manager: Phase switch wanted but not available. Check configuration.");
             } else if (!charge_manager.is_control_pilot_disconnect_supported(time_now - 5000)) {
                 logger.printfln("power_manager: Phase switch wanted but not supported by all chargers.");
@@ -659,10 +652,7 @@ void PowerManager::update_energy()
 
         // Switch phases or deal with what's available.
         if (switch_phases) {
-            set_available_current(0);
-            set_available_phases(wants_3phase ? 3 : 1);
-            switching_state = SwitchingState::Stopping;
-            switching_start = time_now;
+            switching_state = SwitchingState::StartSwitching;
         } else {
             // Check against overall minimum power, to avoid wanting to switch off when available power is below 3-phase minimum but switch to 1-phase is possible.
             bool wants_on = power_available_filtered_w >= overall_min_power_w;
@@ -765,6 +755,17 @@ void PowerManager::update_energy()
             just_switched_phases = false;
             just_switched_mode = false;
         }
+    } else if (switching_state == SwitchingState::StartSwitching) {
+            set_available_phases(wants_3phase ? 3 : 1);
+
+            if (phase_switcher_backend->requires_cp_disconnect()) {
+                set_available_current(0);
+
+                switching_state = SwitchingState::Stopping;
+                switching_start = millis();
+            } else {
+                switching_state = SwitchingState::TogglingContactor;
+            }
     } else if (switching_state == SwitchingState::Stopping) {
         set_available_current(0);
 
@@ -777,23 +778,28 @@ void PowerManager::update_energy()
 
         if (charge_manager.are_all_control_pilot_disconnected(switching_start)) {
             switching_state = SwitchingState::TogglingContactor;
-            switching_start = millis();
+            switching_start = 0;
         }
     } else if (switching_state == SwitchingState::TogglingContactor) {
-        // TODO FIXME
-        //tf_warp_energy_manager_set_contactor(&device, wants_3phase);
+        if (!phase_switcher_backend->switch_phases_3phase(wants_3phase)) {
+            logger.printfln("power_manager: Toggling phases failed (3p=%i)", wants_3phase);
+        } else {
+            switching_state = SwitchingState::WaitUntilSwitched;
+        }
+    } else if (switching_state == SwitchingState::WaitUntilSwitched) {
+        if (phase_switcher_backend->get_phase_switching_state() == PhaseSwitcherBackend::SwitchingState::Ready) {
+            if (phase_switcher_backend->get_is_3phase() != wants_3phase) {
+                logger.printfln("power_manager: Incorrect number of phases after switching, wanted %u. Trying again.", wants_3phase ? 3u : 1u);
+                switching_state = SwitchingState::StartSwitching;
+            } else {
+                if (phase_switcher_backend->requires_cp_disconnect()) {
+                    charge_manager.set_all_control_pilot_disconnect(false);
+                }
+                switching_state = SwitchingState::Monitoring;
 
-        //if (all_data.contactor_value == wants_3phase) {
-            switching_state = SwitchingState::ConnectingCP;
-            switching_start = millis();
-        //}
-    } else if (switching_state == SwitchingState::ConnectingCP) {
-        charge_manager.set_all_control_pilot_disconnect(false);
-
-        switching_state = SwitchingState::Monitoring;
-        switching_start = 0;
-
-        just_switched_phases = true;
+                just_switched_phases = true;
+            }
+        }
     }
 
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && switching_state != SwitchingState::Monitoring)
