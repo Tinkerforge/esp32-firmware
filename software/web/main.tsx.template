@@ -115,7 +115,8 @@ function login() {
             }
         }
     }
-    xhr.open("GET", location.protocol + "//" + location.host + "/credential_check", false, username, password);
+
+    xhr.open("GET", location.protocol + "//" + location.host + (util.iframeMode ? "/wg" : "") + "/credential_check", false, username, password);
     xhr.send();
     return result;
 }

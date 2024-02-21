@@ -176,7 +176,78 @@ export function initCapsLockCheck() {
     document.addEventListener("click", checkCapsLock);
 }
 
-export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.APIEventTarget) => void) {
+export const iframeMode = window.top !== window.self;
+
+window.addEventListener("message", (e) => {
+    const msg = e.data as string;
+    if (iFrameSocketCb) {
+        iFrameSocketCb(msg);
+    }
+});
+
+let iFrameSocketCb: (data: any) => void = null;
+
+function iFrameSocketInit(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket | undefined, eventTarget: API.APIEventTarget) => void) {
+    if (!first) {
+        add_alert("event_connection_lost", "alert-warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
+    }
+    if (wsReconnectTimeout != null) {
+        clearTimeout(wsReconnectTimeout);
+    }
+    wsReconnectCallback = () => setupEventSource(keep_as_first ? first : false, keep_as_first, continuation, true)
+    wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
+
+    iFrameSocketCb = (data: any) => {
+        if(!keep_as_first)
+            remove_alert("event_connection_lost");
+
+        if (wsReconnectTimeout != null) {
+            window.clearTimeout(wsReconnectTimeout);
+            wsReconnectTimeout = null;
+        }
+        wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
+
+        if (typeof data !== "string") {
+            return;
+        }
+        const end_marker_found = (data as string).includes("\n\n");
+        const messages = (data as string).trim();
+
+        let topics: any[] = [];
+        batch(() => {
+            for (let item of messages.split("\n")) {
+                if (item == "")
+                    continue;
+                let obj = JSON.parse(item);
+                if (!("topic" in obj) || !("payload" in obj)) {
+                    console.log("Received malformed event", obj);
+                    return;
+                }
+
+                topics.push(obj["topic"]);
+                API.update(obj["topic"], obj["payload"]);
+            }
+
+            for (let topic of topics) {
+                API.trigger(topic, eventTarget);
+            }
+
+            if (end_marker_found) {
+                allow_render.value = true;
+            }
+        });
+    }
+    continuation(undefined, eventTarget);
+}
+
+export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.APIEventTarget) => void, isIframe?: boolean) {
+    if (iframeMode) {
+        pauseWebSockets();
+        iFrameSocketInit(first, keep_as_first, continuation);
+        window.parent.postMessage("initIFrame", "*");
+        return;
+    }
+
     if (!first) {
         add_alert("event_connection_lost", "alert-warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
     }
@@ -233,7 +304,9 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
 }
 
 export function pauseWebSockets() {
-    ws.close();
+    if (ws !== null) {
+        ws.close();
+    }
     if (wsReconnectTimeout != null) {
         clearTimeout(wsReconnectTimeout);
     }
@@ -245,7 +318,9 @@ export function resumeWebSockets() {
 }
 
 export function postReboot(alert_title: string, alert_text: string) {
-    ws.close();
+    if (ws !== null) {
+        ws.close();
+    }
     clearTimeout(wsReconnectTimeout);
     add_alert("reboot", "alert-success", alert_title, alert_text);
     // Wait 5 seconds before starting the reload/reconnect logic, to make sure the reboot has actually started yet.
@@ -439,6 +514,10 @@ export function upload(data: Blob, url: string, progress: (i: number) => void = 
 
     let error_message: string = null;
 
+    if (iframeMode) {
+        url = "/wg" + (url.startsWith("/") ? "" : "/") + url;
+    }
+
     return new Promise<void>((resolve, reject) => {
         xhr.upload.addEventListener("abort", e => error_message = error_message ?? __("util.upload_abort"));
         // https://bugs.chromium.org/p/chromium/issues/detail?id=118096#c5
@@ -480,6 +559,9 @@ export async function download(url: string, timeout_ms: number = 5000) {
 
     let response = null;
     try {
+        if (iframeMode) {
+            url = "/wg" + (url.startsWith("/") ? "" : "/") + url;
+        }
         response = await fetch(url, {signal: abort.signal})
     } catch (e) {
         clearTimeout(timeout);
@@ -499,6 +581,9 @@ export async function put(url: string, payload: any, timeout_ms: number = 5000) 
 
     let response = null;
     try {
+        if (iframeMode) {
+            url = "/wg" + (url.startsWith("/") ? "" : "/") + url;
+        }
         response = await fetch(url, {
             signal: abort.signal,
             method: "PUT",
