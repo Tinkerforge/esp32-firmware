@@ -246,6 +246,8 @@ def gzip_compress(data):
         result = run([sevenz_path, 'a', '-tgzip', '-mx=9', '-mfb=258', '-mpass=5', '-an', '-si', '-so'], input=data, capture_output=True)
         if result.returncode == 0:
             return result.stdout
+
+    print("Using gzip! Install 7z or 7za to reduce the web interface size by ~ 5 %")
     from gzip import compress
     return compress(data)
 
