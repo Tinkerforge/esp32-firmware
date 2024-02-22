@@ -18,6 +18,7 @@
  */
 
 #include "event.h"
+#include "tools.h"
 
 void Event::pre_setup()
 {
@@ -31,6 +32,10 @@ void Event::setup()
 
 int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(const Config *)> &&callback)
 {
+    if (boot_stage < BootStage::REGISTER_EVENTS) {
+        logger.printfln("Attempted to register event for %s before the REGISTER_EVENTS BootStage!", path.c_str());
+    }
+
     auto api_states = api.states.size();
     for (size_t i = 0; i < api_states; i++) {
         if (path.length() != api.states[i].path_len || path != api.states[i].path) {
