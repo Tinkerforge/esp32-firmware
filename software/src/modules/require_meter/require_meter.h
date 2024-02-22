@@ -31,6 +31,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
 
     void start_task();
     bool allow_charging(float meter_value);
