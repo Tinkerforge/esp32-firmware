@@ -49,11 +49,6 @@
 #define ERROR_FLAGS_ALL_ERRORS_MASK         (0x7FFF0000)
 #define ERROR_FLAGS_ALL_WARNINGS_MASK       (0x0000FFFF)
 
-#define EXTERNAL_CONTROL_STATE_AVAILABLE    0
-#define EXTERNAL_CONTROL_STATE_DISABLED     1
-#define EXTERNAL_CONTROL_STATE_UNAVAILABLE  2
-#define EXTERNAL_CONTROL_STATE_SWITCHING    3
-
 class EnergyManager final : public PhaseSwitcherBackend, public DeviceModule<TF_WARPEnergyManager,
                                           warp_energy_manager_bricklet_firmware_bin_data,
                                           warp_energy_manager_bricklet_firmware_bin_length,
