@@ -145,6 +145,8 @@ void sdm_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size
 
         default:
             logger.printfln("sdm_helpers: Value IDs unsupported for meter type %u.", meter_type);
+            /* FALLTHROUGH */
+        case METER_TYPE_DSZ15DZMOD: // Known unsupported
             *value_ids_len = 0;
             return;
     }
@@ -192,7 +194,9 @@ void sdm_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VAL
 
         if (i_out != value_ids_len) {
             if (!value_ids_len) {
-                logger.printfln("sdm_helpers: Can't validate value IDs for meter type %u.", meter_type);
+                if (meter_type != METER_TYPE_DSZ15DZMOD) { // Validating this meter type is known unsupported
+                    logger.printfln("sdm_helpers: Can't validate value IDs for meter type %u.", meter_type);
+                }
             } else {
                 logger.printfln("sdm_helpers: Value ID count mismatch for meter type %u: detected %u but expected %u.", meter_type, i_out, value_ids_len);
             }
