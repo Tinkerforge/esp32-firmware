@@ -53,8 +53,6 @@ public:
 
     size_t contentLength();
 
-    char *receive();
-
     int receive(char *buf, size_t buf_len);
 
     int method()

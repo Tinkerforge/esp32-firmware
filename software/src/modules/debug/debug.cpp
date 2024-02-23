@@ -385,9 +385,13 @@ void Debug::register_urls()
         }
 
         File f = LittleFS.open(path, "w");
-        char *payload = request.receive();
-        f.write(reinterpret_cast<uint8_t *>(payload), request.contentLength());
-        free(payload);
+
+        auto size = request.contentLength();
+        auto payload = heap_alloc_array<char>(size);
+        if (request.receive(payload.get(), size) < 0)
+            return request.send(500, "text/plain", "failed to receive");
+
+        f.write(reinterpret_cast<uint8_t *>(payload.get()), size);
         return request.send(200, "text/plain", ("File " + path + " created.").c_str());
     });
 #endif

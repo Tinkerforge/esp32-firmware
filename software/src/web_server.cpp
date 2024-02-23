@@ -423,13 +423,6 @@ size_t WebServerRequest::contentLength()
     return req->content_len;
 }
 
-char *WebServerRequest::receive()
-{
-    char *result = (char *)malloc(sizeof(char) * contentLength());
-    httpd_req_recv(req, result, contentLength());
-    return result;
-}
-
 int WebServerRequest::receive(char *buf, size_t buf_len)
 {
     if (buf_len < contentLength())
