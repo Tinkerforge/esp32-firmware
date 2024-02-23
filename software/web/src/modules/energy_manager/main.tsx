@@ -45,6 +45,10 @@ export class EnergyManagerStatus extends Component {
         API.save('power_manager/charge_mode', {"mode": mode}, __("energy_manager.script.mode_change_failed"));
     }
 
+    change_phase(phases: number) {
+        API.save('power_manager/external_control', {"phases_wanted": phases}, __("energy_manager.script.mode_change_failed"));
+    }
+
     generate_config_error_label(generate: number, label: string) {
         if (generate == 0)
             return <></>
@@ -138,17 +142,30 @@ export class EnergyManagerStatus extends Component {
                 </ButtonGroup>
             </FormRow>
 
-            <FormRow label={__("energy_manager.status.phase_switching")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
-                <IndicatorGroup
-                    value={status.phases_switched == 1 ? 0 : status.phases_switched == 3 ? 1 : 42}
-                    items={[
-                        ["primary", __("energy_manager.status.single_phase")],
-                        ["primary", __("energy_manager.status.three_phase")],
-                    ]} />
-            </FormRow>
 
             {pm_config.phase_switching_mode == 3 ?
                 <>
+                    <FormRow label={__("energy_manager.status.phase_switching")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                        <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
+                            <Button
+                                style="display: flex;align-items: center;justify-content: center;"
+                                className="m-1 rounded-left rounded-right"
+                                variant={status.phases_switched == 1 ? "success" : "primary"}
+                                disabled={status.phases_switched == 1 || pm_status.external_control != 0}
+                                onClick={() => this.change_phase(1)}>
+                                {status.phases_switched == 1 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.single_phase")}</span>
+                            </Button>
+                            <Button
+                                style="display: flex;align-items: center;justify-content: center;"
+                                className="m-1 rounded-left rounded-right"
+                                variant={status.phases_switched == 3 ? "success" : "primary"}
+                                disabled={status.phases_switched == 3 || pm_status.external_control != 0}
+                                onClick={() => this.change_phase(3)}>
+                                {status.phases_switched == 3 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("energy_manager.status.three_phase")}</span>
+                            </Button>
+                        </ButtonGroup>
+                    </FormRow>
+
                     <FormRow label={__("energy_manager.status.external_control_state")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                         <IndicatorGroup
                             value={pm_status.external_control}
@@ -160,20 +177,18 @@ export class EnergyManagerStatus extends Component {
                             ]}
                         />
                     </FormRow>
-
-                    <FormRow label={__("energy_manager.status.external_control_request")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
-                        <IndicatorGroup
-                            value={external_control.phases_wanted > 1 ? external_control.phases_wanted - 1 : external_control.phases_wanted}
-                            items={[
-                                ["warning", __("energy_manager.status.external_control_request_none")],
-                                ["primary", __("energy_manager.status.single_phase")],
-                                ["primary", __("energy_manager.status.three_phase")],
-                            ]}
-                        />
-                    </FormRow>
                 </>
             :
-                null
+                <>
+                    <FormRow label={__("energy_manager.status.phase_switching")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                        <IndicatorGroup
+                            value={status.phases_switched == 1 ? 0 : status.phases_switched == 3 ? 1 : 42}
+                            items={[
+                                ["primary", __("energy_manager.status.single_phase")],
+                                ["primary", __("energy_manager.status.three_phase")],
+                            ]} />
+                    </FormRow>
+                </>
             }
 
             <FormRow label={__("energy_manager.status.status")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
