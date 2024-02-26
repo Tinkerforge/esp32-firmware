@@ -166,9 +166,6 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     return req.send(400, "text/plain; charset=utf-8", message.c_str());
 }
 
-// strcmp is safe here: both String::c_str() and req.uriCStr() return null terminated strings.
-// Also we know (because of the custom matcher) that req.uriCStr() contains an API path,
-// we only have to find out which one.
 // Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
 WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
 {
