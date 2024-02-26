@@ -84,6 +84,39 @@ let x = {
                 return <>{day}{time}, </>;
             }/*NF*/,
 
+            "http": "HTTP-Nachricht empfangen",
+            "http_method": "Erlaube Methode",
+            "http_get": "GET",
+            "http_post": "POST",
+            "http_put": "PUT",
+            "http_post_put": "POST oder PUT",
+            "http_get_post_put": "GET, POST oder PUT",
+            "http_url_suffix": "URL-Suffix",
+            "http_payload": "Erwartete Nachricht",
+            "http_match_any": "Jede Nachricht wird akzeptiert",
+            "http_translation_function": /*FFN*/(method: number, url: string, payload: string) => {
+                let methods = [
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "POST- oder PUT",
+                    "GET-, POST- oder PUT",
+                ];
+
+                let payload_str = <></>;
+                if (payload.length == 0) {
+                    payload_str = <>mit beliebigem Inhalt</>;
+                } else {
+                    payload_str = <>mit dem Inhalt "<b>{payload}</b>"</>;
+                }
+
+                let ret = <>Wenn eine HTTP-{methods[method]}-Anfrage {payload_str}</>;
+
+                return <>
+                    {ret} an URL <b><a href={url}>{url}</a></b> empfangen wird{", "}
+                </>
+            }/*NF*/,
+
             "print_action": "Gebe im Ereignislog aus",
             "print_action_message": "Nachricht",
             "print_action_text": /*FFN*/(message: string) => <>zeige "{message}" im <b>Ereignislog</b> an.</> /*NF*/

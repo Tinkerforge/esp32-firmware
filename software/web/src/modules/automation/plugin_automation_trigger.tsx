@@ -24,6 +24,8 @@ import { AutomationTrigger } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
+import * as API from "../../ts/api";
+import { InputText } from "src/ts/components/input_text";
 
 export type CronAutomationTrigger = [
     AutomationTriggerID.Cron,
@@ -123,6 +125,74 @@ function get_cron_edit_children(trigger: CronAutomationTrigger, on_trigger: (tri
     </>]
 }
 
+const enum HttpTriggerMethod {
+    GET = 0,
+    POST,
+    PUT,
+    POST_PUT,
+    GET_POST_PUT
+};
+
+export type HTTPAutomationTrigger = [
+    AutomationTriggerID.HTTP,
+    {
+        method: HttpTriggerMethod,
+        url_suffix: string,
+        payload: string
+    }
+];
+
+function new_http_config(): HTTPAutomationTrigger {
+    return [
+        AutomationTriggerID.HTTP,
+        {
+            method: HttpTriggerMethod.GET_POST_PUT,
+            url_suffix: "",
+            payload: ""
+        },
+    ];
+}
+
+function suffix_to_url(url_suffix: string) {
+    return "http://" + API.get("network/config").hostname + "/automation_trigger/" + url_suffix
+}
+
+function get_http_table_children(trigger: HTTPAutomationTrigger) {
+    return __("automation.automation.http_translation_function")(trigger[1].method, suffix_to_url(trigger[1].url_suffix), trigger[1].payload);
+}
+
+function get_http_edit_children(trigger: HTTPAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
+    return [<>
+        <FormRow label={__("automation.automation.http_method")}>
+            <InputSelect
+                items={[
+                    ['0', __("automation.automation.http_get")],
+                    ['1', __("automation.automation.http_post")],
+                    ['2', __("automation.automation.http_put")],
+                    ['3', __("automation.automation.http_post_put")],
+                    ['4', __("automation.automation.http_get_post_put")],
+                ]}
+                value={trigger[1].method.toString()}
+                onValue={(v) => on_trigger(util.get_updated_union(trigger, {method: parseInt(v)}))} />
+        </FormRow>
+        <FormRow label={__("automation.automation.http_url_suffix")}>
+            <InputText
+                required
+                value={trigger[1].url_suffix}
+                maxLength={32}
+                onValue={(v) => on_trigger(util.get_updated_union(trigger, {url_suffix: v}))} />
+        </FormRow>
+        <FormRow label={__("automation.automation.http_payload")}>
+            <InputText
+                disabled={trigger[1].method == 0 || trigger[1].method == 4}
+                placeholder={__("automation.automation.http_match_any")}
+                maxLength={32}
+                value={trigger[1].payload}
+                onValue={(v) => on_trigger(util.get_updated_union(trigger, {payload: v}))} />
+        </FormRow>
+    </>]
+}
+
 export function init() {
     return {
         trigger_components: {
@@ -132,6 +202,13 @@ export function init() {
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_edit_children: get_cron_edit_children,
                 get_table_children: get_cron_table_children,
+            },
+            [AutomationTriggerID.HTTP]: {
+                name: __("automation.automation.http"),
+                new_config: new_http_config,
+                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+                get_edit_children: get_http_edit_children,
+                get_table_children: get_http_table_children,
             },
         },
     };

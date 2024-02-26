@@ -88,6 +88,39 @@ let x = {
                 return <>{day}{time}, </>;
             }/*NF*/,
 
+            "http": "HTTP message received",
+            "http_method": "Allowed method",
+            "http_get": "GET",
+            "http_post": "POST",
+            "http_put": "PUT",
+            "http_post_put": "POST or PUT",
+            "http_get_post_put": "GET, POST or PUT",
+            "http_url_suffix": "URL suffix",
+            "http_payload": "Message",
+            "http_match_any": "Accept any message",
+            "http_translation_function": /*FFN*/(method: number, url: string, payload: string) => {
+                let methods = [
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "POST or PUT",
+                    "GET, POST or PUT",
+                ];
+
+                let payload_str = <></>;
+                if (payload.length == 0) {
+                    payload_str = <>containing any message</>;
+                } else {
+                    payload_str = <>containing the message "<b>{payload}</b>"</>;
+                }
+
+                let ret = <>If a HTTP {methods[method]} request {payload_str}</>;
+
+                return <>
+                    {ret} is received on URL <b><a href={url}>{url}</a></b>{", "}
+                </>
+            }/*NF*/,
+
             "print_action": "Print to event log",
             "print_action_message": "Message",
             "print_action_text": /*FFN*/(message: string) => <>Show {message} in the <b>event log</b>.</> /*NF*/
