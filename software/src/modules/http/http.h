@@ -51,8 +51,19 @@ public:
     struct HttpTrigger {
         WebServerRequest &req;
         const String &uri_suffix;
+        std::unique_ptr<char[]> payload;
+        bool payload_receive_failed;
     };
-    bool trigger_action(Config *trigger_config, void *user_data);
+
+    enum class HttpTriggerActionResult {
+        WrongUrl,
+        WrongMethod,
+        WrongPayloadLength,
+        FailedToReceivePayload,
+        WrongPayload,
+        OK,
+    };
+    HttpTriggerActionResult trigger_action(Config *trigger_config, void *user_data);
 
     Ownership response_ownership;
 };
