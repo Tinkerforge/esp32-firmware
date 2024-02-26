@@ -634,7 +634,8 @@ static bool repair_logic(Charge *buf)
     // We got no meter values of the charge but we got the end of the previous and the start of the next.
     case 9:
         if (buf[-1].ce.meter_end <= buf[1].cs.meter_start
-                && buf[1].cs.meter_start - buf[-1].ce.meter_end < CHARGE_TRACKER_MAX_REPAIR) {
+                && buf[1].cs.meter_start - buf[-1].ce.meter_end < CHARGE_TRACKER_MAX_REPAIR
+                && !(buf[-1].ce.meter_end == 0 && buf[0].cs.meter_start == 0 && buf[0].ce.meter_end == 0 && buf[1].cs.meter_start == 0)) {
             buf[0].cs.meter_start = buf[-1].ce.meter_end;
             buf[0].ce.meter_end = buf[1].cs.meter_start;
             repaired = true;
