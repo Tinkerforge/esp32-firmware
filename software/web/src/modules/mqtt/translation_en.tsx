@@ -52,7 +52,7 @@ let x = {
         },
         "automation": {
             "mqtt": "Send MQTT message",
-            "match_all": "Accept all messages",
+            "match_any": "Accept any message",
             "send_topic": "To topic",
             "send_payload": "Message",
             "topic": "Topic",

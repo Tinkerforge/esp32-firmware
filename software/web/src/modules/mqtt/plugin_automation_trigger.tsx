@@ -77,7 +77,7 @@ function get_mqtt_edit_children(trigger: MqttAutomationTrigger, on_trigger: (tri
         </FormRow>
         <FormRow label={__("mqtt.automation.payload")}>
             <InputText
-                placeholder={__("mqtt.automation.match_all")}
+                placeholder={__("mqtt.automation.match_any")}
                 maxLength={64}
                 value={trigger[1].payload}
                 onValue={(v) => {
