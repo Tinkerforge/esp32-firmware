@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2024-02-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -28,6 +28,7 @@ extern "C" {
 struct TF_EVSEV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
+typedef void (*TF_EVSEV2_EnergyMeterValuesHandler)(struct TF_EVSEV2 *evse_v2, float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data);
 
 #endif
 /**
@@ -38,6 +39,8 @@ struct TF_EVSEV2;
 typedef struct TF_EVSEV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
+    TF_EVSEV2_EnergyMeterValuesHandler energy_meter_values_handler;
+    void *energy_meter_values_user_data;
 
 #endif
     uint16_t magic;
@@ -305,6 +308,11 @@ typedef struct TF_EVSEV2 {
 #define TF_EVSE_V2_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CALLBACK_ENERGY_METER_VALUES 41
 
 #endif
 
@@ -876,8 +884,19 @@ int tf_evse_v2_set_response_expected(TF_EVSEV2 *evse_v2, uint8_t function_id, bo
  * functions of this device at once.
  */
 int tf_evse_v2_set_response_expected_all(TF_EVSEV2 *evse_v2, bool response_expected);
-
-
+#if TF_IMPLEMENT_CALLBACKS != 0
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * Registers the given \c handler to the Energy Meter Values callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data) \endcode
+ *
+ * TODO
+ */
+int tf_evse_v2_register_energy_meter_values_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2_EnergyMeterValuesHandler handler, void *user_data);
+#endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_EVSEV2

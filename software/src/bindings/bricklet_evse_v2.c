@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2024-02-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -21,13 +21,41 @@ extern "C" {
 #endif
 
 
+#if TF_IMPLEMENT_CALLBACKS != 0
 static bool tf_evse_v2_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
-    (void)device;
-    (void)fid;
+    TF_EVSEV2 *evse_v2 = (TF_EVSEV2 *)device;
+    TF_HALCommon *hal_common = tf_hal_get_common(evse_v2->tfp->spitfp->hal);
     (void)payload;
 
+    switch (fid) {
+        case TF_EVSE_V2_CALLBACK_ENERGY_METER_VALUES: {
+            TF_EVSEV2_EnergyMeterValuesHandler fn = evse_v2->energy_meter_values_handler;
+            void *user_data = evse_v2->energy_meter_values_user_data;
+            if (fn == NULL) {
+                return false;
+            }
+            size_t _i;
+            float power = tf_packet_buffer_read_float(payload);
+            float current[3]; for (_i = 0; _i < 3; ++_i) current[_i] = tf_packet_buffer_read_float(payload);
+            bool phases_active[3]; tf_packet_buffer_read_bool_array(payload, phases_active, 3);
+            bool phases_connected[3]; tf_packet_buffer_read_bool_array(payload, phases_connected, 3);
+            hal_common->locked = true;
+            fn(evse_v2, power, current, phases_active, phases_connected, user_data);
+            hal_common->locked = false;
+            break;
+        }
+
+        default:
+            return false;
+    }
+
+    return true;
+}
+#else
+static bool tf_evse_v2_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
     return false;
 }
+#endif
 int tf_evse_v2_create(TF_EVSEV2 *evse_v2, const char *uid_or_port_name, TF_HAL *hal) {
     if (evse_v2 == NULL || hal == NULL) {
         return TF_E_NULL;
@@ -3560,8 +3588,22 @@ int tf_evse_v2_get_all_energy_meter_values(TF_EVSEV2 *evse_v2, float *ret_values
     }
     return ret;
 }
+#if TF_IMPLEMENT_CALLBACKS != 0
+int tf_evse_v2_register_energy_meter_values_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2_EnergyMeterValuesHandler handler, void *user_data) {
+    if (evse_v2 == NULL) {
+        return TF_E_NULL;
+    }
 
+    if (evse_v2->magic != 0x5446 || evse_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
 
+    evse_v2->energy_meter_values_handler = handler;
+    evse_v2->energy_meter_values_user_data = user_data;
+
+    return TF_E_OK;
+}
+#endif
 int tf_evse_v2_callback_tick(TF_EVSEV2 *evse_v2, uint32_t timeout_us) {
     if (evse_v2 == NULL) {
         return TF_E_NULL;
