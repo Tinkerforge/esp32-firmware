@@ -52,20 +52,20 @@ function get_cron_table_children(trigger: CronAutomationTrigger) {
 }
 
 function get_cron_edit_children(trigger: CronAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
-    let hours: [string, string][] = [['-1',__("automation.automation.every_hour")]];
-    let minutes: [string, string][] = [['-1',__("automation.automation.every_minute")]];
+    let hours: [string, string][] = [['-1',__("automation.automation.cron_every_hour")]];
+    let minutes: [string, string][] = [['-1',__("automation.automation.cron_every_minute")]];
     let days: [string, string][] = [
-        ['-1', __("automation.automation.every_day")],
-        ['1', __("automation.automation.monday")],
-        ['2', __("automation.automation.tuesday")],
-        ['3', __("automation.automation.wednesday")],
-        ['4', __("automation.automation.thursday")],
-        ['5', __("automation.automation.friday")],
-        ['6', __("automation.automation.saturday")],
-        ['0', __("automation.automation.sunday")],
-        ['8', __("automation.automation.weekdays")],
-        ['9', __("automation.automation.weekends")],
-        ['10', __("automation.automation.month_end")]
+        ['-1', __("automation.automation.cron_every_day")],
+        ['1', __("automation.automation.cron_monday")],
+        ['2', __("automation.automation.cron_tuesday")],
+        ['3', __("automation.automation.cron_wednesday")],
+        ['4', __("automation.automation.cron_thursday")],
+        ['5', __("automation.automation.cron_friday")],
+        ['6', __("automation.automation.cron_saturday")],
+        ['0', __("automation.automation.cron_sunday")],
+        ['8', __("automation.automation.cron_weekdays")],
+        ['9', __("automation.automation.cron_weekends")],
+        ['10', __("automation.automation.cron_month_end")]
     ];
 
     const date = new Date();
@@ -84,7 +84,7 @@ function get_cron_edit_children(trigger: CronAutomationTrigger, on_trigger: (tri
     const day = trigger[1].mday != -1 ? trigger[1].mday == 32 ? 10 : trigger[1].mday + 10 : trigger[1].wday;
 
     return [<>
-        <FormRow label={__("automation.automation.mday")}>
+        <FormRow label={__("automation.automation.cron_mday")}>
             <InputSelect
                 items={days}
                 value={day.toString()}
@@ -104,7 +104,7 @@ function get_cron_edit_children(trigger: CronAutomationTrigger, on_trigger: (tri
                     on_trigger(util.get_updated_union(trigger, {mday: mday, wday: wday}));
                 }} />
         </FormRow>
-        <FormRow label={__("automation.automation.time")}>
+        <FormRow label={__("automation.automation.cron_time")}>
             <div class="input-group mb-2">
                 <InputSelect
                     items={hours}
@@ -127,7 +127,7 @@ export function init() {
     return {
         trigger_components: {
             [AutomationTriggerID.Cron]: {
-                name: __("automation.automation.clock"),
+                name: __("automation.automation.cron"),
                 new_config: new_cron_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_edit_children: get_cron_edit_children,
