@@ -129,6 +129,16 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
     return false;
 }
 
+#if MODULE_AUTOMATION_AVAILABLE()
+enum class HttpTriggerMethod : uint8_t {
+    GET = 0,
+    POST,
+    PUT,
+    POST_PUT,
+    GET_POST_PUT
+};
+#endif
+
 void Http::pre_setup()
 {
     api.registerBackend(this);
@@ -137,6 +147,9 @@ void Http::pre_setup()
     automation.register_trigger(
         AutomationTriggerID::HTTP,
         Config::Object({
+            {"method", Config::Uint((uint8_t)HttpTriggerMethod::GET_POST_PUT,
+                                    (uint8_t)HttpTriggerMethod::GET,
+                                    (uint8_t)HttpTriggerMethod::GET_POST_PUT)},
             {"url_suffix", Config::Str("", 0, 32)},
             {"payload", Config::Str("", 0, 32)}
         })
@@ -306,6 +319,33 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
 bool Http::trigger_action(Config *trigger_config, void *user_data) {
 #if MODULE_AUTOMATION_AVAILABLE()
     auto *trigger = (HttpTrigger *) user_data;
+
+    auto method = trigger->req.method();
+    switch (trigger_config->get()->get("method")->asEnum<HttpTriggerMethod>()) {
+        case HttpTriggerMethod::GET:
+            if (method != HTTP_GET)
+                return false;
+            break;
+        case HttpTriggerMethod::POST:
+            if (method != HTTP_POST)
+                return false;
+            break;
+        case HttpTriggerMethod::PUT:
+            if (method != HTTP_PUT)
+                return false;
+            break;
+        case HttpTriggerMethod::POST_PUT:
+            if (method != HTTP_POST
+             && method != HTTP_PUT)
+                return false;
+            break;
+        case HttpTriggerMethod::GET_POST_PUT:
+            if (method != HTTP_GET
+             && method != HTTP_POST
+             && method != HTTP_PUT)
+                return false;
+            break;
+    }
 
     if (trigger->uri_suffix != trigger_config->get()->get("url_suffix")->asEphemeralCStr())
         return false;
