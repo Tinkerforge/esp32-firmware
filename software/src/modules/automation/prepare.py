@@ -39,6 +39,7 @@ triggers = [
     ('EM Contactor Monitoring', 15),
     ('EM Power Available', 16),
     ('EM Grid Power Draw', 17),
+    ('HTTP', 18)
 ]
 
 # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!

@@ -46,5 +46,13 @@ public:
     WebServerRequestReturnProtect api_handler_get(WebServerRequest req);
     WebServerRequestReturnProtect api_handler_put(WebServerRequest req);
 
+    WebServerRequestReturnProtect automation_trigger_handler(WebServerRequest req);
+
+    struct HttpTrigger {
+        WebServerRequest &req;
+        const String &uri_suffix;
+    };
+    bool trigger_action(Config *trigger_config, void *user_data);
+
     Ownership response_ownership;
 };

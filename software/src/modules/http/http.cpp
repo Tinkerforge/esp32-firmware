@@ -23,6 +23,8 @@
 #include "task_scheduler.h"
 #include "web_server.h"
 
+#include "module_dependencies.h"
+
 #if defined(BOARD_HAS_PSRAM)
 #define RECV_BUF_SIZE 4096
 #else
@@ -130,6 +132,16 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
 void Http::pre_setup()
 {
     api.registerBackend(this);
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_trigger(
+        AutomationTriggerID::HTTP,
+        Config::Object({
+            {"url_suffix", Config::Str("", 0, 32)},
+            {"payload", Config::Str("", 0, 32)}
+        })
+    );
+#endif
 }
 
 void Http::setup()
@@ -291,8 +303,64 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
     return req.send(405, "text/plain", "Request method for this URI is not handled by server");
 }
 
+bool Http::trigger_action(Config *trigger_config, void *user_data) {
+#if MODULE_AUTOMATION_AVAILABLE()
+    auto *trigger = (HttpTrigger *) user_data;
+
+    if (trigger->uri_suffix != trigger_config->get()->get("url_suffix")->asEphemeralCStr())
+        return false;
+
+    const auto &expected_payload = trigger_config->get()->get("payload")->asString();
+
+    if (expected_payload.length() != 0 && expected_payload.length() != trigger->req.contentLength())
+        return false;
+
+    if (expected_payload.length() == 0)
+        return true;
+    auto size = trigger->req.contentLength();
+    auto payload = heap_alloc_array<char>(size + 1);
+    if (trigger->req.receive(payload.get(), size) < 0)
+        return false;
+
+    payload[size] = '\0';
+
+    return expected_payload == payload.get();
+#else
+    return false;
+#endif
+}
+
+WebServerRequestReturnProtect Http::automation_trigger_handler(WebServerRequest req)
+{
+#if MODULE_AUTOMATION_AVAILABLE()
+    String uri = req.uri();
+    int idx = uri.indexOf("automation_trigger/");
+    if (idx < 0) {
+        return req.send(405, "text/plain", "Request method for this URI is not handled by server");
+    }
+    uri = uri.substring(idx + strlen("automation_trigger/"));
+
+    HttpTrigger t{req, uri};
+
+    if (!automation.trigger_action(AutomationTriggerID::HTTP, &t, [this](Config *c, void *u){return this->trigger_action(c, u);})) {
+        // TODO: report the correct error here!
+        return req.send(405, "text/plain", "Request method for this URI is not handled by server");
+    }
+
+    return req.send(200);
+#else
+    return req.send(405, "text/plain", "Request method for this URI is not handled by server");
+#endif
+}
+
 void Http::register_urls()
 {
+#if MODULE_AUTOMATION_AVAILABLE()
+    server.on("/automation_trigger/*", HTTP_GET, [this](WebServerRequest request){return automation_trigger_handler(request);});
+    server.on("/automation_trigger/*", HTTP_PUT, [this](WebServerRequest request){return automation_trigger_handler(request);});
+    server.on("/automation_trigger/*", HTTP_POST, [this](WebServerRequest request){return automation_trigger_handler(request);});
+#endif
+
     server.on_HTTPThread("/*", HTTP_GET, [this](WebServerRequest request){return api_handler_get(request);});
     server.on_HTTPThread("/*", HTTP_PUT, [this](WebServerRequest request){return api_handler_put(request);});
     server.on_HTTPThread("/*", HTTP_POST, [this](WebServerRequest request){return api_handler_put(request);});
