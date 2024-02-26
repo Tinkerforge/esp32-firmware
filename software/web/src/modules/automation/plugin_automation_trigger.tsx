@@ -184,7 +184,6 @@ function get_http_edit_children(trigger: HTTPAutomationTrigger, on_trigger: (tri
         </FormRow>
         <FormRow label={__("automation.automation.http_payload")}>
             <InputText
-                disabled={trigger[1].method == 0 || trigger[1].method == 4}
                 placeholder={__("automation.automation.http_match_any")}
                 maxLength={32}
                 value={trigger[1].payload}
