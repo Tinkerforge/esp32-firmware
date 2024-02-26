@@ -63,7 +63,7 @@ function get_mqtt_edit_children(trigger: MqttAutomationTrigger, on_trigger: (tri
                 required
                 value={trigger[1].topic_filter}
                 class={isInvalid ? "is-invalid" : undefined}
-                maxLength={64}
+                maxLength={32}
                 onValue={(v) => {
                     if (v.startsWith(mqtt_config.global_topic_prefix)) {
                         isInvalidSetter(true);
@@ -78,7 +78,7 @@ function get_mqtt_edit_children(trigger: MqttAutomationTrigger, on_trigger: (tri
         <FormRow label={__("mqtt.automation.payload")}>
             <InputText
                 placeholder={__("mqtt.automation.match_any")}
-                maxLength={64}
+                maxLength={32}
                 value={trigger[1].payload}
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {payload: v}));
