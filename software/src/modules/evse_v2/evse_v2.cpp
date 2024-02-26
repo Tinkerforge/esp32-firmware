@@ -34,6 +34,8 @@ extern bool firmware_update_allowed;
 
 extern void evse_v2_button_recovery_handler();
 
+static void energy_meter_values_callback(struct TF_EVSEV2 * evse_v2, float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data);
+
 EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE", [](){evse_common.setup_evse();}) {}
 
 void EVSEV2::pre_init()
@@ -296,6 +298,12 @@ void EVSEV2::post_register_urls()
     api.addCommand("evse/gp_output_update", &gp_output_update, {}, [this](){
         is_in_bootloader(tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()));
     }, true);
+}
+
+void EVSEV2::register_events()
+{
+    // Register callback in the events stage so that it doesn't keep firing during the setup stage.
+    tf_evse_v2_register_energy_meter_values_callback(&device, energy_meter_values_callback, this);
 }
 
 void EVSEV2::factory_reset()
@@ -1036,6 +1044,15 @@ bool EVSEV2::reset_energy_meter_relative_energy()
 uint8_t EVSEV2::get_energy_meter_type()
 {
     return evse_common.hardware_configuration.get("energy_meter_type")->asUint();
+}
+
+static void energy_meter_values_callback(struct TF_EVSEV2 * /*evse_v2*/, float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data)
+{
+    //EVSEV2 *_this = static_cast<EVSEV2 *>(user_data);
+
+#if MODULE_METERS_EVSE_V2_AVAILABLE()
+    meters_evse_v2.energy_meter_values_callback(power, current);
+#endif
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()

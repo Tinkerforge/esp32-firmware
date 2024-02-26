@@ -83,3 +83,11 @@ void MetersEVSEV2::update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data)
 
     meter_instance->update_from_evse_v2_all_data(meter_data);
 }
+
+void MetersEVSEV2::energy_meter_values_callback(float power, float current[3])
+{
+    if (!meter_instance)
+        return;
+
+    meter_instance->energy_meter_values_callback(power, current);
+}

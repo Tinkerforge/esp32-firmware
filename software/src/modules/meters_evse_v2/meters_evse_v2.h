@@ -49,6 +49,7 @@ public:
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
     void update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data);
+    void energy_meter_values_callback(float power, float current[3]);
 
 private:
     Config config_prototype;

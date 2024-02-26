@@ -48,10 +48,6 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data)
     errors->get("illegal_data_value"  )->updateUint(meter_data->error_count[4]);
     errors->get("slave_device_failure")->updateUint(meter_data->error_count[5]);
 
-    // No data to handle if no meter was detected.
-    if (meter_data->meter_type == METER_TYPE_NONE)
-        return;
-
     if (meter_type != meter_data->meter_type) {
         if (meter_type != METER_TYPE_NONE) {
             if (!meter_change_warning_printed) {
@@ -88,10 +84,18 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data)
 
         return;
     }
+}
 
-    meters.update_value(slot, value_index_power, meter_data->power);
+void MeterEVSEV2::energy_meter_values_callback(float power, float current[3])
+{
+    if (value_index_power == UINT32_MAX) {
+        logger.printfln("meter_evse_v2: Received values callback before detecting a meter.");
+        return;
+    }
+
+    meters.update_value(slot, value_index_power, power);
     for (size_t i = 0; i < ARRAY_SIZE(value_index_currents); i++) {
-        meters.update_value(slot, value_index_currents[i], meter_data->currents[i]);
+        meters.update_value(slot, value_index_currents[i], current[i]);
     }
 }
 

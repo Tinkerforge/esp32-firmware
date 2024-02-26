@@ -42,6 +42,7 @@ public:
     void pre_setup() override;
     void setup() override {}; // Override empty: Base method sets initialized to true, but we want EvseCommon to decide this.
     void register_urls() override {this->DeviceModule::register_urls();};
+    void register_events() override;
     void loop() override {this->DeviceModule::loop();};
 
 protected:
