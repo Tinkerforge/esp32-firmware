@@ -77,7 +77,7 @@ let x = {
                 if (payload.length == 0) {
                     ret = <>If any MQTT message</>;
                 } else {
-                    ret = <>If  MQTT message "<b>{payload}</b>"</>;
+                    ret = <>If MQTT message "<b>{payload}</b>"</>;
                 }
                 return <>
                     {ret} is received on topic "<b>{topic}</b>"{retained ? " (Retained messages are accepted)" : ""}{", "}
