@@ -67,20 +67,20 @@ void MeterRS485Bricklet::changeMeterType(size_t supported_meter_idx)
 
 void MeterRS485Bricklet::cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length) {
     if (request_id != callback_data.expected_request_id || callback_data.expected_request_id == 0) {
-        logger.printfln("Unexpected request id %u, expected %u", request_id, callback_data.expected_request_id);
+        logger.printfln("meter_rs485_bricklet: Unexpected request id %u, expected %u", request_id, callback_data.expected_request_id);
         callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
 
     if (exception_code != 0) {
         if (exception_code != -1)
-            logger.printfln("Request %u: Exception code %d", request_id, exception_code);
+            logger.printfln("meter_rs485_bricklet: Request %u: Exception code %d", request_id, exception_code);
         callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
 
     if (callback_data.value_to_write == nullptr) {
-        logger.printfln("value to write was nullptr");
+        logger.printfln("meter_rs485_bricklet: Value to write was nullptr");
         callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
@@ -97,30 +97,30 @@ void MeterRS485Bricklet::cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id,
 
         this->changeMeterType(i);
 
-        logger.printfln("%s detected.", this->meter_in_use->meter_name);
+        logger.printfln("meter_rs485_bricklet: %s detected.", this->meter_in_use->meter_name);
         return;
     }
 
-    logger.printfln("Found unknown meter type 0x%x. Assuming this is a SDM72DM.", meter_id);
+    logger.printfln("meter_rs485_bricklet: Found unknown meter type 0x%x. Assuming this is a SDM72DM.", meter_id);
     this->changeMeterType(0);
 }
 
 
 void MeterRS485Bricklet::cb_read_values(TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t *input_registers, uint16_t input_registers_length) {
     if (request_id != callback_data.expected_request_id || callback_data.expected_request_id == 0) {
-        logger.printfln("Unexpected request id %u, expected %u", request_id, callback_data.expected_request_id);
+        logger.printfln("meter_rs485_bricklet: Unexpected request id %u, expected %u", request_id, callback_data.expected_request_id);
         callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
 
     if (exception_code != 0) {
-        logger.printfln("Request %u: Exception code %d", request_id, exception_code);
+        logger.printfln("meter_rs485_bricklet: Request %u: Exception code %d", request_id, exception_code);
         callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
 
     if (callback_data.value_to_write == nullptr) {
-        logger.printfln("value to write was nullptr");
+        logger.printfln("meter_rs485_bricklet: Value to write was nullptr");
         callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
@@ -139,7 +139,7 @@ void MeterRS485Bricklet::cb_read_values(TF_RS485 *device, uint8_t request_id, in
 void MeterRS485Bricklet::cb_write_reset(TF_RS485 *device, uint8_t request_id, int8_t exception_code)
 {
     if (request_id != callback_data.expected_request_id || callback_data.expected_request_id == 0) {
-        logger.printfln("Unexpected request id %u, expected %u", request_id, callback_data.expected_request_id);
+        logger.printfln("meter_rs485_bricklet: Unexpected request id %u, expected %u", request_id, callback_data.expected_request_id);
         callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
@@ -154,7 +154,7 @@ void MeterRS485Bricklet::cb_write_reset(TF_RS485 *device, uint8_t request_id, in
     // In the future we should check that the reset worked by re-reading the energy value,
     // making sure that it is a small enough value and retrying the reset if not.
     if (exception_code != 0 && exception_code != TF_RS485_EXCEPTION_CODE_TIMEOUT) {
-        logger.printfln("Exception code %d", exception_code);
+        logger.printfln("meter_rs485_bricklet: Exception code %d", exception_code);
         callback_data.done = MeterRS485Bricklet::UserDataDone::ERROR;
         return;
     }
@@ -175,10 +175,10 @@ void MeterRS485Bricklet::setupMeter()
 
     if ((this->type_override - 1) < ARRAY_SIZE(supported_meters)) {
         this->changeMeterType(this->type_override - 1);
-        logger.printfln("Meter type override set to %s.", this->meter_in_use->meter_name);
+        logger.printfln("meter_rs485_bricklet: Meter type override set to %s.", this->meter_in_use->meter_name);
     } else {
         if (this->type_override != METER_TYPE_AUTO_DETECT)
-            logger.printfln("Meter type override set to unknown value %u. Ignoring", this->type_override);
+            logger.printfln("meter_rs485_bricklet: Meter type override set to unknown value %u. Ignoring", this->type_override);
 
         callback_data.value_to_write = &this->meter_type;
         tf_rs485_register_modbus_master_read_holding_registers_response_callback(
@@ -218,7 +218,7 @@ void MeterRS485Bricklet::setup(const Config &ephemeral_config)
     this->type_override = ephemeral_config.get("type_override")->asUint();
 
     if (this->type_override == METER_TYPE_NONE) {
-        logger.printfln("Meter type override set to NONE (0). Disabling energy meter support.");
+        logger.printfln("meter_rs485_bricklet: Meter type override set to NONE (0). Disabling energy meter support.");
         return;
     }
 
@@ -284,7 +284,7 @@ void MeterRS485Bricklet::tick()
         return;
 
     if (callback_data.done == UserDataDone::NOT_DONE) {
-        logger.printfln("rs485 deadline reached!");
+        logger.printfln("meter_rs485_bricklet: RS485 deadline reached!");
         generator->checkRS485State();
     }
 
@@ -321,7 +321,7 @@ void MeterRS485Bricklet::tick()
     callback_data.expected_request_id = 0;
     /*TODO is_in_bootloader(*/tf_rs485_modbus_master_read_input_registers(rs485, 1, next_read->start, next_read->len, &callback_data.expected_request_id)/*)*/;
     if (callback_data.expected_request_id == 0) {
-        logger.printfln("Failed to read energy meter registers starting at %u: request_id: %u", next_read->start, callback_data.expected_request_id);
+        logger.printfln("meter_rs485_bricklet: Failed to read energy meter registers starting at %u: request_id: %u", next_read->start, callback_data.expected_request_id);
         generator->checkRS485State();
     }
 

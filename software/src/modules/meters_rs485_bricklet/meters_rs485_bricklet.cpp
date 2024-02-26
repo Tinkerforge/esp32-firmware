@@ -61,7 +61,7 @@ void MetersRS485Bricklet::setupRS485()
     int result = tf_rs485_set_rs485_configuration(&device, 9600, TF_RS485_PARITY_NONE, TF_RS485_STOPBITS_1, TF_RS485_WORDLENGTH_8, TF_RS485_DUPLEX_HALF);
     if (result != TF_E_OK) {
         if (!is_in_bootloader(result)) {
-            logger.printfln("RS485 set config failed (rc %d). Disabling energy meter support.", result);
+            logger.printfln("meters_rs485_bricklet: RS485 set config failed (rc %d). Disabling energy meter support.", result);
         }
         return;
     }
@@ -69,7 +69,7 @@ void MetersRS485Bricklet::setupRS485()
     result = tf_rs485_set_modbus_configuration(&device, MODBUS_SLAVE_ADDRESS, MODBUS_MASTER_REQUEST_TIMEOUT);
     if (result != TF_E_OK) {
         if (!is_in_bootloader(result)) {
-            logger.printfln("RS485 set modbus config failed (rc %d). Disabling energy meter support.", result);
+            logger.printfln("meters_rs485_bricklet: RS485 set modbus config failed (rc %d). Disabling energy meter support.", result);
         }
         return;
     }
@@ -81,7 +81,7 @@ void MetersRS485Bricklet::setupRS485()
     result = tf_rs485_set_mode(&device, TF_RS485_MODE_MODBUS_MASTER_RTU);
     if (result != TF_E_OK) {
         if (!is_in_bootloader(result)) {
-            logger.printfln("RS485 set mode failed (rc %d). Disabling energy meter support.", result);
+            logger.printfln("meters_rs485_bricklet: RS485 set mode failed (rc %d). Disabling energy meter support.", result);
         }
         return;
     }
@@ -100,14 +100,14 @@ void MetersRS485Bricklet::checkRS485State()
     int result = tf_rs485_get_mode(&device, &mode);
     if (result != TF_E_OK) {
         if (!is_in_bootloader(result)) {
-            logger.printfln("Failed to get RS485 mode, rc: %d", result);
+            logger.printfln("meters_rs485_bricklet: Failed to get RS485 mode, rc: %d", result);
             if (meter_instance != nullptr)
                 meter_instance->errors->get("bricklet")->updateUint(meter_instance->errors->get("bricklet")->asUint() + 1);
         }
         return;
     }
     if (mode != TF_RS485_MODE_MODBUS_MASTER_RTU) {
-        logger.printfln("RS485 mode invalid (%u). Did the bricklet reset?", mode);
+        logger.printfln("meters_rs485_bricklet: RS485 mode invalid (%u). Did the bricklet reset?", mode);
         if (meter_instance != nullptr)
             meter_instance->errors->get("bricklet_reset")->updateUint(meter_instance->errors->get("bricklet_reset")->asUint() + 1);
         setupRS485();
