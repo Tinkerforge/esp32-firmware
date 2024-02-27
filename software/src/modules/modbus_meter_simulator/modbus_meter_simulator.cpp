@@ -67,7 +67,6 @@ void ModbusMeterSimulator::pre_setup()
 
 void ModbusMeterSimulator::setup()
 {
-    foobar
     api.restorePersistentConfig("modbus_meter_simulator/config", &config);
 
     uint32_t meter_type = config.get("meter_type")->asUint();
