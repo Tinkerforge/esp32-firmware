@@ -127,7 +127,7 @@ void MeterSunSpec::read_done_callback()
     }
 
     if (!model_parser->parse_values(generic_read_request.data, quirks)) {
-        logger.printfln("meter_sun_spec: Parsing model %u data in slot %u failed.", model_id, slot);
+        logger.printfln("meter_sun_spec: Ignoring inconsistent data set for model %u in slot %u.", model_id, slot);
         // TODO: Read again if parsing failed?
     }
 }
