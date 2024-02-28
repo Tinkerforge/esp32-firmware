@@ -166,6 +166,8 @@ let x = {
             "gpio_shutdown_not_configured": "Nicht konfiguriert",
             "gpio_shutdown_on_open": "Abschalten wenn geöffnet",
             "gpio_shutdown_on_close": "Abschalten wenn geschlossen",
+            "gpio_4300w_on_open": "Begrenzen auf 4300 W wenn geöffnet (§14 EnWG)",
+            "gpio_4300w_on_close": "Begrenzen auf 4300 W wenn geschlossen (§14 EnWG)",
             "not_configured": "Nicht konfiguriert",
             "active_low_blocked": "Blockiert wenn geschlossen",
             "active_low_prefix": "Limitiert Ladestrom auf ",

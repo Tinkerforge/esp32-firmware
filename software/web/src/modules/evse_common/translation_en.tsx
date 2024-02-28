@@ -166,6 +166,8 @@ let x = {
             "gpio_shutdown_not_configured": "Not configured",
             "gpio_shutdown_on_open": "Shut down on open",
             "gpio_shutdown_on_close": "Shut down on close",
+            "gpio_4300w_on_open": "Limit to 4300 W on open (§14 EnWG)",
+            "gpio_4300w_on_close": "Limit to 4300 W on close (§14 EnWG)",
             "not_configured": "Not configured",
             "active_low_blocked": "Blocks if closed",
             "active_low_prefix": "Limits charge current to ",
