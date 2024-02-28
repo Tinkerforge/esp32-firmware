@@ -446,7 +446,7 @@ void MetersSunSpec::loop()
             if (sun_spec_id == SUN_SPEC_ID) {
                 scan_printfln("SunSpec ID found");
 
-                scan_state = ScanState::ReadCommonModelHeader;
+                scan_state = ScanState::ReadModelHeader;
             }
             else {
                 scan_printfln("No SunSpec ID found (sun-spec-id: %08x)", sun_spec_id);
@@ -462,64 +462,15 @@ void MetersSunSpec::loop()
 
         break;
 
-    case ScanState::ReadCommonModelHeader:
-        if (scan_abort) {
-            scan_state = ScanState::Disconnect;
-            break;
-        }
-
-        scan_printfln("Reading Common Model");
-
-        scan_read_size = 2;
-        scan_read_state = ScanState::ReadCommonModelHeaderDone;
-        scan_state = ScanState::Read;
-
-        break;
-
-    case ScanState::ReadCommonModelHeaderDone:
-        if (scan_abort) {
-            scan_state = ScanState::Disconnect;
-            break;
-        }
-
-        if (scan_read_result == Modbus::ResultCode::EX_SUCCESS) {
-            uint16_t model_id = scan_deserializer.read_uint16();
-            size_t block_length = scan_deserializer.read_uint16();
-
-            if (model_id == COMMON_MODEL_ID && (block_length == 65 || block_length == 66)) {
-                scan_printfln("Common Model found (block-length: %zu)", block_length);
-
-                scan_common_block_length = block_length;
-                scan_state = ScanState::ReadCommonModelBlock;
-            }
-            else {
-                scan_printfln("No Common Model found (model-id: %u, block-length: %zu)", model_id, block_length);
-
-                scan_state = ScanState::NextBaseAddress;
-            }
-        }
-        else {
-            scan_printfln("Could not read Common Model header (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
-
-            if (scan_read_result == Modbus::ResultCode::EX_TIMEOUT) {
-                scan_read_size = 2;
-                scan_read_state = ScanState::ReadCommonModelHeaderDone;
-                scan_state = ScanState::Read;
-            }
-            else {
-                scan_state = scan_get_next_state_after_read_error();
-            }
-        }
-
-        break;
-
     case ScanState::ReadCommonModelBlock:
         if (scan_abort) {
             scan_state = ScanState::Disconnect;
             break;
         }
 
-        scan_read_size = scan_common_block_length;
+        scan_printfln("Reading Common Model block");
+
+        scan_read_size = scan_block_length;
         scan_read_state = ScanState::ReadCommonModelBlockDone;
         scan_state = ScanState::Read;
 
@@ -540,12 +491,12 @@ void MetersSunSpec::loop()
 
             uint16_t device_address = scan_deserializer.read_uint16();
 
-            scan_printfln("Manufacturer Name: %s\n"
-                          "Model Name: %s\n"
-                          "Options: %s\n"
-                          "Version: %s\n"
-                          "Serial Number: %s\n"
-                          "Device Address: %u",
+            scan_printfln("  Manufacturer Name: %s\n"
+                          "  Model Name: %s\n"
+                          "  Options: %s\n"
+                          "  Version: %s\n"
+                          "  Serial Number: %s\n"
+                          "  Device Address: %u",
                           scan_common_manufacturer_name,
                           scan_common_model_name,
                           scan_common_options,
@@ -553,7 +504,7 @@ void MetersSunSpec::loop()
                           scan_common_serial_number,
                           device_address);
 
-            scan_state = ScanState::ReadStandardModelHeader;
+            scan_state = ScanState::ReadModelHeader;
         }
         else {
             scan_printfln("Could not read Common Model block (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
@@ -563,21 +514,21 @@ void MetersSunSpec::loop()
 
         break;
 
-    case ScanState::ReadStandardModelHeader:
+    case ScanState::ReadModelHeader:
         if (scan_abort) {
             scan_state = ScanState::Disconnect;
             break;
         }
 
-        scan_printfln("Reading Standard Model");
+        scan_printfln("Reading Model header");
 
         scan_read_size = 2;
-        scan_read_state = ScanState::ReadStandardModelHeaderDone;
+        scan_read_state = ScanState::ReadModelHeaderDone;
         scan_state = ScanState::Read;
 
         break;
 
-    case ScanState::ReadStandardModelHeaderDone:
+    case ScanState::ReadModelHeaderDone:
         if (scan_abort) {
             scan_state = ScanState::Disconnect;
             break;
@@ -591,6 +542,13 @@ void MetersSunSpec::loop()
                 scan_printfln("End Model found");
 
                 scan_state = ScanState::NextDeviceAddress;
+            }
+            else if (model_id == COMMON_MODEL_ID && (block_length == 65 || block_length == 66)) {
+                scan_printfln("Common Model found (block-length: %zu)", block_length);
+
+                scan_model_id = model_id;
+                scan_block_length = block_length;
+                scan_state = ScanState::ReadCommonModelBlock;
             }
             else {
                 const char *model_name = nullptr;
@@ -611,22 +569,22 @@ void MetersSunSpec::loop()
                     }
                 }
 
-                scan_printfln("Found %s Model (model-id: %u, block-length: %zu)", model_name, model_id, block_length);
+                scan_printfln("%s Model found (model-id: %u, block-length: %zu)", model_name, model_id, block_length);
 
-                scan_standard_model_id = model_id;
-                scan_standard_block_length = block_length;
-                scan_state = ScanState::ReportStandardModelResult;
+                scan_model_id = model_id;
+                scan_block_length = block_length;
+                scan_state = ScanState::ReportModelResult;
             }
         }
         else {
-            scan_printfln("Could not read Standard Model header (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
+            scan_printfln("Could not read Model header (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
 
             scan_state = scan_get_next_state_after_read_error();
         }
 
         break;
 
-    case ScanState::ReportStandardModelResult: {
+    case ScanState::ReportModelResult: {
             if (scan_abort) {
                 scan_state = ScanState::Disconnect;
                 break;
@@ -643,7 +601,7 @@ void MetersSunSpec::loop()
             json.addMemberString("version", scan_common_version);
             json.addMemberString("serial_number", scan_common_serial_number);
             json.addMemberNumber("device_address", scan_device_address);
-            json.addMemberNumber("model_id", scan_standard_model_id);
+            json.addMemberNumber("model_id", scan_model_id);
             json.endObject();
             json.end();
 
@@ -651,8 +609,8 @@ void MetersSunSpec::loop()
                 break; // need report the scan result before doing something else
             }
 
-            scan_read_address += scan_standard_block_length;
-            scan_state = ScanState::ReadStandardModelHeader;
+            scan_read_address += scan_block_length;
+            scan_state = ScanState::ReadModelHeader;
         }
 
         break;

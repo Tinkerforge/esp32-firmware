@@ -67,13 +67,11 @@ public:
         ReadNext,
         ReadSunSpecID,
         ReadSunSpecIDDone,
-        ReadCommonModelHeader,
-        ReadCommonModelHeaderDone,
         ReadCommonModelBlock,
         ReadCommonModelBlockDone,
-        ReadStandardModelHeader,
-        ReadStandardModelHeaderDone,
-        ReportStandardModelResult,
+        ReadModelHeader,
+        ReadModelHeaderDone,
+        ReportModelResult,
     };
 
     ScanState scan_get_next_state_after_read_error();
@@ -113,9 +111,8 @@ public:
     size_t scan_read_index;
     Modbus::ResultCode scan_read_result;
     ScanState scan_read_state;
-    size_t scan_common_block_length;
-    uint16_t scan_standard_model_id;
-    size_t scan_standard_block_length;
+    uint16_t scan_model_id;
+    size_t scan_block_length;
     char scan_printfln_buffer[512] = "";
     size_t scan_printfln_buffer_used = 0;
     micros_t scan_printfln_last_flush = 0_usec;
