@@ -89,8 +89,8 @@ export class WifiStatus extends Component<{}, WifiStatusState> {
             </FormRow>;
 
         return <>
-                {sta_row}
                 {ap_row}
+                {sta_row}
             </>;
     }
 }
