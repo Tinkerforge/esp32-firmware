@@ -81,7 +81,7 @@ def forward_ws(sock):
     q = queue.Queue()
     try:
         with ws_cache_lock:
-            initial_data = "\n".join(json.dumps({"topic":topic,"payload":payload}) for topic, payload in ws_cache.items())
+            initial_data = "\n".join(json.dumps({"topic":topic,"payload":payload}) for topic, payload in ws_cache.items()) + "\n\n"
             sock.send(initial_data)
             ws_queues.append(q)
 
