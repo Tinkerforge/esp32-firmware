@@ -132,7 +132,7 @@ let x = {
                 }
                 return <>Wenn {not}<b>genug</b> Leistung zum Laden verfügbar ist, </>
             }/*NF*/,
-            "contactor_monitoring": "Schützüberwachung ausgelöst",
+            "contactor_monitoring": "Schützfehler",
             "automation_contactor_monitoring_text": /*FFN*/(contactor: boolean) => {
                 if (contactor) {
                     return <>Wenn beim Start <b>kein Schützfehler</b> erkannt wird, </>
@@ -140,11 +140,11 @@ let x = {
                     return <>Wenn <b>ein Schützfehler</b> erkannt wird, </>
                 }
             }/*NF*/,
-            "contactor_monitoring_state": "Status",
-            "contactor_error": "Schützfehler",
-            "contactor_okay": "Kein Schützfehler bei Start",
+            "contactor_monitoring_state": "",
+            "contactor_error": "erkannt",
+            "contactor_okay": "beim Start nicht erkannt",
             "phase_switch": "Phasen umgeschaltet",
-            "phase": "Phase",
+            "phase": "",
             "automation_phase_switch_text": /*FFN*/(phase: number) => {
                 let ret = <></>;
                 switch (phase) {
@@ -159,12 +159,11 @@ let x = {
                 return <>Wenn das Schütz auf {ret} geschaltet hat, </>
             }/*NF*/,
             "input": /*SFN*/(input: number) => "Eingang " + input + " geschaltet"/*NF*/,
-            "state": "Zustand",
-            "closed": "Geschlossen",
-            "open": "Offen",
+            "state": "",
+            "closed": "auf geschlossen",
+            "open": "auf offen",
             "automation_input_text": /*FFN*/(input: number, state: boolean) => {
-                let ret = state ? <><b>geschlossen</b></> : <><b>offen</b></>
-                return <>Wenn <b>Eingang {input}</b> auf Zustand {ret} wechselt, </>
+                return <>Wenn <b>Eingang {input}</b> {state ? <b>geschlossen</b> : <b>geöffnet</b>} wird, </>
             }/*NF*/,
             "switch_relay": "Schalte Relais",
             "relay_state": "Schalten auf",
@@ -210,8 +209,8 @@ let x = {
             }/*NF*/,
             "set_phases": "Schalte Phasen um",
             "phases_wanted": "Umschaltung auf",
-            "single_phase": "Einphasig",
-            "three_phase": "Dreiphasig",
+            "single_phase": "auf einphasig",
+            "three_phase": "auf dreiphasig",
             "automation_action_text": /*FFN*/(phases: number) => <>Schalte auf <b>{phases == 1 ? "Einphasig" : "Dreiphasig"}</b> um.</>/*NF*/
         },
         "script": {

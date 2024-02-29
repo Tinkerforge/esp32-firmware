@@ -132,7 +132,7 @@ let x = {
                 }
                 return <>When {not}<b>enough</b> power for charging is available, </>
             }/*NF*/,
-            "contactor_monitoring": "Contactor monitoring triggered",
+            "contactor_monitoring": "Contactor error",
             "automation_contactor_monitoring_text": /*FFN*/(contactor: boolean) => {
                 if (contactor) {
                     return <>When <b>no contactor error</b> is detected on boot, </>
@@ -140,11 +140,11 @@ let x = {
                     return <>When <b>a contactor error</b> is detected, </>
                 }
             }/*NF*/,
-            "contactor_monitoring_state": "State",
-            "contactor_error": "Contactor error",
-            "contactor_okay": "No contactor error on boot",
+            "contactor_monitoring_state": "",
+            "contactor_error": "detected",
+            "contactor_okay": "Not detected on boot",
             "phase_switch": "Phases switched",
-            "phase": "Phase",
+            "phase": "",
             "automation_phase_switch_text": /*FFN*/(phase: number) => {
                 let ret = <></>;
                 switch (phase) {
@@ -159,9 +159,9 @@ let x = {
                 return <>When the contactor switched to {ret}, </>
             }/*NF*/,
             "input": /*SFN*/(input: number) => "Input " + input + " switched"/*NF*/,
-            "state": "State",
-            "closed": "Closed",
-            "open": "Open",
+            "state": "",
+            "closed": "to closed",
+            "open": "to open",
             "automation_input_text": /*FFN*/(input: number, state: boolean) => {
                 let ret = state ? <><b>closed</b></> : <><b>open</b></>
                 return <>If <b>Input {input}</b> switches to state {ret}, </>
@@ -210,9 +210,9 @@ let x = {
             }/*NF*/,
             "set_phases": "Switch phases",
             "phases_wanted": "Switch to",
-            "single_phase": "Single-phase",
-            "three_phase": "Three-phase",
-            "automation_action_text": /*FFN*/(phases: number) => <>switch to <b>{phases == 1 ? "Single-phase" : "Three-phase"}</b></>/*NF*/
+            "single_phase": "to single phase",
+            "three_phase": "to three phases",
+            "automation_action_text": /*FFN*/(phases: number) => <>switch to <b>{phases == 1 ? "single phase" : "three phases"}</b></>/*NF*/
         },
         "script": {
             "save_failed": "Failed to save energy manager settings.",
