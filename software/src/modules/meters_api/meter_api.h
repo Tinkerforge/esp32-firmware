@@ -30,9 +30,6 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-// Limited to 256 values because processing requires at least 20 bytes per value.
-#define METER_API_MAX_VALUES 256
-
 class MeterAPI final : public IMeter
 {
 public:
