@@ -75,11 +75,15 @@ private:
     bool read_allowed = false;
     bool values_declared = false;
 
+    String manufacturer_name;
+    String model_name;
+    String serial_number;
     uint16_t model_id;
     size_t scan_base_address_index;
     ScanState scan_state;
     ScanState scan_state_next;
     ModbusDeserializer scan_deserializer;
+    bool scan_device_found;
 
     uint32_t quirks = 0;
     MetersSunSpecParser *model_parser;

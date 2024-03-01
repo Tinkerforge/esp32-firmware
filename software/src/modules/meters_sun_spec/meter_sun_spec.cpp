@@ -44,10 +44,13 @@ MeterClassID MeterSunSpec::get_class() const
 
 void MeterSunSpec::setup(const Config &ephemeral_config)
 {
-    host_name      = ephemeral_config.get("host")->asString();
-    port           = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
-    device_address = static_cast<uint8_t>(ephemeral_config.get("device_address")->asUint());
-    model_id       = static_cast<uint16_t>(ephemeral_config.get("model_id")->asUint());
+    host_name         = ephemeral_config.get("host")->asString();
+    port              = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
+    device_address    = static_cast<uint8_t>(ephemeral_config.get("device_address")->asUint());
+    manufacturer_name = ephemeral_config.get("manufacturer_name")->asString();
+    model_name        = ephemeral_config.get("model_name")->asString();
+    serial_number     = ephemeral_config.get("serial_number")->asString();
+    model_id          = static_cast<uint16_t>(ephemeral_config.get("model_id")->asUint());
 
     model_parser = MetersSunSpecParser::new_parser(slot, model_id);
     if (!model_parser) {
@@ -157,6 +160,7 @@ void MeterSunSpec::scan_start()
     scan_state = ScanState::Idle;
     scan_state_next = ScanState::ReadSunSpecID;
     scan_deserializer.buf = buffer;
+    scan_device_found = false;
 
     generic_read_request.register_type = TAddress::RegType::HREG;
     generic_read_request.start_address = scan_base_addresses[scan_base_address_index];
@@ -227,7 +231,9 @@ void MeterSunSpec::scan_next()
                     logger.printfln("meter_sun_spec: Configured SunSpec model %u not found at %s:%u:%u", model_id, host_name.c_str(), port, device_address);
                     scan_start_delay();
                 }
-                else if (scan_model_id == model_id) {
+                else if (scan_device_found && scan_model_id == model_id) {
+                    scan_state_next = ScanState::Idle;
+
                     logger.printfln("meter_sun_spec: Configured SunSpec model %u found at %s:%u:%u:%u", model_id, host_name.c_str(), port, device_address, generic_read_request.start_address);
                     read_start(generic_read_request.start_address, 2 + block_length);
                 }
@@ -253,10 +259,31 @@ void MeterSunSpec::scan_next()
 
                 if (scan_model_id == 1) { // Common model
                     SunSpecCommonModel001_u *common_model = reinterpret_cast<SunSpecCommonModel001_u *>(generic_read_request.data[0]);
-                    modbus_bswap_registers(common_model->registers + 2, 16); // 16 registers for only manufacturer name, 64 registers for everything
+                    modbus_bswap_registers(common_model->registers + 2, 64);
                     const SunSpecCommonModel001_s *m = &common_model->model;
 
-                    //logger.printfln("meter_sun_spec: Device is %s %s %s %s %s", m->Mn, m->Md, m->Opt, m->Vr, m->SN);
+                    logger.printfln("meter_sun_spec: Looking for device Mn='%s' Md='%s' SN='%s'", manufacturer_name.c_str(), model_name.c_str(), serial_number.c_str());
+
+                    if (manufacturer_name.length() == 0 && model_name.length() == 0 && serial_number.length() == 0) {
+                        scan_device_found = true;
+                    }
+                    else {
+                        scan_device_found = strncmp(m->Mn, manufacturer_name.c_str(), 32) == 0 &&
+                                            strncmp(m->Md, model_name.c_str(), 32) == 0 &&
+                                            strncmp(m->SN, serial_number.c_str(), 32) == 0;
+                    }
+
+                    logger.printfln("meter_sun_spec: Device Mn='%.*s' Md='%.*s' Opt='%.*s' Vr='%.*s' SN='%.*s' is %smatching",
+                                    static_cast<int>(strnlen(m->Mn, 32)), m->Mn,
+                                    static_cast<int>(strnlen(m->Md, 32)), m->Md,
+                                    static_cast<int>(strnlen(m->Opt, 16)), m->Opt,
+                                    static_cast<int>(strnlen(m->Vr, 16)), m->Vr,
+                                    static_cast<int>(strnlen(m->SN, 32)), m->SN,
+                                    !scan_device_found ? "not " :"");
+
+                    if (!scan_device_found) {
+                        break;
+                    }
 
                     if (strncmp(m->Mn, "KOSTAL", 32) == 0) {
                         quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;

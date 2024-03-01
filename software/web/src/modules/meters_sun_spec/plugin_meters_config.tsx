@@ -41,6 +41,9 @@ export type SunSpecMetersConfig = [
         host: string;
         port: number;
         device_address: number;
+        manufacturer_name: string;
+        model_name: string;
+        serial_number: string;
         model_id: number;
     },
 ];
@@ -213,6 +216,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             </div>
             <div class="d-flex w-100 justify-content-between">
                 <span class="text-left">{__("meters_sun_spec.content.config_device_address")}: {scan_result.device_address}</span>
+                <span class="text-center">{__("meters_sun_spec.content.config_serial_number")}: {scan_result.serial_number}</span>
                 <span class="text-right">{__("meters_sun_spec.content.config_model_id") + ": " + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)}</span>
             </div>
         </ListGroupItem>;
@@ -344,7 +348,7 @@ export function init() {
     return {
         [MeterClassID.SunSpec]: {
             name: __("meters_sun_spec.content.meter_class"),
-            new_config: () => [MeterClassID.SunSpec, {display_name: "", host: "", port: 502, device_address: null, model_id: null}] as MeterConfig,
+            new_config: () => [MeterClassID.SunSpec, {display_name: "", host: "", port: 502, device_address: null, manufacturer_name: null, model_name: null, serial_number: null, model_id: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: SunSpecMetersConfig, on_config: (config: SunSpecMetersConfig) => void): ComponentChildren => {
                 let model_ids: [string, string][] = [];
@@ -379,7 +383,14 @@ export function init() {
                     </FormRow>
                     <hr/>
                     <DeviceScanner host={config[1].host} port={config[1].port} onResultSelected={(result: DeviceScannerResult) => {
-                        on_config(util.get_updated_union(config, {display_name: result.display_name, device_address: result.device_address, model_id: result.model_id}));
+                        on_config(util.get_updated_union(config, {
+                            display_name: result.display_name,
+                            device_address: result.device_address,
+                            manufacturer_name: result.manufacturer_name,
+                            model_name: result.model_name,
+                            serial_number: result.serial_number,
+                            model_id: result.model_id,
+                        }));
                     }} />
                     <hr/>
                     <FormRow label={__("meters_sun_spec.content.config_display_name")}>
@@ -400,6 +411,34 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {device_address: v}));
                             }} />
+                    </FormRow>
+                    <FormRow label={__("meters_sun_spec.content.config_unique_id")} label_muted={__("meters_sun_spec.content.config_unique_id_muted")}>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <InputText
+                                    maxLength={32}
+                                    value={config[1].manufacturer_name}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {manufacturer_name: v}));
+                                    }} />
+                            </div>
+                            <div class="col-sm-4">
+                                <InputText
+                                    maxLength={32}
+                                    value={config[1].model_name}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {model_name: v}));
+                                    }} />
+                            </div>
+                            <div class="col-sm-4">
+                                <InputText
+                                    maxLength={32}
+                                    value={config[1].serial_number}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {serial_number: v}));
+                                    }} />
+                            </div>
+                        </div>
                     </FormRow>
                     <FormRow label={__("meters_sun_spec.content.config_model_id")}>
                         <InputSelect

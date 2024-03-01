@@ -14,6 +14,9 @@ let x = {
             "config_host_invalid": "Host ist ungültig",
             "config_port": "Port",
             "config_device_address": "Geräteadresse",
+            "config_serial_number": "Seriennummer",
+            "config_unique_id": "Eindeutige ID",
+            "config_unique_id_muted": "optional; Hersteller, Modell, Seriennummer",
             "config_model_id": "Modell",
             "config_model_id_select": "Auswählen...",
 

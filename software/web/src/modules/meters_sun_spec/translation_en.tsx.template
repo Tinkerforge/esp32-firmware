@@ -14,6 +14,9 @@ let x = {
             "config_host_invalid": "Host is invalid",
             "config_port": "Port",
             "config_device_address": "Device address",
+            "config_serial_number": "Serial number",
+            "config_unique_id": "Unique ID",
+            "config_unique_id_muted": "optional; manufacturer, model, serial number",
             "config_model_id": "Model",
             "config_model_id_select": "Select...",
 

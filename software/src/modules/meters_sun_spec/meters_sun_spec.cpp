@@ -57,6 +57,9 @@ void MetersSunSpec::pre_setup()
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)}, // 0 == auto discover
         {"device_address", Config::Uint(0, 1, 247)}, // 0 == auto discover
+        {"manufacturer_name", Config::Str("", 0, 32)},
+        {"model_name", Config::Str("", 0, 32)},
+        {"serial_number", Config::Str("", 0, 32)},
         {"model_id", Config::Uint16(0)}, // 0 == invalid
     });
 
