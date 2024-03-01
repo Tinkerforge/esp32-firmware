@@ -33,7 +33,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Terminal } from "react-feather";
 
 export function DebugNavbar() {
-    return <NavbarItem name="debug" modules="debug" title={__("debug.navbar.debug")} symbol={<Terminal />} />;
+    return <NavbarItem name="debug" module="debug" title={__("debug.navbar.debug")} symbol={<Terminal />} />;
 }
 
 export class Debug extends Component {
