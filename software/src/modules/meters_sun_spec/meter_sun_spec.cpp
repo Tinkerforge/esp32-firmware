@@ -258,16 +258,16 @@ void MeterSunSpec::scan_next()
 
                     //logger.printfln("meter_sun_spec: Device is %s %s %s %s %s", m->Mn, m->Md, m->Opt, m->Vr, m->SN);
 
-                    if (strcmp(m->Mn, "KOSTAL") == 0) {
+                    if (strncmp(m->Mn, "KOSTAL", 32) == 0) {
                         quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
-                    } else if (strcmp(m->Mn, "SMA") == 0) {
+                    } else if (strncmp(m->Mn, "SMA", 32) == 0) {
                         if (model_id >= 100 && model_id < 200) {
                             quirks |= SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16;
                         }
                     }
 
                     if (quirks) {
-                        logger.printfln("meter_sun_spec: Enabling quirks mode 0x%x for %s device.", quirks, m->Mn);
+                        logger.printfln("meter_sun_spec: Enabling quirks mode 0x%x for %.*s device.", quirks, static_cast<int>(strnlen(m->Mn, 32)), m->Mn);
                     }
                 }
                 else {
