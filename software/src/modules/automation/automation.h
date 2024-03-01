@@ -49,13 +49,13 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void register_action(AutomationActionID id, Config cfg, ActionCb callback, ValidatorCb validator = nullptr);
-    void register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb validator = nullptr);
+    void register_action(AutomationActionID id, Config cfg, ActionCb &&callback, ValidatorCb &&validator = nullptr);
+    void register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb &&validator = nullptr);
 
-    bool trigger_action(AutomationTriggerID number, void *data, std::function<bool(Config *, void *)> cb);
+    bool trigger_action(AutomationTriggerID number, void *data, std::function<bool(Config *, void *)> &&cb);
     bool is_trigger_active(AutomationTriggerID number);
 
-    bool action_triggered(Config *conf, void *data);
+    bool action_triggered(const Config *conf, void *data);
 
     ConfigVec get_configured_triggers(AutomationTriggerID number);
 };
