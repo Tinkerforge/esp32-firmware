@@ -1,6 +1,7 @@
 export interface config {
     enable: boolean;
     make_default_interface: boolean;
+    local_port: number;
     internal_ip: string;
     internal_subnet: string;
     internal_gateway: string;
