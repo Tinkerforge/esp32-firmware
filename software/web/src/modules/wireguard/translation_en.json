@@ -21,6 +21,7 @@
             "internal_gateway": "Gateway of the WireGuard network",
             "remote_host": "Peer hostname or IP address",
             "port": "Peer port",
+            "local_port": "Local port",
             "private_key": "Own private key",
             "remote_public_key": "Peer public key",
             "preshared_key": "Preshared key",

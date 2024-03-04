@@ -117,6 +117,13 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                                      value={state.remote_port}
                                      onValue={this.set("remote_port")}/>
                     </FormRow>
+                    <FormRow label={__("wireguard.content.local_port")}>
+                        <InputNumber required
+                                     min={1}
+                                     max={65535}
+                                     value={state.local_port}
+                                     onValue={this.set("local_port")}/>
+                    </FormRow>
 
                     <FormRow label={__("wireguard.content.private_key")}>
                         <InputPassword maxLength={44}
