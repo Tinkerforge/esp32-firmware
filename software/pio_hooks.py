@@ -636,7 +636,7 @@ def main():
     if nightly:
         module = util.FlavoredName("Debug").get()
         component = module
-        frontend_components.append((module, component))
+        frontend_components.append((module, component, None))
 
     frontend_status_components = []
     for entry in env.GetProjectOption("custom_frontend_status_components").splitlines():
