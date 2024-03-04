@@ -492,10 +492,10 @@
 - Use import energy for charge tracker etc. Switch over when factory resetting or removing all tracked charges
 - Add API to restart charge limits
 - Add event log message when meter becomes stuck or unreachable
-- Add warning to event log if ethernet and WiFi station are used at the same time
+- Add warning to event log if Ethernet and WiFi station are used at the same time
 - Improve translations
 - Improve charge manager packet burst robustness
-- Improve performance when sendings lots of data over MQTT
+- Improve performance when sending lots of data over MQTT
 - Improve WiFi softAP performance while connecting to WiFi network
 - Improve error feedback in web interface forms
 - Separate Contactor/PE errors
