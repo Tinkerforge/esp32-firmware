@@ -416,8 +416,8 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                                 <InputText value={ll_state.phases_requested}/>
                             </FormRow>
 
-                            <FormRow label={__("evse.content.phases_status")}>
-                                <InputText value={ll_state.phases_status}/>
+                            <FormRow label={__("evse.content.phases_state")}>
+                                <InputText value={ll_state.phases_state}/>
                             </FormRow>
                         </>
                         }

@@ -216,7 +216,7 @@ let x = {
             "temperature": "Temperatur",
             "phases_current": "Phasen geschaltet",
             "phases_requested": "Phasen angefordert",
-            "phases_status": "Status der Phasenumschaltung",
+            "phases_state": "Zustand der Phasenumschaltung",
             "switch_to_one_phase": "Umschalten auf einphasig",
             "switch_to_three_phases": "Umschalten auf dreiphasig"
         },

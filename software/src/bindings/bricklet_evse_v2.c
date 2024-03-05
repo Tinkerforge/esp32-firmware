@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-26.      *
+ * This file was automatically generated on 2024-03-05.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -2222,7 +2222,7 @@ int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, u
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_status) {
+int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info) {
     if (evse_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -2253,7 +2253,7 @@ int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_co
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(evse_v2->tfp);
-        if (_error_code != 0 || _length != 29) {
+        if (_error_code != 0 || _length != 30) {
             tf_packet_buffer_remove(_recv_buf, _length);
         } else {
             if (ret_shutdown_input_configuration != NULL) { *ret_shutdown_input_configuration = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
@@ -2274,7 +2274,8 @@ int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_co
             if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
             if (ret_phases_current != NULL) { *ret_phases_current = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_phases_requested != NULL) { *ret_phases_requested = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
-            if (ret_phases_status != NULL) { *ret_phases_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_phases_state != NULL) { *ret_phases_state = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_phases_info != NULL) { *ret_phases_info = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(evse_v2->tfp);
     }
@@ -2288,7 +2289,7 @@ int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_co
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
-    if (_error_code == 0 && _length != 29) {
+    if (_error_code == 0 && _length != 30) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
@@ -2775,7 +2776,7 @@ int tf_evse_v2_set_phase_control(TF_EVSEV2 *evse_v2, uint8_t phases) {
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_evse_v2_get_phase_control(TF_EVSEV2 *evse_v2, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_status) {
+int tf_evse_v2_get_phase_control(TF_EVSEV2 *evse_v2, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info) {
     if (evse_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -2806,12 +2807,13 @@ int tf_evse_v2_get_phase_control(TF_EVSEV2 *evse_v2, uint8_t *ret_phases_current
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(evse_v2->tfp);
-        if (_error_code != 0 || _length != 3) {
+        if (_error_code != 0 || _length != 4) {
             tf_packet_buffer_remove(_recv_buf, _length);
         } else {
             if (ret_phases_current != NULL) { *ret_phases_current = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_phases_requested != NULL) { *ret_phases_requested = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
-            if (ret_phases_status != NULL) { *ret_phases_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_phases_state != NULL) { *ret_phases_state = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_phases_info != NULL) { *ret_phases_info = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(evse_v2->tfp);
     }
@@ -2825,7 +2827,7 @@ int tf_evse_v2_get_phase_control(TF_EVSEV2 *evse_v2, uint8_t *ret_phases_current
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
-    if (_error_code == 0 && _length != 3) {
+    if (_error_code == 0 && _length != 4) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 

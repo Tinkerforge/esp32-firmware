@@ -109,7 +109,7 @@ void EVSEV2::pre_setup()
         {"temperature", Config::Int16(0)},
         {"phases_current", Config::Uint16(0)},
         {"phases_requested", Config::Uint16(0)},
-        {"phases_status", Config::Uint16(0)},
+        {"phases_state", Config::Uint16(0)},
         {"dc_fault_pins", Config::Uint8(0)},
         {"dc_fault_sensor_type", Config::Uint8(0)}
     });
@@ -731,7 +731,8 @@ void EVSEV2::update_all_data()
     int16_t temperature;
     uint8_t phases_current;
     uint8_t phases_requested;
-    uint8_t phases_status;
+    uint8_t phases_state;
+    uint8_t phases_info;
 
     // get_low_level_state - 61 byte
     uint8_t led_state;
@@ -793,7 +794,8 @@ void EVSEV2::update_all_data()
                                    &temperature,
                                    &phases_current,
                                    &phases_requested,
-                                   &phases_status);
+                                   &phases_state,
+                                   &phases_info);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_2 %d", rc);
@@ -1016,7 +1018,7 @@ void EVSEV2::update_all_data()
     evse_common.low_level_state.get("temperature")->updateInt(temperature);
     evse_common.low_level_state.get("phases_current")->updateUint(phases_current);
     evse_common.low_level_state.get("phases_requested")->updateUint(phases_requested);
-    evse_common.low_level_state.get("phases_status")->updateUint(phases_status);
+    evse_common.low_level_state.get("phases_state")->updateUint(phases_state);
 
 #if MODULE_WATCHDOG_AVAILABLE()
     static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable");

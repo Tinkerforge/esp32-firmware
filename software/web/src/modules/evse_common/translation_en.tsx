@@ -216,7 +216,7 @@ let x = {
             "temperature": "Temperature",
             "phases_current": "Phases current",
             "phases_requested": "Phases requested",
-            "phases_status": "Phases status",
+            "phases_state": "Phase switching state",
             "switch_to_one_phase": "Switch to one phase",
             "switch_to_three_phases": "Switch to three phases"
         },

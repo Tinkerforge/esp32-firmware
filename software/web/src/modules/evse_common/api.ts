@@ -49,7 +49,7 @@ export interface low_level_state {
     temperature?: number;
     phases_current?: number;
     phases_requested?: number;
-    phases_status?: number;
+    phases_state?: number;
     dc_fault_pins?: number;
     dc_fault_sensor_type?: number;
 }
