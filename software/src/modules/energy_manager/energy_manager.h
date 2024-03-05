@@ -68,7 +68,8 @@ public:
     void loop() override;
 
     // for PhaseSwitcherBackend
-    bool can_switch_phases() override;
+    bool phase_switching_capable() override;
+    bool can_switch_phases_now(bool wants_3phase) override;
     bool requires_cp_disconnect() override {return true;}
     bool get_is_3phase() override;
     PhaseSwitcherBackend::SwitchingState get_phase_switching_state() override;

@@ -297,9 +297,22 @@ void EnergyManager::loop()
     }
 }
 
-bool EnergyManager::can_switch_phases()
+bool EnergyManager::phase_switching_capable()
 {
     return contactor_installed;
+}
+
+bool EnergyManager::can_switch_phases_now(bool /*wants_3phase*/)
+{
+    if (!contactor_installed) {
+        return false;
+    }
+
+    if (get_phase_switching_state() != PhaseSwitcherBackend::SwitchingState::Ready) {
+        return false;
+    }
+
+    return true;
 }
 
 bool EnergyManager::get_is_3phase()

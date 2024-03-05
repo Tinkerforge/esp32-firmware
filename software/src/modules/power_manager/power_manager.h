@@ -89,7 +89,8 @@ public:
 private:
     class PhaseSwitcherBackendDummy final : public PhaseSwitcherBackend
     {
-        bool can_switch_phases()                     override {return false;}
+        bool phase_switching_capable()               override {return false;}
+        bool can_switch_phases_now(bool wants_3phase) override {return false;}
         bool requires_cp_disconnect()                override {return true;}
         bool get_is_3phase()                         override {return false;}
         SwitchingState get_phase_switching_state()   override {return SwitchingState::Error;}

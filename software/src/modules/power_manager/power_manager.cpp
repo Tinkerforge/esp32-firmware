@@ -282,7 +282,7 @@ void PowerManager::setup()
     }, 0);
 
     // The default configuration after a factory reset must be good enough for everything to run without crashing.
-    if (!phase_switcher_backend->can_switch_phases()) {
+    if (!phase_switcher_backend->phase_switching_capable()) {
         switch (phase_switching_mode) {
             case PHASE_SWITCHING_ALWAYS_1PHASE:
             case PHASE_SWITCHING_ALWAYS_3PHASE:
@@ -429,7 +429,7 @@ void PowerManager::set_available_phases(uint32_t phases)
 void PowerManager::update_data()
 {
     // Update states from back-end
-    is_3phase = phase_switcher_backend->can_switch_phases() ? phase_switcher_backend->get_is_3phase() : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
+    is_3phase = phase_switcher_backend->phase_switching_capable() ? phase_switcher_backend->get_is_3phase() : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
     have_phases = 1 + static_cast<uint32_t>(is_3phase) * 2;
     low_level_state.get("is_3phase")->updateBool(is_3phase);
 
@@ -685,8 +685,10 @@ void PowerManager::update_energy()
         // Check if phase switching is allowed right now.
         bool switch_phases = false;
         if (wants_3phase != is_3phase) {
-            if (!phase_switcher_backend->can_switch_phases()) {
+            if (!phase_switcher_backend->phase_switching_capable()) {
                 logger.printfln("power_manager: Phase switch wanted but not available. Check configuration.");
+            } else if (!phase_switcher_backend->can_switch_phases_now(wants_3phase)) {
+                // Back-end can't switch to the requested phases at the moment. Try again later.
             } else if (!charge_manager.is_control_pilot_disconnect_supported(time_now - 5000)) {
                 logger.printfln("power_manager: Phase switch wanted but not supported by all chargers.");
             } else if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
