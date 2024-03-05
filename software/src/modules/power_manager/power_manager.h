@@ -132,6 +132,7 @@ private:
     bool     uptime_past_hysteresis              = false;
 
     SwitchingState switching_state               = SwitchingState::Monitoring;
+    SwitchingState switching_state_prev          = switching_state;
     uint32_t switching_start                     = 0;
     uint32_t mode                                = 0;
     uint32_t have_phases                         = 0;

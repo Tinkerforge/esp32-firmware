@@ -497,10 +497,9 @@ void PowerManager::update_data()
 
 void PowerManager::update_energy()
 {
-    static SwitchingState prev_state = switching_state;
-    if (switching_state != prev_state) {
-        logger.printfln("power_manager: now in state %i", static_cast<int>(switching_state));
-        prev_state = switching_state;
+    if (switching_state != switching_state_prev) {
+        logger.printfln("power_manager: Now in state %i", static_cast<int>(switching_state));
+        switching_state_prev = switching_state;
         low_level_state.get("switching_state")->updateUint(static_cast<uint32_t>(switching_state));
     }
 
