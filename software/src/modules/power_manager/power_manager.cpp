@@ -93,6 +93,73 @@ void PowerManager::pre_setup()
         {"phases_wanted", Config::Uint32(0)},
     });
     external_control_update = external_control;
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_action(
+        AutomationActionID::EMPhaseSwitch,
+        Config::Object({
+            {"phases_wanted", Config::Uint(1)}
+        }),
+        [this](const Config *cfg) {
+            api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
+                {"phases_wanted", cfg->get("phases_wanted")->asUint()}
+            }});
+        });
+
+    automation.register_action(
+        AutomationActionID::EMChargeModeSwitch,
+        Config::Object({
+            {"mode", Config::Uint(0, 0, 4)}
+        }),
+        [this](const Config *cfg) {
+            uint32_t configured_mode = cfg->get("mode")->asUint();
+
+            // Automation rule configured to switch to default mode
+            if (configured_mode == 4) {
+                configured_mode = this->default_mode;
+            }
+
+            api.callCommand("power_manager/charge_mode_update", Config::ConfUpdateObject{{
+                {"mode", configured_mode}
+            }});
+        });
+
+    automation.register_action(
+        AutomationActionID::EMLimitMaxCurrent,
+        Config::Object({
+            {"current", Config::Int(0, -1)}
+        }),
+        [this](const Config *cfg) {
+            int32_t current = cfg->get("current")->asInt();
+            if (current == -1) {
+                this->reset_limit_max_current();
+            } else {
+                this->limit_max_current(static_cast<uint32_t>(current));
+            }
+        });
+
+    automation.register_action(
+        AutomationActionID::EMBlockCharge,
+        Config::Object({
+            {"slot", Config::Uint(0, 0, 3)},
+            {"block", Config::Bool(false)}
+        }),
+        [this](const Config *cfg) {
+            this->charging_blocked.pin[cfg->get("slot")->asUint()] = static_cast<uint8_t>(cfg->get("block")->asBool());
+        });
+
+    automation.register_trigger(
+        AutomationTriggerID::EMPowerAvailable,
+        Config::Object({
+            {"power_available", Config::Bool(false)}
+        }));
+
+    automation.register_trigger(
+        AutomationTriggerID::EMGridPowerDraw,
+        Config::Object({
+            {"drawing_power", Config::Bool(false)}
+        }));
+#endif
 }
 
 void PowerManager::setup()
@@ -224,7 +291,7 @@ void PowerManager::setup()
                     const char *err_reason;
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
                     err_reason = "no contactor installed";
-#elif 0 // charger back-end
+#elif 0 // FIXME: charger back-end
                     err_reason = "charger doesn't support it";
 #else
                     err_reason = "not supported by back-end";
@@ -365,7 +432,6 @@ void PowerManager::update_data()
     is_3phase = phase_switcher_backend->can_switch_phases() ? phase_switcher_backend->get_is_3phase() : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
     have_phases = 1 + static_cast<uint32_t>(is_3phase) * 2;
     low_level_state.get("is_3phase")->updateBool(is_3phase);
-    //automation_trigger |= state.get("phases_switched")->updateUint(have_phases) ? 4u : 0u; // TODO FIXME
 
 #if MODULE_METERS_AVAILABLE()
     if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != MeterValueAvailability::Fresh)
@@ -419,6 +485,14 @@ void PowerManager::update_data()
 
         low_level_state.get("power_at_meter_filtered")->updateFloat(static_cast<float>(power_at_meter_filtered_w));
     }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    TristateBool drawing_power = static_cast<TristateBool>(power_at_meter_raw_w > 0);
+    if (drawing_power != automation_drawing_power_last && boot_stage > BootStage::SETUP) {
+        automation.trigger_action(AutomationTriggerID::EMGridPowerDraw, nullptr, [this](const Config *cfg, void *data) -> bool {return this->action_triggered(cfg, data);});
+        automation_drawing_power_last = drawing_power;
+    }
+#endif
 }
 
 void PowerManager::update_energy()
@@ -657,19 +731,11 @@ void PowerManager::update_energy()
             // Check against overall minimum power, to avoid wanting to switch off when available power is below 3-phase minimum but switch to 1-phase is possible.
             bool wants_on = power_available_filtered_w >= overall_min_power_w;
 
-// TODO FIXME
-#if 0 //MODULE_AUTOMATION_AVAILABLE()
-            enum class AutomationWantsOn {
-                Unknown,
-                True,
-                False,
-            };
-
-            static AutomationWantsOn last_automation_wants_on = AutomationWantsOn::Unknown;
-            AutomationWantsOn automation_wants_on = wants_on ? AutomationWantsOn::True : AutomationWantsOn::False;
-            if (automation_wants_on != last_automation_wants_on) {
-                automation.trigger_action(AutomationTriggerID::EMPowerAvailable, &wants_on, trigger_action);
-                last_automation_wants_on = automation_wants_on;
+#if MODULE_AUTOMATION_AVAILABLE()
+            TristateBool automation_power_available = static_cast<TristateBool>(wants_on);
+            if (automation_power_available != automation_power_available_last) {
+                automation.trigger_action(AutomationTriggerID::EMPowerAvailable, &wants_on, [this](const Config *cfg, void *data) -> bool {return this->action_triggered(cfg, data);});
+                automation_power_available_last = automation_power_available;
             }
 #endif
 
@@ -817,13 +883,6 @@ void PowerManager::reset_limit_max_current()
     max_current_limited_ma = max_current_unlimited_ma;
 }
 
-//void PowerManager::switch_mode(uint32_t new_mode)
-//{
-//    api.callCommand("power_manager/charge_mode_update", Config::ConfUpdateObject{{
-//        {"mode", new_mode}
-//    }});
-//}
-
 bool PowerManager::get_is_3phase() const
 {
     return is_3phase;
@@ -839,3 +898,28 @@ void PowerManager::set_config_error(uint32_t config_error_mask)
     energy_manager.set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
 #endif
 }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+bool PowerManager::action_triggered(const Config *automation_config, void *data)
+{
+    const Config *cfg = static_cast<const Config *>(automation_config->get());
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
+    switch (automation_config->getTag<AutomationTriggerID>()) {
+        case AutomationTriggerID::EMPowerAvailable:
+            return (*static_cast<bool *>(data) == cfg->get("power_available")->asBool());
+
+        case AutomationTriggerID::EMGridPowerDraw:
+            return ((power_at_meter_raw_w > 0) == cfg->get("drawing_power")->asBool());
+
+        default:
+            break;
+    }
+
+#pragma GCC diagnostic pop
+
+    return false;
+}
+#endif

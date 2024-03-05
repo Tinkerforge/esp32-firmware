@@ -94,19 +94,21 @@ public:
 
     bool disallow_fw_update_with_vehicle_connected();
 
-    bool action_triggered(Config *config, void *data);
-
 private:
     void update_status_led();
     void clr_error(uint32_t error_mask);
     bool is_error(uint32_t error_bit_pos);
     void set_config_error(uint32_t config_error_mask);
     void check_bricklet_reachable(int rc, const char *context);
+
+    template<typename T>
+    void update_all_data_triggers(T id, void *data);
     void update_all_data();
     void update_all_data_struct();
 
     void start_network_check_task();
 
+    bool action_triggered(const Config *config, void *data);
     void check_debug();
     String prepare_fmtstr();
 

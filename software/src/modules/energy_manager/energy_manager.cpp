@@ -34,8 +34,6 @@
 
 #include "gcc_warnings.h"
 
-extern EnergyManager energy_manager;
-
 void EnergyManager::pre_setup()
 {
     this->DeviceModule::pre_setup();
@@ -101,37 +99,7 @@ void EnergyManager::pre_setup()
         history_meter_power_value[slot] = NAN;
     }
 
-// TODO FIXME
-#if 0 //MODULE_AUTOMATION_AVAILABLE()
-    automation.register_action(
-        AutomationActionID::EMPhaseSwitch,
-        Config::Object({
-            {"phases_wanted", Config::Uint(1)}
-        }),
-        [this](const Config *cfg) {
-            api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
-                {"phases_wanted", cfg->get("phases_wanted")->asUint()}
-            }});
-        });
-
-    automation.register_action(
-        AutomationActionID::EMChargeModeSwitch,
-        Config::Object({
-            {"mode", Config::Uint(0, 0, 4)}
-        }),
-        [this](const Config *cfg) {
-            auto configured_mode = cfg->get("mode")->asUint();
-
-            // Automation rule configured to switch to default mode
-            if (configured_mode == 4) {
-                configured_mode = this->default_mode;
-            }
-
-            api.callCommand("power_manager/charge_mode_update", Config::ConfUpdateObject{{
-                {"mode", configured_mode}
-            }});
-        });
-
+#if MODULE_AUTOMATION_AVAILABLE()
     automation.register_action(
         AutomationActionID::EMRelaySwitch,
         Config::Object({
@@ -141,30 +109,6 @@ void EnergyManager::pre_setup()
             this->set_output(cfg->get("closed")->asBool());
         }
     );
-
-    automation.register_action(
-        AutomationActionID::EMLimitMaxCurrent,
-        Config::Object({
-            {"current", Config::Int(0, -1)}
-        }),
-        [this](const Config *cfg) {
-            auto current = cfg->get("current")->asInt();
-            if (current == -1) {
-                this->reset_limit_max_current();
-            } else {
-                this->limit_max_current(static_cast<uint32_t>(current));
-            }
-        });
-
-    automation.register_action(
-        AutomationActionID::EMBlockCharge,
-        Config::Object({
-            {"slot", Config::Uint(0, 0, 3)},
-            {"block", Config::Bool(false)}
-        }),
-        [this](const Config *cfg) {
-            this->charging_blocked.pin[cfg->get("slot")->asUint()] = static_cast<uint8_t>(cfg->get("block")->asBool());
-        });
 
     automation.register_trigger(
         AutomationTriggerID::EMInputThree,
@@ -189,26 +133,13 @@ void EnergyManager::pre_setup()
         Config::Object({
             {"contactor_okay", Config::Bool(false)}
         }));
-
-    automation.register_trigger(
-        AutomationTriggerID::EMPowerAvailable,
-        Config::Object({
-            {"power_available", Config::Bool(false)}
-        }));
-
-    automation.register_trigger(
-        AutomationTriggerID::EMGridPowerDraw,
-        Config::Object({
-            {"drawing_power", Config::Bool(false)}
-        }));
 #endif
 }
 
-// TODO FIXME
-#if 0 //MODULE_AUTOMATION_AVAILABLE()
-bool EnergyManager::action_triggered(Config *automation_config, void *data)
+#if MODULE_AUTOMATION_AVAILABLE()
+bool EnergyManager::action_triggered(const Config *automation_config, void *data)
 {
-    Config *cfg = static_cast<Config *>(automation_config->get());
+    const Config *cfg = static_cast<const Config *>(automation_config->get());
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
@@ -235,23 +166,12 @@ bool EnergyManager::action_triggered(Config *automation_config, void *data)
         case AutomationTriggerID::EMContactorMonitoring:
             return (*static_cast<bool *>(data) == cfg->get("contactor_okay")->asBool());
 
-        case AutomationTriggerID::EMPowerAvailable:
-            return (*static_cast<bool *>(data) == cfg->get("power_available")->asBool());
-
-        case AutomationTriggerID::EMGridPowerDraw:
-            return ((power_at_meter_raw_w > 0) == cfg->get("drawing_power")->asBool());
-
         default:
             break;
     }
 #pragma GCC diagnostic pop
 
     return false;
-}
-
-static bool trigger_action(Config *config, void *data)
-{
-    return energy_manager.action_triggered(config, data);
 }
 #endif
 
@@ -289,14 +209,6 @@ void EnergyManager::setup()
         return;
     }
 
-// TODO FIXME
-#if 0 //MODULE_AUTOMATION_AVAILABLE()
-    task_scheduler.scheduleOnce([this]() {
-        automation.trigger_action(AutomationTriggerID::EMInputThree, nullptr, trigger_action);
-        automation.trigger_action(AutomationTriggerID::EMInputFour, nullptr, trigger_action);
-    }, 0);
-#endif
-
     api.addFeature("energy_manager");
 
     update_status_led();
@@ -319,11 +231,17 @@ void EnergyManager::setup()
 
     power_manager.register_phase_switcher_backend(this);
 
-// TODO FIXME
-#if 0 //MODULE_AUTOMATION_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
     task_scheduler.scheduleOnce([this]() {
+        auto trigger_action = [this](const Config *cfg, void *data) -> bool {return this->action_triggered(cfg, data);};
+        automation.trigger_action(AutomationTriggerID::EMInputThree,  nullptr, trigger_action);
+        automation.trigger_action(AutomationTriggerID::EMInputFour,   nullptr, trigger_action);
         automation.trigger_action(AutomationTriggerID::EMPhaseSwitch, nullptr, trigger_action);
-        automation.trigger_action(AutomationTriggerID::EMGridPowerDraw, nullptr, trigger_action);
+
+        if (this->contactor_installed) {
+            bool contactor_okay = all_data.contactor_check_state & 1;
+            automation.trigger_action(AutomationTriggerID::EMContactorMonitoring, &contactor_okay, trigger_action);
+        }
     }, 0);
 #endif
 
@@ -426,30 +344,39 @@ bool EnergyManager::switch_phases_3phase(bool wants_3phase)
     return true;
 }
 
+#if MODULE_AUTOMATION_AVAILABLE()
+template<typename T>
+void EnergyManager::update_all_data_triggers(T id, void *data_)
+{
+    // Don't attempt to trigger actions during the setup stage because the automation rules are probably not loaded yet.
+    // Start-up triggers are dispatched from a task started in our setup().
+    if (boot_stage > BootStage::SETUP) {
+        automation.trigger_action(id, data_, [this](const Config *cfg, void *data) -> bool {return this->action_triggered(cfg, data);});
+    }
+}
+#define AUTOMATION_TRIGGER_ACTION(TRIGGER_ID, DATA) update_all_data_triggers(AutomationTriggerID::TRIGGER_ID, DATA)
+#else
+#define AUTOMATION_TRIGGER_ACTION(TRIGGER_ID, DATA) do {} while (0)
+#endif
+
 void EnergyManager::update_all_data()
 {
     update_all_data_struct();
-
-    /**
-     * Use uint8_t to collect all triggers, so that only one ifdef is needed.
-     * Bit 0: input 3
-     * Bit 1: input 4
-     * Bit 2: phase switching
-     * Bit 3: Contactor monitoring
-     * Bits 4-7: unused
-     */
-    uint32_t automation_trigger = 0;
 
     low_level_state.get("contactor")->updateBool(all_data.contactor_value);
     low_level_state.get("led_rgb")->get(0)->updateUint(all_data.rgb_value_r);
     low_level_state.get("led_rgb")->get(1)->updateUint(all_data.rgb_value_g);
     low_level_state.get("led_rgb")->get(2)->updateUint(all_data.rgb_value_b);
-    automation_trigger |= state.get("input3_state")->updateBool(all_data.input[0]) ? 1u : 0u;
-    automation_trigger |= state.get("input4_state")->updateBool(all_data.input[1]) ? 2u : 0u;
+    if (state.get("input3_state")->updateBool(all_data.input[0])) AUTOMATION_TRIGGER_ACTION(EMInputThree, nullptr);
+    if (state.get("input4_state")->updateBool(all_data.input[1])) AUTOMATION_TRIGGER_ACTION(EMInputFour, nullptr);
     state.get("relay_state")->updateBool(all_data.relay);
     low_level_state.get("input_voltage")->updateUint(all_data.voltage);
     low_level_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
     low_level_state.get("uptime")->updateUint(all_data.uptime);
+
+    // Update derived states
+    uint32_t have_phases = 1 + static_cast<uint32_t>(all_data.contactor_value) * 2;
+    if (state.get("phases_switched")->updateUint(have_phases)) AUTOMATION_TRIGGER_ACTION(EMPhaseSwitch, nullptr);
 
 #if MODULE_METERS_EM_AVAILABLE()
     meters_em.update_from_em_all_data(all_data);
@@ -463,47 +390,13 @@ void EnergyManager::update_all_data()
         if ((all_data.contactor_check_state & 1) == 0) {
             logger.printfln("Contactor check tripped. Check contactor.");
             if (!contactor_check_tripped) {
-                automation_trigger |= 1 << 3;
+                bool contactor_okay = all_data.contactor_check_state & 1;
+                AUTOMATION_TRIGGER_ACTION(EMContactorMonitoring, &contactor_okay);
             }
             contactor_check_tripped = true;
             set_error(ERROR_FLAGS_CONTACTOR_MASK);
         }
-
-// TODO FIXME
-#if 0 //MODULE_AUTOMATION_AVAILABLE()
-        static bool first_read = true;
-        if (first_read) {
-            task_scheduler.scheduleOnce([this]() {
-                bool contactor_okay = (all_data.contactor_check_state & 1) != 0;
-                automation.trigger_action(AutomationTriggerID::EMContactorMonitoring, &contactor_okay, trigger_action);
-            }, 0);
-            first_read = false;
-        }
-#endif
     }
-
-// TODO FIXME
-#if 0 //MODULE_AUTOMATION_AVAILABLE()
-    if (automation_trigger & 1) {
-        automation.trigger_action(AutomationTriggerID::EMInputThree, nullptr, trigger_action);
-    }
-    if (automation_trigger & 2) {
-        automation.trigger_action(AutomationTriggerID::EMInputFour, nullptr, trigger_action);
-    }
-    if (automation_trigger & 4) {
-        automation.trigger_action(AutomationTriggerID::EMPhaseSwitch, nullptr, trigger_action);
-    }
-    if (automation_trigger & 8) {
-        bool contactor_okay = (all_data.contactor_check_state & 1) != 0;
-        automation.trigger_action(AutomationTriggerID::EMContactorMonitoring, &contactor_okay, trigger_action);
-    }
-    static bool drawing_power_last = false;
-    bool drawing_power = power_at_meter_raw_w > 0;
-    if (drawing_power != drawing_power_last) {
-        automation.trigger_action(AutomationTriggerID::EMGridPowerDraw, nullptr, trigger_action);
-        drawing_power_last = drawing_power;
-    }
-#endif
 }
 
 void EnergyManager::update_all_data_struct()

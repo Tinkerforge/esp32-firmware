@@ -84,10 +84,6 @@ public:
 
     void register_phase_switcher_backend(PhaseSwitcherBackend *backend);
 
-    void limit_max_current(uint32_t limit_ma);
-    void reset_limit_max_current();
-    //void switch_mode(uint32_t new_mode);
-
     bool get_is_3phase() const;
 
 private:
@@ -100,11 +96,21 @@ private:
         bool switch_phases_3phase(bool wants_3phase) override {return false;}
     };
 
+    enum class TristateBool : uint8_t {
+        False = 0,
+        True = 1,
+        Undefined = 2,
+    };
+
     void set_available_current(uint32_t current);
     void set_available_phases(uint32_t phases);
     void update_data();
     void update_energy();
+    void limit_max_current(uint32_t limit_ma);
+    void reset_limit_max_current();
     void set_config_error(uint32_t config_error_mask);
+
+    bool action_triggered(const Config *config, void *data);
 
     ConfigRoot state;
     ConfigRoot low_level_state;
@@ -181,4 +187,8 @@ private:
     int32_t  threshold_3to1_w    = 0;
     int32_t  threshold_1to3_w    = 0;
     uint32_t max_phases          = 0;
+
+    // Automation
+    TristateBool automation_drawing_power_last   = TristateBool::Undefined;
+    TristateBool automation_power_available_last = TristateBool::Undefined;
 };
