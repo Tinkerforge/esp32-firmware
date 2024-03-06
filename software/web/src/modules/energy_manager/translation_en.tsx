@@ -118,7 +118,7 @@ let x = {
                 if (drawing_power) {
                     return <>When <b>power is drawn</b> from the grid, </>;
                 } else {
-                    return <>When <b>power is fed</b> the grid, </>;
+                    return <>When <b>power is fed</b> to the grid, </>;
                 }
             }/*NF*/,
             "power_available": "Power available",
