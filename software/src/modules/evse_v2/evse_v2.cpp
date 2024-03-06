@@ -110,6 +110,7 @@ void EVSEV2::pre_setup()
         {"phases_current", Config::Uint16(0)},
         {"phases_requested", Config::Uint16(0)},
         {"phases_state", Config::Uint16(0)},
+        {"phases_info", Config::Uint16(0)},
         {"dc_fault_pins", Config::Uint8(0)},
         {"dc_fault_sensor_type", Config::Uint8(0)}
     });
@@ -1019,6 +1020,7 @@ void EVSEV2::update_all_data()
     evse_common.low_level_state.get("phases_current")->updateUint(phases_current);
     evse_common.low_level_state.get("phases_requested")->updateUint(phases_requested);
     evse_common.low_level_state.get("phases_state")->updateUint(phases_state);
+    evse_common.low_level_state.get("phases_info")->updateUint(phases_info);
 
 #if MODULE_WATCHDOG_AVAILABLE()
     static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable");
