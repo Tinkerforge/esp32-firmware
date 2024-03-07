@@ -117,13 +117,6 @@ void WarpEsp32Rtc::register_urls() {
         return;
 
     rtc.register_backend(this);
-
-    api.addCommand("scratch/foo", Config::Null(), {}, [this](){
-        timeval t;
-        t.tv_sec = 1678175475;
-        t.tv_usec = 0;
-        this->set_time(t);
-    }, true);
 }
 
 void WarpEsp32Rtc::set_time(const tm &date_time)
