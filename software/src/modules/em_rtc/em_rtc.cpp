@@ -45,3 +45,8 @@ struct timeval EmRtc::get_time()
 {
     return energy_manager.get_time();
 }
+
+void EmRtc::reset()
+{
+
+}
