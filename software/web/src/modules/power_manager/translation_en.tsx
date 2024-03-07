@@ -18,18 +18,10 @@ let x = {
             "external_control_state_switching": "Switching now",
             "external_control_request": "External phase request",
             "external_control_request_none": "None",
-            "status": "Energy manager",
-            "error_ok": "OK",
-            "error_network": "Network error",
-            "error_contactor": "Contactor error",
-            "error_config": "Incomplete configuration",
-            "error_internal": "Internal error",
             "config_error_phase_switching": "Phase switching or contactor not configured",
             "config_error_no_max_current": "No maximum current configured for chargers",
             "config_error_no_chargers": "No chargers configured",
-            "config_error_excess_no_meter": "Excess charging enabled but no meter configured",
-
-            "no_bricklet": "Internal error, bricklet not found"
+            "config_error_excess_no_meter": "Excess charging enabled but no meter configured"
         },
         "navbar": {
             "energy_manager": "Settings"
@@ -101,6 +93,7 @@ let x = {
                 }
                 return <><b>unblock</b> charging with slot <b>{slot}</b>.</>
             }/*NF*/,
+
             "limit_max_current": "Limit maximum total current",
             "limit_mode": "Mode",
             "reset_limit_max_current": "Reset maximum total current limit",
@@ -111,6 +104,7 @@ let x = {
                 }
                 return <>limit maximum total current to <b>{current / 1000} A</b>.</>
             }/*NF*/,
+
             "grid_power_draw": "Grid power draw",
             "drawing": "Drawing power from the grid",
             "feeding": "Feeding power to the grid",
@@ -121,6 +115,7 @@ let x = {
                     return <>When <b>power is fed</b> to the grid, </>;
                 }
             }/*NF*/,
+
             "power_available": "Power available",
             "not_available": "not available",
             "available": "available",
@@ -132,48 +127,7 @@ let x = {
                 }
                 return <>When {not}<b>enough</b> power for charging is available, </>
             }/*NF*/,
-            "contactor_monitoring": "Contactor error",
-            "automation_contactor_monitoring_text": /*FFN*/(contactor: boolean) => {
-                if (contactor) {
-                    return <>When <b>no contactor error</b> is detected on boot, </>
-                } else {
-                    return <>When <b>a contactor error</b> is detected, </>
-                }
-            }/*NF*/,
-            "contactor_monitoring_state": "",
-            "contactor_error": "detected",
-            "contactor_okay": "Not detected on boot",
-            "phase_switch": "Phases switched",
-            "phase": "",
-            "automation_phase_switch_text": /*FFN*/(phase: number) => {
-                let ret = <></>;
-                switch (phase) {
-                    case 1:
-                        ret = <><b>single-phase</b></>
-                        break;
 
-                    case 3:
-                        ret = <><b>three-phase</b></>
-                        break;
-                }
-                return <>When the contactor switched to {ret}, </>
-            }/*NF*/,
-            "input": /*SFN*/(input: number) => "Input " + input + " switched"/*NF*/,
-            "state": "",
-            "closed": "to closed",
-            "open": "to open",
-            "automation_input_text": /*FFN*/(input: number, state: boolean) => {
-                let ret = state ? <><b>closed</b></> : <><b>open</b></>
-                return <>If <b>Input {input}</b> switches to state {ret}, </>
-            }/*NF*/,
-            "switch_relay": "Switch relay",
-            "relay_state": "Swtich to",
-            "relay_state_open": "Open",
-            "relay_state_closed": "Closed",
-            "relay_action_text": /*FFN*/(state: boolean) => {
-                let ret = state ? <><b>close</b></> : <><b>open</b></>
-                return <>{ret} relay.</>
-            }/*NF*/,
             "charge_mode_default": "Default mode",
             "charge_mode_switch": "Switch charge mode",
             "charge_mode": "Charge mode",
@@ -208,6 +162,7 @@ let x = {
                 }
                 return <>switch charge mode to {ret}.</>
             }/*NF*/,
+
             "set_phases": "Switch phases",
             "phases_wanted": "Switch to",
             "single_phase": "to single phase",

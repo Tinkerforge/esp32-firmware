@@ -84,30 +84,10 @@ export class PowerManagerStatus extends Component {
         if (!util.render_allowed())
             return <StatusSection name="energy_manager" />
 
-        if (!API.hasFeature("energy_manager")) {
-            return <>
-                <FormRow label={__("energy_manager.status.status")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
-                    <IndicatorGroup
-                        value={0}
-                        items={[
-                            ["danger", __("energy_manager.status.no_bricklet")],
-                        ]}
-                    />
-                </FormRow>
-            </>
-        }
-
         let status           = API.get('energy_manager/state');
         let charge_mode      = API.get('power_manager/charge_mode');
-        let external_control = API.get('power_manager/external_control');
         let pm_status        = API.get('power_manager/state');
         let pm_config        = API.get('power_manager/config');
-
-        let error_flags_ok        = status.error_flags == 0;
-        let error_flags_config    = status.error_flags & 0x80000000;
-        let error_flags_internal  = status.error_flags & 0x7F000000;
-        let error_flags_contactor = status.error_flags & 0x00010000;
-        let error_flags_network   = status.error_flags & 0x00000002;
 
         return <StatusSection name="energy_manager">
             <FormRow label={__("energy_manager.status.mode")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
@@ -195,31 +175,6 @@ export class PowerManagerStatus extends Component {
                     </FormRow>
                 </>
             }
-
-            <FormRow label={__("energy_manager.status.status")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
-                <ButtonGroup className="flex-wrap w-100">
-                    <Button disabled
-                        variant={(error_flags_ok ? "" : "outline-") + "success"}>
-                        {__("energy_manager.status.error_ok")}
-                    </Button>
-                    <Button disabled
-                        variant={(error_flags_network ? "" : "outline-") + "warning"}>
-                        {__("energy_manager.status.error_network")}
-                    </Button>
-                    <Button disabled
-                        variant={(error_flags_contactor ? "" : "outline-") + "danger"}>
-                        {__("energy_manager.status.error_contactor")}
-                    </Button>
-                    <Button disabled
-                        variant={(error_flags_internal ? "" : "outline-") + "danger"}>
-                        {__("energy_manager.status.error_internal")}
-                    </Button>
-                    <Button disabled
-                        variant={(error_flags_config ? "" : "outline-") + "danger"}>
-                        {__("energy_manager.status.error_config")}
-                    </Button>
-                </ButtonGroup>
-            </FormRow>
 
             {this.generate_config_error_labels(pm_status.config_error_flags)}
         </StatusSection>

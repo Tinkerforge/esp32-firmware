@@ -18,18 +18,10 @@ let x = {
             "external_control_state_switching": "Schaltet gerade",
             "external_control_request": "Externe Phasenanforderung",
             "external_control_request_none": "Keine",
-            "status": "Energiemanager",
-            "error_ok": "OK",
-            "error_network": "Netzwerkfehler",
-            "error_contactor": "Schützfehler",
-            "error_config": "Unvollständige Konfiguration",
-            "error_internal": "Interner Fehler",
             "config_error_phase_switching": "Phasenumschaltung oder Schütz nicht konfiguriert",
             "config_error_no_max_current": "Maximaler Gesamtstrom der Wallboxen nicht konfiguriert",
             "config_error_no_chargers": "Keine Wallboxen konfiguriert",
-            "config_error_excess_no_meter": "Überschussladen aktiviert aber kein Stromzähler eingerichtet",
-
-            "no_bricklet": "Interner Fehler, Bricklet nicht gefunden"
+            "config_error_excess_no_meter": "Überschussladen aktiviert aber kein Stromzähler eingerichtet"
         },
         "navbar": {
             "energy_manager": "Einstellungen"
@@ -101,6 +93,7 @@ let x = {
                 }
                 return <><b>gebe</b> das Laden durch Slot <b>{slot} frei</b>.</>
             }/*NF*/,
+
             "limit_max_current": "Begrenze maximalen Gesamtstrom",
             "limit_mode": "Modus",
             "reset_limit_max_current": "Maximalen Gesamtstrom zurücksetzen",
@@ -111,6 +104,7 @@ let x = {
                 }
                 return <>begrenze den maximalen Gesamtstrom auf <b>{current / 1000} A</b>.</>
             }/*NF*/,
+
             "grid_power_draw": "Netzbezug",
             "drawing": "Bezieht Energie aus dem Netz",
             "feeding": "Speist Energie ins Netz ein",
@@ -121,6 +115,7 @@ let x = {
                     return <>Wenn <b>Energie</b> ins Stromnetz <b>eingespeist</b> wird, </>;
                 }
             }/*NF*/,
+
             "power_available": "Leistung verfügbar",
             "not_available": "Nicht verfügbar",
             "available": "Verfügbar",
@@ -132,47 +127,7 @@ let x = {
                 }
                 return <>Wenn {not}<b>genug</b> Leistung zum Laden verfügbar ist, </>
             }/*NF*/,
-            "contactor_monitoring": "Schützfehler",
-            "automation_contactor_monitoring_text": /*FFN*/(contactor: boolean) => {
-                if (contactor) {
-                    return <>Wenn beim Start <b>kein Schützfehler</b> erkannt wird, </>
-                } else {
-                    return <>Wenn <b>ein Schützfehler</b> erkannt wird, </>
-                }
-            }/*NF*/,
-            "contactor_monitoring_state": "",
-            "contactor_error": "erkannt",
-            "contactor_okay": "beim Start nicht erkannt",
-            "phase_switch": "Phasen umgeschaltet",
-            "phase": "",
-            "automation_phase_switch_text": /*FFN*/(phase: number) => {
-                let ret = <></>;
-                switch (phase) {
-                    case 1:
-                        ret = <><b>einphasig</b></>
-                        break;
 
-                    case 3:
-                        ret = <><b>dreiphasig</b></>
-                        break;
-                }
-                return <>Wenn das Schütz auf {ret} geschaltet hat, </>
-            }/*NF*/,
-            "input": /*SFN*/(input: number) => "Eingang " + input + " geschaltet"/*NF*/,
-            "state": "",
-            "closed": "auf geschlossen",
-            "open": "auf offen",
-            "automation_input_text": /*FFN*/(input: number, state: boolean) => {
-                return <>Wenn <b>Eingang {input}</b> {state ? <b>geschlossen</b> : <b>geöffnet</b>} wird, </>
-            }/*NF*/,
-            "switch_relay": "Schalte Relais",
-            "relay_state": "Schalten auf",
-            "relay_state_open": "Offen",
-            "relay_state_closed": "Geschlossen",
-            "relay_action_text": /*FFN*/(state: boolean) => {
-                let ret = state ? <><b>schließen</b></> : <><b>öffnen</b></>
-                return <>Relais {ret}.</>
-            }/*NF*/,
             "charge_mode_default": "Standardmodus",
             "charge_mode_switch": "Wechsle Lademodus",
             "charge_mode": "Lademodus",
@@ -207,6 +162,7 @@ let x = {
                 }
                 return <>wechsle Lademodus auf {ret}.</>
             }/*NF*/,
+
             "set_phases": "Schalte Phasen um",
             "phases_wanted": "Umschaltung auf",
             "single_phase": "auf einphasig",
