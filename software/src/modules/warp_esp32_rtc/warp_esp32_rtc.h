@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2024 Erik Fleckstein <erik@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,23 +19,20 @@
 
 #pragma once
 
-#include "config.h"
+#include "../rtc/rtc.h"
 
-#include "module.h"
-
-#define I2C_TMP1075N_ADDR 0b1001001
-#define I2C_RTC_ADDRESS 0b1101000
-
-class ESP32EthernetBrick final : public IModule
+class WarpEsp32Rtc final : public IModule, public IRtcBackend
 {
 public:
-    ESP32EthernetBrick(){}
-
-    bool initHAL();
-    void initI2C();
-
-    void pre_init() override;
+    WarpEsp32Rtc() {};
     void setup() override;
+    void register_urls() override;
 
-    bool is_warp_esp_ethernet_brick = false;
+    void setup_rtc();
+
+    void set_time(const timeval &time);
+    void set_time(const tm &time);
+    bool update_system_time();
+    void reset();
+    struct timeval get_time();
 };
