@@ -37,8 +37,8 @@ triggers = [
     ('EM Input Four', 13),
     ('EM Phase Switch', 14),
     ('EM Contactor Monitoring', 15),
-    ('EM Power Available', 16),
-    ('EM Grid Power Draw', 17),
+    ('PM Power Available', 16),
+    ('PM Grid Power Draw', 17),
     ('HTTP', 18)
 ]
 
@@ -55,11 +55,11 @@ actions = [
     ('Charge Limits', 8),
     ('EVSE GP Output', 9),
     ('Charge Tracker Reset', 10),
-    ('EM Phase Switch', 11),
-    ('EM Charge Mode Switch', 12),
+    ('PM Phase Switch', 11),
+    ('PM Charge Mode Switch', 12),
     ('EM Relay Switch', 13),
-    ('EM Limit Max Current', 14),
-    ('EM Block Charge', 15),
+    ('PM Limit Max Current', 14),
+    ('PM Block Charge', 15),
 ]
 
 trigger_values = []

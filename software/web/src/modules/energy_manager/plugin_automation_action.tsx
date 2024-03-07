@@ -27,15 +27,15 @@ import { InputFloat } from "../../ts/components/input_float";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
-export type EMPhaseSwitchAutomationAction = [
-    AutomationActionID.EMPhaseSwitch,
+export type PMPhaseSwitchAutomationAction = [
+    AutomationActionID.PMPhaseSwitch,
     {
         phases_wanted: number;
     },
 ];
 
-export type EMChargeModeSwitchAutomationAction = [
-    AutomationActionID.EMChargeModeSwitch,
+export type PMChargeModeSwitchAutomationAction = [
+    AutomationActionID.PMChargeModeSwitch,
     {
         mode: number;
     },
@@ -48,26 +48,26 @@ export type EMContactorAutomationAction = [
     },
 ];
 
-export type EMLimitMaxCurrentAutomationAction = [
-    AutomationActionID.EMLimitMaxCurrent,
+export type PMLimitMaxCurrentAutomationAction = [
+    AutomationActionID.PMLimitMaxCurrent,
     {
         current: number;
     },
 ];
 
-export type EMBlockChargeAutomationAction = [
-    AutomationActionID.EMBlockCharge,
+export type PMBlockChargeAutomationAction = [
+    AutomationActionID.PMBlockCharge,
     {
         slot: number;
         block: boolean;
     },
 ];
 
-function get_em_phase_switch_table_children(action: EMPhaseSwitchAutomationAction) {
+function get_em_phase_switch_table_children(action: PMPhaseSwitchAutomationAction) {
     return __("energy_manager.automation.automation_action_text")(action[1].phases_wanted);
 }
 
-function get_em_phase_switch_edit_children(action: EMPhaseSwitchAutomationAction, on_action: (action: AutomationAction) => void) {
+function get_em_phase_switch_edit_children(action: PMPhaseSwitchAutomationAction, on_action: (action: AutomationAction) => void) {
     const phases: [string, string][] = [
         ['1', __("energy_manager.automation.single_phase")],
         ['3', __("energy_manager.automation.three_phase")],
@@ -86,18 +86,18 @@ function get_em_phase_switch_edit_children(action: EMPhaseSwitchAutomationAction
 
 function new_em_phase_switch_config(): AutomationAction {
     return [
-        AutomationActionID.EMPhaseSwitch,
+        AutomationActionID.PMPhaseSwitch,
         {
             phases_wanted: 1,
         },
     ];
 }
 
-function get_em_charge_mode_switch_table_children(action: EMChargeModeSwitchAutomationAction) {
+function get_em_charge_mode_switch_table_children(action: PMChargeModeSwitchAutomationAction) {
     return __("energy_manager.automation.charge_mode_switch_action_text")(action[1].mode, API.get("power_manager/config").default_mode);
 }
 
-function get_em_charge_mode_switch_edit_children(action: EMChargeModeSwitchAutomationAction, on_action: (action: AutomationAction) => void) {
+function get_em_charge_mode_switch_edit_children(action: PMChargeModeSwitchAutomationAction, on_action: (action: AutomationAction) => void) {
     const modes: [string, string][] = [
         ['0', __("energy_manager.automation.fast")],
         ['1', __("energy_manager.automation.disabled")],
@@ -121,7 +121,7 @@ function get_em_charge_mode_switch_edit_children(action: EMChargeModeSwitchAutom
 
 function new_em_charge_mode_switch_config(): AutomationAction {
     return [
-        AutomationActionID.EMChargeModeSwitch,
+        AutomationActionID.PMChargeModeSwitch,
         {
             mode: 4,
         },
@@ -159,11 +159,11 @@ function new_em_contactor_config(): AutomationAction {
     ];
 }
 
-function get_em_limit_max_current_table_children(action: EMLimitMaxCurrentAutomationAction) {
+function get_em_limit_max_current_table_children(action: PMLimitMaxCurrentAutomationAction) {
     return __("energy_manager.automation.automation_limit_max_current_action_text")(action[1].current, API.get("charge_manager/config").maximum_available_current);
 }
 
-function get_em_limit_max_current_edit_children(action: EMLimitMaxCurrentAutomationAction, on_action: (action: AutomationAction) => void) {
+function get_em_limit_max_current_edit_children(action: PMLimitMaxCurrentAutomationAction, on_action: (action: AutomationAction) => void) {
     const items:[string, string][] = [
         ['0', __("energy_manager.automation.limit_max_current")],
         ['1', __("energy_manager.automation.reset_limit_max_current") + " (" + API.get("charge_manager/config").maximum_available_current / 1000 + "A)"]
@@ -193,18 +193,18 @@ function get_em_limit_max_current_edit_children(action: EMLimitMaxCurrentAutomat
 
 function new_em_limit_max_current_config(): AutomationAction {
     return [
-        AutomationActionID.EMLimitMaxCurrent,
+        AutomationActionID.PMLimitMaxCurrent,
         {
             current: 0,
         },
     ];
 }
 
-function get_em_block_charge_table_children(action: EMBlockChargeAutomationAction) {
+function get_em_block_charge_table_children(action: PMBlockChargeAutomationAction) {
     return __("energy_manager.automation.automation_block_charge_action_text")(action[1].slot, action[1].block);
 }
 
-function get_em_block_charge_edit_children(action: EMBlockChargeAutomationAction, on_action: (action: AutomationAction) => void) {
+function get_em_block_charge_edit_children(action: PMBlockChargeAutomationAction, on_action: (action: AutomationAction) => void) {
     const items:[string, string][] = [
         ['0', __("energy_manager.automation.unblock_charge")],
         ['1', __("energy_manager.automation.block_charge")],
@@ -238,7 +238,7 @@ function get_em_block_charge_edit_children(action: EMBlockChargeAutomationAction
 
 function new_em_block_charge_config(): AutomationAction {
     return [
-        AutomationActionID.EMBlockCharge,
+        AutomationActionID.PMBlockCharge,
         {
             slot: 0,
             block: true,
@@ -249,14 +249,14 @@ function new_em_block_charge_config(): AutomationAction {
 export function init() {
     return {
         action_components: {
-            [AutomationActionID.EMPhaseSwitch]: {
+            [AutomationActionID.PMPhaseSwitch]: {
                 name: __("energy_manager.automation.set_phases"),
                 new_config: new_em_phase_switch_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_table_children: get_em_phase_switch_table_children,
                 get_edit_children: get_em_phase_switch_edit_children,
             },
-            [AutomationActionID.EMChargeModeSwitch]: {
+            [AutomationActionID.PMChargeModeSwitch]: {
                 name: __("energy_manager.automation.charge_mode_switch"),
                 new_config: new_em_charge_mode_switch_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
@@ -270,14 +270,14 @@ export function init() {
                 get_table_children: get_em_contactor_table_children,
                 get_edit_children: get_em_contactor_edit_children,
             },
-            [AutomationActionID.EMLimitMaxCurrent]: {
+            [AutomationActionID.PMLimitMaxCurrent]: {
                 name: __("energy_manager.automation.limit_max_current"),
                 new_config: new_em_limit_max_current_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_em_limit_max_current_edit_children,
                 get_table_children: get_em_limit_max_current_table_children,
             },
-            [AutomationActionID.EMBlockCharge]: {
+            [AutomationActionID.PMBlockCharge]: {
                 name: __("energy_manager.automation.block_charge"),
                 new_config: new_em_block_charge_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,

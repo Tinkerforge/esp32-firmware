@@ -96,7 +96,7 @@ void PowerManager::pre_setup()
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_action(
-        AutomationActionID::EMPhaseSwitch,
+        AutomationActionID::PMPhaseSwitch,
         Config::Object({
             {"phases_wanted", Config::Uint(1)}
         }),
@@ -107,7 +107,7 @@ void PowerManager::pre_setup()
         });
 
     automation.register_action(
-        AutomationActionID::EMChargeModeSwitch,
+        AutomationActionID::PMChargeModeSwitch,
         Config::Object({
             {"mode", Config::Uint(0, 0, 4)}
         }),
@@ -125,7 +125,7 @@ void PowerManager::pre_setup()
         });
 
     automation.register_action(
-        AutomationActionID::EMLimitMaxCurrent,
+        AutomationActionID::PMLimitMaxCurrent,
         Config::Object({
             {"current", Config::Int(0, -1)}
         }),
@@ -139,7 +139,7 @@ void PowerManager::pre_setup()
         });
 
     automation.register_action(
-        AutomationActionID::EMBlockCharge,
+        AutomationActionID::PMBlockCharge,
         Config::Object({
             {"slot", Config::Uint(0, 0, 3)},
             {"block", Config::Bool(false)}
@@ -149,13 +149,13 @@ void PowerManager::pre_setup()
         });
 
     automation.register_trigger(
-        AutomationTriggerID::EMPowerAvailable,
+        AutomationTriggerID::PMPowerAvailable,
         Config::Object({
             {"power_available", Config::Bool(false)}
         }));
 
     automation.register_trigger(
-        AutomationTriggerID::EMGridPowerDraw,
+        AutomationTriggerID::PMGridPowerDraw,
         Config::Object({
             {"drawing_power", Config::Bool(false)}
         }));
@@ -489,7 +489,7 @@ void PowerManager::update_data()
 #if MODULE_AUTOMATION_AVAILABLE()
     TristateBool drawing_power = static_cast<TristateBool>(power_at_meter_raw_w > 0);
     if (drawing_power != automation_drawing_power_last && boot_stage > BootStage::SETUP) {
-        automation.trigger_action(AutomationTriggerID::EMGridPowerDraw, nullptr, [this](const Config *cfg, void *data) -> bool {return this->action_triggered(cfg, data);});
+        automation.trigger_action(AutomationTriggerID::PMGridPowerDraw, nullptr, [this](const Config *cfg, void *data) -> bool {return this->action_triggered(cfg, data);});
         automation_drawing_power_last = drawing_power;
     }
 #endif
@@ -735,7 +735,7 @@ void PowerManager::update_energy()
 #if MODULE_AUTOMATION_AVAILABLE()
             TristateBool automation_power_available = static_cast<TristateBool>(wants_on);
             if (automation_power_available != automation_power_available_last) {
-                automation.trigger_action(AutomationTriggerID::EMPowerAvailable, &wants_on, [this](const Config *cfg, void *data) -> bool {return this->action_triggered(cfg, data);});
+                automation.trigger_action(AutomationTriggerID::PMPowerAvailable, &wants_on, [this](const Config *cfg, void *data) -> bool {return this->action_triggered(cfg, data);});
                 automation_power_available_last = automation_power_available;
             }
 #endif
@@ -909,10 +909,10 @@ bool PowerManager::action_triggered(const Config *automation_config, void *data)
 #pragma GCC diagnostic ignored "-Wswitch-enum"
 
     switch (automation_config->getTag<AutomationTriggerID>()) {
-        case AutomationTriggerID::EMPowerAvailable:
+        case AutomationTriggerID::PMPowerAvailable:
             return (*static_cast<bool *>(data) == cfg->get("power_available")->asBool());
 
-        case AutomationTriggerID::EMGridPowerDraw:
+        case AutomationTriggerID::PMGridPowerDraw:
             return ((power_at_meter_raw_w > 0) == cfg->get("drawing_power")->asBool());
 
         default:

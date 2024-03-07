@@ -53,15 +53,15 @@ export type EMContactorMonitoringAutomationTrigger = [
     },
 ];
 
-export type EMPowerAvailableAutomationTrigger = [
-    AutomationTriggerID.EMPowerAvailable,
+export type PMPowerAvailableAutomationTrigger = [
+    AutomationTriggerID.PMPowerAvailable,
     {
         power_available: boolean;
     },
 ];
 
-export type EMGridPowerDrawAutomationTrigger = [
-    AutomationTriggerID.EMGridPowerDraw,
+export type PMGridPowerDrawAutomationTrigger = [
+    AutomationTriggerID.PMGridPowerDraw,
     {
         drawing_power: boolean;
     },
@@ -184,11 +184,11 @@ function new_em_contactor_monitoring_config(): AutomationTrigger {
     ];
 }
 
-function get_em_power_available_table_children(trigger: EMPowerAvailableAutomationTrigger) {
+function get_em_power_available_table_children(trigger: PMPowerAvailableAutomationTrigger) {
     return __("energy_manager.automation.automation_power_available_text")(trigger[1].power_available);
 }
 
-function get_em_power_available_edit_children(trigger: EMPowerAvailableAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
+function get_em_power_available_edit_children(trigger: PMPowerAvailableAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     return [
         <FormRow label={__("energy_manager.automation.power")}>
             <InputSelect
@@ -206,18 +206,18 @@ function get_em_power_available_edit_children(trigger: EMPowerAvailableAutomatio
 
 function new_em_power_available_config(): AutomationTrigger {
     return [
-        AutomationTriggerID.EMPowerAvailable,
+        AutomationTriggerID.PMPowerAvailable,
         {
             power_available: false,
         },
     ];
 }
 
-function get_em_grid_power_draw_table_children(trigger: EMGridPowerDrawAutomationTrigger) {
+function get_em_grid_power_draw_table_children(trigger: PMGridPowerDrawAutomationTrigger) {
     return __("energy_manager.automation.automation_grid_power_draw_text")(trigger[1].drawing_power);
 }
 
-function get_em_grid_power_draw_edit_children(trigger: EMGridPowerDrawAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
+function get_em_grid_power_draw_edit_children(trigger: PMGridPowerDrawAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     return [
         <FormRow label={__("energy_manager.automation.power")}>
             <InputSelect
@@ -235,7 +235,7 @@ function get_em_grid_power_draw_edit_children(trigger: EMGridPowerDrawAutomation
 
 function new_em_grid_power_draw_config(): AutomationTrigger {
     return [
-        AutomationTriggerID.EMGridPowerDraw,
+        AutomationTriggerID.PMGridPowerDraw,
         {
             drawing_power: false,
         },
@@ -273,14 +273,14 @@ export function init() {
                 get_table_children: get_em_contactor_monitoring_table_children,
                 get_edit_children: get_em_contactor_monitoring_edit_children,
             },
-            [AutomationTriggerID.EMPowerAvailable]: {
+            [AutomationTriggerID.PMPowerAvailable]: {
                 name: __("energy_manager.automation.power_available"),
                 new_config: new_em_power_available_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_em_power_available_table_children,
                 get_edit_children: get_em_power_available_edit_children,
             },
-            [AutomationTriggerID.EMGridPowerDraw]: {
+            [AutomationTriggerID.PMGridPowerDraw]: {
                 name: __("energy_manager.automation.grid_power_draw"),
                 new_config: new_em_grid_power_draw_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
