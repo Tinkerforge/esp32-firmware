@@ -185,6 +185,9 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
                     <Button variant="primary" onClick={() => {
                         API.call("remote_access/test", "", "");
                     }}>Clickediclick</Button>
+                    <Button variant="primary" onClick={() => {
+                        API.call("remote_access/test1", "", "");
+                    }}>Bliblablub</Button>
                 </SubPage>
     }
 }
