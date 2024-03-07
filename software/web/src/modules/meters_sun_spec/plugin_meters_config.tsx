@@ -125,7 +125,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                     unique_id: unique_id,
                     manufacturer_name: scan_result.manufacturer_name,
                     model_name: scan_result.model_name,
-                    display_name: scan_result.model_name.startsWith(scan_result.manufacturer_name) ? scan_result.model_name : scan_result.manufacturer_name + ' ' + scan_result.model_name,
+                    display_name: scan_result.model_name.startsWith(scan_result.manufacturer_name) ? scan_result.model_name.trim() : scan_result.manufacturer_name.trim() + ' ' + scan_result.model_name.trim(),
                     options: scan_result.options,
                     version: scan_result.version,
                     serial_number: scan_result.serial_number,
