@@ -32,22 +32,8 @@ import { Switch } from "../../ts/components/switch";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
 
-export class EVSESettingsNavbar extends Component<{}, {hidden: boolean}> {
-    constructor() {
-        super();
-
-        this.state = {
-            hidden: true
-        } as any;
-
-        util.addApiEventListener("info/modules", () => {
-            this.setState({hidden: !API.hasModule("evse_v2") && !API.hasModule("evse")});
-        });
-    }
-
-    render() {
-        return <NavbarItem name="evse-settings" title={__("evse.navbar.evse_settings")} symbol={<Settings />} hidden={this.state.hidden} />;
-    }
+export function EVSESettingsNavbar() {
+    return <NavbarItem name="evse-settings" title={__("evse.navbar.evse_settings")} symbol={<Settings />} hidden={!API.hasModule("evse_v2") && !API.hasModule("evse")} />;
 }
 
 interface EVSESettingsState {

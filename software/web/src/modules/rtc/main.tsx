@@ -30,22 +30,8 @@ import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Watch } from "react-feather";
 
-export class RtcNavbar extends Component<{}, {hidden: boolean}> {
-    constructor() {
-        super();
-
-        this.state = {
-            hidden: true
-        } as any;
-
-        util.addApiEventListener("info/features", () => {
-            this.setState({hidden: !API.hasFeature("rtc")});
-        });
-    }
-
-    render() {
-        return <NavbarItem name="rtc" title={__("rtc.navbar.rtc")} symbol={<Watch />} hidden={this.state.hidden} />;
-    }
+export function RtcNavbar() {
+    return <NavbarItem name="rtc" title={__("rtc.navbar.rtc")} symbol={<Watch />} hidden={!API.hasFeature("rtc")} />;
 }
 
 type RTCTime = API.getType['rtc/time'];
