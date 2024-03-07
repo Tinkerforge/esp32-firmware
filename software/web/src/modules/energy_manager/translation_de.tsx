@@ -27,6 +27,8 @@ let x = {
 
             "phase_switch": "Phasen umgeschaltet",
             "phase": "",
+            "single_phase": "auf einphasig",
+            "three_phase": "auf dreiphasig",
             "automation_phase_switch_text": /*FFN*/(phase: number) => {
                 let ret = <></>;
                 switch (phase) {

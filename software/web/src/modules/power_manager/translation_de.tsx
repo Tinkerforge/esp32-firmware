@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 let x = {
-    "energy_manager": {
+    "power_manager": {
         "status": {
             "mode": "Lademodus",
             "mode_fast": "Schnell",
@@ -16,15 +16,13 @@ let x = {
             "external_control_state_disabled": "Deaktiviert",
             "external_control_state_unavailable": "Nicht verfügbar",
             "external_control_state_switching": "Schaltet gerade",
-            "external_control_request": "Externe Phasenanforderung",
-            "external_control_request_none": "Keine",
             "config_error_phase_switching": "Phasenumschaltung oder Schütz nicht konfiguriert",
             "config_error_no_max_current": "Maximaler Gesamtstrom der Wallboxen nicht konfiguriert",
             "config_error_no_chargers": "Keine Wallboxen konfiguriert",
             "config_error_excess_no_meter": "Überschussladen aktiviert aber kein Stromzähler eingerichtet"
         },
         "navbar": {
-            "energy_manager": "Einstellungen"
+            "power_manager": "Einstellungen"
         },
         "content": {
             "page_header": "Energiemanager",

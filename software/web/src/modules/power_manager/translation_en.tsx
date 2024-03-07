@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 let x = {
-    "energy_manager": {
+    "power_manager": {
         "status": {
             "mode": "Charging mode",
             "mode_fast": "Fast",
@@ -16,15 +16,13 @@ let x = {
             "external_control_state_disabled": "Disabled",
             "external_control_state_unavailable": "Unavailable",
             "external_control_state_switching": "Switching now",
-            "external_control_request": "External phase request",
-            "external_control_request_none": "None",
             "config_error_phase_switching": "Phase switching or contactor not configured",
             "config_error_no_max_current": "No maximum current configured for chargers",
             "config_error_no_chargers": "No chargers configured",
             "config_error_excess_no_meter": "Excess charging enabled but no meter configured"
         },
         "navbar": {
-            "energy_manager": "Settings"
+            "power_manager": "Settings"
         },
         "content": {
             "page_header": "Energy Manager",
