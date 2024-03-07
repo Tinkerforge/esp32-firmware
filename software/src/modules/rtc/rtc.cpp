@@ -74,6 +74,9 @@ void Rtc::setup()
 
 void Rtc::register_backend(IRtcBackend *_backend)
 {
+    if (boot_stage < BootStage::REGISTER_URLS)
+        esp_system_abort("Registering RTC backends before the register URLs stage is not allowed!");
+
     if (backend || !_backend)
         return;
 
