@@ -77,11 +77,11 @@ void WarpEsp32Rtc::setup()
         ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0b00000000, 1));
         ESP_ERROR_CHECK(i2c_master_stop(cmd));
         auto errRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, i2c_timeout);
+        i2c_cmd_link_delete(cmd);
         if (errRc != 0) {
             logger.printfln("RTC write control reg failed: %d", errRc);
             return;
         }
-        i2c_cmd_link_delete(cmd);
 
         if (!initialized)
             rtc.register_backend(this);
