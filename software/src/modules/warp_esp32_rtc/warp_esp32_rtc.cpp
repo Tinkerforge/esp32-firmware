@@ -22,7 +22,9 @@
 #include "musl_libc_timegm.h"
 
 #include "api.h"
+#include "task_scheduler.h"
 #include "build.h"
+#include "tools.h"
 #include <ctime>
 
 #include "gcc_warnings.h"
@@ -66,28 +68,26 @@ void WarpEsp32Rtc::setup()
                                          rtc_write_time_write_buf, ARRAY_SIZE(rtc_write_time_write_buf),
                                          nullptr, 0);
 
+    task_scheduler.scheduleWithFixedDelay([this](){
+        // Enable battery switch-over in control register.
+        i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+        ESP_ERROR_CHECK(i2c_master_start(cmd));
+        ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_RTC_ADDRESS << 1) | I2C_MASTER_WRITE, 1)); // expect ack
+        ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0x02, 1));
+        ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0b00000000, 1));
+        ESP_ERROR_CHECK(i2c_master_stop(cmd));
+        auto errRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, i2c_timeout);
+        if (errRc != 0) {
+            logger.printfln("RTC write control reg failed: %d", errRc);
+            return;
+        }
+        i2c_cmd_link_delete(cmd);
 
-    // Enable battery switch-over in control register.
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    ESP_ERROR_CHECK(i2c_master_start(cmd));
-    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_RTC_ADDRESS << 1) | I2C_MASTER_WRITE, 1)); // expect ack
-    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0x02, 1));
-    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0b00000000, 1));
-    ESP_ERROR_CHECK(i2c_master_stop(cmd));
-    auto errRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, i2c_timeout);
-    if (errRc != 0) {
-        logger.printfln("RTC write control reg failed: %d", errRc);
-    }
-    i2c_cmd_link_delete(cmd);
+        if (!initialized)
+            rtc.register_backend(this);
 
-    initialized = true;
-}
-
-void WarpEsp32Rtc::register_urls() {
-    if (!esp32_ethernet_brick.is_warp_esp_ethernet_brick)
-        return;
-
-    rtc.register_backend(this);
+        initialized = true;
+    }, 0, 60 * 1000);
 }
 
 void WarpEsp32Rtc::set_time(const tm &date_time)
