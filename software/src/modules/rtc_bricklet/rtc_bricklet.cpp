@@ -25,35 +25,6 @@
 
 #include "gcc_warnings.h"
 
-bool RtcBricklet::update_system_time()
-{
-    // We have to make sure, we don't try to update the system clock
-    // while NTP also sets the clock.
-    // To prevent this, we skip updating the system clock if NTP
-    // did update it while we were fetching the current time from the RTC.
-
-    uint32_t count;
-    {
-        std::lock_guard<std::mutex> lock{ntp.mtx};
-        count = ntp.sync_counter;
-    }
-
-    struct timeval t = this->get_time();
-    if (t.tv_sec == 0 && t.tv_usec == 0)
-        return false;
-
-    {
-        std::lock_guard<std::mutex> lock{ntp.mtx};
-        if (count != ntp.sync_counter)
-            // NTP has just updated the system time. We assume that this time is more accurate the the RTC's.
-            return false;
-
-        settimeofday(&t, nullptr);
-        ntp.set_synced();
-    }
-    return true;
-}
-
 void RtcBricklet::setup()
 {
     setup_rtc();
@@ -86,14 +57,6 @@ void RtcBricklet::set_time(const tm &date_time)
     auto ret = tf_real_time_clock_v2_set_date_time(&device, year, mon, day, hour, min, sec, 0, wday);
     if (ret)
         logger.printfln("Setting RTC to %04u-%02u-%02u %02u:%02u:%02u (wd %i) failed with code %i", year, mon, day, hour, min, sec, wday, ret);
-}
-
-void RtcBricklet::set_time(const timeval &time)
-{
-    struct tm date_time;
-    gmtime_r(&time.tv_sec, &date_time);
-
-    set_time(date_time);
 }
 
 struct timeval RtcBricklet::get_time()

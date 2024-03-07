@@ -39,9 +39,9 @@ public:
     void register_urls() override;
 
     void setup_rtc();
-    void set_time(const timeval &time);
-    void set_time(const tm &time);
-    bool update_system_time();
-    void reset();
-    struct timeval get_time();
+
+    // IRtcBackend implementation
+    void set_time(const tm &time) override;
+    struct timeval get_time() override;
+    void reset() override;
 };

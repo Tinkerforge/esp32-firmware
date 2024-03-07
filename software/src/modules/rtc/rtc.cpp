@@ -24,6 +24,21 @@
 #include "task_scheduler.h"
 #include "time.h"
 #include "module_dependencies.h"
+#include "musl_libc_timegm.h"
+
+void IRtcBackend::set_time(const timeval &time) {
+    struct tm tm;
+    gmtime_r(&time.tv_sec, &tm);
+    set_time(tm);
+}
+
+void IRtcBackend::set_time(const tm &time) {
+    struct tm copy = time;
+    struct timeval timeval;
+    timeval.tv_sec = timegm(&copy);
+    timeval.tv_usec = 0;
+    set_time(timeval);
+}
 
 void Rtc::pre_setup()
 {
@@ -117,7 +132,7 @@ void Rtc::register_backend(IRtcBackend *_backend)
         update_system_time();
     }, 1000 * 60 * 10, 1000 * 60 * 10);
 
-    if (backend->update_system_time()) {
+    if (update_system_time()) {
         auto now = millis();
         auto secs = now / 1000;
         auto ms = now % 1000;
@@ -152,5 +167,30 @@ bool Rtc::update_system_time()
 {
     if (!backend)
         return false;
-    return backend->update_system_time();
+
+    // We have to make sure, we don't try to update the system clock
+    // while NTP also sets the clock.
+    // To prevent this, we skip updating the system clock if NTP
+    // did update it while we were fetching the current time from the RTC.
+
+    uint32_t count;
+    {
+        std::lock_guard<std::mutex> lock{ntp.mtx};
+        count = ntp.sync_counter;
+    }
+
+    struct timeval t = this->get_time();
+    if (t.tv_sec == 0 && t.tv_usec == 0)
+        return false;
+
+    {
+        std::lock_guard<std::mutex> lock{ntp.mtx};
+        if (count != ntp.sync_counter)
+            // NTP has just updated the system time. We assume that this time is more accurate the the RTC's.
+            return false;
+
+        settimeofday(&t, nullptr);
+        ntp.set_synced();
+    }
+    return true;
 }
