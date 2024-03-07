@@ -1387,6 +1387,8 @@ struct timeval EnergyManager::get_time()
 
         time.tv_sec = timegm(&date_time);
 
+        // Allow time to be 24h older than the build timestamp,
+        // in case the RTC is set by hand to test something.
         //FIXME not Y2038-safe
         if (time.tv_sec < static_cast<time_t>(build_timestamp() - 24 * 3600))
             time.tv_sec = 0;

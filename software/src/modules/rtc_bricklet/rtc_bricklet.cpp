@@ -113,10 +113,13 @@ struct timeval RtcBricklet::get_time()
     time.tv_usec = static_cast<suseconds_t>(ts % 1000) * 1000;
     time.tv_sec  = static_cast<time_t>(ts / 1000);
 
+    // Unix timestamps start at 1970-01-01, the RTC starts at year 00 (i.e. 2000). Add the unix timestamp of 2000-01-01 00:00:00
     time.tv_sec += 946684800;
 
+    // Allow time to be 24h older than the build timestamp,
+    // in case the RTC is set by hand to test something.
     // FIXME not Y2038-safe
-    if (time.tv_sec < static_cast<time_t>(build_timestamp() - 14 * 3600))
+    if (time.tv_sec < static_cast<time_t>(build_timestamp() - 24 * 3600))
     {
         struct timeval tmp;
         tmp.tv_sec = 0;
