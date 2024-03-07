@@ -21,3 +21,7 @@ export interface management_connection {
 export interface test {
 
 }
+
+export interface test1 {
+    
+}

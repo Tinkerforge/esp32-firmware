@@ -109,6 +109,12 @@ void RemoteAccess::register_urls() {
         this->resolve_management();
         this->connect_management();
     }, true);
+
+    api.addCommand("remote_access/test1", Config::Null(), {}, [this]() {
+        logger.printfln("bla");
+        this->login();
+        this->resolve_management();
+    }, true);
 }
 
 static esp_err_t http_event_handle(esp_http_client_event *evt) {
@@ -265,7 +271,7 @@ void RemoteAccess::connect_management() {
     String private_key = management_connection.get("private_key")->asString(); // Local copy of ephemeral conf String. The network interface created by WG might hold a reference to the C string.
     String remote_host = management_connection.get("remote_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
 
-    logger.printfln("Got NTP sync. Connecting to WireGuard peer %s:%u", remote_host.c_str(), management_connection.get("remote_port")->asUint());
+    logger.printfln("Connecting to Management WireGuard peer %s:%u", remote_host.c_str(), management_connection.get("remote_port")->asUint());
 
     management.begin(internal_ip,
              internal_subnet,
