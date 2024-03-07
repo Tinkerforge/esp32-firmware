@@ -39,13 +39,13 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, List } from "react-feather";
 
-export function EnergyManagerNavbar() {
+export function PowerManagerNavbar() {
     return <NavbarItem name="energy_manager" module="energy_manager" title={__("energy_manager.navbar.energy_manager")} symbol={<List />} />;
 }
 
 type StringStringTuple = [string, string];
 
-export class EnergyManagerStatus extends Component {
+export class PowerManagerStatus extends Component {
     change_mode(mode: number) {
         API.save('power_manager/charge_mode', {"mode": mode}, __("energy_manager.script.mode_change_failed"));
     }
@@ -226,7 +226,7 @@ export class EnergyManagerStatus extends Component {
     }
 }
 
-export class EnergyManager extends ConfigComponent<'energy_manager/config', {status_ref?: RefObject<EnergyManagerStatus>}, API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
+export class PowerManager extends ConfigComponent<'energy_manager/config', {status_ref?: RefObject<PowerManagerStatus>}, API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
     // Need to use any here in case the automation module is not available.
     automation_config: any;
 
