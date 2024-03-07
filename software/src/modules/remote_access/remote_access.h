@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2022 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2024 Frederic Henrichs <frederic@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,33 +17,28 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#pragma once
-
-#include <WireGuard-ESP32.h>
-
 #include "module.h"
 #include "config.h"
 
-class Wireguard final : public IModule
-{
+#include <WireGuard-ESP32.h>
+
+class RemoteAccess final : public IModule {
 public:
-    Wireguard(){}
+    RemoteAccess() {};
+
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void start_wireguard();
-
-    bool port_used(uint32_t port);
 
 private:
+    void resolve_management();
+    void login();
+    void connect_management();
+
+    WireGuard management;
+
+    String jwt;
+
     ConfigRoot config;
-    ConfigRoot state;
-    WireGuard wg;
-
-    String private_key;
-    String remote_host;
-
-    uint32_t last_connected_ms = 0;
+    ConfigRoot management_connection;
 };
-
-String check_key(const String &key, bool enable);

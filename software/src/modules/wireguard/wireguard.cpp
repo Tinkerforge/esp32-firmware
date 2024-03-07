@@ -206,3 +206,8 @@ void Wireguard::register_urls()
 
     api.addState("wireguard/state", &state);
 }
+
+bool Wireguard::port_used(uint32_t port) {
+    uint32_t self_port = config.get("local_port")->asUint();
+    return port == self_port;
+}
