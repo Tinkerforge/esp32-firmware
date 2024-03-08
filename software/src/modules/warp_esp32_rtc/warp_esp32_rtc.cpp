@@ -146,7 +146,6 @@ struct timeval WarpEsp32Rtc::get_time()
 
 void WarpEsp32Rtc::reset()
 {
-    // Enable battery switch-over in control register.
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     ESP_ERROR_CHECK(i2c_master_start(cmd));
     ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_RTC_ADDRESS << 1) | I2C_MASTER_WRITE, 1)); // expect ack
