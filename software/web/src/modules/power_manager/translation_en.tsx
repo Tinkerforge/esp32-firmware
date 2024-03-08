@@ -22,10 +22,10 @@ let x = {
             "config_error_excess_no_meter": "Excess charging enabled but no meter configured"
         },
         "navbar": {
-            "power_manager": "Settings"
+            "power_manager": "Power Manager"
         },
         "content": {
-            "page_header": "Energy Manager",
+            "page_header": "Power Manager",
 
             "header_phase_switching": "Phase switching",
             "contactor_installed": "Contactor installed",
@@ -41,14 +41,14 @@ let x = {
             "external_control_notification": "External control for phase switching is active. This will disable all settings related to PV excess charging.",
 
             "header_load_management": "Dynamic load management",
-            "load_management_explainer": "The energy manager adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)",
+            "load_management_explainer": "The power manager adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)",
 
             "header_excess_charging": "Photovoltaic excess charging",
             "enable_excess_charging": "Excess charging enabled",
             "enable_excess_charging_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
-            "enable_excess_charging_desc": "The energy manager will adjust the power consumption of controlled chargers, depending on the power generation of a photovoltaic system and the charge mode.",
+            "enable_excess_charging_desc": "The power manager will adjust the power consumption of controlled chargers, depending on the power generation of a photovoltaic system and the charge mode.",
             "default_mode": "Default charging mode",
-            "default_mode_muted": "will be used after energy manager reboot",
+            "default_mode_muted": "will be used after power manager reboot",
             "auto_reset_charging_mode": "Daily reset",
             "auto_reset_charging_mode_disabled": "Found different Automation rule for setting the charging mode, please check the Automation settings.",
             "auto_reset_charging_mode_desc": "Automatically sets the charging mode back to the default.",
@@ -168,8 +168,8 @@ let x = {
             "automation_action_text": /*FFN*/(phases: number) => <>switch to <b>{phases == 1 ? "single phase" : "three phases"}</b></>/*NF*/
         },
         "script": {
-            "save_failed": "Failed to save energy manager settings.",
-            "reboot_content_changed": "energy manager settings",
+            "save_failed": "Failed to save power manager settings.",
+            "reboot_content_changed": "power manager settings",
             "mode_change_failed": "Failed to change charging mode.",
             "meter": /*SFN*/(slot: number|"?") => "Meter #" + slot/*NF*/
         }

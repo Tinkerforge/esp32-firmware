@@ -84,10 +84,10 @@ export class PowerManagerStatus extends Component {
         if (!util.render_allowed())
             return <StatusSection name="power_manager" />
 
-        let status           = API.get('energy_manager/state');
-        let charge_mode      = API.get('power_manager/charge_mode');
-        let pm_status        = API.get('power_manager/state');
-        let pm_config        = API.get('power_manager/config');
+        let charge_mode = API.get('power_manager/charge_mode');
+        let state       = API.get('power_manager/state');
+        let ll_state    = API.get('power_manager/low_level_state');
+        let config      = API.get('power_manager/config');
 
         return <StatusSection name="power_manager">
             <FormRow label={__("power_manager.status.mode")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
@@ -103,18 +103,18 @@ export class PowerManagerStatus extends Component {
                     <Button
                         style="display: flex;align-items: center;justify-content: center;"
                         className="m-1 rounded-left rounded-right"
-                        variant={pm_config.excess_charging_enable ? (charge_mode.mode == 2 ? "success" : "primary") : "secondary"}
-                        disabled={!pm_config.excess_charging_enable || charge_mode.mode == 2}
+                        variant={config.excess_charging_enable ? (charge_mode.mode == 2 ? "success" : "primary") : "secondary"}
+                        disabled={!config.excess_charging_enable || charge_mode.mode == 2}
                         onClick={() => this.change_mode(2)}>
-                        {!pm_config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 2 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_pv")}</span>
+                        {!config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 2 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_pv")}</span>
                     </Button>
                     <Button
                         style="display: flex;align-items: center;justify-content: center;"
                         className="m-1 rounded-left rounded-right"
-                        variant={pm_config.excess_charging_enable ? (charge_mode.mode == 3 ? "success" : "primary") : "secondary"}
-                        disabled={!pm_config.excess_charging_enable || charge_mode.mode == 3}
+                        variant={config.excess_charging_enable ? (charge_mode.mode == 3 ? "success" : "primary") : "secondary"}
+                        disabled={!config.excess_charging_enable || charge_mode.mode == 3}
                         onClick={() => this.change_mode(3)}>
-                        {!pm_config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 3 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_min_pv")}</span>
+                        {!config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 3 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_min_pv")}</span>
                     </Button>
                     <Button
                         style="display: flex;align-items: center;justify-content: center;"
@@ -128,32 +128,32 @@ export class PowerManagerStatus extends Component {
             </FormRow>
 
 
-            {pm_config.phase_switching_mode == 3 ?
+            {config.phase_switching_mode == 3 ?
                 <>
                     <FormRow label={__("power_manager.status.phase_switching")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                         <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
                             <Button
                                 style="display: flex;align-items: center;justify-content: center;"
                                 className="m-1 rounded-left rounded-right"
-                                variant={status.phases_switched == 1 ? "success" : "primary"}
-                                disabled={status.phases_switched == 1 || pm_status.external_control != 0}
+                                variant={!ll_state.is_3phase ? "success" : "primary"}
+                                disabled={!ll_state.is_3phase || state.external_control != 0}
                                 onClick={() => this.change_phase(1)}>
-                                {status.phases_switched == 1 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.single_phase")}</span>
+                                {!ll_state.is_3phase ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.single_phase")}</span>
                             </Button>
                             <Button
                                 style="display: flex;align-items: center;justify-content: center;"
                                 className="m-1 rounded-left rounded-right"
-                                variant={status.phases_switched == 3 ? "success" : "primary"}
-                                disabled={status.phases_switched == 3 || pm_status.external_control != 0}
+                                variant={ll_state.is_3phase ? "success" : "primary"}
+                                disabled={ll_state.is_3phase || state.external_control != 0}
                                 onClick={() => this.change_phase(3)}>
-                                {status.phases_switched == 3 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.three_phase")}</span>
+                                {ll_state.is_3phase ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.three_phase")}</span>
                             </Button>
                         </ButtonGroup>
                     </FormRow>
 
                     <FormRow label={__("power_manager.status.external_control_state")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                         <IndicatorGroup
-                            value={pm_status.external_control}
+                            value={state.external_control}
                             items={[
                                 ["success", __("power_manager.status.external_control_state_available")],
                                 ["danger",  __("power_manager.status.external_control_state_disabled")],
@@ -167,7 +167,7 @@ export class PowerManagerStatus extends Component {
                 <>
                     <FormRow label={__("power_manager.status.phase_switching")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
                         <IndicatorGroup
-                            value={status.phases_switched == 1 ? 0 : status.phases_switched == 3 ? 1 : 42}
+                            value={!ll_state.is_3phase ? 0 : 1}
                             items={[
                                 ["primary", __("power_manager.status.single_phase")],
                                 ["primary", __("power_manager.status.three_phase")],
@@ -176,22 +176,22 @@ export class PowerManagerStatus extends Component {
                 </>
             }
 
-            {this.generate_config_error_labels(pm_status.config_error_flags)}
+            {this.generate_config_error_labels(state.config_error_flags)}
         </StatusSection>
     }
 }
 
-export class PowerManager extends ConfigComponent<'energy_manager/config', {status_ref?: RefObject<PowerManagerStatus>}, API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
+export class PowerManager extends ConfigComponent<'power_manager/config', {status_ref?: RefObject<PowerManagerStatus>}, API.getType['energy_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
     // Need to use any here in case the automation module is not available.
     automation_config: any;
 
     constructor() {
-        super('energy_manager/config',
+        super('power_manager/config',
             __("power_manager.script.save_failed"),
             __("power_manager.script.reboot_content_changed"));
 
-        util.addApiEventListener('power_manager/config', () => {
-            this.setState({...API.get('power_manager/config')});
+        util.addApiEventListener('energy_manager/config', () => {
+            this.setState({...API.get('energy_manager/config')});
         });
 
         util.addApiEventListener('power_manager/debug_config', () => {
@@ -216,16 +216,10 @@ export class PowerManager extends ConfigComponent<'energy_manager/config', {stat
         }
     }
 
-    override async sendSave(t: "energy_manager/config", cfg: API.getType['energy_manager/config']) {
-        if (API.hasModule("power_manager")) {
-            await API.save('power_manager/config', {
-                phase_switching_mode:   this.state.phase_switching_mode,
-                excess_charging_enable: this.state.excess_charging_enable,
-                default_mode:           this.state.default_mode,
-                meter_slot_grid_power:  this.state.meter_slot_grid_power,
-                target_power_from_grid: this.state.target_power_from_grid,
-                guaranteed_power:       this.state.guaranteed_power,
-                cloud_filter_mode:      this.state.cloud_filter_mode,
+    override async sendSave(t: "power_manager/config", cfg: API.getType['power_manager/config']) {
+        if (API.hasModule("energy_manager")) {
+            await API.save('energy_manager/config', {
+                contactor_installed: this.state.contactor_installed,
             }, __("power_manager.script.save_failed"));
         }
         if (API.hasModule("debug")) {
@@ -239,9 +233,9 @@ export class PowerManager extends ConfigComponent<'energy_manager/config', {stat
         await super.sendSave(t, cfg);
     }
 
-    override async sendReset(t: "energy_manager/config") {
-        if (API.hasModule("power_manager")) {
-            await API.reset('power_manager/config', super.error_string, super.reboot_string);
+    override async sendReset(t: "power_manager/config") {
+        if (API.hasModule("energy_manager")) {
+            await API.reset('energy_manager/config', super.error_string, super.reboot_string);
         }
         if (API.hasModule("debug")) {
             await API.reset('power_manager/debug_config', super.error_string, super.reboot_string);
@@ -250,8 +244,8 @@ export class PowerManager extends ConfigComponent<'energy_manager/config', {stat
         await super.sendReset(t);
     }
 
-    override getIsModified(t: "energy_manager/config"): boolean {
-        if (API.hasModule("power_manager") && API.is_modified('power_manager/config')) {
+    override getIsModified(t: "power_manager/config"): boolean {
+        if (API.hasModule("energy_manager") && API.is_modified('energy_manager/config')) {
             return true;
         }
 
@@ -319,7 +313,7 @@ export class PowerManager extends ConfigComponent<'energy_manager/config', {stat
         return has_rule;
     }
 
-    render(props: {}, s: Readonly<API.getType['energy_manager/config'] & API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}>) {
+    render(props: {}, s: Readonly<API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & API.getType['energy_manager/config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}>) {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
             return <SubPage name="energy_manager" />;
 

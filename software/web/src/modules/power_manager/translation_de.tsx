@@ -22,10 +22,10 @@ let x = {
             "config_error_excess_no_meter": "Überschussladen aktiviert aber kein Stromzähler eingerichtet"
         },
         "navbar": {
-            "power_manager": "Einstellungen"
+            "power_manager": "Power Manager"
         },
         "content": {
-            "page_header": "Energiemanager",
+            "page_header": "Power Manager",
 
             "header_phase_switching": "Phasenumschaltung",
             "contactor_installed": "Schütz angeschlossen",
@@ -41,14 +41,14 @@ let x = {
             "external_control_notification": "Externe Steuerung für die Phasenumschaltung ist aktiv. Dadurch werden alle Einstellungen im Zusammenhang mit PV-Überschussladen deaktiviert.",
 
             "header_load_management": "Dynamisches Lastmanagement",
-            "load_management_explainer": "Der Energiemanager regelt die verwalteten Wallboxen so, dass der maximal zulässige Strom des Gebäudeanschlusses auf keiner Phase überschritten wird. (Bald verfügbar: Diese Funktion befindet sich aktuell noch in der Entwicklung.)",
+            "load_management_explainer": "Der Power Manager regelt die verwalteten Wallboxen so, dass der maximal zulässige Strom des Gebäudeanschlusses auf keiner Phase überschritten wird. (Bald verfügbar: Diese Funktion befindet sich aktuell noch in der Entwicklung.)",
 
             "header_excess_charging": "Photovoltaik-Überschussladen",
             "enable_excess_charging": "Überschussladen aktiviert",
             "enable_excess_charging_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
-            "enable_excess_charging_desc": "Der Energiemanager regelt die verwalteten Wallboxen abhängig vom gemessenen Überschuss einer Photovoltaikanlage und vom Lademodus.",
+            "enable_excess_charging_desc": "Der Power Manager regelt die verwalteten Wallboxen abhängig vom gemessenen Überschuss einer Photovoltaikanlage und vom Lademodus.",
             "default_mode": "Standardlademodus",
-            "default_mode_muted": "wird nach Neustart des Energiemanagers verwendet",
+            "default_mode_muted": "wird nach Neustart des Power Managers verwendet",
             "auto_reset_charging_mode": "Tägliches Zurücksetzen",
             "auto_reset_charging_mode_disabled": "Abweichende Automatisierungsregeln für Lademoduswechsel gefunden, bitte in den Automatisierungseinstellungen überprüfen.",
             "auto_reset_charging_mode_desc": "Setzt den Lademodus täglich auf den Standardlademodus zurück.",
@@ -168,8 +168,8 @@ let x = {
             "automation_action_text": /*FFN*/(phases: number) => <>Schalte auf <b>{phases == 1 ? "Einphasig" : "Dreiphasig"}</b> um.</>/*NF*/
         },
         "script": {
-            "save_failed": "Speichern der Energiemanager-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Energiemanager-Einstellungen",
+            "save_failed": "Speichern der Power Manager-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "Power Manager-Einstellungen",
             "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen.",
             "meter": /*SFN*/(slot: number|"?") => "Zähler #" + slot/*NF*/
         }
