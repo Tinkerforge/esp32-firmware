@@ -61,7 +61,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
                 charger_address: "10.123." + i + ".2",
                 web_address: "10.123." + i + ".3",
                 charger_public: charger_keypair.publicKey,
-                web_private: web_keypair.privateKey
+                web_private: web_keypair.privateKey,
+                port: 51825 + i
             })
         }
 
