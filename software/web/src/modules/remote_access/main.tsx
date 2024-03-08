@@ -31,7 +31,7 @@ import { SubPage } from "src/ts/components/sub_page";
 import { Switch } from "src/ts/components/switch";
 import { __ } from "src/ts/translation";
 import "./wireguard";
-import { config } from "./api";
+import { config, management_connection } from "./api";
 import { Button } from "react-bootstrap";
 
 
@@ -54,17 +54,38 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
         const mg_charger_keypair = (window as any).wireguard.generateKeypair();
 
         const keys = [];
+        const connections = [];
         for (const i of util.range(0, 5)) {
             const charger_keypair = (window as any).wireguard.generateKeypair();
             const web_keypair = (window as any).wireguard.generateKeypair();
+            const charger_address = "10.123." + i + ".2";
+            const web_address = "10.123." + i + ".3";
+            const port = 51825 + i;
             keys.push({
-                charger_address: "10.123." + i + ".2",
-                web_address: "10.123." + i + ".3",
+                charger_address: charger_address,
+                web_address: web_address,
                 charger_public: charger_keypair.publicKey,
                 web_private: web_keypair.privateKey,
-                port: 51825 + i
-            })
+                port: port
+            });
+
+            const connection: management_connection = {
+                internal_ip: charger_address,
+                internal_subnet: "255.255.255.0",
+                internal_gateway: "10.123." + i + ".1",
+                remote_internal_ip: web_address,
+                remote_host: this.state.relay_host,
+                remote_port: 51820,
+                local_port: port,
+                private_key: charger_keypair.privateKey,
+                remote_public_key: web_keypair.publicKey,
+            }
+            connections.push(connection);
         }
+
+        await API.save("remote_access/remote_connection_config", {
+            connections: connections
+        }, __("remote_access.script.save_failed"));
 
         const charger = {
             charger: {
@@ -189,6 +210,9 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
                     <Button variant="primary" onClick={() => {
                         API.call("remote_access/test1", "", "");
                     }}>Bliblablub</Button>
+                    <Button variant="primary" onClick={() => {
+                        API.call("remote_access/test2", "", "");
+                    }}>aibdabd</Button>
                 </SubPage>
     }
 }

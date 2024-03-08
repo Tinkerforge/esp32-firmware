@@ -18,10 +18,18 @@ export interface management_connection {
     remote_public_key: string,
 }
 
+export interface remote_connection_config {
+    connections: management_connection[],
+}
+
 export interface test {
 
 }
 
 export interface test1 {
+
+}
+
+export interface test2 {
     
 }

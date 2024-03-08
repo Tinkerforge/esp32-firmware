@@ -34,11 +34,14 @@ private:
     void resolve_management();
     void login();
     void connect_management();
+    void connect_remote_access(uint8_t i);
 
     WireGuard management;
+    WireGuard remote_connections[5];
 
     String jwt;
 
     ConfigRoot config;
     ConfigRoot management_connection;
+    ConfigRoot remote_connection_config;
 };
