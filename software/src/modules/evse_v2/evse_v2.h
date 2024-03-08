@@ -26,6 +26,8 @@
 #include "evse_v2_bricklet_firmware_bin.embedded.h"
 #include "../evse_common/evse_common.h"
 
+#define EVSEV2_PHASES_INFO_1P_CAR_MASK (1 << 0)
+
 class EVSEV2 final : public DeviceModule<TF_EVSEV2,
                                          evse_v2_bricklet_firmware_bin_data,
                                          evse_v2_bricklet_firmware_bin_length,
@@ -76,6 +78,14 @@ protected:
 
     String get_evse_debug_header() override;
     String get_evse_debug_line() override;
+
+    // PhaseSwitcherBackend implementation
+    bool phase_switching_capable() override;
+    bool can_switch_phases_now(bool wants_3phase) override;
+    bool requires_cp_disconnect() override {return false;}
+    bool get_is_3phase() override;
+    PhaseSwitcherBackend::SwitchingState get_phase_switching_state() override;
+    bool switch_phases_3phase(bool wants_3phase) override;
 
 // To allow the evse_v2_meter module to get/set energy meter values
 public:

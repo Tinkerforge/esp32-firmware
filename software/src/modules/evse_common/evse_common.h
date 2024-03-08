@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include "modules/meters/meter_value_availability.h"
+#include "modules/power_manager/phase_switcher_back-end.h"
 #include "module.h"
 #include "tools.h"
 
@@ -64,7 +65,7 @@
 
 #define EXTERNAL_TIMEOUT 30
 
-class IEvseBackend : virtual public IModule {
+class IEvseBackend : virtual public IModule, public PhaseSwitcherBackend {
     friend class EvseCommon;
 protected:
     IEvseBackend() {}

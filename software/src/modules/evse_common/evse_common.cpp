@@ -294,6 +294,10 @@ void EvseCommon::setup()
         backend->update_all_data();
     }, 0, 250);
 
+#if MODULE_POWER_MANAGER_AVAILABLE()
+    power_manager.register_phase_switcher_backend(backend);
+#endif
+
     backend->post_setup();
     initialized = true;
 }

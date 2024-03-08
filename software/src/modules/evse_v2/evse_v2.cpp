@@ -704,6 +704,62 @@ String EVSEV2::get_evse_debug_line()
     return String(line);
 }
 
+bool EVSEV2::phase_switching_capable()
+{
+    return evse_common.hardware_configuration.get("evse_version")->asUint() >= 30;
+}
+
+bool EVSEV2::can_switch_phases_now(bool wants_3phase)
+{
+    if (wants_3phase) {
+        uint32_t phases_info = evse_common.low_level_state.get("phases_info")->asUint();
+        if (phases_info & EVSEV2_PHASES_INFO_1P_CAR_MASK) {
+            // Car wants to charge single-phase, don't allow switching to three phases.
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool EVSEV2::get_is_3phase()
+{
+    return evse_common.low_level_state.get("phases_current")->asUint() == 3;
+}
+
+PhaseSwitcherBackend::SwitchingState EVSEV2::get_phase_switching_state()
+{
+    if (evse_common.state.get("error_state")->asUint() != 0) {
+        return PhaseSwitcherBackend::SwitchingState::Error;
+    }
+
+    uint32_t state = evse_common.low_level_state.get("phases_state")->asUint();
+    if (state != 0) {
+        return PhaseSwitcherBackend::SwitchingState::Busy;
+    }
+
+    return PhaseSwitcherBackend::SwitchingState::Ready;
+}
+
+bool EVSEV2::switch_phases_3phase(bool wants_3phase)
+{
+    if (!can_switch_phases_now(wants_3phase)) {
+        logger.printfln("evse_v2: Requested phase switch but can't switch at the moment.");
+        return false;
+    }
+
+    uint8_t phases_wanted = wants_3phase ? 3 : 1;
+
+    int err = tf_evse_v2_set_phase_control(&device, phases_wanted);
+    if (err == TF_E_OK) {
+        return true;
+    }
+
+    logger.printfln("evse_v2: switch_phases_3phase failed: %s (%i)", tf_hal_strerror(err), err);
+
+    return false;
+}
+
 void EVSEV2::update_all_data()
 {
     if (!initialized)

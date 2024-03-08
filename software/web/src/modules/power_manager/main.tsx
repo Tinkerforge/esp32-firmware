@@ -181,7 +181,7 @@ export class PowerManagerStatus extends Component {
     }
 }
 
-export class PowerManager extends ConfigComponent<'power_manager/config', {status_ref?: RefObject<PowerManagerStatus>}, API.getType['energy_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
+export class PowerManager extends ConfigComponent<'power_manager/config', {status_ref?: RefObject<PowerManagerStatus>}, {em_contactor_installed: boolean} & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
     // Need to use any here in case the automation module is not available.
     automation_config: any;
 
@@ -190,8 +190,10 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
             __("power_manager.script.save_failed"),
             __("power_manager.script.reboot_content_changed"));
 
-        util.addApiEventListener('energy_manager/config', () => {
-            this.setState({...API.get('energy_manager/config')});
+        this.setState({em_contactor_installed: false});
+
+        util.addApiEventListener_unchecked('energy_manager/config', () => {
+            this.setState({em_contactor_installed: API.get_unchecked('energy_manager/config')?.contactor_installed});
         });
 
         util.addApiEventListener('power_manager/debug_config', () => {
@@ -218,8 +220,8 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
 
     override async sendSave(t: "power_manager/config", cfg: API.getType['power_manager/config']) {
         if (API.hasModule("energy_manager")) {
-            await API.save('energy_manager/config', {
-                contactor_installed: this.state.contactor_installed,
+            await API.save_unchecked('energy_manager/config', {
+                contactor_installed: this.state.em_contactor_installed,
             }, __("power_manager.script.save_failed"));
         }
         if (API.hasModule("debug")) {
@@ -235,7 +237,7 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
 
     override async sendReset(t: "power_manager/config") {
         if (API.hasModule("energy_manager")) {
-            await API.reset('energy_manager/config', super.error_string, super.reboot_string);
+            await API.reset_unchecked('energy_manager/config', super.error_string, super.reboot_string);
         }
         if (API.hasModule("debug")) {
             await API.reset('power_manager/debug_config', super.error_string, super.reboot_string);
@@ -245,7 +247,7 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
     }
 
     override getIsModified(t: "power_manager/config"): boolean {
-        if (API.hasModule("energy_manager") && API.is_modified('energy_manager/config')) {
+        if (API.hasModule("energy_manager") && API.is_modified_unchecked('energy_manager/config')) {
             return true;
         }
 
@@ -313,9 +315,9 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
         return has_rule;
     }
 
-    render(props: {}, s: Readonly<API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & API.getType['energy_manager/config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}>) {
-        if (!util.render_allowed() || !API.hasFeature("energy_manager"))
-            return <SubPage name="energy_manager" />;
+    render(props: {}, s: Readonly<API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}>) {
+        if (!util.render_allowed())
+            return <SubPage name="power_manager" />;
 
         let mode_list: StringStringTuple[] = [];
 
@@ -354,6 +356,13 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
             </FormRow>
         }
 
+        let can_switch_phases = false;
+        if (API.hasModule("energy_manager")) {
+            can_switch_phases = this.state.em_contactor_installed;
+        } else if (API.hasFeature("evse")) {
+            can_switch_phases = API.get_unchecked('evse/hardware_configuration')?.evse_version >= 30;
+        }
+
         let debug_mode = API.hasModule("debug");
 
         return (
@@ -361,17 +370,18 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
                 <ConfigForm id="power_manager_config_form" title={__("power_manager.content.page_header")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
 
                     <FormSeparator heading={__("power_manager.content.header_phase_switching")} first={true} />
-                    <FormRow label={__("power_manager.content.contactor_installed")}>
+
+                    <FormRow label={__("power_manager.content.contactor_installed")} hidden={!API.hasFeature("energy_manager")}>
                         <Switch desc={__("power_manager.content.contactor_installed_desc")}
-                                checked={s.contactor_installed}
-                                onClick={() => this.setState({contactor_installed: !this.state.contactor_installed})} // input4_rule_then setting inverted because it checks the not-yet-toggled state of contactor_installed.
+                                checked={this.state.em_contactor_installed}
+                                onClick={() => this.setState({em_contactor_installed: !this.state.em_contactor_installed})}
                         />
                     </FormRow>
 
                     <FormRow label={__("power_manager.content.phase_switching_mode")}>
                         <InputSelect
                             required
-                            items={s.contactor_installed ? [
+                            items={can_switch_phases ? [
                                 ["0", __("power_manager.content.automatic")],
                                 ["1", __("power_manager.content.always_single_phase")],
                                 ["2", __("power_manager.content.always_three_phases")],
