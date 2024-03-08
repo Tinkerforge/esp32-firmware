@@ -79,19 +79,42 @@ void RemoteAccess::pre_setup() {
 
             return "";
         }};
+
+    remote_connection_config = ConfigRoot {
+        Config::Object({
+            {"connections", Config::Array({},
+                new Config{
+                    Config::Object({
+                        {"internal_ip",      Config::Str("0.0.0.0", 7, 15)},
+                        {"internal_subnet",  Config::Str("0.0.0.0", 7, 15)},
+                        {"internal_gateway", Config::Str("0.0.0.0", 7, 15)},
+
+                        {"remote_internal_ip", Config::Str("0.0.0.0", 7, 15)},
+                        {"remote_host", Config::Str("", 0, 64)},
+                        {"remote_port", Config::Uint16(51820)},
+
+                        {"local_port", Config::Uint16(51820)},
+
+                        {"private_key",       Config::Str("", 0, 44)},
+                        {"remote_public_key", Config::Str("", 0, 44)},
+                    })
+                }, 5, 5, Config::type_id<Config::ConfObject>())
+            }
+        })
+    };
+
 }
 
 void RemoteAccess::setup() {
     api.restorePersistentConfig("remote_access/config", &config);
     api.restorePersistentConfig("remote_access/management_connection", &management_connection);
+    api.restorePersistentConfig("remote_access/remote_connection_config", &remote_connection_config);
     initialized = true;
 
     if (!config.get("enable")->asBool())
         return;
 
     logger.printfln("Remote Access is enabled trying to connect");
-
-
 }
 
 void RemoteAccess::register_urls() {
@@ -101,6 +124,10 @@ void RemoteAccess::register_urls() {
     api.addPersistentConfig("remote_access/management_connection", &management_connection, {
         "private_key",
         "remote_public_key",
+    });
+
+    api.addPersistentConfig("remote_access/remote_connection_config", &remote_connection_config, {
+        "private_key"
     });
 
     api.addCommand("remote_access/test", Config::Null(), {}, [this]() {
@@ -114,6 +141,12 @@ void RemoteAccess::register_urls() {
         logger.printfln("bla");
         this->login();
         this->resolve_management();
+    }, true);
+    api.addCommand("remote_access/test2", Config::Null(), {}, [this]() {
+        logger.printfln("asd");
+        for (size_t i = 0; i < 5; i++) {
+            this->connect_remote_access(i);
+        }
     }, true);
 }
 
@@ -219,8 +252,6 @@ void RemoteAccess::resolve_management() {
     CoolString management_data = "{\"id\":\"";
     management_data += String(local_uid_str) + "\"}";
 
-    logger.printfln("data: %s", management_data.c_str());
-
     esp_err_t ret = esp_http_client_set_post_field(client, management_data.c_str(), management_data.length());
     if (ret != ESP_OK) {
         logger.printfln("Failed to set post data: %i", ret);
@@ -259,8 +290,6 @@ void RemoteAccess::connect_management() {
     IPAddress allowed_subnet;
     uint16_t local_port;
 
-    printf("%s\n", management_connection.to_string().c_str());
-
     internal_ip.fromString(management_connection.get("internal_ip")->asEphemeralCStr());
     internal_subnet.fromString(management_connection.get("internal_subnet")->asEphemeralCStr());
     internal_gateway.fromString(management_connection.get("internal_gateway")->asEphemeralCStr());
@@ -290,7 +319,45 @@ void RemoteAccess::connect_management() {
         bool up = management.is_peer_up(nullptr, nullptr);
 
         if (up) {
-            logger.printfln("Bla");
         }
     }, 1000, 1000);
+}
+
+void RemoteAccess::connect_remote_access(uint8_t i) {
+    const Config *conf = static_cast<Config *>(remote_connection_config.get("connections")->get(i));
+
+    struct timeval tv;
+    if (!clock_synced(&tv))
+        return;
+
+    IPAddress internal_ip;
+    IPAddress internal_subnet;
+    IPAddress internal_gateway;
+    IPAddress allowed_ip;
+    IPAddress allowed_subnet;
+    uint16_t local_port;
+
+    internal_ip.fromString(conf->get("internal_ip")->asEphemeralCStr());
+    internal_subnet.fromString(conf->get("internal_subnet")->asEphemeralCStr());
+    internal_gateway.fromString(conf->get("internal_gateway")->asEphemeralCStr());
+    allowed_ip.fromString("0.0.0.0");
+    allowed_subnet.fromString("0.0.0.0");
+    local_port = conf->get("local_port")->asUint();
+
+    String private_key = conf->get("private_key")->asString(); // Local copy of ephemeral conf String. The network interface created by WG might hold a reference to the C string.
+    String remote_host = conf->get("remote_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
+
+
+    remote_connections[i].begin(internal_ip,
+             internal_subnet,
+             local_port,
+             internal_gateway,
+             private_key.c_str(),
+             remote_host.c_str(),
+             conf->get("remote_public_key")->asEphemeralCStr(),
+             conf->get("remote_port")->asUint(),
+             allowed_ip,
+             allowed_subnet,
+             false,
+             nullptr);
 }
