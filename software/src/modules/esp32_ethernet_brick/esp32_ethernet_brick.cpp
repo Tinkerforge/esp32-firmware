@@ -42,7 +42,7 @@
 #endif
 
 #define GREEN_LED 2
-#define BLUE_LED_WARP_ESP32_ETHERNET 2
+#define BLUE_LED_WARP_ESP32_ETHERNET_BRICK 2
 #define BLUE_LED_ESP32_ETHERNET_BRICK 15
 #define BUTTON 0
 
@@ -147,7 +147,7 @@ void ESP32EthernetBrick::pre_init()
     button_pin = BUTTON;
 
 #if defined(BUILD_NAME_WARP3)
-        blue_led_pin = BLUE_LED_WARP_ESP32_ETHERNET;
+        blue_led_pin = BLUE_LED_WARP_ESP32_ETHERNET_BRICK;
         // green LED is connected directly to 3.3 V
 #else
         blue_led_pin = BLUE_LED_ESP32_ETHERNET_BRICK;
