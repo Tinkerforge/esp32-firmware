@@ -119,7 +119,6 @@ public:
     char scan_common_manufacturer_name[32 + 1];
     char scan_common_model_name[32 + 1];
     char scan_common_serial_number[32 + 1];
-    uint16_t scan_common_device_address;
 };
 
 #if defined(__GNUC__)
