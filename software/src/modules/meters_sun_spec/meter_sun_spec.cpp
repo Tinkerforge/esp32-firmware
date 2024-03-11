@@ -51,6 +51,7 @@ void MeterSunSpec::setup(const Config &ephemeral_config)
     model_name        = ephemeral_config.get("model_name")->asString();
     serial_number     = ephemeral_config.get("serial_number")->asString();
     model_id          = static_cast<uint16_t>(ephemeral_config.get("model_id")->asUint());
+    model_instance    = static_cast<uint16_t>(ephemeral_config.get("model_instance")->asUint());
 
     model_parser = MetersSunSpecParser::new_parser(slot, model_id);
     if (!model_parser) {
@@ -161,6 +162,7 @@ void MeterSunSpec::scan_start()
     scan_state_next = ScanState::ReadSunSpecID;
     scan_deserializer.buf = buffer;
     scan_device_found = false;
+    scan_model_counter = model_instance;
 
     generic_read_request.register_type = TAddress::RegType::HREG;
     generic_read_request.start_address = scan_base_addresses[scan_base_address_index];
@@ -228,14 +230,26 @@ void MeterSunSpec::scan_next()
                 size_t block_length = scan_deserializer.read_uint16();
 
                 if (scan_model_id == NON_IMPLEMENTED_UINT16 && block_length == 0) {
-                    logger.printfln("meter_sun_spec: Configured SunSpec model %u not found at %s:%u:%u", model_id, host_name.c_str(), port, device_address);
+                    logger.printfln("meter_sun_spec: Configured SunSpec model %u/%u not found at %s:%u:%u",
+                                    model_id, model_instance, host_name.c_str(), port, device_address);
                     scan_start_delay();
                 }
                 else if (scan_device_found && scan_model_id == model_id) {
-                    scan_state_next = ScanState::Idle;
+                    if (scan_model_counter > 0) {
+                        --scan_model_counter;
 
-                    logger.printfln("meter_sun_spec: Configured SunSpec model %u found at %s:%u:%u:%u", model_id, host_name.c_str(), port, device_address, generic_read_request.start_address);
-                    read_start(generic_read_request.start_address, 2 + block_length);
+                        generic_read_request.start_address += generic_read_request.register_count + block_length;
+                        generic_read_request.register_count = 2;
+
+                        start_generic_read();
+                    }
+                    else {
+                        scan_state_next = ScanState::Idle;
+
+                        logger.printfln("meter_sun_spec: Configured SunSpec model %u/%u found at %s:%u:%u:%u",
+                                        model_id, model_instance, host_name.c_str(), port, device_address, generic_read_request.start_address);
+                        read_start(generic_read_request.start_address, 2 + block_length);
+                    }
                 }
                 else if (scan_model_id == 1) { // Common model
                     generic_read_request.register_count = 67;

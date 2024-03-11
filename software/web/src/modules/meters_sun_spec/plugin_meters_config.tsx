@@ -45,6 +45,7 @@ export type SunSpecMetersConfig = [
         model_name: string;
         serial_number: string;
         model_id: number;
+        model_instance: number;
     },
 ];
 
@@ -56,6 +57,7 @@ interface DeviceScannerResult {
     serial_number: string;
     device_address: number;
     model_id: number;
+    model_instance: number;
 }
 
 interface DeviceScannerProps {
@@ -118,7 +120,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             // this combination must be unique according to sunspec specification
             let unique_id = scan_result.manufacturer_name + scan_result.model_name + scan_result.serial_number;
 
-            if (this.state.scan_results.filter((other) => other.unique_id == unique_id && other.model_id == scan_result.model_id).length == 0) {
+            if (this.state.scan_results.filter((other) => other.unique_id == unique_id && other.model_id == scan_result.model_id && other.model_instance == scan_result.model_instance).length == 0) {
                 this.setState({scan_results: this.state.scan_results.concat({
                     unique_id: unique_id,
                     manufacturer_name: scan_result.manufacturer_name,
@@ -127,6 +129,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                     serial_number: scan_result.serial_number,
                     device_address: scan_result.device_address,
                     model_id: scan_result.model_id,
+                    model_instance: scan_result.model_instance,
                 })});
             }
         });
@@ -213,7 +216,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             <div class="d-flex w-100 justify-content-between">
                 <span class="text-left">{__("meters_sun_spec.content.config_device_address")}: {scan_result.device_address}</span>
                 <span class="text-center">{__("meters_sun_spec.content.config_serial_number")}: {scan_result.serial_number}</span>
-                <span class="text-right">{__("meters_sun_spec.content.config_model_id") + ": " + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)}</span>
+                <span class="text-right">{__("meters_sun_spec.content.config_model_id")}: {translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)} / {scan_result.model_instance}</span>
             </div>
         </ListGroupItem>;
     }
@@ -386,6 +389,7 @@ export function init() {
                             model_name: result.model_name,
                             serial_number: result.serial_number,
                             model_id: result.model_id,
+                            model_instance: result.model_instance,
                         }));
                     }} />
                     <hr/>
@@ -444,6 +448,16 @@ export function init() {
                             value={util.hasValue(config[1].model_id) ? config[1].model_id.toString() : config[1].model_id}
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {model_id: parseInt(v)}));
+                            }} />
+                    </FormRow>
+                    <FormRow label={__("meters_sun_spec.content.config_model_instance")}>
+                        <InputNumber
+                            required
+                            min={0}
+                            max={65535}
+                            value={config[1].model_instance}
+                            onValue={(v) => {
+                                on_config(util.get_updated_union(config, {model_instance: v}));
                             }} />
                     </FormRow>
                 </>];

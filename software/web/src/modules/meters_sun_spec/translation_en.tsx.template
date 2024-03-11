@@ -19,6 +19,7 @@ let x = {
             "config_unique_id_muted": "optional; manufacturer, model, serial number",
             "config_model_id": "Model",
             "config_model_id_select": "Select...",
+            "config_model_instance": "Model instance",
 
             "scan_title": "Device search",
             "scan": "Start search",

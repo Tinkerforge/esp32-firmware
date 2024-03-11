@@ -19,6 +19,7 @@ let x = {
             "config_unique_id_muted": "optional; Hersteller, Modell, Seriennummer",
             "config_model_id": "Modell",
             "config_model_id_select": "Auswählen...",
+            "config_model_instance": "Modellinstanz",
 
             "scan_title": "Gerätesuche",
             "scan": "Suche starten",

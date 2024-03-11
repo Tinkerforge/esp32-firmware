@@ -24,6 +24,7 @@ export interface scan_result {
     serial_number: string;
     device_address: number;
     model_id: number;
+    model_instance: number;
 }
 
 export interface scan_done {
