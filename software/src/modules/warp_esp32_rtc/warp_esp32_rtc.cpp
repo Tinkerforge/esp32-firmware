@@ -29,6 +29,8 @@
 
 #include "gcc_warnings.h"
 
+#define I2C_RTC_ADDRESS 0b1101000
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 // portTICK_PERIOD_MS expands to an old style cast.
@@ -55,9 +57,6 @@ static uint8_t rtc_write_time_write_buf[8] = {};
 
 void WarpEsp32Rtc::setup()
 {
-    if (!esp32_ethernet_brick.is_warp_esp_ethernet_brick)
-        return;
-
     rtc_cmd_handle = i2c_master_prepare_write_read_device(I2C_RTC_ADDRESS,
                                          rtc_cmd_buf, ARRAY_SIZE(rtc_cmd_buf),
                                          rtc_write_buf, ARRAY_SIZE(rtc_write_buf),
@@ -76,7 +75,7 @@ void WarpEsp32Rtc::setup()
         ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0x02, 1));
         ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0b00000000, 1));
         ESP_ERROR_CHECK(i2c_master_stop(cmd));
-        auto errRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, i2c_timeout);
+        auto errRc = i2c_master_cmd_begin(I2C_MASTER_PORT, cmd, i2c_timeout);
         i2c_cmd_link_delete(cmd);
         if (errRc != 0) {
             logger.printfln("RTC write control reg failed: %d", errRc);
@@ -103,7 +102,7 @@ void WarpEsp32Rtc::set_time(const tm &date_time)
     rtc_write_time_write_buf[7] = intToBCD(static_cast<uint8_t>(date_time.tm_year - 100));
 
     esp_err_t errRc;
-    errRc = i2c_master_cmd_begin(I2C_NUM_0, rtc_write_time_cmd_handle, i2c_timeout);
+    errRc = i2c_master_cmd_begin(I2C_MASTER_PORT, rtc_write_time_cmd_handle, i2c_timeout);
     if (errRc != 0) {
         logger.printfln("RTC write failed: %d", errRc);
     }
@@ -115,7 +114,7 @@ struct timeval WarpEsp32Rtc::get_time()
     time.tv_sec = 0;
     time.tv_usec = 0;
 
-    auto ret = i2c_master_cmd_begin(I2C_NUM_0, rtc_cmd_handle, i2c_timeout);
+    auto ret = i2c_master_cmd_begin(I2C_MASTER_PORT, rtc_cmd_handle, i2c_timeout);
 
     if (ret != ESP_OK) {
         return time;
@@ -154,7 +153,7 @@ void WarpEsp32Rtc::reset()
     // For a software reset, 01011000 (58h) must be sent to register Control_1
     ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0b01011000, 1));
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
-    auto errRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, i2c_timeout);
+    auto errRc = i2c_master_cmd_begin(I2C_MASTER_PORT, cmd, i2c_timeout);
     if (errRc != 0) {
         logger.printfln("RTC write control reg failed: %d", errRc);
     }

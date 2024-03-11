@@ -46,12 +46,6 @@
 #define BLUE_LED_ESP32_ETHERNET_BRICK 15
 #define BUTTON 0
 
-#define I2C_MASTER_SCL_IO 4
-#define I2C_MASTER_SDA_IO 15
-#define I2C_MASTER_NUM 0
-#define I2C_MASTER_TIMEOUT_MS 1000
-#define I2C_TMP1075N_TIMEOUT_MS 1000
-
 TF_HAL hal;
 extern uint32_t local_uid_num;
 extern char local_uid_str[32];
@@ -133,55 +127,34 @@ static void check_for_factory_reset()
 }
 #endif
 
-void ESP32EthernetBrick::initI2C()
-{
-    i2c_config_t conf;
-    memset(&conf, 0, sizeof(i2c_config_t));
-    conf.mode = I2C_MODE_MASTER;
-    conf.sda_io_num = I2C_MASTER_SDA_IO;
-    conf.scl_io_num = I2C_MASTER_SCL_IO;
-    conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
-    conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-    conf.master.clk_speed = 100000;
-
-    i2c_param_config(I2C_MASTER_NUM, &conf);
-    i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
-}
-
 bool ESP32EthernetBrick::initHAL()
 {
-    int result = tf_hal_create(&hal, this->is_warp_esp_ethernet_brick ? 4 : 6);
+#if defined(BUILD_NAME_WARP3)
+    uint8_t ports = 4;
+#else
+    uint8_t ports = 6;
+#endif
+
+    int result = tf_hal_create(&hal, ports);
     if (result != TF_E_OK)
         return false;
     tf_hal_set_timeout(&hal, 100000);
     return true;
 }
 
-static uint8_t tmp_cmd_buf[I2C_LINK_RECOMMENDED_SIZE(2)] = {};
-static uint8_t tmp_read_buf[2] = {};
-
 void ESP32EthernetBrick::pre_init()
 {
-    initI2C();
-
-    auto tmp_cmd_handle = i2c_master_prepare_write_read_device(I2C_TMP1075N_ADDR,
-                                         tmp_cmd_buf, ARRAY_SIZE(tmp_cmd_buf),
-                                         nullptr, 0,
-                                         tmp_read_buf, ARRAY_SIZE(tmp_read_buf));
-    int ret = i2c_master_cmd_begin(I2C_NUM_0, tmp_cmd_handle, I2C_TMP1075N_TIMEOUT_MS  / portTICK_PERIOD_MS);
-    this->is_warp_esp_ethernet_brick = ret == ESP_OK;
-
     button_pin = BUTTON;
 
-    if (this->is_warp_esp_ethernet_brick) {
+#if defined(BUILD_NAME_WARP3)
         blue_led_pin = BLUE_LED_WARP_ESP32_ETHERNET;
         // green LED is connected directly to 3.3 V
-    } else {
+#else
         blue_led_pin = BLUE_LED_ESP32_ETHERNET_BRICK;
 
         green_led_pin = GREEN_LED;
         pinMode(green_led_pin, OUTPUT);
-    }
+#endif
 
     pinMode(blue_led_pin, OUTPUT);
     pinMode(button_pin, INPUT);
@@ -190,7 +163,11 @@ void ESP32EthernetBrick::pre_init()
 void ESP32EthernetBrick::setup()
 {
     read_efuses(&local_uid_num, local_uid_str, passphrase);
-    logger.printfln("%sESP32 Ethernet Brick UID: %s", this->is_warp_esp_ethernet_brick ? "WARP " : "", local_uid_str);
+#if defined(BUILD_NAME_WARP3)
+    logger.printfln("WARP ESP32 Ethernet Brick UID: %s", local_uid_str);
+#else
+    logger.printfln("ESP32 Ethernet Brick UID: %s", local_uid_str);
+#endif
 
 #if defined(BUILD_NAME_ENERGY_MANAGER) && MODULE_FIRMWARE_UPDATE_AVAILABLE()
     check_for_factory_reset();
