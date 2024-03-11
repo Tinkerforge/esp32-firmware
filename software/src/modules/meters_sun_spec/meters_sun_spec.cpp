@@ -486,10 +486,13 @@ void MetersSunSpec::loop()
         }
 
         if (scan_read_result == Modbus::ResultCode::EX_SUCCESS) {
+            char options[16 + 1];
+            char version[16 + 1];
+
             scan_deserializer.read_string(scan_common_manufacturer_name, sizeof(scan_common_manufacturer_name));
             scan_deserializer.read_string(scan_common_model_name, sizeof(scan_common_model_name));
-            scan_deserializer.read_string(scan_common_options, sizeof(scan_common_options));
-            scan_deserializer.read_string(scan_common_version, sizeof(scan_common_version));
+            scan_deserializer.read_string(options, sizeof(options));
+            scan_deserializer.read_string(version, sizeof(version));
             scan_deserializer.read_string(scan_common_serial_number, sizeof(scan_common_serial_number));
 
             uint16_t device_address = scan_deserializer.read_uint16();
@@ -502,8 +505,8 @@ void MetersSunSpec::loop()
                           "  Device Address: %u",
                           scan_common_manufacturer_name,
                           scan_common_model_name,
-                          scan_common_options,
-                          scan_common_version,
+                          options,
+                          version,
                           scan_common_serial_number,
                           device_address);
 
@@ -600,8 +603,6 @@ void MetersSunSpec::loop()
             json.addMemberNumber("cookie", scan_cookie);
             json.addMemberString("manufacturer_name", scan_common_manufacturer_name);
             json.addMemberString("model_name", scan_common_model_name);
-            json.addMemberString("options", scan_common_options);
-            json.addMemberString("version", scan_common_version);
             json.addMemberString("serial_number", scan_common_serial_number);
             json.addMemberNumber("device_address", scan_device_address);
             json.addMemberNumber("model_id", scan_model_id);

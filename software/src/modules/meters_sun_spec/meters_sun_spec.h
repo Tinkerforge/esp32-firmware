@@ -118,8 +118,6 @@ public:
     micros_t scan_printfln_last_flush = 0_usec;
     char scan_common_manufacturer_name[32 + 1];
     char scan_common_model_name[32 + 1];
-    char scan_common_options[16 + 1];
-    char scan_common_version[16 + 1];
     char scan_common_serial_number[32 + 1];
     uint16_t scan_common_device_address;
 };

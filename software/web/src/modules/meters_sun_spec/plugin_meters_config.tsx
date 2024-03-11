@@ -53,8 +53,6 @@ interface DeviceScannerResult {
     manufacturer_name: string;
     model_name: string;
     display_name: string;
-    options: string;
-    version: string;
     serial_number: string;
     device_address: number;
     model_id: number;
@@ -126,8 +124,6 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                     manufacturer_name: scan_result.manufacturer_name,
                     model_name: scan_result.model_name,
                     display_name: scan_result.model_name.startsWith(scan_result.manufacturer_name) ? scan_result.model_name.trim() : scan_result.manufacturer_name.trim() + ' ' + scan_result.model_name.trim(),
-                    options: scan_result.options,
-                    version: scan_result.version,
                     serial_number: scan_result.serial_number,
                     device_address: scan_result.device_address,
                     model_id: scan_result.model_id,

@@ -21,8 +21,6 @@ export interface scan_result {
     cookie: number;
     manufacturer_name: string;
     model_name: string;
-    options: string;
-    version: string;
     serial_number: string;
     device_address: number;
     model_id: number;
