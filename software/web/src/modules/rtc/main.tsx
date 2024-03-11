@@ -71,12 +71,6 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
         });
     }
 
-    add_leading_zero(i: number) {
-        if (i > 9)
-            return i.toString();
-        return '0' + i.toString();
-    }
-
     set_current_time() {
         let date = new Date();
         let time: RTCTime = {
@@ -111,11 +105,11 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
                         </FormRow>
                         <FormRow label={__("rtc.content.live_date")}>
                             <OutputDatetime date={new Date(state.state.year.toString()+ "-" +
-                                                        this.add_leading_zero(state.state.month) + "-" +
-                                                        this.add_leading_zero(state.state.day) + "T" +
-                                                        this.add_leading_zero(state.state.hour) + ":" +
-                                                        this.add_leading_zero(state.state.minute) + ":" +
-                                                        this.add_leading_zero(state.state.second) + ".000Z")}
+                                                        util.leftPad(state.state.month, 0, 2) + "-" +
+                                                        util.leftPad(state.state.day, 0, 2) + "T" +
+                                                        util.leftPad(state.state.hour, 0, 2) + ":" +
+                                                        util.leftPad(state.state.minute, 0, 2) + ":" +
+                                                        util.leftPad(state.state.second, 0, 2) + ".000Z")}
                                             onClick={() => this.set_current_time()}
                                             buttonText={__("rtc.content.set_time")}
                                             disabled={this.state.auto_sync}/>

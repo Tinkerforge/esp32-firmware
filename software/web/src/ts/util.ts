@@ -611,14 +611,10 @@ export function get_updated_union<T extends object>(union: [number, T], update: 
 }
 
 export function toIsoString(date: Date) {
-    const pad = function(num: number) {
-        return (num < 10 ? '0' : '') + num;
-    };
-
     return date.getFullYear() +
-        '-' + pad(date.getMonth() + 1) +
-        '-' + pad(date.getDate()) +
-        'T' + pad(date.getHours()) +
-        ':' + pad(date.getMinutes()) +
-        ':' + pad(date.getSeconds());
+        '-' + leftPad(date.getMonth() + 1, 0, 2) +
+        '-' + leftPad(date.getDate(), 0, 2) +
+        'T' + leftPad(date.getHours(), 0, 2) +
+        ':' + leftPad(date.getMinutes(), 0, 2) +
+        ':' + leftPad(date.getSeconds(), 0, 2);
 }
