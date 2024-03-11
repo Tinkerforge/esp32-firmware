@@ -35,40 +35,19 @@ export function RtcNavbar() {
 }
 
 type RTCTime = API.getType['rtc/time'];
-type RTCConfig = API.getType['rtc/config'];
 
-interface RtcPageState {
-    state: RTCTime;
-}
-
-export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
+export class Rtc extends ConfigComponent<'rtc/config'> {
     constructor() {
         super('rtc/config',
               __("rtc.script.save_failed"),
               __("rtc.script.reboot_content_changed"));
 
-        util.addApiEventListener("rtc/time", () => {
-            let time = API.get("rtc/time");
-
-            if (!this.state.state) {
-                window.setTimeout(() => {
-                    if (API.get("rtc/config").auto_sync && !API.get("ntp/state").synced)
-                        this.set_current_time();
-                }, 1000);
-            }
-
-            this.setState({
-                state: {
-                    year: time.year,
-                    month: time.month,
-                    day: time.day,
-                    hour: time.hour,
-                    minute: time.minute,
-                    second: time.second,
-                    weekday: time.weekday,
-                },
-            });
-        });
+        window.setTimeout(() => {
+                if (util.render_allowed() && API.get("rtc/config").auto_sync && !API.get("ntp/state").synced) {
+                    this.set_current_time();
+                }
+            },
+            1000);
     }
 
     set_current_time() {
@@ -86,9 +65,15 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
         API.save("rtc/time", time, __("rtc.script.save_failed"));
     }
 
-    render(props: {}, state: RTCConfig & RtcPageState) {
+    render(props: {}, state: API.getType['rtc/config']) {
+        const p = (i: number) => util.leftPad(i, 0, 2);
+
         if (!util.render_allowed() || !API.hasFeature("rtc"))
             return <></>
+
+        let t = API.get('rtc/time');
+        let date = new Date(
+            `20${p(t.year)}-${p(t.month)}-${p(t.day)}T${p(t.hour)}:${p(t.minute)}:${p(t.second)}.000Z`);
 
         return <SubPage name="rtc">
                     <ConfigForm id="rtc_config_form"
@@ -104,15 +89,11 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
                             }}/>
                         </FormRow>
                         <FormRow label={__("rtc.content.live_date")}>
-                            <OutputDatetime date={new Date(state.state.year.toString()+ "-" +
-                                                        util.leftPad(state.state.month, 0, 2) + "-" +
-                                                        util.leftPad(state.state.day, 0, 2) + "T" +
-                                                        util.leftPad(state.state.hour, 0, 2) + ":" +
-                                                        util.leftPad(state.state.minute, 0, 2) + ":" +
-                                                        util.leftPad(state.state.second, 0, 2) + ".000Z")}
+                            <OutputDatetime date={date}
                                             onClick={() => this.set_current_time()}
                                             buttonText={__("rtc.content.set_time")}
-                                            disabled={this.state.auto_sync}/>
+                                            disabled={this.state.auto_sync}
+                                            invalidDateText={__("rtc.content.time_not_set")}/>
                         </FormRow>
                     </ConfigForm>
                 </SubPage>

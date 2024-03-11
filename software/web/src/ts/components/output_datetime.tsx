@@ -29,19 +29,29 @@ interface OutputDatetimeProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputE
     onClick?: () => void;
     buttonText?: string;
     disabled?: boolean;
+    invalidDateText?: string;
 }
 
 export function OutputDatetime(props: OutputDatetimeProps) {
     const id = !props.idContext ? util.useId() : useContext(props.idContext);
 
     let inner = <input class={"form-control " + props.className}
-                id={id}
-                type="datetime-local"
-                step={1}
-                disabled={true}
-                value={util.toIsoString(props.date)}
-                required
-                />
+                    id={id}
+                    type="datetime-local"
+                    step={1}
+                    disabled={true}
+                    value={util.toIsoString(props.date)}
+                    required
+                    />;
+
+    if (isNaN(props.date.getTime()) && props.invalidDateText)
+        inner = <input class={"form-control " + props.className}
+            id={id}
+            type="text"
+            disabled={true}
+            value={props.invalidDateText}
+            required
+            />;
 
     if (!props.onClick)
         return inner;
