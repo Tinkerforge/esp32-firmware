@@ -1,2 +1,2 @@
-2022-01-01: 2.0.0 (<unknown>)
+<unknown>: 2.0.0 (<unknown>)
 - Initial release
