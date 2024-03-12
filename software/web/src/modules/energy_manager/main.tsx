@@ -366,7 +366,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {sta
 
     render(props: {}, s: Readonly<API.getType['energy_manager/config'] & API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}>) {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
-            return <></>
+            return <SubPage name="energy_manager" />;
 
         let mode_list: StringStringTuple[] = [];
 

@@ -65,7 +65,7 @@ export class NTP extends ConfigComponent<'ntp/config', {status_ref?: RefObject<N
 
     render(props: {}, state: Readonly<NTPConfig>) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="ntp" />;
 
         let splt = state.timezone.split("/");
 

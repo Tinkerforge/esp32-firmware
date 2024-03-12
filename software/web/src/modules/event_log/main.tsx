@@ -224,7 +224,7 @@ export class EventLog extends Component<{}, EventLogState> {
 
     render(props: {}, state: Readonly<EventLogState>) {
         if (!util.render_allowed())
-            return (<></>);
+            return <SubPage name="event_log" />;
 
         return (
             <SubPage name="event_log">

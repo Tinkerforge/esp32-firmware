@@ -56,7 +56,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
 
     render(props: {}, state: Readonly<WireguardConfig>) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="wireguard" />;
 
         return (
             <SubPage name="wireguard">

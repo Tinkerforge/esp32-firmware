@@ -326,7 +326,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
     override render(props: {}, state: UsersConfig & UsersState & ConfigComponentState) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="users" />;
 
         const MAX_ACTIVE_USERS = API.hasModule("esp32_ethernet_brick") ? 33 : 17;
 

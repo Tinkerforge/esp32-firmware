@@ -47,7 +47,7 @@ export class Co2Ampel extends ConfigComponent<"co2ampel/config"> {
 
     render(props: {}, state: Readonly<Co2AmpelConfig>) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="co2ampel" />;
 
         return (
             <SubPage name="co2ampel">

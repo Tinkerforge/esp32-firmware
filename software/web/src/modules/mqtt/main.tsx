@@ -78,7 +78,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
 
     render(props: {}, state: Readonly<MqttConfig & MqttState>) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="mqtt" />;
 
         let default_ports = [1883, 8883, 80, 443];
 

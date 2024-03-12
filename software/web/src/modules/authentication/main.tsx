@@ -55,7 +55,7 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
 
     override render(props: {}, state: AuthenticationState) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="authentication" />;
 
         let user_required = state.enable_auth || state.digest_hash != "";
         let pass_required = (state.enable_auth && !API.get("authentication/config").enable_auth) || (state.username != API.get("authentication/config").username);

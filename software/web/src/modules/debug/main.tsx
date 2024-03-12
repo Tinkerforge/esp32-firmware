@@ -39,7 +39,7 @@ export function DebugNavbar() {
 export class Debug extends Component {
     render() {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="debug" />;
 
         let state_static = API.get('debug/state_static');
         let state_fast   = API.get('debug/state_fast');

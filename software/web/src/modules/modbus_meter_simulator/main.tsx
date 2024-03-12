@@ -43,7 +43,7 @@ export class ModbusMeterSimulator extends ConfigComponent<'modbus_meter_simulato
 
     render(props: {}, s: Readonly<API.getType['modbus_meter_simulator/config']>) {
         if (!util.render_allowed())
-            return <></>;
+            return <SubPage name="modbus_meter_simulator" />;
 
         let meter_names: [string, string][] = [];
         for (let i = 0; i < METERS_SLOTS; i++) {

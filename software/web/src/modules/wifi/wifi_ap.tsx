@@ -56,7 +56,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
 
     override render(props: {}, state: Readonly<APConfig & WifiAPState>) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="wifi-ap" />;
 
         return (
             <SubPage name="wifi-ap">

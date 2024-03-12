@@ -83,7 +83,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
 
     render(props: {}, state: OcppConfig & OcppState) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="ocpp" />;
 
         let ocpp_debug = API.hasFeature("ocpp_debug");
         let msg_in_flight = state.state.message_in_flight_id_high != 0 || state.state.message_in_flight_id_low != 0;

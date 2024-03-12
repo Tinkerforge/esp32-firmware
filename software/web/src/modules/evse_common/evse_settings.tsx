@@ -153,7 +153,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
 
     render(props: {}, s: EVSESettingsState & ChargeLimitsConfig) {
         if (!util.render_allowed() || !API.hasFeature("evse"))
-            return <></>;
+            return <SubPage name="evse-settings" />;
 
         let {
             button_cfg,

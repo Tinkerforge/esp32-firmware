@@ -48,7 +48,7 @@ let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
 export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
     override render(props: {}, s: {}) {
         if (!util.render_allowed() || !API.hasFeature("evse"))
-            return (<></>);
+            return <SubPage name="evse" />;
 
         let state = API.get('evse/state');
         let ll_state = API.get('evse/low_level_state');

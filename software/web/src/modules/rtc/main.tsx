@@ -66,11 +66,10 @@ export class Rtc extends ConfigComponent<'rtc/config'> {
     }
 
     render(props: {}, state: API.getType['rtc/config']) {
-        const p = (i: number) => util.leftPad(i, 0, 2);
-
         if (!util.render_allowed() || !API.hasFeature("rtc"))
-            return <></>
+            return <SubPage name="rtc" />;
 
+        const p = (i: number) => util.leftPad(i, 0, 2);
         let t = API.get('rtc/time');
         let date = new Date(
             `20${p(t.year)}-${p(t.month)}-${p(t.day)}T${p(t.hour)}:${p(t.minute)}:${p(t.second)}.000Z`);

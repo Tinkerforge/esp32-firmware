@@ -84,7 +84,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
 
     render(props: {}, state: NFCConfig & NFCState) {
         if (!util.render_allowed() || !API.hasFeature("nfc"))
-            return <></>
+            return <SubPage name="nfc" />;
 
         const MAX_AUTHORIZED_TAGS = API.hasModule("esp32_ethernet_brick") ? 32 : 16;
 

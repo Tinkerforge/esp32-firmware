@@ -20,7 +20,7 @@
 import { ComponentChildren, h, toChildArray } from "preact";
 
 interface SubPageProps {
-    children: ComponentChildren;
+    children?: ComponentChildren;
     name: string;
     colClasses?: string;
 }

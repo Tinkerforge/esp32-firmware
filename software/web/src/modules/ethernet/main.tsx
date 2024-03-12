@@ -59,7 +59,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
 
     render(props: {}, state: Readonly<EthernetConfig>) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="ethernet" />;
 
         return (
             <SubPage name="ethernet">

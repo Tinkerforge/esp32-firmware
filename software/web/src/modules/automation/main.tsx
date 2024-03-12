@@ -203,7 +203,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
 
     render(props: {}, state: AutomationState) {
         if (!util.render_allowed())
-            return <></>;
+            return <SubPage name="automation" />;
 
         return <SubPage name="automation">
              <ConfigForm

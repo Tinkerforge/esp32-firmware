@@ -223,7 +223,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {sta
 
     render(props: {}, state: ChargeManagerConfig & ChargeManagerState) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="charge_manager" />;
 
         const MAX_CONTROLLED_CHARGERS = API.hasModule("esp32_ethernet_brick") ? 32 : 10;
 

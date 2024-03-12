@@ -74,7 +74,7 @@ export class ModbusTcp extends ConfigComponent<'modbus_tcp/config', {}, config> 
 
     render(props: {}, state: ModbusTcpConfig & config) {
         if (!util.render_allowed())
-            return (<></>);
+            return <SubPage name="modbus_tcp" />;
 
         let docu = <CollapsedSection label={__("modbus_tcp.content.table_docu")}>
             <table class="table table-bordered table-sm">

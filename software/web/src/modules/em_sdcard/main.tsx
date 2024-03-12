@@ -37,7 +37,7 @@ export function EMSDcardNavbar() {
 export class EMSDcard extends Component {
     render() {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
-            return <></>;
+            return <SubPage name="em_sdcard" />;
 
         let state = API.get('energy_manager/sdcard_state');
 

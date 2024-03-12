@@ -95,7 +95,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
 
     render(props: {}, state: Readonly<FirmwareUpdateConfig>) {
         if (!util.render_allowed())
-            return (<></>);
+            return <SubPage name="flash" />;
 
         // TODO: why not use the charge tracker module here?
         let show_config_reset = false;

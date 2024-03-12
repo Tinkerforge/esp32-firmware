@@ -46,7 +46,7 @@ export class Network extends ConfigComponent<'network/config'> {
 
     render(props: {}, state: Readonly<NetworkConfig>) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="network" />;
 
         return (
             <SubPage name="network">

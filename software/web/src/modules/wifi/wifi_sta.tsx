@@ -356,7 +356,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
 
     render(props: {}, state: Readonly<STAConfig & WifiSTAState>) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="wifi-sta" />;
 
         return (
             <SubPage name="wifi-sta">

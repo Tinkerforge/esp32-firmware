@@ -959,9 +959,8 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
     }
 
     render(props: {}, state: Readonly<MetersState>) {
-        if (!util.render_allowed()) {
-            return <></>;
-        }
+        if (!util.render_allowed())
+            return <SubPage name="meters" />;
 
         let active_meter_slots = Object.keys(state.configs_table).filter((meter_slot_str) => state.configs_table[parseInt(meter_slot_str)][0] != MeterClassID.None);
         let show_plot = API.hasFeature("meters");

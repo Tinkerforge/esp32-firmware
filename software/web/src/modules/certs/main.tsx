@@ -44,7 +44,7 @@ const MAX_CERT_SIZE = 4027;
 export class Certs extends Component<{}, State> {
     render(props: {}, state: Readonly<State>) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="certs" />;
 
         return (
             <SubPage name="certs">

@@ -283,7 +283,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
     render(props: {}, state: Readonly<ChargeTrackerState> & ChargeTrackerConfig) {
         if (!util.render_allowed())
-            return <></>
+            return <SubPage name="charge_tracker" />;
 
         return (
             <SubPage name="charge_tracker">
