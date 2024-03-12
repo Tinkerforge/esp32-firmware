@@ -298,6 +298,7 @@ void MeterSunSpec::scan_next()
                     if (scan_device_found) {
                         if (strncmp(m->Mn, "KOSTAL", 32) == 0) {
                             quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
+                            quirks |= SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY;
                         } else if (strncmp(m->Mn, "SMA", 32) == 0) {
                             if (model_id >= 100 && model_id < 200) {
                                 quirks |= SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16;
@@ -305,7 +306,7 @@ void MeterSunSpec::scan_next()
                         }
 
                         if (quirks) {
-                            logger.printfln("meter_sun_spec: Enabling quirks mode 0x%x for %.*s device.", quirks, static_cast<int>(strnlen(m->Mn, 32)), m->Mn);
+                            logger.printfln("meter_sun_spec: Enabling quirks mode 0x%02x for %.*s device.", quirks, static_cast<int>(strnlen(m->Mn, 32)), m->Mn);
                         }
                     }
                 }

@@ -2000,6 +2000,9 @@ static float get_model_201_PF(const void *register_data, uint32_t quirks, bool d
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -2010,6 +2013,9 @@ static float get_model_201_PFphA(const void *register_data, uint32_t quirks, boo
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -2020,6 +2026,9 @@ static float get_model_201_PFphB(const void *register_data, uint32_t quirks, boo
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -2030,6 +2039,9 @@ static float get_model_201_PFphC(const void *register_data, uint32_t quirks, boo
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -2802,6 +2814,9 @@ static float get_model_202_PF(const void *register_data, uint32_t quirks, bool d
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -2812,6 +2827,9 @@ static float get_model_202_PFphA(const void *register_data, uint32_t quirks, boo
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -2822,6 +2840,9 @@ static float get_model_202_PFphB(const void *register_data, uint32_t quirks, boo
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -2832,6 +2853,9 @@ static float get_model_202_PFphC(const void *register_data, uint32_t quirks, boo
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -3604,6 +3628,9 @@ static float get_model_203_PF(const void *register_data, uint32_t quirks, bool d
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -3614,6 +3641,9 @@ static float get_model_203_PFphA(const void *register_data, uint32_t quirks, boo
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -3624,6 +3654,9 @@ static float get_model_203_PFphB(const void *register_data, uint32_t quirks, boo
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -3634,6 +3667,9 @@ static float get_model_203_PFphC(const void *register_data, uint32_t quirks, boo
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -4406,6 +4442,9 @@ static float get_model_204_PF(const void *register_data, uint32_t quirks, bool d
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -4416,6 +4455,9 @@ static float get_model_204_PFphA(const void *register_data, uint32_t quirks, boo
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -4426,6 +4468,9 @@ static float get_model_204_PFphB(const void *register_data, uint32_t quirks, boo
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -4436,6 +4481,9 @@ static float get_model_204_PFphC(const void *register_data, uint32_t quirks, boo
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 

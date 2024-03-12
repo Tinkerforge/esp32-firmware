@@ -119,12 +119,20 @@ value_id_mappings_meter = {
     "TotVAhImp"       : [ "EnergyApparentLSumImport",    0.001 ],
     "TotVAhExp"       : [ "EnergyApparentLSumExport",    0.001 ],
 
-    "PFphA"           : [ "PowerFactorL1Directional",    None  ],
-    "PFphB"           : [ "PowerFactorL2Directional",    None  ],
-    "PFphC"           : [ "PowerFactorL3Directional",    None  ],
-    "PF"              : [ "PowerFactorLSumDirectional",  None  ],
+    "PFphA"           : [ "PowerFactorL1Directional",    0.01  ],
+    "PFphB"           : [ "PowerFactorL2Directional",    0.01  ],
+    "PFphC"           : [ "PowerFactorL3Directional",    0.01  ],
+    "PF"              : [ "PowerFactorLSumDirectional",  0.01  ],
+
     "Hz"              : [ "FrequencyLAvg",               None  ],
 }
+
+# Power factor in the float meter models is not in percent but already unity
+value_id_mappings_float_meter = dict(value_id_mappings_meter)
+value_id_mappings_float_meter["PFphA"] = [ "PowerFactorL1Directional",   None ]
+value_id_mappings_float_meter["PFphB"] = [ "PowerFactorL2Directional",   None ]
+value_id_mappings_float_meter["PFphC"] = [ "PowerFactorL3Directional",   None ]
+value_id_mappings_float_meter["PF"   ] = [ "PowerFactorLSumDirectional", None ]
 
 # Unmapped SunSpec IDs
 #    "ID"  : None,
@@ -194,6 +202,8 @@ for model_id in model_ids:
         value_id_mappings = {}
     elif model_id >= 100 and model_id <= 199:
         value_id_mappings = value_id_mappings_inverter
+    elif model_id >= 211 and model_id <= 214:
+        value_id_mappings = value_id_mappings_float_meter
     elif model_id >= 200 and model_id <= 299:
         value_id_mappings = value_id_mappings_meter
     else:
@@ -487,6 +497,7 @@ for model in models:
         usable_value_count += 1
 
         value_is_inverter_current = model_id >= 100 and model_id < 200 and re.match(r"^CurrentL.Export$", value_id_mapping[0])
+        value_is_integer_meter_power_factor = model_id >= 200 and model_id < 210 and re.match(r"^PowerFactorL.+Directional$", value_id_mapping[0])
 
         get_fn_name =  f"get_model_{model_id:03d}_{name}"
         value['get_fn_name'] = get_fn_name
@@ -568,11 +579,22 @@ for model in models:
 
         value_mapping_factor = value_id_mapping[1]
         if scale_factor and value_mapping_factor:
-            print_cpp(f"    fval *= ({scale_factor} * {value_mapping_factor}f);")
+            if value_is_integer_meter_power_factor:
+                print_cpp(f"    fval *= {scale_factor};")
+                print_cpp(r"    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {")
+                print_cpp(f"        fval *= {value_mapping_factor}f;")
+                print_cpp(r"    }")
+            else:
+                print_cpp(f"    fval *= ({scale_factor} * {value_mapping_factor}f);")
         elif scale_factor:
             print_cpp(f"    fval *= {scale_factor};")
         elif value_mapping_factor:
-            print_cpp(f"    fval *= {value_mapping_factor}f;")
+            if value_is_integer_meter_power_factor:
+                print_cpp(r"    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {")
+                print_cpp(f"        fval *= {value_mapping_factor}f;")
+                print_cpp(r"    }")
+            else:
+                print_cpp(f"    fval *= {value_mapping_factor}f;")
 
         print_cpp(r"    return fval;")
         print_cpp(r"}")

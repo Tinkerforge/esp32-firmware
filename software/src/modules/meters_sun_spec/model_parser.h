@@ -31,8 +31,9 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-#define SUN_SPEC_QUIRKS_ACC32_IS_INT32              (1u << 0)
-#define SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16   (1u << 1)
+#define SUN_SPEC_QUIRKS_ACC32_IS_INT32                      (1u << 0)
+#define SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16           (1u << 1)
+#define SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY (1u << 2)
 
 class MetersSunSpecParser
 {
