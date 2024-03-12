@@ -217,7 +217,7 @@ void Wifi::apply_soft_ap_config_and_start()
         return;
     }
 
-    if (channel_to_use == 0 && scan_start_time != 0 && !deadline_elapsed(scan_start_time + 6000)) {
+    if (channel_to_use == 0 && scan_start_time != 0 && !deadline_elapsed(scan_start_time + 10000)) {
         int network_count = WiFi.scanComplete();
 
         if (network_count == WIFI_SCAN_RUNNING) {
@@ -265,8 +265,9 @@ void Wifi::apply_soft_ap_config_and_start()
         }
         logger.printfln("Selecting channel %d for softAP", min);
         channel_to_use = min;
+
     }
-    if (channel_to_use == 0 && scan_start_time != 0 && deadline_elapsed(scan_start_time + 7000)) {
+    if (channel_to_use == 0 && scan_start_time != 0 && deadline_elapsed(scan_start_time + 10000)) {
         channel_to_use = (esp_random() % 4) * 4 + 1;
         logger.printfln("Channel selection scan timeout elapsed! Randomly selected channel %i", channel_to_use);
     }
