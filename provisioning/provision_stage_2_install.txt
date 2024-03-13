@@ -1,7 +1,7 @@
 run in this folder:
 git clone https://github.com/espressif/esptool.git
-git checkout 876d133717cbcc033573bcf0894b25cd7bf2cfdb
 cd esptool
+git checkout 876d133717cbcc033573bcf0894b25cd7bf2cfdb #bff93341542e19ac83d2693ccd08598828c44a21
 pip install --user -e .
 cd ..
 copy or symlink evse_test_report folder here
