@@ -496,11 +496,11 @@ def wait_for_wifi(ssid, timeout_s):
 def blink_thread_fn(rgbs, stop_event):
     while not stop_event.is_set():
         for rgb in rgbs:
-            rgb.set_rgb_value(0,127,0)
-            time.sleep(0.2)
+            rgb.set_rgb_value(0,63,0)
+            time.sleep(0.5)
         for rgb in rgbs:
             rgb.set_rgb_value(0,0,0)
-            time.sleep(0.2)
+            time.sleep(0.5)
 
 def now():
     return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
