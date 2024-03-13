@@ -54,6 +54,8 @@ public:
     int printfln(const char *fmt, va_list args);
     [[gnu::format(__printf__, 2, 3)]] int printfln(const char *fmt, ...);
 
+    #define dbg(fmt, ...) printfln("[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
+
     void drop(size_t count);
 
     void register_urls();
