@@ -752,6 +752,12 @@ void ChargeManager::distribute_current()
                 uint16_t current_per_charger = MIN(32000, available / (chargers_allocated_current_to - chargers_reallocated));
 
                 uint16_t requested_current = charger.requested_current;
+
+                // If exactly one charger is charging, double the current margin for faster power manager control.
+                if (chargers_allocated_current_to == 1) {
+                    requested_current += requested_current_margin;
+                }
+
                 // Protect against overflow.
                 if (requested_current < current_array[idx_array[i]])
                     continue;
