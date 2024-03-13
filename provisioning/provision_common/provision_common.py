@@ -420,7 +420,7 @@ def handle_block3_fuses(set_block_3, uid, passphrase):
 def handle_block3_fuses_with_two_int_format(set_block_3, uid):
     if not set_block_3:
         print("Block 3 eFuses already set. UID: {}".format(uid))
-        return uid 
+        return uid
 
     print("UID: " + uid)
 
