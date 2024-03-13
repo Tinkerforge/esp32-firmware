@@ -68,8 +68,6 @@ static TF_Local local;
 #if defined(BUILD_NAME_ENERGY_MANAGER) && MODULE_FIRMWARE_UPDATE_AVAILABLE()
 static void check_for_factory_reset()
 {
-    logger.printfln("Checking for factory reset for %d seconds", WEM_FACTORY_RESET_WAIT_TIME);
-
     // A factory reset will leave the green LED on, even across a restart. Switch it off here.
     digitalWrite(green_led_pin, false);
 
@@ -92,6 +90,8 @@ static void check_for_factory_reset()
 
     bool blue_led_off = false;
     if (!seen_ethernet_clock) {
+        logger.printfln("Checking for factory reset for %d seconds", WEM_FACTORY_RESET_WAIT_TIME);
+
         // Flash LED for 8 seconds while waiting for button press.
         bool button_pressed = false;
         for (uint32_t i = 0; i < (WEM_FACTORY_RESET_WAIT_TIME*10); i++) {
