@@ -180,6 +180,12 @@ void ChargeManager::pre_setup()
     available_current = ConfigRoot{Config::Object({
         {"current", Config::Uint32(0)},
     }), [](const Config &conf, ConfigSource source) -> String {
+#if MODULE_POWER_MANAGER_AVAILABLE()
+        if (source == ConfigSource::API && power_manager.get_enabled()) {
+            logger.printfln("charge_manager: Cannot set available_current via the API if the Power Manager is enabled.");
+            return "Cannot set available_current if the Power Manager is enabled.";
+        }
+#endif
         if (conf.get("current")->asUint() > max_avail_current)
             return "Current too large: maximum available current is configured to " + String(max_avail_current);
         return "";
