@@ -57,7 +57,7 @@ def temp_file():
             print('Failed to clean up temp file {}'.format(name))
 
 def run(args):
-    return subprocess.check_output(args, env=dict(os.environ, LC_ALL="en_US.UTF-8")).decode("utf-8").split("\n")
+    return subprocess.check_output(args, env=dict(os.environ, LC_ALL="en_US.UTF-8", LANG="C", LANGUAGE="en")).decode("utf-8").split("\n")
 
 def esptool(args):
     return run(["python3", "./esptool/esptool.py", *args])
