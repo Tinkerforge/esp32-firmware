@@ -85,6 +85,14 @@ void EventLog::write(const char *buf, size_t len)
     char timestamp_buf[TIMESTAMP_LEN + 1] = {0};
     this->get_timestamp(timestamp_buf);
 
+    // Strip away \r\n.
+    // We only use \n as line endings for the serial output as well as the event log.
+    // Removing \r\n by reducing the length works,
+    // because if a message does not end in \n we add the \n below.
+    if (len >= 2 && buf[len - 2] == '\r' && buf[len - 1] == '\n') {
+        len -= 2;
+    }
+
     Serial.print(timestamp_buf);
     Serial.write(buf, len);
 
