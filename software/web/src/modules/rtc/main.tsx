@@ -43,7 +43,7 @@ export class Rtc extends ConfigComponent<'rtc/config'> {
               __("rtc.script.reboot_content_changed"));
 
         window.setTimeout(() => {
-                if (util.render_allowed() && API.get("rtc/config").auto_sync && !API.get("ntp/state").synced) {
+                if (util.render_allowed() && API.hasFeature("rtc") && API.get("rtc/config").auto_sync && !API.get("ntp/state").synced) {
                     this.set_current_time();
                 }
             },
