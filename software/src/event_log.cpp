@@ -205,3 +205,8 @@ void EventLog::register_urls()
 
     api.addState("event_log/boot_id", &boot_id);
 }
+
+int tf_event_log_printf(const char *fmt, va_list args)
+{
+    return logger.printfln(fmt, args);
+}

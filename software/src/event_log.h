@@ -68,3 +68,5 @@ public:
 // Make global variable available everywhere because it is not declared in modules.h.
 // Definition is in event_log.cpp.
 extern EventLog logger;
+
+extern "C" int tf_event_log_printf(const char *fmt, va_list args);
