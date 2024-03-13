@@ -36,7 +36,7 @@ from provision_stage_3_warp2 import Stage3
 
 evse = None
 power_off_on_error = True
-is_warp3 = None
+generation = None
 
 def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_wiring, ssid, stage3):
     global evse
@@ -159,7 +159,9 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
     return seen_tags
 
 def exists_evse_test_report(evse_uid):
-    with open(os.path.join("evse_v2_test_report", "full_test_log.csv"), newline='') as csvfile:
+    global generation
+    evse_version = {2: 2, 3: 3}[generation]
+    with open(os.path.join(f"evse_v{evse_version}_test_report", "full_test_log.csv"), newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
             if row[0] == evse_uid:
@@ -180,9 +182,9 @@ def retry_wrapper(fn, s):
 
 def is_front_panel_button_pressed():
     global evse
-    global is_warp3
-    assert is_warp3 != None
-    return retry_wrapper(lambda: evse.get_low_level_state().gpio[5 if is_warp3 else 6], "check if front panel button is pressed")
+    global generation
+    assert generation in (2, 3)
+    return retry_wrapper(lambda: evse.get_low_level_state().gpio[{2: 6, 3: 5}[generation]], "check if front panel button is pressed")
 
 def get_iec_state():
     global evse
@@ -349,7 +351,6 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify):
     return seen_tags
 
 def main(stage3):
-    global is_warp3
     result = {"start": now()}
 
     github_reachable = True
@@ -363,14 +364,6 @@ def main(stage3):
     if github_reachable:
         with ChangedDirectory(os.path.join("..", "..", "firmwares")):
             run(["git", "pull"])
-
-    evse_directory = os.path.join("..", "..", "firmwares", "bricklets", "evse_v2")
-    evse_path = os.readlink(os.path.join(evse_directory, "bricklet_evse_v2_firmware_latest.zbin"))
-    evse_path = os.path.join(evse_directory, evse_path)
-
-    firmware_directory = os.path.join("..", "..", "firmwares", "bricks", "warp2_charger")
-    firmware_path = os.readlink(os.path.join(firmware_directory, "brick_warp2_charger_firmware_latest.bin"))
-    firmware_path = os.path.join(firmware_directory, firmware_path)
 
     # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:0;;;
     pattern = r'^T:WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75)(?:-PC)?;V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
@@ -433,8 +426,20 @@ def main(stage3):
 
         result["accessories_qr_code"] = match.group(0)
 
+    global generation
+    assert qr_gen in ("2", "3")
+    generation = int(qr_gen)
+
+    evse_directory = os.path.join("..", "..", "firmwares", "bricklets", "evse_v2")
+    evse_path = os.readlink(os.path.join(evse_directory, "bricklet_evse_v2_firmware_latest.zbin"))
+    evse_path = os.path.join(evse_directory, evse_path)
+
+    firmware_directory = os.path.join("..", "..", "firmwares", "bricks", f"warp{generation}_charger")
+    firmware_path = os.readlink(os.path.join(firmware_directory, f"brick_warp{generation}_charger_firmware_latest.bin"))
+    firmware_path = os.path.join(firmware_directory, firmware_path)
+
     if qr_variant != "B":
-        pattern = r"^WIFI:S:(esp32|warp|warp2|warp3)-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58)
+        pattern = r"^WIFI:S:(warp{gen})-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58, gen=generation)
         qr_code = getpass.getpass(green("Scan the ESP Brick QR code"))
         match = re.match(pattern, qr_code)
 
@@ -450,7 +455,6 @@ def main(stage3):
         hardware_type = match.group(1)
         esp_uid_qr = match.group(2)
         passphrase_qr = match.group(3)
-        is_warp3 = hardware_type == 'warp3'
 
         print("ESP Brick QR code data:")
         print("    Hardware type: {}".format(hardware_type))
@@ -465,12 +469,12 @@ def main(stage3):
 
         event_log = connect_to_ethernet(ssid, "event_log").decode('utf-8')
 
-        m = re.search(r"WARP(?:2|3) (?:CHARGER|Charger) V(\d+).(\d+).(\d+)", event_log)
+        m = re.search(r"WARP{gen} (?:CHARGER|Charger) V(\d+).(\d+).(\d+)".format(gen=generation), event_log)
         if not m:
             fatal_error("Failed to find version number in event log!" + event_log)
 
         version = [int(x) for x in m.groups()]
-        latest_version = [int(x) for x in re.search(r"warp2_charger_firmware_(\d+)_(\d+)_(\d+).bin", firmware_path).groups()]
+        latest_version = [int(x) for x in re.search(r"warp{gen}_charger_firmware_(\d+)_(\d+)_(\d+).bin".format(gen=generation), firmware_path).groups()]
 
         if version > latest_version:
             fatal_error("Flashed firmware {}.{}.{} is not released yet! Latest released is {}.{}.{}".format(*version, *latest_version))
@@ -641,9 +645,7 @@ def main(stage3):
     result["evse_test_report_found"] = True
 
     if qr_variant == "B":
-        hardware_type = "warp2" if result["evse_version"] < 30 else "warp3"
-        is_warp3 = hardware_type == 'warp3'
-        ssid = hardware_type + "-" + result["evse_uid"]
+        ssid = f'warp{generation}-{result["evse_uid"]}'
 
     browser = None
     try:
