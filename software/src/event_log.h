@@ -51,8 +51,8 @@ public:
 
     void write(const char *buf, size_t len);
 
-    void printfln(const char *fmt, va_list args);
-    [[gnu::format(__printf__, 2, 3)]] void printfln(const char *fmt, ...);
+    int printfln(const char *fmt, va_list args);
+    [[gnu::format(__printf__, 2, 3)]] int printfln(const char *fmt, ...);
 
     void drop(size_t count);
 

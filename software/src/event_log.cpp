@@ -134,7 +134,7 @@ void EventLog::write(const char *buf, size_t len)
 #endif
 }
 
-void EventLog::printfln(const char *fmt, va_list args)
+int EventLog::printfln(const char *fmt, va_list args)
 {
     char buf[256];
     auto buf_size = sizeof(buf) / sizeof(buf[0]);
@@ -147,14 +147,18 @@ void EventLog::printfln(const char *fmt, va_list args)
     }
 
     write(buf, written);
+
+    return written;
 }
 
-void EventLog::printfln(const char *fmt, ...)
+int EventLog::printfln(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    this->printfln(fmt, args);
+    int result = this->printfln(fmt, args);
     va_end(args);
+
+    return result;
 }
 
 void EventLog::drop(size_t count)
