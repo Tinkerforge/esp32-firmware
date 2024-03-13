@@ -84,6 +84,7 @@ public:
 
     void register_phase_switcher_backend(PhaseSwitcherBackend *backend);
 
+    bool get_enabled() const;
     bool get_is_3phase() const;
 
 private:

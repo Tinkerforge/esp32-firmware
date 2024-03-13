@@ -27,6 +27,13 @@ let x = {
         "content": {
             "page_header": "Power Manager",
 
+            "header_general": "General settings",
+            "enable_pm": "Power Manager enabled",
+            "enable_pm_desc": "Automatically adjust the amount of available charging power",
+            "cm_requirements_warning_em": "No chargers configured. To use the power manager, all connected chargers must be configured as managed chargers in the charge manager.",
+            "cm_requirements_warning_wb": "To use the power manager, charge management must be enabled and set to “Charge manager” and the charger should only manage itself.",
+            "cm_multiple_chargers_warning": "To use the power manager with this charger, no other chargers should be configured as manager chargers in the charge manager.",
+
             "header_phase_switching": "Phase switching",
             "contactor_installed": "Contactor installed",
             "contactor_installed_desc": "The energy manager is connected to a contactor that it can use to switch its managed chargers between single-phase and three-phase connection.",

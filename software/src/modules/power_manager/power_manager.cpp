@@ -25,6 +25,12 @@
 
 #include "gcc_warnings.h"
 
+#if MODULE_ENERGY_MANAGER_AVAILABLE()
+#define PM_ENABLED_DEFAULT (true)
+#else
+#define PM_ENABLED_DEFAULT (false)
+#endif
+
 void PowerManager::pre_setup()
 {
     // States
@@ -59,6 +65,7 @@ void PowerManager::pre_setup()
     });
 
     config = ConfigRoot{Config::Object({
+        {"enabled", Config::Bool(PM_ENABLED_DEFAULT)},
         {"phase_switching_mode", Config::Uint(PHASE_SWITCHING_AUTOMATIC, PHASE_SWITCHING_MIN, PHASE_SWITCHING_MAX)},
         {"excess_charging_enable", Config::Bool(false)},
         {"default_mode", Config::Uint(0, 0, 3)},
@@ -171,6 +178,10 @@ void PowerManager::setup()
 #if MODULE_DEBUG_AVAILABLE()
     api.restorePersistentConfig("power_manager/debug_config", &debug_config);
 #endif
+
+    if (!config.get("enabled")->asBool()) {
+        return;
+    }
 
     charge_manager.set_allocated_current_callback([this](uint32_t current_ma) {
         //logger.printfln("power_manager: allocated current callback: %u", current_ma);
@@ -882,6 +893,11 @@ void PowerManager::limit_max_current(uint32_t limit_ma)
 void PowerManager::reset_limit_max_current()
 {
     max_current_limited_ma = max_current_unlimited_ma;
+}
+
+bool PowerManager::get_enabled() const
+{
+    return config.get("enabled")->asBool();
 }
 
 bool PowerManager::get_is_3phase() const

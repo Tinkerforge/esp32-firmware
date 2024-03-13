@@ -19,7 +19,7 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { __ } from "../../ts/translation";
+import { __, translate_unchecked } from "../../ts/translation";
 import { METERS_SLOTS } from "../../build";
 import { h, Fragment, Component, RefObject } from "preact";
 import { Button, ButtonGroup, Collapse } from "react-bootstrap";
@@ -356,8 +356,17 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
             </FormRow>
         }
 
+        let show_enable = !API.hasFeature("energy_manager") || !s.enabled;
+
+        let cm_config = API.get_unchecked("charge_manager/config");
+        let cm_ok = cm_config?.enable_charge_manager && cm_config?.chargers.length >= 1;
+        let cm_multiple_chargers = cm_config.chargers.length > 1;
+
+        let is_em = API.hasModule("energy_manager");
+        let device_translation_suffix = is_em ? "em" : "wb";
+
         let can_switch_phases = false;
-        if (API.hasModule("energy_manager")) {
+        if (is_em) {
             can_switch_phases = this.state.em_contactor_installed;
         } else if (API.hasFeature("evse")) {
             can_switch_phases = API.get_unchecked('evse/hardware_configuration')?.evse_version >= 30;
@@ -369,10 +378,44 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
             <SubPage name="power_manager">
                 <ConfigForm id="power_manager_config_form" title={__("power_manager.content.page_header")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
 
-                    <FormSeparator heading={__("power_manager.content.header_phase_switching")} first={true} />
+                    <Collapse in={show_enable}>
+                        <div>
+                            <FormSeparator heading={__("power_manager.content.header_general")} first={true} />
+                            <FormRow label={__("power_manager.content.enable_pm")}>
+                                <Switch desc={__("power_manager.content.enable_pm_desc")}
+                                        checked={s.enabled}
+                                        onClick={() => this.setState({
+                                            enabled: !s.enabled,
+                                            excess_charging_enable: s.enabled ? false : s.excess_charging_enable,
+                                        })}
+                                />
+                            </FormRow>
+                        </div>
+                    </Collapse>
 
+                    <Collapse in={s.enabled && !cm_ok}>
+                        <div>
+                            <FormRow label="">
+                                <div style="color:red">
+                                    {translate_unchecked("power_manager.content.cm_requirements_warning_" + device_translation_suffix)}
+                                </div>
+                            </FormRow>
+                        </div>
+                    </Collapse>
+                    <Collapse in={s.enabled && !is_em && cm_multiple_chargers}>
+                        <div>
+                            <FormRow label="">
+                                <div style="color:red">
+                                    {__("power_manager.content.cm_multiple_chargers_warning")}
+                                </div>
+                            </FormRow>
+                        </div>
+                    </Collapse>
+
+                    <FormSeparator heading={__("power_manager.content.header_phase_switching")} first={!show_enable} />
                     <FormRow label={__("power_manager.content.contactor_installed")} hidden={!API.hasFeature("energy_manager")}>
                         <Switch desc={__("power_manager.content.contactor_installed_desc")}
+                                disabled={!this.state.enabled}
                                 checked={this.state.em_contactor_installed}
                                 onClick={() => this.setState({em_contactor_installed: !this.state.em_contactor_installed})}
                         />
@@ -380,7 +423,8 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
 
                     <FormRow label={__("power_manager.content.phase_switching_mode")}>
                         <InputSelect
-                            required
+                            required={s.enabled}
+                            disabled={!s.enabled}
                             items={can_switch_phases ? [
                                 ["0", __("power_manager.content.automatic")],
                                 ["1", __("power_manager.content.always_single_phase")],
@@ -423,13 +467,14 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
                     <FormRow label={__("power_manager.content.enable_excess_charging")} label_muted={__("power_manager.content.enable_excess_charging_muted")}>
                         <Switch desc={__("power_manager.content.enable_excess_charging_desc")}
                             checked={s.excess_charging_enable}
-                            disabled={s.phase_switching_mode == 3}
+                            disabled={!s.enabled || s.phase_switching_mode == 3}
                             onClick={this.toggle('excess_charging_enable')}/>
                     </FormRow>
 
                     <FormRow label={__("power_manager.content.default_mode")} label_muted={__("power_manager.content.default_mode_muted")}>
                         <InputSelect
-                            required
+                            required={s.enabled}
+                            disabled={!s.enabled}
                             items={mode_list}
                             value={s.default_mode}
                             onValue={s.phase_switching_mode == 3 ? undefined : (v) => this.setState({default_mode: parseInt(v)})}

@@ -29,6 +29,7 @@ export interface low_level_state {
 }
 
 export interface config {
+    enabled: boolean;
     phase_switching_mode: number;
     default_mode: number;
     excess_charging_enable: boolean;

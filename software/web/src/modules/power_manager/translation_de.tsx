@@ -27,6 +27,13 @@ let x = {
         "content": {
             "page_header": "Power Manager",
 
+            "header_general": "Allgemeine Einstellungen",
+            "enable_pm": "Power Manager aktiviert",
+            "enable_pm_desc": "Passt die verfügbare Ladeleistung automatisch an",
+            "cm_requirements_warning_em": "Keine kontrollierten Wallboxen eingetragen. Um den Power Manager zu nutzen, müssen alle angeschlossenen Wallboxen im Lastmanagement als kontrollierte Wallboxen eingetragen sein.",
+            "cm_requirements_warning_wb": "Um den Power Manager zu nutzen, muss das Lastmanagement auf „Lastmanager“ eingestellt und nur diese Wallbox als kontrollierte Wallbox eingetragen sein.",
+            "cm_multiple_chargers_warning": "Um den Power Manager mit dieser Wallbox zu nutzen, sollten im Lastmanagement keine weiteren Wallboxen als kontrollierte Wallboxen eingetragen sein.",
+
             "header_phase_switching": "Phasenumschaltung",
             "contactor_installed": "Schütz angeschlossen",
             "contactor_installed_desc": "Der Energiemanager verfügt über ein Schütz, mit dem die von ihm verwalteten Wallboxen zwischen ein- und dreiphasigem Anschluss umgeschaltet werden können.",
