@@ -223,8 +223,13 @@ def has_evse_error():
     global evse
     return retry_wrapper(lambda: evse.get_state().error_state != 0, "get EVSE error state")
 
+def switch_phases(phases):
+    global evse
+    return retry_wrapper(lambda: evse.set_phase_control(phases), "set phases")
+
 def led_wrap():
-    stage3 = Stage3(is_front_panel_button_pressed_function=is_front_panel_button_pressed, get_iec_state_function=get_iec_state, reset_dc_fault_function=reset_dc_fault, has_evse_error_function=has_evse_error)
+    stage3 = Stage3(is_front_panel_button_pressed_function=is_front_panel_button_pressed, get_iec_state_function=get_iec_state, reset_dc_fault_function=reset_dc_fault, has_evse_error_function=has_evse_error,
+    switch_phases_function=switch_phases)
     stage3.setup()
     stage3.set_led_strip_color((0, 0, 255))
     try:
