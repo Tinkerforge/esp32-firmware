@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-01-15.      #
+# This file was automatically generated on 2024-03-14.      #
 #                                                           #
-# Python Bindings Version 2.1.30                            #
+# Python Bindings Version 2.1.31                            #
 #                                                           #
 # If you have a bugfix for this file and want to commit it, #
 # please fix the bug in the generator. You can find a link  #
@@ -33,8 +33,8 @@ GetGPIOConfiguration = namedtuple('GPIOConfiguration', ['shutdown_input_configur
 GetIndicatorLED = namedtuple('IndicatorLED', ['indication', 'duration', 'color_h', 'color_s', 'color_v'])
 GetButtonState = namedtuple('ButtonState', ['button_press_time', 'button_release_time', 'button_pressed'])
 GetAllData1 = namedtuple('AllData1', ['iec61851_state', 'charger_state', 'contactor_state', 'contactor_error', 'allowed_charging_current', 'error_state', 'lock_state', 'dc_fault_current_state', 'jumper_configuration', 'has_lock_switch', 'evse_version', 'energy_meter_type', 'power', 'current', 'phases_active', 'phases_connected', 'error_count'])
-GetAllData2 = namedtuple('AllData2', ['shutdown_input_configuration', 'input_configuration', 'output_configuration', 'indication', 'duration', 'color_h', 'color_s', 'color_v', 'button_configuration', 'button_press_time', 'button_release_time', 'button_pressed', 'ev_wakeup_enabled', 'control_pilot_disconnect', 'boost_mode_enabled', 'temperature', 'phases_current', 'phases_requested', 'phases_status'])
-GetPhaseControl = namedtuple('PhaseControl', ['phases_current', 'phases_requested', 'phases_status'])
+GetAllData2 = namedtuple('AllData2', ['shutdown_input_configuration', 'input_configuration', 'output_configuration', 'indication', 'duration', 'color_h', 'color_s', 'color_v', 'button_configuration', 'button_press_time', 'button_release_time', 'button_pressed', 'ev_wakeup_enabled', 'control_pilot_disconnect', 'boost_mode_enabled', 'temperature', 'phases_current', 'phases_requested', 'phases_state', 'phases_info', 'phase_auto_switch_enabled'])
+GetPhaseControl = namedtuple('PhaseControl', ['phases_current', 'phases_requested', 'phases_state', 'phases_info'])
 GetSPITFPErrorCount = namedtuple('SPITFPErrorCount', ['error_count_ack_checksum', 'error_count_message_checksum', 'error_count_frame', 'error_count_overflow'])
 GetIdentity = namedtuple('Identity', ['uid', 'connected_uid', 'position', 'hardware_version', 'firmware_version', 'device_identifier'])
 
@@ -47,6 +47,7 @@ class BrickletEVSEV2(Device):
     DEVICE_DISPLAY_NAME = 'EVSE Bricklet 2.0'
     DEVICE_URL_PART = 'evse_v2' # internal
 
+    CALLBACK_ENERGY_METER_VALUES = 43
 
 
     FUNCTION_GET_STATE = 1
@@ -89,6 +90,8 @@ class BrickletEVSEV2(Device):
     FUNCTION_GET_TEMPERATURE = 38
     FUNCTION_SET_PHASE_CONTROL = 39
     FUNCTION_GET_PHASE_CONTROL = 40
+    FUNCTION_SET_PHASE_AUTO_SWITCH = 41
+    FUNCTION_GET_PHASE_AUTO_SWITCH = 42
     FUNCTION_GET_SPITFP_ERROR_COUNT = 234
     FUNCTION_SET_BOOTLOADER_MODE = 235
     FUNCTION_GET_BOOTLOADER_MODE = 236
@@ -151,6 +154,8 @@ class BrickletEVSEV2(Device):
     SHUTDOWN_INPUT_IGNORED = 0
     SHUTDOWN_INPUT_SHUTDOWN_ON_OPEN = 1
     SHUTDOWN_INPUT_SHUTDOWN_ON_CLOSE = 2
+    SHUTDOWN_INPUT_4300_WATT_ON_OPEN = 3
+    SHUTDOWN_INPUT_4300_WATT_ON_CLOSE = 4
     OUTPUT_CONNECTED_TO_GROUND = 0
     OUTPUT_HIGH_IMPEDANCE = 1
     BUTTON_CONFIGURATION_DEACTIVATED = 0
@@ -250,6 +255,8 @@ class BrickletEVSEV2(Device):
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_TEMPERATURE] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_SET_PHASE_CONTROL] = BrickletEVSEV2.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_PHASE_CONTROL] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_SET_PHASE_AUTO_SWITCH] = BrickletEVSEV2.RESPONSE_EXPECTED_FALSE
+        self.response_expected[BrickletEVSEV2.FUNCTION_GET_PHASE_AUTO_SWITCH] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_SPITFP_ERROR_COUNT] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_SET_BOOTLOADER_MODE] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_BOOTLOADER_MODE] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
@@ -263,6 +270,7 @@ class BrickletEVSEV2(Device):
         self.response_expected[BrickletEVSEV2.FUNCTION_READ_UID] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_IDENTITY] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
 
+        self.callback_formats[BrickletEVSEV2.CALLBACK_ENERGY_METER_VALUES] = (26, 'f 3f 3! 3!')
 
         ipcon.add_device(self)
 
@@ -567,7 +575,7 @@ class BrickletEVSEV2(Device):
         """
         self.check_validity()
 
-        return GetAllData2(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_ALL_DATA_2, (), '', 37, 'B B B h H H B B B I I ! ! ! ! h B B B'))
+        return GetAllData2(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_ALL_DATA_2, (), '', 39, 'B B B h H H B B B I I ! ! ! ! h B B B B !'))
 
     def factory_reset(self, password):
         r"""
@@ -651,7 +659,25 @@ class BrickletEVSEV2(Device):
         """
         self.check_validity()
 
-        return GetPhaseControl(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_PHASE_CONTROL, (), '', 11, 'B B B'))
+        return GetPhaseControl(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_PHASE_CONTROL, (), '', 12, 'B B B B'))
+
+    def set_phase_auto_switch(self, phase_auto_switch_enabled):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        phase_auto_switch_enabled = bool(phase_auto_switch_enabled)
+
+        self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_SET_PHASE_AUTO_SWITCH, (phase_auto_switch_enabled,), '!', 0, '')
+
+    def get_phase_auto_switch(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        return self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_PHASE_AUTO_SWITCH, (), '', 9, '!')
 
     def get_spitfp_error_count(self):
         r"""
@@ -846,5 +872,14 @@ class BrickletEVSEV2(Device):
                 raise Error(Error.STREAM_OUT_OF_SYNC, 'Values stream is out-of-sync')
 
         return values_data[:values_length]
+
+    def register_callback(self, callback_id, function):
+        r"""
+        Registers the given *function* with the given *callback_id*.
+        """
+        if function is None:
+            self.registered_callbacks.pop(callback_id, None)
+        else:
+            self.registered_callbacks[callback_id] = function
 
 EVSEV2 = BrickletEVSEV2 # for backward compatibility
