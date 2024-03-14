@@ -62,6 +62,31 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
     stage3.test_front_panel_button(qr_stand == '0' or qr_stand_wiring == '0')
     result["front_panel_button_tested"] = True
 
+    if not qr_stand == '0' or qr_stand_wiring == '0':
+        fatal_error("WARP 3 RGB LED test not yet implemented for stand. " + blink("Complain to Erik!"))
+
+    evse.set_indicator_led(255, 1000, 0, 255, 255)
+    time.sleep(0.5)
+    if not stage3.is_front_panel_led_red():
+        fatal_error("Front LED not red!")
+
+    evse.set_indicator_led(255, 1000, 120, 255, 255)
+    time.sleep(0.5)
+    if not stage3.is_front_panel_led_green():
+        fatal_error("Front LED not green!")
+
+    evse.set_indicator_led(255, 1000, 240, 255, 255)
+    time.sleep(0.5)
+    if not stage3.is_front_panel_led_blue():
+        fatal_error("Front LED not blue!")
+
+    evse.set_indicator_led(255, 1000, 0, 0, 255)
+    time.sleep(0.5)
+    if not stage3.is_front_panel_led_white():
+        fatal_error("Front LED not white!")
+
+    result["front_panel_led_tested"] = True
+
     seen_tags = []
     if is_smart or is_pro:
         if qr_stand != '0' and qr_stand_wiring != '0':

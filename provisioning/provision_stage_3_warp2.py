@@ -49,6 +49,8 @@ VOLTAGE_ON_THRESHOLD = 200.0 # Volt
 IEC_STATE_CHECK_DURATION = 5.0 # seconds
 IEC_STATE_CHECK_INTERVAL = 0.01 # seconds
 
+PHASE_SWITCH_SETTLE_DURATION = 7.0 # seconds
+
 STACK_MASTER_UIDS = {
     '0': '61SMKP',
     '1': '6jEhrp',
@@ -84,11 +86,12 @@ EXPECTED_DEVICE_IDENTIFIERS = {
 }
 
 class Stage3:
-    def __init__(self, is_front_panel_button_pressed_function, has_evse_error_function, get_iec_state_function, reset_dc_fault_function):
+    def __init__(self, is_front_panel_button_pressed_function, has_evse_error_function, get_iec_state_function, reset_dc_fault_function, switch_phases_function):
         self.is_front_panel_button_pressed_function = is_front_panel_button_pressed_function
         self.has_evse_error_function = has_evse_error_function
         self.get_iec_state_function = get_iec_state_function
         self.reset_dc_fault_function = reset_dc_fault_function
+        self.switch_phases_function = switch_phases_function
         self.ipcon = IPConnection()
         self.inventory = Inventory(self.ipcon)
         self.devices = {} # by position path
@@ -424,10 +427,26 @@ class Stage3:
         return text
 
     # internal
-    def is_front_panel_led_on(self):
+    def is_front_panel_led_blue(self):
         color = self.try_action('20D', lambda device: device.get_color())
 
-        return color[2] - color[0] > 1000
+        return color[2] / color[3] > 0.8
+
+    def is_front_panel_led_red(self):
+        color = self.try_action('20D', lambda device: device.get_color())
+
+        return color[0] / color[3] > 0.8
+
+    def is_front_panel_led_green(self):
+        color = self.try_action('20D', lambda device: device.get_color())
+
+        return color[1] / color[3] > 0.8
+
+    def is_front_panel_led_white(self):
+        color = self.try_action('20D', lambda device: device.get_color())
+
+        return color[0] / color[3] < 0.5 and color[0] / color[3] < 0.5 and color[0] / color[3] < 0.5 and color[3] > 10000
+
 
     # internal
     def check_iec_state(self, expected_state):
@@ -595,7 +614,7 @@ class Stage3:
 
         try:
             button_before = self.is_front_panel_button_pressed_function()
-            led_before = self.is_front_panel_led_on() if automatic else True
+            led_before = self.is_front_panel_led_blue() if automatic else True
 
             if button_before:
                 fatal_error('Front panel button is already pressed before test')
@@ -621,7 +640,7 @@ class Stage3:
                 print('Front panel button is pressed')
 
             button_pressed = self.is_front_panel_button_pressed_function()
-            led_pressed = self.is_front_panel_led_on() if automatic else False
+            led_pressed = self.is_front_panel_led_blue() if automatic else False
 
             if automatic:
                 self.set_servo_position(servo, channel, -3000)
@@ -644,7 +663,7 @@ class Stage3:
                 self.beep_notify()
 
             button_after = self.is_front_panel_button_pressed_function()
-            led_after = self.is_front_panel_led_on() if automatic else True
+            led_after = self.is_front_panel_led_blue() if automatic else True
 
             if button_after:
                 fatal_error('Front panel button is still pressed after test')
@@ -726,6 +745,7 @@ class Stage3:
         assert self.has_evse_error_function != None
         assert self.get_iec_state_function != None
         assert self.reset_dc_fault_function != None
+        assert self.switch_phases_function != None
 
         if self.read_meter_qr_code() != '01':
             fatal_error('Meter in wrong step')
@@ -856,6 +876,59 @@ class Stage3:
         print('Connecting power to L1, L2 and L3')
 
         self.connect_warp_power(['L1', 'L2', 'L3'])
+
+        time.sleep(RELAY_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
+
+        voltages = self.read_voltage_monitors()
+
+        print('Reading voltages as {0}'.format(voltages))
+
+        if voltages[0] < VOLTAGE_ON_THRESHOLD:
+            fatal_error('Missing voltage on L1')
+
+        if voltages[1] < VOLTAGE_OFF_THRESHOLD:
+            fatal_error('Missing voltage on L2')
+
+        if voltages[2] < VOLTAGE_ON_THRESHOLD:
+            fatal_error('Missing voltage on L3')
+
+        print('Testing phase switch')
+
+        self.switch_phases_function(1)
+
+        time.sleep(PHASE_SWITCH_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
+
+        voltages = self.read_voltage_monitors()
+
+        print('Reading voltages as {0}'.format(voltages))
+
+        if voltages[0] < VOLTAGE_ON_THRESHOLD:
+            fatal_error('Missing voltage on L1')
+
+        if voltages[1] > VOLTAGE_OFF_THRESHOLD:
+            fatal_error('Unexpected voltage on L2')
+
+        if voltages[2] > VOLTAGE_ON_THRESHOLD:
+            fatal_error('Unexpected voltage on L3')
+
+
+        self.switch_phases_function(3)
+
+        time.sleep(PHASE_SWITCH_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
+
+        voltages = self.read_voltage_monitors()
+
+        print('Reading voltages as {0}'.format(voltages))
+
+        if voltages[0] < VOLTAGE_ON_THRESHOLD:
+            fatal_error('Missing voltage on L1')
+
+        if voltages[1] < VOLTAGE_OFF_THRESHOLD:
+            fatal_error('Missing voltage on L2')
+
+        if voltages[2] < VOLTAGE_ON_THRESHOLD:
+            fatal_error('Missing voltage on L3')
+
         self.connect_voltage_monitors(False)
 
         time.sleep(RELAY_SETTLE_DURATION)
@@ -1111,7 +1184,8 @@ def main():
     stage3 = Stage3(is_front_panel_button_pressed_function=lambda: False,
                     has_evse_error_function=lambda: False,
                     get_iec_state_function=lambda: 'A',
-                    reset_dc_fault_function=lambda: None)
+                    reset_dc_fault_function=lambda: None,
+                    switch_phases_function=lambda x: None)
 
     stage3.setup()
 
