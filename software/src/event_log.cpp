@@ -68,7 +68,7 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
         auto to_write = snprintf(nullptr, 0, "%lu", secs) + 6; // + 6 for the decimal sign, fractional part and two spaces
         auto start = TIMESTAMP_LEN - to_write;
 
-        for (int i = 0; i < TIMESTAMP_LEN; ++i)
+        for (int i = 0; i < start; ++i)
             buf[i] = ' ';
         snprintf(buf + start, to_write + 1, "%lu,%03lu  ", secs, ms); // + 1 for the null terminator
     }
@@ -146,7 +146,6 @@ int EventLog::printfln(const char *fmt, va_list args)
 {
     char buf[256];
     auto buf_size = sizeof(buf) / sizeof(buf[0]);
-    memset(buf, 0, buf_size);
 
     auto written = vsnprintf(buf, buf_size, fmt, args);
     if (written >= buf_size) {
