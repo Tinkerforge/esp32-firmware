@@ -62,7 +62,7 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
     stage3.test_front_panel_button(qr_stand == '0' or qr_stand_wiring == '0')
     result["front_panel_button_tested"] = True
 
-    if not qr_stand == '0' or qr_stand_wiring == '0':
+    if not (qr_stand == '0' or qr_stand_wiring == '0'):
         fatal_error("WARP 3 RGB LED test not yet implemented for stand. " + blink("Complain to Erik!"))
 
     evse.set_indicator_led(255, 1000, 0, 255, 255)
