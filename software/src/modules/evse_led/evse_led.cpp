@@ -30,7 +30,10 @@ void EvseLed::pre_setup()
 
     led = Config::Object({
         {"indication", Config::Int(-1, -1, Blink::ErrorEnd)},
-        {"duration", Config::Uint16(0)}
+        {"duration", Config::Uint16(0)},
+        {"h", Config::Uint(0, 0, 360)},
+        {"s", Config::Uint8(0)},
+        {"v", Config::Uint8(0)},
     });
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -38,7 +41,10 @@ void EvseLed::pre_setup()
         AutomationActionID::LED,
         Config::Object({
             {"indication", Config::Int(-1)},
-            {"duration", Config::Uint16(0)}
+            {"duration", Config::Uint16(0)},
+            {"h", Config::Uint(0, 0, 360)},
+            {"s", Config::Uint8(0)},
+            {"v", Config::Uint8(0)},
         }),
         [this](const Config *config) {
             set_module(config->get("indication")->asEnum<Blink>(), config->get("duration")->asUint());
@@ -59,7 +65,7 @@ void EvseLed::register_urls()
 
     // Has to be named this way, because evse/indicator_led is the corresponding read API.
     api.addCommand("evse/indicator_led_update", &led, {}, [this](){
-        this->set_api(led.get("indication")->asEnum<EvseLed::Blink>(), led.get("duration")->asUint());
+        this->set_api(led.get("indication")->asEnum<EvseLed::Blink>(), led.get("duration")->asUint(), led.get("h")->asUint(), led.get("s")->asUint(), led.get("v")->asUint());
     }, true);
 }
 
@@ -122,7 +128,7 @@ bool EvseLed::accepts_new_state(Blink new_state)
     }
 }
 
-bool EvseLed::set(Blink state, uint16_t duration_ms, bool via_api)
+bool EvseLed::set(Blink state, uint16_t duration_ms, uint16_t h, uint8_t s, uint8_t v, bool via_api)
 {
     if (!accepts_new_state(state))
         return false;
@@ -131,7 +137,7 @@ bool EvseLed::set(Blink state, uint16_t duration_ms, bool via_api)
 
     uint8_t error_code = 1;
 
-    evse_common.set_indicator_led(state, duration_ms, 0, 0, 0, &error_code); //Don't set colors for now, let the EVSE choose.
+    evse_common.set_indicator_led(state, duration_ms, h, s, v, &error_code); //Don't set colors for now, let the EVSE choose.
 
     if (error_code == 0) {
         current_state = state;
@@ -141,18 +147,18 @@ bool EvseLed::set(Blink state, uint16_t duration_ms, bool via_api)
     return error_code == 0;
 }
 
-bool EvseLed::set_module(Blink state, uint16_t duration_ms)
+bool EvseLed::set_module(Blink state, uint16_t duration_ms, uint16_t h, uint8_t s, uint8_t v)
 {
     // Allow modules to override API only if module reports an error and API does not.
     // Don't allow modules to set non-error states.
     // Don't allow modules to override error states with other error states.
     if (!config_in_use.get("enable_api")->asBool() || (is_error(state) && !is_error(current_state)))
-        return set(state, duration_ms, false);
+        return set(state, duration_ms, h, s, v, false);
 
     return false;
 }
 
-bool EvseLed::set_api(Blink state, uint16_t duration_ms)
+bool EvseLed::set_api(Blink state, uint16_t duration_ms, uint16_t h, uint8_t s, uint8_t v)
 {
     if (!config_in_use.get("enable_api")->asBool())
         return false;
@@ -161,5 +167,5 @@ bool EvseLed::set_api(Blink state, uint16_t duration_ms)
     if (!current_state_via_api && is_error(current_state))
         return false;
 
-    return set(state, duration_ms, true);
+    return set(state, duration_ms, h, s, v, true);
 }

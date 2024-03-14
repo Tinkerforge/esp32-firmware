@@ -44,15 +44,18 @@ public:
         ErrorEnd = 2010,
     };
 
-    bool set_module(Blink state, uint16_t duration_ms);
-    bool set_api(Blink state, uint16_t duration_ms);
+    // If v is 0 the EVSE selects the color of the indication/state
+    bool set_module(Blink state, uint16_t duration_ms, uint16_t h = 0, uint8_t s = 0, uint8_t v = 0);
+
+    // If v is 0 the EVSE selects the color of the indication/state
+    bool set_api(Blink state, uint16_t duration_ms, uint16_t h = 0, uint8_t s = 0, uint8_t v = 0);
 
     ConfigRoot config, config_in_use;
     ConfigRoot led;
 
 private:
     bool accepts_new_state(Blink state);
-    bool set(Blink state, uint16_t duration_ms, bool via_api);
+    bool set(Blink state, uint16_t duration_ms, uint16_t h, uint8_t s, uint8_t v, bool via_api);
 
     Blink current_state = Blink::None;
     micros_t current_duration_end_us = 0_usec;
