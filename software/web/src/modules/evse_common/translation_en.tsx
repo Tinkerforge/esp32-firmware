@@ -189,6 +189,10 @@ let x = {
             "ev_wakeup_desc_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
             "ev_wakeup": "Attempts to wake up the charge controller of the connected vehicle by fake-un and -re-plugging the charge cable.",
 
+            "phase_auto_switch_desc": "Automatic phase switch Automatischer Phasenwechsel",
+            "phase_auto_switch_desc_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
+            "phase_auto_switch": "Automatically switches to single phase charging if the connected vehicle only draws current on L1.",
+
             "dc_fault_current_state": "DC fault protector state",
             "dc_fault_current_state_desc": "",
             "dc_fault_current_ok": "OK",

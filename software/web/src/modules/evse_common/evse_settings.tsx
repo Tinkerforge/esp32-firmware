@@ -41,6 +41,7 @@ interface EVSESettingsState {
     slots: Readonly<API.getType['evse/slots']>;
     gpio_cfg: API.getType['evse/gpio_configuration'];
     ev_wakeup: API.getType['evse/ev_wakeup'];
+    phase_auto_switch: API.getType['evse/phase_auto_switch'];
     boost_mode: API.getType['evse/boost_mode'];
     auto_start_charging: API.getType['evse/auto_start_charging'];
     require_meter_enabled: API.getType['require_meter/config'];
@@ -67,6 +68,10 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
 
         util.addApiEventListener('evse/ev_wakeup', () => {
             this.setState({ev_wakeup: API.get('evse/ev_wakeup')});
+        });
+
+        util.addApiEventListener('evse/phase_auto_switch', () => {
+            this.setState({phase_auto_switch: API.get('evse/phase_auto_switch')});
         });
 
         util.addApiEventListener('evse/boost_mode', () => {
@@ -109,6 +114,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             await API.save('evse/button_configuration', {"button": this.state.button_cfg.button}, __("evse.script.save_failed"));
             await API.save('evse/gpio_configuration', this.state.gpio_cfg, __("evse.script.gpio_configuration_failed"));
             await API.save('evse/ev_wakeup', {"enabled": this.state.ev_wakeup.enabled}, __("evse.script.save_failed"));
+            await API.save('evse/phase_auto_switch', {"enabled": this.state.phase_auto_switch.enabled}, __("evse.script.save_failed"));
         }
 
         super.sendSave(t, cfg);
@@ -127,6 +133,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             await API.save('evse/button_configuration', {"button": 2}, __("evse.script.save_failed"));
             await API.save('evse/gpio_configuration', {"input": 0, "output": 1, "shutdown_input": 0}, __("evse.script.gpio_configuration_failed"));
             await API.save('evse/ev_wakeup', {"enabled": true}, __("evse.script.save_failed"));
+            await API.save('evse/phase_auto_switch', {"enabled": true}, __("evse.script.save_failed"));
         }
 
         super.sendReset(t);
@@ -145,6 +152,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             result ||= API.is_modified('evse/button_configuration');
             result ||= API.is_modified('evse/gpio_configuration');
             result ||= API.is_modified('evse/ev_wakeup');
+            result ||= API.is_modified('evse/phase_auto_switch');
         }
 
         result ||= super.getIsModified(t);
@@ -160,6 +168,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             slots,
             gpio_cfg,
             ev_wakeup,
+            phase_auto_switch,
             boost_mode,
             auto_start_charging,
             require_meter_enabled,
@@ -329,6 +338,12 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                             <Switch desc={__("evse.content.ev_wakeup")}
                                     checked={ev_wakeup.enabled}
                                     onClick={async () => this.setState({ev_wakeup: {enabled: !ev_wakeup.enabled}})}/>
+                        </FormRow>
+
+                        <FormRow label={__("evse.content.phase_auto_switch_desc")} label_muted={__("evse.content.phase_auto_switch_desc_muted")}>
+                            <Switch desc={__("evse.content.phase_auto_switch")}
+                                    checked={phase_auto_switch.enabled}
+                                    onClick={async () => this.setState({phase_auto_switch: {enabled: !phase_auto_switch.enabled}})}/>
                         </FormRow>
                         </>
                     }

@@ -141,6 +141,11 @@ void EVSEV2::pre_setup()
     });
     ev_wakeup_update = ev_wakeup;
 
+    phase_auto_switch = Config::Object({
+        {"enabled", Config::Bool(false)}
+    });
+    phase_auto_switch_update = phase_auto_switch;
+
     control_pilot_disconnect = Config::Object({
         {"disconnect", Config::Bool(false)}
     });
@@ -284,6 +289,11 @@ void EVSEV2::post_register_urls()
     api.addState("evse/ev_wakeup", &ev_wakeup);
     api.addCommand("evse/ev_wakeup_update", &ev_wakeup_update, {}, [this](){
         is_in_bootloader(tf_evse_v2_set_ev_wakeup(&device, ev_wakeup_update.get("enabled")->asBool()));
+    }, true);
+
+    api.addState("evse/phase_auto_switch", &phase_auto_switch);
+    api.addCommand("evse/phase_auto_switch_update", &phase_auto_switch_update, {}, [this](){
+        is_in_bootloader(tf_evse_v2_set_phase_auto_switch(&device, phase_auto_switch_update.get("enabled")->asBool()));
     }, true);
 
     api.addState("evse/control_pilot_disconnect", &control_pilot_disconnect);
@@ -734,6 +744,7 @@ void EVSEV2::update_all_data()
     uint8_t phases_requested;
     uint8_t phases_state;
     uint8_t phases_info;
+    bool phase_auto_switch_enabled;
 
     // get_low_level_state - 61 byte
     uint8_t led_state;
@@ -796,7 +807,8 @@ void EVSEV2::update_all_data()
                                    &phases_current,
                                    &phases_requested,
                                    &phases_state,
-                                   &phases_info);
+                                   &phases_info,
+                                   &phase_auto_switch_enabled);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_2 %d", rc);
@@ -981,6 +993,7 @@ void EVSEV2::update_all_data()
     evse_common.button_state.get("button_pressed")->updateBool(button_pressed);
 
     ev_wakeup.get("enabled")->updateBool(ev_wakeup_enabled);
+    phase_auto_switch.get("enabled")->updateBool(phase_auto_switch_enabled);
     evse_common.boost_mode.get("enabled")->updateBool(boost_mode_enabled);
 
     control_pilot_disconnect.get("disconnect")->updateBool(cp_disconnect);

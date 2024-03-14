@@ -163,6 +163,10 @@ export interface ev_wakeup {
     enabled: boolean;
 }
 
+export interface phase_auto_switch {
+    enabled: boolean;
+}
+
 export interface control_pilot_disconnect {
     disconnect: boolean;
 }

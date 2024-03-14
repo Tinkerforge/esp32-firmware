@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-03-05.      *
+ * This file was automatically generated on 2024-03-14.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -250,6 +250,16 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
+#define TF_EVSE_V2_FUNCTION_SET_PHASE_AUTO_SWITCH 41
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_PHASE_AUTO_SWITCH 42
+
+/**
+ * \ingroup TF_EVSEV2
+ */
 #define TF_EVSE_V2_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
@@ -312,7 +322,7 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CALLBACK_ENERGY_METER_VALUES 41
+#define TF_EVSE_V2_CALLBACK_ENERGY_METER_VALUES 43
 
 #endif
 
@@ -1142,7 +1152,7 @@ int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, u
  *
  * TODO
  */
-int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info);
+int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info, bool *ret_phase_auto_switch_enabled);
 
 /**
  * \ingroup TF_EVSEV2
@@ -1206,6 +1216,20 @@ int tf_evse_v2_set_phase_control(TF_EVSEV2 *evse_v2, uint8_t phases);
  * TODO
  */
 int tf_evse_v2_get_phase_control(TF_EVSEV2 *evse_v2, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_phase_auto_switch(TF_EVSEV2 *evse_v2, bool phase_auto_switch_enabled);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_phase_auto_switch(TF_EVSEV2 *evse_v2, bool *ret_phase_auto_switch_enabled);
 
 /**
  * \ingroup TF_EVSEV2

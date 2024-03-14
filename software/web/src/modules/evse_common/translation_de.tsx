@@ -189,6 +189,10 @@ let x = {
             "ev_wakeup_desc_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
             "ev_wakeup": "Versucht die Ladeelektronik des Fahrzeugs aus einem Energiesparmodus zu wecken, indem ein Abziehen und Anstecken des Ladekabels vorgetäuscht wird.",
 
+            "phase_auto_switch_desc": "Automatischer Phasenwechsel",
+            "phase_auto_switch_desc_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
+            "phase_auto_switch": "Schaltet automatisch auf einphasiges Laden um, wenn das angeschlossene Fahrzeug nur auf L1 Strom bezieht.",
+
             "dc_fault_current_state": "DC-Fehlerstromzustand",
             "dc_fault_current_state_desc": "",
             "dc_fault_current_ok": "OK",
