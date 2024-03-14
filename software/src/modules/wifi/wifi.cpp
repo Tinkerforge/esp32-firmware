@@ -277,25 +277,28 @@ void Wifi::apply_soft_ap_config_and_start()
     gateway.fromString(ap_config_in_use.get("gateway")->asEphemeralCStr());
     subnet.fromString(ap_config_in_use.get("subnet")->asEphemeralCStr());
 
-    int counter = 0;
-    while (ip != WiFi.softAPIP()) {
-        if (!WiFi.softAPConfig(ip, gateway, subnet))
-            logger.printfln("WiFi.softAPConfig() failed. Try different Access Point settings.");
-        ++counter;
-    }
-    logger.printfln("Had to configure soft AP IP address %d times.", counter);
-    logger.printfln("Wifi soft AP started");
-    logger.printfln("    SSID: %s", ap_config_in_use.get("ssid")->asEphemeralCStr());
-
     WiFi.softAP(ap_config_in_use.get("ssid")->asEphemeralCStr(),
                 ap_config_in_use.get("passphrase")->asEphemeralCStr(),
                 channel_to_use,
                 ap_config_in_use.get("hide_ssid")->asBool());
+
+    int ap_config_attempts = 0;
+    do {
+        if (!WiFi.softAPConfig(ip, gateway, subnet)) {
+            logger.printfln("WiFi.softAPConfig() failed. Try different Access Point settings.");
+        }
+        ++ap_config_attempts;
+    } while (ip != WiFi.softAPIP());
+
     WiFi.setSleep(false);
 
-    IPAddress myIP = WiFi.softAPIP();
+    if (ap_config_attempts != 1) {
+        logger.printfln("Had to configure soft AP IP address %d times.", ap_config_attempts);
+    }
+    logger.printfln("Wifi soft AP started");
+    logger.printfln("    SSID: %s", ap_config_in_use.get("ssid")->asEphemeralCStr());
     logger.printfln("    MAC address: %s", WiFi.softAPmacAddress().c_str());
-    logger.printfln("    IP address: %s", myIP.toString().c_str());
+    logger.printfln("    IP address: %s", ip.toString().c_str());
 }
 
 bool Wifi::apply_sta_config_and_connect()
