@@ -220,7 +220,7 @@ void PowerManager::setup()
     } else {
         power_at_meter_mavg_values_count = static_cast<int32_t>(power_mavg_span_s * 1000 / PM_TASK_DELAY_MS);
     }
-    power_at_meter_mavg_values_w = static_cast<int32_t*>(malloc_psram(static_cast<size_t>(power_at_meter_mavg_values_count) * sizeof(power_at_meter_mavg_values_w[0])));
+    power_at_meter_mavg_values_w = static_cast<int32_t *>(heap_caps_malloc_prefer(static_cast<size_t>(power_at_meter_mavg_values_count) * sizeof(power_at_meter_mavg_values_w[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM));
 
     // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
     uint32_t hysteresis_min_ms = 10 * 1000;  // milliseconds
