@@ -276,7 +276,7 @@ String EVSE::get_evse_debug_line()
     uint32_t time_since_state_change;
     uint32_t uptime;
 
-    // get_all_charging_slots - 60 byte
+    // get_all_charging_slots
     uint16_t max_current[20];
     uint8_t active_and_clear_on_disconnect[20];
 
@@ -398,7 +398,7 @@ void EVSE::update_all_data()
     if (!initialized)
         return;
 
-    // get_all_data_1 - 51 byte
+    // get_all_data_1
     uint8_t iec61851_state;
     uint8_t charger_state;
     uint8_t contactor_state;
@@ -411,14 +411,14 @@ void EVSE::update_all_data()
     uint8_t evse_version;
     bool boost_mode_enabled;
 
-    // get_all_data_2 - 18 byte
+    // get_all_data_2
     int16_t indication;
     uint16_t duration;
     uint32_t button_press_time;
     uint32_t button_release_time;
     bool button_pressed;
 
-    // get_low_level_state - 57 byte
+    // get_low_level_state
     uint8_t led_state;
     uint16_t cp_pwm_duty_cycle;
     uint16_t adc_values[2];
@@ -429,11 +429,11 @@ void EVSE::update_all_data()
     uint32_t time_since_state_change;
     uint32_t uptime;
 
-    // get_all_charging_slots - 60 byte
+    // get_all_charging_slots
     uint16_t max_current[20];
     uint8_t active_and_clear_on_disconnect[20];
 
-    // get_user_calibration - 37 byte
+    // get_user_calibration
     bool user_calibration_active;
     int16_t voltage_diff;
     int16_t voltage_mul;

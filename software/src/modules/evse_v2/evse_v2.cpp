@@ -516,7 +516,7 @@ String EVSEV2::get_evse_debug_line()
     bool phases_connected[3];
     uint32_t error_count[6];
 
-    // get_low_level_state - 61 byte
+    // get_low_level_state
     uint8_t led_state;
     uint16_t cp_pwm_duty_cycle;
     uint16_t adc_values[7];
@@ -528,7 +528,7 @@ String EVSEV2::get_evse_debug_line()
     uint32_t time_since_dc_fault_check;
     uint32_t uptime;
 
-    // get_all_charging_slots - 60 byte
+    // get_all_charging_slots
     uint16_t max_current[20];
     uint8_t active_and_clear_on_disconnect[20];
 
@@ -709,7 +709,7 @@ void EVSEV2::update_all_data()
     if (!initialized)
         return;
 
-    // get_all_data_1 - 51 byte
+    // get_all_data_1
     uint8_t iec61851_state;
     uint8_t charger_state;
     uint8_t contactor_state;
@@ -723,7 +723,7 @@ void EVSEV2::update_all_data()
     uint8_t evse_version;
     struct meter_data meter_data;
 
-    // get_all_data_2 - 26 byte
+    // get_all_data_2
     uint8_t shutdown_input_configuration;
     uint8_t input_configuration;
     uint8_t output_configuration;
@@ -746,7 +746,7 @@ void EVSEV2::update_all_data()
     uint8_t phases_info;
     bool phase_auto_switch_enabled;
 
-    // get_low_level_state - 61 byte
+    // get_low_level_state
     uint8_t led_state;
     uint16_t cp_pwm_duty_cycle;
     uint16_t adc_values[7];
@@ -758,7 +758,7 @@ void EVSEV2::update_all_data()
     uint32_t time_since_dc_fault_check;
     uint32_t uptime;
 
-    // get_all_charging_slots - 60 byte
+    // get_all_charging_slots
     uint16_t max_current[20];
     uint8_t active_and_clear_on_disconnect[20];
 
