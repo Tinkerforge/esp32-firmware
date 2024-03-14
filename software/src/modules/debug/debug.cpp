@@ -39,8 +39,19 @@ static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_c
 
 extern uint8_t _text_start;
 
+static void malloc_failed_hook(size_t size, uint32_t caps, const char *function_name)
+{
+    logger.printfln("malloc_failed_hook size=%u caps=0x%x fn=%s", size, caps, function_name);
+
+    multi_heap_info_t ram_info;
+    heap_caps_get_info(&ram_info, caps);
+    logger.printfln(" free=%u largest=%u", ram_info.total_free_bytes, ram_info.largest_free_block);
+}
+
 void Debug::pre_setup()
 {
+    heap_caps_register_failed_alloc_callback(malloc_failed_hook);
+
     size_t internal_heap_size = heap_caps_get_total_size(MALLOC_CAP_INTERNAL);
     size_t dram_heap_size     = heap_caps_get_total_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     size_t iram_heap_size     = internal_heap_size - dram_heap_size;
@@ -162,12 +173,16 @@ void Debug::setup()
         state_slow.get("largest_free_dram_block")->updateUint(dram_info.largest_free_block);
         state_slow.get("largest_free_psram_block")->updateUint(psram_info.largest_free_block);
 
+        if (dram_info.largest_free_block < 2000) {
+            logger.printfln("debug: Heap full. Largest block is %u bytes.", dram_info.largest_free_block);
+        }
+
 
         uint32_t task_count = this->task_handles.size();
         for (uint16_t i = 0; i < task_count; i++) {
             uint32_t hwm = uxTaskGetStackHighWaterMark(this->task_handles[i]);
             Config *conf_task_hwm = static_cast<Config *>(this->state_hwm.get(i));
-            if (conf_task_hwm->get("hwm")->updateUint(hwm) && hwm < 400 && this->show_hwm_changes) {
+            if (conf_task_hwm->get("hwm")->updateUint(hwm) && hwm < 200 && this->show_hwm_changes) {
                 logger.printfln("debug: HWM of task '%s' changed: %u", conf_task_hwm->get("task_name")->asUnsafeCStr(), hwm);
             }
         }
