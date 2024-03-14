@@ -38,6 +38,9 @@ extern Mqtt mqtt;
 
 extern char local_uid_str[32];
 
+// Default task stack size in mqtt_config.h is 6144.
+#define MQTT_TASK_STACK_SIZE 6144U
+
 #if defined(BOARD_HAS_PSRAM)
 #define MQTT_RECV_BUFFER_SIZE 6144U
 #define MQTT_SEND_BUFFER_SIZE 32768U
@@ -584,6 +587,7 @@ void Mqtt::setup()
     mqtt_cfg.client_id = config_in_use.get("client_name")->asEphemeralCStr();
     mqtt_cfg.username = config_in_use.get("broker_username")->asEphemeralCStr();
     mqtt_cfg.password = config_in_use.get("broker_password")->asEphemeralCStr();
+    mqtt_cfg.task_stack = MQTT_TASK_STACK_SIZE;
     mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE;
     mqtt_cfg.out_buffer_size = MQTT_SEND_BUFFER_SIZE;
     mqtt_cfg.network_timeout_ms = 1000;
@@ -709,13 +713,13 @@ void Mqtt::register_events()
     if (start_immediately) {
         esp_mqtt_client_start(client);
 #if MODULE_DEBUG_AVAILABLE()
-        debug.register_task("mqtt_task", 6144); // stack size from mqtt_config.h
+        debug.register_task("mqtt_task", MQTT_TASK_STACK_SIZE);
 #endif
     } else {
         task_scheduler.scheduleOnce([this]() {
             esp_mqtt_client_start(client);
 #if MODULE_DEBUG_AVAILABLE()
-            debug.register_task("mqtt_task", 6144); // stack size from mqtt_config.h
+            debug.register_task("mqtt_task", MQTT_TASK_STACK_SIZE);
 #endif
         }, 20000);
     }
