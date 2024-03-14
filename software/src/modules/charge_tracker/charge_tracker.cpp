@@ -746,7 +746,7 @@ void ChargeTracker::register_urls()
     }, true);
 
     server.on_HTTPThread("/charge_tracker/pdf", HTTP_PUT, [this](WebServerRequest request) {
-        logger.printfln("Beginning PDF generation. Please ignore timeout errors (rc -1 etc.) for the next minute!");
+        logger.printfln("Beginning PDF generation. Please ignore timeout errors (rc -1 etc.) until it is done.");
         #define USER_FILTER_ALL_USERS -2
         #define USER_FILTER_DELETED_USERS -1
         int user_filter = USER_FILTER_ALL_USERS;
