@@ -44,7 +44,8 @@ def main():
     result = {"start": now()}
 
     print("Checking ESP state")
-    mac_address = check_if_esp_is_sane_and_get_mac(ignore_flash_errors=True, allowed_revision=3.1 if firmware_type == "warp3" else 3)
+    #allowed_revision=3.1 if firmware_type == "warp3" else 3
+    mac_address = check_if_esp_is_sane_and_get_mac(ignore_flash_errors=True, allowed_revision=3)
     print("MAC Address is {}".format(mac_address))
     result["mac"] = mac_address
 
