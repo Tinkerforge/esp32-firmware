@@ -104,8 +104,24 @@ def connect_ethernet(ip):
 
     print(" Connected.")
 
-def test_rtc_time(ip):
+def test_rtc_time(ip, wait_for_ntp):
     print("Testing RTC")
+    if wait_for_ntp:
+        print("    Waiting for NTP sync")
+        for i in range(30):
+            start = time.time()
+            try:
+                with urllib.request.urlopen(f"http://{ip}/ntp/state", timeout=1) as f:
+                    if json.loads(f.read())["synced"]:
+                        break
+            except:
+                pass
+            t = max(0, 1 - (time.time() - start))
+            time.sleep(t)
+            print(".", end="")
+        else:
+            fatal_error("NTP did not sync in 30 seconds!")
+
     try:
         with urllib.request.urlopen(f"http://{ip}/rtc/time", timeout=10) as f:
             t = json.loads(f.read())
@@ -210,7 +226,7 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
 
     result["temperature_test_successful"] = True
 
-    test_rtc_time(ethernet_ip)
+    test_rtc_time(ethernet_ip, wait_for_ntp=True)
 
     print("Testing RTC supercap")
 
@@ -226,7 +242,7 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
         with urllib.request.urlopen(req, timeout=1) as f:
             f.read()
     except:
-        pass
+        fatal_error("Failed to disable NTP")
 
     power_off_fn()
     time.sleep(10)
@@ -234,7 +250,7 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
 
     connect_ethernet(ethernet_ip)
 
-    test_rtc_time(ethernet_ip)
+    test_rtc_time(ethernet_ip, wait_for_ntp=False)
 
     result["rtc_test_successful"] = True
 
