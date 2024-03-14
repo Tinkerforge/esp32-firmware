@@ -206,70 +206,67 @@ void Wifi::apply_soft_ap_config_and_start()
     // if we are still scanning for a channel.
     soft_ap_running = true;
 
-    if (channel_to_use == 0 && scan_start_time == 0) {
-        logger.printfln("Starting scan to select unoccupied channel for soft AP.");
-        WiFi.scanDelete();
-        WiFi.scanNetworks(true, true);
-        scan_start_time = millis();
-        task_scheduler.scheduleOnce([this](){
-            this->apply_soft_ap_config_and_start();
-        }, 500);
-        return;
-    }
-
-    if (channel_to_use == 0 && scan_start_time != 0 && !deadline_elapsed(scan_start_time + 10000)) {
-        int network_count = WiFi.scanComplete();
-
-        if (network_count == WIFI_SCAN_RUNNING) {
-            task_scheduler.scheduleOnce([this](){
+    if (channel_to_use == 0) {
+        if (scan_start_time == 0) {
+            logger.printfln("Wifi starting scan to select unoccupied channel for soft AP");
+            WiFi.scanDelete();
+            WiFi.scanNetworks(true, true);
+            scan_start_time = millis();
+            task_scheduler.scheduleOnce([this]() {
                 this->apply_soft_ap_config_and_start();
             }, 500);
             return;
-        }
+        } else { // Scan already started
+            int network_count = WiFi.scanComplete();
 
-        if (network_count == WIFI_SCAN_FAILED) {
-            task_scheduler.scheduleOnce([this](){
-                this->apply_soft_ap_config_and_start();
-            }, 500);
-        }
+            if (network_count == WIFI_SCAN_RUNNING && !deadline_elapsed(scan_start_time + 10000)) {
+                task_scheduler.scheduleOnce([this]() {
+                    this->apply_soft_ap_config_and_start();
+                }, 500);
+                return;
+            }
 
-        float channels[14] = {0}; // Don't use 0, channels are one-based.
-        float channels_smeared[14] = {0}; // Don't use 0, channels are one-based.
-        for (int i = 0; i < network_count; ++i) {
-            wifi_ap_record_t *info = (wifi_ap_record_t *)WiFi.getScanInfoByIndex(i);
+            if (network_count >= 0) { // Scan finished successfully
+                float channels[14] = {0}; // Don't use 0, channels are one-based.
+                float channels_smeared[14] = {0}; // Don't use 0, channels are one-based.
+                for (int i = 0; i < network_count; ++i) {
+                    wifi_ap_record_t *info = (wifi_ap_record_t *)WiFi.getScanInfoByIndex(i);
 
-            int channel = info->primary;
-            float weight = rssi_to_weight(info->rssi);
-            apply_weight(channels, channel, weight);
+                    int channel = info->primary;
+                    float weight = rssi_to_weight(info->rssi);
+                    apply_weight(channels, channel, weight);
 
-            if (info->second == WIFI_SECOND_CHAN_ABOVE) {
-                apply_weight(channels, channel + 4, weight);
-            } else if (info->second == WIFI_SECOND_CHAN_BELOW) {
-                apply_weight(channels, channel - 4, weight);
+                    if (info->second == WIFI_SECOND_CHAN_ABOVE) {
+                        apply_weight(channels, channel + 4, weight);
+                    } else if (info->second == WIFI_SECOND_CHAN_BELOW) {
+                        apply_weight(channels, channel - 4, weight);
+                    }
+                }
+
+                memcpy(channels_smeared, channels, sizeof(channels_smeared) / sizeof(channels_smeared[0]));
+
+                for (int i = 1; i <= 13; ++i) {
+                    if (i > 1)
+                        channels_smeared[i] += channels[i - 1];
+                    if (i < 13)
+                        channels_smeared[i] += channels[i + 1];
+                }
+
+                int min = 1;
+                for (int i = 1; i <= 13; ++i) {
+                    if (channels_smeared[i] < channels_smeared[min])
+                        min = i;
+                }
+                logger.printfln("Wifi selecting channel %d for soft AP", min);
+                channel_to_use = min;
+            }
+
+            // If channel_to_use is still 0, either a timeout occurred or the scan failed.
+            if (channel_to_use == 0) {
+                channel_to_use = (esp_random() % 4) * 4 + 1;
+                logger.printfln("Channel selection scan timeout elapsed! Randomly selected channel %i", channel_to_use);
             }
         }
-
-        memcpy(channels_smeared, channels, sizeof(channels_smeared) / sizeof(channels_smeared[0]));
-
-        for (int i = 1; i <= 13; ++i) {
-            if (i > 1)
-                channels_smeared[i] += channels[i - 1];
-            if (i < 13)
-                channels_smeared[i] += channels[i + 1];
-        }
-
-        int min = 1;
-        for (int i = 1; i <= 13; ++i) {
-            if (channels_smeared[i] < channels_smeared[min])
-                min = i;
-        }
-        logger.printfln("Selecting channel %d for softAP", min);
-        channel_to_use = min;
-
-    }
-    if (channel_to_use == 0 && scan_start_time != 0 && deadline_elapsed(scan_start_time + 10000)) {
-        channel_to_use = (esp_random() % 4) * 4 + 1;
-        logger.printfln("Channel selection scan timeout elapsed! Randomly selected channel %i", channel_to_use);
     }
 
     IPAddress ip, gateway, subnet;
