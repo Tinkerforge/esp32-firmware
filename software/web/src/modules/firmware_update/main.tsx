@@ -28,10 +28,10 @@ import { InputFile } from "../../ts/components/input_file";
 import { Button } from "react-bootstrap";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
-import { Clock } from "react-feather";
+import { Upload } from "react-feather";
 
 export function FirmwareUpdateNavbar() {
-    return <NavbarItem name="flash" module="firmware_update" title={__("firmware_update.navbar.flash")} symbol={<Clock />} />;
+    return <NavbarItem name="flash" module="firmware_update" title={__("firmware_update.navbar.flash")} symbol={<Upload />} />;
 }
 
 type FirmwareUpdateConfig = API.getType["info/version"];
