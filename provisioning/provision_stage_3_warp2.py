@@ -741,11 +741,12 @@ class Stage3:
             fatal_error('Wallbox not in IEC state C')
 
     # requires power_on
-    def test_wallbox(self):
+    def test_wallbox(self, has_phase_switch):
         assert self.has_evse_error_function != None
         assert self.get_iec_state_function != None
         assert self.reset_dc_fault_function != None
-        assert self.switch_phases_function != None
+        if has_phase_switch:
+            assert self.switch_phases_function != None
 
         if self.read_meter_qr_code() != '01':
             fatal_error('Meter in wrong step')
@@ -877,61 +878,62 @@ class Stage3:
 
         self.connect_warp_power(['L1', 'L2', 'L3'])
 
-        time.sleep(RELAY_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
+        if has_phase_switch:
+            time.sleep(RELAY_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
 
-        voltages = self.read_voltage_monitors()
+            voltages = self.read_voltage_monitors()
 
-        print('Reading voltages as {0}'.format(voltages))
+            print('Reading voltages as {0}'.format(voltages))
 
-        if voltages[0] < VOLTAGE_ON_THRESHOLD:
-            fatal_error('Missing voltage on L1')
+            if voltages[0] < VOLTAGE_ON_THRESHOLD:
+                fatal_error('Missing voltage on L1')
 
-        if voltages[1] < VOLTAGE_OFF_THRESHOLD:
-            fatal_error('Missing voltage on L2')
+            if voltages[1] < VOLTAGE_OFF_THRESHOLD:
+                fatal_error('Missing voltage on L2')
 
-        if voltages[2] < VOLTAGE_ON_THRESHOLD:
-            fatal_error('Missing voltage on L3')
+            if voltages[2] < VOLTAGE_ON_THRESHOLD:
+                fatal_error('Missing voltage on L3')
 
-        print('Testing phase switch')
+            print('Testing phase switch')
 
-        self.switch_phases_function(1)
+            self.switch_phases_function(1)
 
-        time.sleep(PHASE_SWITCH_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
+            time.sleep(PHASE_SWITCH_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
 
-        voltages = self.read_voltage_monitors()
+            voltages = self.read_voltage_monitors()
 
-        print('Reading voltages as {0}'.format(voltages))
+            print('Reading voltages as {0}'.format(voltages))
 
-        if voltages[0] < VOLTAGE_ON_THRESHOLD:
-            fatal_error('Missing voltage on L1')
+            if voltages[0] < VOLTAGE_ON_THRESHOLD:
+                fatal_error('Missing voltage on L1')
 
-        if voltages[1] > VOLTAGE_OFF_THRESHOLD:
-            fatal_error('Unexpected voltage on L2')
+            if voltages[1] > VOLTAGE_OFF_THRESHOLD:
+                fatal_error('Unexpected voltage on L2')
 
-        if voltages[2] > VOLTAGE_ON_THRESHOLD:
-            fatal_error('Unexpected voltage on L3')
+            if voltages[2] > VOLTAGE_ON_THRESHOLD:
+                fatal_error('Unexpected voltage on L3')
 
 
-        self.switch_phases_function(3)
+            self.switch_phases_function(3)
 
-        time.sleep(PHASE_SWITCH_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
+            time.sleep(PHASE_SWITCH_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
 
-        voltages = self.read_voltage_monitors()
+            voltages = self.read_voltage_monitors()
 
-        print('Reading voltages as {0}'.format(voltages))
+            print('Reading voltages as {0}'.format(voltages))
 
-        if voltages[0] < VOLTAGE_ON_THRESHOLD:
-            fatal_error('Missing voltage on L1')
+            if voltages[0] < VOLTAGE_ON_THRESHOLD:
+                fatal_error('Missing voltage on L1')
 
-        if voltages[1] < VOLTAGE_OFF_THRESHOLD:
-            fatal_error('Missing voltage on L2')
+            if voltages[1] < VOLTAGE_OFF_THRESHOLD:
+                fatal_error('Missing voltage on L2')
 
-        if voltages[2] < VOLTAGE_ON_THRESHOLD:
-            fatal_error('Missing voltage on L3')
+            if voltages[2] < VOLTAGE_ON_THRESHOLD:
+                fatal_error('Missing voltage on L3')
 
-        self.connect_voltage_monitors(False)
+            self.connect_voltage_monitors(False)
 
-        time.sleep(RELAY_SETTLE_DURATION)
+            time.sleep(RELAY_SETTLE_DURATION)
 
         # step 01: test PE disconnect
         print('Disconnecting PE')
