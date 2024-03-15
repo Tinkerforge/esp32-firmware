@@ -155,13 +155,23 @@ let x = {
             "user_calibration_reset": "Reset",
 
             // EVSE V2 only
+            "evse_v2_gpio_names_0": "current configuration 0, motor fault, DC fault, current configuration 1",
+            "evse_v2_gpio_names_1": "DC fault protector test, GP shutdown, button, CP PWM",
+            "evse_v2_gpio_names_2": "motor input switch, contactor, GP output, CP disconnect",
+            "evse_v2_gpio_names_3": "motor active, motor phase, contactor check before, contactor check behind",
+            "evse_v2_gpio_names_4": "GP input, DC X6, DC X30, LED",
+            "evse_v2_gpio_names_5": "unused",
+
+            // EVSE V3 only
+            "evse_v3_gpio_names_0": "DC X30, DC X6, DC fault, DC fault protector test",
+            "evse_v3_gpio_names_1": "EVSE status LED, button, LED red, LED blue",
+            "evse_v3_gpio_names_2": "LED green, CP PWM, contactor 1, contactor 0",
+            "evse_v3_gpio_names_3": "contactor 1 feedback, contactor 0 feedback, PE check, current configuration 1",
+            "evse_v3_gpio_names_4": "CP disconnect, current configuration 0, GP shutdown, version detect",
+            "evse_v3_gpio_names_5": "unused",
+
+            // EVSE V2 and V3
             "energy_meter_type": "Energy meter type",
-            "gpio_names_0": "current configuration 0, motor fault, DC fault, current configuration 1",
-            "gpio_names_1": "DC fault protector test, shutdown, button, CP-PWM",
-            "gpio_names_2": "motor input switch, contactor, GP output, CP separation",
-            "gpio_names_3": "motor active, motor phase, contactor check before, contactor check behind",
-            "gpio_names_4": "GP input, DC X6, DC X30, LED",
-            "gpio_names_5": "unused",
             "gpio_shutdown_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
             "gpio_shutdown_not_configured": "Not configured",
             "gpio_shutdown_on_open": "Shut down on open",

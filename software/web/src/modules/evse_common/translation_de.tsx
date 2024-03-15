@@ -155,13 +155,23 @@ let x = {
             "user_calibration_reset": "Zurücksetzen",
 
             // EVSE V2 only
+            "evse_v2_gpio_names_0": "Stromkonfiguration 0, Motorfehler, DC-Fehler, Stromkonfiguration 1",
+            "evse_v2_gpio_names_1": "DC-Fehlerstromschutz-Test, Abschalteingang, Taster, CP-PWM",
+            "evse_v2_gpio_names_2": "Motoreingangsschalter, Schützsteuerung, Konfigurierbarer Ausgang, CP-Trennung",
+            "evse_v2_gpio_names_3": "Motor aktiv, Motor-Phase, Schützprüfung vorher, Schützprüfung nachher",
+            "evse_v2_gpio_names_4": "Konfigurierbarer Eingang, DC X6, DC X30, LED",
+            "evse_v2_gpio_names_5": "nicht belegt",
+
+            // EVSE V3 only
+            "evse_v3_gpio_names_0": "DC X30, DC X6, DC-Fehler, DC-Fehlerstromschutz-Test",
+            "evse_v3_gpio_names_1": "EVSE-Status-LED, Taster, LED rot, LED blau",
+            "evse_v3_gpio_names_2": "LED grün, CP-PWM, Schütz 1, Schütz 0",
+            "evse_v3_gpio_names_3": "Schütz 1 Feedback, Schütz 0 Feedback, PE-Prüfung, Stromkonfiguration 1",
+            "evse_v3_gpio_names_4": "CP-Trennung, Stromkonfiguration 0, Abschalteingang, Versionsdetektion",
+            "evse_v3_gpio_names_5": "nicht belegt",
+
+            // EVSE V2 and V3
             "energy_meter_type": "Stromzählertyp",
-            "gpio_names_0": "Stromkonfiguration 0, Motorfehler, Gleichstromfehler, Stromkonfiguration 1",
-            "gpio_names_1": "DC-Fehlerstromschutz-Test, Abschaltung, Taster, CP-PWM",
-            "gpio_names_2": "Motoreingangsschalter, Schützsteuerung, Konfigurierbarer Ausgang, CP-Trennung",
-            "gpio_names_3": "Motor aktiv, Motor-Phase, Schützprüfung vorher, Schützprüfung nachher",
-            "gpio_names_4": "Konfigurierbarer Eingang, DC X6, DC X30, LED",
-            "gpio_names_5": "nicht belegt",
             "gpio_shutdown_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
             "gpio_shutdown_not_configured": "Nicht konfiguriert",
             "gpio_shutdown_on_open": "Abschalten wenn geöffnet",
