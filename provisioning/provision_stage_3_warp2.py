@@ -916,7 +916,6 @@ class Stage3:
             if voltages[2] > VOLTAGE_ON_THRESHOLD:
                 fatal_error('Unexpected voltage on L3')
 
-
             self.switch_phases_function(3)
 
             time.sleep(PHASE_SWITCH_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
@@ -1191,25 +1190,34 @@ def main():
     button_power_on_smart.grid(row=0, column=0, padx=10, pady=10)
 
     button_power_on_pro = tk.Button(root, text='Power On - Pro', width=50, command=lambda: stage3.power_on('Pro'))
-    button_power_on_pro.grid(row=1, column=0, padx=10, pady=10)
+    button_power_on_pro.grid(row=1, column=0, padx=10, pady=0)
 
     button_power_on_cee = tk.Button(root, text='Power On - CEE', width=50, command=lambda: stage3.power_on('CEE'))
     button_power_on_cee.grid(row=2, column=0, padx=10, pady=10)
 
     button_power_off = tk.Button(root, text='Power Off', width=50, command=lambda: stage3.power_off())
-    button_power_off.grid(row=3, column=0, padx=10, pady=10)
+    button_power_off.grid(row=3, column=0, padx=10, pady=0)
 
     button_cp_pe_state_a = tk.Button(root, text='CP/PE State A', width=50, command=lambda: stage3.change_cp_pe_state('A'))
     button_cp_pe_state_a.grid(row=4, column=0, padx=10, pady=10)
 
     button_cp_pe_state_b = tk.Button(root, text='CP/PE State B', width=50, command=lambda: stage3.change_cp_pe_state('B'))
-    button_cp_pe_state_b.grid(row=5, column=0, padx=10, pady=10)
+    button_cp_pe_state_b.grid(row=5, column=0, padx=10, pady=0)
 
     button_cp_pe_state_c = tk.Button(root, text='CP/PE State C', width=50, command=lambda: stage3.change_cp_pe_state('C'))
     button_cp_pe_state_c.grid(row=6, column=0, padx=10, pady=10)
 
     button_cp_pe_state_d = tk.Button(root, text='CP/PE State D', width=50, command=lambda: stage3.change_cp_pe_state('D'))
-    button_cp_pe_state_d.grid(row=7, column=0, padx=10, pady=10)
+    button_cp_pe_state_d.grid(row=7, column=0, padx=10, pady=0)
+
+    button_meter_state_type2_l1 = tk.Button(root, text='Meter State Type2 L1', width=50, command=lambda: stage3.change_meter_state('Type2-L1'))
+    button_meter_state_type2_l1.grid(row=8, column=0, padx=10, pady=10)
+
+    button_meter_state_type2_l2 = tk.Button(root, text='Meter State Type2 L2', width=50, command=lambda: stage3.change_meter_state('Type2-L2'))
+    button_meter_state_type2_l2.grid(row=9, column=0, padx=10, pady=0)
+
+    button_meter_state_type2_l3 = tk.Button(root, text='Meter State Type2 L3', width=50, command=lambda: stage3.change_meter_state('Type2-L3'))
+    button_meter_state_type2_l3.grid(row=10, column=0, padx=10, pady=10)
 
     root.mainloop()
 
