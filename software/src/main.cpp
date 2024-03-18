@@ -38,12 +38,9 @@
 
 BootStage boot_stage = BootStage::STATIC_INITIALIZATION;
 
-struct loop_chain {
-    struct loop_chain *next;
-    IModule *imodule;
-};
-
-static struct loop_chain *loop_chain = nullptr;
+static IModule **loop_chain = nullptr;
+static size_t loop_chain_size = 0;
+static size_t loop_chain_head = 0;
 
 static bool is_module_loop_overridden(const IModule *imodule) {
 #if defined(__GNUC__)
@@ -222,16 +219,23 @@ void setup(void) {
     }
 
     // Ignore non-overridden empty loop functions.
-    // Add all overridden loop functions to a circular list for round-robin execution.
-    struct loop_chain **next_chain_ptr = &loop_chain;
     for (IModule *imodule : imodules) {
         if (is_module_loop_overridden(imodule)) {
-            *next_chain_ptr = static_cast<struct loop_chain *>(malloc(sizeof(struct loop_chain)));
-            (*next_chain_ptr)->imodule = imodule;
-            next_chain_ptr = &(*next_chain_ptr)->next;
+            ++loop_chain_size;
         }
     }
-    *next_chain_ptr = loop_chain; // Close loop. Overwrites loop_chain with itself if the loop is empty.
+
+    // Add all overridden loop functions to a circular list for round-robin execution.
+    if (loop_chain_size > 0) {
+        loop_chain = static_cast<IModule **>(malloc(sizeof(IModule*) * loop_chain_size));
+        size_t loop_chain_used = 0;
+        for (IModule *imodule : imodules) {
+            if (is_module_loop_overridden(imodule)) {
+                loop_chain[loop_chain_used] = imodule;
+                ++loop_chain_used;
+            }
+        }
+    }
 
     boot_stage = BootStage::LOOP;
 }
@@ -242,7 +246,10 @@ void loop(void) {
 
     // Round-robin for modules' loop functions, to prioritize HAL ticks and scheduler.
     if (loop_chain != nullptr) {
-        loop_chain->imodule->loop();
-        loop_chain = loop_chain->next;
+        loop_chain[loop_chain_head]->loop();
+        loop_chain_head = loop_chain_head + 1;
+        if (loop_chain_head >= loop_chain_size) {
+            loop_chain_head = 0;
+        }
     }
 }
