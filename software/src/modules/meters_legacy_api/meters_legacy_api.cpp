@@ -220,7 +220,12 @@ void MetersLegacyAPI::register_urls()
             return;
         }
 
-        float *values = static_cast<float *>(malloc(this->linked_meter_value_count * sizeof(float)));
+        if (this->linked_meter_value_count > METERS_MAX_VALUES_PER_METER) {
+            logger.printfln("meters_legacy_api: Cannot update meter %u with too many many values (%u)", this->linked_meter_slot, this->linked_meter_value_count);
+            return;
+        }
+
+        float values[METERS_MAX_VALUES_PER_METER]; // Always allocate max size to avoid VLA.
 
         // Pre-fill values with NaN because maybe not all of the target meter's values are available.
         float *values_end = values + this->linked_meter_value_count;
@@ -239,7 +244,6 @@ void MetersLegacyAPI::register_urls()
         }
 
         meters.update_all_values(linked_meter_slot, values);
-        free(values);
     }, false);
 }
 
@@ -324,7 +328,12 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     linked_meter_value_count = cnt;
     meter_setup_done = true;
 
-    MeterValueID *meter_value_ids = static_cast<MeterValueID *>(malloc(linked_meter_value_count * sizeof(MeterValueID)));
+    if (linked_meter_value_count > METERS_MAX_VALUES_PER_METER) {
+        logger.printfln("meters_legacy_api: Linked meter has too many values (%u)", linked_meter_value_count);
+        return EventResult::Deregister;
+    }
+
+    MeterValueID meter_value_ids[METERS_MAX_VALUES_PER_METER]; // Always allocate max size to avoid VLA.
     for (uint16_t i = 0; i < linked_meter_value_count; i++) {
         meter_value_ids[i] = static_cast<MeterValueID>(value_ids->get(i)->asUint());
     }
@@ -412,8 +421,6 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     } else {
         logger.printfln("meters_legacy_api: Meter detection failed: %u matching meters. 72:%u 72v2:%u 630:%u", can_be_count, can_be_sdm72, can_be_sdm72v2, can_be_sdm630);
     }
-
-    free(meter_value_ids);
 
     MeterClassID linked_meter_class = meters.get_meter_class(linked_meter_slot);
     if (linked_meter_class == MeterClassID::RS485Bricklet
