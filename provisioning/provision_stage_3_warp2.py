@@ -292,7 +292,10 @@ class Stage3:
             fatal_error('Action did not complete in time')
 
     # internal
-    def change_meter_state(self, state):
+    def change_meter_state(self, state, quiet=False):
+        if not quiet:
+            print('Changing meter state to {0}'.format(state))
+
         if state == 'Type2-L1':
             value = [(True,  True),  (False, False), (False, False)]
         elif state == 'Type2-L2':
@@ -578,7 +581,7 @@ class Stage3:
         self.connect_front_panel(False)
         self.connect_type2_pe(True)
         self.change_cp_pe_state('A', quiet=True)
-        self.change_meter_state('Type2-L1')
+        self.change_meter_state('Type2-L1', quiet=True)
 
         time.sleep(RELAY_SETTLE_DURATION)
 
@@ -597,7 +600,7 @@ class Stage3:
         self.connect_front_panel(False)
         self.connect_type2_pe(True)
         self.change_cp_pe_state('A', quiet=True)
-        self.change_meter_state('Type2-L1')
+        self.change_meter_state('Type2-L1', quiet=True)
 
         time.sleep(RELAY_SETTLE_DURATION)
 
@@ -969,10 +972,7 @@ class Stage3:
         if not self.check_iec_state('C'):
             fatal_error('Wallbox not in IEC state C. Check contactor!')
 
-        print('Changing meter state to Type2-L1')
-
         self.change_meter_state('Type2-L1')
-
         time.sleep(RELAY_SETTLE_DURATION)
 
         self.click_meter_run_button() # skip QR code
@@ -1006,10 +1006,8 @@ class Stage3:
 
         # step 04: test voltage L2
         print('Testing wallbox, step 04/15, test voltage L2')
-        print('Changing meter state to Type2-L2')
 
         self.change_meter_state('Type2-L2')
-
         time.sleep(RELAY_SETTLE_DURATION)
 
         self.click_meter_run_button() # skip QR code
@@ -1031,10 +1029,8 @@ class Stage3:
 
         # step 06: test voltage L3
         print('Testing wallbox, step 06/15, test voltage L3')
-        print('Changing meter state to Type2-L3')
 
         self.change_meter_state('Type2-L3')
-
         time.sleep(RELAY_SETTLE_DURATION)
 
         self.click_meter_run_button() # skip QR code
@@ -1056,9 +1052,9 @@ class Stage3:
 
         # step 08: test RCD positive
         print('Testing wallbox, step 08/15, test RCD positive')
-        print('Changing meter state to Type2-L1')
 
         self.change_meter_state('Type2-L1')
+
         time.sleep(RELAY_SETTLE_DURATION)
 
         self.click_meter_run_button() # skip QR code
@@ -1113,7 +1109,6 @@ class Stage3:
 
         # step 11: test R iso L2
         print('Testing wallbox, step 11/15, test R iso L2')
-        print('Changing meter state to Type2-L2')
 
         self.change_meter_state('Type2-L2')
         time.sleep(RELAY_SETTLE_DURATION)
@@ -1127,7 +1122,6 @@ class Stage3:
 
         # step 12: test R iso L3
         print('Testing wallbox, step 12/15, test R iso L3')
-        print('Changing meter state to Type2-L3')
 
         self.change_meter_state('Type2-L3')
         time.sleep(RELAY_SETTLE_DURATION)
@@ -1141,7 +1135,6 @@ class Stage3:
 
         # step 13: test R iso N
         print('Testing wallbox, step 13/15, test R iso N')
-        print('Changing meter state to Type2-L1')
 
         self.change_meter_state('Type2-L1')
         time.sleep(RELAY_SETTLE_DURATION)
