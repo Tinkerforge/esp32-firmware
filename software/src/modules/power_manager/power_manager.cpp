@@ -362,11 +362,8 @@ void PowerManager::register_urls()
 
         auto runtime_mode = this->charge_mode.get("mode");
         uint32_t old_mode = runtime_mode->asUint();
-        runtime_mode->updateUint(new_mode);
+        just_switched_mode = runtime_mode->updateUint(new_mode);
         mode = new_mode;
-
-        if (new_mode != old_mode)
-            just_switched_mode = true;
 
         logger.printfln("power_manager: Switched mode %u->%u", old_mode, mode);
     }, false);
