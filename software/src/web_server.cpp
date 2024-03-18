@@ -35,7 +35,11 @@
 // Global definition here to match the declaration in web_server.h.
 WebServer server;
 
+#if defined(BOARD_HAS_PSRAM) && BOARD_HAS_PSRAM == 1
 #define HTTPD_STACK_SIZE 8192
+#else
+#define HTTPD_STACK_SIZE 6144
+#endif
 
 void WebServer::start()
 {
