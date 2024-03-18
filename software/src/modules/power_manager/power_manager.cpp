@@ -286,7 +286,7 @@ void PowerManager::setup()
         set_available_phases(is_3phase ? 3 : 1);
 
         // Can't check for chargers in setup() because CM's setup() hasn't run yet to load the charger configuration.
-        if (!charge_manager.have_chargers()) {
+        if (charge_manager.get_charger_count() <= 0) {
             logger.printfln("power_manager: No chargers configured. Won't try to distribute energy.");
             set_config_error(PM_CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK);
         }
@@ -636,7 +636,7 @@ void PowerManager::update_energy()
         // CP disconnect support unknown if some chargers haven't replied yet.
         if (!charge_manager.seen_all_chargers()) {
             // Don't constantly complain if we don't have any chargers configured.
-            if (charge_manager.have_chargers()) {
+            if (charge_manager.get_charger_count() > 0) {
                 if (!printed_not_seen_all_chargers) {
                     logger.printfln("power_manager: Not seen all chargers yet.");
                     printed_not_seen_all_chargers = true;

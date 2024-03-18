@@ -474,9 +474,9 @@ void ChargeManager::check_watchdog()
     last_available_current_update = millis();
 }
 
-bool ChargeManager::have_chargers()
+bool ChargeManager::get_charger_count()
 {
-    return charger_count > 0;
+    return charger_count;
 }
 
 // Check is not 100% reliable after an uptime of 49 days because last_update might legitimately 0.
