@@ -64,7 +64,7 @@ void ValueHistory::register_urls(String base_url)
         if (buf == nullptr) {
             return request.send(500, "text/plain", "Failed to allocate buffer");
         }
-        defer {free(buf);}
+        defer {free(buf);};
 
         size_t buf_written = format_history(millis(), buf, buf_size);
 
@@ -77,7 +77,7 @@ void ValueHistory::register_urls(String base_url)
         if (buf == nullptr) {
             return request.send(500, "text/plain", "Failed to allocate buffer");
         }
-        defer {free(buf);}
+        defer {free(buf);};
 
         size_t buf_written = format_live(millis(), buf, buf_size);
 

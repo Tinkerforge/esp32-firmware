@@ -329,7 +329,7 @@ void Meters::register_urls()
         if (buf == nullptr) {
             return request.send(500, "text/plain", "Failed to allocate buffer");
         }
-        defer {free(buf);}
+        defer {free(buf);};
 
         size_t buf_written = 0;
         uint32_t offset = now - last_history_update;
@@ -374,7 +374,7 @@ void Meters::register_urls()
         if (buf == nullptr) {
             return request.send(500, "text/plain", "Failed to allocate buffer");
         }
-        defer {free(buf);}
+        defer {free(buf);};
 
         size_t buf_written = 0;
         uint32_t offset = now - last_live_update;
