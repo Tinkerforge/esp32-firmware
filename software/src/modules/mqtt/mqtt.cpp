@@ -361,16 +361,18 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
 
         if (c.callback_in_thread == CallbackInThread::Main) {
             esp_mqtt_client_disable_receive(client, 100);
-            char *topic_cpy = (char *)malloc(topic_len);
-            memcpy(topic_cpy, topic, topic_len);
+            char *copy_buf = (char *)malloc(topic_len + data_len);
+            if (copy_buf == nullptr) {
+                logger.printfln("MQTT: Failed to run command %s: Failed to allocate copy_buf", c.topic.c_str());
+                return;
+            }
 
-            char *data_cpy = (char *)malloc(data_len);
-            memcpy(data_cpy, data, data_len);
+            memcpy(copy_buf, topic, topic_len);
+            memcpy(copy_buf + topic_len, data, data_len);
 
-            task_scheduler.scheduleOnce([this, c, topic_cpy, topic_len, data_cpy, data_len](){
-                c.callback(topic_cpy, topic_len, data_cpy, data_len);
-                free(data_cpy);
-                free(topic_cpy);
+            task_scheduler.scheduleOnce([this, c, copy_buf, topic_len, data_len](){
+                c.callback(copy_buf, topic_len, copy_buf + topic_len, data_len);
+                free(copy_buf);
                 esp_mqtt_client_enable_receive(client);
             }, 0);
         } else
@@ -423,6 +425,10 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         }
 
         char *data_cpy = (char *)malloc(data_len);
+        if (data_cpy == nullptr) {
+            logger.printfln("MQTT: Failed to run raw command %s: Failed to allocate copy_buf", reg.path);
+            return;
+        }
         memcpy(data_cpy, data, data_len);
 
         esp_mqtt_client_disable_receive(client, 100);

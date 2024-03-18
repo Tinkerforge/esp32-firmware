@@ -60,18 +60,28 @@ void ValueHistory::register_urls(String base_url)
 {
     server.on(("/" + base_url + "history").c_str(), HTTP_GET, [this](WebServerRequest request) {
         const size_t buf_size = HISTORY_RING_BUF_SIZE * chars_per_value + 100;
-        std::unique_ptr<char[]> buf{new char[buf_size]};
-        size_t buf_written = format_history(millis(), buf.get(), buf_size);
+        char *buf = static_cast<char *>(malloc(sizeof(char) * buf_size));
+        if (buf == nullptr) {
+            return request.send(500, "text/plain", "Failed to allocate buffer");
+        }
+        defer {free(buf);}
 
-        return request.send(200, "application/json; charset=utf-8", buf.get(), static_cast<ssize_t>(buf_written));
+        size_t buf_written = format_history(millis(), buf, buf_size);
+
+        return request.send(200, "application/json; charset=utf-8", buf, static_cast<ssize_t>(buf_written));
     });
 
     server.on(("/" + base_url + "live").c_str(), HTTP_GET, [this](WebServerRequest request) {
         const size_t buf_size = HISTORY_RING_BUF_SIZE * chars_per_value + 100;
-        std::unique_ptr<char[]> buf{new char[buf_size]};
-        size_t buf_written = format_live(millis(), buf.get(), buf_size);
+        char *buf = static_cast<char *>(malloc(sizeof(char) * buf_size));
+        if (buf == nullptr) {
+            return request.send(500, "text/plain", "Failed to allocate buffer");
+        }
+        defer {free(buf);}
 
-        return request.send(200, "application/json; charset=utf-8", buf.get(), static_cast<ssize_t>(buf_written));
+        size_t buf_written = format_live(millis(), buf, buf_size);
+
+        return request.send(200, "application/json; charset=utf-8", buf, static_cast<ssize_t>(buf_written));
     });
 }
 

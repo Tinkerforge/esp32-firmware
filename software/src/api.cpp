@@ -555,6 +555,10 @@ void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t
     }
 
     char *cpy = (char *)malloc(len);
+    if (cpy == nullptr) {
+        done_cb("callCommandNonBlocking: Failed to allocate payload copy!");
+        return;
+    }
     memcpy(cpy, payload, len);
 
     task_scheduler.scheduleOnce(

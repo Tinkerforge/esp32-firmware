@@ -324,12 +324,17 @@ void Meters::register_urls()
     server.on("/meters/history", HTTP_GET, [this](WebServerRequest request) {
         uint32_t now = millis();
         const size_t buf_size = HISTORY_RING_BUF_SIZE * history_chars_per_value + 100;
-        std::unique_ptr<char[]> buf{new char[buf_size]};
-        char *buf_ptr = buf.get();
+
+        char *buf = static_cast<char *>(malloc(sizeof(char) * buf_size));
+        if (buf == nullptr) {
+            return request.send(500, "text/plain", "Failed to allocate buffer");
+        }
+        defer {free(buf);}
+
         size_t buf_written = 0;
         uint32_t offset = now - last_history_update;
 
-        buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[", offset);
+        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[", offset);
 
         request.beginChunkedResponse(200, "application/json; charset=utf-8");
 
@@ -338,21 +343,21 @@ void Meters::register_urls()
 
             if (meter_slot.meter->get_class() != MeterClassID::None) {
                 if (buf_written < buf_size) {
-                    buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", slot == 0 ? "[" : ",[");
+                    buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", slot == 0 ? "[" : ",[");
 
                     if (buf_written < buf_size) {
-                        buf_written += meter_slot.power_history.format_history_samples(buf_ptr + buf_written, buf_size - buf_written);
+                        buf_written += meter_slot.power_history.format_history_samples(buf + buf_written, buf_size - buf_written);
 
                         if (buf_written < buf_size) {
-                            buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", "]");
+                            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "]");
                         }
                     }
                 }
             } else if (buf_written < buf_size) {
-                buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", slot == 0 ? "null" : ",null");
+                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", slot == 0 ? "null" : ",null");
             }
 
-            request.sendChunk(buf_ptr, static_cast<ssize_t>(buf_written));
+            request.sendChunk(buf, static_cast<ssize_t>(buf_written));
 
             buf_written = 0;
         }
@@ -365,12 +370,16 @@ void Meters::register_urls()
     server.on("/meters/live", HTTP_GET, [this](WebServerRequest request) {
         uint32_t now = millis();
         const size_t buf_size = HISTORY_RING_BUF_SIZE * history_chars_per_value + 100;
-        std::unique_ptr<char[]> buf{new char[buf_size]};
-        char *buf_ptr = buf.get();
+        char *buf = static_cast<char *>(malloc(sizeof(char) * buf_size));
+        if (buf == nullptr) {
+            return request.send(500, "text/plain", "Failed to allocate buffer");
+        }
+        defer {free(buf);}
+
         size_t buf_written = 0;
         uint32_t offset = now - last_live_update;
 
-        buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[", offset, static_cast<double>(live_samples_per_second()));
+        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[", offset, static_cast<double>(live_samples_per_second()));
 
         request.beginChunkedResponse(200, "application/json; charset=utf-8");
 
@@ -379,21 +388,21 @@ void Meters::register_urls()
 
             if (meter_slot.meter->get_class() != MeterClassID::None) {
                 if (buf_written < buf_size) {
-                    buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", slot == 0 ? "[" : ",[");
+                    buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", slot == 0 ? "[" : ",[");
 
                     if (buf_written < buf_size) {
-                        buf_written += meter_slot.power_history.format_live_samples(buf_ptr + buf_written, buf_size - buf_written);
+                        buf_written += meter_slot.power_history.format_live_samples(buf + buf_written, buf_size - buf_written);
 
                         if (buf_written < buf_size) {
-                            buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", "]");
+                            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "]");
                         }
                     }
                 }
             } else if (buf_written < buf_size) {
-                buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", slot == 0 ? "null" : ",null");
+                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", slot == 0 ? "null" : ",null");
             }
 
-            request.sendChunk(buf_ptr, static_cast<ssize_t>(buf_written));
+            request.sendChunk(buf, static_cast<ssize_t>(buf_written));
 
             buf_written = 0;
         }
