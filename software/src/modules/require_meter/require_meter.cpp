@@ -189,7 +189,12 @@ void RequireMeter::start_task()
             }
         }
         last_meter_timeout = meter_timeout;
-    }, 0, 1000);
+
+        // Delay first check to give the meter time to send initial values.
+        // This might allow an immediate charge, just to abort it right away, but the EVSE
+        // might start a charge by itself anyway before the ESP finished starting,
+        // unless NFC or OCPP are enabled.
+    }, 3000, 1000);
     is_running = true;
 }
 
