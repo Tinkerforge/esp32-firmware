@@ -391,7 +391,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                         {!is_evse_v3 ? undefined :
                         <>
                             <FormRow label={__("evse.content.temperature")}>
-                                <OutputFloat value={ll_state.temperature} digits={2} scale={2} unit="°C"/>
+                                <InputText value={util.toLocaleFixed(ll_state.temperature / 100, 2) + " °C"} />
                             </FormRow>
 
                             <FormRow label={__("evse.content.phases_current")}>
