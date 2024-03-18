@@ -41,11 +41,9 @@ extern uint8_t _text_start;
 
 static void malloc_failed_hook(size_t size, uint32_t caps, const char *function_name)
 {
-    logger.printfln("malloc_failed_hook size=%u caps=0x%x fn=%s", size, caps, function_name);
-
     multi_heap_info_t ram_info;
     heap_caps_get_info(&ram_info, caps);
-    logger.printfln(" free=%u largest=%u", ram_info.total_free_bytes, ram_info.largest_free_block);
+    logger.printfln("malloc_failed_hook sz=%u frBl=%u frTot=%u caps=0x%x fn=%s", size, ram_info.largest_free_block, ram_info.total_free_bytes, caps, function_name);
 }
 
 void Debug::pre_setup()
