@@ -36,11 +36,12 @@
 // The MQTT send buffer is 2K on a WARP1 -> 2048/21 ~ 97,5.
 #define METERS_MAX_VALUES_PER_METER 96
 
-#define INDEX_CACHE_POWER         0
-#define INDEX_CACHE_ENERGY_IMPORT 1
-#define INDEX_CACHE_ENERGY_IMEXSUM 2
-#define INDEX_CACHE_ENERGY_EXPORT 3
-#define INDEX_CACHE_SINGLE_VALUES_COUNT 4
+#define INDEX_CACHE_POWER_REAL     0
+#define INDEX_CACHE_POWER_VIRTUAL  1
+#define INDEX_CACHE_ENERGY_IMPORT  2
+#define INDEX_CACHE_ENERGY_IMEXSUM 3
+#define INDEX_CACHE_ENERGY_EXPORT  4
+#define INDEX_CACHE_SINGLE_VALUES_COUNT 5
 
 #define INDEX_CACHE_CURRENT_N  0
 #define INDEX_CACHE_CURRENT_L1 1
@@ -77,7 +78,8 @@ public:
 
     MeterValueAvailability get_values(uint32_t slot, const Config **values, micros_t max_age = 0_usec);
     MeterValueAvailability get_value_by_index(uint32_t slot, uint32_t index, float *value, micros_t max_age = 0_usec);
-    MeterValueAvailability get_power(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
+    MeterValueAvailability get_power_real(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
+    MeterValueAvailability get_power_virtual(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
     MeterValueAvailability get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age = 0_usec);
     MeterValueAvailability get_energy_imexsum(uint32_t slot, float *total_imexsum_kwh, micros_t max_age = 0_usec);
     MeterValueAvailability get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age = 0_usec);
@@ -88,7 +90,7 @@ public:
     void update_all_values(uint32_t slot, const Config *new_values);
     void declare_value_ids(uint32_t slot, const MeterValueID value_ids[], uint32_t value_id_count);
 
-    bool get_cached_power_index(uint32_t slot, uint32_t *index);
+    bool get_cached_real_power_index(uint32_t slot, uint32_t *index);
 
     void fill_index_cache(uint32_t slot, size_t value_count, const MeterValueID value_ids[], uint32_t index_cache[]);
 

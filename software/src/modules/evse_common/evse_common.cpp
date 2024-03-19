@@ -667,7 +667,7 @@ uint32_t EvseCommon::get_charger_meter()
 
 MeterValueAvailability EvseCommon::get_charger_meter_power(float *power, micros_t max_age)
 {
-    return meters.get_power(this->get_charger_meter(), power, max_age);
+    return meters.get_power_real(this->get_charger_meter(), power, max_age);
 }
 
 MeterValueAvailability EvseCommon::get_charger_meter_energy(float *energy, micros_t max_age)

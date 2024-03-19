@@ -68,7 +68,7 @@ void EnergyManager::register_events()
             history_meter_setup_done[slot] = true;
 
             uint32_t power_index;
-            if (meters.get_cached_power_index(slot, &power_index)) {
+            if (meters.get_cached_real_power_index(slot, &power_index)) {
                 event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {static_cast<uint16_t>(power_index)}, [this, slot](const Config *config){
                     update_history_meter_power(slot, config->asFloat());
                     return EventResult::OK;
