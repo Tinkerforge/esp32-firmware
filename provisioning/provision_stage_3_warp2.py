@@ -933,9 +933,8 @@ class Stage3:
             if voltages[2] < VOLTAGE_ON_THRESHOLD:
                 fatal_error('Missing voltage on L3')
 
-            self.connect_voltage_monitors(False)
-
-            time.sleep(RELAY_SETTLE_DURATION)
+        self.connect_voltage_monitors(False)
+        time.sleep(RELAY_SETTLE_DURATION)
 
         # step 01: test PE disconnect
         print('Disconnecting PE')
