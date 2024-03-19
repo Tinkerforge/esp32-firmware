@@ -58,21 +58,11 @@ extern bool firmware_update_allowed;
 extern ChargeManager charge_manager;
 
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
-#define REQUESTED_CURRENT_MARGIN_ENERGY_MANAGER_1_CHARGER_DEFAULT (2 * REQUESTED_CURRENT_MARGIN_DEFAULT)
-
 static void apply_energy_manager_config(Config &conf)
 {
     conf.get("enable_charge_manager")->updateBool(true);
     conf.get("enable_watchdog")->updateBool(false);
     conf.get("default_available_current")->updateUint(0);
-
-    if (conf.get("chargers")->count() == 1 && conf.get("requested_current_margin")->asUint() == REQUESTED_CURRENT_MARGIN_DEFAULT) {
-        conf.get("requested_current_margin")->updateUint(REQUESTED_CURRENT_MARGIN_ENERGY_MANAGER_1_CHARGER_DEFAULT);
-    }
-
-    if (conf.get("chargers")->count() != 1 && conf.get("requested_current_margin")->asUint() == REQUESTED_CURRENT_MARGIN_ENERGY_MANAGER_1_CHARGER_DEFAULT) {
-        conf.get("requested_current_margin")->updateUint(REQUESTED_CURRENT_MARGIN_DEFAULT);
-    }
 }
 #endif
 
