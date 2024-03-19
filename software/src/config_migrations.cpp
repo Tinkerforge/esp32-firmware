@@ -691,7 +691,30 @@ static const ConfigMigration migrations[] = {
                 }
             }
         }
-    }
+    },
+    {
+        2, 0, 3,
+        // 2.0.3 changes
+        // - Reset charge manager's requested current margin back to 3A.
+        [](){
+            DynamicJsonDocument json{16384};
+
+            if (read_config_file("charge_manager/config", json)) {
+                if (json.containsKey("requested_current_margin")) {
+                    uint32_t requested_current_margin_old = json["requested_current_margin"].as<uint32_t>();
+                    if (requested_current_margin_old == 6000) {
+                        logger.printfln("CM migration: Resetting requested_current_margin to 3000.");
+                        json["requested_current_margin"] = 3000;
+                        write_config_file("charge_manager/config", json);
+                    } else {
+                        logger.printfln("CM migration: Not resetting custom requested_current_margin of %u.", requested_current_margin_old);
+                    }
+                } else {
+                    logger.printfln("CM migration skipped, requested_current_margin not present");
+                }
+            }
+        }
+    },
 #endif
 };
 
