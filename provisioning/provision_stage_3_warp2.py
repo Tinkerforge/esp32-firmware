@@ -714,7 +714,7 @@ class Stage3:
         self.try_action('03B', lambda device: device.set_beep(2400, volume, beep_duration))
         time.sleep(beep_duration / 1000)
 
-    def reset_dc_fault(self):
+    def reset_dc_fault(self, cp_pe_state):
         print('Resetting DC fault')
 
         self.reset_dc_fault_function()
@@ -736,12 +736,13 @@ class Stage3:
 
         time.sleep(30)
 
-        self.change_cp_pe_state('C')
+        if cp_pe_state != 'A':
+            self.change_cp_pe_state(cp_pe_state)
 
-        time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
-        if not self.check_iec_state('C'):
-            fatal_error('Wallbox not in IEC state C')
+            if not self.check_iec_state(cp_pe_state):
+                fatal_error('Wallbox not in IEC state ' + cp_pe_state)
 
     # requires power_on
     def test_wallbox(self, has_phase_switch):
@@ -900,7 +901,6 @@ class Stage3:
             print('Testing phase switch')
 
             self.switch_phases_function(1)
-
             time.sleep(PHASE_SWITCH_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
 
             voltages = self.read_voltage_monitors()
@@ -917,7 +917,6 @@ class Stage3:
                 fatal_error('Unexpected voltage on L3')
 
             self.switch_phases_function(3)
-
             time.sleep(PHASE_SWITCH_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
 
             voltages = self.read_voltage_monitors()
@@ -1068,7 +1067,7 @@ class Stage3:
         if self.read_meter_qr_code(timeout=30) != '09':
             fatal_error('Step 08 timeouted')
 
-        self.reset_dc_fault()
+        self.reset_dc_fault('C')
 
         # step 09: test RCD negative
         print('Testing wallbox, step 09/15, test RCD negative')
@@ -1086,17 +1085,10 @@ class Stage3:
         if self.read_meter_qr_code(timeout=30) != '10':
             fatal_error('Step 09 timeouted')
 
-        self.reset_dc_fault()
+        self.reset_dc_fault('A')
 
         # step 10: test R iso L1
         print('Testing wallbox, step 10/15, test R iso L1')
-
-        self.change_cp_pe_state('A')
-
-        time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
-
-        if not self.check_iec_state('A'):
-            fatal_error('Wallbox not in IEC state A')
 
         self.click_meter_run_button() # skip QR code
 
