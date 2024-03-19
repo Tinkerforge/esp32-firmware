@@ -37,10 +37,10 @@ import { MeterConfig     } from "../meters/types";
 import { MeterClassID    } from "../meters/meters_defs";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
-import { CheckCircle, Circle, List } from "react-feather";
+import { CheckCircle, Circle, Sun } from "react-feather";
 
 export function PowerManagerNavbar() {
-    return <NavbarItem name="power_manager" module="power_manager" title={__("power_manager.navbar.power_manager")} symbol={<List />} />;
+    return <NavbarItem name="power_manager" module="power_manager" title={__("power_manager.navbar.power_manager")} symbol={<Sun />} />;
 }
 
 type StringStringTuple = [string, string];
