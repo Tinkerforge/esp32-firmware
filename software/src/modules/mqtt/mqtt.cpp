@@ -39,12 +39,12 @@ extern Mqtt mqtt;
 extern char local_uid_str[32];
 
 // Default task stack size in mqtt_config.h is 6144.
+#define MQTT_TASK_STACK_SIZE  3072U
+
 #if defined(BOARD_HAS_PSRAM)
-#define MQTT_TASK_STACK_SIZE  6144U
 #define MQTT_RECV_BUFFER_SIZE 6144U
 #define MQTT_SEND_BUFFER_SIZE 32768U
 #else
-#define MQTT_TASK_STACK_SIZE  3072U
 #define MQTT_RECV_BUFFER_SIZE 4096U
 #define MQTT_SEND_BUFFER_SIZE 4096U
 #endif
