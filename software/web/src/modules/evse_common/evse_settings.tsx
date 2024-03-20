@@ -33,7 +33,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
 
 export function EVSESettingsNavbar() {
-    return <NavbarItem name="evse-settings" title={__("evse.navbar.evse_settings")} symbol={<Settings />} hidden={!API.hasModule("evse_v2") && !API.hasModule("evse")} />;
+    return <NavbarItem name="evse_settings" title={__("evse.navbar.evse_settings")} symbol={<Settings />} hidden={!API.hasModule("evse_v2") && !API.hasModule("evse")} />;
 }
 
 interface EVSESettingsState {
@@ -161,7 +161,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
 
     render(props: {}, s: EVSESettingsState & ChargeLimitsConfig) {
         if (!util.render_allowed() || !API.hasFeature("evse"))
-            return <SubPage name="evse-settings" />;
+            return <SubPage name="evse_settings" />;
 
         let {
             button_cfg,
@@ -205,7 +205,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                             }}/>
                                     </FormRow>;
 
-        return <SubPage name="evse-settings">
+        return <SubPage name="evse_settings">
                 <ConfigForm id="evse_settings" title={__("evse.content.settings")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
                         <Switch desc={__("evse.content.auto_start_enable")}

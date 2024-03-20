@@ -3,10 +3,9 @@ import { h } from "preact";
 let x = {
     "firmware_update": {
         "status": {
-
         },
         "navbar": {
-            "flash": "Firmware Update"
+            "firmware_update": "Firmware Update"
         },
         "content": {
             "current_firmware": "Firmware version",
@@ -36,8 +35,8 @@ let x = {
             "confirm_downgrade": "Downgrade firmware"
         },
         "script": {
-            "flash_success": "Successfully updated; restarting...",
-            "flash_fail": "Failed to update",
+            "update_success": "Successfully updated; restarting...",
+            "update_fail": "Failed to update",
             "factory_reset_init": "Formatting configuration partition and restarting...",
             "factory_reset_error": "Initiating factory reset failed",
             "config_reset_init": "Resetting configuration and restarting...",

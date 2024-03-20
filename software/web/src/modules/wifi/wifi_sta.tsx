@@ -356,10 +356,10 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
 
     render(props: {}, state: Readonly<STAConfig & WifiSTAState>) {
         if (!util.render_allowed())
-            return <SubPage name="wifi-sta" />;
+            return <SubPage name="wifi_sta" />;
 
         return (
-            <SubPage name="wifi-sta">
+            <SubPage name="wifi_sta">
                 <ConfigForm id="wifi_sta_config_form"
                             title={__("wifi.content.sta_settings")}
                             isModified={this.isModified()}

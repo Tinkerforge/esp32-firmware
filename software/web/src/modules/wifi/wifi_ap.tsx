@@ -56,10 +56,10 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
 
     override render(props: {}, state: Readonly<APConfig & WifiAPState>) {
         if (!util.render_allowed())
-            return <SubPage name="wifi-ap" />;
+            return <SubPage name="wifi_ap" />;
 
         return (
-            <SubPage name="wifi-ap">
+            <SubPage name="wifi_ap">
                 <ConfigForm id="wifi_ap_config_form"
                             title={__("wifi.content.ap_settings")}
                             isModified={this.isModified()}

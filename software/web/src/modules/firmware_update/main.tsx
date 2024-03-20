@@ -31,7 +31,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Upload } from "react-feather";
 
 export function FirmwareUpdateNavbar() {
-    return <NavbarItem name="flash" module="firmware_update" title={__("firmware_update.navbar.flash")} symbol={<Upload />} />;
+    return <NavbarItem name="firmware_update" module="firmware_update" title={__("firmware_update.navbar.firmware_update")} symbol={<Upload />} />;
 }
 
 type FirmwareUpdateConfig = API.getType["info/version"];
@@ -53,12 +53,12 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
             await util.upload(f.slice(0xd000 - 0x1000, 0xd000), "check_firmware", () => {})
         } catch (error) {
             if (typeof error === "string") {
-                util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error);
+                util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.update_fail"), error);
             } else if (error instanceof XMLHttpRequest) {
                 let xhr = error;
 
                 if (xhr.status == 423) {
-                    util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.flash_fail"), __("firmware_update.script.vehicle_connected"));
+                    util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.update_fail"), __("firmware_update.script.vehicle_connected"));
                     return false;
                 }
 
@@ -79,11 +79,11 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                             }))
                             return false;
                     } else {
-                        util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error_message);
+                        util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.update_fail"), error_message);
                         return false;
                     }
                 } catch {
-                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), xhr.responseText);
+                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.update_fail"), xhr.responseText);
                     return false;
                 }
             }
@@ -95,7 +95,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
 
     render(props: {}, state: Readonly<FirmwareUpdateConfig>) {
         if (!util.render_allowed())
-            return <SubPage name="flash" />;
+            return <SubPage name="firmware_update" />;
 
         // TODO: why not use the charge tracker module here?
         let show_config_reset = false;
@@ -114,7 +114,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
         }
 
         return (
-            <SubPage name="flash">
+            <SubPage name="firmware_update">
                 <PageHeader title={__("firmware_update.content.firmware_update")} />
 
                 <FormRow label={__("firmware_update.content.current_firmware")}>
@@ -131,18 +131,18 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
 
                         timeout_ms={120 * 1000}
                         onUploadStart={async (f) => this.checkFirmware(f)}
-                        onUploadSuccess={() => util.postReboot(__("firmware_update.script.flash_success"), __("util.reboot_text"))}
+                        onUploadSuccess={() => util.postReboot(__("firmware_update.script.update_success"), __("util.reboot_text"))}
                         onUploadError={error => {
                             if (typeof error === "string") {
-                                util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error);
+                                util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.update_fail"), error);
                             } else if (error instanceof XMLHttpRequest) {
                                 let xhr = error;
 
                                 if (xhr.status == 423)
-                                    util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.flash_fail"), __("firmware_update.script.vehicle_connected"));
+                                    util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.update_fail"), __("firmware_update.script.vehicle_connected"));
                                 else {
                                     let txt = xhr.responseText.startsWith("firmware_update.") ? translate_unchecked(xhr.responseText) : (xhr.responseText ?? xhr.response);
-                                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), txt);
+                                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.update_fail"), txt);
                                 }
                             }
                             util.resumeWebSockets();
