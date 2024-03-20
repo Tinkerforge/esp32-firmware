@@ -35,7 +35,6 @@ import { SubPage } from "../../ts/components/sub_page";
 import { __, translate_unchecked } from "../../ts/translation";
 import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_AUTOMATION } from "./api";
 import { EVSEStatus } from "./evse_status";
-import { OutputFloat } from "../../ts/components/output_float";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { BatteryCharging } from "react-feather";
 
