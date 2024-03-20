@@ -20,7 +20,7 @@
 import { h, Fragment, Component, createRef } from "preact";
 import { __ } from "./ts/translation";
 import { NavbarItem } from "./ts/components/navbar_item";
-import { Key, Home } from "react-feather";
+import { Key, Home, Menu } from "react-feather";
 {{{navbar_imports}}}
 {{{content_imports}}}
 {{{status_imports}}}
@@ -34,7 +34,7 @@ export class App extends Component {
                 <a href="/"><img class="pt-2 pb-2 pl-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
                 <button class="navbar-toggler d-md-none collapsed pt-2 mr-3" type="button" data-toggle="collapse"
                     data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+                    <Menu {...{class: "navbar-toggler-icon", style: "vertical-align: baseline;"} as any} />
                 </button>
                 {/* show inline status here? */}
             </nav>
