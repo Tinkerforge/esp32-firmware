@@ -1,0 +1,26 @@
+From b22f4749ac28932c283e0bf948aca4b12064111c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Mon, 18 Mar 2024 18:29:43 +0100
+Subject: [PATCH] mdns: Place static buffer to assemble packets on stack
+ instead
+
+---
+ components/mdns/mdns.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/components/mdns/mdns.c b/components/mdns/mdns.c
+index b658b16ea1..97600c5ee1 100644
+--- a/components/mdns/mdns.c
++++ b/components/mdns/mdns.c
+@@ -1138,7 +1138,7 @@ static uint8_t _mdns_append_answer(uint8_t * packet, uint16_t * index, mdns_out_
+  */
+ static void _mdns_dispatch_tx_packet(mdns_tx_packet_t * p)
+ {
+-    static uint8_t packet[MDNS_MAX_PACKET_SIZE];
++    uint8_t packet[MDNS_MAX_PACKET_SIZE];
+     uint16_t index = MDNS_HEAD_LEN;
+     memset(packet, 0, MDNS_HEAD_LEN);
+     mdns_out_question_t * q;
+-- 
+2.39.2
+
