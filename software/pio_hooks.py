@@ -17,9 +17,12 @@ import glob
 from pathlib import PurePath
 from base64 import b64encode
 from zlib import crc32
+from collections import namedtuple
 import util
-
 from hyphenations import hyphenations, allowed_missing
+
+FrontendComponent = namedtuple('FrontendComponent', 'module component mode')
+FrontendStatusComponent = namedtuple('FrontendStatusComponent', 'module component')
 
 # use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
 class ChangedDirectory(object):
@@ -631,12 +634,12 @@ def main():
 
         mode = m.group(3)
 
-        frontend_components.append((module, component, mode))
+        frontend_components.append(FrontendComponent(module, component, mode))
 
     if nightly:
         module = util.FlavoredName("Debug").get()
         component = module
-        frontend_components.append((module, component, None))
+        frontend_components.append(FrontendComponent(module, component, None))
 
     frontend_status_components = []
     for entry in env.GetProjectOption("custom_frontend_status_components").splitlines():
@@ -656,7 +659,7 @@ def main():
             print('Error: Unknown module in custom_frontend_status_components entry:', module.space)
             sys.exit(1)
 
-        frontend_status_components.append((module, component))
+        frontend_status_components.append(FrontendStatusComponent(module, component))
 
     branding_module = find_branding_module(frontend_modules)
 
@@ -899,26 +902,35 @@ def main():
 
     navbar = []
     navbar_nesting = 0
+    navbar_group = None
+    navbar_mapping = []
 
     for frontend_component in frontend_components:
         if frontend_component[2] == 'Open':
-            navbar.append(f'<{frontend_component[1].camel}Navbar>')
+            navbar.append(f'<{frontend_component[1].camel}Navbar group_ref={{this.{frontend_component[1].under}_ref}}>')
             navbar_nesting += 1
+            navbar_group = frontend_component
         elif frontend_component[2] == 'Close':
             navbar.append(f'</{frontend_component[1].camel}Navbar>')
             navbar_nesting -= 1
+            navbar_group = None
         else:
             navbar.append(f'{"   " * navbar_nesting}<{frontend_component[1].camel}Navbar />')
 
+            if navbar_group != None:
+                navbar_mapping.append((frontend_component[1].under, f'{navbar_group[1].under}_ref'))
+
     util.specialize_template(os.path.join("web", "app.tsx.template"), os.path.join("web", "src", "app.tsx"), {
         '{{{logo_base64}}}': logo_base64,
-        '{{{navbar_imports}}}': '\n'.join([f'import {{ {x[1].camel}Navbar }} from "./modules/{x[0].under}/main";' for x in frontend_components if x[2] != 'Close']),
-        '{{{navbar}}}': '\n                                '.join(navbar),
-        '{{{content_imports}}}': '\n'.join([f'import {{ {x[1].camel} }} from "./modules/{x[0].under}/main";' for x in frontend_components if x[2] == None]),
-        '{{{content}}}': '\n                            '.join([f'<{x[1].camel}{f" status_ref={{this.{x[1].under}_status_ref}}" if (x[1].space + " Status") in [y[1].space for y in frontend_status_components] else ""} />' for x in frontend_components if x[2] == None]),
-        '{{{status_imports}}}': '\n'.join([f'import {{ {x[1].camel} }} from "./modules/{x[0].under}/main";' for x in frontend_status_components]),
-        '{{{status}}}': '\n                                '.join([f'<{x[1].camel} ref={{this.{x[1].under}_ref}} />' for x in frontend_status_components]),
-        '{{{status_refs}}}': '\n    '.join([f'{x[1].under}_ref = createRef();' for x in frontend_status_components]),
+        '{{{navbar_imports}}}': '\n'.join([f'import {{ {x.component.camel}Navbar }} from "./modules/{x.module.under}/main";' for x in frontend_components if x.mode != 'Close']),
+        '{{{navbar}}}': '\n                                    '.join(navbar),
+        '{{{navbar_refs}}}': '\n    '.join([f'{x.component.under}_ref = createRef();' for x in frontend_components if x.mode == 'Open']),
+        '{{{navbar_refs_mapping}}}': '\n            '.join([f'{repr(x[0])}: this.{x[1]},' for x in navbar_mapping]),
+        '{{{content_imports}}}': '\n'.join([f'import {{ {x.component.camel} }} from "./modules/{x.module.under}/main";' for x in frontend_components if x.mode == None]),
+        '{{{content}}}': '\n                            '.join([f'<{x.component.camel}{f" status_ref={{this.{x.component.under}_status_ref}}" if (x.component.space + " Status") in [y.component.space for y in frontend_status_components] else ""} />' for x in frontend_components if x.mode == None]),
+        '{{{status_imports}}}': '\n'.join([f'import {{ {x.component.camel} }} from "./modules/{x.module.under}/main";' for x in frontend_status_components]),
+        '{{{status}}}': '\n                                '.join([f'<{x.component.camel} ref={{this.{x.component.under}_ref}} />' for x in frontend_status_components]),
+        '{{{status_refs}}}': '\n    '.join([f'{x.component.under}_ref = createRef();' for x in frontend_status_components]),
     })
 
     util.specialize_template(os.path.join("web", "main.tsx.template"), os.path.join("web", "src", "main.tsx"), {

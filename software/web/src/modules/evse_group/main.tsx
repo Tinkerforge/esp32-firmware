@@ -18,13 +18,13 @@
  */
 
 import { __ } from "../../ts/translation";
-import { h, ComponentChildren } from "preact";
+import { h, ComponentChildren, RefObject } from "preact";
 import { NavbarGroup } from "../../ts/components/navbar_group";
 import { BatteryCharging } from "react-feather";
 
-export function EVSEGroupNavbar(props: {children: ComponentChildren}) {
+export function EVSEGroupNavbar(props: {children: ComponentChildren, group_ref: RefObject<NavbarGroup>}) {
     return (
-        <NavbarGroup name="evse" title={__("evse_group.navbar.evse_group")} symbol={<BatteryCharging />} hidden={false}>
+        <NavbarGroup ref={props.group_ref} title={__("evse_group.navbar.evse_group")} symbol={<BatteryCharging />} hidden={false}>
             {props.children}
         </NavbarGroup>);
 }

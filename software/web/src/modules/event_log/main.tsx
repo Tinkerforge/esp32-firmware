@@ -17,10 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment, Component } from "preact";
+import { effect } from "@preact/signals-core";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 import { FormRow } from "../../ts/components/form_row";
@@ -65,18 +65,8 @@ export class EventLog extends Component<{}, EventLogState> {
             this.set_log(this.state.log + ev.data + "\n");
         });
 
-        // FIXME: Bootstrap 4.x only provides jQuery events. We need to port
-        //        to Bootstrap 5.x before we can remove jQuery completly
-        //        https://getbootstrap.com/docs/5.0/getting-started/javascript/
-        $('#sidebar-event_log').on('shown.bs.tab', () => {
-            this.page_visible = true;
-        });
-
-        // FIXME: Bootstrap 4.x only provides jQuery events. We need to port
-        //        to Bootstrap 5.x before we can remove jQuery completly
-        //        https://getbootstrap.com/docs/5.0/getting-started/javascript/
-        $('#sidebar-event_log').on('hidden.bs.tab', () => {
-            this.page_visible = false;
+        effect(() => {
+            this.page_visible = util.get_active_sub_page() == "event_log";
         });
     }
 

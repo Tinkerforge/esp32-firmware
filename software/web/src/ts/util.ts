@@ -152,6 +152,15 @@ export function addApiEventListener_unchecked(type: string, callback: EventListe
 
 export let eventTarget: API.APIEventTarget = new API.APIEventTarget();
 
+let active_sub_page: Signal<string> = signal("");
+
+export function get_active_sub_page() {
+    return active_sub_page.value;
+}
+export function set_active_sub_page(sub_page: string) {
+    active_sub_page.value = sub_page;
+}
+
 let allow_render: Signal<boolean> = signal(false);
 
 export function render_allowed() {

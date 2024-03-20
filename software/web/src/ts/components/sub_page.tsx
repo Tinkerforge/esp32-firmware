@@ -17,7 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { ComponentChildren, h, toChildArray } from "preact";
+import { h, ComponentChildren } from "preact";
+import Row from "react-bootstrap/Row";
+import Tab from "react-bootstrap/Tab";
 
 interface SubPageProps {
     children?: ComponentChildren;
@@ -27,12 +29,12 @@ interface SubPageProps {
 
 export function SubPage(props: SubPageProps) {
     return (
-        <div class="tab-pane fade" role="tabpanel" aria-labelledby={`sidebar-${props.name}`} id={props.name}>
-            <div class="row">
+        <Tab.Pane eventKey={props.name}>
+            <Row>
                 <div class={props.colClasses === undefined ? "col-xl-8" : props.colClasses}>
-                    {toChildArray(props.children)}
+                    {props.children}
                 </div>
-            </div>
-        </div>
+            </Row>
+        </Tab.Pane>
     )
 }

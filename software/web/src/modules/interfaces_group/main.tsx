@@ -18,13 +18,13 @@
  */
 
 import { __ } from "../../ts/translation";
-import { h, ComponentChildren } from "preact";
+import { h, ComponentChildren, RefObject } from "preact";
 import { NavbarGroup } from "../../ts/components/navbar_group";
 import { Globe } from "react-feather";
 
-export function InterfacesGroupNavbar(props: {children: ComponentChildren}) {
+export function InterfacesGroupNavbar(props: {children: ComponentChildren, group_ref: RefObject<NavbarGroup>}) {
     return (
-        <NavbarGroup name="interfaces" title={__("interfaces_group.navbar.interfaces_group")} symbol={<Globe />} hidden={false}>
+        <NavbarGroup ref={props.group_ref} title={__("interfaces_group.navbar.interfaces_group")} symbol={<Globe />} hidden={false}>
             {props.children}
         </NavbarGroup>);
 }

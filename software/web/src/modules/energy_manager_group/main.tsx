@@ -18,13 +18,13 @@
  */
 
 import { __ } from "../../ts/translation";
-import { h, ComponentChildren } from "preact";
+import { h, ComponentChildren, RefObject } from "preact";
 import { NavbarGroup } from "../../ts/components/navbar_group";
 import { Sliders } from "react-feather";
 
-export function EnergyManagerGroupNavbar(props: {children: ComponentChildren}) {
+export function EnergyManagerGroupNavbar(props: {children: ComponentChildren, group_ref: RefObject<NavbarGroup>}) {
     return (
-        <NavbarGroup name="energy_manager" title={__("energy_manager_group.navbar.energy_manager_group")} symbol={<Sliders />} hidden={false}>
+        <NavbarGroup ref={props.group_ref} title={__("energy_manager_group.navbar.energy_manager_group")} symbol={<Sliders />} hidden={false}>
             {props.children}
         </NavbarGroup>);
 }

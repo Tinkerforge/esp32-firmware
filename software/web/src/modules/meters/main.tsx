@@ -17,12 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import { METERS_SLOTS } from "../../build";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __, translate_unchecked } from "../../ts/translation";
 import { h, createRef, Fragment, Component, RefObject, ComponentChild, toChildArray } from "preact";
+import { effect } from "@preact/signals-core";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
@@ -68,7 +68,7 @@ interface UplotData {
 interface UplotWrapperProps {
     id: string;
     class: string;
-    sidebar_id: string;
+    sub_page: string;
     show: boolean;
     legend_time_with_seconds: boolean;
     aspect_ratio: number;
@@ -150,26 +150,12 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             return;
         }
 
-        // FIXME: special hack for status page that is visible by default
-        //        and doesn't receive an initial shown event because of that
-        this.visible = this.props.sidebar_id === "status";
+        effect(() => {
+            this.visible = util.get_active_sub_page() == this.props.sub_page;
 
-        // FIXME: Bootstrap 4.x only provides jQuery events. We need to port
-        //        to Bootstrap 5.x before we can remove jQuery completly
-        //        https://getbootstrap.com/docs/5.0/getting-started/javascript/
-        $(`#sidebar-${this.props.sidebar_id}`).on('shown.bs.tab', () => {
-            this.visible = true;
-
-            if (this.pending_data !== undefined) {
+            if (this.visible && this.pending_data !== undefined) {
                 this.set_data(this.pending_data);
             }
-        });
-
-        // FIXME: Bootstrap 4.x only provides jQuery events. We need to port
-        //        to Bootstrap 5.x before we can remove jQuery completly
-        //        https://getbootstrap.com/docs/5.0/getting-started/javascript/
-        $(`#sidebar-${this.props.sidebar_id}`).on('hidden.bs.tab', () => {
-            this.visible = false;
         });
 
         let options = {
@@ -999,7 +985,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                     <UplotWrapper ref={this.uplot_wrapper_live_ref}
                                     id="meters_chart_live"
                                     class="meters-chart pb-3"
-                                    sidebar_id="meters"
+                                    sub_page="meters"
                                     show={false}
                                     legend_time_with_seconds={true}
                                     aspect_ratio={3}
@@ -1009,7 +995,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                     <UplotWrapper ref={this.uplot_wrapper_history_ref}
                                     id="meters_chart_history"
                                     class="meters-chart pb-3"
-                                    sidebar_id="meters"
+                                    sub_page="meters"
                                     show={true}
                                     legend_time_with_seconds={false}
                                     aspect_ratio={3}
@@ -1451,7 +1437,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                         <UplotWrapper ref={this.uplot_wrapper_ref}
                                       id="status_meters_chart"
                                       class="status-meters-chart"
-                                      sidebar_id="status"
+                                      sub_page="status"
                                       show={true}
                                       legend_time_with_seconds={false}
                                       aspect_ratio={2.5}

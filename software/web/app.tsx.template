@@ -17,45 +17,204 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment, Component, createRef } from "preact";
+import * as util from "./ts/util";
+import { h, Fragment, Component, createRef, RefObject } from "preact";
 import { __ } from "./ts/translation";
 import { NavbarItem } from "./ts/components/navbar_item";
+import { NavbarGroup } from "./ts/components/navbar_group";
 import { Key, Home, Menu } from "react-feather";
+import Container from "react-bootstrap/Container";
+import Tab from "react-bootstrap/Tab";
+import Row from "react-bootstrap/Row";
+import Nav from "react-bootstrap/Nav";
+import Collapse from "react-bootstrap/Collapse";
 {{{navbar_imports}}}
 {{{content_imports}}}
 {{{status_imports}}}
 
-export class App extends Component {
+interface AppProps {
+    init: () => void;
+}
+
+interface AppState {
+    visible: boolean;
+    mode: "" | "normal" | "login";
+    sub_page: string;
+    sidebar_open: boolean;
+}
+
+function get_sub_page() {
+    let sub_page = window.location.hash.substring(1);
+    let element: HTMLElement = null;
+
+    if (sub_page.length > 0) {
+        element = document.querySelector(`a[href="#${sub_page}"]`) as HTMLElement;
+    }
+
+    if (element == null || element.hidden) {
+        sub_page = "status";
+        history.replaceState({}, "", "#" + sub_page);
+    }
+
+    return sub_page;
+}
+
+function login() {
+    let username = (document.getElementById("main_login_username") as HTMLInputElement).value;
+    let password = (document.getElementById("main_login_password") as HTMLInputElement).value;
+
+    let xhr = new XMLHttpRequest();
+    let result = false;
+    xhr.onreadystatechange = function () {
+        if(xhr.readyState === XMLHttpRequest.DONE) {
+            let status = xhr.status;
+            if (status == 200) {
+                 window.location.reload();
+                 result = true;
+            } else if (status == 401) {
+                console.log("credentials incorrect?");
+            } else {
+                console.log("error: got status ");
+                console.log(status);
+            }
+        }
+    }
+    xhr.open("GET", location.protocol + "//" + location.host + "/credential_check", false, username, password);
+    xhr.send();
+    return result;
+}
+
+export class App extends Component<AppProps, AppState> {
     {{{status_refs}}}
+    {{{navbar_refs}}}
+    navbar_group_refs: {[id: string]: RefObject<NavbarGroup>} = {};
+
+    constructor() {
+        super();
+
+        this.state = {
+            visible: false,
+            mode: "",
+            sub_page: "",
+            sidebar_open: false,
+        } as any;
+
+        this.navbar_group_refs = {
+            {{{navbar_refs_mapping}}}
+        };
+    }
+
+    componentDidMount() {
+        util.ifLoggedInElse(() => this.setup_normal(), () => this.setup_login());
+    }
+
+    setup_normal() {
+        this.setState({mode: "normal"});
+
+        window.addEventListener("hashchange", (event) => {
+            if (event.oldURL != event.newURL) {
+                let sub_page = get_sub_page();
+
+                if (this.state.sub_page != sub_page) {
+                    this.setState({sub_page: sub_page}, this.on_sub_page_change);
+                }
+            }
+        });
+
+        util.addApiEventListener("info/modules", () => {
+            // reacting synchronous to this event is too early. we need to wait
+            // until the navbar has reacted to this event and has updated all
+            // the hidden flags on the navitems
+            window.setTimeout(() => {
+                let sub_page = get_sub_page();
+                let sub_page_changed = this.state.sub_page != sub_page;
+
+                if (!this.state.visible || sub_page_changed) {
+                    this.setState({visible: true, sub_page: sub_page}, () => {if (sub_page_changed) this.on_sub_page_change();});
+                }
+            }, 0);
+        });
+
+        util.ifLoggedInElseReload(this.props.init);
+    }
+
+    setup_login() {
+        this.setState({visible: true, mode: "login", sub_page: "login"});
+
+        let show_password = document.getElementById('main_login_show_password') as HTMLInputElement;
+        let password = document.getElementById('main_login_password') as HTMLInputElement;
+        show_password.addEventListener("change", () => {
+            if (password.type == 'password')
+                password.type = 'text';
+            else
+                password.type = 'password';
+        });
+
+        let form = document.getElementById('main_login_form') as HTMLFormElement;
+        form.addEventListener('submit', function (event: Event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if(!login()) {
+                password.classList.add("shake");
+                window.setTimeout(() => {
+                    password.classList.remove("shake");
+                    password.focus();
+                }, 500);
+            }
+        }, false);
+    }
+
+    on_sub_page_change() {
+        let group_ref = this.navbar_group_refs[this.state.sub_page];
+
+        if (group_ref && group_ref.current) {
+            group_ref.current.open();
+        }
+
+        util.set_active_sub_page(this.state.sub_page);
+    }
 
     render() {
         return <>
             <nav class="navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0 pb-2 pt-2">
                 <a href="/"><img class="pt-2 pb-2 pl-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
-                <button class="navbar-toggler d-md-none collapsed pt-2 mr-3" type="button" data-toggle="collapse"
-                    data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler d-md-none collapsed pt-2 mr-3" type="button" onClick={() => {this.setState({sidebar_open: !this.state.sidebar_open})}}>
                     <Menu {...{class: "navbar-toggler-icon", style: "vertical-align: baseline;"} as any} />
                 </button>
                 {/* show inline status here? */}
             </nav>
 
-            <div id="container" class="container-fluid">
-                <div class="row">
-                    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse navbar-collapse">
-                        <div class="sidebar-sticky pt-3">
-                            <ul class="nav flex-column" role="tablist" id="nav-list" style="visibility: hidden;">
-                                <NavbarItem name="login" title={__("main.navbar_login")} symbol={<Key />} />
-                                <NavbarItem name="status" title={__("main.navbar_status")} symbol={<Home />} />
-                                {{{navbar}}}
-                            </ul>
+            <Container fluid>
+            <Tab.Container activeKey={this.state.sub_page} onSelect={(sub_page) => {
+                    let sub_page_changed = this.state.sub_page != sub_page;
+
+                    if (sub_page_changed || this.state.sidebar_open) {
+                        setTimeout(() => window.scrollTo(0, 0), 1);
+                        this.setState({sub_page: sub_page, sidebar_open: false}, () => {if (sub_page_changed) this.on_sub_page_change();});
+                    }
+                }}>
+                <Row>
+                    <Collapse in={this.state.sidebar_open}>
+                    <nav id="sidebar-menu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar navbar-collapse">
+                        <div class="sidebar-sticky pt-3 pb-3">
+                            <Nav as="ul" className="flex-column" id="nav-list" style={this.state.visible ? undefined : "visibility: hidden;"}>
+                                {this.state.mode == "login" ?
+                                    <NavbarItem name="login" title={__("main.navbar_login")} symbol={<Key />} hidden={false} no_href={true} />
+                                    : undefined}
+                                {this.state.mode == "normal" ? <>
+                                    <NavbarItem name="status" title={__("main.navbar_status")} symbol={<Home />} hidden={false} />
+                                    {{{navbar}}}
+                                    </> : undefined}
+                            </Nav>
                         </div>
                     </nav>
-
-                    <main id="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style="visibility: hidden;">
-                        <div class="tab-content" id="v-pills-tabContent">
+                    </Collapse>
+                    <main id="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style={this.state.visible ? undefined : "visibility: hidden;"}>
+                        <Tab.Content>
                             <div id="alert_placeholder" class="alert_placeholder"></div>
 
-                            <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-login" id="login">
+                            <Tab.Pane eventKey="login">
                                 <div class="row sticky-under-top mb-3 pt-3">
                                     <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
                                         <h1 class="page-header">{__("main.content_login")}</h1>
@@ -91,17 +250,18 @@ export class App extends Component {
                                         </div>
                                     </div>
                                 </form>
-                            </div>
+                            </Tab.Pane>
 
-                            <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-status" id="status">
+                            <Tab.Pane eventKey="status">
                                 {{{status}}}
-                            </div>
+                            </Tab.Pane>
 
                             {{{content}}}
-                        </div>
+                        </Tab.Content>
                     </main>
-                </div>
-            </div>
+                </Row>
+            </Tab.Container>
+            </Container>
 
             <div id="async_modal"></div>
 

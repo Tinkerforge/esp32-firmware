@@ -20,6 +20,7 @@
 import * as API from "../api";
 import * as util from "../util";
 import { h, Component } from "preact";
+import Nav from 'react-bootstrap/Nav';
 
 interface NavbarItemProps {
     name: string;
@@ -27,6 +28,7 @@ interface NavbarItemProps {
     title: string;
     symbol: h.JSX.Element;
     hidden?: boolean;
+    no_href?: boolean; // default: false
 }
 
 interface NavbarItemState {
@@ -67,12 +69,12 @@ export class NavbarItem extends Component<NavbarItemProps, NavbarItemState> {
         }
 
         return (
-            <li class="nav-item">
-                <a id={`sidebar-${this.props.name}`} class="nav-link" data-toggle="tab" role="tab" aria-controls={this.props.name} aria-selected="true" href={`#${this.props.name}`} hidden={hidden}>
+            <Nav.Item as="li">
+                <Nav.Link eventKey={this.props.name} href={this.props.no_href ? undefined : "#" + this.props.name} hidden={hidden}>
                     {this.props.symbol}
                     <span style="margin-left: 8px;">{this.props.title}</span>
-                </a>
-            </li>
+                </Nav.Link>
+            </Nav.Item>
         );
     }
 }

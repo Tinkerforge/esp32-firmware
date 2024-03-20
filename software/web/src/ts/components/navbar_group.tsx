@@ -17,47 +17,51 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../jq";
-import { h, Component, ComponentChildren, createRef } from "preact";
+import { h, Component, ComponentChildren } from "preact";
 import { ChevronRight } from "react-feather";
+import Nav from 'react-bootstrap/Nav';
+import Collapse from 'react-bootstrap/Collapse';
 
 interface NavbarGroupProps {
     children: ComponentChildren;
-    name: string;
     title: string;
     symbol: h.JSX.Element;
-    hidden?: boolean;
+    hidden?: boolean; // default: true
 }
 
-export class NavbarGroup extends Component<NavbarGroupProps, {}> {
-    chevron_ref = createRef();
+interface NavbarGroupState {
+    open: boolean;
+}
 
+export class NavbarGroup extends Component<NavbarGroupProps, NavbarGroupState> {
     constructor(props: NavbarGroupProps) {
         super(props);
 
         props.symbol.props.class = "col-auto";
+
+        this.state = {
+            open: false,
+        } as any;
     }
 
-    componentDidMount() {
-        // FIXME: Bootstrap 4.x only provides jQuery events. We need to port
-        //        to Bootstrap 5.x before we can remove jQuery completly
-        //        https://getbootstrap.com/docs/5.0/getting-started/javascript/
-        $(`#${this.props.name}-group`).on('hide.bs.collapse', () => this.chevron_ref.current.classList.remove("rotated-chevron"));
-        $(`#${this.props.name}-group`).on('show.bs.collapse', () => this.chevron_ref.current.classList.add("rotated-chevron"));
+    open() {
+        this.setState({open: true});
     }
 
     render() {
         return (
-            <li class="nav-item">
-                <div id={`sidebar-${this.props.name}-group`} class="nav-link row no-gutters d-flex-ni align-items-center" data-toggle="collapse" href={`#${this.props.name}-group`} role="button" aria-expanded="false" aria-controls={`${this.props.name}-group`} hidden={this.props.hidden === undefined ? true : this.props.hidden}>
-                    {this.props.symbol}<span class="col" style="margin-left: 8px;">{this.props.title}</span><ChevronRight ref={this.chevron_ref} {...{class: "unrotated-chevron col-auto", style: "margin-right: 0px;"} as any} />
-                </div>
-                <div class="collapse nav-nested" id={`${this.props.name}-group`}>
-                    <ul class="flex-column nav" style="padding-left: 32px">
-                        {this.props.children}
-                    </ul>
-                </div>
-            </li>
+            <Nav.Item as="li">
+                <Nav.Link as="div" className="row no-gutters d-flex-ni align-items-center" role="button" hidden={this.props.hidden === undefined ? true : this.props.hidden} onClick={() => {this.setState({open: !this.state.open});}}>
+                    {this.props.symbol}<span class="col" style="margin-left: 8px;">{this.props.title}</span><ChevronRight {...{class: "col-auto unrotated-chevron " + (this.state.open ? "rotated-chevron" : ""), style: "margin-right: 0px;"} as any} />
+                </Nav.Link>
+                <Collapse in={this.state.open}>
+                    <div class="nav-nested">
+                        <Nav as="ul" className="flex-column" style="padding-left: 32px">
+                            {this.props.children}
+                        </Nav>
+                    </div>
+                </Collapse>
+            </Nav.Item>
         );
     }
 }

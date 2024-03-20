@@ -36,54 +36,6 @@ interface Module {
 
 let modules: Module[] = [{{{modules}}}];
 
-$('.navbar-collapse a').on("click", function () {
-    $(".navbar-collapse").collapse('hide');
-});
-
-let first_module_init = true;
-
-function show_page() {
-    $('#nav-list').removeAttr("style");
-    $('#main').removeAttr("style");
-}
-
-function navigate() {
-    let hash = window.location.hash;
-    let elem: JQuery<HTMLElement>;
-
-    if (hash.length > 0) {
-        elem = $(`a[href="${hash}"]`);
-
-        if (elem.length == 0 || elem.prop("hidden")) {
-            elem = undefined;
-        }
-    }
-
-    if (!elem) {
-        elem = $('a[href="#status"]');
-        history.replaceState({}, "", "#status");
-    }
-
-    elem.click();
-    elem.parents(".nav-nested.collapse").collapse('show');
-}
-
-function update_modules() {
-    if (first_module_init) {
-        first_module_init = false;
-        // FIXME: navigate doesn't work if called directly here. probably
-        //        has something to do with preact render/event order
-        window.setTimeout(() => {
-            navigate();
-            show_page();
-        }, 0);
-    }
-}
-
-export function registerEvents(eventSource: API.APIEventTarget) {
-    eventSource.addEventListener('info/modules', update_modules);
-}
-
 // This is the part of the initialization to be done
 // if we are authenticated (or authentication is deactivated)
 function init() {
@@ -92,79 +44,11 @@ function init() {
     }
 
     util.initCapsLockCheck();
-    util.setupEventSource(true, false, (ws: WebSocket, eventTarget: API.APIEventTarget) => registerEvents(eventTarget));
-}
-
-function login() {
-    let username = (document.getElementById("main_login_username") as HTMLInputElement).value;
-    let password = (document.getElementById("main_login_password") as HTMLInputElement).value;
-
-    let xhr = new XMLHttpRequest();
-    let result = false;
-    xhr.onreadystatechange = function () {
-        if(xhr.readyState === XMLHttpRequest.DONE) {
-            let status = xhr.status;
-            if (status == 200) {
-                 window.location.href = location.protocol + "//" + location.host;
-                 result = true;
-            } else if (status == 401) {
-                console.log("credentials incorrect?");
-            } else {
-                console.log("error: got status ");
-                console.log(status);
-            }
-        }
-    }
-    xhr.open("GET", location.protocol + "//" + location.host + "/credential_check", false, username, password);
-    xhr.send();
-    return result;
-}
-
-function setup_normal() {
-    window.setTimeout(show_page, 1000);
-
-    document.getElementById("sidebar-status").hidden = false;
-    $('#sidebar-status').addClass('active');
-    $('#status').addClass(['show', 'active']);
-
-    util.ifLoggedInElseReload(init);
-}
-
-function setup_login() {
-    window.setTimeout(show_page, 1000);
-
-    document.getElementById("sidebar-login").hidden = false;
-    $('#sidebar-login').addClass('active');
-    $('#login').addClass(['show', 'active']);
-
-    let show_password = document.getElementById('main_login_show_password') as HTMLInputElement;
-    let password = document.getElementById('main_login_password') as HTMLInputElement;
-    show_password.addEventListener("change", () => {
-        if (password.type == 'password')
-            password.type = 'text';
-        else
-            password.type = 'password';
-    });
-
-    let form = document.getElementById('main_login_form') as HTMLFormElement;
-    form.addEventListener('submit', function (event: Event) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if(!login()) {
-            password.classList.add("shake");
-            window.setTimeout(() => {
-                password.classList.remove("shake");
-                password.focus();
-            }, 500);
-        }
-    }, false);
+    util.setupEventSource(true, false, (ws, eventTarget) => {});
 }
 
 window.addEventListener("pageshow", () => {
     document.title = __("main.title");
-
-    util.ifLoggedInElse(setup_normal, setup_login);
 
     init_async_modal();
 
@@ -175,29 +59,10 @@ window.addEventListener("pageshow", () => {
         select_language();
     });*/
 
-    $('a[data-toggle="tab"]').on('show.bs.tab', (event) => {
-        $('a[data-toggle="tab"]').not(event.target as Element).removeClass("active");
-        $('a[data-toggle="tab"]').not(event.target as Element).trigger("hidden.bs.tab");
-    });
-
-    window.addEventListener("hashchange", (event) => {
-        if (event.oldURL != event.newURL) {
-            navigate();
-        }
-    });
-
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function() {
-        window.location.hash = $(this).attr("href");
-    });
-
-    $('a[data-toggle="tab"]').on('shown.bs.tab', () => {
-        setTimeout(() => window.scrollTo(0,0), 1);
-    });
-
     document.getElementById("reboot_button").addEventListener("click", () => {
         $('#reboot').modal('hide');
         util.reboot();
     });
 });
 
-render(<App />, document.getElementById("app"));
+render(<App init={init} />, document.getElementById("app"));

@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { METERS_SLOTS } from "../../build";
 import { h, createRef, Fragment, Component, ComponentChild, RefObject, ComponentChildren } from "preact";
+import { effect } from "@preact/signals-core";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 import { InputDate } from "../../ts/components/input_date";
@@ -261,7 +261,7 @@ class UplotLoader extends Component<UplotLoaderProps, {}> {
 interface UplotFlagsWrapperProps {
     id: string;
     class: string;
-    sidebar_id: string;
+    sub_page: string;
     show: boolean;
     sync?: uPlot.SyncPubSub;
     legend_time_label: string;
@@ -295,26 +295,12 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             return;
         }
 
-        // FIXME: special hack for status page that is visible by default
-        //        and doesn't receive an initial shown event because of that
-        this.visible = this.props.sidebar_id === "status";
+        effect(() => {
+            this.visible = util.get_active_sub_page() == this.props.sub_page;
 
-        // FIXME: Bootstrap 4.x only provides jQuery events. We need to port
-        //        to Bootstrap 5.x before we can remove jQuery completly
-        //        https://getbootstrap.com/docs/5.0/getting-started/javascript/
-        $(`#sidebar-${this.props.sidebar_id}`).on('shown.bs.tab', () => {
-            this.visible = true;
-
-            if (this.pending_data !== undefined) {
+            if (this.visible && this.pending_data !== undefined) {
                 this.set_data(this.pending_data);
             }
-        });
-
-        // FIXME: Bootstrap 4.x only provides jQuery events. We need to port
-        //        to Bootstrap 5.x before we can remove jQuery completly
-        //        https://getbootstrap.com/docs/5.0/getting-started/javascript/
-        $(`#sidebar-${this.props.sidebar_id}`).on('hidden.bs.tab', () => {
-            this.visible = false;
         });
 
         let options = {
@@ -606,7 +592,7 @@ class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 interface UplotWrapperProps {
     id: string;
     class: string;
-    sidebar_id: string;
+    sub_page: string;
     color_cache_group: string;
     show: boolean;
     sync?: uPlot.SyncPubSub;
@@ -651,26 +637,12 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
             return;
         }
 
-        // FIXME: special hack for status page that is visible by default
-        //        and doesn't receive an initial shown event because of that
-        this.visible = this.props.sidebar_id === "status";
+        effect(() => {
+            this.visible = util.get_active_sub_page() == this.props.sub_page;
 
-        // FIXME: Bootstrap 4.x only provides jQuery events. We need to port
-        //        to Bootstrap 5.x before we can remove jQuery completly
-        //        https://getbootstrap.com/docs/5.0/getting-started/javascript/
-        $(`#sidebar-${this.props.sidebar_id}`).on('shown.bs.tab', () => {
-            this.visible = true;
-
-            if (this.pending_data !== undefined) {
+            if (this.visible && this.pending_data !== undefined) {
                 this.set_data(this.pending_data);
             }
-        });
-
-        // FIXME: Bootstrap 4.x only provides jQuery events. We need to port
-        //        to Bootstrap 5.x before we can remove jQuery completly
-        //        https://getbootstrap.com/docs/5.0/getting-started/javascript/
-        $(`#sidebar-${this.props.sidebar_id}`).on('hidden.bs.tab', () => {
-            this.visible = false;
         });
 
         let padding: uPlot.Padding = this.props.padding;
@@ -1233,7 +1205,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                             <UplotWrapper ref={this.uplot_wrapper_ref}
                                             id="em_energy_analysis_status_chart"
                                             class="em-energy-analysis-status-chart"
-                                            sidebar_id="status"
+                                            sub_page="status"
                                             color_cache_group="status"
                                             show={true}
                                             legend_time_label={__("em_energy_analysis.script.time_5min")}
@@ -2923,7 +2895,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         <UplotFlagsWrapper ref={this.uplot_wrapper_5min_flags_ref}
                                             id="em_energy_analysis_5min_flags_chart"
                                             class="em-energy-analysis-flags-chart"
-                                            sidebar_id="em_energy_analysis"
+                                            sub_page="em_energy_analysis"
                                             show={true}
                                             sync={this.uplot_sync}
                                             legend_time_label={__("em_energy_analysis.script.time_5min")}
@@ -2936,7 +2908,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         <UplotWrapper ref={this.uplot_wrapper_5min_power_ref}
                                         id="em_energy_analysis_5min_power_chart"
                                         class="em-energy-analysis-chart pb-4"
-                                        sidebar_id="em_energy_analysis"
+                                        sub_page="em_energy_analysis"
                                         color_cache_group="analsyis"
                                         show={true}
                                         sync={this.uplot_sync}
@@ -2964,7 +2936,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         <UplotWrapper ref={this.uplot_wrapper_daily_ref}
                                         id="em_energy_analysis_daily_chart"
                                         class="em-energy-analysis-chart pb-4"
-                                        sidebar_id="em_energy_analysis"
+                                        sub_page="em_energy_analysis"
                                         color_cache_group="analsyis"
                                         show={false}
                                         legend_time_label={__("em_energy_analysis.script.time_daily")}
