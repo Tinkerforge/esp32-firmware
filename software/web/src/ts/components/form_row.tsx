@@ -83,7 +83,7 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
     }
 
     render(props: FormRowProps, state: {help_expanded: boolean}) {
-        let use_id_context = !toChildArray(props.children).every(c => typeof(c) == "string" || typeof(c) == "number" || components_using_id_context.indexOf(c.type) == -1)
+        let use_id_context = !toChildArray(props.children).every(c => typeof(c) == "string" || typeof(c) == "number" || components_using_id_context.indexOf(c.type) < 0)
 
         let inner = use_id_context ? <>{(toChildArray(props.children) as VNode[]).map(c => cloneElement(c, {idContext: this.idContext}))}</> : props.children;
         if (props.contentColClasses === undefined || props.contentColClasses !== "")

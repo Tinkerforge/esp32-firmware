@@ -368,7 +368,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                 try {
                                     let pdf = await API.call("charge_tracker/pdf", {
                                         api_not_final_acked: true,
-                                        english: navigator.languages.indexOf("de") == -1 || (navigator.languages.indexOf("de") > navigator.languages.indexOf("en")),
+                                        english: navigator.languages.indexOf("de") < 0 || (navigator.languages.indexOf("de") > navigator.languages.indexOf("en")),
                                         start_timestamp_min: start.getTime() / 1000 / 60,
                                         end_timestamp_min: end.getTime() / 1000 / 60,
                                         user_filter: parseInt(state.user_filter),
