@@ -181,7 +181,7 @@ export class PowerManagerStatus extends Component {
     }
 }
 
-export class PowerManager extends ConfigComponent<'power_manager/config', {status_ref?: RefObject<PowerManagerStatus>}, {em_contactor_installed: boolean} & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}> {
+export class PowerManager extends ConfigComponent<'power_manager/config', {status_ref?: RefObject<PowerManagerStatus>}, {em_contactor_installed: boolean} & API.getType['power_manager/debug_config']> {
     // Need to use any here in case the automation module is not available.
     automation_config: any;
 
@@ -203,19 +203,6 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
         util.addApiEventListener_unchecked('automation/config', () => {
             this.automation_config = API.get_unchecked('automation/config');
         });
-
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
-                let meter_config = API.get_unchecked(`meters/${meter_slot}/config`);
-
-                this.setState((prevState) => ({
-                    meter_configs: {
-                        ...prevState.meter_configs,
-                        [meter_slot]: meter_config
-                    }
-                }));
-            });
-        }
     }
 
     override async sendSave(t: "power_manager/config", cfg: API.getType['power_manager/config']) {
@@ -259,13 +246,11 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
     }
 
     get_meter_name(meter_slot: number) {
-        let meter_name = __("power_manager.script.meter")(util.hasValue(meter_slot) ? meter_slot : '?');
+        let cfg = API.get_unchecked(`meters/${meter_slot}/config`) as API.getType["meters/0/config"]
+        if (cfg[0] == MeterClassID.None)
+            return null;
 
-        if (util.hasValue(meter_slot) && util.hasValue(this.state.meter_configs) && util.hasValue(this.state.meter_configs[meter_slot]) && util.hasValue(this.state.meter_configs[meter_slot][1])) {
-            meter_name = this.state.meter_configs[meter_slot][1].display_name;
-        }
-
-        return meter_name;
+        return cfg[1].display_name;
     }
 
     disable_reset_switch() {
@@ -315,7 +300,7 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
         return has_rule;
     }
 
-    render(props: {}, s: Readonly<API.getType['power_manager/config'] & API.getType['power_manager/debug_config'] & {meter_configs: {[meter_slot: number]: MeterConfig}}>) {
+    render(props: {}, s: Readonly<API.getType['power_manager/config'] & API.getType['power_manager/debug_config']>) {
         if (!util.render_allowed())
             return <SubPage name="power_manager" />;
 
@@ -328,8 +313,9 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
 
         let meter_slots: StringStringTuple[] = [];
         for (let i = 0; i < METERS_SLOTS; i++) {
-            if (s.meter_configs[i][0] != MeterClassID.None) {
-                meter_slots.push([i.toString(), this.get_meter_name(i)]);
+            let name = this.get_meter_name(i);
+            if (name !== null) {
+                meter_slots.push([i.toString(), name]);
             }
         }
 
