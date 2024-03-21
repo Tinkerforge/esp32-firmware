@@ -18,8 +18,8 @@
  */
 
 import {ConfigMap, api_cache, Modules, ConfigModified, ConfigModifiedKey} from './api_defs';
-
 import * as util from "./util";
+import { __ } from "./translation";
 
 export { type ConfigMap as getType, type Modules };
 
@@ -167,8 +167,21 @@ export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigM
 export async function call_unchecked(topic: string, payload: any, error_string: string, reboot_string?: string, timeout_ms: number = 5000) {
     try {
         let blob = await util.put('/' + topic, payload, timeout_ms);
-        if (reboot_string)
-            util.getShowRebootModalFn(reboot_string)();
+        if (reboot_string) {
+            const modal = util.async_modal_ref.current;
+
+            if(!await modal.show({
+                    title: __("main.reboot_title"),
+                    body: __("main.reboot_content")(reboot_string),
+                    no_text: __("main.abort"),
+                    yes_text: __("main.reboot"),
+                    no_variant: "secondary",
+                    yes_variant: "danger"
+                }))
+                return;
+
+            util.reboot();
+        }
         return blob;
     } catch (e) {
         util.add_alert(topic.replace("/", "_") + '_failed', 'alert-danger', error_string, e);

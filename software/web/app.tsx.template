@@ -265,24 +265,6 @@ export class App extends Component<AppProps, AppState> {
             </Container>
 
             <div id="async_modal"></div>
-
-            <div class="modal fade" id="reboot" tabindex={-1} role="dialog" aria-hidden="true">
-                <div id="reboot_content" class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <label class="form-label modal-title">{__("main.reboot_title")}</label>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body"><span>{__("main.reboot_content_prefix")}</span><span id="reboot_content_changed"></span><span>{__("main.reboot_content_suffix")}</span></div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">{__("main.abort")}</button>
-                            <button id="reboot_button" type="button" class="btn btn-danger">{__("main.reboot")}</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </>;
     }
 }

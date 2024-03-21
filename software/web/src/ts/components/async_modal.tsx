@@ -67,7 +67,8 @@ export class AsyncModal extends Component<AsyncModalProps, AsyncModalState> {
                     onHide={() => {this.hide(false)}}
                     centered
                     backdropClassName={this.state.nestingDepth ? "modal-backdrop-" + this.state.nestingDepth : ""}
-                    className={this.state.nestingDepth ? "modal-" + this.state.nestingDepth : ""}>
+                    className={this.state.nestingDepth ? "modal-" + this.state.nestingDepth : ""}
+                    size="xl">
                 {/* There seems to be an incompatibility between preact's and react-bootstrap's typings*/ }
                 <Modal.Header {...{closeButton: true} as any}>
                     <label class="modal-title form-label">{state.title}</label>

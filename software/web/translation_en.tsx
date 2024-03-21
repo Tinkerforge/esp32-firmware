@@ -10,8 +10,7 @@ let x = {
         "login_button": "Sign In",
         "navbar_status": "Status",
         "reboot_title": "Reboot to apply configuration",
-        "reboot_content_prefix": "The changed ",
-        "reboot_content_suffix": " will only be applied after rebooting. Reboot now?",
+        "reboot_content": /*SFN*/ (name: string) => `The changed ${name} will only be applied after rebooting. Reboot now?`/*NF*/,
         "abort": "Abort",
         "reboot": "Reboot"
     },

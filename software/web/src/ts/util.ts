@@ -18,12 +18,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
 import { createRef, RefObject } from "preact";
-
 import * as API from "./api";
 import { __ } from "./translation";
-
 import { AsyncModal } from "./components/async_modal";
 import { api_cache } from "./api_defs";
 import { batch, signal, Signal } from "@preact/signals-core";
@@ -33,23 +30,37 @@ export function reboot() {
     API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
 }
 
+function createElementFromHTML(html: string) {
+    var div = document.createElement('div');
+    div.innerHTML = html;
+
+    return div.firstChild;
+}
+
 export function add_alert(id: string, cls: string, title: string, text: string) {
-    let to_add = `<div id="alert_${id}" class="alert ${cls} alert-dismissible fade show custom-alert" role="alert" style="line-height: 1.5rem;">
+    let to_add = createElementFromHTML(`<div id="alert_${id}" class="alert ${cls} alert-dismissible fade show custom-alert" role="alert" style="line-height: 1.5rem;">
     <strong>${title}</strong> ${text}
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
     <span aria-hidden="true">&times;</span>
     </button>
-</div>`;
+</div>`);
 
-    if(!document.getElementById(`alert_${id}`)) {
-        $('#alert_placeholder').append(to_add);
-    } else {
-        $(`#alert_${id}`).replaceWith(to_add);
+    let element = document.getElementById(`alert_${id}`);
+
+    if (element) {
+        element.replaceWith(to_add);
+    }
+    else {
+        document.getElementById("alert_placeholder").appendChild(to_add);
     }
 }
 
 export function remove_alert(id: string) {
-    $(`#alert_${id}`).remove();
+    let element = document.getElementById(`alert_${id}`);
+
+    if (element) {
+        element.remove();
+    }
 }
 
 export function format_timespan_ms(ms: number, opts?: {replace_zero_with?: string, replace_u32max_with?: string}) {
@@ -393,13 +404,6 @@ export function downloadToFile(content: BlobPart, filename_prefix: string, exten
     a.click();
 
     URL.revokeObjectURL(a.href);
-}
-
-export function getShowRebootModalFn(changed_value_name: string) {
-    return () => {
-        $('#reboot_content_changed').html(changed_value_name);
-        $('#reboot').modal('show');
-    };
 }
 
 function timestamp_to_date(timestamp: number, time_fmt: any) {

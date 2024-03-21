@@ -17,17 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 {{{preact_debug}}}
-import $ from "jquery";
-
 import "bootstrap";
-
 import { h, render } from "preact";
 import * as util from "./ts/util";
-import * as API from "./ts/api";
 import { __ /*, select_language*/ } from "./ts/translation";
 import { init_async_modal } from "./ts/components/async_modal";
 import { App } from "./app";
-
 {{{module_imports}}}
 
 interface Module {
@@ -58,11 +53,6 @@ window.addEventListener("pageshow", () => {
         console.log("language change!");
         select_language();
     });*/
-
-    document.getElementById("reboot_button").addEventListener("click", () => {
-        $('#reboot').modal('hide');
-        util.reboot();
-    });
 });
 
 render(<App init={init} />, document.getElementById("app"));
