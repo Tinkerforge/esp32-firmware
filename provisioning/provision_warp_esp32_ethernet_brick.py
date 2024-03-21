@@ -12,7 +12,7 @@ from tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuad
 from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 from tinkerforge.bricklet_temperature_v2 import BrickletTemperatureV2
 
-SERIAL_SETTLE_DELAY = 1
+SERIAL_SETTLE_DELAY = 2
 
 class ThreadWithReturnValue(Thread):
     def __init__(self, group=None, target=None, name=None,
