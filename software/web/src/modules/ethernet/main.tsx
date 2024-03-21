@@ -114,7 +114,7 @@ export class EthernetStatus extends Component
         let state = API.get('ethernet/state');
 
         return <StatusSection name="ethernet">
-                <FormRow label={__("ethernet.status.ethernet_connection")} label_muted={state.ip != "0.0.0.0" ? state.ip : ""} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("ethernet.status.ethernet_connection")} label_muted={state.ip != "0.0.0.0" ? state.ip : ""}>
                     <IndicatorGroup
                         style="width: 100%"
                         class="flex-wrap"

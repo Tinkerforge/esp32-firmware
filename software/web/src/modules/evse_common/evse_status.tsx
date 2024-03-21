@@ -118,7 +118,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
         let theoretical_max = Math.min(state.slots[0].max_current, state.slots[1].max_current);
 
         return <StatusSection name="evse">
-                <FormRow label={__("evse.status.evse")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("evse.status.evse")}>
                     <IndicatorGroup
                         style="width: 100%"
                         class="flex-wrap"
@@ -133,7 +133,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                     />
                 </FormRow>
 
-                <FormRow label={__("evse.status.charge_control")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("evse.status.charge_control")}>
                         <div class="input-group">
                         <Button
                             className="form-control mr-2 rounded-right"
@@ -149,7 +149,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                         </Button>
                     </div>
                 </FormRow>
-                <FormRow label={__("evse.status.configured_charging_current")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4 input-group">
+                <FormRow label={__("evse.status.configured_charging_current")}>
                         <InputFloat min={6000} max={theoretical_max} digits={3} unit="A"
                             value={state.configured_current}
                             onValue={(v) => {
@@ -160,7 +160,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                             }}
                             showMinMax/>
                 </FormRow>
-                <FormRow label={__("evse.status.allowed_charging_current")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("evse.status.allowed_charging_current")}>
                         <InputText value={this.update_evse_slots()} />
                 </FormRow>
             </StatusSection>;

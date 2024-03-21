@@ -58,7 +58,7 @@ export class PowerManagerStatus extends Component {
         if (generate == 0)
             return <></>
 
-        return <FormRow label="" labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+        return <FormRow label="">
             <IndicatorGroup
                 value={0}
                 items={[
@@ -90,7 +90,7 @@ export class PowerManagerStatus extends Component {
         let config      = API.get('power_manager/config');
 
         return <StatusSection name="power_manager">
-            <FormRow label={__("power_manager.status.mode")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+            <FormRow label={__("power_manager.status.mode")}>
                 <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
                     <Button
                         style="display: flex;align-items: center;justify-content: center;"
@@ -127,10 +127,9 @@ export class PowerManagerStatus extends Component {
                 </ButtonGroup>
             </FormRow>
 
-
             {config.phase_switching_mode == 3 ?
                 <>
-                    <FormRow label={__("power_manager.status.phase_switching")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                    <FormRow label={__("power_manager.status.phase_switching")}>
                         <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
                             <Button
                                 style="display: flex;align-items: center;justify-content: center;"
@@ -151,7 +150,7 @@ export class PowerManagerStatus extends Component {
                         </ButtonGroup>
                     </FormRow>
 
-                    <FormRow label={__("power_manager.status.external_control_state")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                    <FormRow label={__("power_manager.status.external_control_state")}>
                         <IndicatorGroup
                             value={state.external_control}
                             items={[
@@ -165,7 +164,7 @@ export class PowerManagerStatus extends Component {
                 </>
             :
                 <>
-                    <FormRow label={__("power_manager.status.phase_switching")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                    <FormRow label={__("power_manager.status.phase_switching")}>
                         <IndicatorGroup
                             value={!ll_state.is_3phase ? 0 : 1}
                             items={[

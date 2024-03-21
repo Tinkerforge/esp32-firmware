@@ -1196,7 +1196,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
         }
 
         return <StatusSection name="em_energy_analysis">
-            <FormRow label={__("em_energy_analysis.status.power_history")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+            <FormRow label={__("em_energy_analysis.status.power_history")} hidden={!show}>
                 <div class="card pl-1 pb-1">
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader ref={this.uplot_loader_ref}
@@ -1225,7 +1225,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                     </div>
                 </div>
             </FormRow>
-            <FormRow label={__("em_energy_analysis.status.current_power")} label_muted={get_meter_name(state.meter_configs, state.meter_slot)} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4" hidden={!show}>
+            <FormRow label={__("em_energy_analysis.status.current_power")} label_muted={get_meter_name(state.meter_configs, state.meter_slot)} hidden={!show}>
                 <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
             </FormRow>
         </StatusSection>;
@@ -2739,7 +2739,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
     render(props: {}, state: Readonly<EMEnergyAnalysisState>) {
         if (!util.render_allowed())
-            return <SubPage name="em_energy_analysis" />;
+            return <SubPage name="em_energy_analysis" colClasses="col-xl-10" />;
 
         let total_5min = () => {
             let key = this.date_to_daily_key(state.current_5min_date);
@@ -2880,12 +2880,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         return (
             <SubPage name="em_energy_analysis" colClasses="col-xl-10">
-                <PageHeader title={__("em_energy_analysis.content.em_energy_analysis")}>
-                    <div>
-                        {state.data_type == '5min'
-                        ? <InputDate date={state.current_5min_date} onDate={this.set_current_5min_date.bind(this)} buttons="day" style="width: 11rem">{data_select}</InputDate>
-                        : <InputMonth date={state.current_daily_date} onDate={this.set_current_daily_date.bind(this)} buttons="month" style="width: 11rem">{data_select}</InputMonth>}
-                    </div>
+                <PageHeader title={__("em_energy_analysis.content.em_energy_analysis")} titleClass="col-12 col-sm text-center text-sm-left" childrenClass="col-12 col-sm-auto mb-2">
+                    {this.state.data_type == '5min'
+                    ? <InputDate date={this.state.current_5min_date} onDate={this.set_current_5min_date.bind(this)} buttons="day" style="width: 11rem">{data_select}</InputDate>
+                    : <InputMonth date={this.state.current_daily_date} onDate={this.set_current_daily_date.bind(this)} buttons="month" style="width: 11rem">{data_select}</InputMonth>}
                 </PageHeader>
 
                 <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}

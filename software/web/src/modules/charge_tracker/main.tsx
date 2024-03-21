@@ -498,7 +498,7 @@ export class ChargeTrackerStatus extends Component {
                 user_id: cc.user_id
             };
 
-            current_charge = <FormRow label={__("charge_tracker.status.current_charge")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+            current_charge = <FormRow label={__("charge_tracker.status.current_charge")}>
                 <ListGroup>
                     <TrackedCharge charge={charge}
                                     users={users}
@@ -509,7 +509,7 @@ export class ChargeTrackerStatus extends Component {
         }
 
         let last_charges_list = last_charges.length == 0 ? <></>
-            : <FormRow label={__("charge_tracker.status.last_charges")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+            : <FormRow label={__("charge_tracker.status.last_charges")}>
                 <ListGroup>
                     {last_charges.slice(-3).map(c =>
                         <TrackedCharge charge={c}

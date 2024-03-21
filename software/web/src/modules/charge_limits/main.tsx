@@ -145,7 +145,7 @@ export class ChargeLimitsStatus extends Component {
                     energy_items[conf_idx][1] += " " + __("charge_limits.content.overridden");
             }
 
-            energy_row = <FormRow label={__("charge_limits.content.override_energy")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+            energy_row = <FormRow label={__("charge_limits.content.override_energy")}>
                 <InputSelect items={energy_items}
                     placeholder={energy_placeholder}
                     value={""}
@@ -157,7 +157,7 @@ export class ChargeLimitsStatus extends Component {
         }
 
         return <StatusSection name="charge_limits">
-                <FormRow label={__("charge_limits.content.override_duration")} labelColClasses="col-sm-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("charge_limits.content.override_duration")}>
                     <InputSelect items={duration_items}
                         placeholder={duration_placeholder}
                         value={""}

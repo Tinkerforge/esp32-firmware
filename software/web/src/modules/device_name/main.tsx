@@ -26,6 +26,7 @@ import { Button } from "react-bootstrap";
 import { Save } from "react-feather";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { StatusSection } from "../../ts/components/status_section";
+import { PageHeader } from "../../ts/components/page_header";
 
 export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
     constructor() {
@@ -34,32 +35,29 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
 
     render(props: {}, state: Readonly<API.getType['info/display_name']>) {
         if (!util.render_allowed() || !API.hasModule("device_name"))
-            return <StatusSection name="device_name" class="row sticky-under-top mb-3" />;
+            return <StatusSection name="device_name" class="sticky-under-top" />;
 
         document.title = API.get("info/display_name").display_name + " - " + __("main.title");
 
-        return <StatusSection name="device_name" class="row sticky-under-top mb-3">
-            <div class="col-12 col-xl-8">
-                <div class="row pt-3 border-bottom tab-header-shadow">
-                    <h1 class="col-4 col-xl-6 page-header pb-2">{__("device_name.status.status")}</h1>
-                    <form class="col-8 col-xl-6" onSubmit={(e: Event) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (!(e.target as HTMLFormElement).checkValidity())
-                            return;
+        return <StatusSection name="device_name" class="sticky-under-top">
+            <PageHeader title={__("device_name.status.status")} titleClass="col-4 col-lg-3" childrenClass="col-8 col-lg-9">
+                <form onSubmit={(e: Event) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!(e.target as HTMLFormElement).checkValidity())
+                        return;
 
-                        API.save("info/display_name", state, __("device_name.script.save_failed"));
-                    }}>
-                        <InputText maxLength={32} value={state.display_name} onValue={(v) => this.setState({display_name: v})} required>
-                            {state.display_name == API.get('info/display_name').display_name ? <></> :
-                                <div class="input-group-append">
-                                    <Button className="form-control rounded-right" type="submit"><Save/></Button>
-                                </div>
-                            }
-                        </InputText>
-                    </form>
-                </div>
-            </div>
+                    API.save("info/display_name", state, __("device_name.script.save_failed"));
+                }}>
+                    <InputText maxLength={32} value={state.display_name} onValue={(v) => this.setState({display_name: v})} required>
+                        {state.display_name == API.get('info/display_name').display_name ? <></> :
+                            <div class="input-group-append">
+                                <Button className="form-control rounded-right" type="submit"><Save/></Button>
+                            </div>
+                        }
+                    </InputText>
+                </form>
+            </PageHeader>
         </StatusSection>;
     }
 }

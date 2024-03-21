@@ -170,7 +170,7 @@ export class WireguardStatus extends Component {
             return <StatusSection name="wireguard" />;
 
         return <StatusSection name="wireguard">
-                <FormRow label={__("wireguard.status.connection")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("wireguard.status.connection")}>
                     <IndicatorGroup
                         style="width: 100%"
                         class="flex-wrap"

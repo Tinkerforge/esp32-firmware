@@ -20,17 +20,25 @@
 import { h, Component, ComponentChildren } from "preact";
 
 export interface PageHeaderProps {
-    title: ComponentChildren;
     children?: ComponentChildren;
+    title: ComponentChildren;
+    titleClass?: string;
+    childrenClass?: string;
 }
 
 export class PageHeader extends Component<PageHeaderProps, any> {
-    render(props: PageHeaderProps) {
+    render() {
         return (
+            // this row/col combination is necessary here to create a div that is
+            // full width to cover the page header shadow after the sm breakpoint
             <div class="row sticky-under-top mb-3 pt-3">
-                <div class="col d-flex flex-wrap justify-content-between pb-2 border-bottom tab-header-shadow">
-                    <h1 class="page-header">{this.props.title}</h1>
-                    {props.children}
+                <div class="col">
+                    <div class="row d-flex flex-wrap justify-content-between pb-2 border-bottom tab-header-shadow">
+                        <h1 class={"page-header " + (this.props.titleClass ? this.props.titleClass : "col")}>{this.props.title}</h1>
+                        <div class={this.props.childrenClass ? this.props.childrenClass : "col-auto"}>
+                            {this.props.children}
+                        </div>
+                    </div>
                 </div>
             </div>
         );

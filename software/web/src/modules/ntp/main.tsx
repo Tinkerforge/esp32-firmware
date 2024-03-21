@@ -167,7 +167,7 @@ export class NTPStatus extends Component<{}, NTPStatusState> {
             return <StatusSection name="ntp" />;
 
         return <StatusSection name="ntp">
-                <FormRow label={__("ntp.status.ntp")} label_muted={util.timestamp_min_to_date(state.state.time, "")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("ntp.status.ntp")} label_muted={util.timestamp_min_to_date(state.state.time, "")}>
                     <IndicatorGroup
                         style="width: 100%"
                         class="flex-wrap"

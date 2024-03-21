@@ -33,7 +33,7 @@ export class EnergyManagerStatus extends Component {
 
         if (!API.hasFeature("energy_manager")) {
             return <StatusSection name="energy_manager">
-                <FormRow label={__("energy_manager.status.status")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("energy_manager.status.status")}>
                     <IndicatorGroup
                         value={0}
                         items={[
@@ -53,7 +53,7 @@ export class EnergyManagerStatus extends Component {
         let error_flags_network   = status.error_flags & 0x00000002;
 
         return <StatusSection name="energy_manager">
-            <FormRow label={__("energy_manager.status.status")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+            <FormRow label={__("energy_manager.status.status")}>
                 <ButtonGroup className="flex-wrap w-100">
                     <Button disabled
                         variant={(error_flags_ok ? "" : "outline-") + "success"}>

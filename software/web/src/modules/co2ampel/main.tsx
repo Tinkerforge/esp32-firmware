@@ -87,7 +87,7 @@ export class Co2AmpelStatus extends Component<{}, Co2AmpelStatusState>
             return <StatusSection name="co2ampel" />;
 
         return <StatusSection name="co2ampel">
-                <FormRow label={__("co2ampel.status.led_state")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("co2ampel.status.led_state")}>
                     <IndicatorGroup
                         style="width: 100%"
                         class="flex-wrap"
@@ -101,15 +101,15 @@ export class Co2AmpelStatus extends Component<{}, Co2AmpelStatusState>
                     />
                 </FormRow>
 
-                <FormRow label={__("co2ampel.status.co2")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("co2ampel.status.co2")}>
                     <OutputFloat value={state.state.co2} digits={0} scale={0} unit="ppm"/>
                 </FormRow>
 
-                <FormRow label={__("co2ampel.status.temperature")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("co2ampel.status.temperature")}>
                     <OutputFloat value={state.state.temperature} digits={2} scale={2} unit="°C"/>
                 </FormRow>
 
-                <FormRow label={__("co2ampel.status.humidity")} labelColClasses="col-lg-4" contentColClasses="col-lg-8 col-xl-4">
+                <FormRow label={__("co2ampel.status.humidity")}>
                     <OutputFloat value={state.state.humidity} digits={2} scale={2} unit="% RH"/>
                 </FormRow>
             </StatusSection>;
