@@ -20,11 +20,11 @@
 import { __ } from "../../ts/translation";
 import { h, ComponentChildren, RefObject } from "preact";
 import { NavbarGroup } from "../../ts/components/navbar_group";
-import { Meh } from "react-feather";
+import { Target } from "react-feather";
 
 export function EnergyManagerGroupNavbar(props: {children: ComponentChildren, group_ref: RefObject<NavbarGroup>}) {
     return (
-        <NavbarGroup ref={props.group_ref} title={__("energy_manager_group.navbar.energy_manager_group")} symbol={<Meh />} hidden={false}>
+        <NavbarGroup ref={props.group_ref} title={__("energy_manager_group.navbar.energy_manager_group")} symbol={<Target />} hidden={false}>
             {props.children}
         </NavbarGroup>);
 }
