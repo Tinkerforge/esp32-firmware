@@ -17,11 +17,11 @@ let x = {
         },
         "navbar": {
             "evse": "Ladestatus",
-            "evse_settings": "Ladeeinstellungen"
+            "evse_settings": "Einstellungen"
         },
         "content": {
             "status": "Ladestatus",
-            "settings": "Ladeeinstellungen",
+            "settings": "Einstellungen",
             "iec_state": "IEC-61851-Zustand",
             "iec_state_a": "A (getrennt)",
             "iec_state_b": "B (verbunden)",

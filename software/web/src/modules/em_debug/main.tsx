@@ -30,10 +30,10 @@ import { OutputFloat    } from "../../ts/components/output_float";
 import { PageHeader     } from "../../ts/components/page_header";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
-import { Tool } from "react-feather";
+import { Terminal } from "react-feather";
 
 export function EMDebugNavbar() {
-    return <NavbarItem name="em_debug" module="energy_manager" title={__("em_debug.navbar.em_debug")} symbol={<Tool />} />;
+    return <NavbarItem name="em_debug" module="energy_manager" title={__("em_debug.navbar.em_debug")} symbol={<Terminal />} />;
 }
 
 export class EMDebug extends Component {

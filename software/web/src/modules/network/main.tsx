@@ -29,10 +29,10 @@ import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
-import { Sliders } from "react-feather";
+import { Settings } from "react-feather";
 
 export function NetworkNavbar() {
-    return <NavbarItem name="network" module="network" title={__("network.navbar.network")} symbol={<Sliders />} />;
+    return <NavbarItem name="network" module="network" title={__("network.navbar.network")} symbol={<Settings />} />;
 }
 
 type NetworkConfig = API.getType["network/config"];
