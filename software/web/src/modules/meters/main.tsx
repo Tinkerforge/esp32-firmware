@@ -1440,7 +1440,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                       sub_page="status"
                                       show={true}
                                       legend_time_with_seconds={false}
-                                      aspect_ratio={2.5}
+                                      aspect_ratio={3}
                                       x_height={50}
                                       x_include_date={true}
                                       y_min={0}
