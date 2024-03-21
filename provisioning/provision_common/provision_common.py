@@ -508,11 +508,9 @@ def now():
 def my_input(s, color_fn=green):
     return input(color_fn(s) + " ")
 
-uids = set()
-
 Enum = namedtuple('Enum', 'uid hardware_version firmware_version device_identifier position')
 
-def cb_enumerate(uid, connected_uid, position, hardware_version, firmware_version,
+def cb_enumerate(uids, uid, connected_uid, position, hardware_version, firmware_version,
                  device_identifier, enumeration_type):
     if enumeration_type == IPConnection.ENUMERATION_TYPE_DISCONNECTED:
         print("")
@@ -521,10 +519,9 @@ def cb_enumerate(uid, connected_uid, position, hardware_version, firmware_versio
     uids.add(Enum(uid, hardware_version, firmware_version, device_identifier, position))
 
 def enumerate_devices(ipcon):
-    global uids
     uids = set()
     # Register Enumerate Callback
-    ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, cb_enumerate)
+    ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, lambda *args: cb_enumerate(uids, *args))
 
     start = time.time()
     while time.time() - start < 10:
