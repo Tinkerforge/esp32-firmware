@@ -130,8 +130,8 @@ void ScreenshotDataFaker::register_urls()
     }});
 
 #if SCREENSHOT_DATA_FAKER_PRO
-    meter.power_hist.history.clear();
+    meters.meter_slots[0].power_history.history.clear();
     for (int i = 0; i < sizeof(meter_history) / sizeof(meter_history[0]); ++i)
-        meter.power_hist.history.push(meter_history[i]);
+        meters.meter_slots[0].power_history.history.push(meter_history[i]);
 #endif
 }

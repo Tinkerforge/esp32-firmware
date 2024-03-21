@@ -156,6 +156,11 @@ private:
     int samples_last_interval = 0;
     uint32_t begin_last_interval = 0;
     uint32_t end_last_interval = 0;
+
+    // For reproducable screenshots, the ScreenshotDataFaker injects values into the power_history of the first meter.
+#if SCREENSHOT_DATA_FAKER_PRO
+    friend class ScreenshotDataFaker;
+#endif
 };
 
 extern uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, MeterValueID id);
