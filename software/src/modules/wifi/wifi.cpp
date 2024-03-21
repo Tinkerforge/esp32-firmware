@@ -634,7 +634,10 @@ void Wifi::setup()
         task_scheduler.scheduleWithFixedDelay([this]() {
             WifiState connection_state = get_connection_state();
             state.get("connection_state")->updateInt((int)connection_state);
-            state.get("sta_rssi")->updateInt(WiFi.RSSI());
+
+            int rssi = 0;
+            esp_wifi_sta_get_rssi(&rssi); // Ignore failure, rssi is still 0.
+            state.get("sta_rssi")->updateInt(rssi);
 
             static int tries = 0;
             if (tries < 3 || tries % 3 == 2)
