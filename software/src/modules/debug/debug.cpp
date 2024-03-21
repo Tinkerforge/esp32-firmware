@@ -17,9 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "backtrace.h"
 #include "debug.h"
 
 #include <Arduino.h>
+#include "esp_debug_helpers.h"
 #include "esp_system.h"
 #include "esp_task.h"
 #include "LittleFS.h"
@@ -39,11 +41,32 @@ static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_c
 
 extern uint8_t _text_start;
 
-static void malloc_failed_hook(size_t size, uint32_t caps, const char *function_name)
+[[gnu::noinline]]
+static void malloc_failed_log_detailed(size_t size, uint32_t caps, const char *function_name, const char *task_name)
 {
     multi_heap_info_t ram_info;
     heap_caps_get_info(&ram_info, caps);
-    logger.printfln("malloc_failed_hook sz=%u frBl=%u frTot=%u caps=0x%x fn=%s", size, ram_info.largest_free_block, ram_info.total_free_bytes, caps, function_name);
+
+    char backtrace_buf[384];
+    size_t backtrace_len = strn_backtrace(backtrace_buf, sizeof(backtrace_buf), 1);
+
+    logger.printfln("malloc_failed_hook sz=%u frBl=%u frTot=%u caps=0x%x fn=%s t=%s", size, ram_info.largest_free_block, ram_info.total_free_bytes, caps, function_name, task_name);
+    logger.write(backtrace_buf, backtrace_len);
+}
+
+// Called on affected task's stack, which might be small.
+static void malloc_failed_hook(size_t size, uint32_t caps, const char *function_name)
+{
+    const char *task_name = pcTaskGetName(xTaskGetCurrentTaskHandle());
+
+    if (strcmp(task_name, "loopTask") == 0 || strcmp(task_name, "httpd") == 0 || strcmp(task_name, "wifi") == 0) {
+        malloc_failed_log_detailed(size, caps, function_name, task_name);
+    } else {
+        logger.write("malloc_failed_hook from other task", 34);
+        logger.write(task_name, strlen(task_name));
+
+        esp_backtrace_print(INT32_MAX);
+    }
 }
 
 void Debug::pre_setup()
@@ -296,7 +319,7 @@ void Debug::register_urls()
     });
 
     server.on_HTTPThread("/debug/state_sizes", HTTP_GET, [](WebServerRequest req) {
-        char str[3968]; // on httpd stack, which is large enough
+        char str[3072]; // on httpd stack, which is large enough
         ssize_t len = 0;
         task_scheduler.await([&str, &len]() {
             size_t offset = 0;
