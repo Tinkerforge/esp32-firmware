@@ -470,23 +470,6 @@ body {
     }
 }
 
-.status-meter-chart {
-    position: relative;
-    aspect-ratio: 1.33333;
-}
-
-@include media-breakpoint-up(md) {
-    .status-meter-chart {
-        position: relative;
-        aspect-ratio: 2.5;
-    }
-}
-
-.meter-chart {
-    position: relative;
-    aspect-ratio: 1.5;
-}
-
 .status-meters-chart {
     position: relative;
     aspect-ratio: 1.33333;
