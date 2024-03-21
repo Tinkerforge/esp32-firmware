@@ -571,7 +571,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 
     render(props: {}, state: Readonly<ChargeManagerStatusState>) {
         if (!util.render_allowed() || !state.config.enable_charge_manager || state.config.chargers.length == 0)
-            return <StatusSection name="charge_limits" />;
+            return <StatusSection name="charge_manager" />;
 
         let cards = state.state.chargers.map((c, i) => {
             let c_state = "";
