@@ -40,7 +40,7 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
         document.title = API.get("info/display_name").display_name + " - " + __("main.title");
 
         return <StatusSection name="device_name" class="sticky-under-top">
-            <PageHeader title={__("device_name.status.status")} titleClass="col-4 col-lg-3" childrenClass="col-8 col-lg-9">
+            <PageHeader title={__("device_name.status.status")} titleClass="col-4" childrenClass="col-8">
                 <form onSubmit={(e: Event) => {
                     e.preventDefault();
                     e.stopPropagation();

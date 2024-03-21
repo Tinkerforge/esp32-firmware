@@ -87,7 +87,7 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
 
         let inner = use_id_context ? <>{(toChildArray(props.children) as VNode[]).map(c => cloneElement(c, {idContext: this.idContext}))}</> : props.children;
         if (props.contentColClasses === undefined || props.contentColClasses !== "")
-            inner = <div class={props.contentColClasses === undefined ? "col-lg-9" : props.contentColClasses}>
+            inner = <div class={props.contentColClasses === undefined ? "col-lg-8" : props.contentColClasses}>
                 {inner}
                 {props.error ? <div class="alert alert-danger my-2 p-3">{props.error}</div> : <></>}
                 {props.help ? <Collapse in={state.help_expanded} className="my-2">
@@ -105,7 +105,7 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
 
         return (
             <div class="form-group row" hidden={props.hidden == undefined ? false : props.hidden}>
-                <label for={use_id_context ? this.id : undefined} class={"col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label " + (props.labelColClasses === undefined ? "col-lg-3" : props.labelColClasses)}>
+                <label for={use_id_context ? this.id : undefined} class={"col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label " + (props.labelColClasses === undefined ? "col-lg-4" : props.labelColClasses)}>
                     <div class="row mx-lg-0">
                         <div class="col px-lg-0">
                     {props.label_prefix ? props.label_prefix : undefined}
