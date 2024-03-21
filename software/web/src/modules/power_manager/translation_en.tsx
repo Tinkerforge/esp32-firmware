@@ -22,7 +22,8 @@ let x = {
             "config_error_excess_no_meter": "Excess charging enabled but no meter configured"
         },
         "navbar": {
-            "power_manager": "Power Manager"
+            "power_manager_settings": "Settings",
+            "pv_excess_settings": "PV excess charging"
         },
         "content": {
             "page_header": "Power Manager",

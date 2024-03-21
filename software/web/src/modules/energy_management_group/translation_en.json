@@ -1,8 +1,8 @@
 {
-    "energy_manager_group": {
+    "energy_management_group": {
         "status": {},
         "navbar": {
-            "energy_manager_group": "Energy Manager"
+            "energy_management_group": "Energy Management"
         },
         "content": {},
         "script": {}

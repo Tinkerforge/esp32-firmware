@@ -22,7 +22,8 @@ let x = {
             "config_error_excess_no_meter": "Überschussladen aktiviert aber kein Stromzähler eingerichtet"
         },
         "navbar": {
-            "power_manager": "Power Manager"
+            "power_manager_settings": "Einstellungen",
+            "pv_excess_settings": "PV-Überschussladen"
         },
         "content": {
             "page_header": "Power Manager",

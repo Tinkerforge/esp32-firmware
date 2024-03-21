@@ -37,10 +37,14 @@ import { MeterConfig     } from "../meters/types";
 import { MeterClassID    } from "../meters/meters_defs";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
-import { CheckCircle, Circle, Sun } from "react-feather";
+import { CheckCircle, Circle, Settings, Sun } from "react-feather";
 
-export function PowerManagerNavbar() {
-    return <NavbarItem name="power_manager" module="power_manager" title={__("power_manager.navbar.power_manager")} symbol={<Sun />} />;
+export function PowerManagerSettingsNavbar() {
+    return <NavbarItem name="power_manager_settings" module="power_manager" title={__("power_manager.navbar.power_manager_settings")} symbol={<Settings />} />;
+}
+
+export function PVExcessSettingsNavbar() {
+    return <NavbarItem name="pv_excess_settings" module="power_manager" title={__("power_manager.navbar.pv_excess_settings")} symbol={<Sun />} />;
 }
 
 type StringStringTuple = [string, string];
@@ -81,7 +85,7 @@ export class PowerManagerStatus extends Component {
     }
 
     render() {
-        if (!util.render_allowed())
+        if (!util.render_allowed() || !API.get('power_manager/config').enabled)
             return <StatusSection name="power_manager" />
 
         let charge_mode = API.get('power_manager/charge_mode');
@@ -180,10 +184,7 @@ export class PowerManagerStatus extends Component {
     }
 }
 
-export class PowerManager extends ConfigComponent<'power_manager/config', {status_ref?: RefObject<PowerManagerStatus>}, {em_contactor_installed: boolean} & API.getType['power_manager/debug_config']> {
-    // Need to use any here in case the automation module is not available.
-    automation_config: any;
-
+export class PowerManagerSettings extends ConfigComponent<'power_manager/config', {status_ref?: RefObject<PowerManagerStatus>}, {em_contactor_installed: boolean}> {
     constructor() {
         super('power_manager/config',
             __("power_manager.script.save_failed"),
@@ -194,14 +195,6 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
         util.addApiEventListener_unchecked('energy_manager/config', () => {
             this.setState({em_contactor_installed: API.get_unchecked('energy_manager/config')?.contactor_installed});
         });
-
-        util.addApiEventListener('power_manager/debug_config', () => {
-            this.setState({...API.get('power_manager/debug_config')});
-        });
-
-        util.addApiEventListener_unchecked('automation/config', () => {
-            this.automation_config = API.get_unchecked('automation/config');
-        });
     }
 
     override async sendSave(t: "power_manager/config", cfg: API.getType['power_manager/config']) {
@@ -210,21 +203,98 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
                 contactor_installed: this.state.em_contactor_installed,
             }, __("power_manager.script.save_failed"));
         }
+
+        // Only update enabled. Rest is controlled by the PV excess settings subpage
+        let new_cfg: API.getType['power_manager/config'] = {...API.get("power_manager/config"), enabled:this.state.enabled};
+
+        await super.sendSave(t, new_cfg);
+    }
+
+    override async sendReset(t: "power_manager/config") {
+        if (API.hasModule("energy_manager")) {
+            await API.save_unchecked('energy_manager/config', {
+                ...API.get_unchecked('energy_manager/config'),
+                contactor_installed: this.state.em_contactor_installed,
+            }, super.error_string);
+        }
+
+        let new_cfg: API.getType['power_manager/config'] = {...API.get("power_manager/config"), enabled: false};
+
+        await super.sendSave(t, new_cfg);
+    }
+
+    override getIsModified(t: "power_manager/config"): boolean {
+        return API.get_unchecked("energy_manager/config")?.contactor_installed || API.get("power_manager/config").enabled;
+    }
+
+    render(props: {}, s: Readonly<API.getType['power_manager/config']>) {
+        if (!util.render_allowed())
+            return <SubPage name="power_manager_settings" />;
+
+        // Currently assume that the power manager settings page is only compiled in if this is an energy manager.
+        // The only setting to set is whether a contactor is installed,
+        // which is always (WARP3) or never (WARP1/2) the case with chargers.
+        // Enabling/Disabling the power manager is not necessary on chargers because it gets enabled iff PV excess charging is enabled.
+        // Still show the UI to re-enable the power manager on an energy manager, because there disabling the
+        // PV excess charging should not disable the power manager to allow manual phase switching of connected chargers.
+        let show_enable = !s.enabled;
+
+        return (
+            <SubPage name="power_manager_settings">
+                <ConfigForm id="power_manager_config_form" title={__("power_manager.content.page_header")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+
+                    <Collapse in={show_enable}>
+                        <div>
+                            <FormRow label={__("power_manager.content.enable_pm")}>
+                                <Switch desc={__("power_manager.content.enable_pm_desc")}
+                                        checked={s.enabled}
+                                        onClick={() => this.setState({
+                                            enabled: !s.enabled
+                                        })}
+                                />
+                            </FormRow>
+                        </div>
+                    </Collapse>
+
+                    <FormRow label={__("power_manager.content.contactor_installed")}>
+                        <Switch desc={__("power_manager.content.contactor_installed_desc")}
+                                disabled={!this.state.enabled}
+                                checked={this.state.em_contactor_installed}
+                                onClick={() => this.setState({em_contactor_installed: !this.state.em_contactor_installed})}
+                        />
+                    </FormRow>
+                </ConfigForm>
+            </SubPage>
+        );
+    }
+}
+
+export class PVExcessSettings extends ConfigComponent<'power_manager/config', {status_ref?: RefObject<PowerManagerStatus>}, API.getType['power_manager/debug_config']> {
+    constructor() {
+        super('power_manager/config',
+            __("power_manager.script.save_failed"),
+            __("power_manager.script.reboot_content_changed"));
+
+        util.addApiEventListener('power_manager/debug_config', () => {
+            this.setState({...API.get('power_manager/debug_config')});
+        });
+    }
+
+    override async sendSave(t: "power_manager/config", cfg: API.getType['power_manager/config']) {
         if (API.hasModule("debug")) {
             await API.save('power_manager/debug_config', {
                     hysteresis_time: this.state.hysteresis_time,
                 }, __("power_manager.script.save_failed"));
         }
-        if (API.hasModule("automation")) {
-            await API.save_unchecked('automation/config', this.automation_config, __("power_manager.script.save_failed"));
-        }
+
+        let is_em = API.hasModule("energy_manager");
+        if (is_em)
+            cfg = {...cfg, enabled: API.get("power_manager/config").enabled};
+
         await super.sendSave(t, cfg);
     }
 
     override async sendReset(t: "power_manager/config") {
-        if (API.hasModule("energy_manager")) {
-            await API.reset_unchecked('energy_manager/config', super.error_string, super.reboot_string);
-        }
         if (API.hasModule("debug")) {
             await API.reset('power_manager/debug_config', super.error_string, super.reboot_string);
         }
@@ -233,10 +303,6 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
     }
 
     override getIsModified(t: "power_manager/config"): boolean {
-        if (API.hasModule("energy_manager") && API.is_modified_unchecked('energy_manager/config')) {
-            return true;
-        }
-
         if (API.hasModule("debug") && API.is_modified('power_manager/debug_config')) {
             return true;
         }
@@ -252,56 +318,9 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
         return cfg[1].display_name;
     }
 
-    disable_reset_switch() {
-        if (!API.hasModule("automation") || !this.automation_config)
-            return false;
-
-            let disable = false
-            let num_rules = 0;
-
-            // We cant use the automation enums here because the automation Module is optional.
-            // 12 is the ID for switching the charge mode and 1 the ID for the time trigger.
-            this.automation_config.tasks.forEach((task: any) => {
-                if (task.action[0] == 12) {
-                    num_rules++;
-                    if (task.trigger[0] != 1) {
-                        disable = true;
-                    } else {
-                        let trigger = task.trigger[1];
-                        if (trigger.hour != 0 || trigger.minute != 0 || trigger.mday != -1 || trigger.wday != -1) {
-                            disable = true;
-                        } else if (task.action[1].mode != 4) {
-                            disable = true;
-                        }
-                    }
-                }
-
-                if (num_rules > 1) {
-                    disable = true;
-                }
-            });
-            return disable;
-    }
-
-    has_automation_reset_rule() {
-        if (!API.hasModule("automation") || !this.automation_config)
-            return false;
-
-        let has_rule = false
-
-        // We cant use the automation enums here because the automation Module is optional.
-        // 12 is the ID for switching the charge mode.
-        this.automation_config.tasks.forEach((task: any, idx: any) => {
-            if (task.action[0] == 12) {
-                has_rule = true;
-            }
-        });
-        return has_rule;
-    }
-
     render(props: {}, s: Readonly<API.getType['power_manager/config'] & API.getType['power_manager/debug_config']>) {
         if (!util.render_allowed())
-            return <SubPage name="power_manager" />;
+            return <SubPage name="pv_excess_settings" />;
 
         let mode_list: StringStringTuple[] = [];
 
@@ -318,31 +337,6 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
             }
         }
 
-        const has_rule = this.has_automation_reset_rule();
-        const disabled = this.disable_reset_switch();
-        let reset = <></>;
-        if (API.hasModule("automation")) {
-            reset = <FormRow label={__("power_manager.content.auto_reset_charging_mode")}>
-                <Switch desc={disabled ? __("power_manager.content.auto_reset_charging_mode_disabled") : __("power_manager.content.auto_reset_charging_mode_desc")}
-                    checked={has_rule && !disabled}
-                    disabled={disabled}
-                    onClick={() => {
-                        if (!has_rule) {
-                            // Need to create config by hand in case automation module is not available.
-                            const action = [12, {mode: 4}];
-                            const trigger = [1, {hour: 0, minute: 0, mday: -1, wday: -1}];
-                            const task = {trigger: trigger, action: action};
-                            this.automation_config.tasks.push(task as any);
-                        } else {
-                            this.automation_config.tasks = this.automation_config.tasks.filter((task: any) => task.action[0] != 12 && task.trigger[0] != 1);
-                        }
-                    }}
-                />
-            </FormRow>
-        }
-
-        let show_enable = !API.hasFeature("energy_manager") || !s.enabled;
-
         let cm_config = API.get_unchecked("charge_manager/config");
         let cm_ok = cm_config?.enable_charge_manager && cm_config?.chargers.length >= 1;
         let cm_multiple_chargers = cm_config.chargers.length > 1;
@@ -350,35 +344,36 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
         let is_em = API.hasModule("energy_manager");
         let device_translation_suffix = is_em ? "em" : "wb";
 
+        // On a charger, the power manager is enabled iff excess charging is enabled.
+        let enabled = is_em ? s.enabled : s.excess_charging_enable;
+
         let can_switch_phases = false;
         if (is_em) {
-            can_switch_phases = this.state.em_contactor_installed;
+            can_switch_phases = API.get_unchecked('energy_manager/config')?.contactor_installed;
         } else if (API.hasFeature("evse")) {
             can_switch_phases = API.get_unchecked('evse/hardware_configuration')?.evse_version >= 30;
         }
 
         let debug_mode = API.hasModule("debug");
 
+        let phase_switching_modes: [string,string][] = [];
+        if (can_switch_phases) {
+            phase_switching_modes.push(["0", __("power_manager.content.automatic")],
+                                       ["1", __("power_manager.content.always_single_phase")],
+                                       ["2", __("power_manager.content.always_three_phases")],
+                                       ["4", __("power_manager.content.pv1p_fast3p")])
+            if (is_em)
+                phase_switching_modes.push(["3", __("power_manager.content.external_control")]);
+        } else {
+            phase_switching_modes.push(["1", __("power_manager.content.fixed_single_phase")],
+                                       ["2", __("power_manager.content.fixed_three_phases")]);
+        }
+
         return (
-            <SubPage name="power_manager">
-                <ConfigForm id="power_manager_config_form" title={__("power_manager.content.page_header")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+            <SubPage name="pv_excess_settings">
+                <ConfigForm id="pv_excess_config_form" title={__("power_manager.content.header_excess_charging")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
 
-                    <Collapse in={show_enable}>
-                        <div>
-                            <FormSeparator heading={__("power_manager.content.header_general")} first={true} />
-                            <FormRow label={__("power_manager.content.enable_pm")}>
-                                <Switch desc={__("power_manager.content.enable_pm_desc")}
-                                        checked={s.enabled}
-                                        onClick={() => this.setState({
-                                            enabled: !s.enabled,
-                                            excess_charging_enable: s.enabled ? false : s.excess_charging_enable,
-                                        })}
-                                />
-                            </FormRow>
-                        </div>
-                    </Collapse>
-
-                    <Collapse in={s.enabled && !cm_ok}>
+                    <Collapse in={enabled && !cm_ok}>
                         <div>
                             <FormRow label="">
                                 <div style="color:red">
@@ -387,7 +382,7 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
                             </FormRow>
                         </div>
                     </Collapse>
-                    <Collapse in={s.enabled && !is_em && cm_multiple_chargers}>
+                    <Collapse in={enabled && !is_em && cm_multiple_chargers}>
                         <div>
                             <FormRow label="">
                                 <div style="color:red">
@@ -397,29 +392,28 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
                         </div>
                     </Collapse>
 
-                    <FormSeparator heading={__("power_manager.content.header_phase_switching")} first={!show_enable} />
-                    <FormRow label={__("power_manager.content.contactor_installed")} hidden={!API.hasFeature("energy_manager")}>
-                        <Switch desc={__("power_manager.content.contactor_installed_desc")}
-                                disabled={!this.state.enabled}
-                                checked={this.state.em_contactor_installed}
-                                onClick={() => this.setState({em_contactor_installed: !this.state.em_contactor_installed})}
-                        />
+                    <FormRow label={__("power_manager.content.enable_excess_charging")} label_muted={__("power_manager.content.enable_excess_charging_muted")}>
+                        <Switch desc={__("power_manager.content.enable_excess_charging_desc")}
+                            checked={s.excess_charging_enable}
+                            disabled={(is_em && !s.enabled) || s.phase_switching_mode == 3}
+                            onClick={() => {
+                                        let enable_pv_excess = !this.state.excess_charging_enable;
+
+                                        // If this is an energy manager, enabled is controlled in the power manager settings sub-page.
+                                        if (!is_em) {
+                                            this.setState({enabled: enable_pv_excess});
+                                        }
+
+                                        this.setState({excess_charging_enable: enable_pv_excess});
+                                    }}
+                            />
                     </FormRow>
 
                     <FormRow label={__("power_manager.content.phase_switching_mode")}>
                         <InputSelect
-                            required={s.enabled}
-                            disabled={!s.enabled}
-                            items={can_switch_phases ? [
-                                ["0", __("power_manager.content.automatic")],
-                                ["1", __("power_manager.content.always_single_phase")],
-                                ["2", __("power_manager.content.always_three_phases")],
-                                ["4", __("power_manager.content.pv1p_fast3p")],
-                                ["3", __("power_manager.content.external_control")],
-                            ] : [
-                                ["1", __("power_manager.content.fixed_single_phase")],
-                                ["2", __("power_manager.content.fixed_three_phases")],
-                            ]}
+                            required={enabled}
+                            disabled={!enabled}
+                            items={phase_switching_modes}
                             value={s.phase_switching_mode}
                             onValue={(v) => {
                                 this.setState({phase_switching_mode: parseInt(v)});
@@ -448,31 +442,21 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
                         </div>
                     </Collapse>
 
-                    <FormSeparator heading={__("power_manager.content.header_excess_charging")} />
-                    <FormRow label={__("power_manager.content.enable_excess_charging")} label_muted={__("power_manager.content.enable_excess_charging_muted")}>
-                        <Switch desc={__("power_manager.content.enable_excess_charging_desc")}
-                            checked={s.excess_charging_enable}
-                            disabled={!s.enabled || s.phase_switching_mode == 3}
-                            onClick={this.toggle('excess_charging_enable')}/>
-                    </FormRow>
-
                     <FormRow label={__("power_manager.content.default_mode")} label_muted={__("power_manager.content.default_mode_muted")}>
                         <InputSelect
-                            required={s.enabled}
-                            disabled={!s.enabled}
+                            required={enabled}
+                            disabled={!enabled}
                             items={mode_list}
                             value={s.default_mode}
                             onValue={s.phase_switching_mode == 3 ? undefined : (v) => this.setState({default_mode: parseInt(v)})}
                         />
                     </FormRow>
 
-                    {reset}
-
                     <Collapse in={s.excess_charging_enable}>
                         <div>
                             <FormRow label={__("power_manager.content.meter_slot_grid_power")} label_muted={__("power_manager.content.meter_slot_grid_power_muted")}>
                                 <InputSelect
-                                    required
+                                    required={enabled}
                                     placeholder={meter_slots.length > 0 ? __("power_manager.content.meter_slot_grid_power_select") : __("power_manager.content.meter_slot_grid_power_none")}
                                     items={meter_slots}
                                     value={s.meter_slot_grid_power}
@@ -487,7 +471,7 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
                                     value={s.guaranteed_power}
                                     onValue={this.set('guaranteed_power')}
                                     digits={3}
-                                    min={230 * 6 * (s.phase_switching_mode == 2 ? 3 : 1)}
+                                    min={6 * 230 * (s.phase_switching_mode == 2 ? 3 : 1)}
                                     max={22000}
                                     showMinMax
                                 />
@@ -500,8 +484,8 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
                                         value={s.target_power_from_grid}
                                         onValue={this.set('target_power_from_grid')}
                                         digits={3}
-                                        min={-43470}
-                                        max={345000}
+                                        min={-63 * 230 * 3}
+                                        max={500 * 230 * 3}
                                     />
                                 </FormRow>
                             : <>
@@ -536,13 +520,6 @@ export class PowerManager extends ConfigComponent<'power_manager/config', {statu
                             </FormRow>
                         </div>
                     </Collapse>
-
-                    <FormSeparator heading={__("power_manager.content.header_load_management")} />
-                    <FormRow label="">
-                        <div class="pt-3 pb-4">
-                            {__("power_manager.content.load_management_explainer")}
-                        </div>
-                    </FormRow>
 
                     {debug_mode ? <>
                         <FormSeparator heading={__("power_manager.content.header_expert_settings")} />

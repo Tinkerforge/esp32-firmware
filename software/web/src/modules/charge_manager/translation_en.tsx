@@ -11,10 +11,12 @@ let x = {
             "available_current": "Available current"
         },
         "navbar": {
-            "charge_manager": null
+            "charge_manager_settings": "Charge management",
+            "charge_manager_chargers": "Chargers"
         },
         "content": {
-            "charge_manager": null,
+            "charge_manager_settings": "Charge management",
+            "charge_manager_chargers": "Chargers",
             "enable_charge_manager": "Charge management mode",
             "enable_charge_manager_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
             "enable_watchdog": "Watchdog enabled",
@@ -75,7 +77,10 @@ let x = {
 
             "managed_boxes": "Managed chargers",
 
-            "host_exists": "Host already exists"
+            "host_exists": "Host already exists",
+
+            "charge_manager_settings_reset_modal_text": "Resetting the list of controlled chargers also deletes the charge manager configuration. Continue?",
+            "charge_manager_chargers_reset_modal_text": "Resetting the charge manager configuration also deletes the list of controlled chargers. Continue?"
         },
         "automation": {
           "charge_manager_wd": "Charge manager watchdog triggered",

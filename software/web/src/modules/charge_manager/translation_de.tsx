@@ -11,11 +11,13 @@ let x = {
             "available_current": "Verfügbarer Strom"
         },
         "navbar": {
-            "charge_manager": null
+            "charge_manager_settings": "Lastmanagement",
+            "charge_manager_chargers": "Wallboxen"
         },
         "content": {
-            "charge_manager": null,
-            "enable_charge_manager": "Lastmanagementmodus",
+            "charge_manager_settings": "Lastmanagement",
+            "charge_manager_chargers": "Wallboxen",
+            "enable_charge_manager": "Fremdsteuerung",
             "enable_charge_manager_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
             "enable_watchdog": "Watchdog aktiviert",
             "enable_watchdog_muted": "nur bei API-Benutzung aktivieren (für den normalen Lastmanagement-Betrieb nicht notwendig!)",
@@ -69,13 +71,16 @@ let x = {
             "scan_error_1": "Firmwareversion inkompatibel",
             "scan_error_2": "Lastmanagement deaktiviert",
 
-            "mode_disabled": "Deaktiviert",
-            "mode_manager": "Lastmanager",
-            "mode_managed": "Fremdgesteuert",
+            "mode_disabled": "Deaktiviert (Dieser WARP Charger steuert nur sich selbst)",
+            "mode_manager": "Lastmanager (Dieser WARP Charger steuert andere)",
+            "mode_managed": "Fremdgesteuert (Anderer WARP Charger oder WARP Energy Manager steuert diesen)",
 
             "managed_boxes": "Kontrollierte Wallboxen",
 
-            "host_exists": "Host existiert bereits"
+            "host_exists": "Host existiert bereits",
+
+            "charge_manager_chargers_reset_modal_text": "Zurücksetzen der Liste der kontrollierten Wallboxen löscht auch die Lastmanagement-Konfiguration. Fortfahren?",
+            "charge_manager_settings_reset_modal_text": "Zurücksetzen der Lastmanagement-Konfiguration löscht auch die Liste der kontrollierten Wallboxen. Fortfahren?"
         },
         "automation": {
             "charge_manager_wd": "Lastmanagement-Watchdog ausgelöst",
