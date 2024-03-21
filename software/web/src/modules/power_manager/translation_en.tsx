@@ -48,9 +48,6 @@ let x = {
             "external_control": "External control (EVCC)",
             "external_control_notification": "External control for phase switching is active. This will disable all settings related to PV excess charging.",
 
-            "header_load_management": "Dynamic load management",
-            "load_management_explainer": "The power manager adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)",
-
             "header_excess_charging": "Photovoltaic excess charging",
             "enable_excess_charging": "Excess charging enabled",
             "enable_excess_charging_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,

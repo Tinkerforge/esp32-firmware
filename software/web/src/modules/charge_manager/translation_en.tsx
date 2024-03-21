@@ -80,7 +80,10 @@ let x = {
             "host_exists": "Host already exists",
 
             "charge_manager_settings_reset_modal_text": "Resetting the list of controlled chargers also deletes the charge manager configuration. Continue?",
-            "charge_manager_chargers_reset_modal_text": "Resetting the charge manager configuration also deletes the list of controlled chargers. Continue?"
+            "charge_manager_chargers_reset_modal_text": "Resetting the charge manager configuration also deletes the list of controlled chargers. Continue?",
+
+            "header_load_management": "Dynamic load management",
+            "load_management_explainer": "The power manager adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)"
         },
         "automation": {
           "charge_manager_wd": "Charge manager watchdog triggered",

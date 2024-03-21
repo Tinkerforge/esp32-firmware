@@ -80,7 +80,10 @@ let x = {
             "host_exists": "Host existiert bereits",
 
             "charge_manager_chargers_reset_modal_text": "Zurücksetzen der Liste der kontrollierten Wallboxen löscht auch die Lastmanagement-Konfiguration. Fortfahren?",
-            "charge_manager_settings_reset_modal_text": "Zurücksetzen der Lastmanagement-Konfiguration löscht auch die Liste der kontrollierten Wallboxen. Fortfahren?"
+            "charge_manager_settings_reset_modal_text": "Zurücksetzen der Lastmanagement-Konfiguration löscht auch die Liste der kontrollierten Wallboxen. Fortfahren?",
+
+            "header_load_management": "Dynamisches Lastmanagement",
+            "load_management_explainer": "Der Power Manager regelt die verwalteten Wallboxen so, dass der maximal zulässige Strom des Gebäudeanschlusses auf keiner Phase überschritten wird. (Bald verfügbar: Diese Funktion befindet sich aktuell noch in der Entwicklung.)"
         },
         "automation": {
             "charge_manager_wd": "Lastmanagement-Watchdog ausgelöst",

@@ -48,9 +48,6 @@ let x = {
             "external_control": "Externe Steuerung (EVCC)",
             "external_control_notification": "Externe Steuerung für die Phasenumschaltung ist aktiv. Dadurch werden alle Einstellungen im Zusammenhang mit PV-Überschussladen deaktiviert.",
 
-            "header_load_management": "Dynamisches Lastmanagement",
-            "load_management_explainer": "Der Power Manager regelt die verwalteten Wallboxen so, dass der maximal zulässige Strom des Gebäudeanschlusses auf keiner Phase überschritten wird. (Bald verfügbar: Diese Funktion befindet sich aktuell noch in der Entwicklung.)",
-
             "header_excess_charging": "Photovoltaik-Überschussladen",
             "enable_excess_charging": "Überschussladen aktiviert",
             "enable_excess_charging_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
