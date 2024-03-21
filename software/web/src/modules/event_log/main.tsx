@@ -18,9 +18,7 @@
  */
 
 import * as util from "../../ts/util";
-import * as API from "../../ts/api";
-import { h, Fragment, Component } from "preact";
-import { effect } from "@preact/signals-core";
+import { h, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 import { FormRow } from "../../ts/components/form_row";
@@ -46,7 +44,6 @@ const LOG_MAX_LEN = 10 * 1024 * 1024;
 const LOG_CHUNK_LEN_DROPPED_WHEN_FULL = 1024 * 1024;
 
 export class EventLog extends Component<{}, EventLogState> {
-    page_visible: boolean = false;
     last_boot_id = -1;
 
     constructor() {
@@ -63,10 +60,6 @@ export class EventLog extends Component<{}, EventLogState> {
                 return;
 
             this.set_log(this.state.log + ev.data + "\n");
-        });
-
-        effect(() => {
-            this.page_visible = util.get_active_sub_page() == "event_log";
         });
     }
 
