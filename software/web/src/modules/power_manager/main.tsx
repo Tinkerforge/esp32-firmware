@@ -22,7 +22,7 @@ import * as util from "../../ts/util";
 import { __, translate_unchecked } from "../../ts/translation";
 import { METERS_SLOTS } from "../../build";
 import { h, Fragment, Component, RefObject } from "preact";
-import { Button, ButtonGroup, Collapse } from "react-bootstrap";
+import { Button, ButtonGroup, Collapse, Spinner } from "react-bootstrap";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm      } from "../../ts/components/config_form";
 import { FormRow         } from "../../ts/components/form_row";
@@ -73,7 +73,7 @@ export class PowerManagerStatus extends Component {
     }
 
     generate_config_error_labels(config_error_flags: number) {
-        if (config_error_flags == 0)
+        if (!API.get('power_manager/config').enabled || config_error_flags == 0)
             return <></>
 
         return <>
@@ -85,7 +85,7 @@ export class PowerManagerStatus extends Component {
     }
 
     render() {
-        if (!util.render_allowed() || !API.get('power_manager/config').enabled)
+        if (!util.render_allowed())
             return <StatusSection name="power_manager" />
 
         let charge_mode = API.get('power_manager/charge_mode');
@@ -94,44 +94,46 @@ export class PowerManagerStatus extends Component {
         let config      = API.get('power_manager/config');
 
         return <StatusSection name="power_manager">
-            <FormRow label={__("power_manager.status.mode")}>
-                <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
-                    <Button
-                        style="display: flex;align-items: center;justify-content: center;"
-                        className="m-1 rounded-left rounded-right"
-                        variant={charge_mode.mode == 1 ? "success" : "primary"}
-                        disabled={charge_mode.mode == 1}
-                        onClick={() => this.change_mode(1)}>
-                        {charge_mode.mode == 1 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_off")}</span>
-                    </Button>
-                    <Button
-                        style="display: flex;align-items: center;justify-content: center;"
-                        className="m-1 rounded-left rounded-right"
-                        variant={config.excess_charging_enable ? (charge_mode.mode == 2 ? "success" : "primary") : "secondary"}
-                        disabled={!config.excess_charging_enable || charge_mode.mode == 2}
-                        onClick={() => this.change_mode(2)}>
-                        {!config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 2 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_pv")}</span>
-                    </Button>
-                    <Button
-                        style="display: flex;align-items: center;justify-content: center;"
-                        className="m-1 rounded-left rounded-right"
-                        variant={config.excess_charging_enable ? (charge_mode.mode == 3 ? "success" : "primary") : "secondary"}
-                        disabled={!config.excess_charging_enable || charge_mode.mode == 3}
-                        onClick={() => this.change_mode(3)}>
-                        {!config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 3 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_min_pv")}</span>
-                    </Button>
-                    <Button
-                        style="display: flex;align-items: center;justify-content: center;"
-                        className="m-1 rounded-left rounded-right"
-                        variant={charge_mode.mode == 0 ? "success" : "primary"}
-                        disabled={charge_mode.mode == 0}
-                        onClick={() => this.change_mode(0)}>
-                        {charge_mode.mode == 0 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_fast")}</span>
-                    </Button>
-                </ButtonGroup>
-            </FormRow>
+            {API.get('power_manager/config').enabled ?
+                <FormRow label={__("power_manager.status.mode")}>
+                    <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
+                        <Button
+                            style="display: flex;align-items: center;justify-content: center;"
+                            className="m-1 rounded-left rounded-right"
+                            variant={charge_mode.mode == 1 ? "success" : "primary"}
+                            disabled={charge_mode.mode == 1}
+                            onClick={() => this.change_mode(1)}>
+                            {charge_mode.mode == 1 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_off")}</span>
+                        </Button>
+                        <Button
+                            style="display: flex;align-items: center;justify-content: center;"
+                            className="m-1 rounded-left rounded-right"
+                            variant={config.excess_charging_enable ? (charge_mode.mode == 2 ? "success" : "primary") : "secondary"}
+                            disabled={!config.excess_charging_enable || charge_mode.mode == 2}
+                            onClick={() => this.change_mode(2)}>
+                            {!config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 2 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_pv")}</span>
+                        </Button>
+                        <Button
+                            style="display: flex;align-items: center;justify-content: center;"
+                            className="m-1 rounded-left rounded-right"
+                            variant={config.excess_charging_enable ? (charge_mode.mode == 3 ? "success" : "primary") : "secondary"}
+                            disabled={!config.excess_charging_enable || charge_mode.mode == 3}
+                            onClick={() => this.change_mode(3)}>
+                            {!config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 3 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_min_pv")}</span>
+                        </Button>
+                        <Button
+                            style="display: flex;align-items: center;justify-content: center;"
+                            className="m-1 rounded-left rounded-right"
+                            variant={charge_mode.mode == 0 ? "success" : "primary"}
+                            disabled={charge_mode.mode == 0}
+                            onClick={() => this.change_mode(0)}>
+                            {charge_mode.mode == 0 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_fast")}</span>
+                        </Button>
+                    </ButtonGroup>
+                </FormRow>
+                : null}
 
-            {config.phase_switching_mode == 3 ?
+            {API.hasFeature("phase_switch") ?
                 <>
                     <FormRow label={__("power_manager.status.phase_switching")}>
                         <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
@@ -141,7 +143,7 @@ export class PowerManagerStatus extends Component {
                                 variant={!ll_state.is_3phase ? "success" : "primary"}
                                 disabled={!ll_state.is_3phase || state.external_control != 0}
                                 onClick={() => this.change_phase(1)}>
-                                {!ll_state.is_3phase ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.single_phase")}</span>
+                                {state.external_control != 3 ? (!ll_state.is_3phase ? <CheckCircle size="20"/> : <Circle size="20"/>) : <Spinner size="sm" animation="grow" />} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.single_phase")}</span>
                             </Button>
                             <Button
                                 style="display: flex;align-items: center;justify-content: center;"
@@ -149,7 +151,7 @@ export class PowerManagerStatus extends Component {
                                 variant={ll_state.is_3phase ? "success" : "primary"}
                                 disabled={ll_state.is_3phase || state.external_control != 0}
                                 onClick={() => this.change_phase(3)}>
-                                {ll_state.is_3phase ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.three_phase")}</span>
+                                {state.external_control != 3 ? (ll_state.is_3phase ? <CheckCircle size="20"/> :  <Circle size="20"/>) : <Spinner size="sm" animation="grow" />} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.three_phase")}</span>
                             </Button>
                         </ButtonGroup>
                     </FormRow>

@@ -212,8 +212,10 @@ void PowerManager::setup()
     mode = default_mode;
     charge_mode.get("mode")->updateUint(mode);
 
-    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
         state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+        api.addFeature("phase_switch");
+    }
 
     // Set up meter power filter.
     uint32_t power_mavg_span_s;
@@ -383,39 +385,80 @@ void PowerManager::register_urls()
     }, false);
 
     api.addState("power_manager/external_control", &external_control);
-    api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this]() {
-        uint32_t external_control_state = state.get("external_control")->asUint();
-        switch (external_control_state) {
-            case EXTERNAL_CONTROL_STATE_DISABLED:
-                logger.printfln("power_manager: Ignoring external control phase change request: External control is not enabled.");
+
+    if (!config.get("enabled")->asBool() && phase_switcher_backend->phase_switching_capable() && !phase_switcher_backend->requires_cp_disconnect()) {
+        logger.printfln("power_manager: Disabled but phase switching backend can switch autonomously. Enabling external control API.");
+
+        api.addFeature("phase_switch");
+
+        api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this]() {
+            switch (phase_switcher_backend->get_phase_switching_state()) {
+                case PhaseSwitcherBackend::SwitchingState::Error:
+                    logger.printfln("power_manager: Ignoring external control phase change request: Phase switching in error state.");
+                    return;
+                case PhaseSwitcherBackend::SwitchingState::Busy:
+                    logger.printfln("power_manager: Ignoring external control phase change request: Phase switching in progress.");
+                    return;
+                case PhaseSwitcherBackend::SwitchingState::Ready:
+                    // All good, proceed.
+                    break;
+                default:
+                    esp_system_abort("");
+            }
+
+            bool _wants_3phase = external_control_update.get("phases_wanted")->asUint() == 3;
+            if (phase_switcher_backend->switch_phases_3phase(_wants_3phase))
+                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_SWITCHING);
+        }, true);
+
+        task_scheduler.scheduleWithFixedDelay([this](){
+            uint32_t ext_state = EXTERNAL_CONTROL_STATE_AVAILABLE;
+            switch(phase_switcher_backend->get_phase_switching_state()) {
+                case PhaseSwitcherBackend::SwitchingState::Error:
+                    ext_state = EXTERNAL_CONTROL_STATE_UNAVAILABLE;
+                    break;
+                case PhaseSwitcherBackend::SwitchingState::Busy:
+                    ext_state = EXTERNAL_CONTROL_STATE_SWITCHING;
+                    break;
+                case PhaseSwitcherBackend::SwitchingState::Ready:
+                    ext_state = EXTERNAL_CONTROL_STATE_AVAILABLE;
+                    break;
+                default:
+                    esp_system_abort("");
+            }
+
+            state.get("external_control")->updateUint(ext_state);
+            low_level_state.get("is_3phase")->updateBool(phase_switcher_backend->get_is_3phase());
+        }, 1000, 1000);
+    } else {
+        api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this]() {
+            uint32_t external_control_state = state.get("external_control")->asUint();
+            switch (external_control_state) {
+                case EXTERNAL_CONTROL_STATE_DISABLED:
+                    logger.printfln("power_manager: Ignoring external control phase change request: External control is not enabled.");
+                    return;
+                case EXTERNAL_CONTROL_STATE_UNAVAILABLE:
+                    logger.printfln("power_manager: Ignoring external control phase change request: Phase switching is currently unavailable.");
+                    return;
+                case EXTERNAL_CONTROL_STATE_SWITCHING:
+                    logger.printfln("power_manager: Ignoring external control phase change request: Phase switching in progress.");
+                    return;
+                default:
+                    break; // All good, proceed.
+            }
+
+            auto phases_wanted = external_control.get("phases_wanted");
+            uint32_t old_phases = phases_wanted->asUint();
+            uint32_t new_phases = external_control_update.get("phases_wanted")->asUint();
+
+            if (!phases_wanted->updateUint(new_phases)) {
+                logger.printfln("power_manager: Ignoring external control phase change request: Value is already %u.", new_phases);
                 return;
-            case EXTERNAL_CONTROL_STATE_UNAVAILABLE:
-                logger.printfln("power_manager: Ignoring external control phase change request: Phase switching is currently unavailable.");
-                return;
-            case EXTERNAL_CONTROL_STATE_SWITCHING:
-                logger.printfln("power_manager: Ignoring external control phase change request: Phase switching in progress.");
-                return;
-            default:
-                break; // All good, proceed.
-        }
+            }
 
-        auto phases_wanted = external_control.get("phases_wanted");
-        uint32_t old_phases = phases_wanted->asUint();
-        uint32_t new_phases = external_control_update.get("phases_wanted")->asUint();
-
-        if (new_phases == old_phases) {
-            logger.printfln("power_manager: Ignoring external control phase change request: Value is already %u.", new_phases);
-            return;
-        }
-
-        if (new_phases == 2 || new_phases > 3) {
-            logger.printfln("power_manager: Ignoring external control phase change request: Value %u is invalid.", new_phases);
-            return;
-        }
-
-        logger.printfln("power_manager: External control phase change request: switching from %u to %u", old_phases, new_phases);
-        phases_wanted->updateUint(new_phases);
-    }, true);
+            logger.printfln("power_manager: External control phase change request: switching from %u to %u", old_phases, new_phases);
+        }, true);
+    }
 }
 
 void PowerManager::register_phase_switcher_backend(PhaseSwitcherBackend *backend)
