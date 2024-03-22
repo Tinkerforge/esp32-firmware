@@ -12,7 +12,10 @@ let x = {
             "password": "Password",
             "relay_host": "Relay Host",
             "relay_host_muted": "Hostname of the Relay Server",
-            "enable": "Remote access enabled"
+            "relay_host_port": "Relay Host Http Port",
+            "enable": "Remote access enabled",
+            "self_signed_cert": "Self signed certificate",
+            "not_used": "Not used"
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",
