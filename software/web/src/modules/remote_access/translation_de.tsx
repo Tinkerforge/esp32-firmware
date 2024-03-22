@@ -12,7 +12,10 @@ let x = {
             "password": "Passwort",
             "relay_host": "Relay Host",
             "relay_host_muted": "Hostname des Relay Servers",
-            "enable": "Fernzugriff aktivieren"
+            "relay_host_port": "Relay Host Http Port",
+            "enable": "Fernzugriff aktivieren",
+            "self_signed_cert": "Selbstsigniertes Zertifikat",
+            "not_used": "Nicht benutzt"
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",
