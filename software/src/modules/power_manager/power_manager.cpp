@@ -97,9 +97,18 @@ void PowerManager::pre_setup()
     charge_mode_update = charge_mode;
 
     external_control = Config::Object({
-        {"phases_wanted", Config::Uint32(0)},
+        {"phases_wanted", Config::Uint(0, 0, 3)},
     });
-    external_control_update = external_control;
+    external_control_update = ConfigRoot{
+        external_control,
+        [](Config &conf, ConfigSource source) -> String {
+            auto phases = conf.get("phases_wanted")->asUint();
+            if (phases != 1 && phases != 3)
+                return "Invalid value for phases_wanted! Only 1 or 3 are allowed.";
+            return "";
+        }
+    };
+
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_action(
