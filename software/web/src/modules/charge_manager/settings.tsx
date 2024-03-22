@@ -264,7 +264,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                     }
                     <FormSeparator heading={__("charge_manager.content.header_load_management")} />
                     <FormRow label="">
-                        <div class="pt-3 pb-4">
+                        <div>
                             {__("charge_manager.content.load_management_explainer")}
                         </div>
                     </FormRow>
