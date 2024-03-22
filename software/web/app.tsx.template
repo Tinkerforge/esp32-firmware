@@ -22,7 +22,11 @@ import { h, Fragment, Component, createRef, RefObject } from "preact";
 import { __ } from "./ts/translation";
 import { NavbarItem } from "./ts/components/navbar_item";
 import { NavbarGroup } from "./ts/components/navbar_group";
+import { PageHeader } from "./ts/components/page_header";
 import { SubPage } from "./ts/components/sub_page";
+import { FormRow } from "./ts/components/form_row";
+import { InputText } from "./ts/components/input_text";
+import { InputPassword } from "./ts/components/input_password";
 import { Key, Home, Menu } from "react-feather";
 import Container from "react-bootstrap/Container";
 import Tab from "react-bootstrap/Tab";
@@ -42,6 +46,8 @@ interface AppState {
     mode: "" | "normal" | "login";
     sub_page: string;
     sidebar_open: boolean;
+    username: string;
+    password: string;
 }
 
 function get_sub_page() {
@@ -60,28 +66,35 @@ function get_sub_page() {
     return sub_page;
 }
 
-function login() {
-    let username = (document.getElementById("main_login_username") as HTMLInputElement).value;
-    let password = (document.getElementById("main_login_password") as HTMLInputElement).value;
+function login(username: string, password: string) {
+    if (username.length == 0 && password.length == 0) {
+        return false;
+    }
 
     let xhr = new XMLHttpRequest();
     let result = false;
+
     xhr.onreadystatechange = function () {
-        if(xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
             let status = xhr.status;
+
             if (status == 200) {
-                 window.location.reload();
-                 result = true;
-            } else if (status == 401) {
+                window.location.reload();
+                result = true;
+            }
+            else if (status == 401) {
                 console.log("credentials incorrect?");
-            } else {
+            }
+            else {
                 console.log("error: got status ");
                 console.log(status);
             }
         }
     }
+
     xhr.open("GET", location.protocol + "//" + location.host + "/credential_check", false, username, password);
     xhr.send();
+
     return result;
 }
 
@@ -89,6 +102,7 @@ export class App extends Component<AppProps, AppState> {
     {{{status_refs}}}
     {{{navbar_refs}}}
     navbar_group_refs: {[id: string]: RefObject<NavbarGroup>} = {};
+    password_ref = createRef();
 
     constructor() {
         super();
@@ -98,6 +112,8 @@ export class App extends Component<AppProps, AppState> {
             mode: "",
             sub_page: "",
             sidebar_open: false,
+            username: "",
+            password: "",
         } as any;
 
         this.navbar_group_refs = {
@@ -142,26 +158,14 @@ export class App extends Component<AppProps, AppState> {
     setup_login() {
         this.setState({visible: true, mode: "login", sub_page: "login"});
 
-        let show_password = document.getElementById('main_login_show_password') as HTMLInputElement;
-        let password = document.getElementById('main_login_password') as HTMLInputElement;
-        show_password.addEventListener("change", () => {
-            if (password.type == 'password')
-                password.type = 'text';
-            else
-                password.type = 'password';
-        });
-
         let form = document.getElementById('main_login_form') as HTMLFormElement;
-        form.addEventListener('submit', function (event: Event) {
+
+        form.addEventListener("submit", (event: Event) => {
             event.preventDefault();
             event.stopPropagation();
 
-            if(!login()) {
-                password.classList.add("shake");
-                window.setTimeout(() => {
-                    password.classList.remove("shake");
-                    password.focus();
-                }, 500);
+            if (!login(this.state.username, this.state.password)) {
+                (this.password_ref.current as InputPassword).shake();
             }
         }, false);
     }
@@ -216,39 +220,25 @@ export class App extends Component<AppProps, AppState> {
                             <div id="alert_placeholder" class="alert_placeholder"></div>
 
                             <SubPage name="login">
-                                <div class="row sticky-under-top mb-3 pt-3">
-                                    <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
-                                        <h1 class="page-header">{__("main.content_login")}</h1>
-                                    </div>
-                                </div>
+                                <PageHeader title={__("main.content_login")} />
                                 <form id="main_login_form">
-                                    <div class="form-group row">
-                                        <label for="main_login_username"
-                                            class="col-lg-3 col-xl-2 col-form-label form-label">{__("main.login_username")}</label>
-                                        <div class="col-lg-9 col-xl-6">
-                                            <input id="main_login_username" class="form-control" type="text" />
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group row">
-                                        <label for="main_login_password" class="col-lg-3 col-xl-2 col-form-label form-label">{__("main.login_password")}</label>
-                                        <div class="col-lg-9 col-xl-6">
-                                            <div class="input-group">
-                                                <input type="password" id="main_login_password" class="form-control" value=""/>
-                                                <div class="input-group-append">
-                                                    <div class="input-group-text custom-control custom-switch" style="padding-left: 2.75rem; padding-right: 0.5rem;">
-                                                        <input id="main_login_show_password" type="checkbox" class="custom-control-input" aria-label="Show password" />
-                                                        <label class="custom-control-label" for="main_login_show_password" style="line-height: 20px;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group row">
-                                        <div class="col-lg-12 col-xl-8 text-right">
-                                            <button id="main_login_button" type="submit" form="main_login_form" class="btn btn-primary">{__("main.login_button")}</button>
-                                        </div>
+                                    <FormRow label={__("main.login_username")}>
+                                        <InputText
+                                            value={this.state.username}
+                                            onValue={(value) => this.setState({username: value})}
+                                        />
+                                    </FormRow>
+                                    <FormRow label={__("main.login_password")}>
+                                        <InputPassword
+                                            ref={this.password_ref}
+                                            value={this.state.password}
+                                            onValue={(value) => this.setState({password: value})}
+                                            placeholder=""
+                                            hideClear
+                                        />
+                                    </FormRow>
+                                    <div class="form-group text-right">
+                                        <button id="main_login_button" type="submit" form="main_login_form" class="btn btn-primary">{__("main.login_button")}</button>
                                     </div>
                                 </form>
                             </SubPage>

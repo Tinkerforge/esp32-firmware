@@ -30,24 +30,25 @@ interface InputPasswordProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputEl
     idContext?: Context<string>
     value: string | null
     onValue: (value: string | null) => void
-    hideClear?: boolean
-    placeholder?: string
-    showAlways?: boolean
-    clearPlaceholder?: string
+    hideClear?: boolean // default: false
+    placeholder?: string // default: "<unchanged>"
+    showAlways?: boolean // default: false
+    clearPlaceholder?: string // default: "<to_be_cleared>"
     clearSymbol?: h.JSX.Element
-    allowAPIClear?: boolean
-    invalidFeedback?: string
+    allowAPIClear?: boolean // default: false
+    invalidFeedback?: string // default: ""
 }
 
 interface InputPasswordState {
     show: boolean;
     clearSelected: boolean;
+    shake: boolean;
 }
 
 export class InputPassword extends Component<InputPasswordProps, InputPasswordState> {
     constructor() {
         super();
-        this.state = {show: false, clearSelected: false};
+        this.state = {show: false, clearSelected: false, shake: false};
     }
 
     toggleClear() {
@@ -59,6 +60,14 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
             this.props.onValue("")
             this.setState({clearSelected: true});
         }
+    }
+
+    shake() {
+        this.setState({shake: true}, () => {
+            window.setTimeout(() => {
+                this.setState({shake: false});
+            }, 500);
+        });
     }
 
     render(props: InputPasswordProps, state: Readonly<InputPasswordState>) {
@@ -80,7 +89,7 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
 
         return (
             <>
-                <div class="input-group">
+                <div class={"input-group rounded" + (this.state.shake ? " shake" : "")}>
                     <input class={"form-control" + (props.showAlways && props.hideClear ? " rounded-right" : "")}
                         id={id}
                         type={state.show || props.showAlways ? "text" : "password"}
