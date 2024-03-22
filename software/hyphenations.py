@@ -82,6 +82,7 @@ de_hyph = [
     'ein-stell-ungen',
     'elek-trische',
     'Energie-bilanz',
+    'Energie-management',
     'Energie-manager',
     'Energie-managers',
     'Energie-wert',
