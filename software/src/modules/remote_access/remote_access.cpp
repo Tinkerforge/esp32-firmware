@@ -404,7 +404,10 @@ void RemoteAccess::resolve_management() {
         logger.printfln("Failed to send request: %i", ret);
     }
 
-    logger.printfln("management response code: %i", esp_http_client_get_status_code(client));
+    int status_code = esp_http_client_get_status_code(client);
+    if (status_code != 200) {
+        logger.printfln("management response code: %i", status_code);
+    }
     esp_http_client_cleanup(client);
 }
 
