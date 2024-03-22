@@ -162,7 +162,7 @@ export class EventLog extends Component<{}, EventLogState> {
 
                 this.set_log(new_log);
             })
-            .catch(e => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), e.message))
+            .catch(e => util.add_alert("event_log_load_failed", "danger", __("event_log.script.load_event_log_error"), e.message))
     }
 
     blobToBase64(blob: Blob): Promise<string> {
@@ -197,7 +197,7 @@ export class EventLog extends Component<{}, EventLogState> {
 
             util.downloadToFile(debug_log, "debug-report", "txt", "text/plain");
         } catch (e) {
-            util.add_alert("debug_report_load_failed", "alert-danger", __("event_log.script.load_debug_report_error"), e.message)
+            util.add_alert("debug_report_load_failed", "danger", __("event_log.script.load_debug_report_error"), e.message)
         } finally {
             window.clearTimeout(timeout);
             this.setState({show_spinner: false})

@@ -274,7 +274,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 else
                 util.downloadToFile(result, "charge-log", "csv", "text/csv; charset=utf-8; header=present");
             })
-            .catch(err => util.add_alert("download-charge-log", "alert-danger", __("charge_tracker.script.download_charge_log_failed"), err));
+            .catch(err => util.add_alert("download-charge-log", "danger", __("charge_tracker.script.download_charge_log_failed"), err));
     }
 
     override async isSaveAllowed(cfg: ChargeTrackerConfig) {

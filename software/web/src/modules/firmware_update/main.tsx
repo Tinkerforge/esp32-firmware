@@ -53,12 +53,12 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
             await util.upload(f.slice(0xd000 - 0x1000, 0xd000), "check_firmware", () => {})
         } catch (error) {
             if (typeof error === "string") {
-                util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.update_fail"), error);
+                util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), error);
             } else if (error instanceof XMLHttpRequest) {
                 let xhr = error;
 
                 if (xhr.status == 423) {
-                    util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.update_fail"), __("firmware_update.script.vehicle_connected"));
+                    util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), __("firmware_update.script.vehicle_connected"));
                     return false;
                 }
 
@@ -79,11 +79,11 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                             }))
                             return false;
                     } else {
-                        util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.update_fail"), error_message);
+                        util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), error_message);
                         return false;
                     }
                 } catch {
-                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.update_fail"), xhr.responseText);
+                    util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), xhr.responseText);
                     return false;
                 }
             }
@@ -134,15 +134,15 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                         onUploadSuccess={() => util.postReboot(__("firmware_update.script.update_success"), __("util.reboot_text"))}
                         onUploadError={error => {
                             if (typeof error === "string") {
-                                util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.update_fail"), error);
+                                util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), error);
                             } else if (error instanceof XMLHttpRequest) {
                                 let xhr = error;
 
                                 if (xhr.status == 423)
-                                    util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.update_fail"), __("firmware_update.script.vehicle_connected"));
+                                    util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), __("firmware_update.script.vehicle_connected"));
                                 else {
                                     let txt = xhr.responseText.startsWith("firmware_update.") ? translate_unchecked(xhr.responseText) : (xhr.responseText ?? xhr.response);
-                                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.update_fail"), txt);
+                                    util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), txt);
                                 }
                             }
                             util.resumeWebSockets();
@@ -176,7 +176,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                                     await util.put("/config_reset", {"do_i_know_what_i_am_doing": true});
                                     util.postReboot(__("firmware_update.script.config_reset_init"), __("util.reboot_text"));
                                 } catch (error) {
-                                    util.add_alert("config_reset_failed", "alert-danger", __("firmware_update.script.config_reset_error"), error);
+                                    util.add_alert("config_reset_failed", "danger", __("firmware_update.script.config_reset_error"), error);
                                 }
                             }}>{__("firmware_update.content.config_reset")}</Button>
                     </FormRow>
@@ -200,7 +200,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                             await util.put("/factory_reset", {"do_i_know_what_i_am_doing": true});
                             util.postReboot(__("firmware_update.script.factory_reset_init"), __("util.reboot_text"));
                         } catch (error) {
-                            util.add_alert("factory_reset_failed", "alert-danger", __("firmware_update.script.factory_reset_error"), error);
+                            util.add_alert("factory_reset_failed", "danger", __("firmware_update.script.factory_reset_error"), error);
                         }
                     }}>{__("firmware_update.content.factory_reset")}</Button>
                 </FormRow>

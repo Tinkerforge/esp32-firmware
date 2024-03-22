@@ -33,6 +33,7 @@ import Tab from "react-bootstrap/Tab";
 import Row from "react-bootstrap/Row";
 import Nav from "react-bootstrap/Nav";
 import Collapse from "react-bootstrap/Collapse";
+import Alert from "react-bootstrap/Alert";
 {{{navbar_imports}}}
 {{{content_imports}}}
 {{{status_imports}}}
@@ -217,7 +218,9 @@ export class App extends Component<AppProps, AppState> {
                     </Collapse>
                     <main id="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style={this.state.visible ? undefined : "visibility: hidden;"}>
                         <Tab.Content>
-                            <div id="alert_placeholder" class="alert_placeholder"></div>
+                            <div class="alert_placeholder">
+                                {util.get_alerts().map((alert) => <Alert className="custom-alert" key={alert.id} variant={alert.variant} onClose={() => util.remove_alert(alert.id)} dismissible><strong>{alert.title}</strong> {alert.text}</Alert>)}
+                            </div>
 
                             <SubPage name="login">
                                 <PageHeader title={__("main.content_login")} />

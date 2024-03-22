@@ -24,42 +24,36 @@ import { __ } from "./translation";
 import { AsyncModal } from "./components/async_modal";
 import { api_cache } from "./api_defs";
 import { batch, signal, Signal } from "@preact/signals-core";
+import { deepSignal, DeepSignal } from "deepsignal";
 import { useState } from "preact/hooks";
 
 export function reboot() {
     API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
 }
 
-function createElementFromHTML(html: string) {
-    var div = document.createElement('div');
-    div.innerHTML = html;
+let alerts: DeepSignal<Array<{id: string, variant: string, title: string, text: string}>> = deepSignal([]);
 
-    return div.firstChild;
+export function get_alerts() {
+    return alerts;
 }
 
-export function add_alert(id: string, cls: string, title: string, text: string) {
-    let to_add = createElementFromHTML(`<div id="alert_${id}" class="alert ${cls} alert-dismissible fade show custom-alert" role="alert" style="line-height: 1.5rem;">
-    <strong>${title}</strong> ${text}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-    </button>
-</div>`);
+export function add_alert(id: string, variant: string, title: string, text: string) {
+    let idx = alerts.findIndex((alert) => alert.id == id);
+    let alert = {id: id, variant: variant, title: title, text: text};
 
-    let element = document.getElementById(`alert_${id}`);
-
-    if (element) {
-        element.replaceWith(to_add);
+    if (idx >= 0) {
+        alerts[idx] = alert;
     }
     else {
-        document.getElementById("alert_placeholder").appendChild(to_add);
+        alerts.push(alert);
     }
 }
 
 export function remove_alert(id: string) {
-    let element = document.getElementById(`alert_${id}`);
+    let idx = alerts.findIndex((alert) => alert.id == id);
 
-    if (element) {
-        element.remove();
+    if (idx >= 0) {
+        alerts.splice(idx, 1);
     }
 }
 
@@ -168,6 +162,7 @@ let active_sub_page: Signal<string> = signal("");
 export function get_active_sub_page() {
     return active_sub_page.value;
 }
+
 export function set_active_sub_page(sub_page: string) {
     active_sub_page.value = sub_page;
 }
@@ -198,7 +193,7 @@ export function initCapsLockCheck() {
 
 export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.APIEventTarget) => void) {
     if (!first) {
-        add_alert("event_connection_lost", "alert-warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
+        add_alert("event_connection_lost", "warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
     }
     console.log("Connecting to web socket");
     if (ws != null) {
@@ -267,7 +262,7 @@ export function resumeWebSockets() {
 export function postReboot(alert_title: string, alert_text: string) {
     ws.close();
     clearTimeout(wsReconnectTimeout);
-    add_alert("reboot", "alert-success", alert_title, alert_text);
+    add_alert("reboot", "success", alert_title, alert_text);
     // Wait 5 seconds before starting the reload/reconnect logic, to make sure the reboot has actually started yet.
     // Else it sometimes happens, that we reconnect _before_ the reboot starts.
     window.setTimeout(() => whenLoggedInElseReload(() =>

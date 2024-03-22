@@ -120,6 +120,10 @@ body {
     margin-bottom: 0;
 }
 
+.custom-alert .close {
+    padding-top: 0.5rem;
+}
+
 .sidebar-sticky {
   position: relative;
   top: 0;

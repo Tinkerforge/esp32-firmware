@@ -476,7 +476,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                                         timeout_ms={10 * 1000}
                                         onUploadSuccess={() => {}}
                                         onUploadError={error => {
-                                            util.add_alert("firmware_update_failed","alert-danger", __("evse.script.user_calibration_upload_failed"), error.toString());
+                                            util.add_alert("firmware_update_failed", "danger", __("evse.script.user_calibration_upload_failed"), error.toString());
                                         }}/>
                             </FormRow>
 
