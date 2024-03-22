@@ -155,18 +155,6 @@ export class PowerManagerStatus extends Component {
                             </Button>
                         </ButtonGroup>
                     </FormRow>
-
-                    <FormRow label={__("power_manager.status.external_control_state")}>
-                        <IndicatorGroup
-                            value={state.external_control}
-                            items={[
-                                ["success", __("power_manager.status.external_control_state_available")],
-                                ["danger",  __("power_manager.status.external_control_state_disabled")],
-                                ["warning", __("power_manager.status.external_control_state_unavailable")],
-                                ["primary", __("power_manager.status.external_control_state_switching")],
-                            ]}
-                        />
-                    </FormRow>
                 </>
             :
                 <>
