@@ -431,7 +431,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                             y_min = value;
                         }
 
-                        if (y_min === undefined || value > y_max) {
+                        if (y_max === undefined || value > y_max) {
                             y_max = value;
                         }
                     }
