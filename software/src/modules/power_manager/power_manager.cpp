@@ -245,6 +245,11 @@ void PowerManager::setup()
         overall_min_power_w = static_cast<int32_t>(230 * 3 * min_current_3p_ma / 1000);
     }
 
+    if (static_cast<int32_t>(guaranteed_power_w) < overall_min_power_w) { // Cast safeguards against overall_min_power_w being negative and guaranteed_power_w is unlikely to be larger than 2GW.
+        guaranteed_power_w = static_cast<uint32_t>(overall_min_power_w);  // This is now safe.
+        logger.printfln("power_manager: Raising guaranteed power to %u based on minimum charge current set in charge manager.", guaranteed_power_w);
+    }
+
     const int32_t max_1phase_w = static_cast<int32_t>(230 * 1 * max_current_unlimited_ma / 1000);
     const int32_t min_3phase_w = static_cast<int32_t>(230 * 3 * min_current_3p_ma / 1000);
 

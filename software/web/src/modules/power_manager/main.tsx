@@ -369,6 +369,10 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                                        ["2", __("power_manager.content.fixed_three_phases")]);
         }
 
+        let charge_manager_config = API.get("charge_manager/config");
+        let guaranteed_power_lower_limit_1p = 230 * 1 * charge_manager_config.minimum_current_1p / 1000;
+        let guaranteed_power_lower_limit_3p = 230 * 3 * charge_manager_config.minimum_current    / 1000;
+
         return (
             <SubPage name="pv_excess_settings">
                 <ConfigForm id="pv_excess_config_form" title={__("power_manager.content.header_excess_charging")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
@@ -418,9 +422,9 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                             onValue={(v) => {
                                 this.setState({phase_switching_mode: parseInt(v)});
                                 if (v == "2") {
-                                    this.setState({guaranteed_power: Math.max(this.state.guaranteed_power, 230 * 6 * 3)});
-                                } else if (this.state.guaranteed_power == (230 * 6 * 3)) {
-                                    this.setState({guaranteed_power: Math.max(230 * 6, API.get("power_manager/config").guaranteed_power)});
+                                    this.setState({guaranteed_power: Math.max(guaranteed_power_lower_limit_3p, this.state.guaranteed_power)});
+                                } else if (this.state.guaranteed_power == (guaranteed_power_lower_limit_3p)) {
+                                    this.setState({guaranteed_power: Math.max(guaranteed_power_lower_limit_1p, API.get("power_manager/config").guaranteed_power)});
                                 }
                                 if (v == "3") {
                                     this.setState({
@@ -471,7 +475,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                                     value={s.guaranteed_power}
                                     onValue={this.set('guaranteed_power')}
                                     digits={3}
-                                    min={6 * 230 * (s.phase_switching_mode == 2 ? 3 : 1)}
+                                    min={s.phase_switching_mode == 2 ? guaranteed_power_lower_limit_3p : guaranteed_power_lower_limit_1p}
                                     max={22000}
                                     showMinMax
                                 />
