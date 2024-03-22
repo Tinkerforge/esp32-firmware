@@ -18,7 +18,7 @@
  */
 
 import { h, Context, Fragment, ComponentChildren } from "preact";
-import { useContext } from "preact/hooks";
+import { useId, useContext } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { __ } from "../translation";
 
@@ -42,7 +42,7 @@ interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<H
 }
 
 export function InputText<T extends (InputTextProps | InputTextWithValidationProps)>(props: util.NoExtraProperties<InputTextProps, T> | InputTextWithValidationProps) {
-    const id = !props.idContext ? util.useId() : useContext(props.idContext);
+    const id = !props.idContext ? useId() : useContext(props.idContext);
     let invalidFeedback = undefined;
     if ("invalidFeedback" in props && props.invalidFeedback)
         invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;

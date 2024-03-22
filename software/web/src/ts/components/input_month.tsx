@@ -18,7 +18,7 @@
  */
 
 import { h, Context, ComponentChildren, Fragment } from "preact";
-import { useContext, useRef } from "preact/hooks";
+import { useId, useContext, useRef } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { ArrowLeft, ArrowRight } from "react-feather";
@@ -38,7 +38,7 @@ interface InputMonthProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputEleme
 //        but the arrow buttons work as expected, so this is still usable
 export function InputMonth(props: InputMonthProps) {
     const input = useRef<HTMLInputElement>();
-    const id = !props.idContext ? util.useId() : useContext(props.idContext);
+    const id = !props.idContext ? useId() : useContext(props.idContext);
 
     const dateToValue = (date: Date) => {
         try {

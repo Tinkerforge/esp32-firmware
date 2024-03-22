@@ -18,7 +18,7 @@
  */
 
 import { h, Component, Context, Fragment } from "preact";
-import { useContext, useState } from "preact/hooks";
+import { useId, useContext } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { Eye, EyeOff, Trash2 } from "react-feather";
@@ -71,7 +71,7 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
     }
 
     render(props: InputPasswordProps, state: Readonly<InputPasswordState>) {
-        const id = !props.idContext ? util.useId() : useContext(props.idContext);
+        const id = !props.idContext ? useId() : useContext(props.idContext);
 
         let invalidFeedback = undefined;
         if ("invalidFeedback" in props)

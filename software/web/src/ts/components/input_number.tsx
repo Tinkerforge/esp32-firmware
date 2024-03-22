@@ -18,7 +18,7 @@
  */
 
 import { h, Context, Fragment } from "preact";
-import { useContext, useRef } from "preact/hooks";
+import { useId, useContext, useRef } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
@@ -35,7 +35,7 @@ interface InputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElem
 }
 
 export function InputNumber(props: InputNumberProps) {
-    const id = !props.idContext ? util.useId() : useContext(props.idContext);
+    const id = !props.idContext ? useId() : useContext(props.idContext);
 
     const input = useRef<HTMLInputElement>();
     let value = parseInt(props.value?.toString(), 10);

@@ -20,7 +20,7 @@
 import * as util from "../util";
 
 import { h, Context, Fragment } from "preact";
-import { useContext, useRef, useState } from "preact/hooks";
+import { useId, useContext, useRef, useState } from "preact/hooks";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
 import { __ } from "../translation";
@@ -58,7 +58,7 @@ function fractional_number_localization_check() {
 let fractional_numbers_require_localization = fractional_number_localization_check();
 
 export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
-    const id = !props.idContext ? util.useId() : useContext(props.idContext);
+    const id = !props.idContext ? useId() : useContext(props.idContext);
 
     let pow10 = Math.pow(10, props.digits);
 

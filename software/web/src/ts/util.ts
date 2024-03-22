@@ -594,20 +594,6 @@ export function compareArrays(a: Array<any>, b: Array<any>): boolean
     return a.length === b.length && a.every((element, index) => element === b[index]);
 }
 
-// https://stackoverflow.com/a/1535650
-export let nextId = (function() {
-    let id = 0;
-    return function() {return "ID-" + (++id).toString();};
-})();
-
-// Preact's useId does not work with multiple roots:
-// https://github.com/preactjs/preact/issues/3781
-// Once the port to preact is complete,
-// we can switch back to Preact's useId.
-export function useId() {
-    return useState(nextId())[0];
-}
-
 export function joinNonEmpty(sep: string, lst: string[]) {
     return lst.filter(x => x) // remove empty slots
               .filter(x => x.length > 0)

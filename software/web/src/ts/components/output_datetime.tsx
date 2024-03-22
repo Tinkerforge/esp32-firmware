@@ -18,7 +18,7 @@
  */
 
 import { h, Context } from "preact";
-import { useContext } from "preact/hooks";
+import { useId, useContext } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 
 import * as util from "../../ts/util";
@@ -33,7 +33,7 @@ interface OutputDatetimeProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputE
 }
 
 export function OutputDatetime(props: OutputDatetimeProps) {
-    const id = !props.idContext ? util.useId() : useContext(props.idContext);
+    const id = !props.idContext ? useId() : useContext(props.idContext);
 
     let inner = <input class={"form-control " + props.className}
                     id={id}

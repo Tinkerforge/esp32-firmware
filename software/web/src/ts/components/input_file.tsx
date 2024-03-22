@@ -20,7 +20,7 @@
 import * as util from "../../ts/util";
 
 import { h, Context, Fragment } from "preact";
-import { useContext, useState } from "preact/hooks";
+import { useId, useContext, useState } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { __ } from "../../ts/translation";
@@ -43,7 +43,7 @@ export function InputFile(props: InputFileProps) {
     const [file, setFile] = useState<File>(null);
     const [uploading, setUploading] = useState(false);
     const [progress, setProgress] = useState(0);
-    const id = !props.idContext ? util.useId() : useContext(props.idContext);
+    const id = !props.idContext ? useId() : useContext(props.idContext);
 
     const upload = async () => {
         if(props.onUploadStart && !await props.onUploadStart(file))
