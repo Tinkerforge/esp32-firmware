@@ -33,6 +33,8 @@ import { __ } from "src/ts/translation";
 import "./wireguard";
 import { config, management_connection } from "./api";
 import { Button } from "react-bootstrap";
+import { InputNumber } from "src/ts/components/input_number";
+import { InputSelect } from "src/ts/components/input_select";
 
 
 export function RemoteAccessNavbar() {
@@ -66,7 +68,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
                 web_address: web_address,
                 charger_public: charger_keypair.publicKey,
                 web_private: web_keypair.privateKey,
-                port: port
+                connection_no: i
             });
 
             const connection: management_connection = {
@@ -98,7 +100,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
             keys: keys
         };
 
-        const resp = await fetch("https://" + this.state.relay_host + "/api/charger/add", {
+        const resp = await fetch("https://" + this.state.relay_host + ":" + this.state.relay_host_port + "/api/charger/add", {
             method: "POST",
             credentials: "include",
             body: JSON.stringify(charger),
@@ -126,7 +128,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
             password: this.state.password
         };
 
-        const resp = await fetch("https://" + this.state.relay_host + "/api/auth/login", {
+        const resp = await fetch("https://" + this.state.relay_host + ":" + this.state.relay_host_port + "/api/auth/login", {
             method: "POST",
             credentials: "include",
             body: JSON.stringify(login_schema),
@@ -163,6 +165,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
     render() {
         if (!util.render_allowed())
             return <></>
+
+        const cert_config = API.get("certs/state");
+        const cert_items: [string, string][] = [["-1", __("remote_access.content.not_used")]];
+        for (const cert of cert_config.certs) {
+            cert_items.push([cert.id.toString(), cert.name]);
+        }
 
         return <SubPage name="remote_access">
                     <ConfigForm id="remote_access_config_form"
@@ -202,6 +210,18 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
                                        onValue={(v) => {
                                             this.setState({relay_host: v})
                                        }} />
+                        </FormRow>
+                        <FormRow label={__("remote_access.content.relay_host_port")}>
+                            <InputNumber required
+                                         min={1}
+                                         max={65565}
+                                         value={this.state.relay_host_port}
+                                         onValue={v => this.setState({relay_host_port: v})} />
+                        </FormRow>
+                        <FormRow label={__("remote_access.content.self_signed_cert")}>
+                            <InputSelect items={cert_items} value={this.state.self_signed_cert_id} onValue={(v) => {
+                                this.setState({self_signed_cert_id: parseInt(v)});
+                            }}/>
                         </FormRow>
                     </ConfigForm>
                     <Button variant="primary" onClick={() => {

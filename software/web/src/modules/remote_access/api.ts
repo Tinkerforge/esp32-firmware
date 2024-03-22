@@ -4,6 +4,8 @@ export interface config {
     email: string,
     password: string,
     relay_host: string,
+    relay_host_port: number,
+    self_signed_cert_id: number,
 }
 
 export interface management_connection {
@@ -31,5 +33,5 @@ export interface test1 {
 }
 
 export interface test2 {
-    
+
 }
