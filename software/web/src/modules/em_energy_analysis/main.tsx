@@ -19,6 +19,7 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
+import * as plot from "../../ts/plot";
 import { METERS_SLOTS } from "../../build";
 import { h, createRef, Fragment, Component, ComponentChild, RefObject, ComponentChildren } from "preact";
 import { effect } from "@preact/signals-core";
@@ -90,57 +91,6 @@ interface EnergyManagerDailyData extends CachedData {
     complete: boolean;
     energy_import: number[/*meter_slot*/][/*timestamp_slot*/]; // kWh
     energy_export: number[/*meter_slot*/][/*timestamp_slot*/]; // kWh
-}
-
-// https://seaborn.pydata.org/tutorial/color_palettes.html#qualitative-color-palettes
-// sns.color_palette("tab10")
-const strokes = [
-    'rgb(  0, 123, 255)', // use bootstrap blue instead of tab10 blue, to avoid subtle conflict between plot and button blue
-    'rgb(255, 127,  14)',
-    'rgb( 44, 160,  44)',
-    'rgb(214,  39,  40)',
-    'rgb(148, 103, 189)',
-    'rgb(140,  86,  75)',
-    'rgb(227, 119, 194)',
-    'rgb(127, 127, 127)',
-    'rgb(188, 189,  34)',
-    'rgb( 23, 190, 207)',
-];
-
-const fills = [
-    'rgb(  0, 123, 255, 0.1)', // use bootstrap blue instead of tab10 blue, to avoid subtle conflict between plot and button blue
-    'rgb(255, 127,  14, 0.1)',
-    'rgb( 44, 160,  44, 0.1)',
-    'rgb(214,  39,  40, 0.1)',
-    'rgb(148, 103, 189, 0.1)',
-    'rgb(140,  86,  75, 0.1)',
-    'rgb(227, 119, 194, 0.1)',
-    'rgb(127, 127, 127, 0.1)',
-    'rgb(188, 189,  34, 0.1)',
-    'rgb( 23, 190, 207, 0.1)',
-];
-
-let color_cache: {[id: string]: {stroke: string, fill: string}} = {};
-let color_cache_next: {[id: string]: number} = {};
-
-function get_color(group: string, name: string)
-{
-    let key = group + '-' + name;
-
-    if (!color_cache[key]) {
-        if (!util.hasValue(color_cache_next[group])) {
-            color_cache_next[group] = 0;
-        }
-
-        color_cache[key] = {
-            stroke: strokes[color_cache_next[group] % strokes.length],
-            fill: fills[color_cache_next[group] % fills.length],
-        };
-
-        color_cache_next[group]++;
-    }
-
-    return color_cache[key];
 }
 
 const wb_state_names: {[id: number]: string} = {
@@ -928,7 +878,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
     get_series_opts(i: number): uPlot.Series {
         let name = this.data.names[i];
-        let color = get_color(this.props.color_cache_group, name);
+        let color = plot.get_color("em_energy_analysis." + this.props.color_cache_group, name);
 
         return {
             show: this.series_visibility[this.data.keys[i]],
@@ -1061,7 +1011,7 @@ class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 } else {
                     this.uplot.addBand({
                         series: [i, last_stacked_index],
-                        fill: get_color(this.props.color_cache_group, this.data.names[i]).fill,
+                        fill: plot.get_color("em_energy_analysis." + this.props.color_cache_group, this.data.names[i]).fill,
                     });
                 }
 
