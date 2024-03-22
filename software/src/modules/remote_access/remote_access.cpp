@@ -234,27 +234,6 @@ void RemoteAccess::register_urls() {
 
     api.addState("remote_access/state", &connection_state);
 
-    api.addCommand("remote_access/test", Config::Null(), {}, [this]() {
-        logger.printfln("Henlo");
-        this->login();
-        this->resolve_management();
-        this->connect_management();
-    }, true);
-
-    api.addCommand("remote_access/test1", Config::Null(), {}, [this]() {
-        logger.printfln("bla");
-        this->login();
-        this->resolve_management();
-    }, true);
-    api.addCommand("remote_access/test2", Config::Null(), {}, [this]() {
-        logger.printfln("asd");
-        this->login();
-        this->resolve_management();
-        for (size_t i = 0; i < 5; i++) {
-            this->connect_remote_access(i);
-        }
-    }, true);
-
     if (!config.get("enable")->asBool()) {
         return;
     }
