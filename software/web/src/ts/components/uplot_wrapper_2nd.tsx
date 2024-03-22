@@ -54,9 +54,9 @@ interface UplotWrapperProps {
     sync?: uPlot.SyncPubSub;
     legend_time_label: string;
     legend_time_with_minutes: boolean;
-    legend_value_prefix: string;
     legend_div_ref?: RefObject<HTMLDivElement>;
     aspect_ratio: number;
+    x_height: number;
     x_format: Intl.DateTimeFormatOptions;
     x_padding_factor: number;
     y_min?: number;
@@ -137,7 +137,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             ],
             axes: [
                 {
-                    size: 30,
+                    size: this.props.x_height,
                     incrs: [
                         60,
                         60 * 2,
@@ -384,13 +384,13 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
     get_series_opts(i: number): uPlot.Series {
         let name = this.data.names[i];
-        let color = plot.get_color("em_energy_analysis." + this.props.color_cache_group, name);
+        let color = plot.get_color(this.props.color_cache_group, name);
 
         return {
             show: this.series_visibility[this.data.keys[i]],
             pxAlign: 0,
             spanGaps: false,
-            label: this.props.legend_value_prefix + (name ? ' ' + name: ''),
+            label: name,
             value: (self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => {
                 if (rawValue !== null) {
                     let prefix = '';
@@ -580,7 +580,6 @@ interface UplotFlagsWrapperProps {
     sync?: uPlot.SyncPubSub;
     legend_time_label: string;
     legend_time_with_minutes: boolean;
-    legend_value_prefix: string;
     legend_div_ref: RefObject<HTMLDivElement>;
     x_format: Intl.DateTimeFormatOptions;
     x_padding_factor: number;
@@ -845,7 +844,7 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
         return {
             show: this.series_visibility[this.data.keys[i]],
-            label: (this.props.legend_value_prefix + ' ' + name).trim(),
+            label: name,
             value: (self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => {
                 if (rawValue !== null && this.data.value_names && this.data.value_names[seriesIdx]) {
                     return this.data.value_names[seriesIdx][this.data.values[seriesIdx][idx]];

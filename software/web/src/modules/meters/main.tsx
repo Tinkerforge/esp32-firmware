@@ -551,23 +551,35 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                     id="meters_chart_live"
                                     class="meters-chart pb-3"
                                     sub_page="meters"
+                                    color_cache_group="meters.default"
                                     show={false}
+                                    legend_time_label={__("meters.script.time")}
                                     legend_time_with_seconds={true}
                                     aspect_ratio={3}
                                     x_height={30}
+                                    x_padding_factor={0}
                                     x_include_date={false}
-                                    y_diff_min={100} />
+                                    y_diff_min={100}
+                                    y_unit="W"
+                                    y_label={__("meters.script.power") + " [Watt]"}
+                                    y_digits={0} />
                     <UplotWrapper ref={this.uplot_wrapper_history_ref}
                                     id="meters_chart_history"
                                     class="meters-chart pb-3"
                                     sub_page="meters"
+                                    color_cache_group="meters.default"
                                     show={true}
+                                    legend_time_label={__("meters.script.time")}
                                     legend_time_with_seconds={false}
                                     aspect_ratio={3}
                                     x_height={50}
+                                    x_padding_factor={0}
                                     x_include_date={true}
                                     y_min={0}
-                                    y_max={1500} />
+                                    y_max={1500}
+                                    y_unit="W"
+                                    y_label={__("meters.script.power") + " [Watt]"}
+                                    y_digits={0} />
                 </div>
 
                 <ConfigForm id="meters_config_form" title={show_plot ? __("meters.content.settings") : __("meters.content.meters")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty} small={show_plot}>
@@ -1003,13 +1015,19 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                       id="status_meters_chart"
                                       class="status-meters-chart"
                                       sub_page="status"
+                                      color_cache_group="meters.default"
                                       show={true}
+                                      legend_time_label={__("meters.script.time")}
                                       legend_time_with_seconds={false}
                                       aspect_ratio={3}
                                       x_height={50}
+                                      x_padding_factor={0}
                                       x_include_date={true}
                                       y_min={0}
-                                      y_max={1500} />
+                                      y_max={1500}
+                                      y_unit="W"
+                                      y_label={__("meters.script.power") + " [Watt]"}
+                                      y_digits={0} />
                     </div>
                 </FormRow>
                 <FormRow label={__("meters.status.current_power")} label_muted={get_meter_name(state.meter_configs, state.meter_slot)} hidden={!show}>

@@ -23,7 +23,6 @@ import { h, Component, ComponentChild, createRef } from "preact";
 import { effect } from "@preact/signals-core";
 import * as util from "../util";
 import * as plot from "../plot";
-import { __ } from "../translation";
 import uPlot from "uplot";
 
 export interface UplotData {
@@ -36,14 +35,21 @@ interface UplotWrapperProps {
     id: string;
     class: string;
     sub_page: string;
+    color_cache_group: string;
     show: boolean;
+    sync?: uPlot.SyncPubSub;
+    legend_time_label: string;
     legend_time_with_seconds: boolean;
     aspect_ratio: number;
     x_height: number;
+    x_padding_factor: number;
     x_include_date: boolean;
     y_min?: number;
     y_max?: number;
     y_diff_min?: number;
+    y_unit: string;
+    y_label: string;
+    y_digits: number;
 }
 
 export class UplotWrapper extends Component<UplotWrapperProps, {}> {
@@ -81,10 +87,13 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 drag: {
                     x: false, // disable zoom
                 },
+                sync: {
+                    key: this.props.sync?.key,
+                },
             },
             series: [
                 {
-                    label: __("meters.script.time"),
+                    label: this.props.legend_time_label,
                     value: (self: uPlot, rawValue: number) => {
                         if (rawValue !== null) {
                             if (this.props.legend_time_with_seconds) {
@@ -112,6 +121,9 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         3600 * 8,
                         3600 * 12,
                         3600 * 24,
+                        3600 * 48,
+                        3600 * 72,
+                        3600 * 168,
                     ],
                     values: (self: uPlot, splits: number[], axisIdx: number, foundSpace: number, foundIncr: number) => {
                         let values: string[] = new Array(splits.length);
@@ -145,7 +157,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     },
                 },
                 {
-                    label: __("meters.script.power") + " [Watt]",
+                    label: this.props.y_label,
                     labelSize: 20,
                     labelGap: 2,
                     labelFont: 'bold 14px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
@@ -192,6 +204,12 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 },
             ],
             scales: {
+                x: {
+                    range: (self: uPlot, initMin: number, initMax: number, scaleKey: string): uPlot.Range.MinMax => {
+                        let pad = (initMax - initMin) * this.props.x_padding_factor;
+                        return [initMin - pad, initMax + pad];
+                    },
+                },
                 y: {
                     range: (self: uPlot, initMin: number, initMax: number, scaleKey: string): uPlot.Range.MinMax => {
                         return uPlot.rangeNum(this.y_min, this.y_max, {min: {}, max: {}});
@@ -212,11 +230,12 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                 let s  = self.series[0];
                                 let xd = self.data[0];
                                 let [i0, i1] = s.idxs;
-                                let x0 = self.valToPos(xd[i0], 'x', true) - self.axes[0].ticks.size * devicePixelRatio;
-                                let x1 = self.valToPos(xd[i1], 'x', true);
+                                let xpad = (xd[i1] - xd[i0]) * this.props.x_padding_factor;
+                                let x0 = self.valToPos(xd[i0] - xpad, 'x', true) - self.axes[0].ticks.size * devicePixelRatio;
+                                let x1 = self.valToPos(xd[i1] + xpad, 'x', true);
                                 let y = self.valToPos(0, 'y', true);
 
-                                if (y > ctx.canvas.height - this.props.x_height) {
+                                if (y > ctx.canvas.height - (self.axes[0].size as number)) {
                                     return;
                                 }
 
@@ -306,14 +325,14 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
     get_series_opts(i: number, fill: boolean): uPlot.Series {
         let name = this.data.names[i];
-        let color = plot.get_color("meters.default", name);
+        let color = plot.get_color(this.props.color_cache_group, name);
 
         return {
             show: this.series_visibility[this.data.keys[i]],
             pxAlign: 0,
             spanGaps: false,
             label: name,
-            value: (self: uPlot, rawValue: number) => util.hasValue(rawValue) ? util.toLocaleFixed(rawValue) + " W" : null,
+            value: (self: uPlot, rawValue: number) => util.hasValue(rawValue) ? util.toLocaleFixed(rawValue, this.props.y_digits) + " " + this.props.y_unit : null,
             stroke: color.stroke,
             fill: fill ? color.fill : undefined,
             width: 2,
