@@ -108,7 +108,7 @@ void RemoteAccess::pre_setup() {
         {"enable", Config::Bool(false)},
         {"email", Config::Str("", 0, 64)},
         {"password", Config::Str("", 0, 64)},
-        {"relay_host", Config::Str("", 0, 64)},
+        {"relay_host", Config::Str("fernzugriff.warp-charger.com", 0, 64)},
         {"relay_host_port", Config::Uint16(443)},
         {"self_signed_cert_id", Config::Int8(-1)}
     })};
@@ -367,7 +367,6 @@ void RemoteAccess::resolve_management() {
     url += ":";
     url += relay_host_port;
     url += "/api/management";
-
     esp_http_client_config_t http_config;
     bzero(&http_config, sizeof(esp_http_client_config_t));
 
