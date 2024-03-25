@@ -801,6 +801,7 @@ void EVSEV2::update_all_data()
     uint8_t phases_state;
     uint8_t phases_info;
     bool phase_auto_switch_enabled;
+    uint8_t phases_connected_;
 
     // get_low_level_state
     uint8_t led_state;
@@ -864,7 +865,8 @@ void EVSEV2::update_all_data()
                                    &phases_requested,
                                    &phases_state,
                                    &phases_info,
-                                   &phase_auto_switch_enabled);
+                                   &phase_auto_switch_enabled,
+                                   &phases_connected_);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_2 %d", rc);
