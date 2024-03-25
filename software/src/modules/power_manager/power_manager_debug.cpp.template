@@ -29,13 +29,13 @@ String PowerManager::prepare_fmtstr() {
 
     fmtstr = reinterpret_cast<char *>(malloc(MAX_FMT_LENGTH));
     if (!fmtstr)
-        return "\"out of memory\"";
+        return "out of memory";
 
     size_t offset = 0;
 
     int ret = snprintf(fmtstr, MAX_FMT_LENGTH, "%s", fmts[0]);
     if (ret < 0) {
-        return "\"snprintf error\"";
+        return "snprintf error";
     } else {
         offset += static_cast<size_t>(ret);
     }
@@ -43,7 +43,7 @@ String PowerManager::prepare_fmtstr() {
     for (unsigned long i = 1; i < {{{varcount}}}; i++) {
         ret = snprintf(fmtstr + offset, MAX_FMT_LENGTH - offset, ",%s", fmts[i]);
         if (ret < 0) {
-            return "\"snprintf error\"";
+            return "snprintf error";
         } else {
             offset += static_cast<size_t>(ret);
         }

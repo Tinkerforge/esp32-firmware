@@ -59,6 +59,7 @@ void DebugProtocol::loop()
         char buf[32];
         snprintf(buf, sizeof(buf), "\"%u", last_debug);
 
+        // FIXME: format into preallocated buffer instead of using the String += operator
         String line(buf);
 
         for (IDebugProtocolBackend *backend : backends) {
@@ -75,6 +76,7 @@ void DebugProtocol::register_backend(IDebugProtocolBackend *backend)
         esp_system_abort("Registering debug protocol backends outside the setup stage is not allowed!");
     }
 
+    // FIXME: format into preallocated buffer instead of using the String += operator
     this->header += "," + backend->get_debug_header();
     backends.push_back(backend);
 }
