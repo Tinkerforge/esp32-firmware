@@ -717,7 +717,7 @@ String EVSEV2::get_evse_debug_line()
 
 bool EVSEV2::phase_switching_capable()
 {
-    return evse_common.hardware_configuration.get("evse_version")->asUint() >= 30;
+    return evse_common.hardware_configuration.get("evse_version")->asUint() >= 30 && evse_v2.phases_connected.get("phases")->asUint() > 1;
 }
 
 bool EVSEV2::can_switch_phases_now(bool wants_3phase)
