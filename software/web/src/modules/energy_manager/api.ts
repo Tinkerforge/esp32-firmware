@@ -56,6 +56,3 @@ export interface history_energy_manager_daily_changed {
     energy_import: number[];
     energy_export: number[];
 }
-
-export type debug_header = string;
-export type debug = string;

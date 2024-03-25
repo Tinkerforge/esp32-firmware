@@ -192,6 +192,8 @@ void PowerManager::setup()
         return;
     }
 
+    debug_protocol.register_backend(this);
+
     charge_manager.set_allocated_current_callback([this](uint32_t current_ma) {
         //logger.printfln("power_manager: allocated current callback: %u", current_ma);
         charge_manager_allocated_current_ma = current_ma;

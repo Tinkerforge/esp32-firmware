@@ -21,6 +21,8 @@ export interface ConfigMap {
     'info/modules': Modules
     'info/features': Features
     'info/keep_alive': KeepAlive
+    'debug_protocol/header': string
+    'debug_protocol/line': string
     'reboot': {}
 }
 
@@ -35,10 +37,14 @@ export let api_cache: DeepSignal<{[key in (keyof ConfigMap | ConfigModifiedKey)]
     'info/modules': null as any,
     'info/features': null as any,
     'info/keep_alive': null as any,
+    'debug_protocol/header': null as any,
+    'debug_protocol/line': null as any,
     'reboot': null as any,
 
     'info/modules_modified': null as any,
     'info/features_modified': null as any,
     'info/keep_alive_modified': null as any,
+    'debug_protocol/header_modified': null as any,
+    'debug_protocol/line_modified': null as any,
     'reboot_modified': null as any
 });

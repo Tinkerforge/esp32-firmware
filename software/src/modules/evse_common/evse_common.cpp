@@ -284,6 +284,8 @@ void EvseCommon::setup()
     backend->update_all_data();
     api.addFeature("evse");
 
+    debug_protocol.register_backend(backend);
+
 #if MODULE_AUTOMATION_AVAILABLE()
     task_scheduler.scheduleOnce([this]() {
         automation.trigger_action(AutomationTriggerID::ChargerState, nullptr, trigger_action);
@@ -410,26 +412,6 @@ void EvseCommon::register_urls()
         if (state.get("iec61851_state")->asUint() != IEC_STATE_A)
             backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOSTART_BUTTON, 32000);
     }, true);
-
-#if MODULE_WS_AVAILABLE()
-    server.on("/evse/start_debug", HTTP_GET, [this](WebServerRequest request) {
-        last_debug_keep_alive = millis();
-        check_debug();
-        ws.pushRawStateUpdate(backend->get_evse_debug_header(), "evse/debug_header");
-        debug = true;
-        return request.send(200);
-    });
-
-    server.on("/evse/continue_debug", HTTP_GET, [this](WebServerRequest request) {
-        last_debug_keep_alive = millis();
-        return request.send(200);
-    });
-
-    server.on("/evse/stop_debug", HTTP_GET, [this](WebServerRequest request){
-        debug = false;
-        return request.send(200);
-    });
-#endif
 
     api.addState("evse/external_current", &external_current);
     api.addCommand("evse/external_current_update", &external_current_update, {}, [this](){
@@ -627,17 +609,6 @@ void EvseCommon::register_urls()
 #endif
 }
 
-void EvseCommon::loop()
-{
-#if MODULE_WS_AVAILABLE()
-    static uint32_t last_debug = 0;
-    if (debug && deadline_elapsed(last_debug + 50)) {
-        last_debug = millis();
-        ws.pushRawStateUpdate(backend->get_evse_debug_line(), "evse/debug");
-    }
-#endif
-}
-
 void EvseCommon::set_managed_current(uint16_t current)
 {
     backend->set_charging_slot_max_current(CHARGING_SLOT_CHARGE_MANAGER, current);
@@ -774,17 +745,4 @@ ConfigRoot &EvseCommon::get_state()
 bool EvseCommon::get_management_enabled()
 {
     return management_enabled.get("enabled")->asBool();
-}
-
-void EvseCommon::check_debug()
-{
-    task_scheduler.scheduleOnce([this](){
-        if (deadline_elapsed(last_debug_keep_alive + 60000) && debug)
-        {
-            logger.printfln("Debug log creation canceled because no continue call was received for more than 60 seconds.");
-            debug = false;
-        }
-        else if (debug)
-            check_debug();
-    }, 10000);
 }

@@ -192,10 +192,9 @@ int EVSE::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled
     return tf_evse_set_charging_slot_default(&device, slot, current, enabled, clear_on_disconnect);
 }
 
-String EVSE::get_evse_debug_header()
+String EVSE::get_debug_header()
 {
-    return "\"millis,"
-           "STATE,"
+    return "STATE,"
            "iec61851_state,"
            "charger_state,"
            "contactor_state,"
@@ -249,11 +248,10 @@ String EVSE::get_evse_debug_header()
            "unused (16),"
            "unused (17),"
            "unused (18),"
-           "unused (19)"
-           "\"";
+           "unused (19)";
 }
 
-String EVSE::get_evse_debug_line()
+String EVSE::get_debug_line()
 {
     uint8_t iec61851_state;
     uint8_t charger_state;
@@ -326,7 +324,7 @@ String EVSE::get_evse_debug_line()
     char line[512] = {0};
     snprintf(line,
              sizeof(line) / sizeof(line[0]),
-             "\"%lu,,"
+             ","
              "%u,%u,%u,%u,%u,%u,%u,,"
              "%u,%c,%u,,"
              "%u,%u,%u,%u,%u,,"
@@ -334,8 +332,7 @@ String EVSE::get_evse_debug_line()
              "%d,%d,%d,,"
              "%u,%u,,"
              "%c,%c,%c,%c,%c,,"
-             "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\"",
-             millis(),
+             "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u",
              iec61851_state,
              charger_state,
              contactor_state,

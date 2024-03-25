@@ -189,18 +189,6 @@ void EnergyManager::setup_energy_manager()
     initialized = true;
 }
 
-void EnergyManager::check_debug()
-{
-    task_scheduler.scheduleOnce([this]() {
-        if (deadline_elapsed(last_debug_keep_alive + 60000) && debug) {
-            logger.printfln("Debug log creation canceled because no continue call was received for more than 60 seconds.");
-            debug = false;
-        } else if (debug) {
-            check_debug();
-        }
-    }, 10000);
-}
-
 void EnergyManager::setup()
 {
     setup_energy_manager();
@@ -212,6 +200,7 @@ void EnergyManager::setup()
     api.addFeature("energy_manager");
 
     update_status_led();
+    debug_protocol.register_backend(this);
 
     api.restorePersistentConfig("energy_manager/config", &config);
 
@@ -266,35 +255,6 @@ void EnergyManager::register_urls()
     api.addResponse("energy_manager/history_energy_manager_daily", &history_energy_manager_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_daily_response(response, ownership, owner_id);});
 
     this->DeviceModule::register_urls();
-
-    server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
-        last_debug_keep_alive = millis();
-        check_debug();
-        ws.pushRawStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
-        debug = true;
-        return request.send(200);
-    });
-
-    server.on("/energy_manager/continue_debug", HTTP_GET, [this](WebServerRequest request) {
-        last_debug_keep_alive = millis();
-        return request.send(200);
-    });
-
-    server.on("/energy_manager/stop_debug", HTTP_GET, [this](WebServerRequest request) {
-        debug = false;
-        return request.send(200);
-    });
-}
-
-void EnergyManager::loop()
-{
-    this->DeviceModule::loop();
-
-    static uint32_t last_debug = 0;
-    if (debug && deadline_elapsed(last_debug + 50)) {
-        last_debug = millis();
-        ws.pushRawStateUpdate(this->get_energy_manager_debug_line(), "energy_manager/debug");
-    }
 }
 
 bool EnergyManager::phase_switching_capable()

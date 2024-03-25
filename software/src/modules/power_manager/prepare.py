@@ -20,46 +20,37 @@ from software import util
 
 import re
 
-util.embed_bricklet_firmware_bin()
-
 debug_log_variables = [
-    "contactor_check_tripped",
-    "consecutive_bricklet_errors",
+    "power_at_meter_smooth_w",
+    "power_at_meter_filtered_w",
+    "power_available_w",
+    "power_available_filtered_w",
+    "charge_manager_available_current_ma",
+    "charge_manager_allocated_current_ma",
+    "max_current_limited_ma",
     "",
-    "all_data.contactor_value",
+    "mode",
+    "is_3phase",
+    "wants_3phase",
+    "wants_3phase_last",
+    "is_on_last",
+    "wants_on_last",
     "",
-    "all_data.rgb_value_r",
-    "all_data.rgb_value_g",
-    "all_data.rgb_value_b",
+    "charging_blocked.combined",
+    "excess_charging_enable",
+    "just_switched_phases",
+    "uptime_past_hysteresis",
+    "switching_state",
     "",
-    "all_data.power",
-    "all_data.current[0]",
-    "all_data.current[1]",
-    "all_data.current[2]",
-    "",
-    "all_data.energy_meter_type",
-    "all_data.error_count[0]",
-    "all_data.error_count[1]",
-    "all_data.error_count[2]",
-    "all_data.error_count[3]",
-    "all_data.error_count[4]",
-    "all_data.error_count[5]",
-    "",
-    "all_data.input[0]",
-    "all_data.input[1]",
-    "",
-    "all_data.relay",
-    "",
-    "all_data.voltage",
-    "",
-    "all_data.contactor_check_state",
+    "phase_state_change_blocked_until",
+    "on_state_change_blocked_until",
 ]
 
 formats = 'fmt(' + '),\n        fmt('.join(debug_log_variables) + '),'
 header  = '"' + ',"\n           "'.join([re.sub('[^.]+\.', '', v) for v in debug_log_variables]) + '"'
 data    = ',\n             '.join(filter(None, debug_log_variables))
 
-util.specialize_template("energy_manager_debug.cpp.template", "energy_manager_debug.cpp", {
+util.specialize_template("power_manager_debug.cpp.template", "power_manager_debug.cpp", {
     "{{{varcount}}}": str(len(debug_log_variables)),
     "{{{formats}}}": formats,
     "{{{header}}}": header,

@@ -58,7 +58,7 @@ export class EMDebug extends Component {
                 <PageHeader title={__("em_debug.content.em_debug")}/>
 
                 <FormSeparator heading={__("em_debug.content.protocol")} first={true} />
-                <DebugLogger prefix="energy_manager" translationPrefix="em_debug" debugHeader="energy_manager/debug_header" debug="energy_manager/debug" />
+                <DebugLogger translationPrefix="em_debug" />
 
                 <FormSeparator heading={__("em_debug.content.internal_state")} />
                 <FormRow label="power at meter smooth">

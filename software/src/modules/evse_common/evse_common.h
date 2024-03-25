@@ -23,6 +23,7 @@
 
 #include "modules/meters/meter_value_availability.h"
 #include "modules/power_manager/phase_switcher_back-end.h"
+#include "modules/debug_protocol/debug_protocol_backend.h"
 #include "module.h"
 #include "tools.h"
 
@@ -65,7 +66,7 @@
 
 #define EXTERNAL_TIMEOUT 30
 
-class IEvseBackend : virtual public IModule, public PhaseSwitcherBackend {
+class IEvseBackend : virtual public IModule, public PhaseSwitcherBackend, public IDebugProtocolBackend {
     friend class EvseCommon;
 protected:
     IEvseBackend() {}
@@ -101,8 +102,6 @@ protected:
     virtual int set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect) = 0;
     // End: Pass through to bindings functions
 
-    virtual String get_evse_debug_header() = 0;
-    virtual String get_evse_debug_line() = 0;
     virtual void update_all_data() = 0;
 };
 
@@ -123,7 +122,6 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void loop() override;
 
     void setup_evse();
 
@@ -166,13 +164,8 @@ public:
 
     bool action_triggered(Config *config, void *data);
 
-    void check_debug();
-
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;
-
-    uint32_t last_debug_keep_alive = 0;
-    bool debug = false;
 
 private:
     ConfigRoot low_level_state;

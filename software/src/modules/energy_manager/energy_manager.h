@@ -26,6 +26,7 @@
 
 #include "bindings/bricklet_warp_energy_manager.h"
 #include "modules/power_manager/phase_switcher_back-end.h"
+#include "modules/debug_protocol/debug_protocol_backend.h"
 
 #include "device_module.h"
 #include "em_rgb_led.h"
@@ -55,7 +56,7 @@ class EnergyManager final : public PhaseSwitcherBackend, public DeviceModule<TF_
                                           tf_warp_energy_manager_create,
                                           tf_warp_energy_manager_get_bootloader_mode,
                                           tf_warp_energy_manager_reset,
-                                          tf_warp_energy_manager_destroy>
+                                          tf_warp_energy_manager_destroy>, public IDebugProtocolBackend
 {
 public:
     EnergyManager() : DeviceModule("energy_manager", "WARP Energy Manager", "Energy Manager", [this](){this->setup_energy_manager();}) {}
@@ -65,7 +66,6 @@ public:
     void setup() override;
     void register_urls() override;
     void register_events() override;
-    void loop() override;
 
     // for PhaseSwitcherBackend
     bool phase_switching_capable() override;
@@ -78,8 +78,8 @@ public:
     void set_error(uint32_t error_mask);
 
     void setup_energy_manager();
-    String get_energy_manager_debug_header();
-    String get_energy_manager_debug_line();
+    String get_debug_header();
+    String get_debug_line();
 
     bool get_sdcard_info(struct sdcard_info *data);
     bool format_sdcard();
@@ -110,7 +110,6 @@ private:
     void start_network_check_task();
 
     bool action_triggered(const Config *config, void *data);
-    void check_debug();
     String prepare_fmtstr();
 
     ConfigRoot state;
@@ -124,8 +123,6 @@ private:
     uint32_t error_flags        = 0;
     uint32_t config_error_flags = 0;
 
-    uint32_t last_debug_keep_alive               = 0;
-    bool     debug                               = false;
     bool     contactor_check_tripped             = false;
     micros_t phase_switch_deadtime_us            = 0_usec;
     bool     bricklet_reachable                  = true;

@@ -76,8 +76,8 @@ protected:
     int get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect) override;
     int set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect) override;
 
-    String get_evse_debug_header() override;
-    String get_evse_debug_line() override;
+    String get_debug_header() override;
+    String get_debug_line() override;
 
     // PhaseSwitcherBackend implementation
     bool phase_switching_capable() override;

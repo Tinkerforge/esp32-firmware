@@ -103,9 +103,6 @@ export interface stop_charging {
 
 }
 
-export type debug_header = string;
-export type debug = string;
-
 export interface reflash {
 
 }

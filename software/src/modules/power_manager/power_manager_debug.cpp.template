@@ -1,6 +1,6 @@
-// WARNING: Edit only energy_manager_debug.cpp.template. Do not edit energy_manager_debug.cpp.
+// WARNING: Edit only power_manager_debug.cpp.template. Do not edit power_manager_debug.cpp.
 
-#include "energy_manager.h"
+#include "power_manager.h"
 #include "module_dependencies.h"
 
 #include "tools.h"
@@ -22,7 +22,7 @@ extern inline const char* fmt(void          ) {return "";    }
 static char *fmtstr;
 
 [[gnu::noinline]]
-String EnergyManager::prepare_fmtstr() {
+String PowerManager::prepare_fmtstr() {
     const char * const fmts[{{{varcount}}}] = {
         {{{formats}}}
     };
@@ -57,7 +57,7 @@ String EnergyManager::prepare_fmtstr() {
     return String();
 }
 
-String EnergyManager::get_debug_header()
+String PowerManager::get_debug_header()
 {
     return {{{header}}};
 }
@@ -68,15 +68,13 @@ String EnergyManager::get_debug_header()
     #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
 
-String EnergyManager::get_debug_line()
+String PowerManager::get_debug_line()
 {
     if (!fmtstr) {
         String err = prepare_fmtstr();
         if (err.length() > 0)
             return err;
     }
-
-    update_all_data_struct();
 
     char line[MAX_DEBUG_LINE_LENGTH] = {0};
     snprintf(line,

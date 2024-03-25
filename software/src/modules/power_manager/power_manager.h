@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "module.h"
+#include "modules/debug_protocol/debug_protocol_backend.h"
 
 #define PM_TASK_DELAY_MS                    250
 #define CURRENT_POWER_SMOOTHING_SAMPLES     4
@@ -72,7 +73,7 @@ enum class SwitchingState
     WaitUntilSwitched,
 };
 
-class PowerManager final : public IModule
+class PowerManager final : public IModule, public IDebugProtocolBackend
 {
     friend class EnergyManager;
 
@@ -86,6 +87,9 @@ public:
 
     bool get_enabled() const;
     bool get_is_3phase() const;
+
+    String get_debug_header();
+    String get_debug_line();
 
 private:
     class PhaseSwitcherBackendDummy final : public PhaseSwitcherBackend
@@ -111,6 +115,7 @@ private:
     void limit_max_current(uint32_t limit_ma);
     void reset_limit_max_current();
     void set_config_error(uint32_t config_error_mask);
+    String prepare_fmtstr();
 
     bool action_triggered(const Config *config, void *data);
 

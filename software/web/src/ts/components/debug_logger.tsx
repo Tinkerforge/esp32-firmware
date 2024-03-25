@@ -22,7 +22,6 @@ import { h, Component, Fragment } from "preact";
 import { Button } from "react-bootstrap";
 import { FormRow } from "./form_row";
 import { translate_unchecked } from "../translation";
-import { ConfigMap } from "../api_defs";
 import { InputText } from "./input_text";
 
 interface DebugLoggerState {
@@ -31,18 +30,15 @@ interface DebugLoggerState {
 }
 
 interface DebugLoggerProps {
-    debugHeader: keyof ConfigMap
-    debug: keyof ConfigMap
-    prefix: string
     translationPrefix: string
 }
 
 export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 {
     debug_prefix: string = '';
-    debug_header: string = '';
-    debug_log_dropped: number = 0;
-    debug_log: Array<string> = [];
+    debug_protocol_header: string = '';
+    debug_protocol_lines_dropped: number = 0;
+    debug_protocol_lines: Array<string> = [];
     debug_suffix: string = '';
 
     constructor(props: any) {
@@ -53,17 +49,17 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
             debug_status: ""
         }
 
-        util.addApiEventListener(this.props.debugHeader, (e) => {
-            this.debug_header = e.data + "\n";
+        util.addApiEventListener("debug_protocol/header", (e) => {
+            this.debug_protocol_header = e.data + "\n";
         }, false);
 
-        util.addApiEventListener(this.props.debug, (e) => {
-            while (this.debug_log.length > 20000) {
-                this.debug_log.shift();
-                ++this.debug_log_dropped;
+        util.addApiEventListener("debug_protocol/line", (e) => {
+            while (this.debug_protocol_lines.length > 20000) {
+                this.debug_protocol_lines.shift();
+                ++this.debug_protocol_lines_dropped;
             }
 
-            this.debug_log.push(e.data + "\n");
+            this.debug_protocol_lines.push(e.data + "\n");
         }, false);
     }
 
@@ -91,9 +87,9 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
     debugTimeout: number;
 
-    async resetDebugWd(prefix: string) {
+    async resetDebugWd() {
         try {
-            await util.download("/" + prefix + "/continue_debug");
+            await util.download("/debug_protocol/continue");
         }
         catch{
             this.setState({debug_running: false, debug_status: translate_unchecked(this.props.translationPrefix + ".script.starting_debug_failed")});
@@ -102,9 +98,9 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
     async debug_start() {
         this.debug_prefix = '';
-        this.debug_header = '';
-        this.debug_log_dropped = 0;
-        this.debug_log = [];
+        this.debug_protocol_header = '';
+        this.debug_protocol_lines_dropped = 0;
+        this.debug_protocol_lines = [];
         this.debug_suffix = '';
         this.setState({debug_running: true});
 
@@ -118,13 +114,13 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         }
 
         try {
-            await util.download("/" + this.props.prefix + "/start_debug");
+            await util.download("/debug_protocol/start");
         } catch {
             this.setState({debug_running: false, debug_status: translate_unchecked(this.props.translationPrefix + ".script.starting_debug_failed")});
             return;
         }
 
-        this.debugTimeout = setInterval(this.resetDebugWd, 15000, this.props.prefix);
+        this.debugTimeout = setInterval(this.resetDebugWd, 15000);
 
         this.setState({debug_status: translate_unchecked(this.props.translationPrefix + ".script.debug_running")});
     }
@@ -134,7 +130,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         clearInterval(this.debugTimeout);
 
         try {
-            await util.download("/" + this.props.prefix + "/stop_debug");
+            await util.download("/debug_protocol/stop");
         } catch {
             this.setState({debug_running: true, debug_status: translate_unchecked(this.props.translationPrefix + ".script.debug_stop_failed")});
         }
@@ -150,16 +146,16 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
         let full_log = [this.debug_prefix];
 
-        if (this.debug_log_dropped > 0) {
-            full_log.push('' + this.debug_log_dropped + ' lines have been dropped from the following table.\n\n');
+        if (this.debug_protocol_lines_dropped > 0) {
+            full_log.push('' + this.debug_protocol_lines_dropped + ' lines have been dropped from the following table.\n\n');
         }
 
-        full_log.push(this.debug_header);
-        full_log = full_log.concat(this.debug_log);
+        full_log.push(this.debug_protocol_header);
+        full_log = full_log.concat(this.debug_protocol_lines);
         full_log.push(this.debug_suffix);
 
         //Download log in any case: Even an incomplete log can be useful for debugging.
-        util.downloadToFile(full_log.join(''), this.props.prefix + "-debug-protocol", "txt", "text/plain");
+        util.downloadToFile(full_log.join(''), "debug-protocol", "txt", "text/plain");
     }
 
     render(props: DebugLoggerProps, s: DebugLoggerState)
