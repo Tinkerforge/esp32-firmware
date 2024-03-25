@@ -52,7 +52,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
     }
 
     override async sendSave(t: "charge_manager/config", cfg: ChargeManagerConfig) {
-        let {enable_charge_manager, chargers, ...new_values} = cfg;
+        let {enable_charge_manager, chargers, maximum_available_current, ...new_values} = cfg;
 
         let new_cfg: ChargeManagerConfig = {...API.get("charge_manager/config"), ...new_values};
 
@@ -114,20 +114,6 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                     max={state.maximum_available_current}
                     />
                 <div class="invalid-feedback">{__("charge_manager.content.default_available_current_invalid")}</div>
-            </FormRow>;
-
-        let maximum_available_current = <FormRow label={__("charge_manager.content.maximum_available_current")} label_muted={__("charge_manager.content.maximum_available_current_muted")}>
-                <InputFloat
-                    unit="A"
-                    value={state.maximum_available_current}
-                    onValue={(v) => this.setState({
-                        maximum_available_current: v,
-                        default_available_current: Math.min(v, state.default_available_current)
-                    })}
-                    digits={3}
-                    min={state.minimum_current}
-                    max={1000000}
-                    />
             </FormRow>;
 
         let requested_current_margin = <FormRow label={__("charge_manager.content.requested_current_margin")} label_muted={__("charge_manager.content.requested_current_margin_muted")}>
@@ -208,23 +194,11 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
             </Collapse>
         </>
 
-        let available_current = <FormRow label={__("charge_manager.content.maximum_available_current")}>
-                <InputFloat
-                    unit="A"
-                    value={state.maximum_available_current}
-                    onValue={(v) => this.setState({maximum_available_current: v, default_available_current: v})}
-                    digits={3}
-                    min={0}
-                    max={1000000}
-                    />
-            </FormRow>
-
         return (
             <SubPage name="charge_manager_settings">
                 <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager_settings")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     {energyManagerMode ?
                         <>
-                            {maximum_available_current}
                             {minimum_current}
                         </>
                         : <>
@@ -248,15 +222,10 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                                 <div>
                                     {verbose}
                                     {watchdog}
-                                    {maximum_available_current}
                                     {default_available_current}
                                     {requested_current_threshold}
                                     {requested_current_margin}
                                 </div>
-                            </Collapse>
-
-                            <Collapse in={!state.showExpert}>
-                                <div>{available_current}</div>
                             </Collapse>
 
                             {minimum_current}

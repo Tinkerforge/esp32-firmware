@@ -28,7 +28,7 @@ let x = {
             "default_available_current_muted": "wird nach Neustart des Lastmanagers verwendet",
             "default_available_current_invalid": "Der voreingestellt verfügbare Strom darf höchstens so groß sein wie der maximale Gesamtstrom.",
             "maximum_available_current": "Maximaler Gesamtstrom",
-            "maximum_available_current_muted": "Maximal zulässiger Ladestrom aller Wallboxen in Summe. Dies ist üblicherweise die Nennbelastbarkeit der gemeinsamen Zuleitung.",
+            "maximum_available_current_muted": "Maximal zulässiger Ladestrom aller Wallboxen in Summe; üblicherweise die Nennbelastbarkeit der gemeinsamen Zuleitung.",
             "minimum_current_auto": "Automatischer minimaler Ladestrom",
             "minimum_current_auto_desc": "Minimaler Ladestrom wird abhängig vom gewählten Fahrzeugmodell eingestellt.",
             "minimum_current_vehicle_type": "Fahrzeugmodell",

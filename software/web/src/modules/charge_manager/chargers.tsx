@@ -31,6 +31,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 
 import type { ChargeManagerStatus } from "./main"
+import { InputFloat } from "src/ts/components/input_float";
 
 type ChargeManagerConfig = API.getType["charge_manager/config"];
 type ChargerConfig = ChargeManagerConfig["chargers"][0];
@@ -135,7 +136,16 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         if (!energyManagerMode)
             await API.save_unchecked('evse/management_enabled', {"enabled": this.state.managementEnabled}, translate_unchecked("charge_manager.script.save_failed"));
 
-        let new_cfg: ChargeManagerConfig = {...API.get("charge_manager/config"), enable_charge_manager: cfg.enable_charge_manager, chargers: cfg.chargers};
+        let new_cfg: ChargeManagerConfig = {...API.get("charge_manager/config"),
+            enable_charge_manager: cfg.enable_charge_manager,
+            chargers: cfg.chargers,
+            maximum_available_current: cfg.maximum_available_current};
+
+        // Only set the default available current if it was equal to the old maximum (the user has probably not changed it)
+        if ((API.get('charge_manager/config').default_available_current == API.get('charge_manager/config').maximum_available_current)
+         || (new_cfg.maximum_available_current < API.get('charge_manager/config').default_available_current))
+            new_cfg.default_available_current = new_cfg.maximum_available_current;
+
         await super.sendSave(t, new_cfg);
     }
 
@@ -373,15 +383,33 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                         }} />
             </FormRow>
 
+        let available_current = <FormRow label={__("charge_manager.content.maximum_available_current")} label_muted={__("charge_manager.content.maximum_available_current_muted")}>
+            <InputFloat
+                unit="A"
+                value={state.maximum_available_current}
+                onValue={(v) => {
+                    this.setState({maximum_available_current: v});
+                }}
+                digits={3}
+                min={0}
+                max={1000000}
+                />
+            </FormRow>
+
         return (
             <SubPage name="charge_manager_chargers">
                 <ConfigForm id="chargers_config_form" title={__("charge_manager.content.charge_manager_chargers")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    {energyManagerMode ? chargers
+                    {energyManagerMode ?
+                        <>
+                            {available_current}
+                            {chargers}
+                        </>
                         : <>
                             {charge_manager_mode}
 
                             <Collapse in={state.enable_charge_manager}>
                                 <div>
+                                    {available_current}
                                     {chargers}
                                 </div>
                             </Collapse>
