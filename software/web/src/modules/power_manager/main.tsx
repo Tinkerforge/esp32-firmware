@@ -156,7 +156,7 @@ export class PowerManagerStatus extends Component {
                         </ButtonGroup>
                     </FormRow>
                 </>
-            :
+            : (API.get('power_manager/config').enabled ?
                 <>
                     <FormRow label={__("power_manager.status.phase_switching")}>
                         <IndicatorGroup
@@ -167,6 +167,7 @@ export class PowerManagerStatus extends Component {
                             ]} />
                     </FormRow>
                 </>
+                : undefined)
             }
 
             {this.generate_config_error_labels(state.config_error_flags)}
