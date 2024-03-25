@@ -22,7 +22,7 @@ import * as util from "../../ts/util";
 import { __, translate_unchecked } from "../../ts/translation";
 import { h, Fragment, Component } from "preact";
 import { Button         } from "react-bootstrap";
-import { FormRow        } from "../../ts/components/form_row";
+import { FormRow as VanillaFormRow, FormRowProps } from "../../ts/components/form_row";
 import { FormSeparator  } from "../../ts/components/form_separator";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputText      } from "../../ts/components/input_text";
@@ -35,6 +35,8 @@ import { Terminal } from "react-feather";
 export function DebugNavbar() {
     return <NavbarItem name="debug" module="debug" title={__("debug.navbar.debug")} symbol={<Terminal />} />;
 }
+
+export function FormRow(props: FormRowProps) { return <VanillaFormRow {...props} labelColClasses="col-lg-3" contentColClasses="col-lg-9" />; }
 
 export class Debug extends Component {
     render() {
