@@ -498,7 +498,7 @@ String EVSEV2::get_evse_debug_header()
            "ocpp,"
            "charge_limits,"
            "require_meter,"
-           "unused (14),"
+           "automation,"
            "unused (15),"
            "unused (16),"
            "unused (17),"
