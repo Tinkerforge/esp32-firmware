@@ -167,6 +167,10 @@ export interface phase_auto_switch {
     enabled: boolean;
 }
 
+export interface phases_connected {
+    phases: number;
+}
+
 export interface control_pilot_disconnect {
     disconnect: boolean;
 }

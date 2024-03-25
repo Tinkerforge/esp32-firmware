@@ -232,7 +232,13 @@ let x = {
             "phases_requested": "Phasen angefordert",
             "phases_state": "Zustand der Phasenumschaltung",
             "switch_to_one_phase": "Umschalten auf einphasig",
-            "switch_to_three_phases": "Umschalten auf dreiphasig"
+            "switch_to_three_phases": "Umschalten auf dreiphasig",
+
+            "phases_connected": "Zuleitung",
+            "phases_connected_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
+            "phases_connected_1": "Einphasig",
+            "phases_connected_3": "Dreiphasig"
+
         },
         "automation" : {
             "external_current_wd": "Watchdog der externen Steuerung ausgelöst",

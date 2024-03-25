@@ -55,6 +55,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
         let slots = API.get('evse/slots');
         let user_calibration = API.get('evse/user_calibration');
 
+        let is_evse_v1 = hardware_cfg.evse_version >= 10;
         let is_evse_v2 = hardware_cfg.evse_version >= 20;
         let is_evse_v3 = hardware_cfg.evse_version >= 30;
 
@@ -439,7 +440,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                             }
                         </FormRow>
 
-                        {is_evse_v2 ? undefined :
+                        {(is_evse_v1 && !is_evse_v2) ?
                             <>
                             <FormSeparator heading={__("evse.content.user_calibration_description")}/>
                             <FormRow label={__("evse.content.user_calibration")}>
@@ -502,6 +503,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                                 <InputText value={user_calibration.resistance_880.join(", ")}/>
                             </FormRow>
                             </>
+                            : undefined
                         }
 
 

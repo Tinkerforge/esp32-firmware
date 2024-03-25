@@ -42,12 +42,15 @@ interface EVSESettingsState {
     gpio_cfg: API.getType['evse/gpio_configuration'];
     ev_wakeup: API.getType['evse/ev_wakeup'];
     phase_auto_switch: API.getType['evse/phase_auto_switch'];
+    phases_connected: API.getType['evse/phases_connected'];
     boost_mode: API.getType['evse/boost_mode'];
     auto_start_charging: API.getType['evse/auto_start_charging'];
     require_meter_enabled: API.getType['require_meter/config'];
     led_configuration: API.getType['evse/led_configuration'];
     evse_uptime: number
     is_evse_v2: boolean
+    is_evse_v3: boolean
+    have_meter: boolean
 }
 
 type ChargeLimitsConfig = API.getType["charge_limits/default_limits"];
@@ -60,6 +63,10 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
 
         util.addApiEventListener('evse/gpio_configuration', () => {
             this.setState({gpio_cfg: API.get('evse/gpio_configuration')});
+        });
+
+        util.addApiEventListener('evse/hardware_configuration', () => {
+            this.setState({have_meter: (API.get('evse/hardware_configuration').energy_meter_type ?? 0) > 0});
         });
 
         util.addApiEventListener('evse/button_configuration', () => {
@@ -99,7 +106,12 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         });
 
         util.addApiEventListener("evse/hardware_configuration", () => {
-            this.setState({is_evse_v2: API.get("evse/hardware_configuration").evse_version >= 20});
+            this.setState({is_evse_v2: API.get("evse/hardware_configuration").evse_version >= 20,
+                           is_evse_v3: API.get("evse/hardware_configuration").evse_version >= 30});
+        });
+
+        util.addApiEventListener("evse/phases_connected", () => {
+            this.setState({phases_connected: API.get("evse/phases_connected")});
         });
     }
 
@@ -115,6 +127,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             await API.save('evse/gpio_configuration', this.state.gpio_cfg, __("evse.script.gpio_configuration_failed"));
             await API.save('evse/ev_wakeup', {"enabled": this.state.ev_wakeup.enabled}, __("evse.script.save_failed"));
             await API.save('evse/phase_auto_switch', {"enabled": this.state.phase_auto_switch.enabled}, __("evse.script.save_failed"));
+            await API.save('evse/phases_connected', this.state.phases_connected, __("evse.script.save_failed"));
         }
 
         super.sendSave(t, cfg);
@@ -134,6 +147,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             await API.save('evse/gpio_configuration', {"input": 0, "output": 1, "shutdown_input": 0}, __("evse.script.gpio_configuration_failed"));
             await API.save('evse/ev_wakeup', {"enabled": true}, __("evse.script.save_failed"));
             await API.save('evse/phase_auto_switch', {"enabled": true}, __("evse.script.save_failed"));
+            await API.save('evse/phases_connected', {"phases": 3}, __("evse.script.save_failed"));
         }
 
         super.sendReset(t);
@@ -153,6 +167,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             result ||= API.is_modified('evse/gpio_configuration');
             result ||= API.is_modified('evse/ev_wakeup');
             result ||= API.is_modified('evse/phase_auto_switch');
+            result ||= API.is_modified('evse/phases_connected');
         }
 
         result ||= super.getIsModified(t);
@@ -169,6 +184,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             gpio_cfg,
             ev_wakeup,
             phase_auto_switch,
+            phases_connected,
             boost_mode,
             auto_start_charging,
             require_meter_enabled,
@@ -289,50 +305,54 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                             />
                         </FormRow>
 
-                        <FormRow label={__("evse.content.gpio_in")} label_muted={__("evse.content.gpio_in_muted")}>
-                            <InputSelect items={[
-                                            ["0", __("evse.content.not_configured")],
-                                            ["1",  __("evse.content.active_low_blocked")],
-                                            ["2", __("evse.content.active_low_prefix")  + '6 A' + __("evse.content.active_low_suffix")],
-                                            ["3", __("evse.content.active_low_prefix")  + '8 A' + __("evse.content.active_low_suffix")],
-                                            ["4", __("evse.content.active_low_prefix")  + '10 A' + __("evse.content.active_low_suffix")],
-                                            ["5", __("evse.content.active_low_prefix")  + '13 A' + __("evse.content.active_low_suffix")],
-                                            ["6", __("evse.content.active_low_prefix")  + '16 A' + __("evse.content.active_low_suffix")],
-                                            ["7", __("evse.content.active_low_prefix")  + '20 A' + __("evse.content.active_low_suffix")],
-                                            ["8", __("evse.content.active_low_prefix")  + '25 A' + __("evse.content.active_low_suffix")],
-                                            ["9",  __("evse.content.active_high_blocked")],
-                                            ["10", __("evse.content.active_high_prefix")  + '6 A' + __("evse.content.active_high_suffix")],
-                                            ["11", __("evse.content.active_high_prefix")  + '8 A' + __("evse.content.active_high_suffix")],
-                                            ["12", __("evse.content.active_high_prefix")  + '10 A' + __("evse.content.active_high_suffix")],
-                                            ["13", __("evse.content.active_high_prefix")  + '13 A' + __("evse.content.active_high_suffix")],
-                                            ["14", __("evse.content.active_high_prefix")  + '16 A' + __("evse.content.active_high_suffix")],
-                                            ["15", __("evse.content.active_high_prefix")  + '20 A' + __("evse.content.active_high_suffix")],
-                                            ["16", __("evse.content.active_high_prefix")  + '25 A' + __("evse.content.active_high_suffix")],
-                                            ["disabled", __("evse.content.todo")]
-                                        ]}
-                                    value={gpio_cfg.input}
-                                    onValue={async (v) => {
-                                        let cfg = gpio_cfg;
-                                        cfg.input = parseInt(v);
-                                        this.setState({gpio_cfg: cfg});
-                                    }}
-                            />
-                        </FormRow>
+                        {this.state.is_evse_v3 ? undefined :
+                        <>
+                            <FormRow label={__("evse.content.gpio_in")} label_muted={__("evse.content.gpio_in_muted")}>
+                                <InputSelect items={[
+                                                ["0", __("evse.content.not_configured")],
+                                                ["1",  __("evse.content.active_low_blocked")],
+                                                ["2", __("evse.content.active_low_prefix")  + '6 A' + __("evse.content.active_low_suffix")],
+                                                ["3", __("evse.content.active_low_prefix")  + '8 A' + __("evse.content.active_low_suffix")],
+                                                ["4", __("evse.content.active_low_prefix")  + '10 A' + __("evse.content.active_low_suffix")],
+                                                ["5", __("evse.content.active_low_prefix")  + '13 A' + __("evse.content.active_low_suffix")],
+                                                ["6", __("evse.content.active_low_prefix")  + '16 A' + __("evse.content.active_low_suffix")],
+                                                ["7", __("evse.content.active_low_prefix")  + '20 A' + __("evse.content.active_low_suffix")],
+                                                ["8", __("evse.content.active_low_prefix")  + '25 A' + __("evse.content.active_low_suffix")],
+                                                ["9",  __("evse.content.active_high_blocked")],
+                                                ["10", __("evse.content.active_high_prefix")  + '6 A' + __("evse.content.active_high_suffix")],
+                                                ["11", __("evse.content.active_high_prefix")  + '8 A' + __("evse.content.active_high_suffix")],
+                                                ["12", __("evse.content.active_high_prefix")  + '10 A' + __("evse.content.active_high_suffix")],
+                                                ["13", __("evse.content.active_high_prefix")  + '13 A' + __("evse.content.active_high_suffix")],
+                                                ["14", __("evse.content.active_high_prefix")  + '16 A' + __("evse.content.active_high_suffix")],
+                                                ["15", __("evse.content.active_high_prefix")  + '20 A' + __("evse.content.active_high_suffix")],
+                                                ["16", __("evse.content.active_high_prefix")  + '25 A' + __("evse.content.active_high_suffix")],
+                                                ["disabled", __("evse.content.todo")]
+                                            ]}
+                                        value={gpio_cfg.input}
+                                        onValue={async (v) => {
+                                            let cfg = gpio_cfg;
+                                            cfg.input = parseInt(v);
+                                            this.setState({gpio_cfg: cfg});
+                                        }}
+                                />
+                            </FormRow>
 
-                        <FormRow label={__("evse.content.gpio_out")} label_muted={__("evse.content.gpio_out_muted")}>
-                            <InputSelect items={[
-                                            ["0",__("evse.content.gpio_out_low")],
-                                            ["1",__("evse.content.gpio_out_high")],
-                                            ["disabled",__("evse.content.todo")],
-                                        ]}
-                                    value={gpio_cfg.output}
-                                    onValue={async (v) => {
-                                        let cfg = gpio_cfg;
-                                        cfg.output = parseInt(v);
-                                        this.setState({gpio_cfg: cfg});
-                                    }}
-                            />
-                        </FormRow>
+                            <FormRow label={__("evse.content.gpio_out")} label_muted={__("evse.content.gpio_out_muted")}>
+                                <InputSelect items={[
+                                                ["0",__("evse.content.gpio_out_low")],
+                                                ["1",__("evse.content.gpio_out_high")],
+                                                ["disabled",__("evse.content.todo")],
+                                            ]}
+                                        value={gpio_cfg.output}
+                                        onValue={async (v) => {
+                                            let cfg = gpio_cfg;
+                                            cfg.output = parseInt(v);
+                                            this.setState({gpio_cfg: cfg});
+                                        }}
+                                />
+                            </FormRow>
+                        </>
+                        }
 
                         <FormRow label={__("evse.content.ev_wakeup_desc")} label_muted={__("evse.content.ev_wakeup_desc_muted")}>
                             <Switch desc={__("evse.content.ev_wakeup")}
@@ -340,11 +360,29 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                     onClick={async () => this.setState({ev_wakeup: {enabled: !ev_wakeup.enabled}})}/>
                         </FormRow>
 
-                        <FormRow label={__("evse.content.phase_auto_switch_desc")} label_muted={__("evse.content.phase_auto_switch_desc_muted")}>
-                            <Switch desc={__("evse.content.phase_auto_switch")}
-                                    checked={phase_auto_switch.enabled}
-                                    onClick={async () => this.setState({phase_auto_switch: {enabled: !phase_auto_switch.enabled}})}/>
-                        </FormRow>
+                        {!this.state.is_evse_v3 ? undefined :
+                        <>
+                            {!this.state.have_meter ? undefined :
+                                <FormRow label={__("evse.content.phase_auto_switch_desc")} label_muted={__("evse.content.phase_auto_switch_desc_muted")}>
+                                    <Switch desc={__("evse.content.phase_auto_switch")}
+                                            checked={phase_auto_switch.enabled}
+                                            onClick={async () => this.setState({phase_auto_switch: {enabled: !phase_auto_switch.enabled}})}/>
+                                </FormRow>
+                            }
+
+                            <FormRow label={__("evse.content.phases_connected")} label_muted={__("evse.content.phases_connected_muted")}>
+                                <InputSelect items={[
+                                                ["1",__("evse.content.phases_connected_1")],
+                                                ["3",__("evse.content.phases_connected_3")]
+                                            ]}
+                                        value={phases_connected.phases}
+                                        onValue={(v) => {
+                                            this.setState({phases_connected: {"phases":parseInt(v)}});
+                                        }}
+                                />
+                            </FormRow>
+                        </>
+                        }
                         </>
                     }
                 </ConfigForm>

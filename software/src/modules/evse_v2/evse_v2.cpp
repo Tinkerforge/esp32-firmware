@@ -146,6 +146,11 @@ void EVSEV2::pre_setup()
     });
     phase_auto_switch_update = phase_auto_switch;
 
+    phases_connected = Config::Object({
+        {"phases", Config::Uint8(0)}
+    });
+    phases_connected_update = phases_connected;
+
     control_pilot_disconnect = Config::Object({
         {"disconnect", Config::Bool(false)}
     });
@@ -294,6 +299,12 @@ void EVSEV2::post_register_urls()
     api.addState("evse/phase_auto_switch", &phase_auto_switch);
     api.addCommand("evse/phase_auto_switch_update", &phase_auto_switch_update, {}, [this](){
         is_in_bootloader(tf_evse_v2_set_phase_auto_switch(&device, phase_auto_switch_update.get("enabled")->asBool()));
+    }, true);
+
+
+    api.addState("evse/phases_connected", &phases_connected);
+    api.addCommand("evse/phases_connected_update", &phases_connected_update, {}, [this](){
+        is_in_bootloader(tf_evse_v2_set_phases_connected(&device, phases_connected_update.get("phases")->asUint()));
     }, true);
 
     api.addState("evse/control_pilot_disconnect", &control_pilot_disconnect);
@@ -1052,6 +1063,7 @@ void EVSEV2::update_all_data()
 
     ev_wakeup.get("enabled")->updateBool(ev_wakeup_enabled);
     phase_auto_switch.get("enabled")->updateBool(phase_auto_switch_enabled);
+    phases_connected.get("phases")->updateUint(phases_connected_);
     evse_common.boost_mode.get("enabled")->updateBool(boost_mode_enabled);
 
     control_pilot_disconnect.get("disconnect")->updateBool(cp_disconnect);

@@ -116,6 +116,8 @@ private:
     ConfigRoot ev_wakeup_update;
     ConfigRoot phase_auto_switch;
     ConfigRoot phase_auto_switch_update;
+    ConfigRoot phases_connected;
+    ConfigRoot phases_connected_update;
     ConfigRoot control_pilot_disconnect;
     ConfigRoot control_pilot_disconnect_update;
     ConfigRoot gp_output;

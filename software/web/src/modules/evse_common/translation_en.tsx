@@ -199,7 +199,7 @@ let x = {
             "ev_wakeup_desc_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
             "ev_wakeup": "Attempts to wake up the charge controller of the connected vehicle by fake-un and -re-plugging the charge cable.",
 
-            "phase_auto_switch_desc": "Automatic phase switch Automatischer Phasenwechsel",
+            "phase_auto_switch_desc": "Automatic phase switch",
             "phase_auto_switch_desc_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
             "phase_auto_switch": "Automatically switches to single phase charging if the connected vehicle only draws current on L1.",
 
@@ -232,7 +232,12 @@ let x = {
             "phases_requested": "Phases requested",
             "phases_state": "Phase switching state",
             "switch_to_one_phase": "Switch to one phase",
-            "switch_to_three_phases": "Switch to three phases"
+            "switch_to_three_phases": "Switch to three phases",
+
+            "phases_connected": "Supply",
+            "phases_connected_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
+            "phases_connected_1": "single-phase",
+            "phases_connected_3": "three-phase"
         },
         "automation": {
             "external_current_wd": "External control watchdog triggered",
