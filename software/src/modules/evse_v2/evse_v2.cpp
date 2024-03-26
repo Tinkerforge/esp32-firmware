@@ -393,7 +393,8 @@ int EVSEV2::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabl
 
 String EVSEV2::get_debug_header()
 {
-    return "STATE,"
+    return String(
+           "STATE,"
            "iec61851_state,"
            "charger_state,"
            "contactor_state,"
@@ -450,7 +451,34 @@ String EVSEV2::get_debug_header()
            "RESISTANCES,"
            "resistance_cp_pe,"
            "resistance_pp_pe,"
-           "GPIOS,"
+           "GPIOS,") +
+           (evse_common.hardware_configuration.get("evse_version")->asUint() >= 30
+           ? String(
+           "gpio_dc_x30,"
+           "gpio_dc_x6,"
+           "gpio_dc_error,"
+           "gpio_dc_test,"
+           "gpio_led_status,"
+           "gpio_button,"
+           "gpio_led_red,"
+           "gpio_led_blue,"
+           "gpio_led_green,"
+           "gpio_cp_pwm,"
+           "gpio_contactor_1,"
+           "gpio_contactor_0,"
+           "gpio_contactor_1_feedback,"
+           "gpio_contactor_0_feedback,"
+           "gpio_pe_check,"
+           "gpio_config_jumper_1,"
+           "gpio_cp_disconnect,"
+           "gpio_config_jumper_0,"
+           "gpio_gp_shutdown,"
+           "gpio_version_detect,"
+           "gpio_20,"
+           "gpio_21,"
+           "gpio_22,"
+           "gpio_23,")
+           : String(
            "gpio_config_jumper_0,"
            "gpio_motor_fault,"
            "gpio_dc_error,"
@@ -474,7 +502,8 @@ String EVSEV2::get_debug_header()
            "gpio_20,"
            "gpio_21,"
            "gpio_22,"
-           "gpio_23,"
+           "gpio_23,")) +
+           String(
            "SLOTS,"
            "slot_incoming_cable,"
            "slot_outgoing_cable,"
@@ -495,7 +524,7 @@ String EVSEV2::get_debug_header()
            "slot_16,"
            "slot_17,"
            "slot_18,"
-           "slot_19";
+           "slot_19");
 }
 
 String EVSEV2::get_debug_line()
