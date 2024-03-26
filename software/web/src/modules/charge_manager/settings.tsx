@@ -212,6 +212,8 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                                 </div>
                             </Collapse>
 
+                            {minimum_current}
+
                             <FormRow label={__("charge_manager.content.configuration_mode")} label_muted={__("charge_manager.content.configuration_mode_muted")}>
                                 <Button className="form-control" onClick={() => this.setState({showExpert: !state.showExpert})}>
                                     {state.showExpert ? __("component.collapsed_section.hide") : __("component.collapsed_section.show")}
@@ -227,9 +229,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                                     {requested_current_margin}
                                 </div>
                             </Collapse>
-
-                            {minimum_current}
-                            </>
+                        </>
                     }
                     <FormSeparator heading={__("charge_manager.content.header_load_management")} />
                     <FormRow label="">
