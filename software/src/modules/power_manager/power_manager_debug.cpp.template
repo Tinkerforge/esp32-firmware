@@ -52,7 +52,7 @@ String PowerManager::prepare_fmtstr() {
     fmtstr[MAX_FMT_LENGTH - 1] = 0;
     fmtstr = reinterpret_cast<char *>(realloc(fmtstr, offset + 1));
 
-    //logger.printfln("energy_manager: using fmtstr='%s'", fmtstr);
+    //logger.printfln("power_manager: using fmtstr='%s'", fmtstr);
 
     return String();
 }

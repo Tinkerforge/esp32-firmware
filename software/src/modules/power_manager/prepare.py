@@ -47,7 +47,7 @@ debug_log_variables = [
 ]
 
 formats = 'fmt(' + '),\n        fmt('.join(debug_log_variables) + '),'
-header  = '"' + ',"\n           "'.join([re.sub('[^.]+\.', '', v) for v in debug_log_variables]) + '"'
+header  = '"' + ',"\n           "'.join([re.sub('[^.]+\.', '', v).replace('[', '_').replace(']', '') for v in debug_log_variables]) + '"'
 data    = ',\n             '.join(filter(None, debug_log_variables))
 
 util.specialize_template("power_manager_debug.cpp.template", "power_manager_debug.cpp", {

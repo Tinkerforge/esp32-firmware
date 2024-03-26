@@ -56,7 +56,7 @@ debug_log_variables = [
 ]
 
 formats = 'fmt(' + '),\n        fmt('.join(debug_log_variables) + '),'
-header  = '"' + ',"\n           "'.join([re.sub('[^.]+\.', '', v) for v in debug_log_variables]) + '"'
+header  = '"' + ',"\n           "'.join([re.sub('[^.]+\.', '', v).replace('[', '_').replace(']', '') for v in debug_log_variables]) + '"'
 data    = ',\n             '.join(filter(None, debug_log_variables))
 
 util.specialize_template("energy_manager_debug.cpp.template", "energy_manager_debug.cpp", {
