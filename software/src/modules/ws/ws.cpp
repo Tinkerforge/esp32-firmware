@@ -160,41 +160,74 @@ static size_t prefix_len = strlen(prefix);
 static size_t infix_len = strlen(infix);
 static size_t suffix_len = strlen(suffix);
 
+// returns true on success
 bool WS::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
 {
-    if (!web_sockets.haveActiveClient())
+    if (!web_sockets.haveActiveClient()) {
         return true;
-    //String to_send = String("{\"topic\":\"") + path + String("\",\"payload\":") + payload + String("}\n");
-    size_t path_len = path.length();
+    }
+
+    StringBuilder sb;
     size_t payload_len = payload.length();
 
-    size_t to_send_len = prefix_len + path_len + infix_len + payload_len + suffix_len;
-    char *to_send = (char *)malloc(to_send_len);
-    if (to_send == nullptr)
+    if (!pushStateUpdateBegin(&sb, stateIdx, payload_len, path.c_str(), path.length())) {
         return false;
+    }
 
-    char *ptr = to_send;
-    memcpy(ptr, prefix, prefix_len);
-    ptr += prefix_len;
+    sb.puts(payload.c_str(), payload_len);
 
-    memcpy(ptr, path.c_str(), path_len);
-    ptr += path_len;
-
-    memcpy(ptr, infix, infix_len);
-    ptr += infix_len;
-
-    memcpy(ptr, payload.c_str(), payload_len);
-    ptr += payload_len;
-
-    memcpy(ptr, suffix, suffix_len);
-    ptr += suffix_len;
-
-    return web_sockets.sendToAllOwned(to_send, to_send_len);
+    return pushStateUpdateEnd(&sb);
 }
 
+// returns true on success
 bool WS::pushRawStateUpdate(const String &payload, const String &path)
 {
     return pushStateUpdate(0, payload, path);
+}
+
+// returns true if it is okay to call pushStateUpdateEnd
+bool WS::pushStateUpdateBegin(StringBuilder *sb, size_t stateIdx, size_t payload_len, const char *path, ssize_t path_len)
+{
+    if (!web_sockets.haveActiveClient()) {
+        return false;
+    }
+
+    if (path_len < 0) {
+        path_len = strlen(path);
+    }
+
+    if (!sb->setCapacity(prefix_len + path_len + infix_len + payload_len + suffix_len)) {
+        return false;
+    }
+
+    sb->puts(prefix, prefix_len);
+    sb->puts(path, path_len);
+    sb->puts(infix, infix_len);
+
+    return true;
+}
+
+// returns true on success
+bool WS::pushStateUpdateEnd(StringBuilder* sb)
+{
+    sb->puts(suffix, suffix_len);
+
+    size_t len = sb->getLength();
+    char *buf = sb->takeBuffer();
+
+    return web_sockets.sendToAllOwned(buf, len);
+}
+
+// returns true if it is okay to call pushRawStateUpdateEnd
+bool WS::pushRawStateUpdateBegin(StringBuilder *sb, size_t payload_len, const char *path, ssize_t path_len)
+{
+    return pushStateUpdateBegin(sb, 0, payload_len, path, path_len);
+}
+
+// returns true on success
+bool WS::pushRawStateUpdateEnd(StringBuilder* sb)
+{
+    return pushStateUpdateEnd(sb);
 }
 
 IAPIBackend::WantsStateUpdate WS::wantsStateUpdate(size_t stateIdx)

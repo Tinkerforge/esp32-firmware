@@ -24,6 +24,7 @@
 
 #include "api.h"
 #include "web_sockets.h"
+#include "string_builder.h"
 
 class WS final : public IAPIBackend
 {
@@ -41,6 +42,11 @@ public:
     bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
     bool pushRawStateUpdate(const String &payload, const String &path) override;
     WantsStateUpdate wantsStateUpdate(size_t stateIdx) override;
+
+    bool pushStateUpdateBegin(StringBuilder *sb, size_t stateIdx, size_t payload_len, const char *path, ssize_t path_len = -1);
+    bool pushStateUpdateEnd(StringBuilder* sb);
+    bool pushRawStateUpdateBegin(StringBuilder *sb, size_t payload_len, const char *path, ssize_t path_len = -1);
+    bool pushRawStateUpdateEnd(StringBuilder* sb);
 
     WebSockets web_sockets;
 };
