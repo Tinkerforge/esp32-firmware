@@ -1811,7 +1811,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
     render(props: {}, state: Readonly<EMEnergyAnalysisState>) {
         if (!util.render_allowed())
-            return <SubPage name="em_energy_analysis" colClasses="col-xl-10" />;
+            return <SubPage name="em_energy_analysis" />;
 
         let total_5min = () => {
             let key = this.date_to_daily_key(state.current_5min_date);
