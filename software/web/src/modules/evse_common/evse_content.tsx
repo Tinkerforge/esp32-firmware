@@ -425,12 +425,6 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                         }
 
                         <FormRow label={__("evse.content.reset_description")} label_muted={__("evse.content.reset_description_muted")}>
-                            {!is_evse_v3 ? undefined :
-                                <div class="input-group pb-2">
-                                    <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => API.call('evse/debug_switch_to_one_phase', {}, "")}>{__("evse.content.switch_to_one_phase")}</Button>
-                                    <Button variant="primary" className="form-control rounded-left" onClick={() => API.call('evse/debug_switch_to_three_phases', {}, "")}>{__("evse.content.switch_to_three_phases")}</Button>
-                                </div>
-                            }
                             <div class="input-group pb-2">
                                 <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => API.call('evse/reset', {}, "")}>{__("evse.content.reset_evse")}</Button>
                                 <Button variant="primary" className="form-control rounded-left" onClick={() => API.call('evse/reflash', {}, "")}>{__("evse.content.reflash_evse")}</Button>
