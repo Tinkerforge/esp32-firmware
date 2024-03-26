@@ -73,7 +73,7 @@ let x = {
 
             "mode_disabled": "Disabled",
             "mode_manager": "Charge manager",
-            "mode_managed": "Externally controlled",
+            "mode_managed": "Externally controlled / PV excess charging",
 
             "managed_boxes": "Managed chargers",
 
@@ -83,7 +83,7 @@ let x = {
             "charge_manager_chargers_reset_modal_text": "Resetting the charge manager configuration also deletes the list of controlled chargers. Continue?",
 
             "header_load_management": "Dynamic load management",
-            "load_management_explainer": "The power manager adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)"
+            "load_management_explainer": "Adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)"
         },
         "automation": {
           "charge_manager_wd": "Charge manager watchdog triggered",

@@ -6,7 +6,7 @@ let x = {
             "em_sdcard": "SD Card"
         },
         "content": {
-            "header": "Energy Manager SD Card",
+            "header": "SD Card",
 
             "manufacturer_id": "Manufacturer ID",
             "product_name": "Product code",

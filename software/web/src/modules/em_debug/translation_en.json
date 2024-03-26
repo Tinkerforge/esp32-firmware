@@ -6,7 +6,7 @@
             "em_debug": "Debug"
         },
         "content": {
-            "em_debug": "Energy Manager Debug",
+            "em_debug": "Debug",
             "protocol": "Energy Manager Protocol",
             "debug_description": "Create protocol",
             "debug_description_muted": "for diagnosing issues",

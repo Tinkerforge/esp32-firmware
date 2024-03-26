@@ -71,9 +71,9 @@ let x = {
             "scan_error_1": "Firmwareversion inkompatibel",
             "scan_error_2": "Lastmanagement deaktiviert",
 
-            "mode_disabled": "Deaktiviert (Dieser WARP Charger steuert nur sich selbst)",
-            "mode_manager": "Lastmanager (Dieser WARP Charger steuert andere)",
-            "mode_managed": "Fremdgesteuert (Anderer WARP Charger oder WARP Energy Manager steuert diesen)",
+            "mode_disabled": "Deaktiviert",
+            "mode_manager": "Lastmanager / PV-Überschussladen",
+            "mode_managed": "Fremdgesteuert",
 
             "managed_boxes": "Kontrollierte Wallboxen",
 
@@ -83,7 +83,7 @@ let x = {
             "charge_manager_settings_reset_modal_text": "Zurücksetzen der Lastmanagement-Konfiguration löscht auch die Liste der kontrollierten Wallboxen. Fortfahren?",
 
             "header_load_management": "Dynamisches Lastmanagement",
-            "load_management_explainer": "Der Power Manager regelt die verwalteten Wallboxen so, dass der maximal zulässige Strom des Gebäudeanschlusses auf keiner Phase überschritten wird. (Bald verfügbar: Diese Funktion befindet sich aktuell noch in der Entwicklung.)"
+            "load_management_explainer": "Regelt die kontrollierten Wallboxen so, dass der maximal zulässige Strom des Gebäudeanschlusses auf keiner Phase überschritten wird. (Bald verfügbar: Diese Funktion befindet sich aktuell noch in der Entwicklung.)"
         },
         "automation": {
             "charge_manager_wd": "Lastmanagement-Watchdog ausgelöst",
