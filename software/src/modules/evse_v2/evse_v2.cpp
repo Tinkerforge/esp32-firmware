@@ -389,9 +389,6 @@ int EVSEV2::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabl
     return tf_evse_v2_set_charging_slot_default(&device, slot, current, enabled, clear_on_disconnect);
 }
 
-//vorher:  gpio_config_jumper,  gpio_enable,     gpio_switch,gpio_input_motor_switch,gpio_relay,    gpio_output,   gpio_motor_enable,gpio_ac_1,                  gpio_ac_2,                 gpio_input,   slot_unused (14),slot_unused (15),slot_unused (16),slot_unused (17),slot_unused (18),slot_unused (19)
-//nachher: gpio_config_jumper_0,gpio_gp_shutdown,gpio_button,gpio_motor_input_switch,gpio_contactor,gpio_gp_output,gpio_motor_active,gpio_contactor_check_before,gpio_contactor_check_after,gpio_gp_input,slot_automation, slot_15,         slot_16,         slot_17,         slot_18,         slot_19
-
 static const char *debug_header_prefix =
     "STATE,"
     "iec61851_state,"
