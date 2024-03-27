@@ -24,6 +24,7 @@
 #include "api.h"
 #include "event_log.h"
 #include "tools.h"
+#include "string_builder.h"
 
 #include "gcc_warnings.h"
 #ifdef __GNUC__
@@ -166,6 +167,7 @@ void Meters::setup()
         METER_VALUE_HISTORY_VALUE_TYPE history_samples[METERS_SLOTS];
         bool valid_samples[METERS_SLOTS];
         METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
+        StringBuilder sb;
 
         for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
             MeterSlot &meter_slot = this->meter_slots[slot];
@@ -189,34 +191,27 @@ void Meters::setup()
         ++samples_this_interval;
 
 #if MODULE_WS_AVAILABLE()
-        {
-            const size_t buf_size = METERS_SLOTS * history_chars_per_value + 100;
-            char *buf_ptr = static_cast<char *>(malloc(sizeof(char) * buf_size));
-            size_t buf_written = 0;
+        if (sb.setCapacity(METERS_SLOTS * history_chars_per_value + 100)) {
+            sb.printf("{\"topic\":\"meters/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[", static_cast<double>(live_samples_per_second()));
 
-            buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "{\"topic\":\"meters/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[", static_cast<double>(live_samples_per_second()));
-
-            if (buf_written < buf_size) {
-                for (uint32_t slot = 0; slot < METERS_SLOTS && buf_written < buf_size; slot++) {
-                    if (!valid_samples[slot]) {
-                        buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, slot == 0 ? "[%s]" : ",[%s]", "");
-                    }
-                    else if (live_samples[slot] == val_min) {
-                        buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, slot == 0 ? "[%s]" : ",[%s]", "null");
-                    }
-                    else {
-                        buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, slot == 0 ? "[%d]" : ",[%d]", static_cast<int>(live_samples[slot]));
-                    }
+            for (uint32_t slot = 0; slot < METERS_SLOTS && sb.getRemainingLength() > 0; slot++) {
+                if (!valid_samples[slot]) {
+                    sb.printf(slot == 0 ? "[%s]" : ",[%s]", "");
                 }
-
-                if (buf_written < buf_size) {
-                    buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", "]}}\n");
+                else if (live_samples[slot] == val_min) {
+                    sb.printf(slot == 0 ? "[%s]" : ",[%s]", "null");
+                }
+                else {
+                    sb.printf(slot == 0 ? "[%d]" : ",[%d]", static_cast<int>(live_samples[slot]));
                 }
             }
 
-            if (buf_written > 0) {
-                ws.web_sockets.sendToAllOwned(buf_ptr, static_cast<size_t>(buf_written));
-            }
+            sb.puts("]}}\n");
+
+            size_t len = sb.getLength();
+            char *buf = sb.take().release();
+
+            ws.web_sockets.sendToAllOwned(buf, len);
         }
 #endif
 
@@ -231,34 +226,27 @@ void Meters::setup()
             end_this_interval = 0;
 
 #if MODULE_WS_AVAILABLE()
-            {
-                const size_t buf_size = METERS_SLOTS * history_chars_per_value + 100;
-                char *buf_ptr = static_cast<char *>(malloc(sizeof(char) * buf_size));
-                size_t buf_written = 0;
+            if (sb.setCapacity(METERS_SLOTS * history_chars_per_value + 100)) {
+                sb.puts("{\"topic\":\"meters/history_samples\",\"payload\":{\"samples\":[");
 
-                buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", "{\"topic\":\"meters/history_samples\",\"payload\":{\"samples\":[");
-
-                if (buf_written < buf_size) {
-                    for (uint32_t slot = 0; slot < METERS_SLOTS && buf_written < buf_size; slot++) {
-                        if (!valid_samples[slot]) {
-                            buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, slot == 0 ? "[%s]" : ",[%s]", "");
-                        }
-                        else if (history_samples[slot] == val_min) {
-                            buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, slot == 0 ? "[%s]" : ",[%s]", "null");
-                        }
-                        else {
-                            buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, slot == 0 ? "[%d]" : ",[%d]", static_cast<int>(history_samples[slot]));
-                        }
+                for (uint32_t slot = 0; slot < METERS_SLOTS && sb.getRemainingLength() > 0; slot++) {
+                    if (!valid_samples[slot]) {
+                        sb.printf(slot == 0 ? "[%s]" : ",[%s]", "");
                     }
-
-                    if (buf_written < buf_size) {
-                        buf_written += snprintf_u(buf_ptr + buf_written, buf_size - buf_written, "%s", "]}}\n");
+                    else if (history_samples[slot] == val_min) {
+                        sb.printf(slot == 0 ? "[%s]" : ",[%s]", "null");
+                    }
+                    else {
+                        sb.printf(slot == 0 ? "[%d]" : ",[%d]", static_cast<int>(history_samples[slot]));
                     }
                 }
 
-                if (buf_written > 0) {
-                    ws.web_sockets.sendToAllOwned(buf_ptr, static_cast<size_t>(buf_written));
-                }
+                sb.puts("]}}\n");
+
+                size_t len = sb.getLength();
+                char *buf = sb.take().release();
+
+                ws.web_sockets.sendToAllOwned(buf, len);
             }
 #endif
         }
@@ -322,44 +310,28 @@ void Meters::register_urls()
     }
 
     server.on("/meters/history", HTTP_GET, [this](WebServerRequest request) {
-        uint32_t now = millis();
-        const size_t buf_size = HISTORY_RING_BUF_SIZE * history_chars_per_value + 100;
+        StringBuilder sb;
 
-        char *buf = static_cast<char *>(malloc(sizeof(char) * buf_size));
-        if (buf == nullptr) {
+        if (!sb.setCapacity(HISTORY_RING_BUF_SIZE * history_chars_per_value + 100)) {
             return request.send(500, "text/plain", "Failed to allocate buffer");
         }
-        defer {free(buf);};
 
-        size_t buf_written = 0;
-        uint32_t offset = now - last_history_update;
-
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[", offset);
-
+        sb.printf("{\"offset\":%lu,\"samples\":[", millis() - last_history_update);
         request.beginChunkedResponse(200, "application/json; charset=utf-8");
 
         for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
             MeterSlot &meter_slot = meter_slots[slot];
 
             if (meter_slot.meter->get_class() != MeterClassID::None) {
-                if (buf_written < buf_size) {
-                    buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", slot == 0 ? "[" : ",[");
-
-                    if (buf_written < buf_size) {
-                        buf_written += meter_slot.power_history.format_history_samples(buf + buf_written, buf_size - buf_written);
-
-                        if (buf_written < buf_size) {
-                            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "]");
-                        }
-                    }
-                }
-            } else if (buf_written < buf_size) {
-                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", slot == 0 ? "null" : ",null");
+                sb.puts(slot == 0 ? "[" : ",[");
+                meter_slot.power_history.format_history_samples(&sb);
+                sb.puts("]");
+            } else {
+                sb.puts(slot == 0 ? "null" : ",null");
             }
 
-            request.sendChunk(buf, static_cast<ssize_t>(buf_written));
-
-            buf_written = 0;
+            request.sendChunk(sb.getPtr(), static_cast<ssize_t>(sb.getLength()));
+            sb.clear();
         }
 
         request.sendChunk("]}", 2);
@@ -368,43 +340,28 @@ void Meters::register_urls()
     });
 
     server.on("/meters/live", HTTP_GET, [this](WebServerRequest request) {
-        uint32_t now = millis();
-        const size_t buf_size = HISTORY_RING_BUF_SIZE * history_chars_per_value + 100;
-        char *buf = static_cast<char *>(malloc(sizeof(char) * buf_size));
-        if (buf == nullptr) {
+        StringBuilder sb;
+
+        if (!sb.setCapacity(HISTORY_RING_BUF_SIZE * history_chars_per_value + 100)) {
             return request.send(500, "text/plain", "Failed to allocate buffer");
         }
-        defer {free(buf);};
 
-        size_t buf_written = 0;
-        uint32_t offset = now - last_live_update;
-
-        buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[", offset, static_cast<double>(live_samples_per_second()));
-
+        sb.printf("{\"offset\":%lu,\"samples_per_second\":%f,\"samples\":[", millis() - last_live_update, static_cast<double>(live_samples_per_second()));
         request.beginChunkedResponse(200, "application/json; charset=utf-8");
 
         for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
             MeterSlot &meter_slot = meter_slots[slot];
 
             if (meter_slot.meter->get_class() != MeterClassID::None) {
-                if (buf_written < buf_size) {
-                    buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", slot == 0 ? "[" : ",[");
-
-                    if (buf_written < buf_size) {
-                        buf_written += meter_slot.power_history.format_live_samples(buf + buf_written, buf_size - buf_written);
-
-                        if (buf_written < buf_size) {
-                            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "]");
-                        }
-                    }
-                }
-            } else if (buf_written < buf_size) {
-                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", slot == 0 ? "null" : ",null");
+                sb.puts(slot == 0 ? "[" : ",[");
+                meter_slot.power_history.format_live_samples(&sb);
+                sb.puts("]");
+            } else {
+                sb.puts(slot == 0 ? "null" : ",null");
             }
 
-            request.sendChunk(buf, static_cast<ssize_t>(buf_written));
-
-            buf_written = 0;
+            request.sendChunk(sb.getPtr(), static_cast<ssize_t>(sb.getLength()));
+            sb.clear();
         }
 
         request.sendChunk("]}", 2);

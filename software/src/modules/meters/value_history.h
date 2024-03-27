@@ -62,6 +62,8 @@ static_assert(std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::max() >= METE
 static_assert(std::numeric_limits<int>::lowest() <= METER_VALUE_HISTORY_VALUE_MIN);
 static_assert(std::numeric_limits<int>::max() >= METER_VALUE_HISTORY_VALUE_MAX);
 
+class StringBuilder;
+
 class ValueHistory
 {
 public:
@@ -74,10 +76,10 @@ public:
     void register_urls_empty(String base_url);
     void add_sample(float sample);
     void tick(uint32_t now, bool update_history, METER_VALUE_HISTORY_VALUE_TYPE *live_sample, METER_VALUE_HISTORY_VALUE_TYPE *history_sample);
-    size_t format_live(uint32_t now, char *buf, size_t buf_size);
-    size_t format_live_samples(char *buf, size_t buf_size);
-    size_t format_history(uint32_t now, char *buf, size_t buf_size);
-    size_t format_history_samples(char *buf, size_t buf_size);
+    void format_live(uint32_t now, StringBuilder *sb);
+    void format_live_samples(StringBuilder *sb);
+    void format_history(uint32_t now, StringBuilder *sb);
+    void format_history_samples(StringBuilder *sb);
     float samples_per_second();
 
     int64_t sum_this_interval = 0;

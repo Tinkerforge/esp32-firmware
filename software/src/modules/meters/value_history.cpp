@@ -21,6 +21,7 @@
 #include "module_dependencies.h"
 
 #include "tools.h"
+#include "string_builder.h"
 
 #include "gcc_warnings.h"
 #ifdef __GNUC__
@@ -59,29 +60,27 @@ void ValueHistory::setup()
 void ValueHistory::register_urls(String base_url)
 {
     server.on(("/" + base_url + "history").c_str(), HTTP_GET, [this](WebServerRequest request) {
-        const size_t buf_size = HISTORY_RING_BUF_SIZE * chars_per_value + 100;
-        char *buf = static_cast<char *>(malloc(sizeof(char) * buf_size));
-        if (buf == nullptr) {
+        StringBuilder sb;
+
+        if (!sb.setCapacity(HISTORY_RING_BUF_SIZE * chars_per_value + 100)) {
             return request.send(500, "text/plain", "Failed to allocate buffer");
         }
-        defer {free(buf);};
 
-        size_t buf_written = format_history(millis(), buf, buf_size);
+        format_history(millis(), &sb);
 
-        return request.send(200, "application/json; charset=utf-8", buf, static_cast<ssize_t>(buf_written));
+        return request.send(200, "application/json; charset=utf-8", sb.getPtr(), static_cast<ssize_t>(sb.getLength()));
     });
 
     server.on(("/" + base_url + "live").c_str(), HTTP_GET, [this](WebServerRequest request) {
-        const size_t buf_size = HISTORY_RING_BUF_SIZE * chars_per_value + 100;
-        char *buf = static_cast<char *>(malloc(sizeof(char) * buf_size));
-        if (buf == nullptr) {
+        StringBuilder sb;
+
+        if (!sb.setCapacity(HISTORY_RING_BUF_SIZE * chars_per_value + 100)) {
             return request.send(500, "text/plain", "Failed to allocate buffer");
         }
-        defer {free(buf);};
 
-        size_t buf_written = format_live(millis(), buf, buf_size);
+        format_live(millis(), &sb);
 
-        return request.send(200, "application/json; charset=utf-8", buf, static_cast<ssize_t>(buf_written));
+        return request.send(200, "application/json; charset=utf-8", sb.getPtr(), static_cast<ssize_t>(sb.getLength()));
     });
 }
 
@@ -173,92 +172,66 @@ void ValueHistory::tick(uint32_t now, bool update_history, METER_VALUE_HISTORY_V
     }
 }
 
-size_t ValueHistory::format_live(uint32_t now, char *buf, size_t buf_size)
+void ValueHistory::format_live(uint32_t now, StringBuilder *sb)
 {
-    size_t buf_written = 0;
-    uint32_t offset = now - live_last_update;
-
-    buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[", offset, static_cast<double>(samples_per_second()));
-
-    if (buf_written < buf_size) {
-        buf_written += format_live_samples(buf + buf_written, buf_size - buf_written);
-
-        if (buf_written < buf_size) {
-            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "]}");
-        }
-    }
-
-    return buf_written;
+    sb->printf("{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[", now - live_last_update, static_cast<double>(samples_per_second()));
+    format_live_samples(sb);
+    sb->puts("]}");
 }
 
-size_t ValueHistory::format_live_samples(char *buf, size_t buf_size)
+void ValueHistory::format_live_samples(StringBuilder *sb)
 {
     METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
-    size_t buf_written = 0;
     METER_VALUE_HISTORY_VALUE_TYPE val;
 
     if (live.peek(&val)) {
         if (val == val_min) {
-            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "null");
+            sb->puts("null");
         } else {
-            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%d", static_cast<int>(val));
+            sb->printf("%d", static_cast<int>(val));
         }
 
         size_t used = live.used();
-        for (size_t i = 1; i < used && live.peek_offset(&val, i) && buf_written < buf_size; ++i) {
+
+        for (size_t i = 1; i < used && live.peek_offset(&val, i) && sb->getRemainingLength() > 0; ++i) {
             if (val == val_min) {
-                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, ",%s", "null");
+                sb->puts(",null");
             } else {
-                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, ",%d", static_cast<int>(val));
+                sb->printf(",%d", static_cast<int>(val));
             }
         }
     }
-
-    return buf_written;
 }
 
-size_t ValueHistory::format_history(uint32_t now, char *buf, size_t buf_size)
+void ValueHistory::format_history(uint32_t now, StringBuilder *sb)
 {
-    size_t buf_written = 0;
-    uint32_t offset = now - history_last_update;
-
-    buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "{\"offset\":%u,\"samples\":[", offset);
-
-    if (buf_written < buf_size) {
-        buf_written += format_history_samples(buf + buf_written, buf_size - buf_written);
-
-        if (buf_written < buf_size) {
-            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "]}");
-        }
-    }
-
-    return buf_written;
+    sb->printf("{\"offset\":%u,\"samples\":[", now - history_last_update);
+    format_history_samples(sb);
+    sb->puts("]}");
 }
 
-size_t ValueHistory::format_history_samples(char *buf, size_t buf_size)
+void ValueHistory::format_history_samples(StringBuilder *sb)
 {
     METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
-    size_t buf_written = 0;
     METER_VALUE_HISTORY_VALUE_TYPE val;
 
     if (history.peek(&val)) {
         if (val == val_min) {
-            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%s", "null");
+            sb->puts("null");
         } else {
-            buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, "%d", static_cast<int>(val));
+            sb->printf("%d", static_cast<int>(val));
         }
 
         size_t used = history.used();
-        for (size_t i = 1; i < used && history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
+
+        for (size_t i = 1; i < used && history.peek_offset(&val, i) && sb->getRemainingLength() > 0; ++i) {
             if (val == val_min) {
-                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, ",%s", "null");
+                sb->puts(",null");
             } else {
-                buf_written += snprintf_u(buf + buf_written, buf_size - buf_written, ",%d", static_cast<int>(val));
+                sb->printf(",%d", static_cast<int>(val));
             }
         }
     }
-
-    return buf_written;
 }
 
 float ValueHistory::samples_per_second()
