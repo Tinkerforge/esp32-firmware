@@ -774,12 +774,12 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
                                 return {
                                     columnValues: [
-                                        <><Button className="mr-2" size="sm"
+                                        <span class="row mx-n1 align-items-center"><span class="col-auto px-1"><Button className="mr-2" size="sm"
                                             onClick={() => {
                                                 this.setState({extraShow: state.extraShow.map((show, i) => meter_slot == i ? !show : show)});
                                             }}>
                                             <ChevronRight {...{id:`meter-${meter_slot}-chevron`, class: state.extraShow[meter_slot] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
-                                            </Button>{get_meter_name(state.configs_table, meter_slot)}</>,
+                                            </Button></span><span class="col px-1">{get_meter_name(state.configs_table, meter_slot)}</span></span>,
                                         util.hasValue(power) ? util.toLocaleFixed(power, 0) + " W" : undefined,
                                         util.hasValue(energy_import) ? util.toLocaleFixed(energy_import, 3) + " kWh" : undefined,
                                         util.hasValue(energy_export) ? util.toLocaleFixed(energy_export, 3) + " kWh" : undefined,
