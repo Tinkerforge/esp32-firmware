@@ -91,6 +91,8 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
 
         let energyManagerMode = API.hasModule("energy_manager") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
         let warpUltimateMode  = API.hasModule("energy_manager") &&  (API.hasModule("evse_v2") || API.hasModule("evse"));
+        let is_warp3          = API.get_unchecked("evse/hardware_configuration")?.evse_version >= 30;
+        let show_1p_current   = energyManagerMode || warpUltimateMode || is_warp3;
 
         let verbose = <FormRow label={__("charge_manager.content.verbose")}>
                 <Switch desc={__("charge_manager.content.verbose_desc")}
@@ -161,8 +163,8 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
 
             <Collapse in={!state.minimum_current_auto}>
                 <div>
-                    <FormRow label={      energyManagerMode ? __("charge_manager.content.minimum_current_3p")       : __("charge_manager.content.minimum_current")}
-                             label_muted={energyManagerMode ? __("charge_manager.content.minimum_current_3p_muted") : __("charge_manager.content.minimum_current_muted")}>
+                    <FormRow label={      show_1p_current ? __("charge_manager.content.minimum_current_3p")       : __("charge_manager.content.minimum_current")}
+                             label_muted={show_1p_current ? __("charge_manager.content.minimum_current_3p_muted") : __("charge_manager.content.minimum_current_muted")}>
                         <InputFloat
                             unit="A"
                             value={state.minimum_current}
@@ -176,7 +178,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                         />
                     </FormRow>
 
-                    {energyManagerMode || warpUltimateMode ?
+                    {show_1p_current ?
                         <FormRow label={__("charge_manager.content.minimum_current_1p")} label_muted={__("charge_manager.content.minimum_current_1p_muted")}>
                             <InputFloat
                                 unit="A"
