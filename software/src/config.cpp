@@ -22,8 +22,8 @@
 #include "config/visitors.h"
 
 #include "math.h"
-
 #include "tools.h"
+#include "string_builder.h"
 
 #define UINT_SLOTS 512
 Config::ConfUint::Slot *uint_buf = nullptr;
@@ -605,11 +605,14 @@ String Config::to_string_except(const String *keys_to_censor, size_t keys_to_cen
     }
     return result;
 }
-size_t Config::to_string_except(const String *keys_to_censor, size_t keys_to_censor_len, char *buf, size_t buf_size) const
+
+void Config::to_string_except(const String *keys_to_censor, size_t keys_to_censor_len, StringBuilder *sb) const
 {
     auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
 
-    size_t written = serializeJson(doc, buf, buf_size);
+    size_t written = serializeJson(doc, sb->getRemainingPtr(), sb->getRemainingLength());
+
+    sb->setLength(sb->getLength() + written);
 
     if (doc.overflowed()) {
         auto capacity = doc.capacity();
@@ -617,8 +620,6 @@ size_t Config::to_string_except(const String *keys_to_censor, size_t keys_to_cen
             logger.printfln("JSON doc overflow while converting to string! Doc capacity is %u but needed %u.", capacity, json_size(false));
         }
     }
-
-    return written;
 }
 
 uint8_t Config::was_updated(uint8_t api_backend_flag)

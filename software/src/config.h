@@ -44,6 +44,8 @@
 #define ASSERT_MAIN_THREAD() do {} while (0)
 #endif
 
+class StringBuilder;
+
 void config_pre_init();
 void config_post_setup();
 
@@ -711,7 +713,7 @@ public:
     String to_string() const;
 
     String to_string_except(const String *keys_to_censor, size_t keys_to_censor_len) const;
-    size_t to_string_except(const String *keys_to_censor, size_t keys_to_censor_len, char *buf, size_t buf_size) const;
+    void to_string_except(const String *keys_to_censor, size_t keys_to_censor_len, StringBuilder *sb) const;
 };
 
 struct ConfigRoot : public Config {
