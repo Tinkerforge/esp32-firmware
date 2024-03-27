@@ -302,6 +302,10 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         if (cfg[0] == MeterClassID.None)
             return null;
 
+        // Disallow selecting the charger-internal meter for PM
+        if (cfg[0] as any == MeterClassID.RS485Bricklet || cfg[0] as any == MeterClassID.EVSEV2)
+            return null;
+
         return cfg[1].display_name;
     }
 
