@@ -609,15 +609,18 @@ String Config::to_string_except(const String *keys_to_censor, size_t keys_to_cen
 void Config::to_string_except(const String *keys_to_censor, size_t keys_to_censor_len, StringBuilder *sb) const
 {
     auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
-
-    size_t written = serializeJson(doc, sb->getRemainingPtr(), sb->getRemainingLength());
+    char *ptr = sb->getRemainingPtr();
+    size_t written = serializeJson(doc, ptr, sb->getRemainingLength());
 
     sb->setLength(sb->getLength() + written);
 
     if (doc.overflowed()) {
         auto capacity = doc.capacity();
         if (capacity == 0) {
-            logger.printfln("JSON doc overflow while converting to string! Doc capacity is %u but needed %u.", capacity, json_size(false));
+            logger.printfln("JSON doc overflow while converting to string! Doc capacity is zero but needed %u.", json_size(false));
+        } else {
+            logger.printfln("JSON doc overflow while converting to string! Doc capacity is %u. Truncated doc follows.", capacity);
+            logger.write(ptr, written);
         }
     }
 }
