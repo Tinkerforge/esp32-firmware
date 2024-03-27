@@ -76,8 +76,10 @@ protected:
     int get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect) override;
     int set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect) override;
 
-    String get_debug_header() override;
-    String get_debug_line() override;
+    [[gnu::const]] size_t get_debug_header_length() const override;
+    void get_debug_header(StringBuilder *sb) override;
+    [[gnu::const]] size_t get_debug_line_length() const override;
+    void get_debug_line(StringBuilder *sb) override;
 
     // PhaseSwitcherBackend implementation
     bool phase_switching_capable() override;

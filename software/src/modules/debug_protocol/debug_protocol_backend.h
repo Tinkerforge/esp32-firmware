@@ -19,13 +19,17 @@
 
 #pragma once
 
-#include <Arduino.h>
+#include <stddef.h>
+
+class StringBuilder;
 
 class IDebugProtocolBackend
 {
 public:
     virtual ~IDebugProtocolBackend() = default;
 
-    virtual String get_debug_header() = 0;
-    virtual String get_debug_line() = 0;
+    [[gnu::const]] virtual size_t get_debug_header_length() const = 0;
+    virtual void get_debug_header(StringBuilder *sb) = 0;
+    [[gnu::const]] virtual size_t get_debug_line_length() const = 0;
+    virtual void get_debug_line(StringBuilder *sb) = 0;
 };

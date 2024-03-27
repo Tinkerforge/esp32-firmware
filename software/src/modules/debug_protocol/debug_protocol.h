@@ -40,6 +40,5 @@ public:
 
     uint32_t last_debug_keep_alive = 0;
     bool debug = false;
-    String header = "\"millis";
     std::vector<IDebugProtocolBackend *> backends;
 };

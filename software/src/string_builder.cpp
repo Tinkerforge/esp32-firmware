@@ -19,6 +19,7 @@
 
 #include "string_builder.h"
 
+#include <Arduino.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -74,20 +75,38 @@ bool StringBuilder::setCapacity(size_t new_capacity)
     return true;
 }
 
-char *StringBuilder::takeBuffer()
+void StringBuilder::setLength(size_t new_length)
+{
+    if (new_length > capacity) {
+        new_length = capacity;
+    }
+
+    length = new_length;
+    buffer[length] = '\0';
+}
+
+std::unique_ptr<char> StringBuilder::take()
 {
     char *tmp = buffer;
+
+    if (tmp == empty) {
+        tmp = strdup("");
+
+        if (tmp == nullptr) {
+            esp_system_abort("StringBuilder: Cannot allocate 1 byte");
+        }
+    }
 
     capacity = 0;
     length = 0;
     buffer = empty;
 
-    return tmp;
+    return std::unique_ptr<char>{tmp};
 }
 
 ssize_t StringBuilder::puts(const char *string, ssize_t string_len)
 {
-    ssize_t remaining = capacity - length;
+    ssize_t remaining = getRemainingLength();
 
     if (remaining <= 0) {
         return 0;
@@ -110,9 +129,22 @@ ssize_t StringBuilder::puts(const char *string, ssize_t string_len)
     return string_len;
 }
 
+ssize_t StringBuilder::putc(char c)
+{
+    if (getRemainingLength() <= 0) {
+        return 0;
+    }
+
+    buffer[length] = c;
+    length += 1;
+    buffer[length] = '\0';
+
+    return 1;
+}
+
 ssize_t StringBuilder::vprintf(const char *fmt, va_list args)
 {
-    ssize_t remaining = capacity - length;
+    ssize_t remaining = getRemainingLength();
 
     if (remaining <= 0) {
         return 0;

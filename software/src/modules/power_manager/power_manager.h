@@ -88,8 +88,10 @@ public:
     bool get_enabled() const;
     bool get_is_3phase() const;
 
-    String get_debug_header();
-    String get_debug_line();
+    [[gnu::const]] size_t get_debug_header_length() const override;
+    void get_debug_header(StringBuilder *sb) override;
+    [[gnu::const]] size_t get_debug_line_length() const override;
+    void get_debug_line(StringBuilder *sb) override;
 
 private:
     class PhaseSwitcherBackendDummy final : public PhaseSwitcherBackend
@@ -115,7 +117,7 @@ private:
     void limit_max_current(uint32_t limit_ma);
     void reset_limit_max_current();
     void set_config_error(uint32_t config_error_mask);
-    String prepare_fmtstr();
+    const char *prepare_fmtstr();
 
     bool action_triggered(const Config *config, void *data);
 

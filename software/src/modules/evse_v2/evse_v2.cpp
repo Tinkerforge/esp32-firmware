@@ -27,6 +27,7 @@
 #include "task_scheduler.h"
 #include "tools.h"
 #include "web_server.h"
+#include "string_builder.h"
 
 extern EVSEV2 evse_v2;
 
@@ -391,143 +392,178 @@ int EVSEV2::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabl
 //vorher:  gpio_config_jumper,  gpio_enable,     gpio_switch,gpio_input_motor_switch,gpio_relay,    gpio_output,   gpio_motor_enable,gpio_ac_1,                  gpio_ac_2,                 gpio_input,   slot_unused (14),slot_unused (15),slot_unused (16),slot_unused (17),slot_unused (18),slot_unused (19)
 //nachher: gpio_config_jumper_0,gpio_gp_shutdown,gpio_button,gpio_motor_input_switch,gpio_contactor,gpio_gp_output,gpio_motor_active,gpio_contactor_check_before,gpio_contactor_check_after,gpio_gp_input,slot_automation, slot_15,         slot_16,         slot_17,         slot_18,         slot_19
 
-String EVSEV2::get_debug_header()
+static const char *debug_header_prefix =
+    "STATE,"
+    "iec61851_state,"
+    "charger_state,"
+    "contactor_state,"
+    "contactor_error,"
+    "allowed_charging_current,"
+    "error_state,"
+    "lock_state,"
+    "dc_fault_current_state,"
+    "HARDWARE_CONFIG,"
+    "jumper_configuration,"
+    "has_lock_switch,"
+    "evse_version,"
+    "energy_meter_type,"
+    "ENERGY_METER,"
+    "power,"
+    "current_0,"
+    "current_1,"
+    "current_2,"
+    "phase_0_active,"
+    "phase_1_active,"
+    "phase_2_active,"
+    "phase_0_connected,"
+    "phase_1_connected,"
+    "phase_2_connected,"
+    "ENERGY_METER_ERRORS,"
+    "local_timeout,"
+    "global_timeout,"
+    "illegal_function,"
+    "illegal_data_access,"
+    "illegal_data_value,"
+    "slave_device_failure,"
+    "LL_STATE,"
+    "led_state,"
+    "cp_pwm_duty_cycle,"
+    "charging_time,"
+    "time_since_state_change,"
+    "uptime,"
+    "ADC_VALUES,"
+    "adc_cp_pe_before_pwm_high,"
+    "adc_cp_pe_after_pwm_high,"
+    "adc_cp_pe_before_pwm_low,"
+    "adc_cp_pe_after_pwm_low,"
+    "adc_pp_pe,"
+    "adc_plus_12v,"
+    "adc_minus_12v,"
+    "VOLTAGES,"
+    "voltage_cp_pe_before_pwm_high,"
+    "voltage_cp_pe_after_pwm_high,"
+    "voltage_cp_pe_before_pwm_low,"
+    "voltage_cp_pe_after_pwm_low,"
+    "voltage_pp_pe,"
+    "voltage_plus_12v,"
+    "voltage_minus_12v,"
+    "RESISTANCES,"
+    "resistance_cp_pe,"
+    "resistance_pp_pe,";
+
+static const char *debug_header_infix_v2 =
+    "GPIOS,"
+    "gpio_config_jumper_0,"
+    "gpio_motor_fault,"
+    "gpio_dc_error,"
+    "gpio_config_jumper_1,"
+    "gpio_dc_test,"
+    "gpio_gp_shutdown,"
+    "gpio_button,"
+    "gpio_cp_pwm,"
+    "gpio_motor_input_switch,"
+    "gpio_contactor,"
+    "gpio_gp_output,"
+    "gpio_cp_disconnect,"
+    "gpio_motor_active,"
+    "gpio_motor_phase,"
+    "gpio_contactor_check_before,"
+    "gpio_contactor_check_after,"
+    "gpio_gp_input,"
+    "gpio_dc_x6,"
+    "gpio_dc_x30,"
+    "gpio_led,"
+    "gpio_20,"
+    "gpio_21,"
+    "gpio_22,"
+    "gpio_23,";
+
+static const char *debug_header_infix_v3 =
+    "GPIOS,"
+    "gpio_dc_x30,"
+    "gpio_dc_x6,"
+    "gpio_dc_error,"
+    "gpio_dc_test,"
+    "gpio_led_status,"
+    "gpio_button,"
+    "gpio_led_red,"
+    "gpio_led_blue,"
+    "gpio_led_green,"
+    "gpio_cp_pwm,"
+    "gpio_contactor_1,"
+    "gpio_contactor_0,"
+    "gpio_contactor_1_feedback,"
+    "gpio_contactor_0_feedback,"
+    "gpio_pe_check,"
+    "gpio_config_jumper_1,"
+    "gpio_cp_disconnect,"
+    "gpio_config_jumper_0,"
+    "gpio_gp_shutdown,"
+    "gpio_version_detect,"
+    "gpio_20,"
+    "gpio_21,"
+    "gpio_22,"
+    "gpio_23,";
+
+static const char *debug_header_suffix =
+    "SLOTS,"
+    "slot_incoming_cable,"
+    "slot_outgoing_cable,"
+    "slot_shutdown_input,"
+    "slot_gp_input,"
+    "slot_autostart_button,"
+    "slot_global,"
+    "slot_user,"
+    "slot_charge_manager,"
+    "slot_external,"
+    "slot_modbus_tcp,"
+    "slot_modbus_tcp_enable,"
+    "slot_ocpp,"
+    "slot_charge_limits,"
+    "slot_require_meter,"
+    "slot_automation,"
+    "slot_15,"
+    "slot_16,"
+    "slot_17,"
+    "slot_18,"
+    "slot_19";
+
+static const size_t debug_header_prefix_len = strlen(debug_header_prefix);
+static const size_t debug_header_infix_v2_len = strlen(debug_header_infix_v2);
+static const size_t debug_header_infix_v3_len = strlen(debug_header_infix_v3);
+static const size_t debug_header_suffix_len = strlen(debug_header_suffix);
+
+[[gnu::const]]
+size_t EVSEV2::get_debug_header_length() const
 {
-    return String(
-           "STATE,"
-           "iec61851_state,"
-           "charger_state,"
-           "contactor_state,"
-           "contactor_error,"
-           "allowed_charging_current,"
-           "error_state,"
-           "lock_state,"
-           "dc_fault_current_state,"
-           "HARDWARE_CONFIG,"
-           "jumper_configuration,"
-           "has_lock_switch,"
-           "evse_version,"
-           "energy_meter_type,"
-           "ENERGY_METER,"
-           "power,"
-           "current_0,"
-           "current_1,"
-           "current_2,"
-           "phase_0_active,"
-           "phase_1_active,"
-           "phase_2_active,"
-           "phase_0_connected,"
-           "phase_1_connected,"
-           "phase_2_connected,"
-           "ENERGY_METER_ERRORS,"
-           "local_timeout,"
-           "global_timeout,"
-           "illegal_function,"
-           "illegal_data_access,"
-           "illegal_data_value,"
-           "slave_device_failure,"
-           "LL_STATE,"
-           "led_state,"
-           "cp_pwm_duty_cycle,"
-           "charging_time,"
-           "time_since_state_change,"
-           "uptime,"
-           "ADC_VALUES,"
-           "adc_cp_pe_before_pwm_high,"
-           "adc_cp_pe_after_pwm_high,"
-           "adc_cp_pe_before_pwm_low,"
-           "adc_cp_pe_after_pwm_low,"
-           "adc_pp_pe,"
-           "adc_plus_12v,"
-           "adc_minus_12v,"
-           "VOLTAGES,"
-           "voltage_cp_pe_before_pwm_high,"
-           "voltage_cp_pe_after_pwm_high,"
-           "voltage_cp_pe_before_pwm_low,"
-           "voltage_cp_pe_after_pwm_low,"
-           "voltage_pp_pe,"
-           "voltage_plus_12v,"
-           "voltage_minus_12v,"
-           "RESISTANCES,"
-           "resistance_cp_pe,"
-           "resistance_pp_pe,"
-           "GPIOS,") +
+    return debug_header_prefix_len +
            (evse_common.hardware_configuration.get("evse_version")->asUint() >= 30
-           ? String(
-           "gpio_dc_x30,"
-           "gpio_dc_x6,"
-           "gpio_dc_error,"
-           "gpio_dc_test,"
-           "gpio_led_status,"
-           "gpio_button,"
-           "gpio_led_red,"
-           "gpio_led_blue,"
-           "gpio_led_green,"
-           "gpio_cp_pwm,"
-           "gpio_contactor_1,"
-           "gpio_contactor_0,"
-           "gpio_contactor_1_feedback,"
-           "gpio_contactor_0_feedback,"
-           "gpio_pe_check,"
-           "gpio_config_jumper_1,"
-           "gpio_cp_disconnect,"
-           "gpio_config_jumper_0,"
-           "gpio_gp_shutdown,"
-           "gpio_version_detect,"
-           "gpio_20,"
-           "gpio_21,"
-           "gpio_22,"
-           "gpio_23,")
-           : String(
-           "gpio_config_jumper_0,"
-           "gpio_motor_fault,"
-           "gpio_dc_error,"
-           "gpio_config_jumper_1,"
-           "gpio_dc_test,"
-           "gpio_gp_shutdown,"
-           "gpio_button,"
-           "gpio_cp_pwm,"
-           "gpio_motor_input_switch,"
-           "gpio_contactor,"
-           "gpio_gp_output,"
-           "gpio_cp_disconnect,"
-           "gpio_motor_active,"
-           "gpio_motor_phase,"
-           "gpio_contactor_check_before,"
-           "gpio_contactor_check_after,"
-           "gpio_gp_input,"
-           "gpio_dc_x6,"
-           "gpio_dc_x30,"
-           "gpio_led,"
-           "gpio_20,"
-           "gpio_21,"
-           "gpio_22,"
-           "gpio_23,")) +
-           String(
-           "SLOTS,"
-           "slot_incoming_cable,"
-           "slot_outgoing_cable,"
-           "slot_shutdown_input,"
-           "slot_gp_input,"
-           "slot_autostart_button,"
-           "slot_global,"
-           "slot_user,"
-           "slot_charge_manager,"
-           "slot_external,"
-           "slot_modbus_tcp,"
-           "slot_modbus_tcp_enable,"
-           "slot_ocpp,"
-           "slot_charge_limits,"
-           "slot_require_meter,"
-           "slot_automation,"
-           "slot_15,"
-           "slot_16,"
-           "slot_17,"
-           "slot_18,"
-           "slot_19");
+            ? debug_header_infix_v3_len
+            : debug_header_infix_v2_len) +
+           debug_header_suffix_len;
 }
 
-String EVSEV2::get_debug_line()
+void EVSEV2::get_debug_header(StringBuilder *sb)
+{
+    sb->puts(debug_header_prefix, debug_header_prefix_len);
+
+    if (evse_common.hardware_configuration.get("evse_version")->asUint() >= 30) {
+        sb->puts(debug_header_infix_v3, debug_header_infix_v3_len);
+    }
+    else {
+        sb->puts(debug_header_infix_v2, debug_header_infix_v2_len);
+    }
+
+    sb->puts(debug_header_suffix, debug_header_suffix_len);
+}
+
+[[gnu::const]]
+size_t EVSEV2::get_debug_line_length() const
+{
+    return 768; // FIXME: currently max ~510, make tighter estimate
+}
+
+void EVSEV2::get_debug_line(StringBuilder *sb)
 {
     uint8_t iec61851_state;
     uint8_t charger_state;
@@ -585,7 +621,8 @@ String EVSEV2::get_debug_line()
     if (rc != TF_E_OK) {
         logger.printfln("get_all_data_1 %d", rc);
         is_in_bootloader(rc);
-        return "get_all_data_1 failed";
+        sb->puts("get_all_data_1 failed");
+        return;
     }
 
     rc = tf_evse_v2_get_low_level_state(&device,
@@ -603,7 +640,8 @@ String EVSEV2::get_debug_line()
     if (rc != TF_E_OK) {
         logger.printfln("get_low_level_state %d", rc);
         is_in_bootloader(rc);
-        return "get_low_level_state failed";
+        sb->puts("get_low_level_state failed");
+        return;
     }
 
     rc = tf_evse_v2_get_all_charging_slots(&device, max_current, active_and_clear_on_disconnect);
@@ -611,14 +649,11 @@ String EVSEV2::get_debug_line()
     if (rc != TF_E_OK) {
         logger.printfln("get_all_charging_slots %d", rc);
         is_in_bootloader(rc);
-        return "get_all_charging_slots failed";
+        sb->puts("get_all_charging_slots failed");
+        return;
     }
 
-    // Currently max ~ 510
-    char line[768] = {0};
-    snprintf(line,
-             sizeof(line) / sizeof(line[0]),
-             ","
+    sb->printf(","
              "%u,%u,%u,%u,%u,%u,%u,%u,,"
              "%u,%c,%u,%u,,"
              "%.3f,%.3f,%.3f,%.3f,%c,%c,%c,%c,%c,%c,,"
@@ -731,7 +766,6 @@ String EVSEV2::get_debug_line()
              SLOT_ACTIVE(active_and_clear_on_disconnect[17]) ? max_current[17] : 32000,
              SLOT_ACTIVE(active_and_clear_on_disconnect[18]) ? max_current[18] : 32000,
              SLOT_ACTIVE(active_and_clear_on_disconnect[19]) ? max_current[19] : 32000);
-    return String(line);
 }
 
 bool EVSEV2::phase_switching_capable()

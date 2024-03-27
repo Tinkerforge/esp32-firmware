@@ -78,8 +78,10 @@ public:
     void set_error(uint32_t error_mask);
 
     void setup_energy_manager();
-    String get_debug_header();
-    String get_debug_line();
+    [[gnu::const]] size_t get_debug_header_length() const override;
+    void get_debug_header(StringBuilder *sb) override;
+    [[gnu::const]] size_t get_debug_line_length() const override;
+    void get_debug_line(StringBuilder *sb) override;
 
     bool get_sdcard_info(struct sdcard_info *data);
     bool format_sdcard();
@@ -110,7 +112,7 @@ private:
     void start_network_check_task();
 
     bool action_triggered(const Config *config, void *data);
-    String prepare_fmtstr();
+    const char *prepare_fmtstr();
 
     ConfigRoot state;
     ConfigRoot low_level_state;

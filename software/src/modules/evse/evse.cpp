@@ -27,6 +27,7 @@
 #include "task_scheduler.h"
 #include "tools.h"
 #include "web_server.h"
+#include "string_builder.h"
 
 extern bool firmware_update_allowed;
 
@@ -192,66 +193,81 @@ int EVSE::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled
     return tf_evse_set_charging_slot_default(&device, slot, current, enabled, clear_on_disconnect);
 }
 
-String EVSE::get_debug_header()
+static const char *debug_header =
+    "STATE,"
+    "iec61851_state,"
+    "charger_state,"
+    "contactor_state,"
+    "contactor_error,"
+    "allowed_charging_current,"
+    "error_state,"
+    "lock_state,"
+    "HARDWARE_CONFIG,"
+    "jumper_configuration,"
+    "has_lock_switch,"
+    "evse_version,"
+    "LL_STATE,"
+    "led_state,"
+    "cp_pwm_duty_cycle,"
+    "charging_time,"
+    "time_since_state_change,"
+    "uptime,"
+    "ADC_VALUES,"
+    "adc_cp_pe,"
+    "adc_pp_pe,"
+    "VOLTAGES,"
+    "voltage_cp_pe,"
+    "voltage_pp_pe,"
+    "voltage_cp_pe_high,"
+    "RESISTANCES,"
+    "resistance_cp_pe,"
+    "resistance_pp_pe,"
+    "GPIOs,"
+    "gpio_input,"
+    "gpio_output,"
+    "gpio_motor_input_switch,"
+    "gpio_contactor,"
+    "gpio_motor_fault,"
+    "SLOTS,"
+    "slot_incoming_cable,"
+    "slot_outgoing_cable,"
+    "slot_shutdown_input,"
+    "slot_gp_input,"
+    "slot_autostart_button,"
+    "slot_global,"
+    "slot_user,"
+    "slot_charge_manager,"
+    "slot_external,"
+    "slot_modbus_tcp,"
+    "slot_modbus_tcp_enable,"
+    "slot_ocpp,"
+    "slot_charge_limits,"
+    "slot_require_meter,"
+    "slot_automation,"
+    "slot_15,"
+    "slot_16,"
+    "slot_17,"
+    "slot_18,"
+    "slot_19";
+
+static const size_t debug_header_len = strlen(debug_header);
+
+size_t EVSE::get_debug_header_length() const
 {
-    return "STATE,"
-           "iec61851_state,"
-           "charger_state,"
-           "contactor_state,"
-           "contactor_error,"
-           "allowed_charging_current,"
-           "error_state,"
-           "lock_state,"
-           "HARDWARE_CONFIG,"
-           "jumper_configuration,"
-           "has_lock_switch,"
-           "evse_version,"
-           "LL_STATE,"
-           "led_state,"
-           "cp_pwm_duty_cycle,"
-           "charging_time,"
-           "time_since_state_change,"
-           "uptime,"
-           "ADC_VALUES,"
-           "adc_cp_pe,"
-           "adc_pp_pe,"
-           "VOLTAGES,"
-           "voltage_cp_pe,"
-           "voltage_pp_pe,"
-           "voltage_cp_pe_high,"
-           "RESISTANCES,"
-           "resistance_cp_pe,"
-           "resistance_pp_pe,"
-           "GPIOs,"
-           "gpio_input,"
-           "gpio_output,"
-           "gpio_motor_input_switch,"
-           "gpio_contactor,"
-           "gpio_motor_fault,"
-           "SLOTS,"
-           "slot_incoming_cable,"
-           "slot_outgoing_cable,"
-           "slot_shutdown_input,"
-           "slot_gp_input,"
-           "slot_autostart_button,"
-           "slot_global,"
-           "slot_user,"
-           "slot_charge_manager,"
-           "slot_external,"
-           "slot_modbus_tcp,"
-           "slot_modbus_tcp_enable,"
-           "slot_ocpp,"
-           "slot_charge_limits,"
-           "slot_require_meter,"
-           "slot_automation,"
-           "slot_15,"
-           "slot_16,"
-           "slot_17,"
-           "slot_18,"
-           "slot_19";
+    return debug_header_len;
 }
 
-String EVSE::get_debug_line()
+void EVSE::get_debug_header(StringBuilder *sb)
+{
+    sb->puts(debug_header, debug_header_len);
+}
+
+size_t EVSE::get_debug_line_length() const
+{
+    return 512; // FIXME: currently max ~290, make tighter estimate
+}
+
+void EVSE::get_debug_line(StringBuilder *sb)
 {
     uint8_t iec61851_state;
     uint8_t charger_state;
@@ -309,7 +325,8 @@ String EVSE::get_debug_line()
     if (rc != TF_E_OK) {
         logger.printfln("get_all_data_1 %d", rc);
         is_in_bootloader(rc);
-        return "get_all_data_1 failed";
+        sb->puts("get_all_data_1 failed");
+        return;
     }
 
     rc = tf_evse_get_all_charging_slots(&device, max_current, active_and_clear_on_disconnect);
@@ -317,14 +334,11 @@ String EVSE::get_debug_line()
     if (rc != TF_E_OK) {
         logger.printfln("get_all_charging_slots %d", rc);
         is_in_bootloader(rc);
-        return "get_all_charging_slots failed";
+        sb->puts("get_all_charging_slots failed");
+        return;
     }
 
-    // Currently max ~ 290
-    char line[512] = {0};
-    snprintf(line,
-             sizeof(line) / sizeof(line[0]),
-             ","
+    sb->printf(","
              "%u,%u,%u,%u,%u,%u,%u,,"
              "%u,%c,%u,,"
              "%u,%u,%u,%u,%u,,"
@@ -387,7 +401,6 @@ String EVSE::get_debug_line()
              SLOT_ACTIVE(active_and_clear_on_disconnect[17]) ? max_current[17] : 32000,
              SLOT_ACTIVE(active_and_clear_on_disconnect[18]) ? max_current[18] : 32000,
              SLOT_ACTIVE(active_and_clear_on_disconnect[19]) ? max_current[19] : 32000);
-    return String(line);
 }
 
 void EVSE::update_all_data()

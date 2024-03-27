@@ -4,6 +4,7 @@
 #include "module_dependencies.h"
 
 #include "tools.h"
+#include "string_builder.h"
 
 #include "gcc_warnings.h"
 
@@ -22,44 +23,50 @@ extern inline const char* fmt(void          ) {return "";    }
 static char *fmtstr;
 
 [[gnu::noinline]]
-String PowerManager::prepare_fmtstr() {
+const char *PowerManager::prepare_fmtstr() {
     const char * const fmts[{{{varcount}}}] = {
         {{{formats}}}
     };
 
-    fmtstr = reinterpret_cast<char *>(malloc(MAX_FMT_LENGTH));
-    if (!fmtstr)
+    StringBuilder sb;
+    if (!sb.setCapacity(MAX_FMT_LENGTH)) {
         return "out of memory";
-
-    size_t offset = 0;
-
-    int ret = snprintf(fmtstr, MAX_FMT_LENGTH, "%s", fmts[0]);
-    if (ret < 0) {
-        return "snprintf error";
-    } else {
-        offset += static_cast<size_t>(ret);
     }
 
+    sb.puts(fmts[0]);
     for (unsigned long i = 1; i < {{{varcount}}}; i++) {
-        ret = snprintf(fmtstr + offset, MAX_FMT_LENGTH - offset, ",%s", fmts[i]);
-        if (ret < 0) {
-            return "snprintf error";
-        } else {
-            offset += static_cast<size_t>(ret);
-        }
+        sb.putc(',');
+        sb.puts(fmts[i]);
     }
 
-    fmtstr[MAX_FMT_LENGTH - 1] = 0;
-    fmtstr = reinterpret_cast<char *>(realloc(fmtstr, offset + 1));
+    sb.shrink();
+    fmtstr = sb.take().release();
 
-    //logger.printfln("power_manager: using fmtstr='%s'", fmtstr);
+    //logger.printfln("energy_manager: using fmtstr='%s'", fmtstr);
 
-    return String();
+    return nullptr;
 }
 
-String PowerManager::get_debug_header()
+static const char *debug_header =
+{{{header}}};
+
+static const size_t debug_header_len = strlen(debug_header);
+
+[[gnu::const]]
+size_t PowerManager::get_debug_header_length() const
 {
-    return {{{header}}};
+    return debug_header_len;
+}
+
+void PowerManager::get_debug_header(StringBuilder *sb)
+{
+    sb->puts(debug_header, static_cast<ssize_t>(debug_header_len));
+}
+
+[[gnu::const]]
+size_t PowerManager::get_debug_line_length() const
+{
+    return MAX_DEBUG_LINE_LENGTH;
 }
 
 #if defined(__GNUC__)
@@ -68,22 +75,17 @@ String PowerManager::get_debug_header()
     #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
 
-String PowerManager::get_debug_line()
+void PowerManager::get_debug_line(StringBuilder *sb)
 {
     if (!fmtstr) {
-        String err = prepare_fmtstr();
-        if (err.length() > 0)
-            return err;
+        const char *err = prepare_fmtstr();
+        if (err != nullptr) {
+            sb->puts(err);
+            return;
+        }
     }
-
-    char line[MAX_DEBUG_LINE_LENGTH] = {0};
-    snprintf(line,
-             sizeof(line) / sizeof(line[0]),
-             fmtstr,
-             {{{data}}}
-    );
-
-    return String(line);
+    sb->printf(fmtstr,
+               {{{data}}});
 }
 
 #if defined(__GNUC__)

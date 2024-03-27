@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <sys/types.h>
+#include <memory>
 
 class StringBuilder
 {
@@ -30,12 +31,18 @@ public:
     ~StringBuilder();
 
     bool setCapacity(size_t capacity);
-    size_t getCapacity() { return capacity; }
-    size_t getLength() { return length; }
-    char *getBuffer() { return buffer; }
-    char *takeBuffer();
+    size_t getCapacity() const { return capacity; }
+    void setLength(size_t new_length);
+    size_t getLength() const { return length; }
+    size_t getRemainingLength() const { return capacity - length; }
+    void clear() { setLength(0); }
+    bool shrink() { return setCapacity(getLength()); }
+    char *getPtr() const { return buffer; }
+    char *getRemainingPtr() const { return buffer + length; }
+    std::unique_ptr<char> take();
 
     ssize_t puts(const char *string, ssize_t string_len = -1);
+    ssize_t putc(char c);
     ssize_t vprintf(const char *fmt, va_list args);
     [[gnu::format(__printf__, 2, 3)]] ssize_t printf(const char *fmt, ...);
 

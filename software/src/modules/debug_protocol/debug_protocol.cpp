@@ -23,18 +23,40 @@
 #include "module_dependencies.h"
 #include "task_scheduler.h"
 #include "debug_protocol_backend.h"
+#include "string_builder.h"
 
 #include "gcc_warnings.h"
 
+static const char *debug_header_prefix = "\"millis\"";
+static const size_t debug_header_prefix_len = strlen(debug_header_prefix);
+
 void DebugProtocol::register_urls()
 {
-    // terminate header now, all backend registrations must have been done by now
-    header += "\"";
-
     server.on("/debug_protocol/start", HTTP_GET, [this](WebServerRequest request) {
         last_debug_keep_alive = millis();
         check_debug();
-        ws.pushRawStateUpdate(header, "debug_protocol/header");
+
+        StringBuilder sb;
+        size_t payload_len = debug_header_prefix_len;
+
+        for (IDebugProtocolBackend *backend : backends) {
+            payload_len += 1 + backend->get_debug_header_length(); // +1 for comma
+        }
+
+        if (!ws.pushRawStateUpdateBegin(&sb, payload_len, "debug_protocol/header")) {
+            return request.send(500);
+        }
+
+        sb.puts("\"millis");
+
+        for (IDebugProtocolBackend *backend : backends) {
+            sb.putc(',');
+            backend->get_debug_header(&sb);
+        }
+
+        sb.putc('"');
+        ws.pushRawStateUpdateEnd(&sb);
+
         debug = true;
         return request.send(200);
     });
@@ -56,17 +78,26 @@ void DebugProtocol::loop()
     if (debug && deadline_elapsed(last_debug + 50)) {
         last_debug = millis();
 
-        char buf[32];
-        snprintf(buf, sizeof(buf), "\"%u", last_debug);
-
-        // FIXME: format into preallocated buffer instead of using the String += operator
-        String line(buf);
+        StringBuilder sb;
+        size_t payload_len = 1 + 10 + 1; // "%u"
 
         for (IDebugProtocolBackend *backend : backends) {
-            line += "," + backend->get_debug_line();
+            payload_len += 1 + backend->get_debug_line_length(); // +1 for comma
         }
 
-        ws.pushRawStateUpdate(line + "\"", "debug_protocol/line");
+        if (!ws.pushRawStateUpdateBegin(&sb, payload_len, "debug_protocol/line")) {
+            return;
+        }
+
+        sb.printf("\"%u", last_debug);
+
+        for (IDebugProtocolBackend *backend : backends) {
+            sb.putc(',');
+            backend->get_debug_line(&sb);
+        }
+
+        sb.putc('"');
+        ws.pushRawStateUpdateEnd(&sb);
     }
 }
 
@@ -76,8 +107,6 @@ void DebugProtocol::register_backend(IDebugProtocolBackend *backend)
         esp_system_abort("Registering debug protocol backends outside the setup stage is not allowed!");
     }
 
-    // FIXME: format into preallocated buffer instead of using the String += operator
-    this->header += "," + backend->get_debug_header();
     backends.push_back(backend);
 }
 
