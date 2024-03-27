@@ -41,9 +41,13 @@ export function InputDate(props: InputDateProps) {
     const [inputInFlight, setInputInFlight] = useState<string | null>(null);
     const [lastEvent, setLastEvent] = useState<'key' | 'click' | null>(null);
 
-    const dateToValue = (date: Date) => util.toIsoString(date).split("T")[0];
+    const dateToValue = (date: Date) => isNaN(date.getFullYear()) ? "" : util.toIsoString(date).split("T")[0];
 
     const valueToDate = (value: string) => {
+        if (!value) {
+            return new Date(NaN);
+        }
+
         let [y, mIdx, d] = value.split(/-/g).map(x => parseInt(x));
 
         return new Date(y, mIdx - 1, d);
@@ -57,11 +61,11 @@ export function InputDate(props: InputDateProps) {
     const sendInFlight = (override?: string) => {
         let value = override !== undefined ? override : inputInFlight;
 
-        if (value === null || value === "") {
+        if (value === null) {
             return;
         }
 
-        props.onDate(valueToDate(value))
+        props.onDate(valueToDate(value));
         setInputInFlight(null);
         input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
     };
@@ -126,7 +130,8 @@ export function InputDate(props: InputDateProps) {
 
                             props.onDate(date);
                             input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-                        }}>
+                        }}
+                        disabled={!value}>
                     <ArrowLeft/>
                 </Button>
                 <Button variant="primary"
@@ -148,7 +153,8 @@ export function InputDate(props: InputDateProps) {
 
                             props.onDate(date);
                             input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-                        }}>
+                        }}
+                        disabled={!value}>
                     <ArrowRight/>
                 </Button>
             </div>

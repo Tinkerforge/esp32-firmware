@@ -616,12 +616,20 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         let month: number = date.getMonth() + 1;
         let day: number = date.getDate();
 
+        if (isNaN(year)) {
+            return null;
+        }
+
         return `${year}-${month}-${day}`;
     }
 
     date_to_daily_key(date: Date) {
         let year: number = date.getFullYear();
         let month: number = date.getMonth() + 1;
+
+        if (isNaN(year)) {
+            return null;
+        }
 
         return`${year}-${month}`;
     }
@@ -648,6 +656,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
     update_uplot_5min_power_cache(date: Date) {
         let key = this.date_to_5min_key(date);
+
+        if (key == null) {
+            return;
+        }
+
         let uplot_data = this.uplot_5min_power_cache[key];
         let needs_update = false;
         let now = Date.now();
@@ -757,6 +770,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
     update_uplot_5min_flags_cache(date: Date) {
         let key = this.date_to_5min_key(date);
+
+        if (key == null) {
+            return;
+        }
+
         let uplot_data = this.uplot_5min_flags_cache[key];
         let needs_update = false;
         let now = Date.now();
@@ -944,6 +962,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
     update_uplot_5min_status_cache(date: Date) {
         let key = this.date_to_5min_key(date);
+
+        if (key == null) {
+            return;
+        }
+
         let uplot_data = this.uplot_5min_status_cache[key];
         let needs_update = false;
         let now = Date.now();
@@ -1003,6 +1026,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
     update_uplot_daily_cache(date: Date) {
         let key = this.date_to_daily_key(date);
+
+        if (key == null) {
+            return;
+        }
+
         let previous_key = this.date_to_daily_key(new Date(date.getFullYear(), date.getMonth() - 1));
         let uplot_data = this.uplot_daily_cache[key];
         let needs_update = false;
@@ -1295,6 +1323,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         let key = this.date_to_5min_key(date);
 
+        if (key == null) {
+            return true;
+        }
+
         if (this.wallbox_5min_cache[uid]
             && this.wallbox_5min_cache[uid][key]
             && (this.wallbox_5min_cache[uid][key].complete
@@ -1361,6 +1393,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         }
 
         let key = this.date_to_5min_key(date);
+
+        if (key == null) {
+            return true;
+        }
 
         if (this.energy_manager_5min_cache[key]
             && (this.energy_manager_5min_cache[key].complete
@@ -1476,6 +1512,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         let key = this.date_to_daily_key(date);
 
+        if (key == null) {
+            return;
+        }
+
         if (this.wallbox_daily_cache[uid]
             && this.wallbox_daily_cache[uid][key]
             && (this.wallbox_daily_cache[uid][key].complete
@@ -1545,6 +1585,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         }
 
         let key = this.date_to_daily_key(date);
+
+        if (key == null) {
+            return true;
+        }
 
         if (this.energy_manager_daily_cache[key]
             && (this.energy_manager_daily_cache[key].complete
@@ -1954,8 +1998,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             <SubPage name="em_energy_analysis" colClasses="col-xl-10">
                 <PageHeader title={__("em_energy_analysis.content.em_energy_analysis")} titleClass="col-12 col-sm text-center text-sm-left" childrenClass="col-12 col-sm-auto mb-2">
                     {this.state.data_type == '5min'
-                    ? <InputDate date={this.state.current_5min_date} onDate={this.set_current_5min_date.bind(this)} buttons="day" style="width: 11rem">{data_select}</InputDate>
-                    : <InputMonth date={this.state.current_daily_date} onDate={this.set_current_daily_date.bind(this)} buttons="month" style="width: 11rem">{data_select}</InputMonth>}
+                    ? <InputDate date={this.state.current_5min_date} onDate={(date) => this.set_current_5min_date(date)} buttons="day" style="width: 11rem">{data_select}</InputDate>
+                    : <InputMonth date={this.state.current_daily_date} onDate={(date) => this.set_current_daily_date(date)} buttons="month" style="width: 11rem">{data_select}</InputMonth>}
                 </PageHeader>
 
                 <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
