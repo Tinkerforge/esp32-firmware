@@ -1,0 +1,77 @@
+From 70101e58a6802269db95e49985c891eeca2e7491 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Tue, 26 Sep 2023 14:41:41 +0200
+Subject: [PATCH] Fix race condition in WiFiGenericClass::hostByName
+
+dns_gethostbyname, as used in hostByName, is required to run in lwIP's TCP/IP
+context. This can be verified by enabling LWIP_CHECK_THREAD_SAFETY in the
+sdkconfig.
+
+Calling dns_gethostbyname from the Arduino task can trigger race conditions
+in lwIP or lower layers. One possibility is a corruption of IDF's Ethernet
+buffers, causing an unstoppable flood of "insufficient TX buffer size" errors,
+effectively severing all Ethernet connectivity.
+
+This patch makes sure to call dns_gethostbyname from lwIP's TCP/IP context.
+---
+ libraries/WiFi/src/WiFiGeneric.cpp | 27 +++++++++++++++++++++++----
+ 1 file changed, 23 insertions(+), 4 deletions(-)
+
+diff --git a/libraries/WiFi/src/WiFiGeneric.cpp b/libraries/WiFi/src/WiFiGeneric.cpp
+index a6bc47e8..c7faf7f2 100644
+--- a/libraries/WiFi/src/WiFiGeneric.cpp
++++ b/libraries/WiFi/src/WiFiGeneric.cpp
+@@ -36,6 +36,7 @@ extern "C" {
+ #include <esp_err.h>
+ #include <esp_wifi.h>
+ #include <esp_event.h>
++#include <esp_netif.h>
+ #include "lwip/ip_addr.h"
+ #include "lwip/opt.h"
+ #include "lwip/err.h"
+@@ -1550,6 +1551,22 @@ static void wifi_dns_found_callback(const char *name, const ip_addr_t *ipaddr, v
+     xEventGroupSetBits(_arduino_event_group, WIFI_DNS_DONE_BIT);
+ }
+ 
++typedef struct gethostbynameParameters {
++    const char *hostname;
++    ip_addr_t addr;
++    void *callback_arg;
++} gethostbynameParameters_t;
++
++/**
++ * Callback to execute dns_gethostbyname in lwIP's TCP/IP context
++ * @param param Parameters for dns_gethostbyname call
++ */
++static esp_err_t wifi_gethostbyname_tcpip_ctx(void *param)
++{
++    gethostbynameParameters_t *parameters = static_cast<gethostbynameParameters_t *>(param);
++    return dns_gethostbyname(parameters->hostname, &parameters->addr, &wifi_dns_found_callback, parameters->callback_arg);
++}
++
+ /**
+  * Resolve the given hostname to an IP address. If passed hostname is an IP address, it will be parsed into IPAddress structure.
+  * @param aHostname     Name to be resolved or string containing IP address
+@@ -1561,13 +1578,15 @@ int WiFiGenericClass::hostByName(const char* aHostname, IPAddress& aResult)
+ {
+     if (!aResult.fromString(aHostname))
+     {
+-        ip_addr_t addr;
++        gethostbynameParameters_t params;
++        params.hostname = aHostname;
++        params.callback_arg = &aResult;
+         aResult = static_cast<uint32_t>(0);
+         waitStatusBits(WIFI_DNS_IDLE_BIT, 16000);
+         clearStatusBits(WIFI_DNS_IDLE_BIT | WIFI_DNS_DONE_BIT);
+-        err_t err = dns_gethostbyname(aHostname, &addr, &wifi_dns_found_callback, &aResult);
+-        if(err == ERR_OK && addr.u_addr.ip4.addr) {
+-            aResult = addr.u_addr.ip4.addr;
++        err_t err = esp_netif_tcpip_exec(wifi_gethostbyname_tcpip_ctx, &params);
++        if(err == ERR_OK && params.addr.u_addr.ip4.addr) {
++            aResult = params.addr.u_addr.ip4.addr;
+         } else if(err == ERR_INPROGRESS) {
+             waitStatusBits(WIFI_DNS_DONE_BIT, 15000);  //real internal timeout in lwip library is 14[s]
+             clearStatusBits(WIFI_DNS_DONE_BIT);
+-- 
+2.39.2
+
