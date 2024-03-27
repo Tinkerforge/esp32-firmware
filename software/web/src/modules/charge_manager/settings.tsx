@@ -168,13 +168,10 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                         <InputFloat
                             unit="A"
                             value={state.minimum_current}
-                            onValue={(v) => this.setState({
-                                minimum_current: v,
-                                maximum_available_current: Math.max(v, state.maximum_available_current) // TODO Is this a good idea? Should warn instead?
-                            })}
+                            onValue={(v) => this.setState({minimum_current: v})}
                             digits={3}
                             min={6000}
-                            max={32000}
+                            max={state.maximum_available_current}
                         />
                     </FormRow>
 
@@ -186,7 +183,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                                 onValue={(v) => this.setState({minimum_current_1p: v})}
                                 digits={3}
                                 min={6000}
-                                max={32000}
+                                max={state.maximum_available_current}
                             />
                         </FormRow>
                     :
