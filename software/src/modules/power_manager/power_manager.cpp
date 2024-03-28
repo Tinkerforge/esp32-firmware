@@ -235,7 +235,7 @@ void PowerManager::setup()
     } else {
         power_at_meter_mavg_values_count = static_cast<int32_t>(power_mavg_span_s * 1000 / PM_TASK_DELAY_MS);
     }
-    power_at_meter_mavg_values_w = static_cast<int32_t *>(heap_caps_malloc_prefer(static_cast<size_t>(power_at_meter_mavg_values_count) * sizeof(power_at_meter_mavg_values_w[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM));
+    power_at_meter_mavg_values_w = static_cast<int32_t *>(heap_caps_malloc_prefer(static_cast<size_t>(power_at_meter_mavg_values_count) * sizeof(power_at_meter_mavg_values_w[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT));
 
     // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
     uint32_t hysteresis_min_ms = 10 * 1000;  // milliseconds
@@ -619,6 +619,12 @@ void PowerManager::update_energy()
                     printed_skipping_energy_update = false;
                 }
             }
+
+            if (power_at_meter_filtered_w == INT32_MAX) {
+                logger.printfln("power_manager: Uninitialized power_at_meter_filtered_w leaked");
+                return;
+            }
+
             p_error_w          = target_power_from_grid_w - power_at_meter_smooth_w;
             p_error_filtered_w = target_power_from_grid_w - power_at_meter_filtered_w;
 
@@ -934,6 +940,14 @@ void PowerManager::update_energy()
                 switching_state = SwitchingState::Monitoring;
 
                 just_switched_phases = true;
+
+                // After switching from 3p to 1p, force re-initializing the cloud filter
+                // to current excess power without a vehicle charging.
+                // Otherwise, being stuck in 3p mode might have pushed the filtered value so low
+                // that the PM won't want to turn on again after switching phases.
+                if (!wants_3phase) {
+                    power_at_meter_filtered_w = INT32_MAX;
+                }
             }
         }
     }
