@@ -74,7 +74,6 @@ let x = {
         "script": {
             "scan_wifi_init_failed": "Search for networks failed. Failed to start scan.",
             "scan_wifi_results_failed": "Search for networks failed. Failed to fetch scan results.",
-            "select_ap": "Found networks",
             "no_ap_found": "No network found",
             "hidden_ap": "[Hidden AP]",
 

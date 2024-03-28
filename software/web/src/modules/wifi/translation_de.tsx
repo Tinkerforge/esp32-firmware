@@ -74,7 +74,6 @@ let x = {
         "script": {
             "scan_wifi_init_failed": "Suche nach Netzwerken fehlgeschlagen. Konnte Scan nicht starten.",
             "scan_wifi_results_failed": "Suche nach Netzwerken fehlgeschlagen. Konnte Ergebnisse nicht abholen.",
-            "select_ap": "Gefundene Netzwerke",
             "no_ap_found": "Kein Netzwerk gefunden.",
             "hidden_ap": "[Versteckter AP]",
 

@@ -27,18 +27,21 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
-import { Collapse, Dropdown, Spinner } from "react-bootstrap";
+import { Collapse, Button, Spinner, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
 import { InputText } from "../../ts/components/input_text";
 import { InputPassword } from "../../ts/components/input_password";
 import { Lock, Unlock } from "react-feather";
 import { SubPage } from "../../ts/components/sub_page";
 import { EapConfigID, EapConfigPEAPTTLS, EapConfigTLS } from "./api";
 import { InputSelect } from "../../ts/components/input_select";
+import { ItemModal } from "../../ts/components/item_modal";
 
 type STAConfig = API.getType["wifi/sta_config"];
 
 type WifiSTAState = {
+    scan_show: boolean;
     scan_running: boolean;
+    scan_error: string;
     scan_results: Readonly<WifiInfo[]>;
     passphrase_required: boolean;
     passphrase_placeholder: string;
@@ -67,6 +70,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
               __("wifi.script.sta_reboot_content_changed"), {
                 passphrase_placeholder: __("component.input_password.unchanged"),
                 passphrase_required: false,
+                scan_show: false,
                 scan_running: false,
             });
 
@@ -77,14 +81,17 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
             window.clearTimeout(this.scan_timeout);
             this.scan_timeout = null;
 
-            if (e.data == "scan failed") {
-                console.log("scan failed");
-                this.setState({scan_results: []});
+            if (e.data == "scan failed" || e.data == "scan out of memory") {
+                this.setState({scan_running: false, scan_error: __("wifi.script.scan_wifi_init_failed")});
                 return;
             }
 
-            if (typeof e.data !== "string")
-                this.setState({scan_running: false, scan_results: e.data});
+            if (typeof e.data === "string") {
+                this.setState({scan_running: false, scan_error: e.data});
+                return;
+            }
+
+            this.setState({scan_running: false, scan_error: undefined, scan_results: e.data});
         });
     }
 
@@ -98,18 +105,15 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         return cfg;
     }
 
-    toggleDropdown = async (isOpen: boolean, event: Event, metadata: {source: 'select' | 'click' | 'rootClose' | 'keydown'}) => {
-        if (!isOpen)
-            return;
-
+    async start_scan() {
         if (this.scan_timeout != null)
             window.clearTimeout(this.scan_timeout);
 
-        this.setState({scan_running: true});
+        this.setState({scan_show: true, scan_running: true});
         try {
-            await API.call('wifi/scan', {}, __("wifi.script.scan_wifi_init_failed"));
+            await API.call('wifi/scan', {});
         } catch {
-            this.setState({scan_running: false});
+            this.setState({scan_running: false, scan_error: __("wifi.script.scan_wifi_init_failed")});
             return;
         }
 
@@ -120,56 +124,62 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
             try {
                 result = await util.download("/wifi/scan_results").then(blob => blob.text())
             } catch (e) {
-                util.add_alert("wifi_scan_failed", "danger", __("wifi.script.scan_wifi_results_failed"), e.message);
-                this.setState({scan_running: false});
+                this.setState({scan_running: false, scan_error: __("wifi.script.scan_wifi_results_failed") + ": " + e.message});
                 return;
             }
 
             let data: WifiInfo[] = JSON.parse(result);
-            this.setState({scan_running: false, scan_results: data});
+            this.setState({scan_running: false, scan_error: undefined, scan_results: data});
         }, 12000);
     }
 
-    get_scan_results(state: Readonly<STAConfig & WifiSTAState>) {
-        if (state.scan_running) {
-            return <>
-                <Dropdown.Header>{__("wifi.content.sta_scanning")}</Dropdown.Header>
-                <div class="text-center">
-                    <Spinner animation="border" style="width: 3rem; height: 3rem;"/>
-                </div>
-            </>;
+    get_scan_results() {
+        if (this.state.scan_running) {
+            return <div class="form-group text-center">
+                <Spinner animation="border" style="width: 3rem; height: 3rem;"/>
+            </div>;
         }
 
-        if (state.scan_results == undefined)
+        if (this.state.scan_error) {
+            return <Alert variant="danger">
+                {this.state.scan_error}
+            </Alert>;
+        }
+
+        if (this.state.scan_results == undefined) {
             return <></>;
+        }
 
-        if (state.scan_results.length == 0)
-            return <Dropdown.Header>{__("wifi.script.no_ap_found")}</Dropdown.Header>;
+        if (this.state.scan_results.length == 0) {
+            return <Alert variant="secondary">
+                {__("wifi.script.no_ap_found")}
+            </Alert>;
+        }
 
-        let result = state.scan_results.map(ap => {
+        let result = this.state.scan_results.map(ap => {
             let display_name = ap.ssid;
             let enable_bssid_lock = false;
 
             if (ap.ssid == "") {
-                display_name = `${__("wifi.script.hidden_ap")} (${ap.bssid})`;
+                display_name = __("wifi.script.hidden_ap");
                 enable_bssid_lock = true;
             } else {
-                for (const inner_ap of state.scan_results) {
+                for (const inner_ap of this.state.scan_results) {
                     if (ap == inner_ap)
                         continue;
                     if (ap.ssid != inner_ap.ssid)
                         continue;
 
-                    display_name = `${ap.ssid} (${ap.bssid})`;
+                    display_name = ap.ssid;
                     enable_bssid_lock ||= (ap.rssi - inner_ap.rssi) > 15;
                 }
             }
 
             let passphrase_required = API.get("wifi/sta_config").ssid != ap.ssid && ap.encryption != 0;
 
-            return <Dropdown.Item
-                        as="button"
-                        type="button"
+            return <ListGroupItem
+                        action
+                        type="submit"
                         onClick={() => {
                             this.setState({
                                 ssid: ap.ssid,
@@ -182,15 +192,18 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             this.setDirty(true);
                         }}
                         key={ap.bssid}>
-                    {wifi_symbol(ap.rssi)}
-                    {ap.encryption == 0 ? <Unlock {...{class: "ml-2"} as any}/> : <Lock {...{class: "ml-2"} as any}/>}
-                    <span class="pl-2">{display_name}</span>
-                </Dropdown.Item>
+                        <div class="d-flex w-100 justify-content-between">
+                            <span class="text-left"><span class="mr-2">{wifi_symbol(ap.rssi)}</span>{ap.encryption == 0 ? <Unlock {...{class: "mr-2"} as any}/> : <Lock {...{class: "mr-2"} as any}/>}<span>{display_name}</span></span>
+                            <span class="text-right">{ap.bssid}</span>
+                        </div>
+                </ListGroupItem>
         });
-        return <>
-            <Dropdown.Header>{__("wifi.script.select_ap")}</Dropdown.Header>
+
+        return <div class="form-group">
+            <ListGroup>
             {result}
-        </>;
+            </ListGroup>
+        </div>;
     }
 
     last_peap_ttls_state: EapConfigPEAPTTLS[1] = {
@@ -379,12 +392,9 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                     maxLength={32}
                                     value={state.ssid}
                                     onValue={this.set("ssid")}>
-                                <Dropdown className="input-group-append" onToggle={this.toggleDropdown}>
-                                    <Dropdown.Toggle className="form-control rounded-right">{__("wifi.content.sta_scan")}</Dropdown.Toggle>
-                                    <Dropdown.Menu align="right">
-                                        {this.get_scan_results(state)}
-                                    </Dropdown.Menu>
-                                </Dropdown>
+                                <div class="input-group-append">
+                                    <Button className="form-control rounded-right" variant="primary" onClick={() => this.start_scan()}>{__("wifi.content.sta_scan")}</Button>
+                                </div>
                             </InputText>
                     </FormRow>
 
@@ -489,6 +499,24 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         />
 
                 </ConfigForm>
+
+                <ItemModal
+                    size="lg"
+                    onCheck={async () => {
+                        return true;
+                    }}
+                    onSubmit={async () => {
+                    }}
+                    onHide={async () => {
+                        this.setState({scan_show: false});
+                    }}
+                    show={state.scan_show}
+                    no_variant="secondary"
+                    title={__("wifi.content.sta_scan")}
+                    no_text={__("component.table.abort")}
+                >
+                    {this.get_scan_results()}
+                </ItemModal>
             </SubPage>
         );
     }
