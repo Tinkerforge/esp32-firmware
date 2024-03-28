@@ -24,32 +24,38 @@
 #include <sys/types.h>
 #include <memory>
 
-class StringBuilder
+class StringWriter
+{
+public:
+    StringWriter(char *buffer, size_t buffer_len);
+
+    size_t getCapacity() const { return capacity; }
+    void setLength(size_t new_length);
+    size_t getLength() const { return length; }
+    void clear() { setLength(0); }
+    size_t getRemainingLength() const { return capacity - length; }
+    char *getPtr() const { return buffer; }
+    char *getRemainingPtr() const { return buffer + length; }
+    ssize_t puts(const char *string, ssize_t string_len = -1);
+    ssize_t putc(char c);
+    ssize_t vprintf(const char *fmt, va_list args);
+    [[gnu::format(__printf__, 2, 3)]] ssize_t printf(const char *fmt, ...);
+
+protected:
+    size_t capacity; // excluding NUL-terminator
+    size_t length = 0; // excluding NUL-terminator
+    char *buffer;
+
+    static char *empty;
+};
+
+class StringBuilder : public StringWriter
 {
 public:
     StringBuilder();
     ~StringBuilder();
 
     bool setCapacity(size_t capacity);
-    size_t getCapacity() const { return capacity; }
-    void setLength(size_t new_length);
-    size_t getLength() const { return length; }
-    size_t getRemainingLength() const { return capacity - length; }
-    void clear() { setLength(0); }
     bool shrink() { return setCapacity(getLength()); }
-    char *getPtr() const { return buffer; }
-    char *getRemainingPtr() const { return buffer + length; }
     std::unique_ptr<char> take();
-
-    ssize_t puts(const char *string, ssize_t string_len = -1);
-    ssize_t putc(char c);
-    ssize_t vprintf(const char *fmt, va_list args);
-    [[gnu::format(__printf__, 2, 3)]] ssize_t printf(const char *fmt, ...);
-
-private:
-    size_t capacity = 0;
-    size_t length = 0;
-    char *buffer;
-
-    static char *empty;
 };

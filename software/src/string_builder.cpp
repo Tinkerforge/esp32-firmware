@@ -23,9 +23,106 @@
 #include <stdio.h>
 #include <string.h>
 
-char *StringBuilder::empty = const_cast<char *>("");
+char *StringWriter::empty = const_cast<char *>("");
 
-StringBuilder::StringBuilder() : buffer(empty) {}
+StringWriter::StringWriter(char *buffer, size_t buffer_len) : capacity(buffer_len - 1), buffer(buffer)
+{
+    if (buffer_len < 1) {
+        esp_system_abort("StringWriter: Buffer too short");
+    }
+
+    if (buffer != empty) {
+        buffer[capacity] = '\0';
+        buffer[length] = '\0';
+    }
+}
+
+void StringWriter::setLength(size_t new_length)
+{
+    if (new_length > capacity) {
+        new_length = capacity;
+    }
+
+    length = new_length;
+    buffer[length] = '\0';
+}
+
+ssize_t StringWriter::puts(const char *string, ssize_t string_len)
+{
+    ssize_t remaining = getRemainingLength();
+
+    if (remaining <= 0) {
+        return 0;
+    }
+
+    if (string_len < 0) {
+        string_len = strlen(string);
+    }
+
+    if (string_len > remaining) {
+        string_len = remaining;
+    }
+
+    memcpy(buffer + length, string, string_len);
+
+    length += string_len;
+
+    buffer[length] = '\0';
+
+    return string_len;
+}
+
+ssize_t StringWriter::putc(char c)
+{
+    if (getRemainingLength() <= 0) {
+        return 0;
+    }
+
+    buffer[length] = c;
+    length += 1;
+    buffer[length] = '\0';
+
+    return 1;
+}
+
+ssize_t StringWriter::vprintf(const char *fmt, va_list args)
+{
+    ssize_t remaining = getRemainingLength();
+
+    if (remaining <= 0) {
+        return 0;
+    }
+
+    ssize_t written = vsnprintf(buffer + length, remaining + 1 /* +1 for NUL-terminator */, fmt, args);
+
+    if (written < 0) {
+        return -1;
+    }
+
+    if (written > remaining) {
+        written = remaining;
+    }
+
+    length += written;
+
+    return written;
+}
+
+ssize_t StringWriter::printf(const char *fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+
+    ssize_t written = vprintf(fmt, args);
+
+    va_end(args);
+
+    return written;
+}
+
+
+StringBuilder::StringBuilder() : StringWriter(empty, 1) {}
 
 StringBuilder::~StringBuilder()
 {
@@ -75,16 +172,6 @@ bool StringBuilder::setCapacity(size_t new_capacity)
     return true;
 }
 
-void StringBuilder::setLength(size_t new_length)
-{
-    if (new_length > capacity) {
-        new_length = capacity;
-    }
-
-    length = new_length;
-    buffer[length] = '\0';
-}
-
 std::unique_ptr<char> StringBuilder::take()
 {
     char *tmp = buffer;
@@ -102,78 +189,4 @@ std::unique_ptr<char> StringBuilder::take()
     buffer = empty;
 
     return std::unique_ptr<char>{tmp};
-}
-
-ssize_t StringBuilder::puts(const char *string, ssize_t string_len)
-{
-    ssize_t remaining = getRemainingLength();
-
-    if (remaining <= 0) {
-        return 0;
-    }
-
-    if (string_len < 0) {
-        string_len = strlen(string);
-    }
-
-    if (string_len > remaining) {
-        string_len = remaining;
-    }
-
-    memcpy(buffer + length, string, string_len);
-
-    length += string_len;
-
-    buffer[length] = '\0';
-
-    return string_len;
-}
-
-ssize_t StringBuilder::putc(char c)
-{
-    if (getRemainingLength() <= 0) {
-        return 0;
-    }
-
-    buffer[length] = c;
-    length += 1;
-    buffer[length] = '\0';
-
-    return 1;
-}
-
-ssize_t StringBuilder::vprintf(const char *fmt, va_list args)
-{
-    ssize_t remaining = getRemainingLength();
-
-    if (remaining <= 0) {
-        return 0;
-    }
-
-    ssize_t written = vsnprintf(buffer + length, remaining + 1 /* +1 for NUL-terminator */, fmt, args);
-
-    if (written < 0) {
-        return -1;
-    }
-
-    if (written > remaining) {
-        written = remaining;
-    }
-
-    length += written;
-
-    return written;
-}
-
-ssize_t StringBuilder::printf(const char *fmt, ...)
-{
-    va_list args;
-
-    va_start(args, fmt);
-
-    ssize_t written = vprintf(fmt, args);
-
-    va_end(args);
-
-    return written;
 }
